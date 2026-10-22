@@ -46,7 +46,7 @@ used when it exists, else `theme-default/`.
 ewcms-dev/
   package.json        {"private": true, "workspaces": ["ewcms", "sites/*"]}
   ewcms/              git clone EverythingWidget/ewcms
-  sites/eeliyarasta/  git clone Eeliya/eeliyarasta-website
+  sites/eeliyarasta-website/  git clone Eeliya/eeliyarasta-website
 ```
 
 The root `package.json` is only that: no `overrides`, nothing per site. `npm install` at the
@@ -65,7 +65,7 @@ engine's files too (`scripts/resolve-hook.mjs` in Node, `resolve.alias` in the V
 Then, from the root:
 
 ```powershell
-npm run dev -w eeliyarasta-website     # or: cd sites\eeliyarasta; npm run dev
+npm run dev -w eeliyarasta-website     # or: cd sites\eeliyarasta-website; npm run dev
 ```
 
 An edit in `ewcms/` reloads the page in `ewcms dev` with no install: templates and

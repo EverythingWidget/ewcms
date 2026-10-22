@@ -15,20 +15,20 @@ import { initialize, resolve } from './resolve-hook.mjs';
 const W = path.win32;
 
 test('Windows: the entry index.html in every spelling Vite and Rolldown use', () => {
-  for (const root of ['S:/ewcms-dev/sites/eeliyarasta', 'S:\\ewcms-dev\\sites\\eeliyarasta']) {
+  for (const root of ['S:/ewcms-dev/sites/eeliyarasta-website', 'S:\\ewcms-dev\\sites\\eeliyarasta-website']) {
     for (const id of [
-      'S:\\ewcms-dev\\sites\\eeliyarasta\\index.html', // Rolldown: the input as given
-      'S:/ewcms-dev/sites/eeliyarasta/index.html', // Vite's ids
-      's:/ewcms-dev/sites/Eeliyarasta/index.html', // drive letter and names: any case
-      '/S:/ewcms-dev/sites/eeliyarasta/index.html',
-      '/@fs/S:/ewcms-dev/sites/eeliyarasta/index.html',
-      'S:/ewcms-dev/sites/eeliyarasta/index.html?html-proxy',
+      'S:\\ewcms-dev\\sites\\eeliyarasta-website\\index.html', // Rolldown: the input as given
+      'S:/ewcms-dev/sites/eeliyarasta-website/index.html', // Vite's ids
+      's:/ewcms-dev/sites/Eeliyarasta-website/index.html', // drive letter and names: any case
+      '/S:/ewcms-dev/sites/eeliyarasta-website/index.html',
+      '/@fs/S:/ewcms-dev/sites/eeliyarasta-website/index.html',
+      'S:/ewcms-dev/sites/eeliyarasta-website/index.html?html-proxy',
     ])
       assert.ok(isVirtualShell(id, root, W), `${id} (root ${root})`);
     for (const id of [
       'S:\\ewcms-dev\\ewcms\\index.html',
-      'S:/ewcms-dev/sites/eeliyarasta/about/index.html',
-      'T:/ewcms-dev/sites/eeliyarasta/index.html',
+      'S:/ewcms-dev/sites/eeliyarasta-website/about/index.html',
+      'T:/ewcms-dev/sites/eeliyarasta-website/index.html',
     ])
       assert.ok(!isVirtualShell(id, root, W), id);
   }
