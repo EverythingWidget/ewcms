@@ -94,7 +94,7 @@ const STYLE = `
 .sel.is-free .handle:not([data-h='e']):not([data-h='w']) { display: none; }
 .dot { position: absolute; left: 50%; width: 12px; height: 12px; translate: -50% -50%; box-sizing: border-box; border: 2px solid ${T.accent}; border-radius: 50%; background: ${T.black}; pointer-events: auto; }
 .dot[data-dot='top'] { top: -${DOT}px; cursor: grab; }
-.dot[data-dot='bottom'] { top: calc(100% + ${DOT}px); }
+.dot[data-dot='bottom'] { top: calc(100% + ${DOT}px); border-style: dashed; opacity: .55; cursor: default; pointer-events: none; }
 .dot.is-linked { background: ${T.accent}; }
 .sel.is-dragging .dot, .is-linking .box .dot { display: none; }
 .target { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; box-sizing: border-box; border: 2px solid ${T.accent}; border-radius: 50%; background: ${T.black}; }
