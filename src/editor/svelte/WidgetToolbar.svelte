@@ -27,7 +27,6 @@
   import { sourceFile, sourceIds as sourceIdsOf } from '../../site/files.js';
   import { sourceOf } from '../../site/layout/source.js';
   import { untrack } from 'svelte';
-  import { circleGap } from './toolbar-place.js';
   import { setWidget } from '../layout-ops.js';
   import { FIT_TYPES, fitted } from '../../site/layout/type.js';
   import { isSafeHref, UNSAFE_HREF } from '../../site/hrefs.js';
@@ -82,6 +81,8 @@
   let hidden = $state(false);
   // its section shown from the panel (the widget's section card hovered): none, as the frame
   const peeking = $derived(ui.peek?.from === 'panel');
+  // shown: a widget picked, its box known, no drag and no peek (else hidden, still mounted)
+  const shown = $derived(!!(where && widget && pos && !hidden && !peeking));
   $effect(() => {
     if (!where) return void (box = null);
     const id = where.id;
@@ -128,15 +129,16 @@
     return 1; // the marks in "…"
   });
   const BAR_H = 40;
+  const CIRCLE_CLEAR = 24;
   const pos = $derived.by(() => {
     if (!box) return null;
     const x = Math.min(
       Math.max(box.x, box.frameLeft + 8),
       Math.max(box.frameLeft + 8, box.frameRight - 8 - barW),
     );
-    // clear of the widget's link circles (overlay.js: centred, 12px outside its top and bottom
-    // edges, 12px wide) when the bar is across their middle: further up / down instead
-    const gap = circleGap(x, barW, box);
+    // always clear of the widget's link circles (overlay.js: centred, 12px outside its top and
+    // bottom edges, 12px wide), whatever its width: it never jumps when its width changes
+    const gap = CIRCLE_CLEAR;
     const above = box.y - BAR_H - gap;
     const below = box.y + box.h + gap + 4;
     let y;
@@ -377,15 +379,18 @@
   >
 {/snippet}
 
-{#if where && widget && pos && !hidden && !peeking}
-  <div
-    class={['btb', pos.flip && 'is-below']}
-    style="left: {pos.x}px; top: {pos.y}px"
-    bind:clientWidth={barW}
-    onpointerdown={keepFocus}
-    onmousedown={keepFocus}
-    role="presentation"
-  >
+<!-- one element for the whole session: hidden when nothing shows, only its content swaps -->
+<div
+  class={['btb', pos?.flip && 'is-below', !shown && 'is-hidden']}
+  style:left="{pos?.x ?? 0}px"
+  style:top="{pos?.y ?? 0}px"
+  aria-hidden={!shown}
+  bind:clientWidth={barW}
+  onpointerdown={keepFocus}
+  onmousedown={keepFocus}
+  role="presentation"
+>
+  {#if where && widget}
     <div class="btb__bar" role="toolbar" aria-label="Widget">
       {#if hasText && !editing}
         <button
@@ -489,8 +494,8 @@
         {/if}
       </div>
     {/if}
-  </div>
-{/if}
+  {/if}
+</div>
 
 <style lang="scss">
   @use '../styles/mixins' as *;
@@ -510,6 +515,12 @@
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-1);
+
+    // nothing to show: hidden in place (still measured, never unmounted)
+    &.is-hidden {
+      visibility: hidden;
+      pointer-events: none;
+    }
   }
 
   // above the widget: its menus open below the bar; under it the same

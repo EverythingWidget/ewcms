@@ -300,7 +300,7 @@ export function createOverlay({
             `<path class="link${ui.link === id ? ' is-sel' : ''}" d="${d}"/>` +
               `<path class="hit" data-link="${id}" d="${d}"/>` +
               (near
-                ? `<text class="gap" x="${(x1 + x2) / 2 + 6}" y="${(y1 + y2) / 2 + 3}">gap ${l.gap}</text>`
+                ? `<text class="gap" x="${(x1 + x2) / 2 + 6}" y="${(y1 + y2) / 2 + 3}">gap ${gapOf(id, l)}</text>`
                 : ''),
           );
         }
@@ -310,10 +310,11 @@ export function createOverlay({
     if (els.links.innerHTML !== html) els.links.innerHTML = html;
   }
 
-  const labelOf = (b, el) => {
-    const l = el && linkOfEl(el);
-    return `${mobile() ? 'phone · ' : ''}${b?.type || 'widget'}${l ? ` · follows, gap ${l.gap}` : ''}`;
-  };
+  // the selected widget's tag: its type only (its gap shows on its link line, live)
+  const labelOf = (b) => b?.type || 'widget';
+
+  // a link's gap as shown: the dragged widget's live one (show()), else the stored one
+  const gapOf = (id, l) => (drag?.id === id && drag.gap != null ? drag.gap : l.gap);
 
   /**
    * The section card hovered in the Content tab, else the one selected (`sec`, null: none): a soft white 1px line on
@@ -360,7 +361,8 @@ export function createOverlay({
       place(els.sel, rectOf(sel, win));
       const b = widgetOf(ui.widget);
       els.sel.classList.toggle('is-free', sizeOf(b) !== 'rows');
-      els.label.textContent = drag?.label ?? labelOf(b, sel);
+      const label = labelOf(b);
+      if (els.label.textContent !== label) els.label.textContent = label;
     }
     // the section card hovered in the Content tab, else the one selected while the list shows:
     // its section (under the widget boxes)
@@ -429,7 +431,7 @@ export function createOverlay({
       flow,
       items,
       link: linkOfEl(el),
-      label: null,
+      gap: null,
       rows: rows || Number(sec.style.getPropertyValue(phone ? '--mrows' : '--rows')) || 1,
       // a Custom section keeps its rows (never fewer: its widgets move inside them)
       min: minOf(sec, phone),
@@ -487,7 +489,7 @@ export function createOverlay({
 
   /**
    * Show `pos` on the widget without storing it: the widgets that follow it move along, the
-   * section's rows grow to hold them, and a linked widget's label shows its gap.
+   * section's rows grow to hold them, and a linked widget's link line shows its gap (live).
    */
   function show(p) {
     setArea(drag.el.style, p, drag.phone);
@@ -500,7 +502,7 @@ export function createOverlay({
     drag.sec.style.setProperty('--frows', Math.max(drag.min, drag.rows, drag.content));
     if (drag.link) {
       const lead = at[drag.link.to];
-      if (lead) drag.label = `${drag.phone ? 'phone · ' : ''}gap ${p.row - (lead.row + lead.rows)}`;
+      if (lead) drag.gap = p.row - (lead.row + lead.rows);
     }
   }
 
