@@ -14,19 +14,11 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { FORMAT, loadSharp, makeVariants } from './image-variants.mjs';
 import { loadSiteConfig } from './site-config.mjs';
 
-// the site: the working folder (npm runs scripts at the package root); its folders: site.config.mjs
-const SITE = loadSiteConfig(process.cwd());
-const ROOT = SITE.root;
-const SRC = SITE.mediaDir;
-const OUT = SITE.publicMediaDir;
-const MANIFEST = SITE.manifest;
 const EXT = /\.(jpe?g|png|webp|avif|tiff?)$/i;
-
-const sharp = await loadSharp();
-if (!sharp) console.warn('[images] sharp not available: copying originals without resizing.');
 
 const walk = (dir) =>
   fs.existsSync(dir)
@@ -41,67 +33,86 @@ const walk = (dir) =>
         )
     : [];
 
-const prev = fs.existsSync(MANIFEST) ? JSON.parse(fs.readFileSync(MANIFEST, 'utf8')) : {};
-const manifest = {};
-const files = walk(SRC);
-let built = 0;
+/**
+ * The site at `root` (default: the working folder): its media/ photos → public/media sizes and
+ * the manifest (.generated/media.json). Returns { files, built }.
+ */
+export async function buildImages(root = process.cwd()) {
+  const SITE = loadSiteConfig(root);
+  const SRC = SITE.mediaDir;
+  const OUT = SITE.publicMediaDir;
+  const PUBLIC = SITE.publicDir;
+  const MANIFEST = SITE.manifest;
+  const sharp = await loadSharp();
+  if (!sharp) console.warn('[images] sharp not available: copying originals without resizing.');
 
-for (const file of files) {
-  const rel = path.relative(SRC, file).split(path.sep).join('/');
-  const base = rel.replace(EXT, '');
-  const mtime = fs.statSync(file).mtimeMs;
-  const cached = prev[rel];
-  const outputsExist =
-    cached && cached.srcset.every((s) => fs.existsSync(path.join(ROOT, 'public', s.url)));
-  if (
-    cached &&
-    cached.mtime === mtime &&
-    cached.pipeline === (sharp ? 'sharp' : 'copy') &&
-    outputsExist
-  ) {
-    manifest[rel] = cached;
-    continue;
-  }
-  fs.mkdirSync(path.join(OUT, path.dirname(rel)), { recursive: true });
+  const prev = fs.existsSync(MANIFEST) ? JSON.parse(fs.readFileSync(MANIFEST, 'utf8')) : {};
+  const manifest = {};
+  const files = walk(SRC);
+  let built = 0;
 
-  if (!sharp) {
-    const url = `${SITE.mediaUrl}/${rel}`;
-    fs.copyFileSync(file, path.join(OUT, rel));
+  for (const file of files) {
+    const rel = path.relative(SRC, file).split(path.sep).join('/');
+    const base = rel.replace(EXT, '');
+    const mtime = fs.statSync(file).mtimeMs;
+    const cached = prev[rel];
+    const outputsExist =
+      cached && cached.srcset.every((s) => fs.existsSync(path.join(PUBLIC, s.url)));
+    if (
+      cached &&
+      cached.mtime === mtime &&
+      cached.pipeline === (sharp ? 'sharp' : 'copy') &&
+      outputsExist
+    ) {
+      manifest[rel] = cached;
+      continue;
+    }
+    fs.mkdirSync(path.join(OUT, path.dirname(rel)), { recursive: true });
+
+    if (!sharp) {
+      const url = `${SITE.mediaUrl}/${rel}`;
+      fs.copyFileSync(file, path.join(OUT, rel));
+      manifest[rel] = {
+        mtime,
+        pipeline: 'copy',
+        width: 0,
+        height: 0,
+        src: url,
+        srcset: [{ url, w: 0 }],
+        color: null,
+        lqip: null,
+      };
+      continue;
+    }
+
+    const v = await makeVariants(sharp, file);
+    const srcset = [];
+    for (const { w, buffer } of v.sizes) {
+      const url = `${SITE.mediaUrl}/${base}-${w}.${FORMAT.ext}`;
+      fs.writeFileSync(path.join(PUBLIC, url), buffer);
+      srcset.push({ url, w });
+    }
     manifest[rel] = {
       mtime,
-      pipeline: 'copy',
-      width: 0,
-      height: 0,
-      src: url,
-      srcset: [{ url, w: 0 }],
-      color: null,
-      lqip: null,
+      pipeline: 'sharp',
+      width: v.width,
+      height: v.height,
+      src: srcset[srcset.length - 1].url,
+      srcset,
+      color: v.color,
+      lqip: v.lqip,
     };
-    continue;
+    built++;
   }
 
-  const v = await makeVariants(sharp, file);
-  const srcset = [];
-  for (const { w, buffer } of v.sizes) {
-    const url = `${SITE.mediaUrl}/${base}-${w}.${FORMAT.ext}`;
-    fs.writeFileSync(path.join(ROOT, 'public', url), buffer);
-    srcset.push({ url, w });
-  }
-  manifest[rel] = {
-    mtime,
-    pipeline: 'sharp',
-    width: v.width,
-    height: v.height,
-    src: srcset[srcset.length - 1].url,
-    srcset,
-    color: v.color,
-    lqip: v.lqip,
-  };
-  built++;
+  fs.mkdirSync(path.dirname(MANIFEST), { recursive: true });
+  fs.writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2));
+  console.log(
+    `[images] ${files.length} images, ${built} (re)built → public/media, manifest → .generated/media.json`,
+  );
+  return { files: files.length, built };
 }
 
-fs.mkdirSync(path.dirname(MANIFEST), { recursive: true });
-fs.writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2));
-console.log(
-  `[images] ${files.length} images, ${built} (re)built → public/media, manifest → .generated/media.json`,
-);
+// run directly: node scripts/images.mjs (the site: the working folder)
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url))
+  await buildImages();

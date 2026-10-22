@@ -1,31 +1,57 @@
 {
-  "name": "eeliyarasta-website",
-  "private": true,
+  "name": "ewcms",
   "version": "0.1.0",
-  "description": "Eeliya Rasta: photography, projects and things. A tiny static site builder on Vite + GSAP.",
+  "private": true,
+  "description": "EverythingWidget CMS: a static site engine on Vite + GSAP with an in-page content editor. A site is content/, theme/, media/ and site.config.mjs; ewcms builds it.",
   "type": "module",
-  "scripts": {
-    "dev": "node scripts/images.mjs && vite",
-    "images": "node scripts/images.mjs",
-    "build": "node scripts/images.mjs && vite build",
-    "preview": "vite preview --port 4173",
-    "test": "node --test scripts/*.test.mjs",
-    "check:links": "node scripts/check-links.mjs",
-    "lint": "eslint . && stylelint \"{src,theme}/**/*.{scss,svelte}\"",
-    "lint:fix": "eslint . --fix && stylelint \"{src,theme}/**/*.{scss,svelte}\" --fix",
-    "prepare": "git config core.hooksPath .githooks || exit 0",
-    "mock": "node --experimental-websocket --no-warnings scripts/mock.mjs",
-    "mock:serve": "node scripts/mock-serve.mjs"
-  },
   "license": "MIT",
-  "dependencies": {
-    "gsap": "^3.15.0"
+  "repository": "github:EverythingWidget/ewcms",
+  "bin": {
+    "ewcms": "bin/ewcms.mjs"
   },
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
+  "exports": {
+    ".": "./index.js",
+    "./vite": "./vite.js",
+    "./widget-api": "./src/site/widget-api.js",
+    "./functions/contact": "./functions/contact.js",
+    "./stylelint-config": "./stylelint.config.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "bin",
+    "functions",
+    "sandbox",
+    "scripts",
+    "src",
+    "templates",
+    "theme-default",
+    "index.html",
+    "index.js",
+    "vite.js",
+    "stylelint.config.mjs"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "lint": "eslint . && stylelint \"{src,theme-default,sandbox}/**/*.{scss,svelte}\"",
+    "lint:fix": "eslint . --fix && stylelint \"{src,theme-default,sandbox}/**/*.{scss,svelte}\" --fix",
+    "postinstall": "node scripts/hooks.mjs",
+    "dev": "node bin/ewcms.mjs dev --root test/fixtures/site-b",
+    "mock": "node --experimental-websocket --no-warnings scripts/mock.mjs",
+    "mock:serve": "node scripts/mock-serve.mjs",
+    "mock:push": "node scripts/mock-push.mjs"
+  },
+  "dependencies": {
     "@fortawesome/fontawesome-free": "^7.3.1",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "aws4fetch": "^1.0.20",
+    "gsap": "^3.15.0",
+    "sass": "^1.105.1",
+    "sharp": "^0.35.5",
+    "svelte": "^5.57.2",
+    "vite": "^8.3.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-svelte": "^3.23.1",
@@ -34,14 +60,10 @@
     "postcss-html": "^2.0.0",
     "prettier": "^3.9.10",
     "prettier-plugin-svelte": "^4.1.1",
-    "sass": "^1.105.1",
-    "sharp": "^0.35.5",
     "stylelint": "^17.16.0",
-    "stylelint-config-standard-scss": "^17.0.0",
-    "svelte": "^5.57.2",
-    "vite": "^8.3.4"
+    "stylelint-config-standard-scss": "^17.0.0"
   },
-  "imports": {
-    "#widget-api": "./src/site/widget-api.js"
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

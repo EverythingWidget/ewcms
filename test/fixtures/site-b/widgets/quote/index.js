@@ -2,7 +2,7 @@
  * Quote: a pull quote with its author, the example of a site's own widget (README "Custom
  * widgets"). Its look: style.scss; on the page, client.js marks it seen once it scrolls in.
  */
-import { html, esc, lines } from '#widget-api';
+import { html, esc, lines } from 'ewcms/widget-api';
 
 export default {
   type: 'quote',

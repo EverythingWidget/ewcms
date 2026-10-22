@@ -8,7 +8,7 @@
  * "phone" get the browser's autofill, and "email" is the reply-to address (needed).
  *
  * Where it sends (config.target, else site.json forms.target, see formTarget):
- *   function  POST /api/contact: the Cloudflare Pages Function functions/api/contact.js
+ *   function  POST /api/contact: the Cloudflare Pages Function (functions/contact.js)
  *             (the dev server answers it too, scripts/vite-plugin-static-site.mjs)
  *   endpoint  POST to site.json forms.endpoint (a form service such as Formspree)
  *   email     the visitor's mail app, to site.json email (mailto:); also the fallback

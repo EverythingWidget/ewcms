@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { handleContact } from '../functions/api/contact.js';
+import { handleContact } from '../functions/contact.js';
 import { formTarget, form } from '../src/site/widgets/form/index.js';
 import { newWidget } from '../src/site/layout/index.js';
 import { checkContent } from '../src/site/validate.js';

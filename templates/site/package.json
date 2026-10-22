@@ -1,0 +1,19 @@
+{
+  "name": "site",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "ewcms dev",
+    "build": "ewcms build",
+    "preview": "ewcms preview",
+    "check": "ewcms check",
+    "images": "ewcms images"
+  },
+  "dependencies": {
+    "ewcms": "github:EverythingWidget/ewcms"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}

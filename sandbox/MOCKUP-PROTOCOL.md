@@ -22,11 +22,11 @@ Pack the mock files as a base64 tar.gz on your side:
 
     tar czf - section-cards-a.svelte section-cards-b.svelte | base64 -w0
 
-**Work PC (WSL)** (from PowerShell; `sandbox/mock-push.sh` writes, checks the server, prints timings):
+**Work PC** (from PowerShell, in the ewcms checkout, `S:\ewcms-dev\ewcms` or WSL's; `scripts/mock-push.mjs` writes, checks the server, prints timings; plain Node, no bash):
 
 ```powershell
-wsl.exe bash -lc 'cd ~/work/eeliyarasta-website && echo <b64> | bash sandbox/mock-push.sh'
-wsl.exe bash -lc 'cd ~/work/eeliyarasta-website && echo <b64> | bash sandbox/mock-push.sh --rm old-a,old-b'
+'<b64>' | node scripts/mock-push.mjs
+'<b64>' | node scripts/mock-push.mjs --rm old-a,old-b
 ```
 
 Why base64: PowerShell rewrites `$…` and strips double quotes inside the command before WSL sees
@@ -41,7 +41,7 @@ problems either), one command for all files:
 $d='S:\eeliyarasta-website\sandbox\mocks'; [IO.File]::WriteAllBytes("$d\section-cards-a.svelte",[Convert]::FromBase64String('<b64 of the file>')); Remove-Item "$d\old-a.svelte" -ErrorAction SilentlyContinue; (Invoke-WebRequest -UseBasicParsing http://localhost:5199/__mocks/list).Content
 ```
 
-Output of `mock-push.sh`: `wrote: …`, `deleted: …`, `server: all listed` (or `missing …` / `not
+Output of `mock-push.mjs`: `wrote: …`, `deleted: …`, `server: all listed` (or `missing …` / `not
 running`), `delete=…ms write=…ms check=…ms`. Overwriting a same-named mock is fine; `--rm` is
 optional (only when asked to redo or clear mocks).
 
@@ -223,5 +223,5 @@ Own data: `sampleLive([{ id: 's-1', name: 'Work', enabled: false, widgets: [widg
 - Don't look anything up: this sheet has every prop. Write the whole mock in one go from the template.
 - Use a `samplePage` instead of writing sample data.
 - One push command per round (pack all files, `--rm` in the same call), no separate checks:
-  `mock-push.sh` already confirms the server lists them.
+  `mock-push.mjs` already confirms the server lists them.
 - Reply with the viewer links and one line per variant.

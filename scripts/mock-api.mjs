@@ -13,8 +13,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { enginePath } from './engine.mjs';
 
-export const MOCKS_DIR = path.resolve('sandbox', 'mocks');
+// the engine's sandbox/mocks/ (git-ignored there), whichever site the dev server runs
+export const MOCKS_DIR = enginePath('sandbox', 'mocks');
 const EXT = /\.(svelte|html)$/;
 const NAME = /^[\w.-]+$/;
 
@@ -117,6 +119,7 @@ export function mocksPlugin(dir = MOCKS_DIR) {
     apply: 'serve',
     configureServer(server) {
       fs.mkdirSync(dir, { recursive: true });
+      server.watcher.add(dir); // outside the site's root
       server.middlewares.use('/__mocks', mocksMiddleware(dir));
       const changed = (file) => {
         if (path.dirname(path.resolve(file)) === path.resolve(dir) && EXT.test(file))

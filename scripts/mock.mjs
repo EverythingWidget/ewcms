@@ -20,6 +20,8 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import { enginePath, mockSite } from './engine.mjs';
+import { MOCKS_DIR } from './mock-api.mjs';
 
 const args = process.argv.slice(2);
 const names = [];
@@ -35,7 +37,10 @@ if (!names.length) {
   process.exit(1);
 }
 for (const n of names)
-  if (n !== 'kit-demo' && !['svelte', 'html'].some((x) => existsSync(`sandbox/mocks/${n}.${x}`))) {
+  if (
+    n !== 'kit-demo' &&
+    !['svelte', 'html'].some((x) => existsSync(join(MOCKS_DIR, `${n}.${x}`)))
+  ) {
     console.error(`No mock sandbox/mocks/${n}.svelte (or .html)`);
     process.exit(1);
   }
@@ -51,9 +56,11 @@ const up = () =>
 // the dev server: reuse it, or start one in the background (it stays up for the next mock)
 if (!(await up())) {
   const log = openSync(join(tmpdir(), `mock-vite-${port}.log`), 'a');
-  // node + Vite's own script (no npx, no shell): the same on Windows
-  const vite = resolve('node_modules', 'vite', 'bin', 'vite.js');
-  spawn(process.execPath, [vite, '--port', String(port), '--strictPort'], {
+  // node + the engine's CLI (no npx, no shell): the same on Windows. The site: engine.mjs mockSite
+  const site = mockSite();
+  const cli = enginePath('bin', 'ewcms.mjs');
+  spawn(process.execPath, [cli, 'dev', '--port', String(port), '--no-images'], {
+    cwd: site,
     detached: true,
     stdio: ['ignore', log, log],
   }).unref();

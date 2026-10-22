@@ -1,7 +1,11 @@
 /**
  * POST /api/contact: the contact form (src/site/widgets/form/index.js) on Cloudflare Pages.
- * A Pages Function: Cloudflare runs it for this path; nothing secret is in the site or its
- * content. It checks the submission, drops spam, and emails it through Resend's HTTP API.
+ * A Pages Function: Cloudflare runs it for the site's functions/api/contact.js, which is one line:
+ *
+ *   export { onRequestPost } from 'ewcms/functions/contact';
+ *
+ * (or `export const onRequestPost = contactHandler({ ... })` for its own fetch/log). Nothing
+ * secret is in the site or its content. It checks the submission, drops spam, and emails it through Resend's HTTP API.
  *
  * Environment variables (Cloudflare Pages project > Settings > Variables and Secrets):
  *   RESEND_API_KEY        Resend API key (a secret)
@@ -150,5 +154,14 @@ export async function handleContact(
   return sent();
 }
 
-/** Cloudflare Pages: POST /api/contact (other methods get 405 from Pages). */
-export const onRequestPost = ({ request, env }) => handleContact(request, env);
+/**
+ * A Pages Function handler for POST /api/contact (other methods get 405 from Pages), with
+ * handleContact's options (fetch, now, log) fixed for every request.
+ */
+export const contactHandler =
+  (options = {}) =>
+  ({ request, env }) =>
+    handleContact(request, env, options);
+
+/** Cloudflare Pages: POST /api/contact, the default handler. */
+export const onRequestPost = contactHandler();

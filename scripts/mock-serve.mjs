@@ -1,22 +1,14 @@
 /**
  * The mock sandbox's own dev server (sandbox/README.md): npm run mock:serve
- * Vite with the project's config (HMR; a new sandbox/mocks/*.svelte shows up by itself), on
- * MOCK_PORT (default 5199, away from the ports npm run dev picks: 5173, 5174, …), and prints the viewer's URL.
+ * `ewcms dev` (HMR; a new sandbox/mocks/*.svelte shows up by itself) for a site: MOCK_SITE, else
+ * the working folder when it is a site, else the test fixture. On MOCK_PORT (default 5199, away
+ * from the ports `ewcms dev` picks: 5173, 5174, …); prints the viewer's URL.
  * Plain Node, no shell: the same on Windows, macOS and Linux.
  */
-import { createServer } from 'vite';
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
+import { dev } from './cli.mjs';
+import { mockSite } from './engine.mjs';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-process.chdir(root);
 const port = Number(process.env.MOCK_PORT || 5199);
-const server = await createServer({
-  root,
-  configFile: path.join(root, 'vite.config.js'),
-  server: { port, strictPort: true },
-  clearScreen: false,
-});
-await server.listen();
+const server = await dev(mockSite(), { port, images: false });
 const local = server.resolvedUrls?.local?.[0] || `http://localhost:${port}/`;
 console.log(`\n  Mock sandbox: ${new URL('sandbox/', local)}\n`);

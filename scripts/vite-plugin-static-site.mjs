@@ -27,7 +27,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import { loadEnv } from 'vite';
 import { loadContent } from './content.mjs';
 import { DRAFT_PARAM, draftsFor, editorMiddleware } from './editor-server.mjs';
@@ -38,8 +38,19 @@ import { checkSources } from '../src/site/schemas.js';
 import { FOLDERS } from '../src/site/files.js';
 import { loadSiteConfig } from './site-config.mjs';
 import { registerSiteWidgets, widgetClientsModule, widgetsModule } from './site-widgets.mjs';
+import { ENGINE, enginePath, fsUrl, posixPath, withEngineUrls } from './engine.mjs';
 
-const RENDER_MODULE = '/src/site/render.js';
+// the engine's modules the server loads itself (render, registry): absolute, the engine is
+// not inside the site's root (node_modules/ewcms, or a workspace folder next to it)
+const RENDER_FILE = enginePath('src/site/render.js');
+const WIDGETS_FILE = enginePath('src/site/widgets/index.js');
+const RENDER_MODULE = fsUrl(RENDER_FILE);
+const WIDGETS_MODULE = fsUrl(WIDGETS_FILE);
+
+/** The page shell: the site's own index.html if it has one, else the engine's template. */
+export const shellFile = (root) =>
+  [path.join(root, 'index.html'), enginePath('index.html')].find((f) => fs.existsSync(f));
+const readShell = (file) => withEngineUrls(fs.readFileSync(file, 'utf8'));
 
 const attr = (s) => String(s).replace(/[&"<>]/g, (c) => `&#${c.charCodeAt(0)};`);
 const setLang = (shell, lang) =>
@@ -48,7 +59,7 @@ const setLang = (shell, lang) =>
     `<html lang="${String(lang || 'en').replace(/[^\w-]/g, '')}"`,
   );
 /** The core's stylesheets (src/client/styles): the theme's styles use them as site-core. */
-const CORE_STYLES = fileURLToPath(new URL('../src/client/styles', import.meta.url));
+const CORE_STYLES = enginePath('src/client/styles');
 
 /**
  * The theme's part of a page's head (theme.json), at the shell's <!--theme-meta--> and
@@ -106,9 +117,10 @@ export const editorConfigModule = (site) =>
  * client modules for the public site (scripts/site-widgets.mjs). */
 export const SITE_WIDGETS = 'virtual:site-widgets';
 export const SITE_WIDGET_CLIENTS = 'virtual:site-widgets/client';
-const WIDGETS_MODULE = '/src/site/widgets/index.js';
 
 const posixRel = (root, p) => path.relative(root, p).split(path.sep).join('/');
+/** The build's entry id: <root>/index.html with "/" (Vite's ids). */
+export const siteShellId = (root) => posixPath(path.join(root, 'index.html'));
 
 export default function staticSite() {
   let config;
@@ -133,6 +145,8 @@ export default function staticSite() {
         define: { __SITE_CONTENT_DIR__: JSON.stringify(site.contentRel) },
       };
     },
+    // engine-owned HTML (the template, the editor, the sandbox) names the engine as %EWCMS%
+    transformIndexHtml: { order: 'pre', handler: (html) => withEngineUrls(html) },
     configResolved(c) {
       config = c;
       widgetsReady = registerSiteWidgets(c.root);
@@ -140,8 +154,13 @@ export default function staticSite() {
     },
     resolveId(id) {
       if ([EDITOR_CONFIG, SITE_WIDGETS, SITE_WIDGET_CLIENTS].includes(id)) return `\0${id}`;
+      // the build's entry, <root>/index.html: the engine's template when the site has none
+      if (id === siteShellId(config.root) && !fs.existsSync(path.join(config.root, 'index.html')))
+        return id;
     },
     load(id) {
+      if (id === siteShellId(config.root) && !fs.existsSync(path.join(config.root, 'index.html')))
+        return readShell(shellFile(config.root));
       if (id === `\0${EDITOR_CONFIG}`) return editorConfigModule(loadSiteConfig(config.root));
       if (id === `\0${SITE_WIDGETS}`) return widgetsModule(config.root);
       if (id === `\0${SITE_WIDGET_CLIENTS}`) return widgetClientsModule(config.root);
@@ -172,7 +191,7 @@ export default function staticSite() {
         }),
       );
 
-      // The contact form's POST /api/contact (functions/api/contact.js): checked, logged, not sent
+      // The contact form's POST /api/contact (functions/contact.js): checked, logged, not sent
       server.middlewares.use('/api/contact', contactMiddleware(config.logger));
 
       server.middlewares.use(async (req, res, next) => {
@@ -189,14 +208,16 @@ export default function staticSite() {
           res.writeHead(302, { Location: moved || '/sandbox/' + url.search });
           return res.end();
         }
-        if (url.pathname.startsWith('/sandbox/')) return next(); // mock sandbox (sandbox/index.html)
+        if (url.pathname === '/sandbox/') {
+          // the mock sandbox (the engine's sandbox/index.html, sandbox/README.md)
+          const html = readShell(enginePath('sandbox/index.html'));
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          return res.end(await server.transformIndexHtml(req.url, html));
+        }
         try {
           if (wantsEditor(url, req.headers)) {
             // the editor app on this page (src/editor/lib/editor-url.js); its preview gets the site
-            const shell = editorShell(
-              fs.readFileSync(path.join(root, EDITOR_HTML), 'utf8'),
-              loadContent(root).site,
-            );
+            const shell = editorShell(readShell(enginePath(EDITOR_HTML)), loadContent(root).site);
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
             return res.end(await server.transformIndexHtml(req.url, shell));
           }
@@ -221,7 +242,7 @@ export default function staticSite() {
           }
           const status = route ? 200 : 404;
           route ||= routes.find((r) => r.page === 'notFound');
-          const shell = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+          const shell = readShell(shellFile(root));
           const html = await server.transformIndexHtml(
             req.url,
             fill(
@@ -249,12 +270,15 @@ export default function staticSite() {
       const content = [site.contentDir, site.generatedDir].some((d) =>
         rel.startsWith(`${posixRel(config.root, d)}/`),
       );
-      if (!content && !rel.startsWith('src/site/')) return;
+      // the engine's templates: src/site in the engine's folder
+      const engineRel = posixRel(ENGINE, file);
+      const template = engineRel.startsWith('src/site/');
+      if (!content && !template) return;
       const external = Date.now() >= editorWriteUntil;
       server.ws.send({
         type: 'custom',
         event: 'site:changed',
-        data: { files: [rel], content, external },
+        data: { files: [template ? `ewcms/${engineRel}` : rel], content, external },
       });
       // Client code imports animations.json: without this, Vite would full-reload every page.
       // src/site modules keep Vite's own handling (the editor imports some of them).
@@ -280,11 +304,11 @@ export default function staticSite() {
         motionChecks,
         seoWarnings,
         sitemapXml,
-      } = await import(pathToFileURL(path.join(root, RENDER_MODULE)).href + `?t=${Date.now()}`);
+      } = await import(pathToFileURL(RENDER_FILE).href + `?t=${Date.now()}`);
       await widgetsReady;
       // the render module was imported by Node itself: its registry is not the one this plugin
-      // (bundled with vite.config.js) registered in, so the site's widgets join it too
-      const { registerWidgets } = await import(pathToFileURL(path.join(root, WIDGETS_MODULE)).href);
+      // (loaded once, from the engine's own folder) registered in, so the site's widgets join it too
+      const { registerWidgets } = await import(pathToFileURL(WIDGETS_FILE).href);
       await registerSiteWidgets(root, { register: registerWidgets });
       const content = loadContent(root);
       // every source against its schema (required fields, types, photos): stop on a mistake

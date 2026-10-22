@@ -1,11 +1,11 @@
 /**
  * The dev server's POST /api/contact: the contact form's Cloudflare Pages Function
- * (functions/api/contact.js) with stand-in settings and a fetch that logs the email instead
+ * (functions/contact.js) with stand-in settings and a fetch that logs the email instead
  * of sending it, so the form can be tried in `npm run dev` and the editor preview without
  * keys. ?contact-fail in the page's URL (or ?fail on the request) answers like a failed send.
  * Turnstile is not checked here.
  */
-import { handleContact } from '../functions/api/contact.js';
+import { handleContact } from '../functions/contact.js';
 
 const ENV = { RESEND_API_KEY: 'dev', CONTACT_TO: 'you@localhost', CONTACT_FROM: 'site@localhost' };
 

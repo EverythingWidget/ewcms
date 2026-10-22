@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { themeHead } from './vite-plugin-static-site.mjs';
-import { loadSiteConfig } from './site-config.mjs';
+import { loadSiteConfig, DEFAULT_THEME } from './site-config.mjs';
 
 const theme = {
   themeColor: '#050505',
@@ -35,6 +35,12 @@ test('loadSiteConfig: the theme folder and its theme.json', () => {
   const site = loadSiteConfig(root);
   assert.equal(site.themeDir, path.join(root, 'looks/a'));
   assert.deepEqual(site.theme, theme);
+  // no theme folder: the engine's theme-default, and its theme.json
   const bare = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-'));
-  assert.deepEqual(loadSiteConfig(bare).theme, {});
+  assert.equal(loadSiteConfig(bare).themeDir, DEFAULT_THEME);
+  assert.equal(loadSiteConfig(bare).theme.version, 1);
+  // a theme folder without theme.json: {}
+  const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-'));
+  fs.mkdirSync(path.join(empty, 'theme'));
+  assert.deepEqual(loadSiteConfig(empty).theme, {});
 });

@@ -4,7 +4,7 @@
 one-command push, the kit's every prop, a template and reference screenshots (`docs/`).
 
 Dev-only page for trying editor UI fast, with the editor's real styles (`editor.scss`, tokens,
-fonts), Font Awesome icons and Svelte components. Never built (`vite.config.js` builds
+fonts), Font Awesome icons and Svelte components. Never built (`vite.js`, the preset, builds
 `index.html` only).
 
 What is in git: the builder (this folder's `main.js`, `Viewer.svelte`, `sandbox.scss`, the kit
@@ -59,8 +59,8 @@ on Windows or macOS, else `/usr/bin/google-chrome`. About 2 s per call with the 
 
 ## Pushing mocks in one command
 
-`sandbox/mock-push.sh` reads a base64 tar.gz of `.svelte` files from stdin, writes them into `sandbox/mocks/`, and checks that the mock server lists them. Add `--rm a,b` to delete mocks first.
+`scripts/mock-push.mjs` (`npm run mock:push`; plain Node, also in PowerShell) reads a base64 tar.gz of `.svelte` files from stdin, writes them into `sandbox/mocks/`, and checks that the mock server lists them. Add `--rm a,b` to delete mocks first.
 
 ```bash
-echo <base64> | bash sandbox/mock-push.sh --rm old-mock
+echo <base64> | node scripts/mock-push.mjs --rm old-mock
 ```

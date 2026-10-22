@@ -1,5 +1,5 @@
 // Compiles every editor component and .svelte.js module the way the dev server does
-// (vite.config.js + vite-plugin-svelte: runes mode, SCSS styles preprocessed, client output,
+// (vite.js preset + vite-plugin-svelte: runes mode, SCSS styles preprocessed, client output,
 // dev mode, CSS emitted separately). `npm run build` skips the editor, so this is what
 // catches a broken component before it reaches the editor (?edit). Warnings fail too.
 import { test } from 'node:test';

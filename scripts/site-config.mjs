@@ -8,7 +8,8 @@
  *     publicMediaDir: 'public/media',  // the photos' generated sizes (served as /media/...)
  *     generatedDir: '.generated',      // the media manifest (media.json)
  *     outDir: 'dist',                  // the build
- *     themeDir: 'theme',               // the theme: theme.json, styles/ (the site-theme alias)
+ *     themeDir: 'theme',               // the theme: theme.json, styles/ (the site-theme alias);
+ *                                      // none there: the engine's theme-default/
  *     widgets: ['./widgets/quote'],    // the site's own widgets (widget modules), after the built-ins
  *     repo: { owner, name },           // GitHub links when the git remote names none
  *   };
@@ -22,6 +23,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { enginePath } from './engine.mjs';
 
 export const CONFIG_FILE = 'site.config.mjs';
 
@@ -37,6 +39,9 @@ export const DEFAULTS = Object.freeze({
   repo: Object.freeze({ owner: '', name: '' }),
 });
 
+/** The engine's theme, for a site without its own themeDir. */
+export const DEFAULT_THEME = enginePath('theme-default');
+
 const require = createRequire(import.meta.url);
 const cache = new Map();
 const posix = (p) => p.split(path.sep).join('/');
@@ -50,6 +55,8 @@ export function loadSiteConfig(root = process.cwd()) {
   const own = fs.existsSync(file) ? require(file).default || {} : {};
   const config = { ...DEFAULTS, ...own, repo: { ...DEFAULTS.repo, ...own.repo } };
   const abs = (p) => path.resolve(root, p);
+  // a site without a theme folder gets the engine's (theme-default/)
+  const themeDir = fs.existsSync(abs(config.themeDir)) ? abs(config.themeDir) : DEFAULT_THEME;
   const site = {
     root,
     config,
@@ -60,8 +67,8 @@ export function loadSiteConfig(root = process.cwd()) {
     generatedDir: abs(config.generatedDir),
     manifest: path.join(abs(config.generatedDir), 'media.json'),
     outDir: abs(config.outDir),
-    themeDir: abs(config.themeDir),
-    theme: readJson(path.join(abs(config.themeDir), 'theme.json')),
+    themeDir,
+    theme: readJson(path.join(themeDir, 'theme.json')),
     contentRel: posix(path.relative(root, abs(config.contentDir))),
     mediaUrl: `/${posix(path.relative(abs(config.publicDir), abs(config.publicMediaDir)))}`,
   };

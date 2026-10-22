@@ -1,29 +1,102 @@
-# eeliyarasta.com
+# ewcms
 
-Personal site of **Eeliya Rasta**: portrait & editorial photography (Fujifilm X100V) first,
-websites and DIY projects second.
+The engine behind **eeliyarasta.com** (and the next sites): a static site builder with an
+in-page visual editor. **Vanilla JS (ES modules) + SCSS + Vite + GSAP**, no framework on the
+public site. Content lives in JSON, templates are plain JavaScript functions, every page is
+prerendered to static HTML at build time, and the browser then takes over as a single-page app
+with GSAP page transitions. The editor (Svelte 5) runs in the dev server only and never ships.
 
-A deliberately small stack: **vanilla JS (ES modules) + SCSS + Vite + GSAP**. No framework.
-Content lives in JSON, templates are plain JavaScript functions, every page is prerendered to
-static HTML at build time, and the browser then takes over as a single-page app with GSAP
-page transitions.
+A **site** is only its own things; ewcms is everything else:
+
+| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                          | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/site` (templates, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `scripts/` (Vite plugin, dev server API, build, images, R2), `functions/contact.js`, `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
+| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                             | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                             |
+| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.0"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                            |
+
+## A site's commands
 
 ```bash
-npm install
-npm run dev       # http://localhost:5173 – pages rendered on the fly, hot reload
-npm run build     # → dist/ (one index.html per route + 404.html, sitemap.xml, robots.txt)
-npm run preview   # serve dist/ on http://localhost:4173
-npm test          # unit tests (R2 upload and delete against a local mock S3, ...)
-npm run lint      # ESLint + Stylelint (npm run lint:fix fixes what it can)
-npm run images    # media/ → public/media/*.webp sizes (dev and build run it first)
-npm run check:links  # after a build: every internal link in dist/ points at a file
-npm run mock -- <name>  # screenshot an editor UI mock (sandbox/README.md)
+ewcms dev [--port N] [--host] [--no-images]   # images, then http://localhost:5173 (pages on the fly, hot reload; editor: ?edit)
+ewcms build [--no-images]                     # images, then dist/ (one index.html per route + 404.html, sitemap.xml, _redirects)
+ewcms preview [--port N]                      # serve dist/ on http://localhost:4173
+ewcms check [--links] [--no-lint]             # content (every file, sources, bindings, motion) + the site's JS/SCSS; --links: dist/'s links
+ewcms images                                  # media/ → public/media/*.webp sizes + .generated/media.json
+ewcms publish-media                           # media/ photos → Cloudflare R2 (.env.local R2_* keys), like the editor's uploads
+ewcms new-site <dir>                          # a new site: theme-default, starter content, package.json
 ```
 
-Visual editor (dev only): any page with `?edit`, e.g. `http://localhost:5173/?edit`, while `npm run dev` runs (see [Visual editor](#visual-editor-edit-dev-only)).
+A site's `package.json` maps them (`npm run dev`, `npm run build`, `npm run check`). It needs no
+`vite.config.js`: the CLI uses the preset (`ewcms/vite`, `siteConfig({ root })`). A site that
+wants more keeps its own `vite.config.js` (the CLI then uses it):
+
+```js
+import { mergeConfig } from 'vite';
+import { siteConfig } from 'ewcms/vite';
+export default mergeConfig(siteConfig({ root: import.meta.dirname }), {/* more */});
+```
+
+`index.html` (the page shell) is the engine's unless the site has one; its `%EWCMS%/…` paths
+point at the engine's files (the dev server serves them as `/@fs/…`). The site's `theme/` is
+used when it exists, else `theme-default/`.
+
+## Working on ewcms and a site together (the workspace, no npm link)
+
+```
+ewcms-dev/
+  package.json        {"private": true, "workspaces": ["ewcms", "sites/*"], "overrides": {…}}
+  ewcms/              git clone EverythingWidget/ewcms
+  sites/eeliyarasta/  git clone Eeliya/eeliyarasta-website
+```
+
+The root `package.json`:
+
+```json
+{
+  "private": true,
+  "workspaces": ["ewcms", "sites/*"],
+  "overrides": {
+    "eeliyarasta-website": { "ewcms": "file:./ewcms" }
+  }
+}
+```
+
+`npm install` at the root links `node_modules/ewcms` to `ewcms/` (a symlink, a junction on
+Windows). The `overrides` line is needed because a site depends on ewcms by a git tag
+(`github:…#v0.1.0`, what Cloudflare installs), and npm only links a workspace for a version
+range: one line per site, keyed by the site's package name. Then, from the root:
+
+```powershell
+npm run dev -w eeliyarasta-website     # or: cd sites\eeliyarasta; npm run dev
+```
+
+An edit in `ewcms/` reloads the page in `ewcms dev` with no install: templates and
+`src/site` re-render, client JS and styles hot-reload, the editor too. Change ewcms's
+dependencies → `npm install` at the root.
+
+Works the same in PowerShell, cmd and WSL: the CLI, the hooks script and the mock tools are plain
+Node (no bash), paths go through `path` (URLs and globs always use `/`). Git hooks
+(`.githooks/pre-push`) are `sh` scripts, which Git for Windows runs itself.
+
+**Releasing:** bump `version` in `package.json`, commit, tag `vX.Y.Z`, push the tag; then each
+site moves its dependency to `#vX.Y.Z` and runs `npm install` (its `package-lock.json` pins
+the commit; Cloudflare installs that).
+
+## Developing ewcms
+
+```bash
+npm test          # node --test: unit tests (R2 upload and delete against a local mock S3, ...)
+npm run lint      # ESLint + Stylelint (npm run lint:fix fixes what it can)
+npm run dev       # ewcms dev for the test fixture site (test/fixtures/site-b, a custom widget)
+npm run mock -- <name>  # screenshot an editor UI mock (sandbox/README.md)
+npm run mock:serve      # the mock sandbox's dev server (MOCK_SITE=<a site's folder>, else the fixture)
+```
 
 Requires Node `^20.19.0 || >=22.12.0` (Vite 8's engines). `npm run mock` passes
 `--experimental-websocket`, which only Node 20 needs.
+
+The sections below call the engine's files by their path in this repo and the site's files by
+theirs in a site (`content/`, `theme/`, `site.config.mjs`).
 
 ### Linting
 
@@ -47,8 +120,9 @@ Requires Node `^20.19.0 || >=22.12.0` (Vite 8's engines). `npm run mock` passes
 **Test fixtures:** tests never read the live content. They read `test/fixtures/site-a` (a frozen
 copy of a site: `content/en` and `.generated/media.json`, `test/fixtures/index.mjs`), and tests
 that change files copy it to a temp folder first.
-`npm install` turns it on (the `prepare` script sets `git config core.hooksPath .githooks`), so
-run `npm install` after pulling this. It works in Git for Windows' sh. Skip it once with
+`npm install` turns it on (`postinstall`: `scripts/hooks.mjs` sets `git config core.hooksPath
+.githooks`, only in a git checkout of ewcms itself, never in a site's node_modules), so run
+`npm install` after pulling this. It works in Git for Windows' sh. Skip it once with
 `git push --no-verify`.
 
 ---
@@ -74,6 +148,7 @@ editor has its own tokens and fonts (`src/editor/styles/_tokens.scss`, `_fonts.s
 `src/editor/fonts`): it never reads the site's theme, so a theme can change and the editor stays.
 
 ```
+— in a site —
 content/            ← all text, albums, projects, animation config (JSON)
  en/                ← one folder per language (only en so far; the site's lang is site.json "lang")
   pages/            ← one folder per page (its URL) with index.json in it (see "Pages and URLs")
@@ -83,7 +158,17 @@ content/            ← all text, albums, projects, animation config (JSON)
                       and footer.json: the footer's sections (see "Footer")
   strings.json      ← UI text of the templates: the menu's Menu / Close / clock label
 media/              ← source photos (jpg), committed
+theme/              ← the site's theme (else ewcms's theme-default/)
+site.config.mjs     ← the site's folders
+functions/api/contact.js ← one line: export { onRequestPost } from 'ewcms/functions/contact'
+
+— in ewcms —
+bin/ewcms.mjs       ← the ewcms command (scripts/cli.mjs: dev, build, check, …)
+vite.js             ← the Vite preset (ewcms/vite)
+templates/site/     ← what ewcms new-site copies (with theme-default/ and the fixture's content)
 scripts/
+  engine.mjs        ← where the engine is; %EWCMS% / /@fs/ paths to its files
+  cli.mjs           ← the commands
   images.mjs        ← media/ → public/media/*.webp sizes + .generated/media.json
   content.mjs       ← loads content/en/<folder>/*.json and strings.json + media manifest (Node)
   image-variants.mjs ← the webp sizes (sharp), for images.mjs and r2.mjs
@@ -93,12 +178,12 @@ scripts/
                       upload / media / pages / publish (localhost only)
   git-env.mjs       ← git's environment without a hook's GIT_DIR & co. (Publish)
   contact-dev.mjs   ← the dev server's POST /api/contact (logs instead of sending)
-  check-links.mjs   ← npm run check:links: every internal link in dist/ points at a file
+  check-links.mjs   ← ewcms check --links: every internal link in dist/ points at a file
   mock.mjs          ← npm run mock: screenshots of sandbox/mocks
   stylelint-4px.mjs ← the editor's local stylelint rules
   test-layout.mjs   ← shared test helpers
   *.test.mjs        ← the unit tests (node --test)
-functions/api/contact.js ← the contact form's Cloudflare Pages Function (emails via Resend)
+functions/contact.js ← the contact form's Cloudflare Pages Function (emails via Resend; contactHandler(options))
 sandbox/            ← editor UI mock builder at /sandbox/ (kit/, viewer; mocks/ is local, git-ignored): npm run mock:serve
 src/
   site/             ← isomorphic templates (no Node APIs, run at build time AND in a browser)
@@ -135,7 +220,7 @@ src/
     svelte/         ← the editor UI (Svelte 5): panels, fields, modals
     lib/            ← small editor helpers (pointers, diff, format, show-value, dialog, editor-url)
     index.html      ← editor shell (served by `npm run dev` for ?edit only)
-index.html          ← HTML shell with <!--ssr-head--> / <!--ssr-body--> markers
+index.html          ← HTML shell (a site may keep its own) with <!--ssr-head--> / <!--ssr-body--> markers
 ```
 
 **Content shape.** Every content file is a JSON object whose first key is `"version": 1`, the
@@ -1381,13 +1466,13 @@ Change in its field, see the Media window above). Edit
 
 ## Deploy
 
-Any static host works: upload `dist/`.
+A site deploys like any static site: build command `npm run build`, output `dist/`.
 
-**Cloudflare Pages** (likely): connect the repo, Build command `npm run build`, Output directory
-`dist`. It reads `dist/_redirects` and runs `functions/` (the contact form: set its variables,
-see "Contact form").
+**Cloudflare Pages:** build command `npm run build`, output directory `dist`. It reads
+`dist/_redirects` and runs the site's `functions/` (the contact form re-exports
+`ewcms/functions/contact`: set its variables, see "Contact form"). `npm ci` installs ewcms from
+GitHub by the commit in the site's `package-lock.json`, so the build machine needs read access to
+`EverythingWidget/ewcms`: either the repo is public, or the build gets a token (e.g. a
+`GITHUB_TOKEN` variable and a git `url.insteadOf` rule in the build command).
 
-**Vercel**: import the repo, Framework preset **Other**, Build command `npm run build`,
-Output directory `dist`. Unknown URLs get `404.html` automatically. Pushes from the
-editor's Publish button trigger a normal redeploy. (Netlify, Cloudflare Pages
-and GitHub Pages work the same way.)
+**Vercel / Netlify / GitHub Pages:** the same build command and output directory.
