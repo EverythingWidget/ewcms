@@ -15,7 +15,22 @@ import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import staticSite from './scripts/vite-plugin-static-site.mjs';
 import { mocksPlugin } from './scripts/mock-api.mjs';
 import { loadSiteConfig } from './scripts/site-config.mjs';
-import { ENGINE, posixPath } from './scripts/engine.mjs';
+import fs from 'node:fs';
+import { ENGINE, enginePath, posixPath } from './scripts/engine.mjs';
+
+/**
+ * 'ewcms', 'ewcms/widget-api', …: always this engine's files (package.json exports), whichever
+ * copy of ewcms node_modules has next to the site (a site's widgets import ewcms/widget-api).
+ */
+function engineAliases() {
+  const { exports } = JSON.parse(fs.readFileSync(enginePath('package.json'), 'utf8'));
+  return Object.entries(exports)
+    .filter(([, file]) => /\.m?js$/.test(file))
+    .map(([key, file]) => ({
+      find: new RegExp(`^${`ewcms${key.slice(1)}`.replace(/[/.]/g, '\\$&')}$`),
+      replacement: posixPath(enginePath(file)),
+    }));
+}
 
 export { staticSite, mocksPlugin };
 
@@ -27,6 +42,7 @@ export function siteConfig({ root = process.cwd() } = {}) {
   const engine = posixPath(ENGINE);
   return {
     root,
+    resolve: { alias: engineAliases() },
     // the site's .env.local (R2_* keys for the editor's uploads)
     envDir: root,
     plugins: [
@@ -55,7 +71,8 @@ export function siteConfig({ root = process.cwd() } = {}) {
       // Only the public site is built: index.html (the site's, else the engine's template:
       // scripts/vite-plugin-static-site.mjs). The visual editor and the mock sandbox are dev only.
       rolldownOptions: {
-        input: { main: path.join(root, 'index.html') },
+        // "/" also on Windows: the static-site plugin serves it when the site has no index.html
+        input: { main: posixPath(path.join(root, 'index.html')) },
       },
     },
     preview: { port: 4173 },

@@ -38,7 +38,7 @@ import { checkSources } from '../src/site/schemas.js';
 import { FOLDERS } from '../src/site/files.js';
 import { loadSiteConfig } from './site-config.mjs';
 import { registerSiteWidgets, widgetClientsModule, widgetsModule } from './site-widgets.mjs';
-import { ENGINE, enginePath, fsUrl, posixPath, withEngineUrls } from './engine.mjs';
+import { ENGINE, enginePath, fsUrl, posixPath, sameFile, withEngineUrls } from './engine.mjs';
 
 // the engine's modules the server loads itself (render, registry): absolute, the engine is
 // not inside the site's root (node_modules/ewcms, or a workspace folder next to it)
@@ -119,8 +119,16 @@ export const SITE_WIDGETS = 'virtual:site-widgets';
 export const SITE_WIDGET_CLIENTS = 'virtual:site-widgets/client';
 
 const posixRel = (root, p) => path.relative(root, p).split(path.sep).join('/');
-/** The build's entry id: <root>/index.html with "/" (Vite's ids). */
-export const siteShellId = (root) => posixPath(path.join(root, 'index.html'));
+/** The build's entry id: <root>/index.html with "/" (Vite's ids, also on Windows: S:/…). */
+export const siteShellId = (root) => posixPath(path.resolve(root, 'index.html'));
+/**
+ * Whether `id` is the build's entry, <root>/index.html, when the site has no index.html (the
+ * engine's template stands in). Any spelling of the path: Rolldown passes the entry as given
+ * (S:\\…\\index.html on Windows), Vite with "/".
+ */
+export const isVirtualShell = (id, root, paths = path) =>
+  sameFile(id, paths.join(root, 'index.html'), paths) &&
+  !fs.existsSync(path.join(root, 'index.html'));
 
 export default function staticSite() {
   let config;
@@ -155,12 +163,10 @@ export default function staticSite() {
     resolveId(id) {
       if ([EDITOR_CONFIG, SITE_WIDGETS, SITE_WIDGET_CLIENTS].includes(id)) return `\0${id}`;
       // the build's entry, <root>/index.html: the engine's template when the site has none
-      if (id === siteShellId(config.root) && !fs.existsSync(path.join(config.root, 'index.html')))
-        return id;
+      if (isVirtualShell(id, config.root)) return siteShellId(config.root);
     },
     load(id) {
-      if (id === siteShellId(config.root) && !fs.existsSync(path.join(config.root, 'index.html')))
-        return readShell(shellFile(config.root));
+      if (isVirtualShell(id, config.root)) return readShell(shellFile(config.root));
       if (id === `\0${EDITOR_CONFIG}`) return editorConfigModule(loadSiteConfig(config.root));
       if (id === `\0${SITE_WIDGETS}`) return widgetsModule(config.root);
       if (id === `\0${SITE_WIDGET_CLIENTS}`) return widgetClientsModule(config.root);

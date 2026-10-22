@@ -14,16 +14,32 @@ export const ENGINE = fs.realpathSync(fileURLToPath(new URL('..', import.meta.ur
 export const enginePath = (...parts) => path.join(ENGINE, ...parts);
 
 /** A path with "/" separators (Vite's ids, globs, URLs). */
-export const posixPath = (p) => p.split(path.sep).join('/');
+export const posixPath = (p, paths = path) => p.split(paths.sep).join('/');
 
 /**
  * A file's dev server URL by its absolute path (Vite's /@fs/ prefix): /@fs/home/x/a.js,
  * /@fs/S:/ewcms-dev/ewcms/a.js on Windows. The build resolves the same URLs.
  */
-export const fsUrl = (abs) => {
-  const p = posixPath(path.resolve(abs));
+export const fsUrl = (abs, paths = path) => {
+  const p = posixPath(paths.resolve(abs), paths);
   return `/@fs${p.startsWith('/') ? '' : '/'}${p}`;
 };
+
+/**
+ * Whether a module id (Vite / Rolldown: "/" or "\\", maybe a /@fs/ or /S:/ prefix, a ?query) is
+ * the file at `file`. Windows (paths = path.win32): drive letters and names case-insensitive.
+ */
+export function sameFile(id, file, paths = path) {
+  const norm = (s) => {
+    let p = String(s).split('?')[0].replace(/\\/g, '/');
+    if (p.startsWith('/@fs/')) p = p.slice(4);
+    if (/^\/[A-Za-z]:\//.test(p)) p = p.slice(1);
+    return p.replace(/\/{2,}/g, '/');
+  };
+  const a = norm(id);
+  const b = norm(paths.resolve(file));
+  return paths === path.win32 ? a.toLowerCase() === b.toLowerCase() : a === b;
+}
 
 /** The marker engine-owned HTML uses for the engine's URL: %EWCMS%/src/client/main.js. */
 export const ENGINE_MARK = '%EWCMS%';

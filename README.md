@@ -12,7 +12,7 @@ A **site** is only its own things; ewcms is everything else:
 | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/site` (templates, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `scripts/` (Vite plugin, dev server API, build, images, R2), `functions/contact.js`, `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
 | `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                             | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                             |
-| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.0"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                            |
+| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                            |
 
 ## A site's commands
 
@@ -44,27 +44,25 @@ used when it exists, else `theme-default/`.
 
 ```
 ewcms-dev/
-  package.json        {"private": true, "workspaces": ["ewcms", "sites/*"], "overrides": {…}}
+  package.json        {"private": true, "workspaces": ["ewcms", "sites/*"]}
   ewcms/              git clone EverythingWidget/ewcms
   sites/eeliyarasta/  git clone Eeliya/eeliyarasta-website
 ```
 
-The root `package.json`:
+The root `package.json` is only that: no `overrides`, nothing per site. `npm install` at the
+root links `node_modules/ewcms` to `ewcms/` (a symlink, a junction on Windows) and installs
+everything once.
 
-```json
-{
-  "private": true,
-  "workspaces": ["ewcms", "sites/*"],
-  "overrides": {
-    "eeliyarasta-website": { "ewcms": "file:./ewcms" }
-  }
-}
-```
+A site depends on ewcms by a git tag (`github:EverythingWidget/ewcms#v0.1.1`, what Cloudflare
+installs), and npm does not link a workspace for a git dependency: it may also put that tag's
+copy in `sites/<site>/node_modules/ewcms` (npm 10 does). That copy only starts the command:
+`ewcms` looks for a workspace above the site whose `workspaces` name a folder with ewcms in it
+(`scripts/locate.mjs`) and runs that one, so the checked-out `ewcms/` always builds and serves
+the site. The site's own files that import `ewcms/…` (`functions/`, widgets) get the running
+engine's files too (`scripts/resolve-hook.mjs` in Node, `resolve.alias` in the Vite preset).
+`EWCMS_ENGINE=<folder>` picks another ewcms; `EWCMS_VERBOSE=1` prints the hand-over.
 
-`npm install` at the root links `node_modules/ewcms` to `ewcms/` (a symlink, a junction on
-Windows). The `overrides` line is needed because a site depends on ewcms by a git tag
-(`github:…#v0.1.0`, what Cloudflare installs), and npm only links a workspace for a version
-range: one line per site, keyed by the site's package name. Then, from the root:
+Then, from the root:
 
 ```powershell
 npm run dev -w eeliyarasta-website     # or: cd sites\eeliyarasta; npm run dev
