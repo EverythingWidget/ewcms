@@ -289,7 +289,7 @@
           />
         </div>
         {#if held}
-          <div class="slide__pane" bind:this={widgetEl} inert={!atWidget}>
+          <div class="slide__pane slide__pane--widget" bind:this={widgetEl} inert={!atWidget}>
             {#if held.section}
               <SectionView {live} {bridge} {file} id={held.section} onback={back} />
             {:else}
@@ -306,9 +306,10 @@
                   actions.setMode('motion');
                 }}
               />
-              <!-- its section's settings under it, on every widget tab (as its card's pen) -->
+              <!-- its section's settings, pinned to the panel's bottom, on every widget tab (as its
+                   card's pen); hovered, its section shows in the preview (SectionsList's sync) -->
               {#if sections[held.widget.at]?.id}
-                <div class="widget-section">
+                <div class="widget-section" data-peek-section={sections[held.widget.at].id}>
                   <SectionView
                     {live}
                     {bridge}
@@ -348,15 +349,21 @@
     padding: 0; // a tab's own 12px: its label on the 12px edge
   }
 
-  // a widget's section, 12px under the widget's card (the pane's 8px gap + 4px)
+  // a widget's section: at the panel's bottom (12px under the widget's card at least: the
+  // pane's 8px gap + 4px); hovered, its card's border shows (as a section card's, no shift)
   .widget-section {
-    margin-top: var(--space-1);
+    margin-top: auto;
+    padding-top: var(--space-1);
+
+    &:hover > :global(.card) {
+      border-color: var(--c-line-hover);
+    }
   }
 
   // the panes share one cell, clipped while they slide
   .slide {
     display: grid;
-    flex: none;
+    flex: 1 0 auto; // the body's height at least: the widget's section at its bottom
     overflow: clip;
   }
 
@@ -367,6 +374,10 @@
     gap: var(--space-2);
     min-width: 0;
     align-self: start;
+
+    &--widget {
+      align-self: stretch;
+    }
 
     &.is-away {
       display: none;

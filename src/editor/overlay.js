@@ -99,6 +99,8 @@ const STYLE = `
 .dot[data-dot='top']:hover { box-shadow: 0 0 0 4px rgb(${T.accentRgb} / .35); }
 .dot[data-dot='bottom'] { top: calc(100% + ${DOT}px); cursor: default; pointer-events: none; }
 .sel.is-dragging .dot, .is-linking .box .dot { display: none; }
+/* the widget's section card hovered: its section only (no grid, links or targets) */
+.is-peeking .grids, .is-peeking .links, .is-peeking .targets { display: none; }
 .target { position: absolute; width: 12px; height: 12px; translate: -50% -50%; box-sizing: border-box; border: 2px solid rgb(255 255 255 / .7); border-radius: 50%; background: ${T.black}; }
 .target.is-near { width: 16px; height: 16px; border-color: ${T.accent}; background: ${T.accent}; box-shadow: 0 0 0 4px rgb(${T.accentRgb} / .35); }
 .tframe { position: absolute; box-sizing: border-box; border: 1px solid rgb(255 255 255 / .25); border-radius: ${T.radiusXs}; }
@@ -347,7 +349,10 @@ export function createOverlay({
     if (!root?.isConnected) return;
     drawGrids();
     drawLinks();
-    const arrange = arranging();
+    // the widget's section card hovered (ui.peek from the panel): only its section shows
+    const peeking = !!ui.widget && ui.peek?.from === 'panel';
+    root.classList.toggle('is-peeking', peeking);
+    const arrange = arranging() && !peeking;
     root.classList.toggle('is-linking', !!linking);
     const sel = arrange ? widgetEl(ui.widget) : null;
     els.sel.hidden = !sel;
@@ -361,7 +366,7 @@ export function createOverlay({
     // its section (under the widget boxes)
     const peekId =
       ui.peek?.from === 'panel' ? ui.peek.id : !ui.widget && !ui.section && ui.selSection;
-    const p = arrange && !drag && peekId ? secById(peekId) : null;
+    const p = (arrange || peeking) && !drag && peekId ? secById(peekId) : null;
     drawPeek(p);
     // a Custom section's bottom edge: the one being dragged, hovered, or the selected widget's
     const rs =

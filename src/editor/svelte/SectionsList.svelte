@@ -38,10 +38,12 @@
   }
 
   // hover sync: a section card the pointer is over shows its section in the preview
-  // (overlay.js); one hovered in the preview shows its card here (.is-peek)
+  // (overlay.js), as does a widget's section card (ContentPanel's [data-peek-section]); one
+  // hovered in the preview shows its card here (.is-peek)
   $effect(() => {
     const over = (e) => {
-      const id = e.target.closest?.('[data-section^="s-"]')?.dataset.section || '';
+      const n = e.target.closest?.('[data-section^="s-"], [data-peek-section]');
+      const id = n?.dataset.section || n?.dataset.peekSection || '';
       if (id) {
         if (ui.peek?.id !== id || ui.peek.from !== 'panel') ui.peek = { id, from: 'panel' };
       } else if (ui.peek?.from === 'panel') ui.peek = null;

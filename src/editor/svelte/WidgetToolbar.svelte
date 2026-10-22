@@ -82,6 +82,8 @@
   let box = $state(null); // { x, y, w, h, frameTop, frameBottom }
   let shownRows = $state(null);
   let hidden = $state(false);
+  // its section shown from the panel (the widget's section card hovered): none, as the frame
+  const peeking = $derived(ui.peek?.from === 'panel');
   $effect(() => {
     if (!where) return void (box = null);
     const id = where.id;
@@ -157,7 +159,7 @@
 
   // the preview's label of the selected text steps aside on the toolbar's side (no shift)
   $effect(() => {
-    const side = where && widget && pos && !hidden ? pos.side : null;
+    const side = where && widget && pos && !hidden && !peeking ? pos.side : null;
     bridge.toolbarSide(side);
     return () => bridge.toolbarSide(null);
   });
@@ -559,7 +561,7 @@
   >
 {/snippet}
 
-{#if where && widget && pos && !hidden}
+{#if where && widget && pos && !hidden && !peeking}
   <div
     class={['btb', pos.flip && 'is-below']}
     style="left: {pos.x}px; top: {pos.y}px"
