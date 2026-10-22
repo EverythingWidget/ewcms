@@ -313,7 +313,7 @@
 
     &:hover,
     &:focus-visible {
-      background: var(--c-hover);
+      background: var(--c-control-hover);
     }
 
     &:focus-visible {

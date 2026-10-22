@@ -301,7 +301,8 @@
         class={['btb__opt', s === style && 'is-on']}
         onclick={() => pickStyle(s)}
         ><span class="sty sty--{s}">{label}</span><span class="btb__hint">{tag.toUpperCase()}</span
-        >{#if s === style}<i class="fa-solid fa-check" aria-hidden="true"></i>{/if}</button
+        ><i class={['fa-solid fa-check btb__check', s !== style && 'is-off']} aria-hidden="true"
+        ></i></button
       >
     {/each}
   </div>
@@ -414,7 +415,10 @@
     </div>
 
     {#if open}
-      <div class={['btb__pop', open === 'style' && 'is-list']} style="margin-left: {anchor}px">
+      <div
+        class={['btb__pop', (open === 'style' || open === 'field') && 'is-list']}
+        style="margin-left: {anchor}px"
+      >
         {#if open === 'style'}
           {@render styleMenu()}
         {:else if open === 'info'}
@@ -523,7 +527,7 @@
     cursor: pointer;
 
     &:hover:not(:disabled) {
-      background: var(--c-hover);
+      background: var(--c-control-hover);
     }
 
     &:disabled {
@@ -537,7 +541,7 @@
 
     &.is-on,
     &.is-open {
-      background: var(--c-hover);
+      background: var(--c-control-hover);
     }
 
     &.is-on {
@@ -582,8 +586,9 @@
     }
   }
 
+  // a list menu: 4px card padding, its rows 8px in: every label, hint and check 12px from the edge
   .btb__grp {
-    padding: var(--space-1) var(--space-1) 0;
+    padding: var(--space-2) var(--space-2) var(--space-1);
     color: var(--c-text-soft);
     font-size: var(--fs-2xs);
     letter-spacing: 0.08em;
@@ -604,9 +609,17 @@
     text-align: left;
     cursor: pointer;
 
-    &:hover:not(:disabled),
+    &:hover:not(:disabled) {
+      background: var(--c-control-hover);
+    }
+
+    // the current choice: a light teal tint (a step stronger hovered), a teal check
     &.is-on {
-      background: var(--c-hover);
+      background: color-mix(in srgb, var(--c-widget-accent) 12%, transparent);
+    }
+
+    &.is-on:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--c-widget-accent) 20%, transparent);
     }
 
     &:disabled {
@@ -616,6 +629,17 @@
 
     > span:first-of-type {
       flex: 1;
+    }
+  }
+
+  // every row keeps the check's room: the hints line up
+  .btb__check {
+    width: 12px;
+    color: var(--c-widget-accent);
+    font-size: var(--fs-xs);
+
+    &.is-off {
+      visibility: hidden;
     }
   }
 
