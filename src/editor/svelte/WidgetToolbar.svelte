@@ -479,15 +479,12 @@
 {#snippet layerPanel()}
   {#if !phone}
     <span class="btb__grp">Layer</span>
-    <div class="btb__pair">
-      <button type="button" class="btb__opt" onclick={() => layer(-1)}
-        ><i class="fa-solid fa-arrow-down" aria-hidden="true"></i><span>Down</span><kbd>[</kbd
-        ></button
-      >
-      <button type="button" class="btb__opt" onclick={() => layer(1)}
-        ><i class="fa-solid fa-arrow-up" aria-hidden="true"></i><span>Up</span><kbd>]</kbd></button
-      >
-    </div>
+    <button type="button" class="btb__opt" onclick={() => layer('front')}
+      ><span>Bring to front</span><kbd>]</kbd></button
+    >
+    <button type="button" class="btb__opt" onclick={() => layer('back')}
+      ><span>Send to back</span><kbd>[</kbd></button
+    >
   {:else}
     <button
       type="button"
@@ -599,13 +596,7 @@
     </div>
 
     {#if open}
-      <div
-        class={[
-          'btb__pop',
-          open === 'style' && 'is-list',
-          (open === 'tsize' || open === 'more') && 'is-wide',
-        ]}
-      >
+      <div class={['btb__pop', open === 'style' && 'is-list']}>
         {#if open === 'style'}
           {@render styleMenu()}
         {:else if open === 'size'}
@@ -785,21 +776,16 @@
       inset 0 0 0 1px var(--c-line),
       0 8px 24px var(--black-a40);
 
-    // the text size's three choices in full (Fit to widget)
-    &.is-wide {
-      width: 320px;
-    }
-
+    // every menu 280px wide; a list of rows: closer
     &.is-list {
       gap: 0;
-      width: 248px;
       padding: var(--space-1);
     }
   }
 
   .btb__grp {
     padding: var(--space-1) var(--space-1) 0;
-    color: var(--c-text-faint);
+    color: var(--c-text-soft);
     font-size: var(--fs-2xs);
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -837,12 +823,6 @@
       color: var(--c-text-muted);
       font-size: var(--fs-xs);
     }
-  }
-
-  .btb__pair {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-1);
   }
 
   // the text size's choices: as wide as their words, the rest shared

@@ -402,7 +402,15 @@ export function linkWidget(store, file, at, j, to, gap = 0, { phone = false, row
 export function layerWidget(store, file, at, j, dir) {
   const section = listOf(store, file)[at];
   const widget = section.widgets[j];
-  const z = (Number.isInteger(widget.z) ? widget.z : 0) + dir;
+  const zOf = (b) => (Number.isInteger(b?.z) ? b.z : 0);
+  // 'front' / 'back': over / under every other widget of its section; a number: a step
+  const others = section.widgets.filter((b) => b !== widget).map(zOf);
+  const z =
+    dir === 'front'
+      ? Math.max(zOf(widget), others.length ? Math.max(...others) + 1 : 0)
+      : dir === 'back'
+        ? Math.min(zOf(widget), others.length ? Math.min(...others) - 1 : 0)
+        : zOf(widget) + dir;
   if (z) widget.z = z;
   else delete widget.z;
   return writeSection(store, file, at, section);

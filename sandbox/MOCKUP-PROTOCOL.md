@@ -102,7 +102,7 @@ Tabs, ExplorerHead, …). `{live}` is required wherever listed.
 | `note`  | string | `''`    | what it is, 1–2 lines (its 32px space is kept even when empty) |
 
 **SectionCard** — a page section's card: the real `SectionCard.svelte` (title row: changed dot,
-title, eye, pen; count row: "N widgets ⌄", + Add widget, ↑, ↓, Duplicate, Delete; its widgets
+title, pen; count row: "Widgets ⌄", + Add widget, ↑, ↓, ⋯ (Hide/Show, Duplicate, Delete); its widgets
 inside when open).
 
 | prop       | type         | default  | meaning                                                        |
@@ -193,9 +193,9 @@ Own data: `sampleLive([{ id: 's-1', name: 'Work', enabled: false, widgets: [widg
 
 `<SectionCard {live} at={i} />`
 
-- Not collapsible. Title row: the changed dot, the title (one line), eye, pen. Count row:
-  "N widgets ⌄" (text only; "No widgets" faint, inactive), + Add widget (always), then ↑, ↓,
-  Duplicate, Delete (24px icon buttons). 12px inside: every icon ends and all text starts on
+- Not collapsible. Title row: the changed dot, the title (one line), pen. Count row:
+  "Widgets ⌄" (text only; "No widgets" faint, inactive), + Add widget (always), then ↑, ↓,
+  ⋯ (24px icon buttons; its menu in the top layer: Hide/Show section, Duplicate, Delete in red). 12px inside: every icon ends and all text starts on
   those edges.
 - The count opens the widgets inside the card (the card grows): 48px rows 4px apart, bleeding
   4px into the card's padding, text 12px in on two 20px lines (type, then its title in the

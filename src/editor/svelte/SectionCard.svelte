@@ -1,16 +1,16 @@
 <!--
   One page section's card in the Content tab's list (SectionsList.svelte), not collapsible:
     title row  the changed dot, its title (its name, else "Section N"; one line, cut with …),
-               its eye and its pen (Section.svelte's onenter: the section's settings; a double
+               its pen (Section.svelte's onenter: the section's settings; a double
                click on the card too, a click selects it)
-    count row  "N widgets ⌄" (text only; "No widgets" faint, inactive), + Add widget (onadd),
-               then move up, move down, Duplicate and Delete (24px icon buttons)
+    count row  "Widgets ⌄" (text only; "No widgets" faint, inactive), + Add widget (onadd),
+               then move up, move down and ⋯ (24px icon buttons): a menu in the top layer with
+               Hide / Show section, Duplicate and Delete (red; asks over the card)
     its widgets the count opens them inside the card (ui.sections["widgets:<id>"]; the card
                grows, animated as a section opens; not on load, not with reduced motion): WidgetRow.svelte each, no order (widgets are placed in the preview)
   12px inside on every side: every icon ends, all text starts on those edges. The card's
   buttons (both rows, Add widget) rest at 30% and show fully while it is hovered, selected or
-  has the focus; a widget row's on its own hover (WidgetRow.svelte); an eye-slash (hidden)
-  always. Opacity only: nothing moves. Delete asks over the card at its size (its border red).
+  has the focus; a widget row's on its own hover (WidgetRow.svelte); ⋯ while its menu is open. Opacity only: nothing moves. Delete asks over the card at its size (its border red).
     live, file, at (its index), last (the last section), peek (hovered in the preview)
     selected, onselect, onsection (its settings), onopen(widgetId), onadd(at)
     deleting  bindable: the id asking "Delete?" (the section's), '' for none
@@ -60,6 +60,23 @@
   const key = $derived(`widgets:${s.id}`);
   const open = $derived(!!n && (expanded ?? !!ui.sections[key]));
   const listId = $props.id();
+
+  // ---- the ⋯ menu (a popover): Hide / Show, Duplicate, Delete (asks)
+  const menuId = $derived(`${listId}-more`);
+  let menu = $state();
+  let menuOpen = $state(false);
+  function placeMenu(e) {
+    menuOpen = e.newState === 'open';
+    if (!menuOpen) return;
+    const r = document.getElementById(`${menuId}-btn`)?.getBoundingClientRect();
+    if (!r) return;
+    menu.style.top = `${Math.round(r.bottom + 4)}px`;
+    menu.style.left = `${Math.round(r.right - 200)}px`;
+  }
+  function pick(act) {
+    menu?.hidePopover();
+    act();
+  }
 
   // The widgets open and close as Section's body: a one-row grid (1fr open, 0fr closed, by its
   // inert), its list clipped to that row and kept rendered; a toggle tweens
@@ -112,20 +129,8 @@
   enterLabel="Edit {title}"
 >
   {#snippet bar()}
-    <span class="tools tools--title">
-      <Button
-        size="small"
-        icon={on ? 'eye' : 'eye-slash'}
-        iconOnly
-        label="Show {title}"
-        title={on
-          ? `Visible: click to hide ${title}`
-          : `Hidden on the public page: click to show ${title}`}
-        aria-pressed={on}
-        data-eye
-        onclick={() => toggleSection(live.store, file, at)}
-      />
-    </span>
+    <!-- (its pen keeps its place at the row's end) -->
+    <span class="tools tools--title"></span>
   {/snippet}
 
   {#snippet over()}
@@ -170,7 +175,7 @@
         title={n ? (open ? 'Hide its widgets' : 'Show its widgets') : undefined}
         onclick={() => (ui.sections[key] = !open)}
       >
-        {n ? `${n} widget${n > 1 ? 's' : ''}` : 'No widgets'}
+        {n ? 'Widgets' : 'No widgets'}
         {#if n}<i class="fa-solid fa-chevron-down line__caret" aria-hidden="true"></i>{/if}
       </button>
       <button
@@ -201,19 +206,53 @@
         />
         <Button
           size="small"
-          icon="copy"
+          icon="ellipsis"
           iconOnly
-          label="Duplicate {title}"
-          onclick={() => duplicateSection(live.store, file, at)}
-        />
-        <Button
-          size="small"
-          icon="trash"
-          iconOnly
-          label="Delete {title}"
-          onclick={() => (deleting = s.id)}
+          label="More for {title}"
+          id="{menuId}-btn"
+          popovertarget={menuId}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          data-open={menuOpen || undefined}
         />
       </span>
+      <!-- its menu, in the top layer (not cut by the card): under ⋯, its right edge on it;
+           a click outside or Esc closes it -->
+      <div
+        class={['more', menuOpen && 'is-open']}
+        id={menuId}
+        popover="auto"
+        role="menu"
+        aria-label={title}
+        bind:this={menu}
+        onbeforetoggle={placeMenu}
+        ontoggle={(e) => (menuOpen = e.newState === 'open')}
+      >
+        <button
+          type="button"
+          role="menuitem"
+          class="more__opt"
+          onclick={() => pick(() => toggleSection(live.store, file, at))}
+          ><i class="fa-solid fa-{on ? 'eye-slash' : 'eye'}" aria-hidden="true"></i><span
+            >{on ? 'Hide section' : 'Show section'}</span
+          ></button
+        >
+        <button
+          type="button"
+          role="menuitem"
+          class="more__opt"
+          onclick={() => pick(() => duplicateSection(live.store, file, at))}
+          ><i class="fa-solid fa-copy" aria-hidden="true"></i><span>Duplicate</span></button
+        >
+        <hr class="more__sep" />
+        <button
+          type="button"
+          role="menuitem"
+          class="more__opt more__del"
+          onclick={() => pick(() => (deleting = s.id))}
+          ><i class="fa-solid fa-trash" aria-hidden="true"></i><span>Delete</span></button
+        >
+      </div>
     </div>
     {#if n}
       <div class="drawer" bind:this={drawer} inert={!open}>
@@ -235,6 +274,68 @@
 
 <style lang="scss">
   @use '../styles/mixins' as *;
+
+  // ---- the ⋯ menu: the toolbar's list menu (WidgetToolbar.svelte's .btb__pop.is-list), 200px
+  .more {
+    @include stack(0);
+    position: fixed;
+    inset: auto;
+    width: 200px;
+    margin: 0;
+    padding: var(--space-1);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--c-card);
+    color: var(--c-text);
+    box-shadow:
+      inset 0 0 0 1px var(--c-line),
+      0 8px 24px var(--black-a40);
+  }
+
+  // closed: hidden (its grid would show it)
+  .more:not(.is-open) {
+    display: none;
+  }
+
+  .more__opt {
+    @include row(var(--space-2));
+    width: 100%;
+    min-height: 32px;
+    padding: 0 var(--space-2);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    font-size: var(--fs-base);
+    text-align: left;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--c-hover);
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+
+    > span {
+      flex: 1;
+    }
+  }
+
+  .more__sep {
+    width: 100%;
+    height: 1px;
+    margin: var(--space-1) 0;
+    border: 0;
+    background: var(--c-line);
+  }
+
+  .more__del {
+    color: var(--c-error);
+  }
 
   // ---- the card (Section.svelte, data-card): 12px inside on the sides (its bar and foot), the
   // count row 8px under the title row, the widgets 8px under it; the title on one line
@@ -270,7 +371,7 @@
   :global(.sec[data-card]:is(:hover, .is-selected, :focus-within)) .line__add,
   :global(.sec[data-card]:is(:hover, .is-selected, :focus-within) > .sec__bar > .sec__enter .btn),
   :global(.sec[data-card] > .sec__bar > .sec__enter .btn:focus-visible),
-  .tools > :global(.btn:is(:focus-visible, [data-eye][aria-pressed='false'])),
+  .tools > :global(.btn:is(:focus-visible, [data-open])),
   .line__add:focus-visible {
     opacity: 1;
   }

@@ -1,14 +1,14 @@
 <!--
   A page section's card as the Content tab draws it: the real SectionCard.svelte on the sample
-  live state (title row: changed dot, title, eye, pen; count row: "N widgets ⌄", + Add widget,
-  move up / down, Duplicate, Delete; its widgets inside when open, WidgetRow.svelte each).
+  live state (title row: changed dot, title, pen; count row: "Widgets ⌄", + Add widget,
+  move up / down, ⋯ (Hide/Show, Duplicate, Delete); its widgets inside when open, WidgetRow.svelte each).
     live      sampleLive() (one per mock)       at       its index in the sample page
     selected  the selected card (white 70% border; its buttons 100%)
     hover     drawn hovered (white 40% border; its buttons 100%)
     open      its widgets open inside the card   hoverRow that widget row drawn hovered (0, 1, …)
     changed   the changed dot before the title
     red       its delete confirm (the real one: over the card, red border)
-  Buttons rest at 30% (a hidden section's or widget's eye-slash 100%), as built.
+  Buttons rest at 30% (a hidden widget's eye-slash 100%, ⋯ while its menu is open), as built.
 -->
 <script>
   import RealCard from '../../src/editor/svelte/SectionCard.svelte';

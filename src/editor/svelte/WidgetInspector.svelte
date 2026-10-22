@@ -24,6 +24,7 @@
   import WidgetMotion from './WidgetMotion.svelte';
   import { ANIMATIONS } from '../../site/files.js';
   import ViewTop from './ViewTop.svelte';
+  import WidgetLayout from './WidgetLayout.svelte';
 
   // onmotion(el): open a part in the Motion tab; onlibrary(name): an animation in Animations
   let { g, live, bridge, sourceIds, onsource, onback, onmotion, onlibrary } = $props();
@@ -142,6 +143,17 @@
         />
       {/key}
     {:else}
+      <!-- its layout (size, layer; a Text widget's text size), then a line -->
+      <WidgetLayout
+        {live}
+        {bridge}
+        file={g.file}
+        {at}
+        {j}
+        id={g.id}
+        {widget}
+        text={!!type.fields?.some((f) => f.type === 'rich')}
+      />
       <!-- its source first (a widget whose type shows items), then its settings and fields -->
       {#snippet lead()}
         <WidgetSource {g} {live} {base} list={!!type.list} {shown} {sourceIds} {onsource} />
