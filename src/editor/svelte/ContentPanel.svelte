@@ -281,6 +281,7 @@
         >
           <SectionsList
             {live}
+            {bridge}
             {file}
             onopen={openWidget}
             onsection={openSection}

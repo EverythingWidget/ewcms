@@ -130,6 +130,15 @@ export function setSection(store, file, at, patch, key) {
   return writeSection(store, file, at, tidyMobile(next), key);
 }
 
+/**
+ * Section `at` shown or hidden (the section card's eye): visible (no "enabled", the default)
+ * becomes enabled: false (off the public page, hidden in the preview), hidden becomes visible.
+ */
+export function toggleSection(store, file, at) {
+  const off = listOf(store, file)[at]?.enabled === false;
+  return setSection(store, file, at, { enabled: off ? undefined : false });
+}
+
 /** Its phone rows only while its phone height is custom; no empty `phone`. */
 function tidyMobile(s) {
   if (!s.phone || typeof s.phone !== 'object') return s;

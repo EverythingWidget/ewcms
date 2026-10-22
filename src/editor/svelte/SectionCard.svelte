@@ -29,7 +29,7 @@
     moveSection,
     removeWidget,
     removeSection,
-    setSection,
+    toggleSection,
   } from '../layout-ops.js';
 
   let {
@@ -123,7 +123,7 @@
           : `Hidden on the public page: click to show ${title}`}
         aria-pressed={on}
         data-eye
-        onclick={() => setSection(live.store, file, at, { enabled: on ? undefined : false })}
+        onclick={() => toggleSection(live.store, file, at)}
       />
     </span>
   {/snippet}

@@ -27,6 +27,7 @@ import {
   removeWidget,
   removeSection,
   setSection,
+  toggleSection,
 } from '../src/editor/layout-ops.js';
 import { SITE_A } from '../test/fixtures/index.mjs';
 
@@ -311,6 +312,13 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   setSection(store, F, 1, { height: 'half', name: 'Our people' });
   assert.deepEqual([sections()[1].height, sections()[1].name], ['half', 'Our people']);
   assert.deepEqual(checkContent(F, store.current[F]), []);
+  // the card's eye: hidden (enabled: false), then visible again (the default, left out)
+  assert.equal(toggleSection(store, F, 1), true);
+  assert.equal(sections()[1].enabled, false);
+  assert.equal(toggleSection(store, F, 1), true);
+  assert.equal('enabled' in sections()[1], false);
+  store.undo(); // eye: shown
+  store.undo(); // eye: hidden
 
   store.undo(); // section settings
   store.undo(); // layer down
