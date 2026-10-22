@@ -11,6 +11,7 @@
               a field of its item) and a bound text's format (WidgetInspector.svelte,
               Field.svelte); null: none
     lead      snippet: first in the grid (the widget's source, WidgetSource.svelte)
+  A Text widget's text (type 'rich') isn't shown: it is edited in the preview only.
   Settings and content share one .fields grid (all through Field, the same labels and gaps),
   a 1px line between them when both are there.
 -->
@@ -25,7 +26,6 @@
   import { openMedia } from './media.svelte.js';
   import { pairedHalves } from './source-items.js';
   import ItemPicker from './ItemPicker.svelte';
-  import RichSummary from './RichSummary.svelte';
   import { sourceFile } from '../../site/files.js';
   import { isBinding } from '../../site/layout/bindings.js';
 
@@ -98,6 +98,8 @@
     return Array.isArray(list) ? list : [];
   };
   const itemOf = (f) => Number(parse(f.ptr)[0]) || 0; // a source field's item
+  // the fields shown: not a Text widget's text (edited in the preview only)
+  const fields = $derived(g.fields.filter((f) => f.type !== 'rich'));
   // the settings shown: a source, a choice, a switch, a link (in the config's order)
   const settings = $derived(
     g.config?.filter(
@@ -109,17 +111,7 @@
 <!-- one field: a Field (text, photo, switch, choice), or a source field (a list item's
      source, ItemPicker.svelte) -->
 {#snippet field(f, half, extra = {})}
-  {#if f.type === 'rich'}
-    <!-- a Text widget's text: edited in the preview only -->
-    <RichSummary
-      label={f.label}
-      value={live.get(f.file, f.ptr)}
-      item={bindings?.item ?? null}
-      items={bindings?.items ?? 0}
-      {live}
-      onedit={() => bridge.editRich(g.id)}
-    />
-  {:else if f.type === 'source'}
+  {#if f.type === 'source'}
     <ItemPicker
       store={live.store}
       mode="source"
@@ -220,8 +212,8 @@
 <div class="fields">
   {@render lead?.()}
   {#each settings as c (c.key)}{@render option(c)}{/each}
-  {#if (lead || settings.length) && g.fields.length}<hr class="fields__line" />{/if}
-  {#each runsOf(g.fields) as run (run.list?.edit ?? run.fields[0].edit)}
+  {#if (lead || settings.length) && fields.length}<hr class="fields__line" />{/if}
+  {#each runsOf(fields) as run (run.list?.edit ?? run.fields[0].edit)}
     {#if run.fields}
       {@const halves = pairedHalves(run.fields)}
       {#each run.fields as f (f.edit)}{@render field(f, halves.has(f.edit))}{/each}

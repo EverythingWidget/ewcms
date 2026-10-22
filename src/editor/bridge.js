@@ -367,14 +367,6 @@ export function createBridge({ store, labelFor }) {
     get rich() {
       return richState();
     },
-    /** Start editing Text widget `id`'s body in place (the panel's Edit in preview). */
-    editRich(id) {
-      const el = doc?.querySelector(`[data-widget="${CSS.escape(id)}"] [data-edit-type="rich"]`);
-      if (!el) return false;
-      bridge.reveal(el);
-      startRich(el);
-      return true;
-    },
     /** Is a Text widget being edited? */
     get richEditing() {
       return !!rich;

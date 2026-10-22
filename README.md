@@ -546,7 +546,7 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
   is a whole line's. Runs: `{ t, marks?: ["b","i"], link? }` text, `{ field, format? }` an item's
   field (from the widget's source, filled at build time), `{ count: { source } | { of: "items" } }`
   a count chip. Rendered to escaped HTML; the page's title is its first Text widget's title line.
-  Edited only in the preview (double-click, or Edit in preview): the widget toolbar's style, B,
+  Edited only in the preview (double-click it): the widget toolbar's style, B,
   I, link and + Field act on the caret's line or the selection.
 - **Item pages:** a `[param]/index.json`'s widgets render once per page it builds. A widget From
   URL shows the items matching that page's address; a type marked `item` (the `album` widget)
