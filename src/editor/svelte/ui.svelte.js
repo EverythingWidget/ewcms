@@ -65,7 +65,7 @@ export const ui = $state({
   selSection: null,
   /** Content tab: an empty section's own view open (its id; no widget to open), or null. */
   section: null,
-  /** 'content' | 'motion' (its layout: the preview's toolbar, WidgetToolbar.svelte) */
+  /** 'content' | 'motion' (its layout: on its card, WidgetLayout.svelte) */
   widgetTab: 'content',
   /**
    * A Text widget edited in place in the preview (bridge.js richState): { widget, edit, style,

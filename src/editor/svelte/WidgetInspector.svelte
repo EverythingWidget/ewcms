@@ -1,6 +1,6 @@
 <!--
-  One widget of the page (ui.widget), in two tabs (its size, text size and layer: the toolbar on
-  it in the preview, WidgetToolbar.svelte; where it sits is dragged there, overlay.js):
+  One widget of the page (ui.widget), in two tabs (its size, text size and layer: at the top of
+  Content, WidgetLayout.svelte; where it sits is dragged in the preview, overlay.js):
     Content  its source (WidgetSource.svelte: Item / All, From URL or None, and on a [param] page
              whether it is the main widget), then its settings and texts (GroupFields.svelte),
              each bindable field with its picker: Custom or a field of the item it shows
@@ -29,7 +29,7 @@
   // onmotion(el): open a part in the Motion tab; onlibrary(name): an animation in Animations
   let { g, live, bridge, sourceIds, onsource, onback, onmotion, onlibrary } = $props();
 
-  // (its layout: the toolbar on the widget in the preview, WidgetToolbar.svelte)
+  // (its layout: on the card, WidgetLayout.svelte; where it sits is dragged in the preview)
   const TABS = [
     ['content', 'Content'],
     ['motion', 'Motion'],

@@ -72,6 +72,7 @@ html.__ed-text :is(.ts__chip, .ts__count) { border-radius: ${T.radiusXs}; backgr
 html.__ed-text [contenteditable] :is(.ts__chip, .ts__count) { color: rgb(${T.chipRgb}); user-select: all; cursor: default; }
 html.__ed-text [data-edit-type="rich"][contenteditable] { outline-offset: 6px; }
 html.__ed-text [data-edit-type="rich"][contenteditable] a { cursor: text !important; }
+html.__ed-text [data-widget] :is([data-edit], [data-bound]):not(.__ed-invalid) { outline: none !important; }
 `;
 
 /** What Motion mode picks under the pointer: a data-anim part, else its widget. */
@@ -636,8 +637,10 @@ export function createBridge({ store, labelFor }) {
       raf = 0;
       if (!boxes?.hover.isConnected) return;
       const sameAsSel = selected && hoverEl === selected.el;
-      placeBox(boxes.hover, sameAsSel ? null : hoverEl, mode === 'text' ? 'text' : 'anim');
-      placeBox(boxes.sel, selected?.el, selected?.kind);
+      // a text in a widget (Content mode): the overlay's frame on the widget is its one border
+      const own = (el) => (mode === 'text' && el?.closest?.('[data-widget]') ? null : el);
+      placeBox(boxes.hover, sameAsSel ? null : own(hoverEl), mode === 'text' ? 'text' : 'anim');
+      placeBox(boxes.sel, own(selected?.el), selected?.kind);
       if (mode !== 'browse') raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);

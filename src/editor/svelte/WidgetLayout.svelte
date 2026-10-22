@@ -125,8 +125,10 @@
           title="Size: as tall as its content"
           class={['seg__btn', size === 'auto' && 'is-active']}
           onclick={() => setSize('auto')}
-          ><i class="fa-solid fa-up-down wl__ic" aria-hidden="true"></i>Auto</button
         >
+          <i class="fa-solid fa-up-down wl__ic" aria-hidden="true"></i>
+          Auto
+        </button>
         <button
           type="button"
           role="radio"
@@ -134,8 +136,10 @@
           title="Size: a fixed number of rows"
           class={['seg__btn', size === 'rows' && 'is-active']}
           onclick={() => setSize('rows')}
-          ><i class="fa-solid fa-grip-lines wl__ic" aria-hidden="true"></i>Rows</button
         >
+          <i class="fa-solid fa-grip-lines wl__ic" aria-hidden="true"></i>
+          Rows
+        </button>
         <button
           type="button"
           role="radio"
@@ -143,10 +147,10 @@
           title="Size: its width × a ratio"
           class={['seg__btn wl__aspect', size === 'aspect' && 'is-active']}
           onclick={() => setSize('aspect')}
-          ><i class="fa-solid fa-crop-simple wl__ic" aria-hidden="true"></i>{size === 'aspect'
-            ? `Aspect ${ratio}`
-            : 'Aspect'}<i class="fa-solid fa-chevron-down wl__caret" aria-hidden="true"></i></button
         >
+          <i class="fa-solid fa-crop-simple wl__ic" aria-hidden="true"></i>
+          {size === 'aspect' ? `Aspect ${ratio}` : 'Aspect none'}
+        </button>
       </div>
       {#if open && size === 'aspect'}
         <div class="wl__pop">
@@ -262,7 +266,7 @@
   // its options: small text, an icon before each; fixed shares, so a pick never moves them
   .wl__size :global(.seg__btn) {
     display: flex;
-    flex: 1 1 0;
+    flex: 1 1 auto;
     gap: var(--space-1);
     align-items: center;
     justify-content: center;
@@ -272,16 +276,12 @@
   }
 
   .wl__size :global(.wl__aspect) {
-    flex-grow: 2.1;
+    width: 40%;
   }
 
   .wl__ic {
     font-size: var(--fs-xs);
     opacity: 0.8;
-  }
-
-  .wl__caret {
-    font-size: var(--fs-2xs);
   }
 
   // the toolbar's menu (WidgetToolbar.svelte's .btb__pop): 280px, under the group

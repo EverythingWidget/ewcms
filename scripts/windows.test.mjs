@@ -15,7 +15,10 @@ import { initialize, resolve } from './resolve-hook.mjs';
 const W = path.win32;
 
 test('Windows: the entry index.html in every spelling Vite and Rolldown use', () => {
-  for (const root of ['S:/ewcms-dev/sites/eeliyarasta-website', 'S:\\ewcms-dev\\sites\\eeliyarasta-website']) {
+  for (const root of [
+    'S:/ewcms-dev/sites/eeliyarasta-website',
+    'S:\\ewcms-dev\\sites\\eeliyarasta-website',
+  ]) {
     for (const id of [
       'S:\\ewcms-dev\\sites\\eeliyarasta-website\\index.html', // Rolldown: the input as given
       'S:/ewcms-dev/sites/eeliyarasta-website/index.html', // Vite's ids

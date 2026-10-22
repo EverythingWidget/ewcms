@@ -6,30 +6,18 @@
     text      (a Text widget) style ▾ (the line the caret is in: the whole line), B, I, link
               (the selected text only: greyed with nothing selected or when not editing),
               + Field (a field of the item the widget shows, or a count, at the caret)
-    | layout  Size ▾ (Auto | Aspect with its ratios and a custom w:h | Rows), Text size ▾
-              (its styles' sizes | Scale with the grid, % | Fit to widget: fixed heights
-              only), Layer (down / up: [ and ]; the phone: Reset phone instead), Info
-              (where it is, what it follows)
+    info      Info (where it is, what it follows)
 
-  A widget without text has the layout part only. A narrow widget puts the layout part into a
-  "…" menu first, then the text marks too. The edit itself is bridge.js's (rich.js); the
-  layout edits layout-ops.js's, one undo step each.
+  Its layout (size, text size, layer) is on the widget's card only (WidgetLayout.svelte); the
+  keys [ and ] still move it down / up a layer (App.svelte). A widget without text has Info
+  only. A narrow widget puts the text marks into a "…" menu. The edit itself is bridge.js's
+  (rich.js).
 -->
 <script>
   import { ui } from './ui.svelte.js';
-  import { layerWidget, resetMobile, setWidget } from '../layout-ops.js';
   import { targetFile } from '../layout-sync.js';
   import { schemaFor } from './source-items.js';
-  import {
-    ASPECTS,
-    linkOf,
-    phoneAreaOf,
-    placeOf,
-    baseOf,
-    ratioOf,
-    sizeOf,
-  } from '../../site/layout/index.js';
-  import { SCALE_TYPES, adjustOf } from '../../site/layout/type.js';
+  import { linkOf, phoneAreaOf, placeOf, baseOf } from '../../site/layout/index.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import { sourceFile, sourceIds as sourceIdsOf } from '../../site/files.js';
   import { sourceOf } from '../../site/layout/source.js';
@@ -70,9 +58,7 @@
   });
   const type = $derived(WIDGET_TYPES[widget?.type] || {});
   const hasText = $derived(!!type.fields?.some((f) => f.type === 'rich'));
-  const scalable = $derived(SCALE_TYPES.includes(widget?.type));
   const phone = $derived(ui.viewport === 'mobile');
-  const size = $derived(sizeOf(widget));
   const rich = $derived(ui.rich && ui.rich.widget === where?.id ? ui.rich : null);
   const editing = $derived(!!rich);
   const style = $derived(rich ? rich.style : widget?.body?.[0]?.style || 'paragraph');
@@ -126,10 +112,8 @@
   const level = $derived.by(() => {
     if (!box) return 0;
     const room = Math.max(box.w, 280);
-    const full = (hasText ? TEXT_W + 16 : 0) + 200;
-    if (room >= full) return 0; // everything
-    if (!hasText || room >= TEXT_W + 48) return 1; // the layout part in "…"
-    return 2; // the marks too
+    if (!hasText || room >= TEXT_W + 48) return 0; // everything
+    return 1; // the marks in "…"
   });
   const BAR_H = 40;
   const pos = $derived.by(() => {
@@ -281,52 +265,6 @@
     const leader = (s.widgets || []).find((b) => b?.id === link.to);
     return leader ? nameOf(leader) || WIDGET_TYPES[leader.type]?.label || leader.id : link.to;
   });
-  const phoneSet = $derived.by(() => {
-    live.version;
-    const s = where && live.get(where.file, `/sections/${where.at}`);
-    return !!s?.widgets?.some((b) => b?.layout?.phone !== undefined);
-  });
-  const SIZES = [
-    ['auto', 'Auto', 'As tall as its content'],
-    ['aspect', 'Aspect', 'Its width × a ratio'],
-    ['rows', 'Rows', 'Its rows, fixed'],
-  ];
-  const set = (patch, key) => setWidget(live.store, where.file, where.at, where.j, patch, key);
-  function setSize(next) {
-    if (next === size) return;
-    set({
-      size: next === 'auto' ? undefined : next,
-      aspect: next === 'aspect' ? widget.aspect || '4:5' : undefined,
-      rows: next === 'auto' ? undefined : area.rows,
-    });
-  }
-  let ratioText = $state('');
-  const customRatio = $derived(!!widget?.aspect && !ASPECTS.includes(widget.aspect));
-  function typeRatio(v) {
-    ratioText = v;
-    if (ratioOf(v)) set({ aspect: v.trim() }, `layout:${where.file}#${where.base}/aspect`);
-  }
-  // text size: the styles' (none), scaled with the grid (on, adjust) or fitted (fit)
-  const tsize = $derived(widget?.scale?.fit ? 'fit' : widget?.scale?.on ? 'scale' : 'fixed');
-  const canFit = $derived(size !== 'auto');
-  function setTextSize(mode, adjust) {
-    const a = adjust ?? widget.scale?.adjust ?? 100;
-    const next =
-      mode === 'fixed'
-        ? undefined
-        : mode === 'fit'
-          ? { fit: true }
-          : { on: true, ...(a !== 100 ? { adjust: a } : {}) };
-    set(
-      { scale: next },
-      adjust !== undefined ? `layout:${where.file}#${where.base}/scale` : undefined,
-    );
-  }
-  const layer = (dir) => layerWidget(live.store, where.file, where.at, where.j, dir);
-
-  const sizeLabel = $derived(
-    size === 'aspect' ? widget?.aspect || '4:5' : SIZES.find(([s]) => s === size)?.[1],
-  );
 </script>
 
 {#snippet styleMenu()}
@@ -383,119 +321,6 @@
   >
 {/snippet}
 
-{#snippet sizePanel()}
-  <span class="btb__grp">Size</span>
-  <div class="seg" role="radiogroup" aria-label="Size">
-    {#each SIZES as [id, label, title] (id)}
-      <button
-        type="button"
-        role="radio"
-        aria-checked={size === id}
-        {title}
-        class={['seg__btn', size === id && 'is-active']}
-        onclick={() => setSize(id)}>{label}</button
-      >
-    {/each}
-  </div>
-  {#if size === 'aspect'}
-    <span class="btb__grp">Ratio (width:height)</span>
-    <div class="seg btb__ratios" role="radiogroup" aria-label="Aspect ratio">
-      {#each ASPECTS as r (r)}
-        <button
-          type="button"
-          role="radio"
-          aria-checked={widget.aspect === r}
-          class={['seg__btn', (widget.aspect ?? '4:5') === r && 'is-active']}
-          onclick={() => set({ aspect: r })}>{r}</button
-        >
-      {/each}
-    </div>
-    <label class="btb__row">
-      <span class="btb__hint">Custom</span>
-      <input
-        class="tf__input btb__input"
-        placeholder="5:7"
-        value={customRatio ? widget.aspect : ratioText}
-        aria-label="Custom ratio (width:height)"
-        aria-invalid={ratioText !== '' && !ratioOf(ratioText)}
-        oninput={(e) => typeRatio(e.currentTarget.value)}
-      />
-    </label>
-  {/if}
-{/snippet}
-
-{#snippet textSizePanel()}
-  <span class="btb__grp">Text size</span>
-  <div class="seg btb__tsize" role="radiogroup" aria-label="Text size">
-    <button
-      type="button"
-      role="radio"
-      aria-checked={tsize === 'fixed'}
-      class={['seg__btn', tsize === 'fixed' && 'is-active']}
-      title="Its styles' sizes (Settings › Typography)"
-      onclick={() => setTextSize('fixed')}>Styles</button
-    >
-    <button
-      type="button"
-      role="radio"
-      aria-checked={tsize === 'scale'}
-      class={['seg__btn', tsize === 'scale' && 'is-active']}
-      title="In cells: it grows and shrinks with the grid, never under its styles' minimum"
-      onclick={() => setTextSize('scale')}>Scale</button
-    >
-    <button
-      type="button"
-      role="radio"
-      aria-checked={tsize === 'fit'}
-      class={['seg__btn', tsize === 'fit' && 'is-active']}
-      disabled={!canFit}
-      title={canFit
-        ? 'As large as fits the widget'
-        : 'Fit needs a fixed height: Size Aspect or Rows'}
-      onclick={() => setTextSize('fit')}>Fit to widget</button
-    >
-  </div>
-  {#if tsize === 'scale'}
-    <label class="btb__row">
-      <span class="btb__hint">% of its styles</span>
-      <input
-        class="tf__input btb__input"
-        type="number"
-        min="10"
-        max="1000"
-        value={Math.round(adjustOf(widget) * 100)}
-        aria-label="Text size, % of its styles"
-        oninput={(e) => {
-          const v = Number(e.currentTarget.value);
-          if (v >= 10 && v <= 1000) setTextSize('scale', v);
-        }}
-      />
-    </label>
-  {:else if !canFit}
-    <p class="btb__note">Fit to widget needs a fixed height: Size Aspect or Rows.</p>
-  {/if}
-{/snippet}
-
-{#snippet layerPanel()}
-  {#if !phone}
-    <span class="btb__grp">Layer</span>
-    <button type="button" class="btb__opt" onclick={() => layer('front')}
-      ><span>Bring to front</span><kbd>]</kbd></button
-    >
-    <button type="button" class="btb__opt" onclick={() => layer('back')}
-      ><span>Send to back</span><kbd>[</kbd></button
-    >
-  {:else}
-    <button
-      type="button"
-      class="btb__opt"
-      disabled={!phoneSet}
-      onclick={() => resetMobile(live.store, where.file, where.at)}
-      ><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset phone</span></button
-    >
-  {/if}
-{/snippet}
-
 {#snippet infoPanel()}
   <span class="btb__grp">{phone ? 'Phone layout' : 'Desktop layout'}</span>
   <span class="btb__info">col {area.col} · row {area.row} · {area.span} × {area.rows}</span>
@@ -508,46 +333,7 @@
   >
 {/snippet}
 
-{#snippet layoutPart()}
-  <button
-    type="button"
-    class={['btb__btn', open === 'size' && 'is-open']}
-    title="Size: Auto, Aspect or Rows"
-    onclick={() => toggle('size')}
-    ><i class="fa-solid fa-up-down" aria-hidden="true"></i><span>{sizeLabel}</span><i
-      class="fa-solid fa-chevron-down btb__caret"
-      aria-hidden="true"
-    ></i></button
-  >
-  {#if scalable}
-    <button
-      type="button"
-      class={['btb__btn btb__icon', (open === 'tsize' || tsize !== 'fixed') && 'is-open']}
-      aria-label="Text size"
-      title="Text size: its styles, scaled with the grid, or fit to widget"
-      onclick={() => toggle('tsize')}
-      ><i class="fa-solid fa-text-height" aria-hidden="true"></i></button
-    >
-  {/if}
-  {#if phone}
-    <button
-      type="button"
-      class="btb__btn"
-      disabled={!phoneSet}
-      title="The section's widgets show their desktop layout halved again"
-      onclick={() => resetMobile(live.store, where.file, where.at)}
-      ><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>Reset phone</span></button
-    >
-  {:else}
-    <button
-      type="button"
-      class={['btb__btn btb__icon', open === 'layer' && 'is-open']}
-      aria-label="Layer"
-      title="Layer: [ down, ] up"
-      onclick={() => toggle('layer')}
-      ><i class="fa-solid fa-layer-group" aria-hidden="true"></i></button
-    >
-  {/if}
+{#snippet infoButton()}
   <button
     type="button"
     class={['btb__btn btb__icon', open === 'info' && 'is-open']}
@@ -579,16 +365,15 @@
             aria-hidden="true"
           ></i></button
         >
-        {#if level < 2}{@render marks()}{/if}
-        {#if level === 0}<span class="btb__vdiv" aria-hidden="true"></span>{/if}
+        {#if level === 0}{@render marks()}{/if}
       {/if}
-      {#if level === 0}{@render layoutPart()}{/if}
+      {@render infoButton()}
       {#if level > 0}
         <button
           type="button"
           class={['btb__btn btb__icon', open === 'more' && 'is-open']}
           aria-label="More"
-          title="More: size, text size, layer"
+          title="More: bold, italic, link, field"
           onclick={() => toggle('more')}
           ><i class="fa-solid fa-ellipsis" aria-hidden="true"></i></button
         >
@@ -599,12 +384,6 @@
       <div class={['btb__pop', open === 'style' && 'is-list']}>
         {#if open === 'style'}
           {@render styleMenu()}
-        {:else if open === 'size'}
-          {@render sizePanel()}
-        {:else if open === 'tsize'}
-          {@render textSizePanel()}
-        {:else if open === 'layer'}
-          {@render layerPanel()}
         {:else if open === 'info'}
           {@render infoPanel()}
         {:else if open === 'link'}
@@ -648,13 +427,7 @@
             >
           {/each}
         {:else if open === 'more'}
-          {#if level === 2 && hasText}
-            <div class="btb__bar btb__bar--inner">{@render marks()}</div>
-          {/if}
-          {@render sizePanel()}
-          {#if scalable}{@render textSizePanel()}{/if}
-          {@render layerPanel()}
-          {@render infoPanel()}
+          <div class="btb__bar btb__bar--inner">{@render marks()}</div>
         {/if}
       </div>
     {/if}
@@ -759,13 +532,6 @@
     font-size: var(--fs-2xs);
   }
 
-  .btb__vdiv {
-    width: 1px;
-    height: 24px;
-    margin-inline: var(--space-1);
-    background: var(--c-line-strong, var(--c-line));
-  }
-
   .btb__pop {
     @include stack(var(--space-2));
     width: 280px;
@@ -818,26 +584,6 @@
     > span:first-of-type {
       flex: 1;
     }
-
-    kbd {
-      color: var(--c-text-muted);
-      font-size: var(--fs-xs);
-    }
-  }
-
-  // the text size's choices: as wide as their words, the rest shared
-  .btb__tsize :global(.seg__btn) {
-    flex: 1 1 auto;
-    padding-inline: var(--space-3);
-  }
-
-  // help under a control, in line with the group titles
-  .btb__note {
-    margin: 0;
-    padding: 0 var(--space-1);
-    color: var(--c-text-muted);
-    font-size: var(--fs-xs);
-    line-height: 16px;
   }
 
   .btb__hint {
@@ -852,10 +598,6 @@
 
   .btb__row {
     @include row(var(--space-2));
-
-    .btb__hint {
-      flex: none;
-    }
   }
 
   .btb__input {
@@ -866,11 +608,6 @@
 
   .btb__url {
     width: 220px;
-  }
-
-  .btb__ratios {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
   }
 
   .btb__chip {
