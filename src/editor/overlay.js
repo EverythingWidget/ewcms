@@ -20,8 +20,10 @@
  *             area, on the phone grid of 60 columns (a widget without one shows its desktop
  *             area halved: that is where the drag starts). An aspect or auto widget's rows
  *             follow its width: only its sides resize.
- *   Links     the selected widget only shows a circle above its top edge and one below its
- *             bottom edge (a hovered one shows none: select it first). Dragging a widget's top circle onto another widget's
+ *   Links     the selected widget only shows a filled circle above its top edge (drag it) and
+ *             an empty one below its bottom edge (a drop target only; a hovered widget shows
+ *             none: select it first). Hovering the filled circle shows the widgets it may link
+ *             to: their empty circles and a dim frame. Dragging a widget's top circle onto another widget's
  *             bottom circle (in its section; widgets that would make a loop show none) links
  *             it: it follows that widget, keeping where it is (the gap: the rows between them
  *             now, negative when they overlap); dropped anywhere else, a linked widget is free
@@ -93,12 +95,14 @@ const STYLE = `
 .handle[data-h='nw'], .handle[data-h='se'] { cursor: nwse-resize; }
 .sel.is-free .handle:not([data-h='e']):not([data-h='w']) { display: none; }
 .dot { position: absolute; left: 50%; width: 12px; height: 12px; translate: -50% -50%; box-sizing: border-box; border: 2px solid ${T.accent}; border-radius: 50%; background: ${T.black}; pointer-events: auto; }
-.dot[data-dot='top'] { top: -${DOT}px; cursor: grab; }
-.dot[data-dot='bottom'] { top: calc(100% + ${DOT}px); border-style: dashed; opacity: .55; cursor: default; pointer-events: none; }
-.dot.is-linked { background: ${T.accent}; }
+.dot[data-dot='top'] { top: -${DOT}px; background: ${T.accent}; cursor: grab; }
+.dot[data-dot='top']:hover { box-shadow: 0 0 0 4px rgb(${T.accentRgb} / .35); }
+.dot[data-dot='bottom'] { top: calc(100% + ${DOT}px); cursor: default; pointer-events: none; }
 .sel.is-dragging .dot, .is-linking .box .dot { display: none; }
-.target { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; box-sizing: border-box; border: 2px solid ${T.accent}; border-radius: 50%; background: ${T.black}; }
-.target.is-near { background: ${T.accent}; box-shadow: 0 0 0 4px rgb(${T.accentRgb} / .35); }
+.target { position: absolute; width: 12px; height: 12px; translate: -50% -50%; box-sizing: border-box; border: 2px solid rgb(255 255 255 / .7); border-radius: 50%; background: ${T.black}; }
+.target.is-near { width: 16px; height: 16px; border-color: ${T.accent}; background: ${T.accent}; box-shadow: 0 0 0 4px rgb(${T.accentRgb} / .35); }
+.tframe { position: absolute; box-sizing: border-box; border: 1px solid rgb(255 255 255 / .25); border-radius: ${T.radiusXs}; }
+.tframe.is-near { border: 2px solid ${T.accent}; }
 .secrow { position: absolute; height: 12px; translate: 0 -50%; pointer-events: auto; cursor: row-resize; }
 .secrow::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 0; border-top: 2px solid rgb(255 255 255 / .75); translate: 0 -50%; box-shadow: 0 0 0 1px rgb(0 0 0 / .35); }
 .secrow::after { content: ''; position: absolute; left: 50%; top: 50%; width: 36px; height: 8px; translate: -50% -50%; box-sizing: border-box; border-radius: ${T.radiusSm}; background: ${T.white}; box-shadow: 0 0 0 1px rgb(0 0 0 / .45); }
@@ -205,6 +209,15 @@ export function createOverlay({
         if (!raf) raf = win.requestAnimationFrame(frame);
       }
     });
+    // the filled top circle hovered: the widgets it may link to show (their empty circles, a dim frame)
+    shadow.addEventListener('pointerover', (e) => {
+      if (e.target.dataset?.dot !== 'top' || linking) return;
+      const el = widgetEl(ui.widget);
+      if (el) showTargets(el);
+    });
+    shadow.addEventListener('pointerout', (e) => {
+      if (e.target.dataset?.dot === 'top' && !linking) els.targets.replaceChildren();
+    });
     doc.body.appendChild(host);
     return host;
   }
@@ -300,11 +313,6 @@ export function createOverlay({
     return `${mobile() ? 'phone · ' : ''}${b?.type || 'widget'}${l ? ` · follows, gap ${l.gap}` : ''}`;
   };
 
-  /** The top circle shows filled when the widget follows another. */
-  function dotsOf(box, el) {
-    box.querySelector('[data-dot="top"]').classList.toggle('is-linked', !!(el && linkOfEl(el)));
-  }
-
   /**
    * The section card hovered in the Content tab, else the one selected (`sec`, null: none): a soft white 1px line on
    * its section and its name in a tag above its top edge, left (just inside it when there is
@@ -348,7 +356,6 @@ export function createOverlay({
       const b = widgetOf(ui.widget);
       els.sel.classList.toggle('is-free', sizeOf(b) !== 'rows');
       els.label.textContent = drag?.label ?? labelOf(b, sel);
-      dotsOf(els.sel, sel);
     }
     // the section card hovered in the Content tab, else the one selected while the list shows:
     // its section (under the widget boxes)
@@ -610,23 +617,41 @@ export function createOverlay({
     const widgets = widgetsIn(sec)
       .map((n) => widgetOf(n.dataset.widget))
       .filter(Boolean);
-    const targets = widgetsIn(sec)
-      .filter((n) => n !== el && !n.hidden && !makesLoop(widgets, id, n.dataset.widget, phone))
-      .map((n) => {
-        const [x, y] = bottomDot(rectOf(n, win));
-        const dot = doc.createElement('i');
-        dot.className = 'target';
-        dot.style.left = `${x}px`;
-        dot.style.top = `${y}px`;
-        return { id: n.dataset.widget, x, y, dot };
-      });
-    els.targets.replaceChildren(...targets.map((t) => t.dot));
+    const targets = showTargets(el, sec, phone, widgets);
     linking = { el, id, sec, phone, targets, near: null, from: topDot(rectOf(el, win)), to: null };
     noSelect(true);
     win.addEventListener('pointermove', moveLink, true);
     win.addEventListener('pointerup', endLink, true);
     win.addEventListener('keydown', cancelLink, true);
     if (!raf) raf = win.requestAnimationFrame(frame);
+  }
+
+  /**
+   * The widgets `el` may follow (in its section, no loop): each an empty circle under its bottom
+   * edge and a dim 1px frame (on this layer; the page doesn't change). Shown while its top circle
+   * is hovered or dragged.
+   */
+  function showTargets(el, sec = secOf(el), phone = mobile(), widgets = null) {
+    const id = el.dataset.widget;
+    widgets ??= widgetsIn(sec)
+      .map((n) => widgetOf(n.dataset.widget))
+      .filter(Boolean);
+    const targets = widgetsIn(sec)
+      .filter((n) => n !== el && !n.hidden && !makesLoop(widgets, id, n.dataset.widget, phone))
+      .map((n) => {
+        const r = rectOf(n, win);
+        const [x, y] = bottomDot(r);
+        const frame = doc.createElement('div');
+        frame.className = 'tframe';
+        place(frame, r);
+        const dot = doc.createElement('i');
+        dot.className = 'target';
+        dot.style.left = `${x}px`;
+        dot.style.top = `${y}px`;
+        return { id: n.dataset.widget, x, y, dot, frame };
+      });
+    els.targets.replaceChildren(...targets.flatMap((t) => [t.frame, t.dot]));
+    return targets;
   }
 
   function moveLink(e) {
@@ -640,7 +665,10 @@ export function createOverlay({
         near = t;
       }
     }
-    for (const t of linking.targets) t.dot.classList.toggle('is-near', t === near);
+    for (const t of linking.targets) {
+      t.dot.classList.toggle('is-near', t === near);
+      t.frame.classList.toggle('is-near', t === near);
+    }
     linking.near = near;
     linking.to = near ? [near.x, near.y] : p;
   }
