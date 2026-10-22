@@ -8,6 +8,10 @@
               + Field (a field of the item the widget shows, or a count, at the caret)
     info      Info (where it is, what it follows)
 
+  Selected, a widget with text shows Edit and Info; its text tools only in its edit mode (Edit,
+  or a double click on the widget; Esc or a click outside ends it, no Done). A single click
+  only selects. Menus open under their own button and stay open after a pick.
+
   Its layout (size, text size, layer) is on the widget's card only (WidgetLayout.svelte); the
   keys [ and ] still move it down / up a layer (App.svelte). A widget without text has Info
   only. A narrow widget puts the text marks into a "…" menu. The edit itself is bridge.js's
@@ -112,7 +116,7 @@
   const level = $derived.by(() => {
     if (!box) return 0;
     const room = Math.max(box.w, 280);
-    if (!hasText || room >= TEXT_W + 48) return 0; // everything
+    if (!editing || room >= TEXT_W + 48) return 0; // everything
     return 1; // the marks in "…"
   });
   const BAR_H = 40;
@@ -150,7 +154,12 @@
 
   // ---- menus: one open at a time; a click elsewhere (here or in the preview) closes it
   let open = $state(null);
-  const toggle = (name) => (open = open === name ? null : name);
+  // under its own button: the button's left edge in the toolbar
+  let anchor = $state(0);
+  const toggle = (name, e) => {
+    if (e?.currentTarget) anchor = e.currentTarget.offsetLeft;
+    open = open === name ? null : name;
+  };
   $effect(() => {
     if (!open) return;
     const close = (e) => {
@@ -159,12 +168,25 @@
       if (open === 'link') bridge.releaseRich(e.target);
       open = null;
     };
+    // Esc: the menu first (the edit goes on)
+    const esc = (e) => {
+      if (e.key !== 'Escape' || open === 'link') return;
+      e.preventDefault();
+      e.stopPropagation();
+      open = null;
+    };
     const doc = bridge.doc;
+    // the preview's window, not its document: it hears the key before the edit's own Esc
+    const view = doc?.defaultView;
     window.addEventListener('pointerdown', close, true);
     doc?.addEventListener('pointerdown', close, true);
+    window.addEventListener('keydown', esc, true);
+    view?.addEventListener('keydown', esc, true);
     return () => {
       window.removeEventListener('pointerdown', close, true);
       doc?.removeEventListener('pointerdown', close, true);
+      window.removeEventListener('keydown', esc, true);
+      view?.removeEventListener('keydown', esc, true);
     };
   });
   $effect(() => {
@@ -175,9 +197,9 @@
       open = null;
     });
   });
-  // the edit ended (a click elsewhere in the preview): the link box goes with it
+  // the edit ended (Esc, a click elsewhere): its text tools' menus go with it
   $effect(() => {
-    if (!rich && untrack(() => open) === 'link') open = null;
+    if (!rich && untrack(() => open) !== 'info') open = null;
   });
   // Ctrl+K while editing: the link box
   $effect(() =>
@@ -193,8 +215,8 @@
 
   // ---- text
   const apply = (fn) => bridge.richApply(fn, bodyRef);
+  // a pick keeps its menu open (Esc, a click outside or its button closes it)
   function pickStyle(s) {
-    open = null;
     const line = rich ? rich.line : 0;
     apply((body) => ({ body: setStyle(body, line, s) }));
   }
@@ -202,7 +224,9 @@
     apply((body, sel) => (sel ? { body: toggleMark(body, sel.from, sel.to, m) } : null));
 
   let linkText = $state('');
-  function openLink() {
+  let linkBtn = $state();
+  function openLink(e) {
+    anchor = e?.currentTarget?.offsetLeft ?? linkBtn?.offsetLeft ?? anchor;
     linkText = rich?.link?.href ?? '';
     bridge.holdRich(true);
     open = 'link';
@@ -238,7 +262,6 @@
     return sourceIdsOf(live.store.current);
   });
   function insert(run) {
-    open = null;
     apply((body, sel) => {
       if (!sel) return null;
       const at = sel.to.line < body.length ? sel.to : { line: 0, at: lineLength(body[0]) };
@@ -308,6 +331,7 @@
     class={['btb__btn btb__icon', rich?.link && 'is-on']}
     disabled={!rich?.selected}
     aria-label="Link"
+    bind:this={linkBtn}
     title="Link ({MOD}+K): the selected text"
     onclick={openLink}><i class="fa-solid fa-link" aria-hidden="true"></i></button
   >
@@ -316,7 +340,7 @@
     class={['btb__btn btb__field', open === 'field' && 'is-open']}
     disabled={!editing}
     title="A field of the item it shows, or a count, at the caret"
-    onclick={() => toggle('field')}
+    onclick={(e) => toggle('field', e)}
     ><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Field</span></button
   >
 {/snippet}
@@ -339,7 +363,7 @@
     class={['btb__btn btb__icon', open === 'info' && 'is-open']}
     aria-label="Where it is"
     title="Where it is"
-    onclick={() => toggle('info')}
+    onclick={(e) => toggle('info', e)}
     ><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button
   >
 {/snippet}
@@ -354,12 +378,21 @@
     role="presentation"
   >
     <div class="btb__bar" role="toolbar" aria-label="Widget">
-      {#if hasText}
+      {#if hasText && !editing}
+        <button
+          type="button"
+          class="btb__btn"
+          title="Edit its text (or double-click it); Esc or a click outside ends"
+          onclick={() => bridge.editWidget(where.id)}
+          ><i class="fa-solid fa-pen" aria-hidden="true"></i><span>Edit</span></button
+        >
+      {/if}
+      {#if editing}
         <button
           type="button"
           class={['btb__btn btb__style', open === 'style' && 'is-open']}
           title="The style of the line the caret is in (the whole line)"
-          onclick={() => toggle('style')}
+          onclick={(e) => toggle('style', e)}
           ><span>{styleLabel(style)}</span><i
             class="fa-solid fa-chevron-down btb__caret"
             aria-hidden="true"
@@ -374,14 +407,14 @@
           class={['btb__btn btb__icon', open === 'more' && 'is-open']}
           aria-label="More"
           title="More: bold, italic, link, field"
-          onclick={() => toggle('more')}
+          onclick={(e) => toggle('more', e)}
           ><i class="fa-solid fa-ellipsis" aria-hidden="true"></i></button
         >
       {/if}
     </div>
 
     {#if open}
-      <div class={['btb__pop', open === 'style' && 'is-list']}>
+      <div class={['btb__pop', open === 'style' && 'is-list']} style="margin-left: {anchor}px">
         {#if open === 'style'}
           {@render styleMenu()}
         {:else if open === 'info'}

@@ -419,6 +419,11 @@ export function createBridge({ store, labelFor }) {
         if (richSel) selectAt(rich.el, win, richSel);
       }
     },
+    /** A widget's edit mode (its toolbar's Edit): its text editable, the caret at its end. */
+    editWidget(id) {
+      const el = richOf(doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`));
+      if (el) startRich(el);
+    },
     focusEdit(edit) {
       const el = doc?.querySelector(
         `[data-edit="${CSS.escape(edit)}"], [data-bound="${CSS.escape(edit)}"]`,
@@ -500,6 +505,9 @@ export function createBridge({ store, labelFor }) {
       structure: true, // its undo and redo render the section again
     });
   }
+
+  /** A widget's Text body (the element edited in its edit mode), or null. */
+  const richOf = (w) => w?.querySelector('[data-edit-type="rich"]') || null;
 
   function startRich(el, x, y) {
     if (rich?.el === el) return;
@@ -758,7 +766,12 @@ export function createBridge({ store, labelFor }) {
       (e) => {
         if (mode !== 'text' || e.altKey) return;
         const t = e.target instanceof win.Element ? e.target : null;
-        const hit = t?.closest('[data-edit], [data-bound]');
+        const found = t?.closest('[data-edit], [data-bound]');
+        // a widget's text: anywhere on the widget (its own edit mode, as its toolbar's Edit)
+        const hit =
+          found?.dataset.editType === 'rich' || !found
+            ? found || richOf(t?.closest('[data-widget]'))
+            : found;
         if (!hit || hit.isContentEditable) return;
         e.preventDefault();
         e.stopPropagation();
