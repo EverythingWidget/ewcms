@@ -8,6 +8,7 @@
 import { DEFAULTS } from '../site/defaults.js';
 import {
   MAX_MIN_ROWS,
+  COLS,
   MCOLS,
   HEIGHTS,
   minRowsOf,
@@ -81,11 +82,24 @@ function copyOf(item, kind, taken) {
   return copy;
 }
 
-/** A new section at index `at` (default: the end), holding a full-width widget of `type` when given. */
+/**
+ * A widget added from the editor (Add widget, a new section's, the preview's): Rows, NEW_ROWS
+ * tall and NEW_SPAN columns wide (the grid's columns when fewer), at `pos` (col 1, row 1 default).
+ */
+export const NEW_ROWS = 6;
+export const NEW_SPAN = 40;
+function addedWidget(type, taken, pos = {}) {
+  const b = newWidget(type, taken, pos);
+  b.size = 'rows'; // first: an area keeps its rows only on a Rows (or Aspect) widget
+  setBase(b, { span: Math.min(NEW_SPAN, COLS), rows: NEW_ROWS, ...pos });
+  return b;
+}
+
+/** A new section at index `at` (default: the end), holding a new widget of `type` when given. */
 export function addSection(store, file, type, at) {
   const list = listOf(store, file);
   const taken = idsOf(list);
-  const widgets = type ? [newWidget(type, taken)] : [];
+  const widgets = type ? [addedWidget(type, taken)] : [];
   list.splice(at ?? list.length, 0, newSection(taken, widgets));
   return write(store, file, list);
 }
@@ -208,12 +222,12 @@ const below = (section) =>
     ...(section.widgets || []).map((b) => placeOf(baseOf(b)).row + (baseOf(b).rows ?? GUESS) - 1),
   ) + 1;
 
-/** A new full-width widget of `type` in section `at`, below its other widgets (free: no link). */
+/** A new widget of `type` in section `at` (addedWidget's size), below its other widgets (free: no link). */
 export function addWidget(store, file, at, type) {
   const list = listOf(store, file);
   const section = list[at];
   const first = !section.widgets?.length;
-  const widget = newWidget(type, idsOf(list), { row: first ? 1 : below(section) });
+  const widget = addedWidget(type, idsOf(list), { row: first ? 1 : below(section) });
   // its source fitted to the page: From URL matches this page's params, or can't be here
   if (widget.source) {
     const id = pageIdOf(file) || '';

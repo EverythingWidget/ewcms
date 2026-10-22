@@ -283,13 +283,17 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   assert.deepEqual(types(), ['photo', 'text', 'text']);
 
   const b = addWidget(store, F, 0, 'button');
-  assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 1, span: 120, row: 9 }); // below
-  assert.equal(rowsOf(sections()[0]), 9);
+  // an added widget: Rows, 6 rows by 40 columns (a new section's too), below the others
+  assert.deepEqual(sections()[0].widgets[0].layout.base, { col: 1, span: 40, row: 1, rows: 6 });
+  assert.equal(sections()[0].widgets[0].size, 'rows');
+  assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 1, span: 40, row: 7, rows: 6 }); // below
+  assert.equal(sections()[0].widgets[1].size, 'rows');
+  assert.equal(rowsOf(sections()[0]), 12);
   assert.equal(sections()[0].rows, undefined); // its rows: down to its lowest widget, not stored
   assert.ok(isId(b.id, 'b'));
   duplicateWidget(store, F, 0, 1);
   assert.deepEqual(types()[0], 'photo+button+button');
-  assert.equal(flat(sections()[0].widgets[2]).pos.row, 17);
+  assert.equal(flat(sections()[0].widgets[2]).pos.row, 13);
   moveWidget(store, F, 0, 2, 0);
   assert.deepEqual(types()[0], 'button+photo+button');
   // to another section: free, below its widgets; one undo step
@@ -301,10 +305,10 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   removeWidget(store, F, 0, 0);
   assert.deepEqual(types()[0], 'photo+button');
   placeWidget(store, F, 0, 1, { col: 13, span: 12, row: 30, rows: 4 });
-  assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 13, span: 12, row: 30 });
-  assert.equal(rowsOf(sections()[0]), 30); // a section grows to fit
+  assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 13, span: 12, row: 30, rows: 4 }); // a Rows widget keeps its rows
+  assert.equal(rowsOf(sections()[0]), 33); // a section grows to fit
   placeWidget(store, F, 0, 1, { col: 13, span: 12, row: 40, rows: 4 });
-  assert.equal(rowsOf(sections()[0]), 40); // grown in the same step
+  assert.equal(rowsOf(sections()[0]), 43); // grown in the same step
   layerWidget(store, F, 0, 1, 1);
   assert.equal(sections()[0].widgets[1].z, 1);
   layerWidget(store, F, 0, 1, -1);
@@ -324,10 +328,10 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   store.undo(); // layer down
   store.undo(); // layer up
   store.undo(); // the second drag
-  assert.equal(rowsOf(sections()[0]), 30);
+  assert.equal(rowsOf(sections()[0]), 33);
   store.undo(); // the first drag
-  assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 1, span: 120, row: 9 });
-  assert.equal(rowsOf(sections()[0]), 9); // down to its lowest widget again
+  assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 1, span: 40, row: 7, rows: 6 });
+  assert.equal(rowsOf(sections()[0]), 12); // down to its lowest widget again
   store.undo(); // remove
   assert.deepEqual(types()[0], 'button+photo+button');
   store.redo();
