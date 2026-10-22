@@ -356,7 +356,6 @@ every section is a grid of **widgets** (`src/site/layout/`):
         { "style": "label", "text": [{ "t": "Photography / People" }] },
         { "style": "title", "text": [{ "t": "People" }, { "count": { "source": "people" } }] }
       ],
-      "config": { "numbered": true },
       "layout": { "base": { "col": 1, "span": 120, "row": 1 } }
     },
     {
@@ -530,7 +529,7 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
 
 | type       | what                                                                                                            |
 | ---------- | --------------------------------------------------------------------------------------------------------------- |
-| `text`     | rich text: `body` lines (see "Text widget"); config `center`, `numbered`                                        |
+| `text`     | rich text: `body` lines (see "Text widget")                                                                     |
 | `photo`    | one photo (`src`) with an optional `caption`                                                                    |
 | `button`   | a button: `label`; config `link` (see Links)                                                                    |
 | `form`     | a contact form (see "Contact form")                                                                             |
@@ -549,8 +548,6 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
   a count chip. Rendered to escaped HTML; the page's title is its first Text widget's title line.
   Edited only in the preview (double-click, or Edit in preview): the widget toolbar's style, B,
   I, link and + Field act on the caret's line or the selection.
-- **Numbering:** nothing is numbered by itself. A Text widget with config `numbered` starts its
-  first label line with its number among the page's numbered Text widgets that are on: (01), (02), …
 - **Item pages:** a `[param]/index.json`'s widgets render once per page it builds. A widget From
   URL shows the items matching that page's address; a type marked `item` (the `album` widget)
   reads its first for its photos, and its texts, like any widget's, are bindings to it (below).

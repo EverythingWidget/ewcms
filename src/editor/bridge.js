@@ -109,8 +109,8 @@ export function createBridge({ store, labelFor }) {
   let plaintext = true;
   let applied = new WeakMap(); // element -> value it currently shows
   let restore = null; // after a reload(): puts scroll and selection back once mounted
-  // the Text widget being edited in place (rich.js): { el, edit, file, ptr, widget, numLine,
-  // numHtml }, and its last selection in model positions (kept while the toolbar has focus)
+  // the Text widget being edited in place (rich.js): { el, edit, file, ptr, widget },
+  //, and its last selection in model positions (kept while the toolbar has focus)
   let rich = null;
   let richSel = null;
 
@@ -494,11 +494,9 @@ export function createBridge({ store, labelFor }) {
     };
   }
 
-  /** Render the lines for editing (chips named), the numbered label's "(01) " kept. */
+  /** Render the lines for editing (chips named). */
   function renderLines(body) {
-    renderEditing(rich.el, body, {
-      lead: (i) => (i === rich.numLine ? rich.numHtml : ''),
-    });
+    renderEditing(rich.el, body);
   }
 
   /** The body typed into the store (no re-render: the preview shows it already). */
@@ -523,15 +521,12 @@ export function createBridge({ store, labelFor }) {
       range && el.contains(range.startContainer)
         ? posOf(el, range.startContainer, range.startOffset)
         : null;
-    const num = el.querySelector('.ts__num');
     rich = {
       el,
       edit,
       file,
       ptr,
       widget: el.closest('[data-widget]')?.dataset.widget || '',
-      numHtml: num ? num.outerHTML : '',
-      numLine: num ? [...el.children].indexOf(num.closest('[data-line]')) : -1,
       hold: false,
     };
     el.setAttribute('contenteditable', 'true');

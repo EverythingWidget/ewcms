@@ -36,9 +36,8 @@
  *   list      a list widget: it shows all its source's items (its source: All / From URL /
  *             None), not one (Item / From URL / None): ../layout/source.js
  *   item      it needs an item (its source's first): without one it is skipped
- *   render(widget, ctx, b)  its HTML, one root element. b: { id, file, number, ed, source,
- *             items, item, index, indexOf }: the widget's id, the page file, its number among
- *             the page's numbered headings, ed(field or path, type), the editor marker of one
+ *   render(widget, ctx, b)  its HTML, one root element. b: { id, file, ed, source,
+ *             items, item, index, indexOf }: the widget's id, the page file, ed(field or path, type), the editor marker of one
  *             of its fields, and what its source shows (widgetItems, ../layout/source.js)
  */
 import text from './text/index.js';

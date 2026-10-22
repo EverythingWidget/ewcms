@@ -10,13 +10,6 @@
 .text {
   container-type: inline-size;
   min-width: 0;
-  &--center {
-    text-align: center;
-    .ts--paragraph,
-    .ts--small {
-      margin-inline: auto;
-    }
-  }
 }
 .text__body {
   display: grid;

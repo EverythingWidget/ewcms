@@ -15,7 +15,6 @@ import {
   widgetClass,
   widgetLinks,
   widgetVars,
-  headingNumbers,
   sectionAnchor,
   sectionClass,
   sectionVars,
@@ -76,8 +75,7 @@ export const syncRoots = (doc) => [pageView(doc), footerOf(doc)].filter(Boolean)
 
 // What each section element was rendered from: its index and its widgets' content (kindOf).
 const rendered = new WeakMap();
-const keyOf = (s, at, numbers) =>
-  JSON.stringify([at, (s?.widgets || []).map((b) => [b?.id, kindOf(b), numbers[b?.id] || 0])]);
+const keyOf = (s, at) => JSON.stringify([at, (s?.widgets || []).map((b) => [b?.id, kindOf(b)])]);
 
 /** The view's section elements by id. */
 const sectionsIn = (view) =>
@@ -88,10 +86,9 @@ export function markRendered(doc, store, view = pageView(doc)) {
   const sections = store.current[view?.dataset.pageFile]?.sections;
   if (!view || !Array.isArray(sections)) return;
   const els = sectionsIn(view);
-  const numbers = headingNumbers(sections);
   sections.forEach((s, at) => {
     const el = els.get(s?.id);
-    if (el) rendered.set(el, keyOf(s, at, numbers));
+    if (el) rendered.set(el, keyOf(s, at));
   });
 }
 
@@ -171,14 +168,13 @@ export function syncLayout(doc, store, { structure = false, root = pageView(doc)
     for (const el of order) view.insertBefore(el, anchor);
   }
 
-  const numbers = headingNumbers(sections);
   const stale = [];
   stale.motion = [];
   const touched = { layout: false };
   sections.forEach((s, at) => {
     const el = els.get(s?.id);
     if (el && applyLayout(el, s, stale.motion, touched)) stale.remount = true;
-    if (!el || (structure && rendered.get(el) !== keyOf(s, at, numbers))) stale.push(s.id);
+    if (!el || (structure && rendered.get(el) !== keyOf(s, at))) stale.push(s.id);
   });
   // the layout changed (classes, CSS variables, links, on/off, order, a section gone): the
   // rows and the scroll triggers need working out again
@@ -189,7 +185,6 @@ export function syncLayout(doc, store, { structure = false, root = pageView(doc)
 /** Put freshly rendered sections ({ id: html }) into the preview, in the file's order. */
 export function swapSections(doc, store, html, view = pageView(doc)) {
   const sections = store.current[view?.dataset.pageFile]?.sections || [];
-  const numbers = headingNumbers(sections);
   const els = sectionsIn(view);
   let prev = null;
   sections.forEach((s, at) => {
@@ -202,7 +197,7 @@ export function swapSections(doc, store, html, view = pageView(doc)) {
       else if (prev) prev.after(next);
       else view.prepend(next);
       el = next;
-      rendered.set(el, keyOf(s, at, numbers));
+      rendered.set(el, keyOf(s, at));
     }
     if (el) prev = el;
   });

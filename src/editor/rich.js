@@ -17,7 +17,6 @@ import { isSafeHref, linkProblem } from '../site/hrefs.js';
 const LINE = '[data-line]';
 const isChip = (n) =>
   n.nodeType === 1 && (n.dataset.field !== undefined || n.dataset.count !== undefined);
-const isNum = (n) => n.nodeType === 1 && n.classList.contains('ts__num');
 
 /** The model of a rendered (and typed into) body element. */
 export function readBody(root) {
@@ -47,7 +46,7 @@ function readRuns(node, marks = [], link = null, self = false) {
       if (t) out.push({ t, ...(m.length ? { marks: [...m] } : {}), ...(l ? { link: l } : {}) });
       return;
     }
-    if (n.nodeType !== 1 || isNum(n)) return;
+    if (n.nodeType !== 1) return;
     if (isChip(n)) {
       if (n.dataset.field !== undefined)
         out.push({
@@ -92,7 +91,7 @@ const linesOf = (root) => [...root.children].filter((n) => n.matches(LINE));
 /** The length a node adds to its line. */
 function lengthOf(n) {
   if (n.nodeType === 3) return n.textContent.replace(/\u200b/g, '').length;
-  if (n.nodeType !== 1 || isNum(n)) return 0;
+  if (n.nodeType !== 1) return 0;
   if (isChip(n)) return 1;
   if (n.tagName === 'BR') return n.nextSibling || !n.parentElement?.matches(LINE) ? 1 : 0;
   let len = 0;
@@ -123,10 +122,10 @@ export function posOf(root, node, offset) {
       found = true;
       return;
     }
-    if (n.nodeType === 1 && (isChip(n) || isNum(n))) {
+    if (n.nodeType === 1 && isChip(n)) {
       // inside a chip: its end
       if (n.contains(node)) {
-        at += isChip(n) ? 1 : 0;
+        at += 1;
         found = true;
         return;
       }
@@ -159,7 +158,7 @@ export function pointOf(root, pos) {
       else left -= len;
       return;
     }
-    if (n.nodeType !== 1 || isNum(n)) return;
+    if (n.nodeType !== 1) return;
     if (isChip(n) || n.tagName === 'BR') {
       const len = lengthOf(n);
       if (left === 0) point = [n.parentNode, [...n.parentNode.childNodes].indexOf(n)];
@@ -201,8 +200,8 @@ export function select(root, win, { from, to }) {
 }
 
 /** The lines rendered again for editing (chips show their field's name). */
-export function renderEditing(root, body, { lead } = {}) {
-  root.innerHTML = renderBody(body, { editing: true, lead });
+export function renderEditing(root, body) {
+  root.innerHTML = renderBody(body, { editing: true });
 }
 
 /** Is a selection collapsed (a caret)? */

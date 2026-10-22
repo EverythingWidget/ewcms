@@ -134,11 +134,10 @@ const sameLook = (a, b) =>
  *   href(link)  a link's URL
  *   editing     chips show what they are (the field's name) and can't be typed into
  *   attrs(i)    extra attributes of line i's element (data-anim)
- *   lead(i)     HTML before line i's text (a numbered label's "(01) ")
  */
 export function renderBody(
   body,
-  { value = () => '', href = () => '#', editing = false, attrs = () => '', lead = () => '' } = {},
+  { value = () => '', href = () => '#', editing = false, attrs = () => '' } = {},
 ) {
   const lines = Array.isArray(body) && body.length ? body : [{ style: 'paragraph', text: [] }];
   return lines
@@ -147,7 +146,7 @@ export function renderBody(
       const tag = tagOf(style);
       const runs = (line?.text || []).map((r) => renderRun(r, { value, href, editing })).join('');
       // an empty line keeps its height (and a caret) with a <br>
-      return `<${tag} class="ts ts--${style}" data-line="${style}"${attrs(i, style)}>${lead(i, style)}${runs || '<br>'}</${tag}>`;
+      return `<${tag} class="ts ts--${style}" data-line="${style}"${attrs(i, style)}>${runs || '<br>'}</${tag}>`;
     })
     .join('');
 }

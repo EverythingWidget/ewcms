@@ -55,7 +55,7 @@
  */
 import { esc, ed, editRef, editable, slugify, warnOnce } from '../helpers.js';
 import { WIDGET_TYPES } from '../widgets/index.js';
-import { eachWidget, newId } from './ids.js';
+import { newId } from './ids.js';
 import { motionAttrs } from './motion.js';
 import { isBinding, keysOf, resolve, resolveWidget } from './bindings.js';
 import { widgetItems } from './source.js';
@@ -281,23 +281,8 @@ const linkAttrs = (b) =>
     .map(([k, v]) => ` ${k}="${esc(v)}"`)
     .join('');
 
-/** The number (1, 2, ...) of each numbered Text widget on the page, by widget id. */
-export function headingNumbers(sections) {
-  const numbers = {};
-  let n = 0;
-  for (const [b, s] of eachWidget(sections))
-    if (
-      s.enabled !== false &&
-      b?.type === 'text' &&
-      b.config?.numbered &&
-      b.config.enabled !== false
-    )
-      numbers[b.id] = ++n;
-  return numbers;
-}
-
 /** One widget of section `at` (its index `j`), rendered with its grid area. */
-function renderWidget(ctx, route, file, at, j, widget, numbers) {
+function renderWidget(ctx, route, file, at, j, widget) {
   const t = WIDGET_TYPES[widget?.type];
   const where = `${contentPath(file)} (sections/${at}/widgets/${j})`;
   if (!t) {
@@ -325,7 +310,6 @@ function renderWidget(ctx, route, file, at, j, widget, numbers) {
     id: widget.id,
     file,
     ...shown,
-    number: numbers[widget.id] || 0,
     ed: (path, type) => {
       const value = [path].flat().reduce((v, k) => v?.[k], widget);
       if (!isBinding(value)) return ed(file, parts(path), type);
@@ -339,14 +323,11 @@ function renderWidget(ctx, route, file, at, j, widget, numbers) {
   return `<div class="${widgetClass(widget)}"${marker} style="${widgetVars(widget)}"${linkAttrs(widget)}${motionAttrs(widget)}${hidden}>${t.render(data, ctx, b)}</div>`;
 }
 
-/**
- * Section `at` of a page file, rendered. numbers: headingNumbers() of the whole page (a
- * section rendered on its own still counts the headings before it).
- */
-export function renderSection(ctx, route, file, section, at, numbers = {}) {
+/** Section `at` of a page file, rendered. */
+export function renderSection(ctx, route, file, section, at) {
   if (section?.enabled === false && !editable) return ''; // off: not on the public page
   const widgets = (Array.isArray(section?.widgets) ? section.widgets : [])
-    .map((b, j) => renderWidget(ctx, route, file, at, j, b, numbers))
+    .map((b, j) => renderWidget(ctx, route, file, at, j, b))
     .join('');
   const marker = editable ? ` data-sec="${esc(section?.id ?? '')}"` : '';
   const anchor = sectionAnchor(section);
@@ -357,6 +338,5 @@ export function renderSection(ctx, route, file, section, at, numbers = {}) {
 /** The sections of a page file, rendered in order. route: the page's route (route.album on [param] pages). */
 export function renderSections(ctx, route, file, sections) {
   const list = Array.isArray(sections) ? sections : [];
-  const numbers = headingNumbers(list);
-  return list.map((s, at) => renderSection(ctx, route, file, s, at, numbers)).join('');
+  return list.map((s, at) => renderSection(ctx, route, file, s, at)).join('');
 }

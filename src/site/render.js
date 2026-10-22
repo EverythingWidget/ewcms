@@ -6,7 +6,7 @@
  */
 import { accentOf, setEditable, warnOnce } from './helpers.js';
 import { head, body } from './templates/layout.js';
-import { renderSections, renderSection, headingNumbers, sectionAnchor } from './layout/index.js';
+import { renderSections, renderSection, sectionAnchor } from './layout/index.js';
 import { docKindOf, docOf, pageFile } from './files.js';
 import { bindingProblems } from './layout/bindings.js';
 import { motionProblems } from './layout/motion.js';
@@ -89,10 +89,9 @@ export function renderRouteSections(route, content, ids, file = pageFile(route.i
   const ctx = contextOf(route, content, true);
   const doc = docOf(content, file);
   const list = doc?.sections || [];
-  const numbers = headingNumbers(list);
   const out = {};
   list.forEach((s, at) => {
-    if (ids.includes(s?.id)) out[s.id] = renderSection(ctx, route, file, s, at, numbers);
+    if (ids.includes(s?.id)) out[s.id] = renderSection(ctx, route, file, s, at);
   });
   if (ids.includes(BACKDROP) && docKindOf(file) === 'page')
     out[BACKDROP] = renderBackdrop(ctx, doc?.backdrop);

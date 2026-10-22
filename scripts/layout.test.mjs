@@ -167,32 +167,6 @@ test('render: sections are grids, widgets carry their area; off is hidden', () =
   assert.match(renderSections(ctxOf(page), page, F, wide), /--c:116;--s:5;/);
 });
 
-test('render: no automatic numbering; a heading can be numbered, counting the ones that are on', () => {
-  // a Text widget: its label numbered (its first label line), then its title
-  const heading = (title, numbered, more) =>
-    widget('text', {
-      body: [
-        { style: 'label', text: [{ t: `L${title}` }] },
-        { style: 'title', text: [{ t: title }] },
-      ],
-      config: { numbered },
-      ...more,
-    });
-  const list = [
-    section([heading('A', true), heading('B', false)]),
-    section([heading('C', true)], { enabled: false }),
-    section([
-      heading('D', true),
-      widget('grid', { title: 'G', eyebrow: 'L', config: { source: 'people' } }),
-    ]),
-  ];
-  const out = renderSections(ctxOf(page), page, F, list);
-  assert.match(out, /\(01\) <\/span>LA</);
-  assert.match(out, /\(02\) <\/span>LD</);
-  assert.doesNotMatch(out, /\(03\)/);
-  assert.match(out, /data-anim="section.label">L</); // a grid head has no number
-});
-
 test('render: editor markers point into the widgets, only when editable', () => {
   const list = [section([widget('photo'), widget('text')])];
   assert.doesNotMatch(renderSections(ctxOf(page), page, F, list), /data-edit|data-sec|data-widget/);
@@ -265,7 +239,6 @@ test('validation: the layout, then each widget against its type', () => {
   );
   assert.match(one({ type: 'about', facts: ['x'] })[0], /list of objects/);
   assert.match(one({ type: 'grid', config: { layout: 'wild' } })[0], /one of staggered, even/);
-  assert.match(one({ type: 'text', config: { numbered: 'yes' } })[0], /must be a boolean/);
   assert.match(one({ type: 'text', config: { enabled: 1 } })[0], /true or false/);
   const twice = section([widget('text'), widget('text')]);
   twice.widgets[1].id = twice.widgets[0].id;
