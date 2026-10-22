@@ -37,6 +37,9 @@ if (engine !== self) {
 } else await main();
 
 async function main() {
+  // ASCII output where Unicode would arrive garbled (Windows, piped: scripts/term.mjs)
+  const term = await import('../scripts/term.mjs');
+  if (term.wantsAscii()) term.asciiOutput();
   // the site's own files that import ewcms/… get this engine's (scripts/resolve-hook.mjs)
   register(pathToFileURL(path.join(self, 'scripts', 'resolve-hook.mjs')).href, {
     data: { engine: self },

@@ -130,6 +130,15 @@ export const isVirtualShell = (id, root, paths = path) =>
   sameFile(id, paths.join(root, 'index.html'), paths) &&
   !fs.existsSync(path.join(root, 'index.html'));
 
+/**
+ * Whether a GET is for a page: an extensionless path or .html, from a client that takes HTML.
+ * No Accept header counts (Windows PowerShell's Invoke-WebRequest, scripts' fetches send none).
+ */
+export function wantsPage(pathname, accept = '') {
+  if (path.posix.extname(pathname) && !pathname.endsWith('.html')) return false;
+  return !accept || accept.includes('text/html') || accept.includes('*/*');
+}
+
 export default function staticSite() {
   let config;
   // Until then, content changes come from the editor's own Save (not "external").
@@ -203,10 +212,7 @@ export default function staticSite() {
       server.middlewares.use(async (req, res, next) => {
         if (req.method !== 'GET') return next();
         const url = new URL(req.url, 'http://localhost');
-        const accept = req.headers.accept || '';
-        const looksLikePage = !path.extname(url.pathname) || url.pathname.endsWith('.html');
-        if (!looksLikePage || (!accept.includes('text/html') && !accept.includes('*/*')))
-          return next();
+        if (!wantsPage(url.pathname, req.headers.accept)) return next();
         if (url.pathname.startsWith('/@') || url.pathname.startsWith('/node_modules'))
           return next();
         const moved = legacyRedirect(url); // the old /edit/?path=… addresses

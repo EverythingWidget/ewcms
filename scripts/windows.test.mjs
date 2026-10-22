@@ -109,3 +109,29 @@ test("resolve hook: ewcms/… from a site's files is the running engine's", asyn
   );
   assert.equal(await resolve('vite', {}, (s) => `next:${s}`), 'next:vite');
 });
+
+// v0.1.2: dev pages for clients without an Accept header, ASCII console text
+import { wantsPage } from './vite-plugin-static-site.mjs';
+import { toAscii, wantsAscii } from './term.mjs';
+
+test('dev serves pages to clients that send no Accept (PowerShell Invoke-WebRequest)', () => {
+  assert.equal(wantsPage('/', undefined), true);
+  assert.equal(wantsPage('/', ''), true);
+  assert.equal(wantsPage('/about', 'text/html,application/xhtml+xml'), true);
+  assert.equal(wantsPage('/index.html', '*/*'), true);
+  assert.equal(wantsPage('/v1.2/page', ''), true);
+  assert.equal(wantsPage('/main.js', ''), false);
+  assert.equal(wantsPage('/', 'application/json'), false);
+});
+
+test('console text is ASCII on Windows when output is piped', () => {
+  assert.equal(
+    toAscii('  Editor:  x?edit  ·  ewcms → ✓ ✗ ➜'),
+    '  Editor:  x?edit  -  ewcms -> ok x >',
+  );
+  assert.equal(wantsAscii({}, 'win32', { isTTY: false }), true);
+  assert.equal(wantsAscii({}, 'win32', { isTTY: true }), false);
+  assert.equal(wantsAscii({}, 'linux', { isTTY: false }), false);
+  assert.equal(wantsAscii({ EWCMS_ASCII: '1' }, 'linux', {}), true);
+  assert.equal(wantsAscii({ EWCMS_ASCII: '0' }, 'win32', {}), false);
+});
