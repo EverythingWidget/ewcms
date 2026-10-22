@@ -1,15 +1,14 @@
 <!--
   A widget's layout on its card (WidgetInspector.svelte), one row: its size (Auto | Rows |
   Aspect, Aspect showing its ratio and opening the ratios under the group; it stays open after a
-  pick) and its layer (forward / backward) at the end. Under a line, a Text widget's text size
-  (Styles / Scale / Fit) and, scaled, its % of the styles.
+  pick) and its layer (forward / backward) at the end. (A text widget's Fit: the toolbar,
+  WidgetToolbar.svelte.)
 -->
 <script>
   import { NEW_ROWS, layerWidget, setWidget } from '../layout-ops.js';
   import { ASPECTS, baseOf, ratioOf, sizeOf } from '../../site/layout/index.js';
-  import { adjustOf } from '../../site/layout/type.js';
 
-  let { live, bridge, file, at, j, id, widget, text = false } = $props();
+  let { live, bridge, file, at, j, id, widget } = $props();
 
   const size = $derived(sizeOf(widget));
   const ratio = $derived(widget.aspect || '4:5');
@@ -57,28 +56,6 @@
     ratioText = v;
     if (ratioOf(v)) set({ aspect: v.trim() }, `layout:${file}#/sections/${at}/widgets/${j}/aspect`);
   }
-
-  // text size: its styles', scaled with the grid, or fitted to the widget
-  const tsize = $derived(widget.scale?.fit ? 'fit' : widget.scale?.on ? 'scale' : 'fixed');
-  const canFit = $derived(size !== 'auto');
-  function setTextSize(mode, adjust) {
-    const a = adjust ?? widget.scale?.adjust ?? 100;
-    const next =
-      mode === 'fixed'
-        ? undefined
-        : mode === 'fit'
-          ? { fit: true }
-          : { on: true, ...(a !== 100 ? { adjust: a } : {}) };
-    set(
-      { scale: next },
-      adjust !== undefined ? `layout:${file}#/sections/${at}/widgets/${j}/scale` : undefined,
-    );
-  }
-  const TSIZES = [
-    ['fixed', 'Styles', 'fa-font', "Text size: its styles' sizes (Settings › Typography)"],
-    ['scale', 'Scale', 'fa-maximize', 'Text size: grows and shrinks with the grid'],
-    ['fit', 'Fit', 'fa-expand', 'Text size: as large as fits the widget'],
-  ];
 </script>
 
 <!-- layer icons: two stacked squares, the one moved (front / back) filled -->
@@ -197,50 +174,6 @@
       >
     </div>
   </div>
-
-  <hr class="wl__sep" />
-
-  {#if text}
-    <div class="tf is-half">
-      <span class="tf__label">Text size</span>
-      <div class="hset" role="radiogroup" aria-label="Text size">
-        {#each TSIZES as [mode, label, icon, title] (mode)}
-          <button
-            type="button"
-            role="radio"
-            aria-checked={tsize === mode}
-            aria-label={label}
-            title={mode === 'fit' && !canFit
-              ? 'Fit needs a fixed height: Size Aspect or Rows'
-              : title}
-            disabled={mode === 'fit' && !canFit}
-            class={['hset__btn', tsize === mode && 'is-active']}
-            onclick={() => setTextSize(mode)}
-            ><i class="fa-solid {icon}" aria-hidden="true"></i></button
-          >
-        {/each}
-      </div>
-    </div>
-    {#if tsize === 'scale'}
-      <label class="tf is-half">
-        <span class="tf__label">Scale %</span>
-        <input
-          class="tf__input"
-          type="number"
-          min="10"
-          max="1000"
-          value={Math.round(adjustOf(widget) * 100)}
-          aria-label="Text size, % of its styles"
-          oninput={(e) => {
-            const v = Number(e.currentTarget.value);
-            if (v >= 10 && v <= 1000) setTextSize('scale', v);
-          }}
-        />
-      </label>
-    {:else}
-      <div class="tf is-half" aria-hidden="true"></div>
-    {/if}
-  {/if}
 </div>
 
 <style lang="scss">
@@ -329,14 +262,6 @@
     height: 32px;
   }
 
-  .wl__sep {
-    grid-column: 1 / -1;
-    width: 100%;
-    margin: var(--space-1) 0;
-    border: 0;
-    border-top: 1px solid var(--c-line);
-  }
-
   // SectionSettings.svelte's .hset
   .hset {
     display: flex;
@@ -376,11 +301,6 @@
     &:disabled {
       opacity: var(--o-disabled);
       cursor: default;
-    }
-
-    &.is-active {
-      background: var(--c-fill-active);
-      color: var(--c-accent);
     }
 
     &:focus-visible {

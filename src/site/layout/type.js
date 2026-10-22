@@ -1,24 +1,21 @@
 /**
- * Text that scales with the grid: a text widget (SCALE_TYPES) whose `scale` is on sizes its
- * text in cells, so it grows and shrinks with the page's width like the widgets do:
- *
- *   "scale": { "on": true, "adjust": 120 }     adjust: % of its styles' sizes (default 100)
- *   "scale": { "fit": true }                    as large as fits the widget (fixed height only)
+ * Fit text: a text widget (FIT_TYPES) with "fit": true has its text as large as fills the
+ * widget's WIDTH, its longest line edge to edge (each line on one line, never by its height),
+ * worked out live in the page (src/client/modules/fit.js: --tkf). Off (the default), a text has
+ * its style's size (the site's stylesheets).
  *
  * Each text style is defined once, in cells of the 120-column grid (site.json "typography";
  * TEXT_STYLES are the defaults):
  *
  *   "typography": { "paragraph": { "size": 1.4, "line": 1.75, "tracking": 0, "min": 14 } }
  *
- *   size      font size in cells (on the phone grid half a cell each: its cells are twice as
- *             wide, so a phone shows the desktop's text scaled like its layout)
+ *   size      font size in cells (on the phone grid half a cell each)
  *   line      line height, × the font size (so it scales with it)
  *   tracking  letter spacing, em (likewise)
- *   min       the smallest font size, px: scaled text never gets smaller (readable on phones)
+ *   min       the smallest font size, px (fitted text has none)
  *
- * Which of a widget's texts has which style: _layout.scss (.wgt--scale), e.g. a heading widget's
- * title "title", its eyebrow "label", its body "paragraph". With `scale` off (the default) a
- * text has its style's normal fixed size (the site's stylesheets).
+ * A fitted widget's texts keep their styles' proportions (_layout.scss .wgt--fit): one factor
+ * over them all.
  */
 import { isObject } from '../is.js';
 
@@ -34,24 +31,11 @@ export const TEXT_STYLES = {
 };
 const STYLE_KEYS = ['size', 'line', 'tracking', 'min'];
 
-/** Widget types whose text can scale (a Scale switch in the editor). */
-export const SCALE_TYPES = ['text', 'button'];
+/** Widget types whose text can fit (the toolbar's Fit). */
+export const FIT_TYPES = ['text', 'button'];
 
-/**
- * Fit to widget: its text as large as fits its box (a widget with a fixed height: aspect or
- * rows), worked out live in the page (src/client/modules/fit.js: --tkf, over adjust).
- */
-export const fitted = (b) =>
-  SCALE_TYPES.includes(b?.type) && b?.scale?.fit === true && ['aspect', 'rows'].includes(b?.size);
-
-/** Is a widget's text scaled (in cells: by the grid, or fitted)? */
-export const scaled = (b) => SCALE_TYPES.includes(b?.type) && (b?.scale?.on === true || fitted(b));
-
-/** A scaled widget's adjust as a factor (1 = 100%). */
-export const adjustOf = (b) => {
-  const a = b?.scale?.adjust;
-  return typeof a === 'number' && a > 0 ? a / 100 : 1;
-};
+/** Is a widget's text fitted to its width? */
+export const fitted = (b) => FIT_TYPES.includes(b?.type) && b?.fit === true;
 
 /** site.json typography merged over the defaults: { style: { size, line, tracking, min } }. */
 export function typographyOf(site) {
@@ -107,22 +91,12 @@ export function checkTypography(t) {
   return out;
 }
 
-/** Problems of a widget's "scale". */
-export function checkScale(b) {
-  const s = b?.scale;
-  if (s === undefined) return [];
-  if (!SCALE_TYPES.includes(b.type))
-    return [`"scale" is for text widgets (${SCALE_TYPES.join(', ')})`];
-  if (!isObject(s))
-    return ['"scale" must be an object { "on": true, "adjust": 100, "fit": false }'];
+/** Problems of a widget's "fit" (and the "scale" it replaced). */
+export function checkFit(b) {
   const out = [];
-  if (s.on !== undefined && typeof s.on !== 'boolean') out.push('"scale.on" must be true or false');
-  if (s.fit !== undefined && typeof s.fit !== 'boolean')
-    out.push('"scale.fit" must be true or false');
-  if (
-    s.adjust !== undefined &&
-    !(typeof s.adjust === 'number' && s.adjust >= 10 && s.adjust <= 1000)
-  )
-    out.push('"scale.adjust" must be a % from 10 to 1000');
+  if (b?.scale !== undefined) out.push('"scale" is gone: use "fit": true (fit text to the width)');
+  if (b?.fit === undefined) return out;
+  if (!FIT_TYPES.includes(b.type)) out.push(`"fit" is for text widgets (${FIT_TYPES.join(', ')})`);
+  else if (typeof b.fit !== 'boolean') out.push('"fit" must be true or false');
   return out;
 }

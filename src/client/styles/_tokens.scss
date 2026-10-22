@@ -25,7 +25,7 @@ $z-skip: 200; // .skip-link: always on top when focused
 
   --pad: clamp(16px, 2.6vw, 40px);
   --gap: clamp(12px, 1.4vw, 22px);
-  // text styles for scaled text (src/site/layout/type.js TEXT_STYLES; site.json typography)
+  // text styles for fitted text (src/site/layout/type.js TEXT_STYLES; site.json typography)
   --ts-title: 19;
   --ts-title-lh: 0.82;
   --ts-title-tr: -0.02em;

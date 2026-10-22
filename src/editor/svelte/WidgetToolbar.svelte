@@ -3,7 +3,8 @@
   the stage (App.svelte) at the widget's top left edge, above it (below it when there is no
   room, inside it when it is taller than the frame), never moving the page. Two parts:
 
-    text      (a Text widget) style ▾ (the line the caret is in: the whole line), B, I, link
+    text      (a Text widget) style ▾ (the line the caret is in: the whole line), Fit (the
+              text's longest line fills the widget's width, type.js "fit"), B, I, link
               (the selected text only: greyed with nothing selected or when not editing),
               + Field (a field of the item the widget shows, or a count, at the caret)
     info      Info (where it is, what it follows)
@@ -12,7 +13,7 @@
   or a double click on the widget; Esc or a click outside ends it, no Done). A single click
   only selects. Menus open under their own button and stay open after a pick.
 
-  Its layout (size, text size, layer) is on the widget's card only (WidgetLayout.svelte); the
+  Its layout (size, layer) is on the widget's card only (WidgetLayout.svelte); the
   keys [ and ] still move it down / up a layer (App.svelte). A widget without text has Info
   only. A narrow widget puts the text marks into a "…" menu. The edit itself is bridge.js's
   (rich.js).
@@ -27,6 +28,8 @@
   import { sourceOf } from '../../site/layout/source.js';
   import { untrack } from 'svelte';
   import { circleGap } from './toolbar-place.js';
+  import { setWidget } from '../layout-ops.js';
+  import { FIT_TYPES, fitted } from '../../site/layout/type.js';
   import { isSafeHref, UNSAFE_HREF } from '../../site/hrefs.js';
   import {
     LINE_STYLES,
@@ -66,6 +69,11 @@
   const rich = $derived(ui.rich && ui.rich.widget === where?.id ? ui.rich : null);
   const editing = $derived(!!rich);
   const style = $derived(rich ? rich.style : widget?.body?.[0]?.style || 'paragraph');
+  // Fit: its longest line fills its width (type.js "fit"), or its styles' sizes
+  const canFit = $derived(FIT_TYPES.includes(widget?.type));
+  const isFit = $derived(fitted(widget));
+  const toggleFit = () =>
+    setWidget(live.store, where.file, where.at, where.j, { fit: isFit ? undefined : true });
   const bodyRef = $derived(where ? { file: where.file, ptr: `${where.base}/body` } : null);
 
   // ---- where it is drawn: the widget's box in the frame, on the stage, every frame
@@ -112,7 +120,7 @@
 
   // its toolbar's width (measured), for where it goes and what moves into "…"
   let barW = $state(0);
-  const TEXT_W = 340; // style + B I link + Field, about
+  const TEXT_W = 400; // style + Fit + B I link + Field, about
   const level = $derived.by(() => {
     if (!box) return 0;
     const room = Math.max(box.w, 280);
@@ -399,6 +407,19 @@
             aria-hidden="true"
           ></i></button
         >
+        {#if canFit}
+          <button
+            type="button"
+            class={['btb__btn btb__fit', isFit && 'is-on']}
+            aria-pressed={isFit}
+            title={isFit
+              ? "Fit on: its longest line fills the widget's width. Click: its styles' sizes"
+              : "Fit: its longest line fills the widget's width (off: its styles' sizes)"}
+            onclick={toggleFit}
+            ><i class="fa-solid fa-arrows-left-right-to-line" aria-hidden="true"></i><span>Fit</span
+            ></button
+          >
+        {/if}
         {#if level === 0}{@render marks()}{/if}
       {/if}
       {@render infoButton()}

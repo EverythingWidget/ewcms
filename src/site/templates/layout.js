@@ -11,7 +11,7 @@ export function head(ctx, route, accent) {
   const { site } = ctx;
   const seo = seoOf(ctx, route);
   const image = seo.image;
-  // site.json typography: the text styles scaled text uses (layout/type.js), where they differ
+  // site.json typography: the text styles fitted text uses (layout/type.js), where they differ
   // site.json typography and layout (a contained section's columns: layout/contain.js)
   const type = [typographyVars(site), layoutVars(site)].filter(Boolean).join('; ');
   const ld =

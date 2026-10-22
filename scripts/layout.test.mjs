@@ -145,21 +145,21 @@ test('render: sections are grids, widgets carry their area; off is hidden', () =
     renderSections(ctxOf(page), page, F, mobile),
     /class="sec"[\s\S]*;--mc:1;--ms:24;--mr:1;--mrs:1"/,
   );
-  // links and scaled text on the element
+  // links and fit text on the element
   const linked = [
     section([
       widget('text', { id: 'b-lead' }),
       widget('text', {
         id: 'b-foll',
         link: { to: 'b-lead', gap: -3 },
-        scale: { on: true, adjust: 120 },
+        fit: true,
       }),
     ]),
   ];
   const lo = renderSections(ctxOf(page), page, F, linked);
   assert.match(
     lo,
-    /class="wgt wgt--text wgt--auto wgt--scale"[^>]*;--tk:1.2" data-link="b-lead -3" data-mlink="b-lead -2"/,
+    /class="wgt wgt--text wgt--auto wgt--fit"[^>]*" data-link="b-lead -3" data-mlink="b-lead -2"/,
   );
   // a widget can't run past column 120
   const wide = [

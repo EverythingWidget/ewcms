@@ -1,4 +1,4 @@
-/** Free widgets and links (src/site/layout/links.js, flow.js), scaled text (type.js), the migration. */
+/** Free widgets and links (src/site/layout/links.js, flow.js), fit text (type.js), the migration. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveRows } from '../src/site/layout/flow.js';
@@ -12,7 +12,7 @@ import {
   newWidget,
 } from '../src/site/layout/index.js';
 import {
-  checkScale,
+  checkFit,
   checkTypography,
   typographyOf,
   typographyVars,
@@ -242,26 +242,26 @@ test('editor: phone links are separate; the first phone move brings the desktop 
   assert.equal(flat(b()).pos.row, 30);
 });
 
-test('scaled text: per widget, by its styles; site typography over the defaults', () => {
+test('fit text: per widget, one boolean; site typography over the defaults', () => {
   const t = (more) => ({
     id: 'b-aaaa',
     type: 'text',
     layout: { base: { col: 1, span: 120, row: 1, rows: 1 } },
     ...more,
   });
-  assert.doesNotMatch(widgetClass(t()), /scale/);
-  assert.match(widgetClass(t({ scale: { on: true } })), / wgt--scale$/);
-  assert.doesNotMatch(widgetClass(t({ scale: { on: false, adjust: 150 } })), /scale/);
-  assert.doesNotMatch(widgetVars(t({ scale: { on: true } })), /--tk/);
-  assert.match(widgetVars(t({ scale: { on: true, adjust: 80 } })), /;--tk:0.8$/);
-  // only text widgets scale
-  assert.doesNotMatch(widgetClass({ ...t({ scale: { on: true } }), type: 'photo' }), /scale/);
-  assert.deepEqual(checkScale({ type: 'photo', scale: { on: true } }), [
-    '"scale" is for text widgets (text, button)',
+  assert.doesNotMatch(widgetClass(t()), /fit/);
+  assert.match(widgetClass(t({ fit: true })), / wgt--fit$/);
+  assert.doesNotMatch(widgetClass(t({ fit: false })), /fit/);
+  assert.doesNotMatch(widgetVars(t({ fit: true })), /--tk/);
+  // only text widgets fit
+  assert.doesNotMatch(widgetClass({ ...t({ fit: true }), type: 'photo' }), /fit/);
+  assert.deepEqual(checkFit({ type: 'photo', fit: true }), [
+    '"fit" is for text widgets (text, button)',
   ]);
-  assert.deepEqual(checkScale({ type: 'text', scale: { on: 'yes', adjust: 5 } }), [
-    '"scale.on" must be true or false',
-    '"scale.adjust" must be a % from 10 to 1000',
+  assert.deepEqual(checkFit({ type: 'text', fit: 'yes' }), ['"fit" must be true or false']);
+  assert.deepEqual(checkFit({ type: 'text', fit: true }), []);
+  assert.deepEqual(checkFit({ type: 'text', scale: { on: true } }), [
+    '"scale" is gone: use "fit": true (fit text to the width)',
   ]);
   assert.equal(typographyOf({}).paragraph.size, 1.4);
   const site = { typography: { paragraph: { size: 1.6, min: 15 }, title: { tracking: -0.03 } } };

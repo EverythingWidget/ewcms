@@ -375,7 +375,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
         "base": { "col": 61, "span": 40, "row": 26, "link": { "to": "b-2fq0", "gap": 1 } },
         "phone": null
       },
-      "scale": { "on": true, "adjust": 90 }
+      "fit": true
     }
   ]
 }
@@ -480,19 +480,18 @@ every section is a grid of **widgets** (`src/site/layout/`):
     with a minimum height a widget that fits in it gets the whole rows that fit (rows stay square, so up to a cell
     short; its content is still screen-high), centred. Without JavaScript the stored areas apply
     as they are (the editor keeps a follower's stored row at its leader's stored bottom + gap).
-- **Scaled text** (`src/site/layout/type.js`): a text widget (`text`, `button`) with
-  `"scale": { "on": true, "adjust": 90 }` sizes its text in cells, so it grows and shrinks with
-  the grid; `adjust` is its % of its styles (default 100). The styles are set once in
-  `site.json` `typography` (Settings › Typography), each in cells of the 120-column grid:
+- **Fit text** (`src/site/layout/type.js`): a text widget (`text`, `button`) with `"fit": true`
+  has its text as large as fills the widget's **width**: each line on one line, the longest one
+  edge to edge (never by its height; the widget's height follows, or is its Rows / Aspect).
+  `src/client/modules/fit.js` sets `--tkf` (one factor over its styles' sizes, so they keep
+  their proportions), on load, when the widget's width changes and on every edit; its own
+  height changing is not a change (no loop). Off (default): the style's normal fixed size from
+  the stylesheets. The styles are set once in `site.json` `typography` (Settings ›
+  Typography), each in cells of the 120-column grid:
   `{ "paragraph": { "size": 1.4, "line": 1.75, "tracking": 0, "min": 14 } }`: font size (cells),
-  line height (× the size), letter spacing (em) and a minimum font size (px, so text stays
-  readable on phones). Defaults: title 19, heading 3, subheading 2, statement 5, paragraph 1.4,
-  label 1 (also a button), small 1.05, ≈ the fixed
-  sizes at 1440px. On phones a style's cell is half a 60-column cell (the 120 grid's), so the
-  text scales like the layout and the minimum takes over. Off (default): the style's normal
-  fixed size from the stylesheets. **Fit to widget** (`"scale": { "fit": true }`, a widget with
-  an Aspect or Rows size): its text is as large as fits the widget (`src/client/modules/fit.js`
-  sets `--tkf`, measured on load, resize and every edit).
+  line height (× the size), letter spacing (em) and a minimum font size (px). Defaults: title
+  19, heading 3, subheading 2, statement 5, paragraph 1.4, label 1 (also a button), small 1.05.
+  In the editor: the toolbar's **Fit** (edit mode, after Style).
 - **Phones** (below 760px): every section is a **60-column** square grid (`--cell` = width /
   60, ~6px at 390px; its rows `--mrows`). Nothing stacks: a widget without a phone area of its
   own shows its **desktop area halved** (columns and rows, rounded to the cells it covers:
@@ -1282,11 +1281,9 @@ preview shows (switch it with the phone toggle in the panel's head). At the top,
 where it is in cells (`col 61 · row 12 · 40 × 18`: its column, the row it shows, its width and
 the rows it spans, the phone's in the phone preview) and its link (`follows <widget>, gap -10`,
 or free); links and gaps are dragged in the preview. Then **Size** as buttons (Auto | Aspect |
-Rows; with Aspect its ratio as buttons: 1:1 … 21:9 or Custom "w:h"), for text widgets **Scale
-text with the grid** and its **Text size (%)**,
-the layer with Down / Up (desktop) and **Reset phone** (phone), which removes every phone area
+Rows; with Aspect its ratio as buttons: 1:1 … 21:9 or Custom "w:h"), the layer with Down / Up (desktop) and **Reset phone** (phone), which removes every phone area
 and link of the section's widgets (they show their desktop layout halved again).
-**Settings › Typography** sets the text styles of scaled text (size and minimum, line height,
+**Settings › Typography** sets the text styles (fitted text keeps their proportions) (size and minimum, line height,
 tracking; the preview follows as you type).
 
 **Buttons:** action buttons (Save, Publish, Delete, Add, …) are pills. Utility toggles and tools

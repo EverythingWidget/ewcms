@@ -144,16 +144,7 @@
       {/key}
     {:else}
       <!-- its layout (size, layer; a Text widget's text size), then a line -->
-      <WidgetLayout
-        {live}
-        {bridge}
-        file={g.file}
-        {at}
-        {j}
-        id={g.id}
-        {widget}
-        text={!!type.fields?.some((f) => f.type === 'rich')}
-      />
+      <WidgetLayout {live} {bridge} file={g.file} {at} {j} id={g.id} {widget} />
       <!-- its source first (a widget whose type shows items), then its settings and fields -->
       {#snippet lead()}
         <WidgetSource {g} {live} {base} list={!!type.list} {shown} {sourceIds} {onsource} />

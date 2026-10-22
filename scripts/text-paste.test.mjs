@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { isSafeHref, linkProblem, hrefOf, UNSAFE_HREF } from '../src/site/hrefs.js';
 import { checkBody, deleteRange, insertLines, plainLines, htmlLines } from '../src/site/text.js';
-import { searchFit } from '../src/client/modules/fit.js';
+import { fitFactor } from '../src/client/modules/fit.js';
 
 test('links: only safe URLs; checked in a body; never output', () => {
   for (const ok of [
@@ -124,14 +124,13 @@ test('paste: into a body: one line inline, more lines between the halves', () =>
   ]);
 });
 
-test('fit: the largest factor that fits, within 1%, near a guess in a few measures', () => {
-  let n = 0;
-  const at = (limit) => (k) => (n++, k <= limit);
-  assert.ok(Math.abs(searchFit(at(1.37)) - 1.37) < 0.02);
-  const cold = n;
-  n = 0;
-  assert.ok(Math.abs(searchFit(at(1.4), 1.37) - 1.4) < 0.02);
-  assert.ok(n < cold, `${n} < ${cold}`);
-  assert.equal(searchFit(at(0)), 0.05); // nothing fits: the smallest
-  assert.ok(searchFit(at(99)) >= 19.8); // everything fits: the largest
+test('fit: the longest line fills the width (a hair under), whatever the height', () => {
+  assert.equal(fitFactor(1000, [200, 500, 100]), 1.99); // 1000 / 500, a hair under
+  assert.equal(fitFactor(300, [600]), 0.497); // too wide: smaller
+  assert.equal(fitFactor(1000, []), 1); // nothing measured: as it is
+  assert.equal(fitFactor(0, [100]), 1);
+  assert.equal(fitFactor(100000, [1]), 40); // capped
+  assert.equal(fitFactor(1, [100000]), 0.05);
+  // a fixed indent (a style's text-indent) is taken off its line's room
+  assert.equal(fitFactor(1000, [400], [200]), 1.99);
 });

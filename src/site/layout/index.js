@@ -61,7 +61,7 @@ import { isBinding, keysOf, resolve, resolveWidget } from './bindings.js';
 import { widgetItems } from './source.js';
 import { COLS, baseOf, phoneAreaOf, placeOf, setBase } from './grid.js';
 import { linkOf } from './links.js';
-import { adjustOf, fitted, scaled } from './type.js';
+import { fitted } from './type.js';
 import { contentPath } from '../files.js';
 
 export {
@@ -230,7 +230,7 @@ export function sectionAnchor(s) {
 
 /**
  * The classes of a widget's element: its type, size mode (wgt--aspect, wgt--auto; fixed rows:
- * neither), scaled text, hidden on phones.
+ * neither), fitted text, hidden on phones.
  */
 export function widgetClass(b) {
   const size = sizeOf(b);
@@ -238,7 +238,6 @@ export function widgetClass(b) {
   return (
     `wgt wgt--${b?.type}` +
     (aspect ? ' wgt--aspect' : size === 'auto' || size === 'aspect' ? ' wgt--auto' : '') +
-    (scaled(b) ? ' wgt--scale' : '') +
     (fitted(b) ? ' wgt--fit' : '') +
     (b?.layout?.phone === null ? ' wgt--m-hidden' : '')
   );
@@ -246,19 +245,17 @@ export function widgetClass(b) {
 
 /**
  * The CSS variables of a widget's element: its grid area, layer, phone area (its own, or its
- * desktop area halved) and its text's scale.
+ * desktop area halved).
  */
 export function widgetVars(b) {
   const p = placeOf(baseOf(b));
   const m = phoneAreaOf(b);
   const ratio = sizeOf(b) === 'aspect' ? ratioOf(b?.aspect) : null;
-  const k = scaled(b) ? adjustOf(b) : 1;
   return (
     `--c:${p.col};--s:${p.span};--r:${p.row};--rs:${p.rows}` +
     (Number.isInteger(b?.z) && b.z !== 0 ? `;--z:${b.z}` : '') +
     (ratio ? `;--ar:${ratio[0]} / ${ratio[1]}` : '') +
-    `;--mc:${m.col};--ms:${m.span};--mr:${m.row};--mrs:${m.rows}` +
-    (k !== 1 ? `;--tk:${k}` : '')
+    `;--mc:${m.col};--ms:${m.span};--mr:${m.row};--mrs:${m.rows}`
   );
 }
 

@@ -28,9 +28,9 @@
  * desktop layout scaled down until its widgets are placed for it. Why 60 and not 120: a phone
  * is ~390px wide, and 120 columns would be ~3px cells; 60 give ~6px.
  *
- * Scaled text (.wgt--scale, src/site/layout/type.js): sizes in --tcell, the 120-column grid's
- * cell (on the phone grid half a cell), × the style's size (--ts-<style>) × the widget's
- * adjust (--tk), never under the style's min.
+ * Fit text (.wgt--fit, src/site/layout/type.js): sizes in --tcell, the 120-column grid's
+ * cell (on the phone grid half a cell), × the style's size (--ts-<style>) × the widget's fit
+ * factor (--tkf, src/client/modules/fit.js: its longest line fills its width).
  */
 
 // off (the editor's preview: the switch; the public page leaves them out): their display
@@ -157,61 +157,43 @@
 }
 
 /*
- * Scaled text (.wgt--scale): its texts by style, in cells. A style's size, line height
- * (× the size), tracking (em) and min (px) are --ts-<style>, -lh, -tr, -min (defaults in
- * _tokens.scss, site.json typography in the page's head).
+ * Fit text (.wgt--fit): its texts by style, in cells, × the widget's --tkf (fit.js), so its
+ * styles keep their proportions. A style's size, line height (× the size) and tracking (em) are
+ * --ts-<style>, -lh, -tr (defaults in _tokens.scss, site.json typography in the page's head).
+ * Every line on one line (a soft break still breaks): the longest one fills the width.
  */
-@mixin scaled($style) {
-  font-size: max(
-    var(--fit-min, var(--ts-#{$style}-min)),
-    calc(var(--tcell) * var(--ts-#{$style}) * var(--tk-now, 1))
-  );
+@mixin fitted($style) {
+  font-size: calc(var(--tcell) * var(--ts-#{$style}) * var(--tkf, 1));
   line-height: var(--ts-#{$style}-lh);
   letter-spacing: var(--ts-#{$style}-tr);
 }
-.wgt--scale {
-  // (a fitted widget's --tkf, src/client/modules/fit.js, over its adjust)
-  --tk-now: var(--tkf, var(--tk, 1));
+.wgt--fit {
   .ts--title {
-    @include scaled('title');
+    @include fitted('title');
   }
   .ts--heading,
   .section__title {
-    @include scaled('heading');
+    @include fitted('heading');
   }
   .ts--subheading {
-    @include scaled('subheading');
+    @include fitted('subheading');
   }
   .ts--statement {
-    @include scaled('statement');
+    @include fitted('statement');
   }
   .ts--paragraph {
-    @include scaled('paragraph');
+    @include fitted('paragraph');
   }
   .ts--small {
-    @include scaled('small');
+    @include fitted('small');
   }
   .ts--label,
   .page-head__crumb,
   .btn {
-    @include scaled('label');
+    @include fitted('label');
   }
-  // scaled lines are as wide as the widget lets them
   .ts {
     max-width: none;
-  }
-}
-// fitted: no minimum (it is as large as fits, small widgets included)
-// and words whole: a long word makes the text smaller (fit.js measures the width too), it
-// never breaks mid-word
-.wgt--fit {
-  overflow: hidden;
-  .text__body {
-    overflow-wrap: normal;
-    word-break: normal;
-    hyphens: manual;
-  }
-  .ts {
-    --fit-min: 0px;
+    white-space: nowrap;
   }
 }
