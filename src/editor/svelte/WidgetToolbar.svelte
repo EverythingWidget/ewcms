@@ -34,6 +34,7 @@
   import { sourceFile, sourceIds as sourceIdsOf } from '../../site/files.js';
   import { sourceOf } from '../../site/layout/source.js';
   import { untrack } from 'svelte';
+  import { circleGap } from './toolbar-place.js';
   import { isSafeHref, UNSAFE_HREF } from '../../site/hrefs.js';
   import {
     LINE_STYLES,
@@ -131,8 +132,15 @@
   const BAR_H = 40;
   const pos = $derived.by(() => {
     if (!box) return null;
-    const above = box.y - BAR_H - 8;
-    const below = box.y + box.h + 12;
+    const x = Math.min(
+      Math.max(box.x, box.frameLeft + 8),
+      Math.max(box.frameLeft + 8, box.frameRight - 8 - barW),
+    );
+    // clear of the widget's link circles (overlay.js: centred, 12px outside its top and bottom
+    // edges, 12px wide) when the bar is across their middle: further up / down instead
+    const gap = circleGap(x, barW, box);
+    const above = box.y - BAR_H - gap;
+    const below = box.y + box.h + gap + 4;
     let y;
     let flip = false;
     let side = 'inside';
@@ -144,10 +152,6 @@
       flip = true;
       side = 'below';
     } else y = Math.max(box.frameTop + 8, box.y + 8); // taller than the frame: inside its top
-    const x = Math.min(
-      Math.max(box.x, box.frameLeft + 8),
-      Math.max(box.frameLeft + 8, box.frameRight - 8 - barW),
-    );
     return { x, y, flip, side };
   });
 

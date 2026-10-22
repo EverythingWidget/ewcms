@@ -20,14 +20,15 @@
  *             area, on the phone grid of 60 columns (a widget without one shows its desktop
  *             area halved: that is where the drag starts). An aspect or auto widget's rows
  *             follow its width: only its sides resize.
- *   Links     the selected and the hovered widget show a circle above their top edge and one
- *             below their bottom edge. Dragging a widget's top circle onto another widget's
+ *   Links     the selected widget only shows a circle above its top edge and one below its
+ *             bottom edge (a hovered one shows none: select it first). Dragging a widget's top circle onto another widget's
  *             bottom circle (in its section; widgets that would make a loop show none) links
  *             it: it follows that widget, keeping where it is (the gap: the rows between them
  *             now, negative when they overlap); dropped anywhere else, a linked widget is free
  *             again (onlink). A line joins every leader's bottom to its followers' tops; a
  *             click on one selects that link, Delete or Backspace removes it. The phone
- *             preview shows and edits the phone links.
+ *             preview shows and edits the phone links. No page text is selected
+ *             while a circle is dragged (user-select off on the page until it ends).
  *   Rows      a Custom height section shows a line on its bottom edge (the hovered section's,
  *             or the selected widget's): dragged up or down it sets the section's rows, in
  *             whole cells, never fewer than its content needs, the count shown live; on
@@ -95,7 +96,6 @@ const STYLE = `
 .dot[data-dot='top'] { top: -${DOT}px; cursor: grab; }
 .dot[data-dot='bottom'] { top: calc(100% + ${DOT}px); }
 .dot.is-linked { background: ${T.accent}; }
-.hover .dot { opacity: 1; }
 .sel.is-dragging .dot, .is-linking .box .dot { display: none; }
 .target { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; box-sizing: border-box; border: 2px solid ${T.accent}; border-radius: 50%; background: ${T.black}; }
 .target.is-near { background: ${T.accent}; box-shadow: 0 0 0 4px rgb(${T.accentRgb} / .35); }
@@ -173,7 +173,7 @@ export function createOverlay({
     host.style.cssText = 'position:absolute;left:0;top:0;width:0;height:0;z-index:2147483645;';
     const shadow = host.attachShadow({ mode: 'open' });
     const dots = '<i class="dot" data-dot="top"></i><i class="dot" data-dot="bottom"></i>';
-    shadow.innerHTML = `<style>${STYLE}</style><div class="layer"><div class="grids"></div><svg class="links" xmlns="${SVG}"></svg><div class="dims"></div><div class="box peek" hidden><span class="tag"></span></div><div class="secrow" hidden><span class="count"></span></div><div class="box hover" hidden>${dots}</div><div class="box sel" hidden><span class="label"></span>${HANDLES.map((h) => `<i class="handle" data-h="${h}"></i>`).join('')}${dots}</div><div class="targets"></div></div>`;
+    shadow.innerHTML = `<style>${STYLE}</style><div class="layer"><div class="grids"></div><svg class="links" xmlns="${SVG}"></svg><div class="dims"></div><div class="box peek" hidden><span class="tag"></span></div><div class="secrow" hidden><span class="count"></span></div><div class="box hover" hidden></div><div class="box sel" hidden><span class="label"></span>${HANDLES.map((h) => `<i class="handle" data-h="${h}"></i>`).join('')}${dots}</div><div class="targets"></div></div>`;
     root = shadow.querySelector('.layer');
     els.grids = root.querySelector('.grids');
     els.links = root.querySelector('.links');
@@ -193,11 +193,8 @@ export function createOverlay({
       if (h && ui.widget) return start(e, widgetEl(ui.widget), h);
       const dot = e.target.dataset?.dot;
       if (dot === 'top') {
-        const el = e.target.closest('.sel') ? widgetEl(ui.widget) : hover;
-        if (el) {
-          onpick(el.dataset.widget);
-          startLink(e, el);
-        }
+        const el = widgetEl(ui.widget);
+        if (el) startLink(e, el);
         return;
       }
       const link = e.target.dataset?.link;
@@ -375,7 +372,6 @@ export function createOverlay({
     els.hover.hidden = !h;
     if (h) {
       place(els.hover, rectOf(h, win));
-      dotsOf(els.hover, h);
     }
     if (shown()) raf = win.requestAnimationFrame(frame);
   }
@@ -626,6 +622,7 @@ export function createOverlay({
       });
     els.targets.replaceChildren(...targets.map((t) => t.dot));
     linking = { el, id, sec, phone, targets, near: null, from: topDot(rectOf(el, win)), to: null };
+    noSelect(true);
     win.addEventListener('pointermove', moveLink, true);
     win.addEventListener('pointerup', endLink, true);
     win.addEventListener('keydown', cancelLink, true);
@@ -648,7 +645,26 @@ export function createOverlay({
     linking.to = near ? [near.x, near.y] : p;
   }
 
+  // no page text selected while a circle is dragged: user-select off on the page, a selection
+  // already there cleared (not a text being edited: its caret stays), selectstart stopped
+  const stopSelect = (e) => e.preventDefault();
+  let savedSelect = null;
+  function noSelect(on) {
+    const st = doc.documentElement.style;
+    if (on) {
+      savedSelect ??= [st.userSelect, st.webkitUserSelect];
+      st.userSelect = st.webkitUserSelect = 'none';
+      if (!doc.activeElement?.isContentEditable) win.getSelection()?.removeAllRanges();
+      doc.addEventListener('selectstart', stopSelect, true);
+    } else if (savedSelect) {
+      [st.userSelect, st.webkitUserSelect] = savedSelect;
+      savedSelect = null;
+      doc.removeEventListener('selectstart', stopSelect, true);
+    }
+  }
+
   function stopLink() {
+    noSelect(false);
     win.removeEventListener('pointermove', moveLink, true);
     win.removeEventListener('pointerup', endLink, true);
     win.removeEventListener('keydown', cancelLink, true);
