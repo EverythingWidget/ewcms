@@ -1,9 +1,9 @@
 <!--
   The page's sections in the Content tab (src/site/layout/): a card each (SectionCard.svelte:
-  its title, eye and pen; its widgets count, which opens its widgets inside the card, Add widget,
-  move up / down, Duplicate, Delete), then the dashed Add section card, which adds an empty
+  its title and its widgets count, which opens its widgets inside the card; the selected one's
+  tools are SectionToolbar.svelte's, over the body), then the dashed Add section card, which adds an empty
   section after the last one. A click on a card selects it (ui.selSection: its section shown in
-  the preview, overlay.js); a double click or its pen opens its settings (onsection); both
+  the preview, overlay.js); a double click (or the toolbar's pen) opens its settings (onsection); both
   scroll the preview to the section (locate.js, as Locate does; only from here, never for a
   selection made in the preview); a widget's
   row opens its settings (onopen), as a click on the widget in the preview does. Widgets have no
@@ -16,8 +16,8 @@
   import { addSection } from '../layout-ops.js';
   import { locate } from '../locate.js';
 
-  let { live, bridge, file, onopen, onsection, onadd } = $props();
-  let deleting = $state(''); // the id of the section asking "Delete?"
+  // deleting: the id of the section asking "Delete?" (bindable: the toolbar's ⋯ asks)
+  let { live, bridge, file, onopen, onsection, deleting = $bindable('') } = $props();
 
   const sections = $derived.by(() => {
     const list = live.current(file)?.sections;
@@ -64,7 +64,6 @@
     {live}
     {file}
     {at}
-    last={at === sections.length - 1}
     peek={ui.peek?.from === 'preview' && ui.peek.id === s.id}
     selected={ui.selSection === s.id}
     bind:deleting
@@ -77,7 +76,6 @@
       onsection(s.id);
     }}
     {onopen}
-    {onadd}
   />
 {/each}
 

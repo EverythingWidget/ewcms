@@ -39,6 +39,8 @@
   import WidgetsModal from './WidgetsModal.svelte';
   import SectionView from './SectionView.svelte';
   import SectionsList from './SectionsList.svelte';
+  import SectionToolbar from './SectionToolbar.svelte';
+  import { locate } from '../locate.js';
   import SeoSection from './SeoSection.svelte';
   import SourcesModal from './SourcesModal.svelte';
   import { allFields, contentGroups, groupFor } from './content-groups.js';
@@ -122,6 +124,19 @@
     ui.selection = null;
     ui.section = id;
   }
+  // the toolbar's pen: scrolled to in the preview, opened (as a card's double click)
+  function enterSection(id) {
+    locate(bridge, id);
+    openSection(id);
+  }
+  let deleting = $state(''); // the section asking "Delete?" over its card
+  // a click on the list's empty space (no card, no control): no section selected
+  const CONTROLS = 'a, button, input, select, textarea, label, [contenteditable], [role="menu"]';
+  function deselect(e) {
+    if (!ui.selSection || e.target.closest?.(`.sec, ${CONTROLS}`)) return;
+    ui.selSection = null;
+  }
+
   function back() {
     ui.widget = null;
     ui.section = null;
@@ -263,12 +278,23 @@
       panel="{tabsId}-panel"
     />
   {/if}
+  {#if file && !waiting && shownTab === 'sections' && !atWidget}
+    <SectionToolbar
+      {live}
+      {file}
+      bind:deleting
+      onsection={enterSection}
+      onadd={(at) => widgetsModal.open(at)}
+    />
+  {/if}
+  <!-- (a click on its empty space deselects the section card: a pointer shortcut, Esc too) -->
   <section
     class="ed-body"
     bind:this={panel}
     id="{tabsId}-panel"
     role={isPage ? 'tabpanel' : undefined}
     aria-labelledby={isPage ? `${tabsId}-${shownTab}` : undefined}
+    onclick={shownTab === 'sections' && !atWidget ? deselect : undefined}
   >
     {#if waiting}
       <p class="hint">Waiting for the preview…</p>
@@ -285,7 +311,7 @@
             {file}
             onopen={openWidget}
             onsection={openSection}
-            onadd={(at) => widgetsModal.open(at)}
+            bind:deleting
           />
         </div>
         {#if held}

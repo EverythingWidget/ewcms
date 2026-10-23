@@ -3,7 +3,7 @@
   controls, then the caret at its right end) and the body, clipped and inert while closed (it stays in the DOM, so a field picked
   in the preview can be found and its section opened). Used by the Content, Motion and Settings
   tabs and the Animations library (with onenter, an always open card a click selects and a
-  double click or its pen goes into: the page's section cards). .sec is a flex column: bar, body (.sec__body > .sec__clip > .sec__inner).
+  double click goes into: the page's section cards; their tools are SectionToolbar.svelte's). .sec is a flex column: bar, body (.sec__body > .sec__clip > .sec__inner).
 
     title     the bar title (small caps)
     name      optional: what it is, on a second line in the accent color
@@ -26,9 +26,8 @@
     over      snippet: drawn over the whole card at its size (a confirm), inside its border
     onenter   optional: the card doesn't collapse (always open, no caret, `key` and `open`
               unused; the title plain text, not a button) and goes into it (a page section's
-              settings): a double click on the card, or its pen (pen-to-square, `enterLabel`)
-              at the title row's right end, after the `bar` snippet's controls (24px, 2px over
-              the 20px row: no height change). Such a card (data-card) dims only its title
+              settings): a double click on the card (the keyboard and the pen: SectionToolbar.svelte).
+              Such a card (data-card) dims only its title
               while `off`: its body's parts dim themselves (SectionCard.svelte)
     onselect  optional, with onenter: a click on the card selects it
     selected  its border white 70% (the selected card); hovered 40% (editor.scss)
@@ -41,7 +40,6 @@
   import { untrack } from 'svelte';
   import { gsap } from 'gsap';
   import { ui } from './ui.svelte.js';
-  import Button from './Button.svelte';
 
   let {
     title,
@@ -61,7 +59,6 @@
     onenter = null,
     onselect = null,
     selected = false,
-    enterLabel = 'Edit',
   } = $props();
 
   const uid = $props.id();
@@ -115,7 +112,7 @@
   {#if name}<strong>{name}</strong>{/if}
 {/snippet}
 
-<!-- a card's click and double click are pointer shortcuts: the keyboard has its pen and tools -->
+<!-- a card's click and double click are pointer shortcuts: the keyboard has the section toolbar -->
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 
 <section
@@ -156,17 +153,6 @@
         tabindex="-1"
         aria-hidden="true"
         onclick={toggle}><i class="fa-solid fa-chevron-right"></i></button
-      >
-    {/if}
-    {#if onenter}
-      <span class="sec__enter"
-        ><Button
-          size="small"
-          icon="pen-to-square"
-          iconOnly
-          label={enterLabel}
-          onclick={onenter}
-        /></span
       >
     {/if}
   </div>
@@ -296,14 +282,6 @@
     &:hover {
       color: var(--c-text-strong);
     }
-  }
-
-  // a card's pen at the title row's right end: 24px centred in a 20px slot, 2px over above
-  // and below (the row keeps its height)
-  .sec__enter {
-    display: flex;
-    align-items: center;
-    height: 20px;
   }
 
   // the body's row: open 1fr, closed (inert) 0fr; the bar's gap is the inner's padding, so
