@@ -26,7 +26,7 @@ import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/solid.css';
 import { mount } from 'svelte';
 import App from './svelte/App.svelte';
-import { ui } from './svelte/ui.svelte.js';
+import { ui, selectWidgets } from './svelte/ui.svelte.js';
 import { toast } from './svelte/toasts.svelte.js';
 import { createLive } from './svelte/live.svelte.js';
 import { connectMedia } from './svelte/media.svelte.js';
@@ -66,8 +66,16 @@ import {
   syncRoots,
   targetFile,
 } from './layout-sync.js';
-import { linkWidget, placeWidget, placeMobile, setSectionRows } from './layout-ops.js';
+import {
+  linkWidget,
+  moveWidgets,
+  placeWidget,
+  removeWidgets,
+  placeMobile,
+  setSectionRows,
+} from './layout-ops.js';
 import { createOverlay } from './overlay.js';
+import { nudgeStep, selectedIds } from './multi-select.js';
 import { restoreUi, restorePlace } from './svelte/persist.js';
 import { editorHref } from './lib/editor-url.js';
 import editorConfig from 'virtual:editor-config';
@@ -88,10 +96,14 @@ const bridge = createBridge({ store, labelFor: (p) => labelFor(store, p) });
 const overlay = createOverlay({
   ui,
   onpick(id) {
-    if (ui.widget !== id) ui.selection = null;
-    ui.widget = id;
-    ui.section = null;
-    ui.selSection = null;
+    selectWidgets(id ? [id] : []);
+  },
+  // several widgets (Ctrl/Cmd+click, a selection box): selectWidgets
+  onselect: (ids) => selectWidgets(ids),
+  // the selected widgets dragged (or nudged) by whole cells: one undo step
+  ongroupmove(ids, dc, dr, { mobile = false, flow = {}, rows = 0 } = {}) {
+    const b = widgetAt(ids[0]);
+    if (b) moveWidgets(store, b.file, b.at, ids, dc, dr, { phone: mobile, flow, rows });
   },
   onplace(id, pos, { mobile = false, flow = {}, rows = 0 } = {}) {
     const b = widgetAt(id);
@@ -566,6 +578,37 @@ document.addEventListener('keydown', (e) => {
   e.preventDefault();
   overlay.deleteLink();
 });
+// multi-select (multi-select.js): Ctrl/Cmd held shows the other sections blocked; the arrow
+// keys move the selection by a cell (Shift: NUDGE_BIG), Delete removes several selected (one
+// undo step); here and in the preview (the bridge's 'key')
+const trackMod = (e) => {
+  const on = e.ctrlKey || e.metaKey;
+  if (ui.mod !== on) ui.mod = on;
+};
+document.addEventListener('keydown', trackMod, true);
+document.addEventListener('keyup', trackMod, true);
+window.addEventListener('blur', () => (ui.mod = false));
+const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+function selectionKey(e) {
+  if (e.defaultPrevented || ui.mode !== 'text' || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (
+    e.target.closest?.('input, textarea, select, [contenteditable], dialog, .wpop, [role="menu"]')
+  )
+    return;
+  if (ARROWS[e.key] && selectedIds(ui).length) {
+    const [x, y] = ARROWS[e.key];
+    const n = nudgeStep(e.shiftKey);
+    if (overlay.nudge(x * n, y * n)) e.preventDefault();
+  } else if (['Delete', 'Backspace'].includes(e.key) && ui.multi.length > 1 && !ui.link) {
+    const b = widgetAt(ui.multi[0]);
+    if (!b) return;
+    e.preventDefault();
+    removeWidgets(store, b.file, b.at, ui.multi);
+    selectWidgets([]);
+  }
+}
+document.addEventListener('keydown', selectionKey);
+bridge.on('key', selectionKey);
 // The preview renders the unsaved edits: the dev server gets them after every change
 // (POST /__editor/draft; {} once saved), so pages the preview loads show them. A structure
 // change (a list item added or removed, a menu item moved) renders the preview again right

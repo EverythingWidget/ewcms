@@ -13,7 +13,8 @@
     changed    overrides the changed dot (the mock kit)
 -->
 <script>
-  import { ui } from './ui.svelte.js';
+  import { ui, selectWidgets } from './ui.svelte.js';
+  import { range, selectedIds, toggle } from '../multi-select.js';
   import Button from './Button.svelte';
   import Section from './Section.svelte';
   import WidgetRow from './WidgetRow.svelte';
@@ -72,6 +73,28 @@
     );
   }
 
+  // ---- multi-select (multi-select.js): Ctrl/Cmd+click toggles a row, Shift+click selects from
+  // the row clicked last; only within one section: while Ctrl/Cmd is held with a selection in
+  // another section, these rows are not clickable (dimmed, the not-allowed cursor)
+  const ids = $derived(widgets.map((b) => b.id));
+  const sel = $derived(selectedIds(ui));
+  const elsewhere = $derived(sel.length > 0 && !sel.some((id) => ids.includes(id)));
+  const blocked = $derived(ui.mod && elsewhere);
+  function pick(e, id) {
+    if (e.ctrlKey || e.metaKey) {
+      if (elsewhere) return;
+      const next = toggle(sel, id, (x) => (ids.includes(x) ? s.id : null));
+      if (!next) return;
+      ui.anchor = id;
+      return selectWidgets(next);
+    }
+    if (e.shiftKey && ui.anchor && ids.includes(ui.anchor))
+      return selectWidgets(range(ids, ui.anchor, id));
+    ui.anchor = id;
+    if (ui.multi.length) selectWidgets([]);
+    onselect?.();
+  }
+
   // the delete confirm: Cancel takes the focus (Enter does not delete by accident)
   const focusCancel = (el) => el.querySelector('.ask-btns > :last-child')?.focus();
 </script>
@@ -126,11 +149,15 @@
       <WidgetRow
         widget={b}
         onopen={() => onopen(b.id)}
-        onselect={() => onselect?.()}
-        open={ui.widget === b.id}
+        onselect={(e) => pick(e, b.id)}
+        open={ui.widget === b.id || ui.multi.includes(b.id)}
+        {blocked}
         onshow={(show) => setWidgetOn(j, show)}
         onduplicate={() => duplicateWidget(live.store, file, at, j)}
-        ondelete={() => removeWidget(live.store, file, at, j)}
+        ondelete={() => {
+          if (ui.multi.includes(b.id)) selectWidgets(ui.multi.filter((x) => x !== b.id));
+          removeWidget(live.store, file, at, j);
+        }}
         ongrab={(e) => ld.grab(e, { id: b.id, j })}
         lifted={drag?.id === b.id && drag.moving}
         dy={drag?.dy ?? 0}

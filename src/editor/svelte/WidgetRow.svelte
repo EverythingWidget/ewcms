@@ -12,8 +12,11 @@
   eye-slash always (SectionCard.svelte's rule for the card's own buttons).
     widget      { id, type, title?, config? }
     onopen     () => open its settings (a double click, Enter)
-    onselect   () => select it (a click)
-    open        its settings are open in the pop-up: highlighted
+    onselect   (e) => select it (a click; Ctrl/Cmd: toggle, Shift: a range)
+    open        its settings are open in the pop-up, or it is one of several selected
+                (multi-select.js): highlighted, all alike
+    blocked     Ctrl/Cmd held with widgets of another section selected: not clickable
+                (dimmed, the not-allowed cursor; multi-select.js)
     onshow     (on) => show (true) or hide it
     onduplicate, ondelete
     ongrab      (e) => its grip's pointerdown (the card's drag, list-drag.svelte.js)
@@ -29,6 +32,7 @@
     onopen,
     onselect,
     open = false,
+    blocked = false,
     onshow,
     onduplicate,
     ondelete,
@@ -47,7 +51,14 @@
 </script>
 
 <li
-  class={['brow', !on && 'is-off', open && 'is-open', lifted && 'is-lifted', drop]}
+  class={[
+    'brow',
+    !on && 'is-off',
+    open && 'is-open',
+    blocked && 'is-blocked',
+    lifted && 'is-lifted',
+    drop,
+  ]}
   style:translate={lifted ? `0 ${dy}px` : null}
   data-row
   data-widget-row={widget?.id}
@@ -61,9 +72,10 @@
     title="Double-click to open {label}"
     aria-haspopup="dialog"
     aria-expanded={open}
-    onclick={() => onselect?.()}
+    onclick={(e) => !blocked && onselect?.(e)}
     ondblclick={(e) => {
       e.stopPropagation();
+      if (blocked || e.ctrlKey || e.metaKey || e.shiftKey) return;
       onopen();
     }}
     onkeydown={(e) => {
@@ -149,6 +161,16 @@
     // its settings open in the pop-up: a full accent ring (stays while the pop-up is open)
     &.is-open {
       box-shadow: inset 0 0 0 1px var(--c-widget-accent);
+    }
+
+    // Ctrl/Cmd held, another section's widgets selected: not clickable (nothing moves)
+    &.is-blocked {
+      opacity: 0.4;
+      cursor: not-allowed;
+
+      :global(*) {
+        cursor: not-allowed;
+      }
     }
 
     &:is(:hover, :focus-within, .is-open) > :global(.btn),

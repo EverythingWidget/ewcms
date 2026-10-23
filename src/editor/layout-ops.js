@@ -466,3 +466,121 @@ export function resetMobile(store, file, at) {
   for (const b of section.widgets) setPhone(b, null);
   return writeSection(store, file, at, section);
 }
+
+// ---- several widgets of one section at once (multi-select, multi-select.js): each one
+// write of the section, so one undo step and one change
+
+/** The indexes of `ids` in section `at`'s widgets (their order), [] when it has none of them. */
+const indexesOf = (section, ids) =>
+  (section?.widgets || []).flatMap((b, j) => (ids.includes(b.id) ? [j] : []));
+
+/**
+ * Widgets `ids` of section `at` moved by `dc` columns and `dr` rows (already clamped:
+ * multi-select.js clampDelta), on the desktop grid or the phone's (`phone`). A moved widget
+ * that follows one outside the group keeps following it (its gap changes); flow: where the
+ * section's other widgets are now (storeFlow); rows: the rows its content needs now.
+ */
+export function moveWidgets(
+  store,
+  file,
+  at,
+  ids,
+  dc,
+  dr,
+  { phone = false, flow = {}, rows = 0 } = {},
+) {
+  const section = listOf(store, file)[at];
+  const js = indexesOf(section, ids);
+  if (!js.length || (!dc && !dr)) return false;
+  // the others where they show now (not the moved ones: they get their new areas)
+  section.widgets.forEach((b) => {
+    const a = !ids.includes(b.id) && flow[b.id];
+    if (!a) return;
+    if (phone) {
+      if (hasMobileArea(phoneOf(b))) setPhone(b, { row: a.row, rows: a.rows });
+    } else setBase(b, { row: a.row, rows: a.rows });
+  });
+  for (const j of js) {
+    const b = section.widgets[j];
+    const from = flow[b.id] || (phone ? phoneAreaOf(b) : placeOf(baseOf(b)));
+    const p = { col: from.col + dc, span: from.span, row: from.row + dr, rows: from.rows };
+    if (phone) {
+      const inherited = !hasMobileArea(phoneOf(b)) ? linkOf(b, true) : null;
+      setPhone(b, placeOf(p, MCOLS));
+      if (inherited) setPhone(b, { link: inherited });
+    } else setBase(b, placeOf(p));
+    const l = linkOf(b, phone);
+    if (l && !ids.includes(l.to)) {
+      const gap = gapAt(section, l, p.row, flow, phone);
+      if (phone) setPhone(b, { link: { to: l.to, gap } });
+      else setBase(b, { link: { to: l.to, gap } });
+    }
+  }
+  if (phone) grow(section, Math.max(rows, mobileRowsOf(section)), true);
+  else grow(section, Math.max(rows, rowsOf(section)));
+  return writeSection(store, file, at, section);
+}
+
+/** Widgets `ids` of section `at` removed (the widgets that followed them are free). */
+export function removeWidgets(store, file, at, ids) {
+  const list = listOf(store, file);
+  const section = list[at];
+  if (!indexesOf(section, ids).length) return false;
+  section.widgets = section.widgets.filter((b) => !ids.includes(b.id));
+  for (const b of section.widgets) {
+    if (ids.includes(baseOf(b).link?.to)) setBase(b, { link: undefined });
+    if (ids.includes(phoneOf(b)?.link?.to)) setPhone(b, { link: undefined });
+  }
+  return writeDropMain(store, file, list, ids);
+}
+
+/** Copies of widgets `ids` of section `at` (new ids, free, below the others): the copies' ids. */
+export function duplicateWidgets(store, file, at, ids) {
+  const list = listOf(store, file);
+  const section = list[at];
+  const js = indexesOf(section, ids);
+  if (!js.length) return [];
+  const taken = idsOf(list);
+  const row = below(section);
+  const top = Math.min(...js.map((j) => placeOf(baseOf(section.widgets[j])).row));
+  const copies = [];
+  for (const j of js.reverse()) {
+    const copy = copyOf(section.widgets[j], 'b', taken);
+    // the group keeps its shape, below the section's widgets
+    setBase(copy, { row: row + placeOf(baseOf(section.widgets[j])).row - top, link: undefined });
+    if (phoneOf(copy)) setPhone(copy, { link: undefined });
+    section.widgets.splice(j + 1, 0, copy);
+    copies.unshift(copy.id);
+  }
+  write(store, file, list);
+  return copies;
+}
+
+/** Widgets `ids` of section `at` shown (true) or hidden (false; config.enabled false). */
+export function showWidgets(store, file, at, ids, show) {
+  const section = listOf(store, file)[at];
+  const js = indexesOf(section, ids);
+  if (!js.length) return false;
+  for (const j of js) {
+    const b = section.widgets[j];
+    const config = { ...b.config, enabled: show ? undefined : false };
+    if (config.enabled === undefined) delete config.enabled;
+    if (Object.keys(config).length) b.config = config;
+    else delete b.config;
+  }
+  return writeSection(store, file, at, section);
+}
+
+/** Widgets `ids` of section `at` one layer up (dir 1) or down (-1), each. */
+export function layerWidgets(store, file, at, ids, dir) {
+  const section = listOf(store, file)[at];
+  const js = indexesOf(section, ids);
+  if (!js.length) return false;
+  for (const j of js) {
+    const b = section.widgets[j];
+    const z = (Number.isInteger(b.z) ? b.z : 0) + dir;
+    if (z) b.z = z;
+    else delete b.z;
+  }
+  return writeSection(store, file, at, section);
+}

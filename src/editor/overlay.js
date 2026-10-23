@@ -58,6 +58,7 @@ import {
   tracksOf,
 } from '../site/layout/geometry.js';
 import { PHONE_MAX } from '../site/layout/grid.js';
+import { clampDelta, hits, selectedIds, toggle } from './multi-select.js';
 import { T } from './ui-tokens.js';
 
 const MOBILE = PHONE_MAX;
@@ -76,6 +77,8 @@ const STYLE = `
 .grid { position: absolute; box-sizing: border-box; }
 .cells { position: absolute; background-image: linear-gradient(to right, rgb(255 255 255 / .12) 1px, transparent 1px), linear-gradient(to bottom, rgb(255 255 255 / .12) 1px, transparent 1px), linear-gradient(to right, rgb(255 255 255 / .06) 1px, transparent 1px), linear-gradient(to bottom, rgb(255 255 255 / .06) 1px, transparent 1px); box-shadow: inset -1px -1px 0 rgb(255 255 255 / .12); }
 .box { position: absolute; box-sizing: border-box; border-radius: ${T.radiusXs}; }
+.marquee { position: absolute; box-sizing: border-box; border: 1px solid ${T.accent}; background: rgb(${T.accentRgb} / .12); }
+.block { position: absolute; background: rgb(0 0 0 / .5); pointer-events: auto; cursor: not-allowed; }
 .hover { border: 1px dashed ${T.white}; opacity: .7; }
 .peek { border-radius: 0; border: 1px solid ${T.peekLine}; }
 .peek .tag { position: absolute; left: -1px; bottom: 100%; margin-bottom: 4px; padding: 4px 8px; border-radius: ${T.radiusSm}; background: rgb(255 255 255 / .9); color: ${T.black}; white-space: nowrap; }
@@ -134,6 +137,8 @@ export function createOverlay({
   onplace,
   onlink = () => {},
   onrows = () => {},
+  onselect = () => {},
+  ongroupmove = () => {},
   widgetOf,
   secNameOf = () => '',
 }) {
@@ -147,6 +152,8 @@ export function createOverlay({
   let hoverSec = null;
   let sizing = null; // a section's bottom edge being dragged
   let gridKey = '';
+  let group = null; // several selected widgets being dragged together
+  let boxing = null; // a selection box being drawn on a section's empty grid
   const els = {};
 
   const arranging = () => ui.mode === 'text';
@@ -179,7 +186,7 @@ export function createOverlay({
     host.style.cssText = 'position:absolute;left:0;top:0;width:0;height:0;z-index:2147483645;';
     const shadow = host.attachShadow({ mode: 'open' });
     const dots = '<i class="dot" data-dot="top"></i><i class="dot" data-dot="bottom"></i>';
-    shadow.innerHTML = `<style>${STYLE}</style><div class="layer"><div class="grids"></div><svg class="links" xmlns="${SVG}"></svg><div class="dims"></div><div class="box peek" hidden><span class="tag"></span></div><div class="secrow" hidden><span class="count"></span></div><div class="box hover" hidden></div><div class="box sel" hidden><span class="label"></span>${HANDLES.map((h) => `<i class="handle" data-h="${h}"></i>`).join('')}${dots}</div><div class="targets"></div></div>`;
+    shadow.innerHTML = `<style>${STYLE}</style><div class="layer"><div class="grids"></div><svg class="links" xmlns="${SVG}"></svg><div class="dims"></div><div class="box peek" hidden><span class="tag"></span></div><div class="secrow" hidden><span class="count"></span></div><div class="box hover" hidden></div><div class="box sel" hidden><span class="label"></span>${HANDLES.map((h) => `<i class="handle" data-h="${h}"></i>`).join('')}${dots}</div><div class="targets"></div><div class="multi"></div><div class="marquee" hidden></div><div class="blocks"></div></div>`;
     root = shadow.querySelector('.layer');
     els.grids = root.querySelector('.grids');
     els.links = root.querySelector('.links');
@@ -192,8 +199,13 @@ export function createOverlay({
     els.targets = root.querySelector('.targets');
     els.secrow = root.querySelector('.secrow');
     els.count = root.querySelector('.count');
+    els.multi = root.querySelector('.multi');
+    els.marquee = root.querySelector('.marquee');
+    els.blocks = root.querySelector('.blocks');
     shadow.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return;
+      // another section while Ctrl/Cmd is held with a selection: not clickable
+      if (e.target.closest?.('.block')) return void (e.preventDefault(), e.stopPropagation());
       if (e.target.closest?.('.secrow')) return startRows(e);
       const h = e.target.dataset?.h;
       if (h && ui.widget) return start(e, widgetEl(ui.widget), h);
@@ -237,7 +249,11 @@ export function createOverlay({
    */
   function drawGrids() {
     const sec = arranging()
-      ? drag?.sec || secOf(widgetEl(ui.widget)) || (ui.section && secById(ui.section))
+      ? drag?.sec ||
+        group?.sec ||
+        boxing?.sec ||
+        secOf(widgetEl(selectedIds(ui)[0])) ||
+        (ui.section && secById(ui.section))
       : null;
     const secs = sec && !sec.hidden ? [sec] : [];
     const info = secs.map((sec) => {
@@ -382,12 +398,276 @@ export function createOverlay({
       els.secrow.classList.toggle('is-dragging', !!sizing);
       if (sizing) els.count.textContent = `${sizing.phone ? 'phone · ' : ''}${sizing.rows} rows`;
     }
-    const h = arrange && hover !== sel && !drag ? hover : null;
+    drawMulti(arrange);
+    drawBlocks(arrange);
+    els.marquee.hidden = !boxing?.box;
+    if (boxing?.box) place(els.marquee, boxing.box);
+    const h =
+      arrange &&
+      hover !== sel &&
+      !drag &&
+      !group &&
+      !boxing &&
+      !ui.multi.includes(hover?.dataset.widget)
+        ? hover
+        : null;
     els.hover.hidden = !h;
     if (h) {
       place(els.hover, rectOf(h, win));
     }
     if (shown()) raf = win.requestAnimationFrame(frame);
+  }
+
+  // ---- multi-select (multi-select.js): two or more widgets, one section, all alike
+
+  /** Each selected widget's box: the same border, no handles or circles (the count: SectionToolbar). */
+  function drawMulti(arrange) {
+    const els2 = arrange ? ui.multi.map(widgetEl).filter((n) => n && !n.hidden) : [];
+    const boxes = els.multi.children;
+    while (boxes.length > els2.length) boxes[boxes.length - 1].remove();
+    while (boxes.length < els2.length) els.multi.append(doc.createElement('div'));
+    const rs = els2.map((n) => rectOf(n, win));
+    rs.forEach((r, i) => {
+      boxes[i].className = `box sel${group ? ' is-dragging' : ''}`;
+      place(boxes[i], r);
+    });
+  }
+
+  /**
+   * Ctrl/Cmd held (ui.mod) with a selection: every other section is dimmed and not clickable
+   * (a box over it that takes the click, the not-allowed cursor).
+   */
+  function drawBlocks(arrange) {
+    const ids = selectedIds(ui);
+    const sec = arrange && ui.mod && ids.length && !drag && !group ? secOf(widgetEl(ids[0])) : null;
+    const others = sec
+      ? [...doc.querySelectorAll('[data-sec]:not([hidden])')].filter(
+          (s) => s !== sec && live(s) && !s.parentElement.closest('[data-sec]') && !s.contains(sec),
+        )
+      : [];
+    const blocks = els.blocks.children;
+    while (blocks.length > others.length) blocks[blocks.length - 1].remove();
+    while (blocks.length < others.length) els.blocks.append(doc.createElement('div'));
+    others.forEach((s, i) => {
+      blocks[i].className = 'block';
+      place(blocks[i], rectOf(s, win));
+    });
+  }
+
+  const secIdOf = (id) => secOf(widgetEl(id))?.dataset.sec;
+
+  /** The step of one cell (px) on a section's lines: columns, rows. */
+  const stepsOf = (lines) => ({
+    col: lines.cols.starts[1] - lines.cols.starts[0] || lines.row + lines.rowGap,
+    row: lines.row + lines.rowGap,
+  });
+
+  /** What a group move starts from: the section, its flow, the members' areas. */
+  function groupOf(ids) {
+    const sec = secOf(widgetEl(ids[0]));
+    if (!sec) return null;
+    const phone = mobile();
+    const flow = flowAreas(sec, phone, widgetOf);
+    const members = ids
+      .map((id) => ({ id, el: widgetEl(id), from: flow[id] }))
+      .filter((m) => m.el && m.from);
+    if (!members.length) return null;
+    return { sec, phone, flow, members, cols: phone ? MCOLS : COLS };
+  }
+
+  /** A drag of the selected widgets `ids` (one of them, `el`, under the pointer): all move. */
+  function startGroup(e, ids, el) {
+    const g = groupOf(ids);
+    if (!g) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const { sec, phone, flow } = g;
+    const rows = Number(sec.style.getPropertyValue('--frows')) || 0;
+    doc.documentElement.setAttribute('data-flow-hold', '');
+    group = {
+      ...g,
+      el,
+      saved: new Map([sec, ...widgetsIn(sec)].map((n) => [n, n.style.cssText])),
+      x: e.clientX,
+      y: e.clientY,
+      lines: linesOf(sec, win),
+      items: widgetsIn(sec)
+        .filter((n) => flow[n.dataset.widget])
+        .map((n) => ({
+          id: n.dataset.widget,
+          el: n,
+          ...flow[n.dataset.widget],
+          link: ids.includes(n.dataset.widget) ? null : linkOfEl(n),
+        })),
+      dc: 0,
+      dr: 0,
+      rows: rows || Number(sec.style.getPropertyValue(phone ? '--mrows' : '--rows')) || 1,
+      min: minOf(sec, phone),
+    };
+    noSelect(true);
+    win.addEventListener('pointermove', moveGroup, true);
+    win.addEventListener('pointerup', endGroup, true);
+    win.addEventListener('keydown', cancelGroup, true);
+  }
+
+  function moveGroup(e) {
+    const st = stepsOf(group.lines);
+    const areas = Object.fromEntries(group.members.map((m) => [m.id, m.from]));
+    const d = clampDelta(
+      areas,
+      Math.round((e.clientX - group.x) / st.col),
+      Math.round((e.clientY - group.y) / st.row),
+      group.cols,
+    );
+    if (d.dc === group.dc && d.dr === group.dr) return;
+    group.dc = d.dc;
+    group.dr = d.dr;
+    showGroup();
+  }
+
+  /** The members at their area + the delta, the widgets that follow them along (live). */
+  function showGroup() {
+    const { dc, dr, phone } = group;
+    const at = {};
+    for (const m of group.members) {
+      at[m.id] = { ...m.from, col: m.from.col + dc, row: m.from.row + dr };
+      setArea(m.el.style, at[m.id], phone);
+    }
+    const items = group.items.map((it) => (at[it.id] ? { ...it, ...at[it.id] } : it));
+    const res = resolveRows(items, 1);
+    for (const it of group.items)
+      if (!at[it.id] && res.at[it.id]) it.el.style.setProperty('--fr', res.at[it.id].row);
+    group.content = Math.max(res.rows, ...Object.values(at).map((p) => p.row + p.rows - 1));
+    group.sec.style.setProperty('--frows', Math.max(group.min, group.rows, group.content));
+  }
+
+  function stopGroup() {
+    doc.documentElement.removeAttribute('data-flow-hold');
+    noSelect(false);
+    win.removeEventListener('pointermove', moveGroup, true);
+    win.removeEventListener('pointerup', endGroup, true);
+    win.removeEventListener('keydown', cancelGroup, true);
+  }
+
+  function endGroup() {
+    const g = group;
+    stopGroup();
+    group = null;
+    const moved = g.dc || g.dr;
+    if (!moved) {
+      for (const [n, css] of g.saved) n.style.cssText = css;
+      // a click (no move) on one of them: that one only
+      ui.anchor = g.el.dataset.widget;
+      onpick(g.el.dataset.widget);
+      return;
+    }
+    ongroupmove(
+      g.members.map((m) => m.id),
+      g.dc,
+      g.dr,
+      {
+        mobile: g.phone,
+        flow: g.flow,
+        rows: g.content || 0,
+      },
+    );
+  }
+
+  function cancelGroup(e) {
+    if (e.key !== 'Escape') return;
+    e.preventDefault();
+    e.stopPropagation();
+    for (const [n, css] of group.saved) n.style.cssText = css;
+    stopGroup();
+    group = null;
+  }
+
+  /** Arrow keys: the selection moved by whole cells (clamped as a drag), one undo step. */
+  function nudge(dc, dr) {
+    const ids = selectedIds(ui);
+    if (!doc || !arranging() || !ids.length) return false;
+    const g = groupOf(ids);
+    if (!g) return false;
+    const d = clampDelta(Object.fromEntries(g.members.map((m) => [m.id, m.from])), dc, dr, g.cols);
+    if (d.dc || d.dr)
+      ongroupmove(
+        g.members.map((m) => m.id),
+        d.dc,
+        d.dr,
+        { mobile: g.phone, flow: g.flow },
+      );
+    return true;
+  }
+
+  /**
+   * A selection box: dragged on a section's empty grid, it selects the widgets it touches (in
+   * that section; `base`: kept too, Ctrl/Cmd+drag). A click without a drag clears (or, with
+   * Ctrl/Cmd, keeps) the selection.
+   */
+  function startBox(e, sec, base) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (doc.activeElement?.isContentEditable) doc.activeElement.blur();
+    boxing = {
+      sec,
+      base,
+      x: e.pageX,
+      y: e.pageY,
+      box: null,
+      mod: base.length > 0 || e.ctrlKey || e.metaKey,
+    };
+    noSelect(true);
+    win.addEventListener('pointermove', moveBox, true);
+    win.addEventListener('pointerup', endBox, true);
+    win.addEventListener('keydown', cancelBox, true);
+    if (!raf) raf = win.requestAnimationFrame(frame);
+  }
+
+  function moveBox(e) {
+    const { sec, x, y } = boxing;
+    if (!boxing.box && Math.hypot(e.pageX - x, e.pageY - y) < 4) return;
+    // inside its section's grid
+    const s = rectOf(sec, win);
+    const cx = (v) => Math.min(Math.max(v, s.x), s.x + s.w);
+    const cy = (v) => Math.min(Math.max(v, s.y), s.y + s.h);
+    const x1 = cx(Math.min(x, e.pageX));
+    const x2 = cx(Math.max(x, e.pageX));
+    const y1 = cy(Math.min(y, e.pageY));
+    const y2 = cy(Math.max(y, e.pageY));
+    boxing.box = { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+    const rects = Object.fromEntries(
+      widgetsIn(sec)
+        .filter((n) => !n.hidden && widgetOf(n.dataset.widget))
+        .map((n) => [n.dataset.widget, rectOf(n, win)]),
+    );
+    const ids = [...new Set([...boxing.base, ...hits(rects, boxing.box)])];
+    if (ids.join() !== selectedIds(ui).join()) onselect(ids);
+  }
+
+  function stopBox() {
+    noSelect(false);
+    win.removeEventListener('pointermove', moveBox, true);
+    win.removeEventListener('pointerup', endBox, true);
+    win.removeEventListener('keydown', cancelBox, true);
+  }
+
+  function endBox() {
+    const b = boxing;
+    stopBox();
+    boxing = null;
+    // a click on empty space: nothing selected (Ctrl/Cmd: the selection stays)
+    if (!b.box && !b.mod && (ui.widget || ui.section || ui.selSection || ui.multi.length))
+      onpick(null);
+  }
+
+  function cancelBox(e) {
+    if (e.key !== 'Escape') return;
+    e.preventDefault();
+    e.stopPropagation();
+    const b = boxing;
+    stopBox();
+    boxing = null;
+    onselect(b.base);
   }
 
   /** A drag of widget `el`: move (h empty) or a resize by handle `h`. */
@@ -740,7 +1020,14 @@ export function createOverlay({
     if (el && linkOfEl(el)) onlink(id, null, 0, { mobile: mobile(), row: shownRow(el) });
     return true;
   }
+  // Ctrl/Cmd held: the other sections show blocked (drawBlocks)
+  const trackMod = (e) => {
+    const on = e.ctrlKey || e.metaKey;
+    if (ui.mod !== on) ui.mod = on;
+    if (on && !raf && win) raf = win.requestAnimationFrame(frame);
+  };
   function onkeydown(e) {
+    trackMod(e);
     if (!['Delete', 'Backspace'].includes(e.key) || !ui.link || editing(e.target)) return;
     if (e.target.closest?.('input, textarea, select')) return;
     e.preventDefault();
@@ -754,11 +1041,37 @@ export function createOverlay({
     if (e.target.id === '__ed-layout') return; // the overlay's own (its shadow root handles it)
     if (!arranging() || e.button !== 0 || e.altKey || editing(e.target)) return;
     ui.link = null;
+    const mod = e.ctrlKey || e.metaKey;
+    const ids = selectedIds(ui);
     const el = e.target.closest?.('[data-widget]');
-    // empty space: nothing selected (the panel shows the sections, the grid hides)
-    if (!el) return void ((ui.widget || ui.section || ui.selSection) && onpick(null));
+    if (!el) {
+      // a section's empty grid: a selection box (Ctrl/Cmd: adds; another section's: refused)
+      const sec = secOf(e.target);
+      if (sec && live(sec) && widgetsIn(sec).length) {
+        if (mod && ids.length && secIdOf(ids[0]) !== sec.dataset.sec)
+          return void (e.preventDefault(), e.stopPropagation());
+        return startBox(e, sec, mod ? ids : []);
+      }
+      // empty space: nothing selected (the panel shows the sections, the grid hides)
+      return void ((ui.widget || ui.section || ui.selSection || ui.multi.length) && onpick(null));
+    }
+    const id = el.dataset.widget;
+    if (mod) {
+      // Ctrl/Cmd+click: in or out of the selection, only within its section
+      e.preventDefault();
+      e.stopPropagation();
+      const next = toggle(ids, id, secIdOf);
+      if (!next) return;
+      if (doc.activeElement?.isContentEditable) doc.activeElement.blur();
+      ui.anchor = id;
+      onselect(next);
+      return;
+    }
     if (doc.activeElement?.isContentEditable) doc.activeElement.blur(); // ends an edit
-    onpick(el.dataset.widget);
+    // one of several selected: they all move
+    if (ui.multi.length > 1 && ui.multi.includes(id)) return startGroup(e, ui.multi, el);
+    ui.anchor = id;
+    onpick(id);
     start(e, el);
   }
   const swallow = (e) => {
@@ -788,6 +1101,8 @@ export function createOverlay({
       doc.addEventListener('pointerover', onpointerover, true);
       doc.documentElement.addEventListener('pointerleave', unpeek);
       doc.addEventListener('keydown', onkeydown, true);
+      doc.addEventListener('keyup', trackMod, true);
+      win.addEventListener('blur', () => (ui.mod = false));
       this.refresh();
     },
     /** ui.mode, ui.widget or ui.link changed: show or hide what they ask for. */
@@ -799,5 +1114,7 @@ export function createOverlay({
     },
     /** The editor's Delete with a link selected (its focus outside the preview). */
     deleteLink,
+    /** Arrow keys: the selection moved by (dc, dr) cells. */
+    nudge,
   };
 }

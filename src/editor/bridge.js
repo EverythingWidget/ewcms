@@ -660,7 +660,8 @@ export function createBridge({ store, labelFor }) {
   const isShortcut = (e) =>
     ((e.metaKey || e.ctrlKey) && /^[sezy]$/i.test(e.key)) ||
     e.key === 'Escape' ||
-    ((e.key === '[' || e.key === ']') && !typing(e.target));
+    ((e.key === '[' || e.key === ']') && !typing(e.target)) ||
+    (/^(Arrow(Left|Right|Up|Down)|Delete|Backspace)$/.test(e.key) && !typing(e.target));
 
   function attachListeners() {
     const style = doc.createElement('style');

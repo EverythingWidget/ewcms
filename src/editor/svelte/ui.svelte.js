@@ -59,6 +59,15 @@ export const ui = $state({
   /** Content tab: the widget open in the widget inspector (its id), or null, and its tab. */
   widget: null,
   /**
+   * Content tab: two or more widgets selected together (their ids, all of one section; none
+   * first or main: multi-select.js), else []. One selected is ui.widget.
+   */
+  multi: [],
+  /** The widget clicked last (Shift+click in a card's list selects from it to the one clicked). */
+  anchor: null,
+  /** Ctrl (Cmd) is held: with a selection, the other sections' widgets are not clickable. */
+  mod: false,
+  /**
    * Content tab: the section card selected (its id; a click on it), or null: its section shows
    * in the preview as a hovered one does (overlay.js) while the list shows.
    */
@@ -91,3 +100,17 @@ export const ui = $state({
   /** Motion tab: the Animations sub-tab (open) or Elements, and its animation ('' = the list). */
   library: { open: false, name: '' },
 });
+
+/**
+ * The Content tab's widget selection set to `ids` (all of one section): none, one (ui.widget:
+ * its pop-up and handles) or several (ui.multi: the shared actions only, the pop-up closed).
+ */
+export function selectWidgets(ids) {
+  const list = ids.filter((id, i) => id && ids.indexOf(id) === i);
+  const one = list.length === 1 ? list[0] : null;
+  if (ui.widget !== one) ui.selection = null;
+  ui.multi = list.length > 1 ? list : [];
+  ui.widget = one;
+  ui.section = null;
+  ui.selSection = null;
+}

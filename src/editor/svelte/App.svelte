@@ -6,6 +6,7 @@
   main.js holds the logic: it changes `ui` (ui.svelte.js) and passes `actions`.
 -->
 <script>
+  import { untrack } from 'svelte';
   import Button from './Button.svelte';
   import Tabs from './Tabs.svelte';
   import { SITE, contentPath } from '../../site/files.js';
@@ -134,9 +135,10 @@
         if (picked) bridge.select(null);
         if (ui.mode === 'text' && !inField) {
           if (ui.link) ui.link = null;
-          else if (ui.widget || ui.section) {
+          else if (ui.widget || ui.section || ui.multi.length) {
             ui.selection = null;
             ui.widget = null;
+            ui.multi = [];
             ui.section = null;
           } else if (ui.selSection) {
             ui.selSection = null;
@@ -146,6 +148,10 @@
     }
   }
   $effect(() => bridge.on('key', onKey)); // once: the bridge never changes
+  // a widget opened anywhere (a row, Add widget, the page head): the one selected
+  $effect(() => {
+    if (ui.widget && untrack(() => ui.multi.length)) ui.multi = [];
+  });
 
   /** Leaving the page with unsaved edits: the browser asks first. */
   function onBeforeUnload(e) {

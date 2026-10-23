@@ -7,12 +7,23 @@
   on the first / last); ⋯ a menu in the top layer: Hide / Show section, Duplicate, Delete (red;
   asks over its card: `deleting`). Add widget (onadd(at)) is off while the section is hidden.
   No section selected: "Select a section…" (muted) instead, the row's height the same.
+  Two or more widgets selected (ui.multi, multi-select.js): widget mode, what they share:
+    [ 3 widgets                 eye  copy  layer↓  layer↑  trash ]
+  each one undo step for all of them (Delete too: undo brings them back); the same 40px row.
     live, file, onsection(id), onadd(at), deleting (bindable)
 -->
 <script>
   import Button from './Button.svelte';
-  import { ui } from './ui.svelte.js';
-  import { duplicateSection, moveSection, toggleSection } from '../layout-ops.js';
+  import { ui, selectWidgets } from './ui.svelte.js';
+  import {
+    duplicateSection,
+    duplicateWidgets,
+    layerWidgets,
+    moveSection,
+    removeWidgets,
+    showWidgets,
+    toggleSection,
+  } from '../layout-ops.js';
 
   // (deleting is only set here, read by the card asking: SectionCard.svelte)
   // eslint-disable-next-line no-useless-assignment
@@ -46,10 +57,58 @@
     act();
   }
   const move = (to) => moveSection(live.store, file, at, to);
+
+  // ---- widget mode: two or more widgets selected (all in one section)
+  const group = $derived.by(() => {
+    const ids = ui.multi;
+    if (ids.length < 2) return null;
+    for (const [k, sec] of sections.entries()) {
+      const widgets = (sec?.widgets || []).filter((b) => ids.includes(b?.id));
+      if (widgets.length) return { at: k, ids: widgets.map((b) => b.id), widgets };
+    }
+    return null;
+  });
+  const allOff = $derived(!!group?.widgets.every((b) => b?.config?.enabled === false));
+  const run = (fn, ...rest) => group && fn(live.store, file, group.at, group.ids, ...rest);
+  function removeGroup() {
+    run(removeWidgets);
+    selectWidgets([]);
+  }
+  function duplicateGroup() {
+    const copies = run(duplicateWidgets);
+    if (copies?.length) selectWidgets(copies);
+  }
 </script>
 
-<div class="stb" role="toolbar" aria-label="Section">
-  {#if s}
+<div class="stb" role="toolbar" aria-label={group ? 'Selected widgets' : 'Section'}>
+  {#if group}
+    <p class="stb__count">{group.ids.length} widgets</p>
+    <span class="stb__gap"></span>
+    <Button
+      size="small"
+      icon={allOff ? 'eye-slash' : 'eye'}
+      iconOnly
+      label={allOff ? 'Show them' : 'Hide them'}
+      title={allOff ? 'Hidden: click to show them' : 'Visible: click to hide them'}
+      onclick={() => run(showWidgets, allOff)}
+    />
+    <Button size="small" icon="copy" iconOnly label="Duplicate them" onclick={duplicateGroup} />
+    <Button
+      size="small"
+      icon="angles-down"
+      iconOnly
+      label="One layer down"
+      onclick={() => run(layerWidgets, -1)}
+    />
+    <Button
+      size="small"
+      icon="angles-up"
+      iconOnly
+      label="One layer up"
+      onclick={() => run(layerWidgets, 1)}
+    />
+    <Button size="small" icon="trash" iconOnly label="Delete them" onclick={removeGroup} />
+  {:else if s}
     <button
       type="button"
       class="stb__add"
@@ -150,6 +209,16 @@
     height: 40px;
     padding: 0 var(--space-3);
     background: var(--c-panel-bar); // borderless: a shade, no line under it
+  }
+
+  // the selected widgets' count, in the widgets' accent, as the hint's type
+  .stb__count {
+    margin: 0;
+    color: var(--c-widget-accent);
+    font-size: var(--fs-sm);
+    letter-spacing: 0.1em;
+    line-height: 24px;
+    text-transform: uppercase;
   }
 
   .stb__gap {
