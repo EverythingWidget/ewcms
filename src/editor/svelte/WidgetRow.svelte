@@ -1,6 +1,7 @@
 <!--
-  One widget in a section card's list (SectionCard.svelte), no order (widgets are placed in the
-  preview), on the widgets' card colour (--c-widget-card): its type with its title under it in
+  One widget in a section card's list (SectionCard.svelte), in its section's order (the DOM
+  order: which paints over which at the same layer; widgets are placed in the preview by their
+  grid areas, which a reorder leaves be), on the widgets' card colour (--c-widget-card): its type with its title under it in
   the widgets' accent (--c-widget-accent), then its eye, Duplicate and
   Delete. A click on the row opens its settings (onopen). Hidden (config.enabled false): its
   name and title faint, its eye-slash. Delete asks over the row at its size (nothing moves).
@@ -11,13 +12,25 @@
     onopen     () => open its settings
     onshow     (on) => show (true) or hide it
     onduplicate, ondelete
+    ongrab      (e) => its grip's pointerdown (the card's drag, list-drag.svelte.js)
+    lifted, dy  it is being dragged: lifted, translated by dy px; drop: the drop line's class
 -->
 <script>
   import Button from './Button.svelte';
   import { nameOf } from './content-groups.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
 
-  let { widget, onopen, onshow, onduplicate, ondelete } = $props();
+  let {
+    widget,
+    onopen,
+    onshow,
+    onduplicate,
+    ondelete,
+    ongrab,
+    lifted = false,
+    dy = 0,
+    drop = '',
+  } = $props();
   let asking = $state(false);
 
   const label = $derived(WIDGET_TYPES[widget?.type]?.label || `Unknown type "${widget?.type}"`);
@@ -27,7 +40,14 @@
   const focusCancel = (el) => el.querySelector('.ask-btns > :last-child')?.focus();
 </script>
 
-<li class={['brow', !on && 'is-off']} data-row>
+<li
+  class={['brow', !on && 'is-off', lifted && 'is-lifted', drop]}
+  style:translate={lifted ? `0 ${dy}px` : null}
+  data-row
+>
+  <span class="brow__grip" title="Drag to reorder" aria-hidden="true" onpointerdown={ongrab}
+    ><i class="fa-solid fa-grip-vertical"></i></span
+  >
   <button type="button" class="brow__open" title="Open {label}" onclick={onopen}>
     <span>{label}</span>
     {#if name}<span class="brow__name">{name}</span>{/if}
@@ -116,7 +136,7 @@
     flex: 1;
     align-self: stretch;
     min-width: 0;
-    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+    padding: var(--space-1) var(--space-2) var(--space-1) 0;
     border: 0;
     border-radius: var(--radius-md);
     background: none;
@@ -139,6 +159,53 @@
     .is-off > & {
       color: var(--c-text-faint);
     }
+  }
+
+  // the drag handle: 24px at the row's start (its text right after it)
+  .brow__grip {
+    display: grid;
+    flex: none;
+    place-items: center;
+    align-self: stretch;
+    width: 24px;
+    margin-left: var(--space-1);
+    color: var(--c-text-faint);
+    font-size: var(--fs-sm);
+    cursor: grab;
+    touch-action: none;
+
+    &:hover {
+      color: var(--c-text);
+    }
+
+    .is-lifted & {
+      cursor: grabbing;
+    }
+  }
+
+  // lifted while dragged: above the others, following the pointer (translate: nothing reflows)
+  .brow.is-lifted {
+    z-index: 2;
+    box-shadow:
+      inset 0 0 0 1px var(--c-widget-line-hover),
+      0 12px 28px -12px var(--c-scrim);
+  }
+
+  // where it lands: a line in the 4px gap above or below this row
+  .brow.is-drop-before::before,
+  .brow.is-drop-after::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    border-top: 2px solid var(--c-accent);
+  }
+
+  .brow.is-drop-before::before {
+    top: -4px;
+  }
+
+  .brow.is-drop-after::after {
+    bottom: -4px;
   }
 
   // the widgets' accent (their card colour's pair: a card's colour says its type)

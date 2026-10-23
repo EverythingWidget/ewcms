@@ -2,8 +2,8 @@
   One page section's card in the Content tab's list (SectionsList.svelte), not collapsible:
     title row  the changed dot, its title (its name, else "Section N"; one line, cut with …);
                a click selects it, a double click opens its settings (onsection)
-    its widgets always shown under the title (not collapsible): WidgetRow.svelte each, no order
-               (widgets are placed in the preview); none: the title alone (no placeholder)
+    its widgets always shown under the title (not collapsible): WidgetRow.svelte each, in their
+               order (drag a row's grip to reorder, within the section; their grid areas stay); none: the title alone (no placeholder)
   12px inside on every side. Its tools (Add widget, pen, move, ⋯) are the tab's section toolbar
   (SectionToolbar.svelte), for the selected card. Delete asks over the card at its size (its
   border red).
@@ -16,7 +16,8 @@
   import Button from './Button.svelte';
   import Section from './Section.svelte';
   import WidgetRow from './WidgetRow.svelte';
-  import { duplicateWidget, removeWidget, removeSection } from '../layout-ops.js';
+  import { listDrag, rowsOf } from './list-drag.svelte.js';
+  import { duplicateWidget, moveWidget, removeWidget, removeSection } from '../layout-ops.js';
 
   let {
     live,
@@ -42,6 +43,24 @@
   const on = $derived(s.enabled !== false);
 
   const asking = $derived(deleting === s.id);
+
+  // Reorder by drag (its grip; list-drag.svelte.js, as the cards had it before 6b47b06): only within this
+  // section (its own list is the only one, so a drop elsewhere moves nothing). The order is the
+  // widgets' array = DOM order (paint order at the same layer, z); their grid areas stay. A drag
+  // is no click: the card's selection doesn't change. One undo step; the preview re-renders.
+  let listEl = $state();
+  const ld = listDrag({
+    lists: () => (listEl ? [rowsOf(listEl, '[data-row]', 0)] : []),
+    shape: () => widgets.map((b) => b.id).join(','),
+    ondrop: (d) => {
+      if (widgets[d.j]?.id !== d.id) return;
+      moveWidget(live.store, file, at, d.j, d.over.to);
+    },
+    grabbing: true,
+    edgeScroll: true,
+    swallowClick: true,
+  });
+  const drag = $derived(ld.drag);
 
   function setWidgetOn(j, show) {
     live.store.set(
@@ -101,7 +120,7 @@
 </Section>
 
 {#snippet list()}
-  <ul class="widgets" aria-label="Widgets of {title}">
+  <ul class="widgets" aria-label="Widgets of {title}" bind:this={listEl}>
     {#each widgets as b, j (b.id)}
       <WidgetRow
         widget={b}
@@ -109,6 +128,10 @@
         onshow={(show) => setWidgetOn(j, show)}
         onduplicate={() => duplicateWidget(live.store, file, at, j)}
         ondelete={() => removeWidget(live.store, file, at, j)}
+        ongrab={(e) => ld.grab(e, { id: b.id, j })}
+        lifted={drag?.id === b.id && drag.moving}
+        dy={drag?.dy ?? 0}
+        drop={ld.dropAt(j)}
       />
     {/each}
   </ul>
@@ -136,6 +159,11 @@
   // hidden: the title muted (Section's), its widgets dimmed; the buttons follow their own rule
   :global(.sec[data-card].is-off) .widgets {
     opacity: var(--o-dim);
+  }
+
+  // a lifted row is drawn over the card's edge (its clip would cut it otherwise)
+  :global(.sec__clip:has(.is-lifted)) {
+    overflow: visible;
   }
 
   .widgets {
