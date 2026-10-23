@@ -8,7 +8,7 @@ import prettier from 'eslint-config-prettier';
 import globals from 'globals';
 
 export default [
-  { ignores: ['dist/', '.generated/', 'media/', 'node_modules/'] },
+  { ignores: ['dist/', '.generated/', 'media/', 'node_modules/', 'sandbox/mocks/'] },
   js.configs.recommended,
   ...svelte.configs.recommended,
   prettier,

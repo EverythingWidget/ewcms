@@ -15,7 +15,9 @@
   --gray-03: #030303;
   --gray-05: #050505;
   --gray-10: #101010;
+  --gray-13: #131313;
   --gray-14: #141414;
+  --gray-16: #161616;
   --gray-1c: #1c1c1c;
   --gray-21: #212121;
   --gray-22: #222;
@@ -65,6 +67,7 @@
   --white-a55: rgb(255 255 255 / 0.55);
   --white-a70: rgb(255 255 255 / 0.7);
   --black-a18: rgb(0 0 0 / 0.18);
+  --black-a30: rgb(0 0 0 / 0.3);
   --black-a35: rgb(0 0 0 / 0.35);
   --black-a40: rgb(0 0 0 / 0.4);
   --black-a50: rgb(0 0 0 / 0.5);
@@ -111,7 +114,14 @@
   --c-text-faint: var(--gray-4f);
   --c-text-dim: var(--gray-aa);
   --c-text-soft: var(--gray-c1);
-  --c-line: var(--white-a10);
+  // borderless (v0.1.22): no borders or divider lines; parts are told apart by shade. The line
+  // tokens are retired (transparent: a 1px border that stays keeps its box, nothing shifts)
+  --c-line: transparent;
+  --c-tab-line: var(--white-a10); // the one line left: a tab bar's baseline (Tabs.svelte)
+  --c-panel-head: var(--gray-16); // the panel's header (tools + modes) and footer
+  --c-panel-bar: var(--gray-13); // the section toolbar
+  --shadow-panel: 0 24px 60px -20px var(--black-a70), 0 8px 24px var(--black-a35),
+    0 2px 6px var(--black-a30);
   // the selected section card's border, and the hovered or selected section's line in the preview
   --c-line-peek: var(--white-a70);
   --c-line-hover: var(--white-a40); // a hovered section card's border (softer)
@@ -131,7 +141,7 @@
   --c-notice: var(--orange-400);
   --c-on-light: var(--black); // text on a light fill (the primary button, badges)
   --c-text-strong: var(--white);
-  --c-line-strong: var(--gray-22);
+  --c-line-strong: transparent; // retired (borderless)
   --c-on-bar: var(--gray-2b); // text on the curtain timeline's bars
   --c-on-bar-active: var(--slate-800);
   --c-fill-hover: var(--white-a03);

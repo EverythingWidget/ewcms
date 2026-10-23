@@ -203,7 +203,7 @@
     height: var(--size-control);
     padding: var(--space-1);
     border-radius: var(--radius-md);
-    box-shadow: inset 0 0 0 1px var(--c-line);
+    background: var(--c-shadow); // filled, as .seg (borderless: no ring)
     justify-self: start;
   }
 

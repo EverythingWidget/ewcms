@@ -6,7 +6,7 @@ import local from './scripts/stylelint-4px.mjs';
 export default {
   extends: ['stylelint-config-standard-scss'],
   plugins: local,
-  ignoreFiles: ['dist/**', '.generated/**', 'media/**', 'node_modules/**', 'public/**'],
+  ignoreFiles: ['dist/**', '.generated/**', 'media/**', 'node_modules/**', 'public/**', 'sandbox/mocks/**'],
   rules: {
     // blank lines and alpha notation are left to the author
     'rule-empty-line-before': null,

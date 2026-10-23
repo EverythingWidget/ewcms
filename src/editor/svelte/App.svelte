@@ -316,11 +316,7 @@
     border-radius: var(--radius-2xl);
     overflow: hidden;
     background: var(--c-surface);
-    box-shadow:
-      inset 0 1px 0 var(--white-a14),
-      inset 0 0 0 1px var(--c-fill-active),
-      0 24px 60px -20px var(--c-scrim),
-      0 2px 10px var(--black-a40);
+    box-shadow: var(--shadow-panel); // borderless: no ring, no top highlight
   }
 
   // the tab panels (child components) may shrink
@@ -332,6 +328,7 @@
   .ed-head {
     flex: none;
     padding-top: var(--space-4);
+    background: var(--c-panel-head);
     @include stack(var(--space-2));
   }
 
@@ -361,12 +358,11 @@
     flex: 1 !important;
   }
 
-  // between Preview and phone / undo / redo: a 1px line, 16px tall
+  // between Preview and phone / undo / redo: a 1px gap, 16px tall (borderless: no line drawn)
   .ed-tools__sep {
     width: 1px;
     height: 16px;
     margin-inline: var(--space-1);
-    background: var(--c-line);
   }
 
   :global(.ed-modes) {
@@ -375,7 +371,8 @@
 
   // [ status line | Save | Publish ]
   .ed-foot {
-    border-top: 1px solid var(--c-line);
+    border-top: 1px solid transparent; // borderless: no line, its 1px kept (no shift)
+    background: var(--c-panel-head);
     padding: var(--space-3) var(--space-4) var(--space-4);
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;

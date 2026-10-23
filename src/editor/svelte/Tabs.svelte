@@ -77,7 +77,7 @@
 
   .tabs {
     display: flex;
-    box-shadow: inset 0 -2px 0 var(--c-line);
+    box-shadow: inset 0 -2px 0 var(--c-tab-line);
   }
 
   .tabs--fill .tabs__btn {
