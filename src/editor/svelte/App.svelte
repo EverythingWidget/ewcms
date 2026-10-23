@@ -122,6 +122,8 @@
         break;
       }
     } else if (e.key === 'Escape') {
+      // in the widget pop-up: its own (an open menu first, then the pop-up; WidgetPopup.svelte)
+      if (e.target instanceof Element && e.target.closest('.wpop')) return;
       // A dialog closes itself on Esc; this also covers Esc pressed in the preview.
       // Content tab: then the selected link, else the selected widget (the panel shows the
       // sections again, the grid hides); not while typing in a field of the panel.

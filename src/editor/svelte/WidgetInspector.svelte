@@ -27,7 +27,19 @@
   import WidgetLayout from './WidgetLayout.svelte';
 
   // onmotion(el): open a part in the Motion tab; onlibrary(name): an animation in Animations
-  let { g, live, bridge, sourceIds, onsource, onback, onmotion, onlibrary } = $props();
+  // bare: in the pop-up (WidgetPopup.svelte, its header has the type and name): no Back row,
+  // no card, no title line
+  let {
+    g,
+    live,
+    bridge,
+    sourceIds,
+    onsource,
+    onback,
+    onmotion,
+    onlibrary,
+    bare = false,
+  } = $props();
 
   // (its layout: on the card, WidgetLayout.svelte; where it sits is dragged in the preview)
   const TABS = [
@@ -104,19 +116,21 @@
   });
 </script>
 
-<ViewTop {bridge} id={g.id} {onback} />
+{#if !bare}<ViewTop {bridge} id={g.id} {onback} />{/if}
 
 <!-- the widget, in a card: its type and title, its tabs and fields -->
-<div class="card">
-  <div class="head">
-    <span class="title">
-      {g.title}
-      {#if g.name}<strong>{g.name}</strong>{/if}
-    </span>
-    {#if isMain}<span class="badge" title="The page’s main widget: it decides which pages exist"
-        >Main</span
-      >{/if}
-  </div>
+<div class={['card', bare && 'card--bare']}>
+  {#if !bare}
+    <div class="head">
+      <span class="title">
+        {g.title}
+        {#if g.name}<strong>{g.name}</strong>{/if}
+      </span>
+      {#if isMain}<span class="badge" title="The page’s main widget: it decides which pages exist"
+          >Main</span
+        >{/if}
+    </div>
+  {/if}
 
   <Tabs
     class="card__tabs"
@@ -175,6 +189,12 @@
     padding: var(--space-3) 0;
     border-radius: var(--radius-lg);
     background: var(--c-card);
+  }
+
+  .card--bare {
+    padding: 0;
+    border-radius: 0;
+    background: none;
   }
 
   // [ Type name ]

@@ -6,10 +6,10 @@
   holding widgets (src/site/layout/), and nothing else. A page's panel has three tabs (Tabs.svelte,
   the open one kept per page in ui.sections["pagetab:<file>"]):
     Sections     SectionsList.svelte: the section cards and the dashed Add section card. One
-                 level under it, never both: a widget's settings (WidgetInspector.svelte,
-                 ui.widget: its Content, Layout, Motion; a widget's row on a card, or the widget
-                 clicked in the preview) or a section's (SectionView.svelte, ui.section; a
-                 card's pen or double click). The Add widget modal (WidgetsModal.svelte): the
+                 level under it: a section's settings (SectionView.svelte, ui.section; a card's
+                 pen or double click). A widget's settings are not in the panel: they open in
+                 one floating pop-up (WidgetPopup.svelte, ui.widget; a widget row's double
+                 click or Enter, or the widget clicked in the preview). The Add widget modal (WidgetsModal.svelte): the
                  widget added opens
     Transitions  the Backdrop (BackdropFields.svelte) and the Curtain (PageCurtain.svelte)
     SEO          SeoSection.svelte
@@ -35,7 +35,8 @@
   import BackdropFields from './BackdropFields.svelte';
   import PageCurtain from './PageCurtain.svelte';
   import Tabs from './Tabs.svelte';
-  import WidgetInspector from './WidgetInspector.svelte';
+  import WidgetPopup from './WidgetPopup.svelte';
+  import { createPopup } from '../widget-popup.js';
   import WidgetsModal from './WidgetsModal.svelte';
   import SectionView from './SectionView.svelte';
   import SectionsList from './SectionsList.svelte';
@@ -80,13 +81,15 @@
     const list = file && live.current(file)?.sections;
     return Array.isArray(list) ? list : [];
   });
-  // what the Sections tab shows over the list: the widget open, else a section's settings
-  // ({ section: its id }); none: the list (a widget or section gone, e.g. undone: the list too)
+  // the widget whose settings are in the pop-up (one only; gone, e.g. undone: none)
+  const popG = $derived((file && groups.find((g) => g.widget && g.id === ui.widget)) || null);
+  const popup = createPopup();
+  // what the Sections tab shows over the list: a section's settings ({ section: its id });
+  // none: the list (a section gone, e.g. undone: the list too)
   const open = $derived(
-    (file && groups.find((g) => g.widget && g.id === ui.widget)) ||
-      (!ui.widget && ui.section && sections.some((s) => s?.id === ui.section)
-        ? { section: ui.section }
-        : null),
+    !ui.widget && ui.section && sections.some((s) => s?.id === ui.section)
+      ? { section: ui.section }
+      : null,
   );
   // the files in content/en/sources/, for a list item's source
   const sourceIds = $derived.by(() => {
@@ -169,8 +172,8 @@
       if (ui.widget !== group.id || ui.widgetTab !== 'content') openWidget(group.id);
     }
     await tick();
-    panel
-      .querySelector(`[data-edit="${CSS.escape(edit)}"]`)
+    document
+      .querySelector(`.wpop [data-edit="${CSS.escape(edit)}"]`)
       ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
@@ -316,36 +319,7 @@
         </div>
         {#if held}
           <div class="slide__pane slide__pane--widget" bind:this={widgetEl} inert={!atWidget}>
-            {#if held.section}
-              <SectionView {live} {bridge} {file} id={held.section} onback={back} />
-            {:else}
-              <WidgetInspector
-                g={held}
-                {live}
-                {bridge}
-                {sourceIds}
-                {onsource}
-                onback={back}
-                onmotion={(el) => actions.editMotion(el)}
-                onlibrary={(name) => {
-                  ui.library = { open: true, name };
-                  actions.setMode('motion');
-                }}
-              />
-              <!-- its section's settings, pinned to the panel's bottom, on every widget tab (as its
-                   card's pen); hovered, its section shows in the preview (SectionsList's sync) -->
-              {#if sections[held.widget.at]?.id}
-                <div class="widget-section" data-peek-section={sections[held.widget.at].id}>
-                  <SectionView
-                    {live}
-                    {bridge}
-                    {file}
-                    id={sections[held.widget.at].id}
-                    top={false}
-                  />
-                </div>
-              {/if}
-            {/if}
+            <SectionView {live} {bridge} {file} id={held.section} onback={back} />
           </div>
         {/if}
       </div>
@@ -365,6 +339,26 @@
   </section>
 {/if}
 
+{#if popG && !ui.pagesWin.open}
+  <WidgetPopup
+    g={popG}
+    {live}
+    {bridge}
+    {sourceIds}
+    {onsource}
+    {popup}
+    onclose={() => {
+      ui.selection = null;
+      ui.widget = null;
+    }}
+    onmotion={(el) => actions.editMotion(el)}
+    onlibrary={(name) => {
+      ui.library = { open: true, name };
+      actions.setMode('motion');
+    }}
+  />
+{/if}
+
 <SourcesModal bind:this={sourcesModal} {live} {bridge} />
 <WidgetsModal bind:this={widgetsModal} {types} onpick={(type, at) => addTo(at, type)} />
 
@@ -373,17 +367,6 @@
   :global(.page-tabs) {
     flex: none;
     padding: 0; // a tab's own 12px: its label on the 12px edge
-  }
-
-  // a widget's section: at the panel's bottom (12px under the widget's card at least: the
-  // pane's 8px gap + 4px); hovered, its card's border shows (as a section card's, no shift)
-  .widget-section {
-    margin-top: auto;
-    padding-top: var(--space-1);
-
-    &:hover > :global(.card) {
-      border-color: var(--c-line-hover);
-    }
   }
 
   // the panes share one cell, clipped while they slide

@@ -13,6 +13,7 @@
     changed    overrides the changed dot (the mock kit)
 -->
 <script>
+  import { ui } from './ui.svelte.js';
   import Button from './Button.svelte';
   import Section from './Section.svelte';
   import WidgetRow from './WidgetRow.svelte';
@@ -125,6 +126,8 @@
       <WidgetRow
         widget={b}
         onopen={() => onopen(b.id)}
+        onselect={() => onselect?.()}
+        open={ui.widget === b.id}
         onshow={(show) => setWidgetOn(j, show)}
         onduplicate={() => duplicateWidget(live.store, file, at, j)}
         ondelete={() => removeWidget(live.store, file, at, j)}

@@ -3,13 +3,17 @@
   order: which paints over which at the same layer; widgets are placed in the preview by their
   grid areas, which a reorder leaves be), on the widgets' card colour (--c-widget-card): its type with its title under it in
   the widgets' accent (--c-widget-accent), then its eye, Duplicate and
-  Delete. A click on the row opens its settings (onopen). Hidden (config.enabled false): its
+  Delete. A click on the row selects it (its section, onselect); a double click or Enter opens its
+  settings in the pop-up (onopen, WidgetPopup.svelte); while open, the row is highlighted (open: a
+  full accent ring and its buttons shown). Hidden (config.enabled false): its
   name and title faint, its eye-slash. Delete asks over the row at its size (nothing moves).
   Hovered: a 1px inset ring (--c-widget-line-hover); keyboard focus: the cyan focus ring.
   Its buttons rest at 30% and show fully while the row is hovered or has the focus; an
   eye-slash always (SectionCard.svelte's rule for the card's own buttons).
     widget      { id, type, title?, config? }
-    onopen     () => open its settings
+    onopen     () => open its settings (a double click, Enter)
+    onselect   () => select it (a click)
+    open        its settings are open in the pop-up: highlighted
     onshow     (on) => show (true) or hide it
     onduplicate, ondelete
     ongrab      (e) => its grip's pointerdown (the card's drag, list-drag.svelte.js)
@@ -23,6 +27,8 @@
   let {
     widget,
     onopen,
+    onselect,
+    open = false,
     onshow,
     onduplicate,
     ondelete,
@@ -41,14 +47,31 @@
 </script>
 
 <li
-  class={['brow', !on && 'is-off', lifted && 'is-lifted', drop]}
+  class={['brow', !on && 'is-off', open && 'is-open', lifted && 'is-lifted', drop]}
   style:translate={lifted ? `0 ${dy}px` : null}
   data-row
+  data-widget-row={widget?.id}
 >
   <span class="brow__grip" title="Drag to reorder" aria-hidden="true" onpointerdown={ongrab}
     ><i class="fa-solid fa-grip-vertical"></i></span
   >
-  <button type="button" class="brow__open" title="Open {label}" onclick={onopen}>
+  <button
+    type="button"
+    class="brow__open"
+    title="Double-click to open {label}"
+    aria-haspopup="dialog"
+    aria-expanded={open}
+    onclick={() => onselect?.()}
+    ondblclick={(e) => {
+      e.stopPropagation();
+      onopen();
+    }}
+    onkeydown={(e) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      onopen();
+    }}
+  >
     <span>{label}</span>
     {#if name}<span class="brow__name">{name}</span>{/if}
   </button>
@@ -123,7 +146,12 @@
       box-shadow: inset 0 0 0 1px var(--c-widget-line-hover);
     }
 
-    &:is(:hover, :focus-within) > :global(.btn),
+    // its settings open in the pop-up: a full accent ring (stays while the pop-up is open)
+    &.is-open {
+      box-shadow: inset 0 0 0 1px var(--c-widget-accent);
+    }
+
+    &:is(:hover, :focus-within, .is-open) > :global(.btn),
     > :global(.btn:focus-visible),
     > :global(.btn[data-eye][aria-pressed='false']) {
       opacity: 1;

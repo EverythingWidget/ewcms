@@ -61,6 +61,7 @@
   --white-a10: rgb(255 255 255 / 0.1);
   --white-a12: rgb(255 255 255 / 0.12);
   --white-a14: rgb(255 255 255 / 0.14);
+  --white-a17: rgb(255 255 255 / 0.17);
   --white-a18: rgb(255 255 255 / 0.18);
   --white-a20: rgb(255 255 255 / 0.2);
   --white-a40: rgb(255 255 255 / 0.4);
@@ -70,6 +71,7 @@
   --black-a30: rgb(0 0 0 / 0.3);
   --black-a35: rgb(0 0 0 / 0.35);
   --black-a40: rgb(0 0 0 / 0.4);
+  --black-a45: rgb(0 0 0 / 0.45);
   --black-a50: rgb(0 0 0 / 0.5);
   --black-a60: rgb(0 0 0 / 0.6);
   --black-a70: rgb(0 0 0 / 0.7);
@@ -102,6 +104,16 @@
   --c-widget-accent: var(--teal-400); // a widget row's title line (its accent text): 8.15:1
   // a hovered widget row's ring (1px inset, no fill change): its accent at 50%
   --c-widget-line-hover: color-mix(in srgb, var(--c-widget-accent) 50%, transparent);
+  // the widget settings pop-up (WidgetPopup.svelte): on the widgets' card colour, its header a
+  // touch of the accent; inside it, controls rest at 35% white and fill at 7% (solid), hovered
+  // a 17% white wash with white icons and text
+  --c-pop-head: color-mix(in srgb, var(--c-widget-accent) 9%, var(--c-widget-card));
+  --c-pop-rest: color-mix(in srgb, var(--white) 35%, var(--c-widget-card));
+  --c-pop-fill: color-mix(in srgb, var(--white) 7%, var(--c-widget-card));
+  --c-pop-hover: var(--white-a17);
+  --shadow-pop:
+    0 1px 2px var(--black-a30), 0 4px 8px var(--black-a30), 0 12px 24px var(--black-a35),
+    0 24px 48px var(--black-a45);
   --c-card-peek: var(--gray-2f);
   --c-control: var(--gray-2a); // Button.svelte: solid, on the panel and in windows
   --c-control-hover: var(--gray-38);
@@ -120,8 +132,8 @@
   --c-tab-line: var(--white-a10); // the one line left: a tab bar's baseline (Tabs.svelte)
   --c-panel-head: var(--gray-16); // the panel's header (tools + modes) and footer
   --c-panel-bar: var(--gray-13); // the section toolbar
-  --shadow-panel: 0 24px 60px -20px var(--black-a70), 0 8px 24px var(--black-a35),
-    0 2px 6px var(--black-a30);
+  --shadow-panel:
+    0 24px 60px -20px var(--black-a70), 0 8px 24px var(--black-a35), 0 2px 6px var(--black-a30);
   // the selected section card's border, and the hovered or selected section's line in the preview
   --c-line-peek: var(--white-a70);
   --c-line-hover: var(--white-a40); // a hovered section card's border (softer)
