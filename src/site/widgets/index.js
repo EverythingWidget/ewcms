@@ -49,7 +49,6 @@ import grid from './grid/index.js';
 import albums from './albums/index.js';
 import panels from './panels/index.js';
 import projects from './projects/index.js';
-import about from './about/index.js';
 import album from './album/index.js';
 
 /** The built-in widgets, always on, in the order the editor offers them. */
@@ -63,7 +62,6 @@ export const BUILTIN_WIDGETS = Object.freeze([
   albums,
   panels,
   projects,
-  about,
   album,
 ]);
 

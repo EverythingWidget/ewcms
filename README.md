@@ -537,7 +537,6 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
 | `albums`   | **list**: album cards of its items (the people/places index); config `layout` (`portrait` / `landscape`)        |
 | `panels`   | big links to sources: `panels` `[{ source, title, unit }]` (photography)                                        |
 | `projects` | **list**: the project accordion of its items; with a `title` it gets a head (home)                              |
-| `about`    | the about widget: `image`, `eyebrow`, `title`, `body` (paragraphs), `facts`, `emailLabel`                       |
 | `album`    | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped |
 
 - **Text widget** (`src/site/text.js`): `body` is a list of lines `{ style, text: [runs] }`; a
@@ -552,7 +551,7 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
   reads its first for its photos, and its texts, like any widget's, are bindings to it (below).
 - **Animations:** a widget's `motion` picks its animation (a new widget gets its type's default
   from the registry, e.g. text `lines-up`, photo `image-reveal`, grid `grid-reveal`). Composite
-  widgets (hero, heading, about, album, section heads) keep `data-anim` **parts** inside them
+  widgets (hero, heading, album, section heads) keep `data-anim` **parts** inside them
   for their own pieces (see Animations).
 - **A new type:** add it to a file in `src/site/widgets/` and to `WIDGET_TYPES` in `index.js`
   (and its styles); the editor shows it with no editor code.
@@ -1115,7 +1114,7 @@ scroll, scrub-words, parallax); `scatter`, `hero-title` and `hover-preview` stay
 `data-anim` parts.
 
 `data-anim` is still used for what is not a widget (curtain, header, menu) and for the
-**parts** of composite widgets (hero photos/title/meta, a heading's title and intro, about,
+**parts** of composite widgets (hero photos/title/meta, a heading's title and intro,
 album, section heads). The old per-element hooks widgets replace (text, photo, form title,
 intro, grids, album grids/panels, projects list) are gone: their targets were removed from
 `animations.json`.
@@ -1240,8 +1239,8 @@ title in `--c-widget-accent`); **Add widget** adds one below the others, **Add s
 section (empty, or with a widget). Clicking a widget (or a text of it in the preview) opens the
 **widget inspector**: **Content** (its settings and fields, from the registry), **Layout**
 (see below) and **Motion** (the widget's animation and timing, the same view as in the Motion
-tab). Its head row is the quiet ← (back to the sections) and the widget's name. A list field (hero photos, about
-paragraphs and facts, photography panels) has its items in boxes with ↑ / ↓ / Remove and an
+tab). Its head row is the quiet ← (back to the sections) and the widget's name. A list field (hero photos,
+photography panels) has its items in boxes with ↑ / ↓ / Remove and an
 **Add** button (a new photo opens the Media window). Each of these is one undo step. Typing in
 a field (a number in Layout too) is one undo step until you leave it, press Enter or pause for a
 second. A field's **Source** switch binds it to an item (see "Bindings").
@@ -1363,7 +1362,7 @@ or global element is edited as before; choose where its edits go:
   that `data-anim` name inside this widget. This is how you give a widget's part a different
   animation without touching templates (`preset`, plus timing only). A widget with only parts
   has no `anim`. Parts outside the widgets (header) only have **All**.
-- **All "target"**: `targets["about.headline"]`. Every element with that `data-anim`.
+- **All "target"**: `targets["hero.title"]`. Every element with that `data-anim`.
 
 Timing fields (`TIMING_KEYS` in `src/editor/svelte/motion.js`) each have a **Custom**
 switch. Off (a faint "inherit" before it): the field's control shows the inherited value,

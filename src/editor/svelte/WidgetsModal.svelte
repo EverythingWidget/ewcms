@@ -97,11 +97,6 @@
         >{#each Array(2) as _, i (i)}<b></b>{/each}</span
       >
     {:else if type === 'projects'}{#each Array(4) as _, i (i)}<b class="w90 h8"></b>{/each}
-    {:else if type === 'about'}<span class="bio"
-        ><b class="img"></b><span
-          ><b class="w90 h8"></b><b class="w80 h4"></b><b class="w60 h4"></b></span
-        ></span
-      >
     {:else}<b class="w70 h8"></b><b class="w50 h4"></b>
     {/if}
   </span>
@@ -281,9 +276,6 @@
     .w70 {
       width: 70%;
     }
-    .w80 {
-      width: 80%;
-    }
     .w90 {
       width: 90%;
     }
@@ -356,20 +348,6 @@
       position: relative;
       align-self: center;
       background: var(--c-text-faint);
-    }
-
-    .bio {
-      display: grid;
-      grid-template-columns: 1fr 1.6fr;
-      gap: 8px;
-      height: 100%;
-
-      span {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 4px;
-      }
     }
   }
 

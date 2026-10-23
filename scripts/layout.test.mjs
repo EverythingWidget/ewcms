@@ -11,7 +11,13 @@ import { buildRoutes } from '../src/site/routes.js';
 import { setEditable } from '../src/site/helpers.js';
 import { checkContent } from '../src/site/validate.js';
 import { WIDGET_TYPES } from '../src/site/widgets/index.js';
-import { newWidget, newSection, renderSections, rowsOf } from '../src/site/layout/index.js';
+import {
+  mobileRowsOf,
+  newWidget,
+  newSection,
+  renderSections,
+  rowsOf,
+} from '../src/site/layout/index.js';
 import { idsOf, isId, newId } from '../src/site/layout/ids.js';
 import { createStore } from '../src/editor/store.js';
 import {
@@ -238,7 +244,7 @@ test('validation: the layout, then each widget against its type', () => {
     one({ type: 'text', body: [{ style: 'huge', text: [{ t: 'x', marks: ['u'] }] }] }).join(),
     /"body\.0\.style" must be one of title[\s\S]*"body\.0\.text\.0\.marks" must/,
   );
-  assert.match(one({ type: 'about', facts: ['x'] })[0], /list of objects/);
+  assert.equal(WIDGET_TYPES.about, undefined); // the Bio widget is gone (v0.1.17)
   assert.match(one({ type: 'grid', config: { layout: 'wild' } })[0], /one of staggered, even/);
   assert.match(one({ type: 'text', config: { enabled: 1 } })[0], /true or false/);
   const twice = section([widget('text'), widget('text')]);
@@ -361,7 +367,7 @@ test('render endpoint: one section of a page, from the editor copy over the draf
   const file = 'pages/about/index.json';
   const data = structuredClone(content.pages.about);
   const [s] = data.sections;
-  s.widgets[0].title = 'Edited headline';
+  s.widgets[0].caption = 'Edited caption';
   const r = renderOp(render, SITE_A, {}, { path: '/about/', file, data, ids: [s.id] });
   assert.equal(r.status, 200);
   assert.deepEqual(Object.keys(r.body.html), [s.id]);
@@ -369,11 +375,11 @@ test('render endpoint: one section of a page, from the editor copy over the draf
   assert.match(
     html,
     new RegExp(
-      `^<section class="sec" data-sec="${s.id}" style="--rows:${rowsOf(s)};--mrows:${Math.ceil(rowsOf(s) / 2)}">`,
+      `^<section class="sec" data-sec="${s.id}" style="--rows:${rowsOf(s)};--mrows:${mobileRowsOf(s)}">`,
     ),
   );
-  assert.match(html, /Edited headline/);
-  assert.match(html, /data-edit="pages\/about\/index\.json#\/sections\/0\/widgets\/0\/title"/);
+  assert.match(html, /Edited caption/);
+  assert.match(html, /data-edit="pages\/about\/index\.json#\/sections\/0\/widgets\/0\/caption"/);
   assert.match(html, /<\/section>$/);
   // the item of a [param] page
   const slug = routes.find((r) => r.album);

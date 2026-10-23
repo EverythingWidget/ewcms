@@ -100,7 +100,7 @@ test('resolveWidget: bound fields and config links resolved; an unbound widget i
   assert.deepEqual(bound.title, { bind: 'title' }); // not changed in place
   assert.equal(bindTypeOf(t.fields[0]), 'text');
   assert.equal(bindTypeOf(WIDGET_TYPES.hero.fields.find((f) => f.key === 'photos')), 'photos');
-  assert.equal(bindTypeOf(WIDGET_TYPES.about.fields.find((f) => f.key === 'body')), null);
+  assert.equal(bindTypeOf(WIDGET_TYPES.form.fields.find((f) => f.key === 'fields')), null);
   assert.equal(bindTypeOf({ key: 'link', type: 'link' }, { config: true }), 'link');
   assert.ok(isBinding({ bind: 'a' }) && !isBinding('{{a}}') && !isBinding(''));
 });
@@ -270,7 +270,7 @@ test('validation: the shape of bindings and items', () => {
   assert.match(one({ label: { bind: 'a', x: 1 } }), /"label" must be \{ "bind"/);
   assert.match(one({ item: 'people' }), /"item" must be/);
   assert.match(one({ item: { source: 'People!', id: 'p-aaaa' } }), /"item" must be/);
-  assert.match(one({ body: { bind: 'body' } }, 'about'), /"body" must be a list of its own/);
+  assert.match(one({ fields: { bind: 'body' } }, 'form'), /"fields" must be a list of its own/);
   assert.match(
     one({ src: { bind: 'cover', format: '{value}.jpg' } }, 'photo'),
     /"src.format" must be left out/,
