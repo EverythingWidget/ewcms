@@ -7,6 +7,7 @@
 -->
 <script>
   import Button from './Button.svelte';
+  import Tabs from './Tabs.svelte';
   import { SITE, contentPath } from '../../site/files.js';
   import PreviewPanel from './PreviewPanel.svelte';
   import ContentPanel from './ContentPanel.svelte';
@@ -217,18 +218,15 @@
       <!-- the modes: evenly spread, the picked one with a white line; their line ends the toolbar.
            Hidden while previewing (the rows above stay put; Preview's panel takes their place) -->
       {#if !previewing}
-        <nav class="ed-modes" aria-label="Mode">
-          {#each TABS as [mode, label] (mode)}
-            <button
-              type="button"
-              class={['ed-modes__btn', ui.mode === mode && 'is-active']}
-              aria-current={ui.mode === mode ? 'page' : undefined}
-              onclick={() => actions.setMode(mode)}
-            >
-              {label}
-            </button>
-          {/each}
-        </nav>
+        <Tabs
+          class="ed-modes"
+          role="navigation"
+          fill
+          label="Mode"
+          tabs={TABS}
+          value={ui.mode}
+          onpick={(mode) => actions.setMode(mode)}
+        />
       {/if}
     </header>
 
@@ -371,41 +369,8 @@
     background: var(--c-line);
   }
 
-  .ed-modes {
-    display: flex;
+  :global(.ed-modes) {
     margin-top: var(--space-1);
-    box-shadow: inset 0 -2px 0 var(--c-line);
-  }
-
-  .ed-modes__btn {
-    flex: 1;
-    height: 32px;
-    padding: 0;
-    border: 0;
-    background: none;
-    @include muted;
-    font-weight: 600; // every mode: no width change when picked
-    letter-spacing: 0.06em;
-    line-height: 16px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition:
-      color 0.2s,
-      box-shadow 0.2s;
-
-    &:hover {
-      color: var(--c-text);
-    }
-
-    &:focus-visible {
-      @include focus-ring;
-      color: var(--c-text);
-    }
-
-    &.is-active {
-      color: var(--c-text-strong);
-      box-shadow: inset 0 -2px 0 var(--c-text-strong);
-    }
   }
 
   // [ status line | Save | Publish ]

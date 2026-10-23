@@ -49,13 +49,7 @@
         <Button icon="rotate-right" iconOnly label="Redo" disabled />
       </div>
       {#if mode !== 'preview'}
-        <nav class="ed-modes" aria-label="Mode">
-          {#each MODES as [m, label] (m)}
-            <button type="button" class={['ed-modes__btn', mode === m && 'is-active']}
-              >{label}</button
-            >
-          {/each}
-        </nav>
+        <Tabs class="ed-modes" role="navigation" fill label="Mode" tabs={MODES} value={mode} onpick={() => {}} />
       {/if}
     </header>
     {#if page && (mode === 'text' || mode === 'motion')}

@@ -1,20 +1,23 @@
 <!--
-  Tabs: a row of uppercase labels over a 1px line its full width; the picked one white with a
-  2px accent underline, the others dim. Only the color and the underline (a shadow) change, so
-  picking one moves nothing. The line runs to the container's edges: put it where it should
+  Tabs: the editor's one tab look, every tab bar uses it (the modes, the page tabs, the widget
+  card, the Motion panel, the Media filter): a row of uppercase labels (600, so no width change)
+  over a 2px line its full width; the picked one white with a 2px white underline, the others
+  dim. Only the color and the underline (inset shadows) change, so picking one moves nothing. The line runs to the container's edges: put it where it should
   span (WidgetInspector's card has no side padding around it). A tab's text starts 12px in.
     tabs    [[value, label]]
     value   the picked one
     onpick  (value) => ...
     label   the group's aria-label
-    role    'tablist' (they switch a panel; role=tab, aria-selected) or 'group' (a view filter;
-            aria-pressed)
+    role    'tablist' (they switch a panel; role=tab, aria-selected), 'group' (a view filter;
+            aria-pressed) or 'navigation' (the modes: a <nav>, aria-current="page")
+    fill    true: the tabs share the row evenly (the modes); else each its label's width
     class   extra class on the row
     id      the tabs' ids are "<id>-<value>" (tablist: the panel's aria-labelledby)
     panel   the id of the panel they switch (tablist: aria-controls)
   A tablist is one Tab stop: ←/→ (Home/End) move to the next tab and pick it.
-  Used by the widget card (Content / Layout / Motion), the Motion panel (Elements / Animations)
-  and the Media window's filter (All / R2 / Local). Not the mode tabs (App.svelte .ed-modes).
+  Used by the modes (App.svelte: Content / Motion / Settings), the page tabs (ContentPanel), the
+  widget card (Content / Motion), the Motion panel (Elements / Animations) and the Media
+  window's filter (All / R2 / Local). Segmented value pickers (.seg) are not tabs.
 -->
 <script>
   let {
@@ -26,10 +29,12 @@
     class: cls = '',
     id: idProp = '',
     panel = undefined,
+    fill = false,
   } = $props();
   const uid = $props.id();
   const id = $derived(idProp || uid);
   const isTab = $derived(role === 'tablist');
+  const isNav = $derived(role === 'navigation');
 
   function onkeydown(e) {
     if (!isTab) return;
@@ -44,7 +49,13 @@
   }
 </script>
 
-<div class={['tabs', cls]} {role} aria-label={label} {onkeydown}>
+<svelte:element
+  this={isNav ? 'nav' : 'div'}
+  class={['tabs', fill && 'tabs--fill', cls]}
+  role={isNav ? undefined : role}
+  aria-label={label}
+  {onkeydown}
+>
   {#each tabs as [v, text] (v)}
     <button
       type="button"
@@ -53,19 +64,25 @@
       aria-selected={isTab ? value === v : undefined}
       aria-controls={isTab ? panel : undefined}
       tabindex={isTab && value !== v ? -1 : undefined}
-      aria-pressed={isTab ? undefined : value === v}
+      aria-pressed={isTab || isNav ? undefined : value === v}
+      aria-current={isNav && value === v ? 'page' : undefined}
       class={['tabs__btn', value === v && 'is-active']}
       onclick={() => onpick(v)}>{text}</button
     >
   {/each}
-</div>
+</svelte:element>
 
 <style lang="scss">
   @use '../styles/mixins' as *;
 
   .tabs {
     display: flex;
-    box-shadow: inset 0 -1px 0 var(--c-line);
+    box-shadow: inset 0 -2px 0 var(--c-line);
+  }
+
+  .tabs--fill .tabs__btn {
+    flex: 1;
+    padding: 0;
   }
 
   .tabs__btn {
@@ -75,6 +92,7 @@
     background: none;
     cursor: pointer;
     @include muted;
+    font-weight: 600; // every tab: no width change when picked
     letter-spacing: 0.06em;
     line-height: 16px;
     text-transform: uppercase;
@@ -94,7 +112,7 @@
 
     &.is-active {
       color: var(--c-text-strong);
-      box-shadow: inset 0 -2px 0 var(--c-accent);
+      box-shadow: inset 0 -2px 0 var(--c-text-strong);
     }
   }
 </style>
