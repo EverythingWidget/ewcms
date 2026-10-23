@@ -23,6 +23,13 @@
  * --mminrows), its widgets from the top, empty rows below them. Phones can have a height of
  * their own (.sec--mh-*, section.phone.height), else the desktop's.
  *
+ * The navbar: a page's first section starts at the very top of the page (its background and
+ * height run behind the fixed header), but its grid starts below it: its padding-top is
+ * --nav-h, the header's real height (modules/navbar.js measures it, per breakpoint, on
+ * resize; the theme's --header-h before that), so row 1 begins at the navbar's bottom edge and
+ * no widget can sit (or be dragged) under it. A preset height (third / half / full) still
+ * counts from the page's top; the rows centre in what is left below the navbar.
+ *
  * Phones (below 760px): a grid of 60 square columns (--mc --ms --mr --mrs, --mrows; a widget
  * without a phone area of its own has its desktop area halved there), so a phone shows the
  * desktop layout scaled down until its widgets are placed for it. Why 60 and not 120: a phone
@@ -71,6 +78,14 @@
   &--h-full {
     min-height: 100svh;
   }
+}
+
+// a page's first section: its grid below the navbar (see the top)
+:root {
+  --nav-h: var(--header-h, 0px);
+}
+[data-router-view] > .sec:nth-child(1 of :not([hidden])) {
+  padding-top: var(--nav-h);
 }
 
 // position: relative so widgets paint in their order (and by --z) above a fullscreen widget

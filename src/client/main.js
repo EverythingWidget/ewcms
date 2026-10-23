@@ -25,6 +25,7 @@ import { watchRows } from './modules/rows.js';
 import { anchors } from './modules/anchors.js';
 import { backdrop } from './modules/backdrop.js';
 import { fitText } from './modules/fit.js';
+import { watchNavHeight } from './modules/navbar.js';
 // the site's own widgets (site.config.mjs widgets): their styles and client modules
 import siteWidgets from 'virtual:site-widgets/client';
 
@@ -256,6 +257,7 @@ function connectEditor() {
 
 async function start() {
   if (import.meta.env.DEV) connectEditor();
+  watchNavHeight();
   initMenu();
   initClock();
   initRouter({ mount, unmount, prepare: movePortals });

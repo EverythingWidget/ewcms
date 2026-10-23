@@ -457,6 +457,14 @@ every section is a grid of **widgets** (`src/site/layout/`):
   `link`. `phone`: only what changes on phones, over what it would show there (its
   base area halved, its base link with the gap halved); `null`: hidden on phones.
   The same rule as hero photos (`x/y/w` plus `phone`).
+- **The navbar** (v0.1.19): a page's first section starts at the very top of the page (its
+  background and preset height run behind the fixed header), but its grid starts below it: row 1
+  begins at the navbar's bottom edge (its `padding-top: var(--nav-h)`), so no widget sits under
+  the navbar, in the editor (grid, drag and resize, link circles) as on the site. `--nav-h` is
+  the header's real height (`[data-header]` when it is fixed or absolute, else 0), measured by
+  `src/client/modules/navbar.js` on load and when the header or window resizes (each
+  breakpoint); the theme's `--header-h` before that. A theme's first-section widgets (hero,
+  album) no longer add the header's height themselves. Other sections are unchanged.
 - **Free widgets and links** (`src/site/layout/links.js`): widgets are **free**: each stays at
   the row it was placed on whatever the widgets above it do, and widgets may overlap (`z` orders
   them). A widget can **follow** another widget of its section instead,
