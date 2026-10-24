@@ -38,7 +38,7 @@ $hero-em-per-char: 0.6;
     letter-spacing: -0.02em;
     white-space: nowrap;
     pointer-events: none;
-    text-shadow: 0 10px 60px rgb(0 0 0 / 0.35);
+    text-shadow: 0 10px 60px var(--shade-35);
   }
   // The name (pages/index.json → hero.title), one span per word.
   &__name {
@@ -148,7 +148,7 @@ $hero-em-per-char: 0.6;
   &__frame {
     overflow: hidden;
     border-radius: 3px;
-    box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.9);
+    box-shadow: 0 30px 60px -30px var(--shade-90);
     img {
       width: 100%;
       height: auto;
@@ -221,9 +221,9 @@ $hero-em-per-char: 0.6;
 
 // the first photo full-bleed under a dark gradient, the name bottom-left
 .hero--behind {
-  --fg: #fff;
-  --muted: rgb(255 255 255 / 0.72);
-  color: #fff;
+  --fg: var(--hero-fg);
+  --muted: var(--hero-muted);
+  color: var(--hero-fg);
   .hero__photo {
     inset: 0;
     z-index: 0;
@@ -233,9 +233,9 @@ $hero-em-per-char: 0.6;
       inset: 0;
       background: linear-gradient(
         to top,
-        rgb(0 0 0 / 0.78) 0%,
-        rgb(0 0 0 / 0.45) 55%,
-        rgb(0 0 0 / 0.15) 100%
+        var(--shade-78) 0%,
+        var(--shade-45) 55%,
+        var(--shade-15) 100%
       );
     }
   }

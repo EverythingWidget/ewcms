@@ -157,9 +157,13 @@ export async function lintSite(root, log = console) {
     const { default: config } = await import(
       pathToFileURL(enginePath('stylelint.config.mjs')).href
     );
-    const dirs = [site.themeDir, ...site.config.widgets.map((w) => path.resolve(root, w))];
+    const dirs = [
+      site.themeDir,
+      site.themeLayerDir,
+      ...site.config.widgets.map((w) => path.resolve(root, w)),
+    ];
     const files = dirs
-      .filter((d) => fs.existsSync(d) && !d.startsWith(ENGINE))
+      .filter((d) => d && fs.existsSync(d) && !d.startsWith(ENGINE))
       .map((d) => `${posixPath(d)}/**/*.scss`);
     if (files.length) {
       const res = await stylelint.default.lint({

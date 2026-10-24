@@ -56,7 +56,7 @@ test('the theme lays out beside (right half, 4px corners) and behind (gradient)'
   assert.match(css, /\.hero--beside \.hero__photo \{[^}]*width: calc\(50% - var\(--pad\) - 12px\)/);
   assert.match(
     css,
-    /linear-gradient\(to top, rgba\(0, 0, 0, 0\.78\) 0%, rgba\(0, 0, 0, 0\.45\) 55%, rgba\(0, 0, 0, 0\.15\) 100%\)/,
+    /linear-gradient\(to top, var\(--shade-78\) 0%, var\(--shade-45\) 55%, var\(--shade-15\) 100%\)/,
   );
   assert.match(css, /@media \(max-width: 640px\)[^@]*\.hero--beside \.hero__title/);
 });

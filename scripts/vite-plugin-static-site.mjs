@@ -37,7 +37,7 @@ import { pageFile } from '../src/site/files.js';
 import { EDITOR_HTML, legacyRedirect, wantsEditor } from '../src/editor/lib/editor-url.js';
 import { checkSources } from '../src/site/schemas.js';
 import { FOLDERS } from '../src/site/files.js';
-import { loadSiteConfig } from './site-config.mjs';
+import { THEME_LAYERS, loadSiteConfig } from './site-config.mjs';
 import { registerSiteWidgets, widgetClientsModule, widgetsModule } from './site-widgets.mjs';
 import { ENGINE, enginePath, fsUrl, posixPath, sameFile, withEngineUrls } from './engine.mjs';
 
@@ -140,6 +140,24 @@ export function wantsPage(pathname, accept = '') {
   return !accept || accept.includes('text/html') || accept.includes('*/*');
 }
 
+/**
+ * The site-layer folder (<generatedDir>/theme-layers): _fonts, _tokens and _overrides, each
+ * the site theme's own (themeLayerDir: fonts.scss, ...) or empty. main.scss uses all three, so
+ * a layer is optional: Sass has no optional @use. Rewritten when a layer file comes or goes.
+ */
+export function writeThemeLayers(site) {
+  const dir = path.join(site.generatedDir, 'theme-layers');
+  fs.mkdirSync(dir, { recursive: true });
+  for (const file of THEME_LAYERS) {
+    const own = site.themeLayerDir && path.join(site.themeLayerDir, file);
+    const rel = own && fs.existsSync(own) && posixPath(path.relative(dir, own));
+    const text = rel ? `@use '${rel.replace(/\.scss$/, '')}';\n` : "// none in the site's theme\n";
+    const out = path.join(dir, `_${file}`);
+    if (!fs.existsSync(out) || fs.readFileSync(out, 'utf8') !== text) fs.writeFileSync(out, text);
+  }
+  return dir;
+}
+
 /** Vite's default (the site's workspace) plus the engine and the packages it serves. */
 function engineAllow(root) {
   const req = createRequire(enginePath('package.json'));
@@ -171,6 +189,8 @@ export default function staticSite() {
             [CONTENT_ALIAS]: site.contentDir,
             // the stylesheets: the core's main.scss uses the theme's, the theme's the core's tokens
             'site-theme': site.themeDir,
+            // the site theme's layers over it (tokens, fonts, overrides): writeThemeLayers
+            'site-layer': writeThemeLayers(site),
             'site-core': CORE_STYLES,
           },
         },
@@ -210,6 +230,15 @@ export default function staticSite() {
       // Content and media manifest changes re-render pages (see handleHotUpdate).
       const site = loadSiteConfig(root);
       server.watcher.add([site.contentDir, site.generatedDir]);
+      // a theme layer added or deleted: the site-layer stubs follow (Vite then rebuilds the CSS)
+      if (site.themeLayerDir) {
+        server.watcher.add(site.themeLayerDir);
+        const relayer = (file) => {
+          if (path.dirname(path.resolve(file)) === path.resolve(site.themeLayerDir))
+            writeThemeLayers(site);
+        };
+        server.watcher.on('add', relayer).on('unlink', relayer);
+      }
 
       // Editor endpoints (dev only, localhost only).
       server.middlewares.use(

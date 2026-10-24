@@ -23,8 +23,8 @@
 }
 
 :root {
-  --glass-fill: color-mix(in oklab, var(--accent) 8%, rgb(30 30 30 / 0.42));
-  --glass-fill-hover: color-mix(in oklab, var(--accent) 12%, rgb(52 52 52 / 0.5));
+  --glass-fill: color-mix(in oklab, var(--accent) 8%, var(--glass-base));
+  --glass-fill-hover: color-mix(in oklab, var(--accent) 12%, var(--glass-base-hover));
 }
 
 .glass {

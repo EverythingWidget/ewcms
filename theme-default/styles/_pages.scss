@@ -67,7 +67,7 @@
     letter-spacing: 0.08em;
     padding: 4px 9px;
     border-radius: 999px;
-    background: rgb(0 0 0 / 0.4);
+    background: var(--shade-40);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
   }
@@ -122,7 +122,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(transparent 50%, rgb(0 0 0 / 0.65));
+    background: linear-gradient(transparent 50%, var(--shade-65));
   }
   &__info {
     position: absolute;
@@ -270,7 +270,7 @@
     height: 100%;
     overflow: hidden;
     border-radius: 8px;
-    box-shadow: 0 40px 80px -30px rgb(0 0 0 / 0.9);
+    box-shadow: 0 40px 80px -30px var(--shade-90);
   }
   img {
     position: absolute;
@@ -341,7 +341,7 @@
       outline-offset: 2px;
     }
     &[aria-invalid='true'] {
-      border-color: #e5776b;
+      border-color: var(--error);
     }
   }
   textarea.cform__input {
@@ -351,7 +351,7 @@
   &__error {
     margin: 0;
     font-size: 13px;
-    color: #e5776b;
+    color: var(--error);
   }
   // the spam trap: off screen, not hidden (some bots skip hidden fields)
   &__hp {
@@ -401,7 +401,7 @@
       display: none;
     }
     &.is-error {
-      color: #e5776b;
+      color: var(--error);
     }
     &:focus {
       outline: none;
