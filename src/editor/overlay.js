@@ -132,7 +132,8 @@ svg { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: no
  * with `gap` cells between them (to null: it is free again); widgetOf(id): the stored widget
  * (null when it isn't on the page); secNameOf(id): a section's name for its tag ("Section N"
  * without one); onrows(secId, rows, { mobile }): a Custom section's bottom
- * edge was dragged to `rows` (the phone's rows when mobile).
+ * edge was dragged to `rows` (the phone's rows when mobile); onsectionpick(secId): a click on a
+ * section's empty space (it alone selected).
  */
 export function createOverlay({
   ui,
@@ -142,6 +143,7 @@ export function createOverlay({
   onlink = () => {},
   onrows = () => {},
   onselect = () => {},
+  onsectionpick = () => {},
   ongroupmove = () => {},
   widgetOf,
   secNameOf = () => '',
@@ -762,9 +764,9 @@ export function createOverlay({
     const b = boxing;
     stopBox();
     boxing = null;
-    // a click on empty space: nothing selected (Ctrl/Cmd: the selection stays)
-    if (!b.box && !b.mod && (ui.widget || ui.section || ui.selSection || ui.multi.length))
-      onpick(null);
+    // a click on a section's empty space: that section selected, alone (Ctrl/Cmd: the
+    // selection stays)
+    if (!b.box && !b.mod) onsectionpick(b.sec.dataset.sec);
   }
 
   function cancelBox(e) {
@@ -1159,7 +1161,8 @@ export function createOverlay({
           return void (e.preventDefault(), e.stopPropagation());
         return startBox(e, sec, mod ? ids : []);
       }
-      // empty space: nothing selected (the panel shows the sections, the grid hides)
+      // a section without widgets: it is selected; outside any: nothing selected
+      if (sec && live(sec)) return void onsectionpick(sec.dataset.sec);
       return void ((ui.widget || ui.section || ui.selSection || ui.multi.length) && onpick(null));
     }
     const id = el.dataset.widget;

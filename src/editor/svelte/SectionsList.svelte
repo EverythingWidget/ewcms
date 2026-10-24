@@ -12,7 +12,7 @@
 <script>
   import { tick } from 'svelte';
   import SectionCard from './SectionCard.svelte';
-  import { ui } from './ui.svelte.js';
+  import { ui, selectSection } from './ui.svelte.js';
   import { addSection } from '../layout-ops.js';
   import { locate } from '../locate.js';
 
@@ -68,7 +68,7 @@
     selected={ui.selSection === s.id}
     bind:deleting
     onselect={() => {
-      ui.selSection = s.id;
+      selectSection(s.id);
       locate(bridge, s.id);
     }}
     onsection={() => {

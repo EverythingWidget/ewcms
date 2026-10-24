@@ -124,6 +124,19 @@ export function selectWidgets(ids) {
   ui.selSection = null;
 }
 
+/**
+ * Section `id` selected (its card, its toolbar; the preview's section outline). One thing is
+ * selected at a time: any widget selection goes, its pop-up closes.
+ */
+export function selectSection(id) {
+  ui.popup = false;
+  ui.selection = null;
+  ui.multi = [];
+  ui.widget = null;
+  ui.section = null;
+  ui.selSection = id;
+}
+
 /** Set by main.js: the preview's (overlay.js reveal). */
 export const hooks = { reveal: () => {} };
 /** A widget scrolled to in the preview, only when it is out of view. */

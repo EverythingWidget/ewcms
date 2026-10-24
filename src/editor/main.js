@@ -26,7 +26,7 @@ import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/solid.css';
 import { mount } from 'svelte';
 import App from './svelte/App.svelte';
-import { ui, selectWidgets, hooks } from './svelte/ui.svelte.js';
+import { ui, selectWidgets, selectSection, hooks } from './svelte/ui.svelte.js';
 import { toast } from './svelte/toasts.svelte.js';
 import { createLive } from './svelte/live.svelte.js';
 import { connectMedia } from './svelte/media.svelte.js';
@@ -99,6 +99,10 @@ const overlay = createOverlay({
     selectWidgets(id ? [id] : []);
   },
   // a double click on a widget in the preview: its pop-up (as its row's double click)
+  // a click on a section's empty space in the preview: that section selected (alone)
+  onsectionpick(id) {
+    selectSection(id);
+  },
   onopen(id) {
     selectWidgets([id]);
     ui.popup = true;
