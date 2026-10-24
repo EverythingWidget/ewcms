@@ -6,6 +6,7 @@
     live, file, at (its index), sections (the page's, a fresh copy after every edit)
 -->
 <script>
+  import InfoHelp from './InfoHelp.svelte';
   import Field from './Field.svelte';
   import SectionIcon from './SectionIcon.svelte';
   import { ui } from './ui.svelte.js';
@@ -102,7 +103,12 @@
     data-edit="{file}#/sections/{at}/{ptr}"
   >
     <span class="tf__label" {id}
-      >{title}
+      >{title}<InfoHelp label="About {title}" bg="var(--c-settings)"
+        >{#if key === 'width'}<b>Width</b>: <b>contained</b> keeps the section inside the page
+          margins, <b>full width</b> runs it from edge to edge.{:else}<b>Height</b>: how tall the
+          section is: a number of rows, as tall as its content, or a third, half or all of the
+          screen. Content is always centred.{/if}</InfoHelp
+      >
       {#if reset}
         <!-- its own phone height: back to the desktop's -->
         <button

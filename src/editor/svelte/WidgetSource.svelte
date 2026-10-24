@@ -16,6 +16,7 @@
   renders the widget again. ui.focusParam (the page head's warning) focuses a param's row.
 -->
 <script>
+  import InfoHelp from './InfoHelp.svelte';
   import { tick } from 'svelte';
   import ItemPicker from './ItemPicker.svelte';
   import Select from './Select.svelte';
@@ -240,7 +241,12 @@
 
 <div class="bs" bind:this={el}>
   <div class="tf">
-    <span class="tf__label">Source</span>
+    <span class="tf__label"
+      >Source<InfoHelp label="About Source"
+        ><b>Source</b>: where this widget gets its items, a list from Sources. <b>All</b> shows
+        every item, <b>From URL</b> only the item of the page you are on.</InfoHelp
+      ></span
+    >
     <div class="seg" role="radiogroup" aria-label="Source">
       {#each MODES as [m, label] (m)}
         {@const off = m === 'url' && !params.length}
