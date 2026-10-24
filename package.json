@@ -1,6 +1,6 @@
 {
   "name": "ewcms",
-  "version": "0.1.37",
+  "version": "0.1.38",
   "private": true,
   "description": "EverythingWidget CMS: a static site engine on Vite + GSAP with an in-page content editor. A site is content/, theme/, media/ and site.config.mjs; ewcms builds it.",
   "type": "module",
@@ -28,7 +28,8 @@
     "index.html",
     "index.js",
     "vite.js",
-    "stylelint.config.mjs"
+    "stylelint.config.mjs",
+    "docs/THEME-MIGRATION.md"
   ],
   "scripts": {
     "test": "node --test",

@@ -5,7 +5,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { checkContentOf, newSite } from './cli.mjs';
+import { checkContentOf, newSite, themeWarning } from './cli.mjs';
+import { loadSiteConfig } from './site-config.mjs';
 import { ENGINE, enginePath, fsUrl, withEngineUrls, ENGINE_MARK } from './engine.mjs';
 
 const FIXTURE = enginePath('test', 'fixtures', 'site-a');
@@ -48,7 +49,22 @@ test('new-site: a site folder that passes check', async () => {
   assert.equal(pkg.name, 'my-site');
   assert.match(pkg.dependencies.ewcms, /^github:EverythingWidget\/ewcms#v\d/);
   assert.deepEqual(await checkContentOf(dir), []);
+  // the theme: layers over the engine's (a name and a tokens stub), no copy of its styles
+  assert.deepEqual(fs.readdirSync(path.join(dir, 'theme')).sort(), ['theme.json', 'tokens.scss']);
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(dir, 'theme/theme.json'), 'utf8')).name,
+    'My Site',
+  );
+  assert.equal(themeWarning(loadSiteConfig(dir)), '');
   assert.throws(() => newSite(dir), /not empty/);
+});
+
+test('check: a warning for a full-copy theme, none for layers or none', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-copy-'));
+  fs.mkdirSync(path.join(dir, 'theme/styles'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'theme/styles/_look.scss'), '');
+  assert.match(themeWarning(loadSiteConfig(dir)), /theme\/ is a full copy.*THEME-MIGRATION/);
+  assert.equal(themeWarning(loadSiteConfig(fs.mkdtempSync(path.join(os.tmpdir(), 'e-')))), '');
 });
 
 test('bin: ewcms --version and usage', () => {

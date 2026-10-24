@@ -23,7 +23,7 @@ ewcms preview [--port N]                      # serve dist/ on http://localhost:
 ewcms check [--links] [--no-lint]             # content (every file, sources, bindings, motion) + the site's JS/SCSS; --links: dist/'s links
 ewcms images                                  # media/ → public/media/*.webp sizes + .generated/media.json
 ewcms publish-media                           # media/ photos → Cloudflare R2 (.env.local R2_* keys), like the editor's uploads
-ewcms new-site <dir>                          # a new site: theme-default, starter content, package.json
+ewcms new-site <dir>                          # a new site: a theme over theme-default, starter content, package.json
 ```
 
 A site's `package.json` maps them (`npm run dev`, `npm run build`, `npm run check`). It needs no
@@ -37,8 +37,8 @@ export default mergeConfig(siteConfig({ root: import.meta.dirname }), {/* more *
 ```
 
 `index.html` (the page shell) is the engine's unless the site has one; its `%EWCMS%/…` paths
-point at the engine's files (the dev server serves them as `/@fs/…`). The site's `theme/` is
-used when it exists, else `theme-default/`.
+point at the engine's files (the dev server serves them as `/@fs/…`). The engine's `theme-default/`
+always loads; the site's `theme/` layers on it (see **Theme**).
 
 ## Working on ewcms and a site together (the workspace, no npm link)
 
@@ -135,11 +135,18 @@ resolves them; the build, the dev server, the editor endpoints, `scripts/images.
 `check:links` all read their paths from it. Client code imports content through the
 `@site-content` alias; the editor's browser code gets its settings from `virtual:editor-config`.
 
-**Theme:** the site's look is its theme, `theme/` (`site.config.mjs` `themeDir`): `theme.json`
-(`themeColor`, `colorScheme` and `preloads`, put in every page's head at `<!--theme-meta-->` and
+**Theme:** the engine's theme, `theme-default/`, always loads: `theme.json` (`themeColor`,
+`colorScheme` and `preloads`, put in every page's head at `<!--theme-meta-->` and
 `<!--theme-preloads-->` in `index.html`; `site.json` `themeColor` wins) and `styles/`: the fonts,
-the colour, font, radius and easing tokens, glass, the chrome (header, menus, curtain, footer)
-and the widgets' looks (`_look.scss`). The core stylesheets (`src/client/styles`: the grid,
+the colour, font, radius and easing tokens (every colour of the look is a token in
+`_tokens.scss`), glass, the chrome (header, menus, curtain, footer) and the widgets' looks
+(`_look.scss`). A site's `theme/` (`site.config.mjs` `themeDir`) layers on it, each file
+optional: `tokens.scss` (`:root` tokens, after the engine's), `fonts.scss` (`@font-face`, after
+the engine's), `overrides.scss` (rules after the engine's look) and `theme.json` (merged over the
+engine's key by key). The layers reach `main.scss` through the `site-layer` alias
+(`.generated/theme-layers`: a stub per layer, the site's file or empty). An older `theme/` with
+`styles/_look.scss` is a full copy: it replaces `theme-default/` as before, and `ewcms check`
+warns (docs/THEME-MIGRATION.md). The core stylesheets (`src/client/styles`: the grid,
 breakpoints, text styles, base, backdrop, layout) take the theme through the `site-theme` alias
 (`main.scss`); the theme takes the core's breakpoints and layers as `site-core/tokens`. The
 editor has its own tokens and fonts (`src/editor/styles/_tokens.scss`, `_fonts.scss`,
@@ -156,14 +163,14 @@ content/            ← all text, albums, projects, animation config (JSON)
                       and footer.json: the footer's sections (see "Footer")
   strings.json      ← UI text of the templates: the menu's Menu / Close / clock label
 media/              ← source photos (jpg), committed
-theme/              ← the site's theme (else ewcms's theme-default/)
+theme/              ← the site's layers over ewcms's theme-default/ (tokens.scss, fonts.scss, overrides.scss, theme.json)
 site.config.mjs     ← the site's folders
 functions/api/contact.js ← one line: export { onRequestPost } from 'ewcms/functions/contact'
 
 — in ewcms —
 bin/ewcms.mjs       ← the ewcms command (scripts/cli.mjs: dev, build, check, …)
 vite.js             ← the Vite preset (ewcms/vite)
-templates/site/     ← what ewcms new-site copies (with theme-default/ and the fixture's content)
+templates/site/     ← what ewcms new-site copies (with templates/theme/ and the fixture's content)
 scripts/
   engine.mjs        ← where the engine is; %EWCMS% / /@fs/ paths to its files
   cli.mjs           ← the commands

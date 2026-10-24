@@ -9,14 +9,14 @@
  *                  the site's own JS) when ESLint / Stylelint are installed; --links: the build's links
  *   images         media/ → public/media sizes + .generated/media.json
  *   publish-media  upload media/ photos to Cloudflare R2 (.env.local R2_* keys), like the editor
- *   new-site <dir> a new site: theme-default, starter content, package.json
+ *   new-site <dir> a new site: a theme layered on theme-default, starter content, package.json
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { ENGINE, enginePath, posixPath, ENGINE_VERSION } from './engine.mjs';
-import { loadSiteConfig, CONFIG_FILE } from './site-config.mjs';
+import { loadSiteConfig, CONFIG_FILE, DEFAULT_THEME } from './site-config.mjs';
 import { buildImages } from './images.mjs';
 import { checkLinks } from './check-links.mjs';
 import { registerSiteWidgets } from './site-widgets.mjs';
@@ -179,6 +179,20 @@ export async function lintSite(root, log = console) {
   return out;
 }
 
+/**
+ * A warning for a site whose theme folder is an older full copy of the engine's theme
+ * (styles/_look.scss): it misses the engine's theme fixes. '' otherwise. Not a failure.
+ */
+export function themeWarning(site) {
+  if (site.themeLayerDir || site.themeDir === DEFAULT_THEME) return '';
+  const rel = posixPath(path.relative(site.root, site.themeDir)) || '.';
+  return (
+    `[check] ${rel}/ is a full copy of the engine's theme: it misses the engine's theme fixes. ` +
+    `Keep only what differs (tokens.scss, fonts.scss, overrides.scss, theme.json): ` +
+    `see ewcms docs/THEME-MIGRATION.md`
+  );
+}
+
 export async function check(root, opts = {}) {
   let failed = false;
   const report = (what, problems) => {
@@ -188,6 +202,8 @@ export async function check(root, opts = {}) {
     } else console.log(`✓ ${what}`);
   };
   report('content', await checkContentOf(root));
+  const warning = themeWarning(loadSiteConfig(root));
+  if (warning) console.warn(warning);
   if (opts.lint !== false) report('lint', await lintSite(root));
   if (opts.links) {
     const { count, pages, broken } = checkLinks(loadSiteConfig(root).outDir);
@@ -245,14 +261,19 @@ export async function publishMedia(root) {
   if (failed) throw new Error(`${failed} photo(s) not uploaded`);
 }
 
-/** A new site in `dir`: the engine's theme, a starter content (the test fixture), package.json. */
+/** A new site in `dir`: a theme layered on the engine's, a starter content (the test fixture), package.json. */
 export function newSite(dir, { name = path.basename(path.resolve(dir)) } = {}) {
   dir = path.resolve(dir);
   if (fs.existsSync(dir) && fs.readdirSync(dir).length) throw new Error(`${dir} is not empty`);
   const copy = (from, to) => fs.cpSync(from, path.join(dir, to), { recursive: true });
   const starter = enginePath('templates', 'site');
   copy(starter, '.');
-  copy(enginePath('theme-default'), 'theme');
+  // the theme: layers over the engine's theme-default/ (its name and a tokens stub), not a copy
+  copy(enginePath('templates', 'theme'), 'theme');
+  fs.writeFileSync(
+    path.join(dir, 'theme', 'theme.json'),
+    `${JSON.stringify({ version: 1, name }, null, 2)}\n`,
+  );
   copy(enginePath('test', 'fixtures', 'site-a', 'content'), 'content');
   fs.renameSync(path.join(dir, 'gitignore'), path.join(dir, '.gitignore'));
   const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));

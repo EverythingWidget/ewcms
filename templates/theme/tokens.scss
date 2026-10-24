@@ -1,0 +1,10 @@
+// This site's tokens, over the engine's (ewcms theme-default/styles/_tokens.scss): set only
+// what differs. The engine's look (chrome, widgets) reads these, so colours follow.
+// fonts.scss (@font-face) and overrides.scss (rules after the engine's look) are optional too.
+@use 'site-core/tokens' as *;
+
+:root {
+  // --bg: #050505;
+  // --fg: #f2efe9;
+  // --accent: #cfc8b8;
+}
