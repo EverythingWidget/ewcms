@@ -201,14 +201,14 @@
     text-align: right;
   }
 
-  // a utility group: icon-only, no fill; the picked one in the accent, on a faint ground
-  // 32px tall, like the inputs (4 + 24 + 4), its buttons sharing the half's width
+  // a joined button group (v2): no padding or gaps, its buttons edge to edge (40px each,
+  // the old 36 + its gap, on the 4px grid: the group 4px narrower), 32px tall like the inputs; the picked one in the accent on a
+  // faint ground, a hovered one white on a 17% wash
   .hset {
     display: flex;
-    gap: var(--space-1);
     height: var(--size-control);
-    padding: var(--space-1);
     border-radius: var(--radius-md);
+    overflow: hidden;
     background: var(--c-shadow); // filled, as .seg (borderless: no ring)
     justify-self: start;
   }
@@ -245,11 +245,11 @@
     display: grid;
     flex: 1;
     place-items: center;
-    height: 24px;
-    width: 36px;
+    height: 100%;
+    width: 40px;
     padding: 0;
     border: 0;
-    border-radius: var(--radius-sm);
+    border-radius: 0;
     background: none;
     color: var(--c-text-muted);
     cursor: pointer;
@@ -258,7 +258,8 @@
       background 0.2s;
 
     &:hover {
-      color: var(--c-text);
+      color: var(--c-text-strong);
+      background: var(--c-pop-hover);
     }
 
     &.is-active {

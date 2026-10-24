@@ -306,6 +306,34 @@
       color: var(--c-text-strong);
     }
 
+    // a photo field (v2, variant A): the pop-up's fill, no line, its thumbnail flush left on a
+    // 12% tile; label, sizes and icons at 35%, a hovered icon white on a 17% wash; 64px
+    :global(.photo) {
+      background: var(--on-card-fill);
+      box-shadow: none;
+    }
+
+    :global(.photo__thumb) {
+      background: var(--on-card-12);
+      color: var(--on-card-35);
+    }
+
+    :global(.photo__label),
+    :global(.photo__meta),
+    :global(.photo .btn--icon) {
+      color: var(--on-card-35);
+    }
+
+    :global(.photo .btn--icon) {
+      background: none;
+      box-shadow: none;
+    }
+
+    :global(.photo .btn--icon:hover:not(:disabled)) {
+      background: var(--on-card-hover);
+      color: var(--c-text-strong);
+    }
+
     :global(.hset__btn:hover:not(:disabled)),
     :global(.seg__btn:not(.is-active):hover),
     :global(.sc .btn:hover) {

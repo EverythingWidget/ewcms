@@ -1,7 +1,7 @@
 <!--
   The body of a Content group (content-groups.js): a widget's settings (its type's config:
   source, layout, ...) and fields, or the other texts of the page. Fields are in rows
-  (.fields): two half fields share one (pairedHalves); a list field is a ListField.
+  (.fields): one field a row; in a list item two half fields share one (pairedHalves); a list field is a ListField.
 
     g         the group
     live      reactive store (live.svelte.js); bridge: the preview (../bridge.js)
@@ -216,8 +216,8 @@
   {#if (lead || settings.length) && fields.length}<hr class="fields__line" />{/if}
   {#each runsOf(fields) as run (run.list?.edit ?? run.fields[0].edit)}
     {#if run.fields}
-      {@const halves = pairedHalves(run.fields)}
-      {#each run.fields as f (f.edit)}{@render field(f, halves.has(f.edit))}{/each}
+      <!-- v2: a widget's own fields each take a whole row (only a list item's pairs share one) -->
+      {#each run.fields as f (f.edit)}{@render field(f, false)}{/each}
     {:else}
       {@const f = run.list}
       {#if photoList(f)}
