@@ -1,5 +1,8 @@
 @use 'site-core/tokens' as *;
 
+// the display font's widest average glyph, in em: sizes the longest word of the name to fit
+$hero-em-per-char: 0.6;
+
 /* ---------------- Hero: name + scattered drifting photos ---------------- */
 .hero {
   position: relative;
@@ -25,7 +28,12 @@
     gap: 0.18em;
     font-family: var(--f-display);
     font-weight: 400;
-    font-size: clamp(64px, 14.2vw, 270px);
+    // capped so the longest word (--hero-word characters, set by the hero widget) fits the
+    // screen: a long name wraps between words instead of running off both sides
+    font-size: min(
+      clamp(64px, 14.2vw, 270px),
+      calc((100vw - 2 * var(--pad)) / (var(--hero-word, 1) * #{$hero-em-per-char}))
+    );
     line-height: 0.82;
     letter-spacing: -0.02em;
     white-space: nowrap;
@@ -35,9 +43,12 @@
   // The name (pages/index.json → hero.title), one span per word.
   &__name {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 0.18em;
+    gap: 0 0.18em;
+    max-width: 100%;
+    padding: 0 var(--pad);
     > span {
       display: inline-block;
     }
@@ -90,7 +101,10 @@
       inset: 0 0 90px;
     }
     &__title {
-      font-size: 27vw;
+      font-size: min(
+        27vw,
+        calc((100vw - 2 * var(--pad)) / (var(--hero-word, 1) * #{$hero-em-per-char}))
+      );
       line-height: 0.86;
     }
     &__name {

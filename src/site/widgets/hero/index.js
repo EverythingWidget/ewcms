@@ -27,6 +27,20 @@ const heroPhoto = (ctx, b, p, i) => {
   </a>`;
 };
 
+/**
+ * Characters in the name's longest word: the theme caps the name's size by it (hero__title in
+ * theme-default/styles/_home.scss), so a long name wraps between words and its longest word
+ * still fits the screen.
+ */
+export const longestWord = (text) =>
+  Math.max(
+    1,
+    ...String(text ?? '')
+      .trim()
+      .split(/\s+/)
+      .map((w) => [...w].length),
+  );
+
 /** The big name over scattered photos (photos: [{ src, link, label, x, y, w, phone?: { x?, y?, w? } | null, depth?, layer? }]). */
 export const hero = {
   type: 'hero',
@@ -52,7 +66,11 @@ export const hero = {
       <div class="hero__photos" data-anim="hero.photos">
         ${(s.photos || []).map((p, i) => heroPhoto(ctx, b, p, i))}
       </div>
-      <h1 class="hero__title" data-anim="hero.title">
+      <h1
+        class="hero__title"
+        data-anim="hero.title"
+        style="--hero-word: ${longestWord(s.title ?? ctx.site.name)}"
+      >
         <span class="hero__name" ${b.ed('title', 'words')}
           >${words(s.title ?? ctx.site.name)}</span
         >
