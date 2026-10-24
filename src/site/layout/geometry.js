@@ -70,6 +70,36 @@ export function rectOf(el, win) {
   return { x: r.left + win.scrollX, y: r.top + win.scrollY, w: r.width, h: r.height };
 }
 
+/**
+ * The page-relative rect a widget element shows: its own box joined with what overflows it
+ * (a button's pill wider than its grid area: overflow visible), not past an element that clips
+ * (overflow other than visible: its box). Hidden and empty boxes add nothing.
+ */
+export function boxOf(el, win) {
+  const r = el.getBoundingClientRect();
+  let l = r.left,
+    t = r.top,
+    rt = r.right,
+    b = r.bottom;
+  const clips = (n) => win.getComputedStyle(n).overflow !== 'visible';
+  if (!clips(el)) {
+    const walk = (n) => {
+      for (const k of n.children) {
+        const q = k.getBoundingClientRect();
+        if (q.width && q.height) {
+          l = Math.min(l, q.left);
+          t = Math.min(t, q.top);
+          rt = Math.max(rt, q.right);
+          b = Math.max(b, q.bottom);
+        }
+        if (!clips(k)) walk(k);
+      }
+    };
+    walk(el);
+  }
+  return { x: l + win.scrollX, y: t + win.scrollY, w: rt - l, h: b - t };
+}
+
 const px = (v) => v.split(' ').map(parseFloat).filter(Number.isFinite);
 
 /** Where free space goes before the tracks: 0 (start), 0.5 (center) or 1 (end). */

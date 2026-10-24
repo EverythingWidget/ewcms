@@ -54,12 +54,14 @@ import {
   linesOf,
   linkOfEl as linkAttr,
   nearest,
+  boxOf,
   rectOf,
   tracksOf,
 } from '../site/layout/geometry.js';
 import { PHONE_MAX } from '../site/layout/grid.js';
 import { clampDelta, hits, offscreen, selectedIds, toggle } from './multi-select.js';
 import { T } from './ui-tokens.js';
+import { shownPlace, tagHtml } from './widget-tag.js';
 
 const MOBILE = PHONE_MAX;
 const HANDLES = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
@@ -86,7 +88,8 @@ const STYLE = `
 .dim { position: absolute; background: rgb(0 0 0 / .4); }
 .sel { border: 2px solid ${T.accent}; }
 .sel.is-dragging { background: ${T.accent}; background: rgb(${T.accentRgb} / .08); }
-.label { position: absolute; right: 0; bottom: 100%; margin-bottom: 4px; padding: 4px 8px; border-radius: ${T.radiusSm}; background: ${T.accent}; color: ${T.black}; white-space: nowrap; }
+.label { position: absolute; right: 0; bottom: 100%; margin-bottom: 8px; padding: 4px 8px; border-radius: ${T.radiusSm}; background: ${T.accent}; color: ${T.black}; font: 500 12px/1 ${T.font}; white-space: nowrap; }
+.label .ch { margin: 0 -4px; padding: 0 4px; border-radius: ${T.radiusXs}; background: ${T.black}; color: ${T.accent}; font-weight: inherit; }
 .handle { position: absolute; width: 12px; height: 12px; translate: -50% -50%; box-sizing: border-box; border: 2px solid ${T.accent}; border-radius: ${T.radiusXs}; background: ${T.black}; pointer-events: auto; }
 .handle[data-h='n'], .handle[data-h='s'] { left: 50%; cursor: ns-resize; }
 .handle[data-h='e'], .handle[data-h='w'] { top: 50%; cursor: ew-resize; }
@@ -147,9 +150,20 @@ export function createOverlay({
   let win = null;
   let root = null; // the shadow root's layer
   let raf = 0;
+  // the loop idles: kick() runs it for IDLE ms more (the page, the pointer or a key changed)
+  const IDLE = 500;
+  let idleUntil = 0;
+  let anims = 0; // the preview's running transitions and animations
+  let frames = 0; // frames drawn (the tests count them)
+  const now = () => performance.now();
+  function kick() {
+    idleUntil = now() + IDLE;
+    if (!raf && win && root) raf = win.requestAnimationFrame(frame);
+  }
   let drag = null;
   let linking = null;
   let hover = null;
+  let tagShown = ''; // the tag's HTML now (set only when it changes)
   let hoverSec = null;
   let sizing = null; // a section's bottom edge being dragged
   let gridKey = '';
@@ -193,6 +207,9 @@ export function createOverlay({
     host.style.cssText = 'position:absolute;left:0;top:0;width:0;height:0;z-index:2147483645;';
     const shadow = host.attachShadow({ mode: 'open' });
     const dots = '<i class="dot" data-dot="top"></i><i class="dot" data-dot="bottom"></i>';
+    linkEls.clear();
+    svgSize = '';
+    tempPath = null;
     shadow.innerHTML = `<style>${STYLE}</style><div class="layer"><div class="grids"></div><svg class="links" xmlns="${SVG}"></svg><div class="dims"></div><div class="box peek" hidden><span class="tag"></span></div><div class="secrow" hidden><span class="count"></span></div><div class="box hover" hidden></div><div class="box sel" hidden><span class="label"></span>${HANDLES.map((h) => `<i class="handle" data-h="${h}"></i>`).join('')}${dots}</div><div class="targets"></div><div class="multi"></div><div class="marquee" hidden></div><div class="blocks"></div></div>`;
     root = shadow.querySelector('.layer');
     els.grids = root.querySelector('.grids');
@@ -227,7 +244,7 @@ export function createOverlay({
         e.preventDefault();
         e.stopPropagation();
         ui.link = link;
-        if (!raf) raf = win.requestAnimationFrame(frame);
+        kick();
       }
     });
     // the filled top circle hovered: the widgets it may link to show (their empty circles, a dim frame)
@@ -301,12 +318,57 @@ export function createOverlay({
   const bottomDot = (r) => [r.x + r.w / 2, r.y + r.h + DOT];
   const topDot = (r) => [r.x + r.w / 2, r.y - DOT];
 
+  // the link lines kept between frames, by follower id: a change sets only what changed
+  const linkEls = new Map();
+  let svgSize = '';
+  let tempPath = null;
+  const R = (v) => Math.round(v * 10) / 10;
+  const attr = (n, k, v) => {
+    if (n.getAttribute(k) !== v) n.setAttribute(k, v);
+  };
+  const svgEl = (tag, cls) => {
+    const n = doc.createElementNS(SVG, tag);
+    n.setAttribute('class', cls);
+    return n;
+  };
+  /** The tag's rect on the page (the gap labels keep clear of it), or null. */
+  function tagRect() {
+    if (els.sel.hidden) return null;
+    const r = els.label.getBoundingClientRect();
+    return r.width
+      ? { x: r.left + win.scrollX, y: r.top + win.scrollY, w: r.width, h: r.height }
+      : null;
+  }
+  /**
+   * A gap label's place: left of the line's middle (the tag sits at the follower's top right),
+   * further left when it would still touch the tag. Returns [x, y] for text-anchor end.
+   */
+  function gapAt(mx, my, text, tag) {
+    const w = text.length * 7.3; // DM Mono 12px
+    let x = mx - 6;
+    const y = my + 4;
+    if (
+      tag &&
+      x > tag.x - 4 &&
+      x - w < tag.x + tag.w + 4 &&
+      y > tag.y - 4 &&
+      y - 12 < tag.y + tag.h + 4
+    )
+      x = tag.x - 8;
+    return [R(x), R(y)];
+  }
+
   /** The links of the shown sections as lines (and the one being dragged). */
   function drawLinks() {
-    const parts = [];
     const h = doc.documentElement;
-    els.links.setAttribute('width', h.scrollWidth);
-    els.links.setAttribute('height', h.scrollHeight);
+    const size = `${h.scrollWidth}x${h.scrollHeight}`;
+    if (size !== svgSize) {
+      svgSize = size;
+      els.links.setAttribute('width', h.scrollWidth);
+      els.links.setAttribute('height', h.scrollHeight);
+    }
+    const seen = new Set();
+    const tag = tagRect();
     if (arranging())
       for (const sec of doc.querySelectorAll('[data-sec]:not([hidden])'))
         for (const el of live(sec) ? widgetsIn(sec) : []) {
@@ -314,27 +376,53 @@ export function createOverlay({
           if (!l || el.hidden || linking?.el === el) continue;
           const lead = widgetsIn(sec).find((n) => n.dataset.widget === l.to);
           if (!lead || lead.hidden) continue;
-          const [x1, y1] = bottomDot(rectOf(lead, win));
-          const [x2, y2] = topDot(rectOf(el, win));
+          const [x1, y1] = bottomDot(boxOf(lead, win)).map(R);
+          const [x2, y2] = topDot(boxOf(el, win)).map(R);
           const id = el.dataset.widget;
+          seen.add(id);
+          let e = linkEls.get(id);
+          if (!e) {
+            e = {
+              line: svgEl('path', 'link'),
+              hit: svgEl('path', 'hit'),
+              gap: svgEl('text', 'gap'),
+            };
+            e.hit.dataset.link = id;
+            e.gap.setAttribute('text-anchor', 'end');
+            els.links.append(e.line, e.hit, e.gap);
+            linkEls.set(id, e);
+          }
           const d = curve(x1, y1, x2, y2);
+          attr(e.line, 'd', d);
+          attr(e.hit, 'd', d);
+          attr(e.line, 'class', ui.link === id ? 'link is-sel' : 'link');
           const near = [ui.widget, ui.link].includes(id) || ui.widget === l.to;
-          parts.push(
-            `<path class="link${ui.link === id ? ' is-sel' : ''}" d="${d}"/>` +
-              `<path class="hit" data-link="${id}" d="${d}"/>` +
-              (near
-                ? `<text class="gap" x="${(x1 + x2) / 2 + 6}" y="${(y1 + y2) / 2 + 3}">gap ${gapOf(id, l)}</text>`
-                : ''),
-          );
+          e.gap.style.display = near ? '' : 'none';
+          if (near) {
+            const text = `gap ${gapOf(id, l)}`;
+            if (e.gap.textContent !== text) e.gap.textContent = text;
+            const [gx, gy] = gapAt((x1 + x2) / 2, (y1 + y2) / 2, text, tag);
+            attr(e.gap, 'x', `${gx}`);
+            attr(e.gap, 'y', `${gy}`);
+          }
         }
-    if (linking?.to)
-      parts.push(`<path class="link is-temp" d="${curve(...linking.to, ...linking.from)}"/>`);
-    const html = parts.join('');
-    if (els.links.innerHTML !== html) els.links.innerHTML = html;
+    for (const [id, e] of linkEls)
+      if (!seen.has(id)) {
+        e.line.remove();
+        e.hit.remove();
+        e.gap.remove();
+        linkEls.delete(id);
+      }
+    if (linking?.to) {
+      tempPath ??= els.links.appendChild(svgEl('path', 'link is-temp'));
+      attr(tempPath, 'd', curve(...linking.to.map(R), ...linking.from.map(R)));
+    } else if (tempPath) {
+      tempPath.remove();
+      tempPath = null;
+    }
   }
 
   // the selected widget's tag: its type only (its gap shows on its link line, live)
-  const labelOf = (b) => b?.type || 'widget';
 
   // a link's gap as shown: the dragged widget's live one (show()), else the stored one
   const gapOf = (id, l) => (drag?.id === id && drag.gap != null ? drag.gap : l.gap);
@@ -382,11 +470,16 @@ export function createOverlay({
     const sel = arrange ? widgetEl(ui.widget) : null;
     els.sel.hidden = !sel;
     if (sel) {
-      place(els.sel, rectOf(sel, win));
+      place(els.sel, boxOf(sel, win));
       const b = widgetOf(ui.widget);
       els.sel.classList.toggle('is-free', sizeOf(b) !== 'rows');
-      const label = labelOf(b);
-      if (els.label.textContent !== label) els.label.textContent = label;
+      // its size and place, the snapped ones while dragged or resized (widget-tag.js)
+      const dragging = drag?.id === ui.widget && drag.pos;
+      const label = tagHtml(
+        dragging ? drag.pos : shownPlace(sel, win),
+        dragging ? drag.from : null,
+      );
+      if (label !== tagShown) els.label.innerHTML = tagShown = label;
     }
     // the section card hovered in the Content tab, else the one selected while the list shows:
     // its section (under the widget boxes)
@@ -423,9 +516,13 @@ export function createOverlay({
         : null;
     els.hover.hidden = !h;
     if (h) {
-      place(els.hover, rectOf(h, win));
+      place(els.hover, boxOf(h, win));
     }
-    if (shown()) raf = win.requestAnimationFrame(frame);
+    frames++;
+    // again only while something moves: a drag, a resize, a box, a link drawn, a running
+    // transition or animation, or for a moment after the page, the pointer or a key changed
+    if (shown() && (drag || group || boxing || sizing || linking || anims > 0 || now() < idleUntil))
+      raf = win.requestAnimationFrame(frame);
   }
 
   // ---- multi-select (multi-select.js): two or more widgets, one section, all alike
@@ -436,7 +533,7 @@ export function createOverlay({
     const boxes = els.multi.children;
     while (boxes.length > els2.length) boxes[boxes.length - 1].remove();
     while (boxes.length < els2.length) els.multi.append(doc.createElement('div'));
-    const rs = els2.map((n) => rectOf(n, win));
+    const rs = els2.map((n) => boxOf(n, win));
     rs.forEach((r, i) => {
       boxes[i].className = `box sel${group ? ' is-dragging' : ''}`;
       place(boxes[i], r);
@@ -630,7 +727,7 @@ export function createOverlay({
     win.addEventListener('pointermove', moveBox, true);
     win.addEventListener('pointerup', endBox, true);
     win.addEventListener('keydown', cancelBox, true);
-    if (!raf) raf = win.requestAnimationFrame(frame);
+    kick();
   }
 
   function moveBox(e) {
@@ -648,7 +745,7 @@ export function createOverlay({
     const rects = Object.fromEntries(
       widgetsIn(sec)
         .filter((n) => !n.hidden && widgetOf(n.dataset.widget))
-        .map((n) => [n.dataset.widget, rectOf(n, win)]),
+        .map((n) => [n.dataset.widget, boxOf(n, win)]),
     );
     const ids = [...new Set([...boxing.base, ...hits(rects, boxing.box)])];
     if (ids.join() !== selectedIds(ui).join()) onselect(ids);
@@ -864,7 +961,7 @@ export function createOverlay({
     win.addEventListener('pointermove', moveRows, true);
     win.addEventListener('pointerup', endRows, true);
     win.addEventListener('keydown', cancelRows, true);
-    if (!raf) raf = win.requestAnimationFrame(frame);
+    kick();
   }
 
   function moveRows(e) {
@@ -915,12 +1012,12 @@ export function createOverlay({
       .map((n) => widgetOf(n.dataset.widget))
       .filter(Boolean);
     const targets = showTargets(el, sec, phone, widgets);
-    linking = { el, id, sec, phone, targets, near: null, from: topDot(rectOf(el, win)), to: null };
+    linking = { el, id, sec, phone, targets, near: null, from: topDot(boxOf(el, win)), to: null };
     noSelect(true);
     win.addEventListener('pointermove', moveLink, true);
     win.addEventListener('pointerup', endLink, true);
     win.addEventListener('keydown', cancelLink, true);
-    if (!raf) raf = win.requestAnimationFrame(frame);
+    kick();
   }
 
   /**
@@ -936,7 +1033,7 @@ export function createOverlay({
     const targets = widgetsIn(sec)
       .filter((n) => n !== el && !n.hidden && !makesLoop(widgets, id, n.dataset.widget, phone))
       .map((n) => {
-        const r = rectOf(n, win);
+        const r = boxOf(n, win);
         const [x, y] = bottomDot(r);
         const frame = doc.createElement('div');
         frame.className = 'tframe';
@@ -1034,7 +1131,7 @@ export function createOverlay({
   const trackMod = (e) => {
     const on = e.ctrlKey || e.metaKey;
     if (ui.mod !== on) ui.mod = on;
-    if (on && !raf && win) raf = win.requestAnimationFrame(frame);
+    if (on && win) kick();
   };
   function onkeydown(e) {
     trackMod(e);
@@ -1127,23 +1224,63 @@ export function createOverlay({
       doc.addEventListener('keydown', onkeydown, true);
       doc.addEventListener('keyup', trackMod, true);
       win.addEventListener('blur', () => (ui.mod = false));
+      // what moves the page: the loop runs for it, then idles
+      anims = 0;
+      const opts = { capture: true, passive: true };
+      for (const t of [
+        'pointermove',
+        'pointerover',
+        'pointerout',
+        'keydown',
+        'keyup',
+        'wheel',
+        'input',
+      ])
+        doc.addEventListener(t, kick, opts);
+      win.addEventListener('scroll', kick, opts);
+      win.addEventListener('resize', kick, opts);
+      // an endless one (a pulse) is followed by neither: the loop would never idle
+      const endless = (e) =>
+        e.type.startsWith('animation') &&
+        /infinite/.test(win.getComputedStyle(e.target).animationIterationCount);
+      for (const t of ['transitionrun', 'animationstart'])
+        doc.addEventListener(t, (e) => (endless(e) || anims++, kick()), opts);
+      for (const t of ['transitionend', 'transitioncancel', 'animationend', 'animationcancel'])
+        doc.addEventListener(
+          t,
+          (e) => (endless(e) || (anims = Math.max(0, anims - 1)), kick()),
+          opts,
+        );
+      new win.MutationObserver(kick).observe(doc.documentElement, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        characterData: true,
+      });
+      new win.ResizeObserver(kick).observe(doc.documentElement);
       this.refresh();
     },
-    /** ui.mode, ui.widget or ui.link changed: show or hide what they ask for. */
     /** Widget `id` scrolled to (centred) only when it is out of the preview's view. */
     reveal(id) {
       const el = doc && widgetEl(id);
       if (el && offscreen(el.getBoundingClientRect(), win.innerHeight))
         el.scrollIntoView({ block: 'center', behavior: 'smooth' });
     },
+    /** ui.mode, ui.widget or ui.link changed: show or hide what they ask for. */
     refresh() {
       if (!doc || !root) return;
       gridKey = '';
       if (!shown()) els.grids.replaceChildren();
-      if (!raf) raf = win.requestAnimationFrame(frame);
+      kick();
     },
     /** The editor's Delete with a link selected (its focus outside the preview). */
     deleteLink,
+    /** The loop run for a moment (the editor's panel changed what shows: main.js). */
+    kick,
+    /** Frames drawn so far (the loop idles: tests). */
+    get frames() {
+      return frames;
+    },
     /** Arrow keys: the selection moved by (dc, dr) cells. */
     nudge,
   };

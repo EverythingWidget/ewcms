@@ -6,7 +6,10 @@
 -->
 <script>
   import { NEW_ROWS, layerWidget, setWidget } from '../layout-ops.js';
-  import { ASPECTS, baseOf, ratioOf, sizeOf } from '../../site/layout/index.js';
+  import { ASPECTS, baseOf, linkOf, ratioOf, sizeOf } from '../../site/layout/index.js';
+  import { WIDGET_TYPES } from '../../site/widgets/index.js';
+  import { nameOf } from './content-groups.js';
+  import { ui } from './ui.svelte.js';
 
   let { live, bridge, file, at, j, id, widget } = $props();
 
@@ -14,6 +17,13 @@
   const ratio = $derived(widget.aspect || '4:5');
   const set = (patch, key) => setWidget(live.store, file, at, j, patch, key);
   const layer = (dir) => layerWidget(live.store, file, at, j, dir);
+  // what it follows (was the widget toolbar's Info; its size and place: the preview's tag)
+  const link = $derived(linkOf(widget, ui.viewport === 'mobile'));
+  const leader = $derived.by(() => {
+    if (!link) return '';
+    const b = (live.get(file, `/sections/${at}`)?.widgets || []).find((w) => w?.id === link.to);
+    return b ? nameOf(b) || WIDGET_TYPES[b.type]?.label || b.id : link.to;
+  });
 
   // the rows it shows now (the preview's), so a size it is given keeps its height
   function shownRows() {
@@ -174,6 +184,9 @@
       >
     </div>
   </div>
+  <p class="hint small wl__link">
+    {#if link}Follows {leader}, gap {link.gap}{:else}Free (not linked){/if}
+  </p>
 </div>
 
 <style lang="scss">

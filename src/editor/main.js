@@ -147,6 +147,10 @@ const overlay = createOverlay({
     return (typeof name === 'string' && name.trim()) || `Section ${at + 1}`;
   },
 });
+// the panels change what the overlay shows (a row picked or hovered, a key): its loop runs
+// for a moment, then idles again
+for (const t of ['pointerdown', 'pointermove', 'pointerup', 'keydown', 'keyup', 'input', 'wheel'])
+  document.addEventListener(t, () => overlay.kick(), { capture: true, passive: true });
 
 restoreUi(bridge, live); // the tab, sections, ...: from the URL and sessionStorage (svelte/persist.js)
 

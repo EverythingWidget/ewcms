@@ -10,11 +10,16 @@
   Two or more widgets selected (ui.multi, multi-select.js): widget mode, what they share:
     [ 3 widgets                 eye  copy  layer↓  layer↑  trash ]
   each one undo step for all of them (Delete too: undo brings them back); the same 40px row.
-    live, file, onsection(id), onadd(at), deleting (bindable)
+  One widget selected (ui.widget): its actions, as its row had them, and its settings:
+    [ Button                locate  eye  copy  layer↓  layer↑  trash  gear ]
+  gear: its pop-up (as a double click on it, ui.popup).
+    live, file, bridge, onsection(id), onadd(at), deleting (bindable)
 -->
 <script>
   import Button from './Button.svelte';
   import { ui, selectWidgets } from './ui.svelte.js';
+  import { locate } from '../locate.js';
+  import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import {
     duplicateSection,
     duplicateWidgets,
@@ -27,7 +32,7 @@
 
   // (deleting is only set here, read by the card asking: SectionCard.svelte)
   // eslint-disable-next-line no-useless-assignment
-  let { live, file, onsection, onadd, deleting = $bindable('') } = $props();
+  let { live, file, bridge, onsection, onadd, deleting = $bindable('') } = $props();
 
   const sections = $derived.by(() => {
     live.version;
@@ -58,10 +63,10 @@
   }
   const move = (to) => moveSection(live.store, file, at, to);
 
-  // ---- widget mode: two or more widgets selected (all in one section)
+  // ---- widget mode: one widget selected, or several (all in one section)
   const group = $derived.by(() => {
-    const ids = ui.multi;
-    if (ids.length < 2) return null;
+    const ids = ui.multi.length > 1 ? ui.multi : ui.widget ? [ui.widget] : [];
+    if (!ids.length) return null;
     for (const [k, sec] of sections.entries()) {
       const widgets = (sec?.widgets || []).filter((b) => ids.includes(b?.id));
       if (widgets.length) return { at: k, ids: widgets.map((b) => b.id), widgets };
@@ -74,6 +79,11 @@
     run(removeWidgets);
     selectWidgets([]);
   }
+  const one = $derived(group?.ids.length === 1);
+  const oneLabel = $derived(
+    one ? WIDGET_TYPES[group.widgets[0]?.type]?.label || group.widgets[0]?.type || 'Widget' : '',
+  );
+  const them = $derived(one ? 'it' : 'them');
   function duplicateGroup() {
     const copies = run(duplicateWidgets);
     if (copies?.length) selectWidgets(copies);
@@ -82,17 +92,26 @@
 
 <div class="stb" role="toolbar" aria-label={group ? 'Selected widgets' : 'Section'}>
   {#if group}
-    <p class="stb__count">{group.ids.length} widgets</p>
+    <p class="stb__count">{one ? oneLabel : `${group.ids.length} widgets`}</p>
     <span class="stb__gap"></span>
+    {#if one}
+      <Button
+        size="small"
+        icon="location-crosshairs"
+        iconOnly
+        label="Show it in the preview"
+        onclick={() => locate(bridge, group.ids[0])}
+      />
+    {/if}
     <Button
       size="small"
       icon={allOff ? 'eye-slash' : 'eye'}
       iconOnly
-      label={allOff ? 'Show them' : 'Hide them'}
-      title={allOff ? 'Hidden: click to show them' : 'Visible: click to hide them'}
+      label={allOff ? `Show ${them}` : `Hide ${them}`}
+      title={allOff ? `Hidden: click to show ${them}` : `Visible: click to hide ${them}`}
       onclick={() => run(showWidgets, allOff)}
     />
-    <Button size="small" icon="copy" iconOnly label="Duplicate them" onclick={duplicateGroup} />
+    <Button size="small" icon="copy" iconOnly label="Duplicate {them}" onclick={duplicateGroup} />
     <Button
       size="small"
       icon="angles-down"
@@ -107,7 +126,20 @@
       label="One layer up"
       onclick={() => run(layerWidgets, 1)}
     />
-    <Button size="small" icon="trash" iconOnly label="Delete them" onclick={removeGroup} />
+    <Button size="small" icon="trash" iconOnly label="Delete {them}" onclick={removeGroup} />
+    {#if one}
+      <Button
+        size="small"
+        icon="gear"
+        iconOnly
+        label="Settings of {oneLabel}"
+        title="Settings (or double-click it)"
+        onclick={() => {
+          ui.popup = true;
+          ui.widgetTab = 'content';
+        }}
+      />
+    {/if}
   {:else if s}
     <button
       type="button"

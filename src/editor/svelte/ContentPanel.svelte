@@ -288,6 +288,7 @@
     <SectionToolbar
       {live}
       {file}
+      {bridge}
       bind:deleting
       onsection={enterSection}
       onadd={(at) => widgetsModal.open(at)}

@@ -19,7 +19,7 @@
   import Section from './Section.svelte';
   import WidgetRow from './WidgetRow.svelte';
   import { listDrag, rowsOf } from './list-drag.svelte.js';
-  import { duplicateWidget, moveWidget, removeWidget, removeSection } from '../layout-ops.js';
+  import { moveWidget, removeSection } from '../layout-ops.js';
 
   let {
     live,
@@ -63,15 +63,6 @@
     swallowClick: true,
   });
   const drag = $derived(ld.drag);
-
-  function setWidgetOn(j, show) {
-    live.store.set(
-      file,
-      `/sections/${at}/widgets/${j}/config`,
-      { ...widgets[j].config, enabled: show ? undefined : false },
-      { source: 'panel' },
-    );
-  }
 
   // ---- multi-select (multi-select.js): Ctrl/Cmd+click toggles a row, Shift+click selects from
   // the row clicked last; only within one section: while Ctrl/Cmd is held with a selection in
@@ -159,12 +150,6 @@
           on
             ? (ui.hot = { id: b.id, from: 'panel' })
             : ui.hot?.from === 'panel' && ui.hot.id === b.id && (ui.hot = null)}
-        onshow={(show) => setWidgetOn(j, show)}
-        onduplicate={() => duplicateWidget(live.store, file, at, j)}
-        ondelete={() => {
-          if (ui.multi.includes(b.id)) selectWidgets(ui.multi.filter((x) => x !== b.id));
-          removeWidget(live.store, file, at, j);
-        }}
         ongrab={(e) => ld.grab(e, { id: b.id, j })}
         lifted={drag?.id === b.id && drag.moving}
         dy={drag?.dy ?? 0}

@@ -7,22 +7,21 @@
               text's longest line fills the widget's width, type.js "fit"), B, I, link
               (the selected text only: greyed with nothing selected or when not editing),
               + Field (a field of the item the widget shows, or a count, at the caret)
-    info      Info (where it is, what it follows)
 
-  Selected, a widget with text shows Edit and Info; its text tools only in its edit mode (Edit,
+  Selected, a widget with text shows Edit (where it is: the overlay's tag, its size and place;
+  what it follows: its link line and its pop-up's Layout); its text tools only in its edit mode (Edit,
   or a double click on the widget; Esc or a click outside ends it, no Done). A single click
   only selects. Menus open under their own button and stay open after a pick.
 
   Its layout (size, layer) is on the widget's card only (WidgetLayout.svelte); the
-  keys [ and ] still move it down / up a layer (App.svelte). A widget without text has Info
-  only. A narrow widget puts the text marks into a "…" menu. The edit itself is bridge.js's
+  keys [ and ] still move it down / up a layer (App.svelte). A widget without text has none
+  (nothing shows). A narrow widget puts the text marks into a "…" menu. The edit itself is bridge.js's
   (rich.js).
 -->
 <script>
   import { ui } from './ui.svelte.js';
   import { targetFile } from '../layout-sync.js';
   import { schemaFor } from './source-items.js';
-  import { linkOf, phoneAreaOf, placeOf, baseOf } from '../../site/layout/index.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import { sourceFile, sourceIds as sourceIdsOf } from '../../site/files.js';
   import { sourceOf } from '../../site/layout/source.js';
@@ -39,7 +38,6 @@
     styleLabel,
     toggleMark,
   } from '../../site/text.js';
-  import { nameOf } from './content-groups.js';
   import { MOD } from '../lib/format.js';
 
   let { live, bridge } = $props();
@@ -64,7 +62,6 @@
   });
   const type = $derived(WIDGET_TYPES[widget?.type] || {});
   const hasText = $derived(!!type.fields?.some((f) => f.type === 'rich'));
-  const phone = $derived(ui.viewport === 'mobile');
   const rich = $derived(ui.rich && ui.rich.widget === where?.id ? ui.rich : null);
   const editing = $derived(!!rich);
   const style = $derived(rich ? rich.style : widget?.body?.[0]?.style || 'paragraph');
@@ -77,12 +74,11 @@
 
   // ---- where it is drawn: the widget's box in the frame, on the stage, every frame
   let box = $state(null); // { x, y, w, h, frameTop, frameBottom }
-  let shownRows = $state(null);
   let hidden = $state(false);
   // its section shown from the panel (the widget's section card hovered): none, as the frame
   const peeking = $derived(ui.peek?.from === 'panel');
   // shown: a widget picked, its box known, no drag and no peek (else hidden, still mounted)
-  const shown = $derived(!!(where && widget && pos && !hidden && !peeking));
+  const shown = $derived(!!(where && widget && hasText && pos && !hidden && !peeking));
   $effect(() => {
     if (!where) return void (box = null);
     const id = where.id;
@@ -111,9 +107,6 @@
       // a drag in the preview (overlay.js holds the rows): out of the way
       const drag = doc.documentElement.hasAttribute('data-flow-hold');
       if (drag !== hidden) hidden = drag;
-      const v = (k) => parseInt(el.style.getPropertyValue(k), 10);
-      const rows = { row: v('--fr'), rows: v('--frs') };
-      if (shownRows?.row !== rows.row || shownRows?.rows !== rows.rows) shownRows = rows;
     };
     tick();
     return () => cancelAnimationFrame(raf);
@@ -209,7 +202,7 @@
   });
   // the edit ended (Esc, a click elsewhere): its text tools' menus go with it
   $effect(() => {
-    if (!rich && untrack(() => open) !== 'info') open = null;
+    if (!rich) open = null;
   });
   // Ctrl+K while editing: the link box
   $effect(() =>
@@ -279,25 +272,6 @@
       return { body: insertRun(body, at, run), sel: { from: next, to: next } };
     });
   }
-
-  // ---- layout (as the Layout tab had it)
-  const area = $derived.by(() => {
-    if (!widget) return null;
-    const a = phone ? phoneAreaOf(widget) : placeOf(baseOf(widget));
-    const ok = (n) => Number.isInteger(n) && n > 0;
-    return {
-      ...a,
-      row: ok(shownRows?.row) ? shownRows.row : a.row,
-      rows: ok(shownRows?.rows) ? shownRows.rows : a.rows,
-    };
-  });
-  const link = $derived(widget ? linkOf(widget, phone) : null);
-  const leaderName = $derived.by(() => {
-    if (!link || !where) return '';
-    const s = live.get(where.file, `/sections/${where.at}`) || {};
-    const leader = (s.widgets || []).find((b) => b?.id === link.to);
-    return leader ? nameOf(leader) || WIDGET_TYPES[leader.type]?.label || leader.id : link.to;
-  });
 </script>
 
 {#snippet styleMenu()}
@@ -356,28 +330,6 @@
   >
 {/snippet}
 
-{#snippet infoPanel()}
-  <span class="btb__grp">{phone ? 'Phone layout' : 'Desktop layout'}</span>
-  <span class="btb__info">col {area.col} · row {area.row} · {area.span} × {area.rows}</span>
-  <span class="btb__info"
-    >{#if link}follows {leaderName}, gap {link.gap}{:else}free (not linked){/if}</span
-  >
-  <span class="btb__hint"
-    >Drag it to move, its handles to resize, its top circle onto another widget's bottom circle to
-    link it.</span
-  >
-{/snippet}
-
-{#snippet infoButton()}
-  <button
-    type="button"
-    class={['btb__btn btb__icon', open === 'info' && 'is-open']}
-    aria-label="Where it is"
-    title="Where it is"
-    onclick={(e) => toggle('info', e)}
-    ><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button
-  >
-{/snippet}
 
 <!-- one element for the whole session: hidden when nothing shows, only its content swaps -->
 <div
@@ -427,7 +379,6 @@
         {/if}
         {#if level === 0}{@render marks()}{/if}
       {/if}
-      {@render infoButton()}
       {#if level > 0}
         <button
           type="button"
@@ -447,8 +398,6 @@
       >
         {#if open === 'style'}
           {@render styleMenu()}
-        {:else if open === 'info'}
-          {@render infoPanel()}
         {:else if open === 'link'}
           <form class="btb__row" onsubmit={saveLink}>
             <input
