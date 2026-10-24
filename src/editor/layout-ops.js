@@ -368,10 +368,12 @@ function gapAt(section, link, row, flow = {}, phone = false) {
  * drag); key: typing in a number field coalesces (see writeSection). flow: where the other
  * widgets are now (storeFlow).
  */
-export function placeWidget(store, file, at, j, pos, key, { flow, rows = 0 } = {}) {
+export function placeWidget(store, file, at, j, pos, key, { flow, rows = 0, size } = {}) {
   const section = listOf(store, file)[at];
   storeFlow(section, j, flow);
   const b = section.widgets[j];
+  // its height dragged: a Rows widget (first: an area keeps its rows only on Rows / Aspect)
+  if (size === 'rows') b.size = 'rows';
   const p = placeOf(pos);
   setBase(b, p);
   // a linked widget moved: its gap changes, it keeps following its leader
@@ -446,6 +448,29 @@ export function setWidget(store, file, at, j, patch, key) {
     setBase(widget, {});
     if (phoneOf(widget)) setPhone(widget, {});
   }
+  return writeSection(store, file, at, section, key);
+}
+
+/**
+ * Widget `j` of section `at`: its left column and / or width (columns) typed, as its handles
+ * would (clamped to the grid: 120 columns, the phone's 60; the width to what's right of its
+ * left). On the phone: its own phone area from then on. One undo step a key (typing merges).
+ */
+export function setColumns(store, file, at, j, { col, span }, { phone = false, key } = {}) {
+  const section = listOf(store, file)[at];
+  const b = section?.widgets?.[j];
+  if (!b) return false;
+  const cols = phone ? MCOLS : COLS;
+  const now = phone ? phoneAreaOf(b) : placeOf(baseOf(b));
+  const whole = (v, d) => (Number.isFinite(v) ? Math.round(v) : d);
+  const c = Math.min(Math.max(1, whole(col, now.col)), cols);
+  const s = Math.min(Math.max(1, whole(span, now.span)), cols - c + 1);
+  if (c === now.col && s === now.span) return false;
+  if (phone) {
+    const inherited = !hasMobileArea(phoneOf(b)) ? linkOf(b, true) : null;
+    setPhone(b, placeOf({ ...now, col: c, span: s }, MCOLS));
+    if (inherited) setPhone(b, { link: inherited });
+  } else setBase(b, { col: c, span: s });
   return writeSection(store, file, at, section, key);
 }
 

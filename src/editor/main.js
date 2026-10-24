@@ -119,11 +119,11 @@ const overlay = createOverlay({
     const b = widgetAt(ids[0]);
     if (b) moveWidgets(store, b.file, b.at, ids, dc, dr, { phone: mobile, flow, rows });
   },
-  onplace(id, pos, { mobile = false, flow = {}, rows = 0 } = {}) {
+  onplace(id, pos, { mobile = false, flow = {}, rows = 0, size } = {}) {
     const b = widgetAt(id);
     if (!b) return;
     if (mobile) placeMobile(store, b.file, b.at, b.j, pos, { flow, rows });
-    else placeWidget(store, b.file, b.at, b.j, pos, undefined, { flow, rows });
+    else placeWidget(store, b.file, b.at, b.j, pos, undefined, { flow, rows, size });
   },
   // a widget linked to another (its top circle dropped on that one's bottom circle) or freed
   onlink(id, to, gap, { mobile = false, row } = {}) {

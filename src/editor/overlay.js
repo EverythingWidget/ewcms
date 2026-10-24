@@ -102,7 +102,7 @@ const STYLE = `
 .edge { position: absolute; top: 0; bottom: 0; width: 12px; translate: -50% 0; pointer-events: auto; cursor: ew-resize; }
 .edge[data-h='w'] { left: 0; }
 .edge[data-h='e'] { left: 100%; }
-.sel.is-free .handle:not([data-h='e']):not([data-h='w']) { display: none; }
+.sel.is-free.is-phone .handle:not([data-h='e']):not([data-h='w']) { display: none; }
 .dot { position: absolute; left: 50%; width: 12px; height: 12px; translate: -50% -50%; box-sizing: border-box; border: 2px solid ${T.accent}; border-radius: 50%; background: ${T.black}; pointer-events: auto; }
 .dot[data-dot='top'] { top: -${DOT}px; background: ${T.accent}; cursor: grab; }
 .dot[data-dot='top']:hover { box-shadow: 0 0 0 4px rgb(${T.accentRgb} / .35); }
@@ -465,6 +465,7 @@ export function createOverlay({
       place(els.sel, boxOf(sel, win));
       const b = widgetOf(ui.widget);
       els.sel.classList.toggle('is-free', sizeOf(b) !== 'rows');
+      els.sel.classList.toggle('is-phone', mobile());
       // its size and place, the snapped ones while dragged or resized (widget-tag.js)
       const dragging = drag?.id === ui.widget && drag.pos;
       const label = tagHtml(
@@ -840,7 +841,9 @@ export function createOverlay({
       rows.ends[from.row + from.rows - 2] ??
       rows.ends.at(-1) + (from.row + from.rows - 1 - rows.ends.length) * step;
     let { col, span, row: r, rows: n } = from;
-    const free = sizeOf(widgetOf(drag.id)) !== 'rows';
+    // an Auto / Aspect widget's height follows its content / width; its top or bottom edge
+    // dragged (desktop) makes it a Rows widget of the rows dragged to (onplace's size)
+    const free = sizeOf(widgetOf(drag.id)) !== 'rows' && drag.phone;
     if (!h) {
       col = Math.min(Math.max(1, nearest(cols.starts, colStart + dx)), drag.cols - span + 1);
       r = Math.max(1, nearest(rows.starts, rowStart + dy, step));
@@ -908,9 +911,11 @@ export function createOverlay({
     const rows = drag.content || 0;
     const moved = ['col', 'span', 'row', 'rows'].some((k) => pos[k] !== from[k]);
     if (!moved) restore(); // a click changes nothing
+    const tall = /[ns]/.test(drag.h) && pos.rows !== from.rows;
+    const size = !phone && tall && sizeOf(widgetOf(id)) !== 'rows' ? 'rows' : undefined;
     stop();
     drag = null;
-    if (moved) onplace(id, pos, { mobile: phone, flow, rows });
+    if (moved) onplace(id, pos, { mobile: phone, flow, rows, size });
   }
 
   function cancel(e) {

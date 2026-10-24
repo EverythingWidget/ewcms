@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createStore } from '../src/editor/store.js';
-import { addSection, addWidget } from '../src/editor/layout-ops.js';
+import { addSection, addWidget, placeWidget, setColumns } from '../src/editor/layout-ops.js';
 import { COLS } from '../src/site/layout/index.js';
 import { checkContent } from '../src/site/validate.js';
 import { renderOp } from './editor-server.mjs';
@@ -68,4 +68,39 @@ test("v0.1.43: a selected widget's whole left / right edge resizes it", () => {
   const o = read('src/editor/overlay.js');
   assert.match(o, /<i class="edge" data-h="w"><\/i><i class="edge" data-h="e"><\/i>/);
   assert.match(o, /\.edge \{ position: absolute; top: 0; bottom: 0;[^}]*cursor: ew-resize; \}/);
+});
+
+test("v0.1.44: Width (columns) and Left (column) typed: the handles' grid fields, clamped, undo", () => {
+  const store = createStore();
+  store.load({ [F]: { version: 1, kind: 'page', id: 'pg-t144', sections: [] } });
+  addSection(store, F, 'text');
+  const base = () => store.current[F].sections[0].widgets[0].layout.base;
+  setColumns(store, F, 0, 0, { span: 60 }, { key: 'k1' });
+  assert.deepEqual([base().col, base().span], [1, 60]);
+  setColumns(store, F, 0, 0, { col: 100 }, { key: 'k2' });
+  assert.deepEqual([base().col, base().span], [100, 21]); // clamped to the grid's 120
+  setColumns(store, F, 0, 0, { col: -5, span: 999 }, { key: 'k3' });
+  assert.deepEqual([base().col, base().span], [1, COLS]);
+  assert.equal(setColumns(store, F, 0, 0, { span: 120 }), false); // no change, no step
+  store.undo();
+  assert.deepEqual([base().col, base().span], [100, 21]);
+  // the phone: its own phone area, 60 columns
+  setColumns(store, F, 0, 0, { col: 31, span: 50 }, { phone: true });
+  const ph = store.current[F].sections[0].widgets[0].layout.phone;
+  assert.deepEqual([ph.col, ph.span], [31, 30]);
+  assert.deepEqual(checkContent(F, store.current[F]), []);
+});
+
+test("v0.1.44: every handle shows on a selected widget; an Auto one's height dragged: Rows", () => {
+  const o = read('src/editor/overlay.js');
+  assert.match(o, /\.sel\.is-free\.is-phone \.handle:not/); // hidden on the phone only
+  assert.doesNotMatch(o, /\.sel\.is-free \.handle:not/);
+  const store = createStore();
+  store.load({ [F]: { version: 1, kind: 'page', id: 'pg-t145', sections: [] } });
+  addSection(store, F, 'text');
+  const b = () => store.current[F].sections[0].widgets[0];
+  store.current[F].sections[0].widgets[0].size = undefined;
+  placeWidget(store, F, 0, 0, { col: 1, span: 40, row: 1, rows: 20 }, undefined, { size: 'rows' });
+  assert.equal(b().size, 'rows');
+  assert.equal(b().layout.base.rows, 20);
 });

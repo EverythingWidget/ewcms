@@ -5,9 +5,20 @@
   WidgetToolbar.svelte.)
 -->
 <script>
+  import Field from './Field.svelte';
   import InfoHelp from './InfoHelp.svelte';
-  import { NEW_ROWS, layerWidget, setWidget } from '../layout-ops.js';
-  import { ASPECTS, baseOf, linkOf, ratioOf, sizeOf } from '../../site/layout/index.js';
+  import { NEW_ROWS, layerWidget, setColumns, setWidget } from '../layout-ops.js';
+  import {
+    ASPECTS,
+    COLS,
+    MCOLS,
+    baseOf,
+    linkOf,
+    phoneAreaOf,
+    placeOf,
+    ratioOf,
+    sizeOf,
+  } from '../../site/layout/index.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import { nameOf } from './content-groups.js';
   import { ui } from './ui.svelte.js';
@@ -25,6 +36,16 @@
     const b = (live.get(file, `/sections/${at}`)?.widgets || []).find((w) => w?.id === link.to);
     return b ? nameOf(b) || WIDGET_TYPES[b.type]?.label || b.id : link.to;
   });
+
+  // its left column and width (columns), typed: the same grid fields its handles write
+  const phoneView = $derived(ui.viewport === 'mobile');
+  const area = $derived(phoneView ? phoneAreaOf(widget) : placeOf(baseOf(widget)));
+  const cols = $derived(phoneView ? MCOLS : COLS);
+  const setCols = (patch, k) =>
+    setColumns(live.store, file, at, j, patch, {
+      phone: phoneView,
+      key: `layout:${file}#/sections/${at}/widgets/${j}/${phoneView ? 'phone/' : ''}${k}`,
+    });
 
   // the rows it shows now (the preview's), so a size it is given keeps its height
   function shownRows() {
@@ -191,6 +212,24 @@
       ></span
     >
   </div>
+  <Field
+    edit="{file}#/sections/{at}/widgets/{j}/layout/{phoneView ? 'phone' : 'base'}/span"
+    label="Width (columns)"
+    type="number"
+    half
+    value={area.span}
+    help={`1–${cols - area.col + 1} (the grid: ${cols})`}
+    onvalue={(v) => setCols({ span: v }, 'span')}
+  />
+  <Field
+    edit="{file}#/sections/{at}/widgets/{j}/layout/{phoneView ? 'phone' : 'base'}/col"
+    label="Left (column)"
+    type="number"
+    half
+    value={area.col}
+    help={`1–${cols}`}
+    onvalue={(v) => setCols({ col: v }, 'col')}
+  />
   <p class="hint small wl__link">
     {#if link}Follows {leader}, gap {link.gap}{:else}Free (not linked){/if}
   </p>
