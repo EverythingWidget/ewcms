@@ -85,7 +85,6 @@ const STYLE = `
 .peek { border-radius: 0; border: 1px solid ${T.peekLine}; }
 .peek .tag { position: absolute; left: -1px; bottom: 100%; margin-bottom: 4px; padding: 4px 8px; border-radius: ${T.radiusSm}; background: rgb(255 255 255 / .9); color: ${T.black}; white-space: nowrap; }
 .peek.is-inside .tag { left: 4px; top: 4px; bottom: auto; margin: 0; }
-.dim { position: absolute; background: rgb(0 0 0 / .4); }
 .sel { border: 2px solid ${T.accent}; }
 .sel.is-dragging { background: ${T.accent}; background: rgb(${T.accentRgb} / .08); }
 .label { position: absolute; right: 0; bottom: 100%; margin-bottom: 8px; padding: 4px 8px; border-radius: ${T.radiusSm}; background: ${T.accent}; color: ${T.black}; font: 500 12px/1 ${T.font}; white-space: nowrap; }
@@ -212,14 +211,13 @@ export function createOverlay({
     linkEls.clear();
     svgSize = '';
     tempPath = null;
-    shadow.innerHTML = `<style>${STYLE}</style><div class="layer"><div class="grids"></div><svg class="links" xmlns="${SVG}"></svg><div class="dims"></div><div class="box peek" hidden><span class="tag"></span></div><div class="secrow" hidden><span class="count"></span></div><div class="box hover" hidden></div><div class="box sel" hidden><span class="label"></span>${HANDLES.map((h) => `<i class="handle" data-h="${h}"></i>`).join('')}${dots}</div><div class="targets"></div><div class="multi"></div><div class="marquee" hidden></div><div class="blocks"></div></div>`;
+    shadow.innerHTML = `<style>${STYLE}</style><div class="layer"><div class="grids"></div><svg class="links" xmlns="${SVG}"></svg><div class="box peek" hidden><span class="tag"></span></div><div class="secrow" hidden><span class="count"></span></div><div class="box hover" hidden></div><div class="box sel" hidden><span class="label"></span>${HANDLES.map((h) => `<i class="handle" data-h="${h}"></i>`).join('')}${dots}</div><div class="targets"></div><div class="multi"></div><div class="marquee" hidden></div><div class="blocks"></div></div>`;
     root = shadow.querySelector('.layer');
     els.grids = root.querySelector('.grids');
     els.links = root.querySelector('.links');
     els.hover = root.querySelector('.hover');
     els.peek = root.querySelector('.peek');
     els.tag = root.querySelector('.tag');
-    els.dims = root.querySelector('.dims');
     els.sel = root.querySelector('.sel');
     els.label = root.querySelector('.label');
     els.targets = root.querySelector('.targets');
@@ -432,23 +430,11 @@ export function createOverlay({
   /**
    * The section card hovered in the Content tab, else the one selected (`sec`, null: none): a soft white 1px line on
    * its section and its name in a tag above its top edge, left (just inside it when there is
-   * no room above, e.g. the first section); the page's other sections dimmed to 60% by dark
-   * boxes over them. All on this layer: the page's own styles don't change (no reflow).
+   * no room above, e.g. the first section). Only it is outlined: nothing else is dimmed (a row
+   * hovered highlights, it doesn't fade the page). All on this layer: the page's own styles don't change (no reflow).
    */
   function drawPeek(sec) {
     els.peek.hidden = !sec;
-    const others = sec
-      ? [...doc.querySelectorAll('[data-sec]:not([hidden])')].filter(
-          (s) => s !== sec && live(s) && !s.parentElement.closest('[data-sec]'),
-        )
-      : [];
-    const dims = els.dims.children;
-    while (dims.length > others.length) dims[dims.length - 1].remove();
-    while (dims.length < others.length) els.dims.append(doc.createElement('div'));
-    others.forEach((s, i) => {
-      dims[i].className = 'dim';
-      place(dims[i], rectOf(s, win));
-    });
     if (!sec) return;
     const r = rectOf(sec, win);
     place(els.peek, r);
@@ -485,8 +471,13 @@ export function createOverlay({
     }
     // the section card hovered in the Content tab, else the one selected while the list shows:
     // its section (under the widget boxes)
+    // (a widget row hovered: only its widget is outlined, not its section too)
     const peekId =
-      ui.peek?.from === 'panel' ? ui.peek.id : !ui.widget && !ui.section && ui.selSection;
+      ui.hot?.from === 'panel'
+        ? null
+        : ui.peek?.from === 'panel'
+          ? ui.peek.id
+          : !ui.widget && !ui.section && ui.selSection;
     const p = (arrange || peeking) && !drag && peekId ? secById(peekId) : null;
     drawPeek(p);
     // a Custom section's bottom edge: the one being dragged, hovered, or the selected widget's
