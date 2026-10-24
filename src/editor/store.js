@@ -153,9 +153,9 @@ export function createStore() {
     /** Leaf changes per file, for the "changes" list. */
     changes: (file) => diff(tidy(file, base[file]), tidy(file, current[file])),
 
-    /** The source now holds `files` (after a save): they become the new base. */
-    markSaved(files) {
-      for (const f of files) base[f] = clone(current[f]);
+    /** The source now holds `files` (after a save): what was sent (default: now) becomes the base. */
+    markSaved(files, sent = current) {
+      for (const f of files) base[f] = clone(sent[f]);
       emit(files, 'saved');
     },
     /**
@@ -165,7 +165,8 @@ export function createStore() {
     rebase(remote) {
       const moved = [];
       for (const [f, data] of Object.entries(remote)) {
-        if (equal(data, base[f])) continue;
+        // the same once tidied (a Save leaves out defaults): not a change
+        if (equal(data, base[f]) || equal(tidy(f, data), tidy(f, base[f]))) continue;
         moved.push(f);
         const ops = diff(base[f], current[f]);
         base[f] = clone(data);

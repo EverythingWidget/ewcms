@@ -28,7 +28,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { loadEnv } from 'vite';
+import { createRequire } from 'node:module';
+import { loadEnv, searchForWorkspaceRoot } from 'vite';
 import { loadContent } from './content.mjs';
 import { DRAFT_PARAM, draftsFor, editorMiddleware } from './editor-server.mjs';
 import { contactMiddleware } from './contact-dev.mjs';
@@ -139,10 +140,25 @@ export function wantsPage(pathname, accept = '') {
   return !accept || accept.includes('text/html') || accept.includes('*/*');
 }
 
+/** Vite's default (the site's workspace) plus the engine and the packages it serves. */
+function engineAllow(root) {
+  const req = createRequire(enginePath('package.json'));
+  let fa = [];
+  try {
+    fa = [path.dirname(req.resolve('@fortawesome/fontawesome-free/package.json'))];
+  } catch {
+    // not installed: the editor's icons are missing anyway
+  }
+  return [searchForWorkspaceRoot(root), ENGINE, ...fa];
+}
+
 export default function staticSite() {
   let config;
   // Until then, content changes come from the editor's own Save (not "external").
   let editorWriteUntil = 0;
+  // a Save's files and what it wrote (editor-server.mjs save): a change that leaves a file
+  // just so is the editor's own, even when the watcher reports it after those 2s
+  const ownWrites = new Map();
   // the site's widgets in Node's registry (the build, the editor endpoints, content checks)
   let widgetsReady = Promise.resolve();
   return {
@@ -160,6 +176,9 @@ export default function staticSite() {
         },
         // the content folder's name, for client messages ("content/en/settings/animations.json")
         define: { __SITE_CONTENT_DIR__: JSON.stringify(site.contentRel) },
+        // the engine's files (the editor's fonts, Font Awesome's) served even when the engine
+        // sits outside the site's workspace (a linked checkout): else 403s in the console
+        server: { fs: { allow: engineAllow(c.root || process.cwd()) } },
       };
     },
     // engine-owned HTML (the template, the editor, the sandbox) names the engine as %EWCMS%
@@ -201,7 +220,10 @@ export default function staticSite() {
           // R2_* only (Node side): Vite exposes nothing but VITE_* to client code
           env: loadEnv(config.mode, config.envDir || root, 'R2_'),
           drafts,
-          onWrite: () => (editorWriteUntil = Date.now() + 2000),
+          onWrite: (texts) => {
+            editorWriteUntil = Date.now() + 2000;
+            for (const [file, text] of texts || []) ownWrites.set(path.resolve(file), text);
+          },
           render: () => server.ssrLoadModule(RENDER_MODULE),
         }),
       );
@@ -286,7 +308,17 @@ export default function staticSite() {
       const engineRel = posixRel(ENGINE, file);
       const template = engineRel.startsWith('src/site/');
       if (!content && !template) return;
-      const external = Date.now() >= editorWriteUntil;
+      const own = ownWrites.get(path.resolve(file));
+      let mine = false;
+      if (own !== undefined) {
+        try {
+          mine = fs.readFileSync(file, 'utf8') === own;
+        } catch {
+          // gone: someone else's change
+        }
+        if (mine) ownWrites.delete(path.resolve(file));
+      }
+      const external = !mine && Date.now() >= editorWriteUntil;
       server.ws.send({
         type: 'custom',
         event: 'site:changed',

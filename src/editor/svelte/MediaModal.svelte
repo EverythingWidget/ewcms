@@ -714,11 +714,20 @@
     color: var(--c-text);
   }
 
+  // one column as wide as the pane (minmax(0, 1fr): a long name, key or use never widens it;
+  // they cut or wrap), scrolling up and down only; its head (the name and Use this photo)
+  // stays at the top while it scrolls, so the button is always there
   .md-detail {
-    overflow: auto;
-    padding: var(--space-4) var(--space-5) var(--space-5);
+    min-width: 0;
+    overflow: hidden auto;
+    padding: 0 var(--space-5) var(--space-5);
     @include stack(var(--space-3));
+    grid-template-columns: minmax(0, 1fr);
     align-content: start;
+
+    > :global(*) {
+      min-width: 0;
+    }
 
     .hint {
       margin: 0;
@@ -728,7 +737,17 @@
 
   .md-detail__head {
     @include row(var(--space-3));
+    position: sticky;
+    top: 0;
+    z-index: 1;
     min-height: var(--size-control);
+    padding-top: var(--space-4);
+    padding-bottom: var(--space-2);
+    background: var(--c-card); // the window's (.modal__box)
+
+    :global(.btn) {
+      flex: none;
+    }
   }
 
   .md-detail__title {

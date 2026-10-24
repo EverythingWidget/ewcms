@@ -739,8 +739,11 @@ async function save({ quiet = false } = {}) {
   if (ui.saving) return false;
   ui.saving = true;
   try {
-    await source.saveDev(Object.fromEntries(dirty.map((f) => [f, store.current[f]])));
-    store.markSaved(dirty);
+    // what is sent is what becomes saved: an edit made while the request runs stays unsaved
+    const sent = Object.fromEntries(dirty.map((f) => [f, structuredClone(store.current[f])]));
+    await source.saveDev(sent);
+    store.markSaved(dirty, sent);
+    saves++;
     // Re-render the preview from the saved files (new list items, site settings, a grid's new
     // source...). Only the preview reloads, at the same scroll and selection; the editor stays.
     // the preview's item page moved (its slug changed): show it at its new path
@@ -769,6 +772,9 @@ async function save({ quiet = false } = {}) {
  * then the preview reloads. A burst of changes is handled once.
  */
 let diskTimer = 0;
+// Saves done: a disk load that started before one finished read the files before it wrote
+// them; rebasing on that would make the saved edits look unsaved again (or undo them)
+let saves = 0;
 let diskContent = false;
 function onDiskChange({ content, external }) {
   if (!external) return;
@@ -779,7 +785,14 @@ function onDiskChange({ content, external }) {
     diskContent = false;
     if (reloadStore) {
       try {
-        const moved = store.rebase((await source.load()).files);
+        let files;
+        for (let tries = 0; tries < 3 && !files; tries++) {
+          const before = saves;
+          const loaded = (await source.load()).files;
+          if (before === saves && !ui.saving) files = loaded;
+          else await new Promise((r) => setTimeout(r, 300));
+        }
+        const moved = files ? store.rebase(files) : [];
         if (moved.length)
           toast('Changed on disk', { files: moved, note: 'unsaved edits kept on top' });
         refreshStatus();

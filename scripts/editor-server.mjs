@@ -583,8 +583,11 @@ export function save(root, files, onWrite = () => {}) {
     : [...sourceProblems(root, files), ...bindingErrors(root, files), ...motionErrors(root, files)];
   if (problems.length)
     return { status: 400, body: { error: `Not saved. ${problems.join('; ')}`, problems } };
-  onWrite();
-  for (const n of names) writeFileAtomic(path.join(contentDirOf(root), n), formatJSON(files[n]));
+  // what it writes, by path: the dev server knows these changes are the editor's own however
+  // late its watcher reports them (vite-plugin-static-site.mjs)
+  const texts = new Map(names.map((n) => [path.join(contentDirOf(root), n), formatJSON(files[n])]));
+  onWrite(texts);
+  for (const [file, text] of texts) writeFileAtomic(file, text);
   return { status: 200, body: { ok: true, written: names } };
 }
 
