@@ -81,9 +81,10 @@
     const structure =
       f.type === 'boolean' ||
       f.type === 'select' ||
+      f.type === 'seg' ||
       isBinding(value) ||
       isBinding(live.get(f.file, f.ptr));
-    const typed = f.type !== 'boolean' && f.type !== 'select' && typeof value !== 'object';
+    const typed = !['boolean', 'select', 'seg'].includes(f.type) && typeof value !== 'object';
     live.store.set(f.file, f.ptr, value, {
       source: 'panel',
       structure,

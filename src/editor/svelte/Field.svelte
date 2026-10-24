@@ -39,7 +39,8 @@
   import { fallback, openMedia, photoInfo, photoLine, thumbUrl } from './media.svelte.js';
 
   // edit: the field's data-edit ("file#/pointer"), also on the label so others can find it.
-  // type: 'text' | 'words' | 'number' | 'date' | 'block' | 'image' | 'boolean' | 'select'.
+  // type: 'text' | 'words' | 'number' | 'date' | 'block' | 'image' | 'boolean' | 'select' |
+  // 'seg' (options as a button group, like Source; unset: the option shown when unset).
   // onvalue(value) gets every valid input.
   // source: the content/en/sources/ file the value comes from ('' for the page's own), with
   // onsource() opening it.
@@ -54,6 +55,7 @@
     help = '',
     half = false,
     options = [],
+    unset = '',
     changed = false,
     selected = false,
     onfocus,
@@ -71,7 +73,7 @@
   let invalid = $state(false);
   const photo = $derived(type === 'image');
   // a label element around an input, a switch; photos and Selects label their own buttons
-  const tag = $derived(photo || type === 'select' || bound ? 'div' : 'label');
+  const tag = $derived(photo || type === 'select' || type === 'seg' || bound ? 'div' : 'label');
   // a photo's label goes inside its card, unless the label row has more (a picker, a file)
   const inner = $derived(photo && !bound && !binds && !source);
 
@@ -229,6 +231,22 @@
           onclick={remove ?? (() => onvalue(''))}
         />
       {/if}
+    </div>
+  {:else if type === 'seg'}
+    <div class="seg" role="radiogroup" aria-label={label}>
+      {#each options as [v, text] (v)}
+        {@const on = (value || unset) === v}
+        <button
+          type="button"
+          role="radio"
+          aria-checked={on}
+          class={['seg__btn', on && 'is-active']}
+          onclick={() => {
+            onfocus?.();
+            onvalue(v);
+          }}>{text}</button
+        >
+      {/each}
     </div>
   {:else if type === 'select'}
     <Select

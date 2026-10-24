@@ -53,6 +53,7 @@ const formatted = (v, format) =>
 export function bindTypeOf(def, { config = false } = {}) {
   if (!def) return null;
   if (config) return def.type === 'link' ? 'link' : null;
+  if (def.type === 'seg') return null; // a choice of looks: nothing to bind
   if (!def.list) return def.type || 'text';
   if (def.list === 'image') return 'photos';
   return def.list.src === 'image' ? 'photos' : null;

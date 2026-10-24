@@ -110,6 +110,7 @@ function registryFields(file, base, s, t) {
       label: def.label || label,
       half: def.width === 'half',
       ...(def.options ? { options: def.options } : {}),
+      ...(def.unset ? { unset: def.unset } : {}),
       bindType: whole
         ? bindTypeOf(def)
         : sub && TEXT_TYPES.includes(def.type || 'text')

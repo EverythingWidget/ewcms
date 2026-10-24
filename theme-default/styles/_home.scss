@@ -170,6 +170,103 @@ $hero-em-per-char: 0.6;
   }
 }
 
+/* ---------------- Hero styles: photo beside / behind (style; scattered is the above) ---------------- */
+// the name's size beside or over one photo: smaller than scattered, capped by its longest word
+// (--hero-word) so it fits the width it has (--hero-room)
+@mixin hero-name-size($max) {
+  font-size: min(#{$max}, calc(var(--hero-room) / (var(--hero-word, 1) * #{$hero-em-per-char})));
+}
+
+.hero--beside,
+.hero--behind {
+  .hero__photo {
+    position: absolute;
+    overflow: hidden;
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  .hero__title {
+    justify-content: flex-start;
+    align-items: center;
+    white-space: normal;
+    line-height: 0.98;
+    @include hero-name-size(clamp(40px, 6vw, 104px));
+  }
+  .hero__name {
+    flex-direction: row; // also on phones (scattered stacks the words there)
+    justify-content: flex-start;
+    gap: 0 0.18em;
+    padding: 0;
+  }
+}
+
+// text left, the first photo fills the right half (4px corners)
+.hero--beside {
+  .hero__photo {
+    top: 8px;
+    right: var(--pad);
+    bottom: 70px;
+    width: calc(50% - var(--pad) - 12px);
+    border-radius: 4px;
+  }
+  .hero__title {
+    --hero-room: calc(50vw - 2 * var(--pad) - 12px);
+    inset: 8px calc(50% + 12px) 70px var(--pad);
+  }
+}
+
+// the first photo full-bleed under a dark gradient, the name bottom-left
+.hero--behind {
+  --fg: #fff;
+  --muted: rgb(255 255 255 / 0.72);
+  color: #fff;
+  .hero__photo {
+    inset: 0;
+    z-index: 0;
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgb(0 0 0 / 0.78) 0%,
+        rgb(0 0 0 / 0.45) 55%,
+        rgb(0 0 0 / 0.15) 100%
+      );
+    }
+  }
+  .hero__title {
+    --hero-room: calc(62vw - var(--pad));
+    inset: auto 38% 120px var(--pad);
+  }
+}
+
+@media (max-width: $bp-sm) {
+  // phones: the photo on top, the name under it
+  .hero--beside {
+    .hero__photo {
+      left: var(--pad);
+      width: auto;
+      bottom: 42%;
+    }
+    .hero__title {
+      --hero-room: calc(100vw - 2 * var(--pad));
+      inset: calc(58% + 16px) var(--pad) 90px;
+      align-items: flex-start;
+      @include hero-name-size(12vw);
+    }
+  }
+  .hero--behind .hero__title {
+    --hero-room: calc(100vw - 2 * var(--pad));
+    inset: auto var(--pad) 110px;
+    @include hero-name-size(12vw);
+  }
+}
+
 /* ---------------- Widget heads (photo grid, project list) ---------------- */
 .section {
   &__head {

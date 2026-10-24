@@ -41,14 +41,34 @@ export const longestWord = (text) =>
       .map((w) => [...w].length),
   );
 
-/** The big name over scattered photos (photos: [{ src, link, label, x, y, w, phone?: { x?, y?, w? } | null, depth?, layer? }]). */
+/** The Hero's looks (style): the first photo beside the name or behind it, or all scattered. */
+export const HERO_STYLES = [
+  ['beside', 'Photo beside'],
+  ['behind', 'Photo behind'],
+  ['scattered', 'Scattered'],
+];
+const styleOf = (s) => (HERO_STYLES.some(([v]) => v === s.style) ? s.style : 'scattered');
+
+// beside / behind: the first photo with a file, one big photo (no scatter, no drift)
+const leadPhoto = (ctx, b, photos, look) => {
+  const i = photos.findIndex((p) => p?.src);
+  if (i < 0) return '';
+  return html`<div class="hero__photo">
+    ${img(ctx, photos[i].src, { decorative: true, sizes: look === 'beside' ? '50vw' : '100vw', ...firstPhotos(0), attrs: b.ed(['photos', i, 'src'], 'image') })}
+  </div>`;
+};
+
+/**
+ * The big name with photos (style: beside | behind | scattered, see HERO_STYLES; scattered when
+ * unset) (photos: [{ src, link, label, x, y, w, phone?: { x?, y?, w? } | null, depth?, layer? }]). */
 export const hero = {
   type: 'hero',
   label: 'Hero',
   icon: 'star',
-  line: 'Your name over scattered photos',
+  line: 'Your name with a photo beside or behind it, or photos scattered around',
   sketch: 'hero',
   fields: [
+    { key: 'style', label: 'Style', type: 'seg', options: HERO_STYLES, unset: 'scattered' },
     { key: 'title', label: 'Name', type: 'words', width: 'half' },
     { key: 'eyebrow', label: 'Eyebrow', width: 'half' },
     { key: 'body', label: 'Subline', type: 'block' },
@@ -60,12 +80,17 @@ export const hero = {
       item: { src: '', x: 40, y: 30, w: 16, depth: 1 },
     },
   ],
-  defaults: { title: 'Your name', eyebrow: '', body: '', photos: [] },
-  render: (s, ctx, b) =>
-    html` <div class="hero" data-hero>
-      <div class="hero__photos" data-anim="hero.photos">
-        ${(s.photos || []).map((p, i) => heroPhoto(ctx, b, p, i))}
-      </div>
+  defaults: { style: 'scattered', title: 'Your name', eyebrow: '', body: '', photos: [] },
+  render: (s, ctx, b) => {
+    const look = styleOf(s);
+    return html` <div class="hero hero--${look}" data-hero>
+      ${
+        look === 'scattered'
+          ? html`<div class="hero__photos" data-anim="hero.photos">
+            ${(s.photos || []).map((p, i) => heroPhoto(ctx, b, p, i))}
+          </div>`
+          : leadPhoto(ctx, b, s.photos || [], look)
+      }
       <h1
         class="hero__title"
         data-anim="hero.title"
@@ -80,7 +105,8 @@ export const hero = {
         <span class="hero__scroll label" aria-hidden="true"><i></i>${esc(t(ctx, 'hero.scroll'))}</span>
         <p class="hero__subline" ${b.ed('body', 'block')}>${lines(s.body)}</p>
       </div>
-    </div>`,
+    </div>`;
+  },
 };
 
 export default hero;
