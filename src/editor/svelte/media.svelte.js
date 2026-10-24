@@ -11,8 +11,9 @@ import { mediaUrl } from '../../site/helpers.js';
 import { SITE } from '../../site/files.js';
 import { ui } from './ui.svelte.js';
 
-// blobs: { key: object URL } of photos uploaded in this session, shown until R2 serves them
-export const media = $state({ manifest: {}, photos: {}, blobs: {} });
+// blobs: { key: object URL } of photos uploaded in this session, shown until R2 serves them;
+// r2: are the R2 keys set (else Upload saves to media/)
+export const media = $state({ manifest: {}, photos: {}, blobs: {}, r2: false });
 let live = null;
 
 /** main.js: the reactive store to read site.json from. */

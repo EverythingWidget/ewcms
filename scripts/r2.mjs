@@ -32,7 +32,7 @@ import { VERSION } from '../src/site/files.js';
 import { slugify } from '../src/site/helpers.js';
 
 /** Image types an upload can be (they are stored as WebP). */
-const IMAGE_TYPES = new Set([
+export const IMAGE_TYPES = new Set([
   'image/jpeg',
   'image/png',
   'image/webp',

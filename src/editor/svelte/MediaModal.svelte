@@ -46,6 +46,14 @@
     ['r2', 'R2'],
     ['local', 'Local'],
   ];
+  // without the R2 keys (media.r2), the window's own words: Upload saves to media/
+  const HINTS = {
+    all: 'Every photo the site can use, in media/. Pick one to see where it is used and to edit its alt text. Drop photos on this window to upload them.',
+    local:
+      "Local photos are saved in your site's media/ folder and resized to WebP (480, 960, 1600 px) with their size and colour. Pick one to see where it is used and to edit its alt text.",
+    r2: 'Photos uploaded to Cloudflare R2 show here once it is set up. Photos in media/ are under Local.',
+  };
+  const R2_HELP = 'https://github.com/EverythingWidget/ewcms#photos-on-cloudflare-r2';
   const uid = $props.id();
   let dialog = $state();
   let confirming = $state(false);
@@ -62,6 +70,7 @@
       (k) => (ui.media.filter === 'r2' ? isR2(k) : ui.media.filter === 'local' ? !isR2(k) : true),
     ),
   );
+  const setUpR2 = $derived(!media.r2 && ui.media.filter === 'r2');
   const known = $derived(!!key && (isR2(key) || !!media.manifest[key]));
   // where the content (with unsaved edits) uses the selected photo
   const uses = $derived.by(() => {
@@ -169,11 +178,19 @@
     set(0);
     try {
       const res = await upload(job.file, set);
-      media.photos[res.key] = { ...res.photo, ...media.photos[res.key] };
-      media.blobs[res.key] = job.url;
-      if (ui.media.filter === 'local') ui.media.filter = 'all';
+      if (res.local) {
+        // no R2 keys: saved in media/ and resized there; the fresh list has it
+        media.manifest = res.media;
+        URL.revokeObjectURL(job.url);
+        if (ui.media.filter === 'r2') ui.media.filter = 'local';
+      } else {
+        media.photos[res.key] = { ...res.photo, ...media.photos[res.key] };
+        media.blobs[res.key] = job.url;
+        if (ui.media.filter === 'local') ui.media.filter = 'all';
+      }
       select(res.key);
-      toast(res.existing ? `${job.name} is already in R2` : `Uploaded ${job.name}`, {
+      const where = res.local ? 'media/' : 'R2';
+      toast(res.existing ? `${job.name} is already in ${where}` : `Uploaded ${job.name}`, {
         kind: 'ok',
         note: res.key,
       });
@@ -331,12 +348,33 @@
       <Button
         size="small"
         icon="upload"
-        title="Upload photos to R2 (or drop them here)"
+        title={media.r2
+          ? 'Upload photos to R2 (or drop them here)'
+          : 'Upload photos to media/ (or drop them here)'}
         onclick={pickFiles}
       >
         Upload
       </Button>
     </div>
+    {#if setUpR2}
+      <!-- R2 tab without the R2 keys: how to set it up; Upload saves to media/ meanwhile -->
+      <div class="md-setup">
+        <i class="fa-solid fa-cloud md-setup__icon" aria-hidden="true"></i>
+        <b class="md-setup__title">R2 isn’t set up yet</b>
+        <span>
+          Photos on Cloudflare R2 load from your own photo domain. Add these keys to
+          <code>.env.local</code> in your site, then restart <code>npm run dev</code>:
+        </span>
+        <span class="md-setup__keys">
+          <code>R2_ACCOUNT_ID</code> <code>R2_ACCESS_KEY_ID</code>
+          <code>R2_SECRET_ACCESS_KEY</code> <code>R2_BUCKET</code>
+        </span>
+        <span>Until then, Upload saves to <code>media/</code> (Local).</span>
+        <a class="md-setup__link" href={R2_HELP} target="_blank" rel="noopener">
+          How to set up R2 ›
+        </a>
+      </div>
+    {/if}
     <ul class="md-grid">
       {#each pending as job (job.id)}
         <li class="mtile mtile--busy">
@@ -373,7 +411,7 @@
         </li>
       {/each}
     </ul>
-    {#if !keys.length && !pending.length}
+    {#if !keys.length && !pending.length && !setUpR2}
       <p class="hint small">No photos here yet: upload some, or drop them on this window.</p>
     {/if}
   </nav>
@@ -475,7 +513,9 @@
           ? 'Pick the photos to add, in order: each one you click gets its number. Click it again to leave it out.'
           : pick
             ? 'Pick a photo on the left, or upload one, then Use this photo.'
-            : 'Every photo the site can use: uploaded to R2, or in media/. Pick one to see where it is used and to edit its alt text. Drop photos on this window to upload them.'}
+            : media.r2
+              ? 'Every photo the site can use: uploaded to R2, or in media/. Pick one to see where it is used and to edit its alt text. Drop photos on this window to upload them.'
+              : HINTS[ui.media.filter] || HINTS.all}
       </p>
     {/if}
   </section>
@@ -517,6 +557,7 @@
 
   .md-list {
     overflow: auto;
+    scrollbar-gutter: stable; // the R2 set-up note, short, must not move Upload
     padding: var(--space-4) var(--space-4) var(--space-5);
     border-right: 1px solid var(--c-line);
   }
@@ -524,6 +565,48 @@
   .md-list__head {
     justify-content: space-between;
     padding: 0 0 var(--space-3);
+  }
+
+  // the R2 tab without the R2 keys (setUpR2)
+  .md-setup {
+    @include stack(var(--space-3));
+    align-items: flex-start;
+    margin: var(--space-2) 0;
+    padding: var(--space-6) var(--space-5);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-sm);
+    color: var(--c-text-muted);
+    background: color-mix(in srgb, var(--c-text) 4%, transparent);
+
+    code {
+      padding: 0 var(--space-1);
+      border-radius: var(--radius-sm);
+      color: var(--c-text);
+      background: color-mix(in srgb, var(--c-text) 7%, transparent);
+    }
+  }
+
+  .md-setup__icon {
+    font-size: var(--fs-lg);
+  }
+
+  .md-setup__title {
+    font-size: var(--fs-base);
+    font-weight: 500;
+    color: var(--c-text);
+  }
+
+  .md-setup__keys {
+    line-height: var(--space-5);
+  }
+
+  .md-setup__link {
+    color: var(--c-link);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   .md-grid {

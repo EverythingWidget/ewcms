@@ -29,6 +29,7 @@ export async function load() {
   }
   media.manifest = dev.media || {};
   media.photos = dev.photos || {};
+  media.r2 = !!dev.r2;
   return { mode: 'dev', files: dev.files, from: 'local files' };
 }
 
@@ -102,8 +103,9 @@ export async function mediaOp(body) {
 }
 
 /**
- * Upload a photo to Cloudflare R2 (POST /__editor/upload), where the dev server resizes it:
- * resolves to { key, photo }, key being the value to store in the content. onprogress(0..1)
+ * Upload a photo (POST /__editor/upload), which the dev server resizes: to Cloudflare R2,
+ * resolving to { key, photo }, or without the R2 keys to the site's media/ folder, resolving to
+ * { key, local: true, media } (the fresh media/ list). key is the value to store in the content. onprogress(0..1)
  * follows the bytes going up (fetch can't, so XMLHttpRequest); at 1 the server is resizing.
  */
 export function upload(file, onprogress) {

@@ -13,7 +13,9 @@
  *                             commits not pushed yet
  *   POST /__editor/upload   → one image (the raw bytes, its Content-Type, X-Filename): resized,
  *                             stored in Cloudflare R2 and added to settings/photos.json
- *                             (scripts/r2.mjs), answers { key, photo }
+ *                             (scripts/r2.mjs), answers { key, photo }; without the R2 keys
+ *                             it is saved in media/ and resized there (scripts/local-upload.mjs),
+ *                             answers { key, local: true, media }
  *   POST /__editor/publish  → { message }: git add + commit ONLY the changed content files in
  *                             one commit, then git push origin <current branch>
  *   POST /__editor/pages    → { op, ... }: add, rename or delete pages (pagesOp)
@@ -62,7 +64,8 @@ import {
 } from '../src/site/files.js';
 import { checkItems, photoChecker, schemaOf } from '../src/site/schemas.js';
 import { NAMED_VIEWS, getRoutes, pathOfId, titleCase } from '../src/site/routes.js';
-import { MAX_UPLOAD, deletePhoto, uploadPhoto, writePhotos } from './r2.mjs';
+import { MAX_UPLOAD, deletePhoto, r2Config, uploadPhoto, writePhotos } from './r2.mjs';
+import { uploadLocal } from './local-upload.mjs';
 import { photoUses } from '../src/editor/lib/photo-uses.js';
 import {
   loadContent,
@@ -1098,6 +1101,7 @@ export function editorMiddleware({
           files: readContentFiles(root),
           media: readMedia(root),
           photos: readPhotos(root),
+          r2: !r2Config(env).missing,
         });
 
       if (route === 'POST /save') {
@@ -1124,6 +1128,15 @@ export function editorMiddleware({
           .trim();
         const name = decodeURIComponent(String(req.headers['x-filename'] || ''));
         const body = await readRaw(req, MAX_UPLOAD);
+        // no R2 keys: the photo goes to media/, resized at once (scripts/local-upload.mjs)
+        if (r2Config(env).missing) {
+          const { status, body: out } = await uploadLocal(root, { name, type, body });
+          if (out.ok) {
+            out.media = readMedia(root);
+            log(`editor saved ${name} to media/${out.key}`);
+          }
+          return sendJSON(res, status, out);
+        }
         const { status, body: out } = await uploadPhoto(
           env,
           { name, type, body },
