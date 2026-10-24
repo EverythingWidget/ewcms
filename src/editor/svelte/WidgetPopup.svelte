@@ -139,8 +139,8 @@
     z-index: 40;
     display: flex;
     flex-direction: column;
-    width: 360px;
-    max-height: calc(100vh - 24px);
+    width: 380px;
+    max-height: min(600px, calc(100vh - 24px));
     border-radius: var(--radius-lg);
     background: var(--c-widget-card);
     box-shadow: var(--shadow-pop);
@@ -215,28 +215,101 @@
     overscroll-behavior: contain;
   }
 
-  // inside it: controls rest at 35% white, fill at 7%, a 17% white wash with white when
-  // hovered (the layer buttons, the segmented options not picked, the tabs not picked); the
-  // active tab and the picked option as everywhere
-  .wpop__body {
-    :global(.hset),
-    :global(.seg) {
-      background: var(--c-pop-fill);
+  // inside it (v2): fills at 7%, rest text and icons at 35%, tiles at 12%; hovered: a 17%
+  // white wash and white. The tabs stay put (48px) while the body scrolls. (.wpop .wpop__body:
+  // above the controls' own scoped rules)
+  .wpop .wpop__body {
+    :global(.card__tabs) {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--c-widget-card);
     }
 
-    :global(.hset__btn),
-    :global(.seg__btn:not(.is-active)),
+    :global(.tabs__btn) {
+      height: 48px;
+    }
+
     :global(.tabs__btn:not(.is-active)) {
-      color: var(--c-pop-rest);
-    }
-
-    :global(.hset__btn:hover:not(:disabled)),
-    :global(.seg__btn:not(.is-active):hover) {
-      background: var(--c-pop-hover);
-      color: var(--c-text-strong);
+      color: var(--on-card-35);
     }
 
     :global(.tabs__btn:not(.is-active):hover) {
+      color: var(--c-text-strong);
+    }
+
+    :global(.seg),
+    :global(.sc),
+    :global(.sel),
+    :global(.tf__input),
+    :global(.tf__pick) {
+      background: var(--on-card-fill);
+      box-shadow: none;
+    }
+
+    // the layer buttons: one joined group like the segmented control, each its own fill
+    :global(.hset) {
+      gap: 0;
+      padding: 0;
+      overflow: hidden;
+      background: var(--on-card-fill);
+    }
+
+    :global(.hset__btn) {
+      width: 40px;
+      height: 100%;
+      border-radius: 0;
+      background: none;
+      color: var(--on-card-35);
+    }
+
+    :global(.seg__btn:not(.is-active)),
+    :global(.tf__label),
+    :global(.tf__name),
+    :global(.tf__pick),
+    :global(.bs__shows),
+    :global(.sc__label),
+    :global(.sc__meta) {
+      color: var(--on-card-35);
+    }
+
+    :global(.tf__pick) {
+      border-radius: var(--radius-md);
+    }
+
+    :global(.tf__input::placeholder) {
+      color: var(--on-card-35);
+    }
+
+    :global(.sc:hover) {
+      background: var(--on-card-10);
+    }
+
+    :global(.sc__tile) {
+      background: var(--on-card-12);
+    }
+
+    :global(.sc__name) {
+      color: var(--c-text-strong);
+    }
+
+    // the pen: a quiet icon button; Change: a 12% tile with white text, no pill
+    :global(.sc .btn--icon) {
+      background: none;
+      box-shadow: none;
+      color: var(--on-card-35);
+    }
+
+    :global(.sc .btn:not(.btn--icon)) {
+      background: var(--on-card-12);
+      box-shadow: none;
+      color: var(--c-text-strong);
+    }
+
+    :global(.hset__btn:hover:not(:disabled)),
+    :global(.seg__btn:not(.is-active):hover),
+    :global(.sc .btn:hover) {
+      background: var(--on-card-hover);
       color: var(--c-text-strong);
     }
   }

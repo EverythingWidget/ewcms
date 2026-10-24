@@ -111,6 +111,12 @@
   --c-pop-rest: color-mix(in srgb, var(--white) 35%, var(--c-widget-card));
   --c-pop-fill: color-mix(in srgb, var(--white) 7%, var(--c-widget-card));
   --c-pop-hover: var(--white-a17);
+  // on the widget card (the pop-up): fills, rest text, tiles, hover
+  --on-card-fill: var(--c-pop-fill); // 7%: #1b2725
+  --on-card-35: var(--c-pop-rest); // 35%: #606867
+  --on-card-12: color-mix(in srgb, var(--white) 12%, var(--c-widget-card)); // #2b3634
+  --on-card-10: color-mix(in srgb, var(--white) 10%, var(--c-widget-card)); // #222f2d
+  --on-card-hover: var(--c-pop-hover); // 17% white wash
   --shadow-pop:
     0 1px 2px var(--black-a30), 0 4px 8px var(--black-a30), 0 12px 24px var(--black-a35),
     0 24px 48px var(--black-a45);
