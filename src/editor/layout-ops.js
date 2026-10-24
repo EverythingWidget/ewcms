@@ -78,7 +78,15 @@ const writeSection = (store, file, at, section, key) => {
 function copyOf(item, kind, taken) {
   const copy = structuredClone(item);
   copy.id = newId(kind, taken);
-  for (const b of copy.widgets || []) b.id = newId('b', taken);
+  // a section's widgets get new ids, and their links follow the copies (a link to the original
+  // widget would follow another section's: the page fails its check and the preview keeps the old)
+  const ids = {};
+  for (const b of copy.widgets || []) b.id = ids[b.id] = newId('b', taken);
+  for (const b of copy.widgets || [])
+    for (const k of ['base', 'phone']) {
+      const link = b.layout?.[k]?.link;
+      if (link?.to) link.to = ids[link.to] ?? link.to;
+    }
   return copy;
 }
 

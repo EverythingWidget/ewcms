@@ -1,3 +1,4 @@
+import { popupStays } from '../multi-select.js';
 /**
  * Editor UI state. main.js changes it, the Svelte shell (App.svelte) shows it: it is a
  * $state object, so a change re-renders whatever uses that field.
@@ -58,6 +59,13 @@ export const ui = $state({
   anim: null,
   /** Content tab: the widget open in the widget inspector (its id), or null, and its tab. */
   widget: null,
+  /** The selected widget's pop-up shown (a double click opens it; a single click only selects). */
+  popup: false,
+  /**
+   * A widget hovered: { id, from: 'panel' | 'preview' } (its row hovered: its outline in the
+   * preview; it hovered in the preview: its row lit), or null.
+   */
+  hot: null,
   /**
    * Content tab: two or more widgets selected together (their ids, all of one section; none
    * first or main: multi-select.js), else []. One selected is ui.widget.
@@ -109,8 +117,14 @@ export function selectWidgets(ids) {
   const list = ids.filter((id, i) => id && ids.indexOf(id) === i);
   const one = list.length === 1 ? list[0] : null;
   if (ui.widget !== one) ui.selection = null;
+  if (!popupStays(list.length)) ui.popup = false;
   ui.multi = list.length > 1 ? list : [];
   ui.widget = one;
   ui.section = null;
   ui.selSection = null;
 }
+
+/** Set by main.js: the preview's (overlay.js reveal). */
+export const hooks = { reveal: () => {} };
+/** A widget scrolled to in the preview, only when it is out of view. */
+export const reveal = (id) => hooks.reveal(id);

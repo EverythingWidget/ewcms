@@ -33,6 +33,8 @@
     onselect,
     open = false,
     blocked = false,
+    hot = false,
+    onhover,
     onshow,
     onduplicate,
     ondelete,
@@ -56,12 +58,15 @@
     !on && 'is-off',
     open && 'is-open',
     blocked && 'is-blocked',
+    hot && 'is-hot',
     lifted && 'is-lifted',
     drop,
   ]}
   style:translate={lifted ? `0 ${dy}px` : null}
   data-row
   data-widget-row={widget?.id}
+  onpointerenter={() => onhover?.(true)}
+  onpointerleave={() => onhover?.(false)}
 >
   <span class="brow__grip" title="Drag to reorder" aria-hidden="true" onpointerdown={ongrab}
     ><i class="fa-solid fa-grip-vertical"></i></span
@@ -154,7 +159,9 @@
     }
 
     // hovered: a 1px inset ring in the widgets' accent (nothing moves; focus keeps the cyan ring)
-    &:hover {
+    // (.is-hot: the widget hovered in the preview)
+    &:hover,
+    &.is-hot {
       box-shadow: inset 0 0 0 1px var(--c-widget-line-hover);
     }
 

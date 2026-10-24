@@ -28,7 +28,7 @@
 <script>
   import { tick, untrack } from 'svelte';
   import { gsap } from 'gsap';
-  import { ui } from './ui.svelte.js';
+  import { ui, selectWidgets } from './ui.svelte.js';
   import HeaderPart from './HeaderPart.svelte';
   import PageHead from './PageHead.svelte';
   import PagesList from './PagesList.svelte';
@@ -82,7 +82,9 @@
     return Array.isArray(list) ? list : [];
   });
   // the widget whose settings are in the pop-up (one only; gone, e.g. undone: none)
-  const popG = $derived((file && groups.find((g) => g.widget && g.id === ui.widget)) || null);
+  const popG = $derived(
+    (file && ui.popup && groups.find((g) => g.widget && g.id === ui.widget)) || null,
+  );
   const popup = createPopup();
   // what the Sections tab shows over the list: a section's settings ({ section: its id });
   // none: the list (a section gone, e.g. undone: the list too)
@@ -118,7 +120,8 @@
 
   function openWidget(id) {
     ui.section = null;
-    ui.widget = id;
+    selectWidgets([id]);
+    ui.popup = true;
     ui.widgetTab = 'content';
   }
   // a section card's pen or double click: its settings
@@ -348,8 +351,9 @@
     {onsource}
     {popup}
     onclose={() => {
+      // closed: the widget stays selected
       ui.selection = null;
-      ui.widget = null;
+      ui.popup = false;
     }}
     onmotion={(el) => actions.editMotion(el)}
     onlibrary={(name) => {

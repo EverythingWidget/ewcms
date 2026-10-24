@@ -152,6 +152,10 @@
   $effect(() => {
     if (ui.widget && untrack(() => ui.multi.length)) ui.multi = [];
   });
+  // nothing selected: no pop-up either (a later single click only selects)
+  $effect(() => {
+    if (!ui.widget) ui.popup = false;
+  });
 
   /** Leaving the page with unsaved edits: the browser asks first. */
   function onBeforeUnload(e) {

@@ -58,7 +58,7 @@ import {
   tracksOf,
 } from '../site/layout/geometry.js';
 import { PHONE_MAX } from '../site/layout/grid.js';
-import { clampDelta, hits, selectedIds, toggle } from './multi-select.js';
+import { clampDelta, hits, offscreen, selectedIds, toggle } from './multi-select.js';
 import { T } from './ui-tokens.js';
 
 const MOBILE = PHONE_MAX;
@@ -134,6 +134,7 @@ svg { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: no
 export function createOverlay({
   ui,
   onpick,
+  onopen,
   onplace,
   onlink = () => {},
   onrows = () => {},
@@ -174,6 +175,12 @@ export function createOverlay({
     } else if (ui.peek?.from === 'preview') ui.peek = null;
   };
   const unpeek = () => peekAt(null);
+  /** The widget under the pointer in the preview: its row in the Content tab lights. */
+  const hotAt = (id) => {
+    if (id) {
+      if (ui.hot?.id !== id || ui.hot.from !== 'preview') ui.hot = { id, from: 'preview' };
+    } else if (ui.hot?.from === 'preview') ui.hot = null;
+  };
   /** The widget elements of a section (not a nested section's). */
   const widgetsIn = (sec) =>
     [...sec.querySelectorAll('[data-widget]')].filter((n) => secOf(n) === sec);
@@ -367,7 +374,8 @@ export function createOverlay({
     drawGrids();
     drawLinks();
     // the widget's section card hovered (ui.peek from the panel): only its section shows
-    const peeking = !!ui.widget && ui.peek?.from === 'panel';
+    // (not over a widget row: its widget shows, selected or outlined)
+    const peeking = !!ui.widget && ui.peek?.from === 'panel' && ui.hot?.from !== 'panel';
     root.classList.toggle('is-peeking', peeking);
     const arrange = arranging() && !peeking;
     root.classList.toggle('is-linking', !!linking);
@@ -402,14 +410,16 @@ export function createOverlay({
     drawBlocks(arrange);
     els.marquee.hidden = !boxing?.box;
     if (boxing?.box) place(els.marquee, boxing.box);
+    // the pointer's widget, else the one whose row is hovered in the panel
+    const hov = hover || (ui.hot?.from === 'panel' ? widgetEl(ui.hot.id) : null);
     const h =
       arrange &&
-      hover !== sel &&
+      hov !== sel &&
       !drag &&
       !group &&
       !boxing &&
-      !ui.multi.includes(hover?.dataset.widget)
-        ? hover
+      !ui.multi.includes(hov?.dataset.widget)
+        ? hov
         : null;
     els.hover.hidden = !h;
     if (h) {
@@ -1074,6 +1084,14 @@ export function createOverlay({
     onpick(id);
     start(e, el);
   }
+  // a double click on a widget: its pop-up (a single click only selects it; a text's own edit
+  // still starts, bridge.js)
+  function ondblclick(e) {
+    if (!arranging() || e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    if (editing(e.target)) return;
+    const id = e.target.closest?.('[data-widget]')?.dataset.widget;
+    if (id) onopen?.(id);
+  }
   const swallow = (e) => {
     if (!arranging() || e.altKey || editing(e.target)) return;
     if (e.target.closest?.('[data-widget]')) {
@@ -1084,6 +1102,7 @@ export function createOverlay({
   function onpointerover(e) {
     if (e.target.id === '__ed-layout') return; // over its circles: the widget stays hovered
     hover = arranging() ? e.target.closest?.('[data-widget]') || null : null;
+    hotAt(hover?.dataset.widget);
     hoverSec = arranging() ? secOf(e.target) || null : null;
     if (e.target.id !== '__ed-layout') peekAt(arranging() ? secOf(e.target) : null);
   }
@@ -1098,14 +1117,25 @@ export function createOverlay({
       doc.addEventListener('pointerdown', onpointerdown, true);
       doc.addEventListener('mousedown', swallow, true);
       doc.addEventListener('click', swallow, true);
+      doc.addEventListener('dblclick', ondblclick, true);
       doc.addEventListener('pointerover', onpointerover, true);
-      doc.documentElement.addEventListener('pointerleave', unpeek);
+      doc.documentElement.addEventListener('pointerleave', () => {
+        hover = null; // the pointer out of the preview: no widget outlined
+        unpeek();
+        hotAt(null);
+      });
       doc.addEventListener('keydown', onkeydown, true);
       doc.addEventListener('keyup', trackMod, true);
       win.addEventListener('blur', () => (ui.mod = false));
       this.refresh();
     },
     /** ui.mode, ui.widget or ui.link changed: show or hide what they ask for. */
+    /** Widget `id` scrolled to (centred) only when it is out of the preview's view. */
+    reveal(id) {
+      const el = doc && widgetEl(id);
+      if (el && offscreen(el.getBoundingClientRect(), win.innerHeight))
+        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    },
     refresh() {
       if (!doc || !root) return;
       gridKey = '';

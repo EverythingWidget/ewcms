@@ -26,7 +26,7 @@ import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/solid.css';
 import { mount } from 'svelte';
 import App from './svelte/App.svelte';
-import { ui, selectWidgets } from './svelte/ui.svelte.js';
+import { ui, selectWidgets, hooks } from './svelte/ui.svelte.js';
 import { toast } from './svelte/toasts.svelte.js';
 import { createLive } from './svelte/live.svelte.js';
 import { connectMedia } from './svelte/media.svelte.js';
@@ -98,8 +98,18 @@ const overlay = createOverlay({
   onpick(id) {
     selectWidgets(id ? [id] : []);
   },
-  // several widgets (Ctrl/Cmd+click, a selection box): selectWidgets
-  onselect: (ids) => selectWidgets(ids),
+  // a double click on a widget in the preview: its pop-up (as its row's double click)
+  onopen(id) {
+    selectWidgets([id]);
+    ui.popup = true;
+    ui.widgetTab = 'content';
+  },
+  // several widgets (Ctrl/Cmd+click, a selection box): selectWidgets; never the pop-up (a box
+  // touching its first widget selects it, nothing opens)
+  onselect(ids) {
+    ui.popup = false;
+    selectWidgets(ids);
+  },
   // the selected widgets dragged (or nudged) by whole cells: one undo step
   ongroupmove(ids, dc, dr, { mobile = false, flow = {}, rows = 0 } = {}) {
     const b = widgetAt(ids[0]);
@@ -793,3 +803,6 @@ async function boot() {
 }
 
 boot();
+
+// a widget row clicked: it scrolls into view in the preview when out of it (overlay.js)
+hooks.reveal = (id) => overlay.reveal(id);

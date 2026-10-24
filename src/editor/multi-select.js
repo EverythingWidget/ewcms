@@ -54,3 +54,12 @@ export function clampDelta(areas, dc, dr, cols) {
 }
 
 export const nudgeStep = (shift) => (shift ? NUDGE_BIG : NUDGE);
+
+/**
+ * Does the open pop-up stay as the selection becomes `n` widgets: only with one (it swaps to
+ * that widget); none or several close it. A single click never opens it (a double click does).
+ */
+export const popupStays = (n) => n === 1;
+
+/** Is a rect ({ top, bottom }, the viewport's) out of a viewport `vh` tall, even in part: scrolled to then. */
+export const offscreen = (r, vh) => r.top < 0 || r.bottom > vh;
