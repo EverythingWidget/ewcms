@@ -91,7 +91,7 @@
 </script>
 
 <section class="ed-body">
-  <Section key="settings:site" title="Name & details">
+  <Section key="settings:site" title="Name & Details">
     <p class="hint">
       Used on every page: the clock and search engines' details about you. The preview shows them
       after Save.

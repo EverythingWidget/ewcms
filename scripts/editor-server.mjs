@@ -1058,6 +1058,7 @@ export function draftOp(root, drafts, files, session) {
 export function renderOp(render, root, drafts, { path: at, file, data, ids, session } = {}) {
   if (typeof file !== 'string' || !Array.isArray(ids))
     return { status: 400, body: { error: 'No file or ids' } };
+  if (typeof at !== 'string' || !at) return { status: 400, body: { error: 'No page path' } };
   const problems = checkContent(file, data);
   if (problems.length) return { status: 400, body: { error: problems.join('; ') } };
   const content = loadContent(root, { ...draftsFor(drafts, session), [file]: data });

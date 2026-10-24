@@ -80,6 +80,9 @@ export const hero = {
       item: { src: '', x: 40, y: 30, w: 16, depth: 1 },
     },
   ],
+  // added from the editor: the section's whole width and about a screen under the menu (68 rows
+  // of 12px at 1440px wide, the viewport's 900px less the header), not the usual 40 × 6
+  added: { span: 'all', rows: 68 },
   defaults: { style: 'scattered', title: 'Your name', eyebrow: '', body: '', photos: [] },
   render: (s, ctx, b) => {
     const look = styleOf(s);

@@ -1284,7 +1284,10 @@ selection (the panel shows the sections again), **dragging** moves it and the **
 its edges and corners resize it, snapping to the section's columns and its real rows; Esc
 cancels, and a drag is one undo step. A drag starts from where the widget is shown and also
 stores where the section's other widgets are now (their real rows, see Layout), so what you see
-is what is stored. An aspect or auto widget's rows follow its width: only its sides resize. A
+is what is stored. An aspect or auto widget's rows follow its width: only its sides resize (the
+whole left or right edge is a grip, not only its middle handle). A widget added from the editor
+is Rows, 40 columns × 6 rows; a Hero the section's full width × 68 rows (about a screen under
+the header at 1440 × 900; a type's `added: { span, rows }`). A
 **double click** on a text edits it in place (until you click elsewhere, press Esc or Enter in
 a one-line text); a double click on a photo or a bound value opens its field in the panel.
 Links, buttons and forms in the preview don't act on clicks (Alt+click follows a link).

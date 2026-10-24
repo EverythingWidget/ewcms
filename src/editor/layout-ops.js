@@ -93,13 +93,16 @@ function copyOf(item, kind, taken) {
 /**
  * A widget added from the editor (Add widget, a new section's, the preview's): Rows, NEW_ROWS
  * tall and NEW_SPAN columns wide (the grid's columns when fewer), at `pos` (col 1, row 1 default).
+ * A type's own `added` ({ span?: n | 'all', rows? }) overrides them (the hero: all, a screen).
  */
 export const NEW_ROWS = 6;
 export const NEW_SPAN = 40;
 function addedWidget(type, taken, pos = {}) {
   const b = newWidget(type, taken, pos);
   b.size = 'rows'; // first: an area keeps its rows only on a Rows (or Aspect) widget
-  setBase(b, { span: Math.min(NEW_SPAN, COLS), rows: NEW_ROWS, ...pos });
+  const own = WIDGET_TYPES[type]?.added || {};
+  const span = own.span === 'all' ? COLS : Math.min(own.span || NEW_SPAN, COLS);
+  setBase(b, { span, rows: own.rows || NEW_ROWS, ...pos });
   return b;
 }
 

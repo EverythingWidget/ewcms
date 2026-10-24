@@ -98,6 +98,10 @@ const STYLE = `
 .handle[data-h='e'], .handle[data-h='ne'], .handle[data-h='se'] { left: 100%; }
 .handle[data-h='ne'], .handle[data-h='sw'] { cursor: nesw-resize; }
 .handle[data-h='nw'], .handle[data-h='se'] { cursor: nwse-resize; }
+/* the whole left / right edge resizes too (a tall widget's middle handle can be off screen) */
+.edge { position: absolute; top: 0; bottom: 0; width: 12px; translate: -50% 0; pointer-events: auto; cursor: ew-resize; }
+.edge[data-h='w'] { left: 0; }
+.edge[data-h='e'] { left: 100%; }
 .sel.is-free .handle:not([data-h='e']):not([data-h='w']) { display: none; }
 .dot { position: absolute; left: 50%; width: 12px; height: 12px; translate: -50% -50%; box-sizing: border-box; border: 2px solid ${T.accent}; border-radius: 50%; background: ${T.black}; pointer-events: auto; }
 .dot[data-dot='top'] { top: -${DOT}px; background: ${T.accent}; cursor: grab; }
@@ -211,7 +215,7 @@ export function createOverlay({
     linkEls.clear();
     svgSize = '';
     tempPath = null;
-    shadow.innerHTML = `<style>${STYLE}</style><div class="layer"><div class="grids"></div><svg class="links" xmlns="${SVG}"></svg><div class="box peek" hidden><span class="tag"></span></div><div class="secrow" hidden><span class="count"></span></div><div class="box hover" hidden></div><div class="box sel" hidden><span class="label"></span>${HANDLES.map((h) => `<i class="handle" data-h="${h}"></i>`).join('')}${dots}</div><div class="targets"></div><div class="multi"></div><div class="marquee" hidden></div><div class="blocks"></div></div>`;
+    shadow.innerHTML = `<style>${STYLE}</style><div class="layer"><div class="grids"></div><svg class="links" xmlns="${SVG}"></svg><div class="box peek" hidden><span class="tag"></span></div><div class="secrow" hidden><span class="count"></span></div><div class="box hover" hidden></div><div class="box sel" hidden><span class="label"></span><i class="edge" data-h="w"></i><i class="edge" data-h="e"></i>${HANDLES.map((h) => `<i class="handle" data-h="${h}"></i>`).join('')}${dots}</div><div class="targets"></div><div class="multi"></div><div class="marquee" hidden></div><div class="blocks"></div></div>`;
     root = shadow.querySelector('.layer');
     els.grids = root.querySelector('.grids');
     els.links = root.querySelector('.links');

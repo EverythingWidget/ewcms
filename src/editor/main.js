@@ -525,6 +525,9 @@ function renderSections(stale, root = bridge.doc?.querySelector('[data-router-vi
   rendering = rendering.then(async () => {
     const file = root.dataset.pageFile;
     const path = bridge.path();
+    // the preview between two pages (reloading after a structure edit: no window yet) loads
+    // the drafts itself; nothing to swap (else: "null is not a page of …")
+    if (!path || !file || !root.isConnected) return;
     try {
       const { html } = await source.render({ path, file, data: store.current[file], ids: stale });
       if (!root.isConnected || bridge.path() !== path) return;
