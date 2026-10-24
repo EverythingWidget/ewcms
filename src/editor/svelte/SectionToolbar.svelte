@@ -11,8 +11,8 @@
     [ 3 widgets                 eye  copy  layer↓  layer↑  trash ]
   each one undo step for all of them (Delete too: undo brings them back); the same 40px row.
   One widget selected (ui.widget): its actions, as its row had them, and its settings:
-    [ Button                locate  eye  copy  layer↓  layer↑  trash  gear ]
-  gear: its pop-up (as a double click on it, ui.popup).
+    [ Button                gear  locate  eye  copy  trash ]
+  gear: its pop-up (as a double click on it, ui.popup). Its layer: in the pop-up, keys [ ].
     live, file, bridge, onsection(id), onadd(at), deleting (bindable)
 -->
 <script>
@@ -97,6 +97,17 @@
     {#if one}
       <Button
         size="small"
+        icon="gear"
+        iconOnly
+        label="Settings of {oneLabel}"
+        title="Settings (or double-click it)"
+        onclick={() => {
+          ui.popup = true;
+          ui.widgetTab = 'content';
+        }}
+      />
+      <Button
+        size="small"
         icon="location-crosshairs"
         iconOnly
         label="Show it in the preview"
@@ -112,34 +123,24 @@
       onclick={() => run(showWidgets, allOff)}
     />
     <Button size="small" icon="copy" iconOnly label="Duplicate {them}" onclick={duplicateGroup} />
-    <Button
-      size="small"
-      icon="angles-down"
-      iconOnly
-      label="One layer down"
-      onclick={() => run(layerWidgets, -1)}
-    />
-    <Button
-      size="small"
-      icon="angles-up"
-      iconOnly
-      label="One layer up"
-      onclick={() => run(layerWidgets, 1)}
-    />
-    <Button size="small" icon="trash" iconOnly label="Delete {them}" onclick={removeGroup} />
-    {#if one}
+    <!-- layers: several only (one widget's are in its pop-up, and keys [ ]) -->
+    {#if !one}
       <Button
         size="small"
-        icon="gear"
+        icon="angles-down"
         iconOnly
-        label="Settings of {oneLabel}"
-        title="Settings (or double-click it)"
-        onclick={() => {
-          ui.popup = true;
-          ui.widgetTab = 'content';
-        }}
+        label="One layer down"
+        onclick={() => run(layerWidgets, -1)}
+      />
+      <Button
+        size="small"
+        icon="angles-up"
+        iconOnly
+        label="One layer up"
+        onclick={() => run(layerWidgets, 1)}
       />
     {/if}
+    <Button size="small" icon="trash" iconOnly label="Delete {them}" onclick={removeGroup} />
   {:else if s}
     <button
       type="button"

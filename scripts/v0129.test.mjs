@@ -51,3 +51,21 @@ test('the panel card and the preview both select a section through selectSection
   assert.match(ov, /if \(!b\.box && !b\.mod\) onsectionpick\(b\.sec\.dataset\.sec\)/);
   assert.match(src('main.js'), /onsectionpick\(id\) \{\s*selectSection\(id\);/);
 });
+
+test('one widget: toolbar order gear, locate, eye, copy, trash; layers only for several', () => {
+  const st = src('svelte/SectionToolbar.svelte');
+  const body = st.slice(st.indexOf('{#if group}'), st.indexOf('{:else if s}'));
+  const icons = [...body.matchAll(/icon=(?:"([a-z-]+)"|\{allOff \? 'eye-slash' : '(eye)'\})/g)].map(
+    (m) => m[2] || m[1],
+  );
+  assert.deepEqual(icons, [
+    'gear',
+    'location-crosshairs',
+    'eye',
+    'copy',
+    'angles-down',
+    'angles-up',
+    'trash',
+  ]);
+  assert.match(body, /\{#if !one\}\s*<Button\s+size="small"\s+icon="angles-down"/);
+});
