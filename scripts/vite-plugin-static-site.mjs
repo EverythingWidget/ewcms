@@ -38,6 +38,7 @@ import { EDITOR_HTML, legacyRedirect, wantsEditor } from '../src/editor/lib/edit
 import { checkSources } from '../src/site/schemas.js';
 import { FOLDERS } from '../src/site/files.js';
 import { THEME_LAYERS, loadSiteConfig } from './site-config.mjs';
+import { createUpdater } from './update.mjs';
 import { registerSiteWidgets, widgetClientsModule, widgetsModule } from './site-widgets.mjs';
 import { ENGINE, enginePath, fsUrl, posixPath, sameFile, withEngineUrls } from './engine.mjs';
 
@@ -249,6 +250,7 @@ export default function staticSite() {
           // R2_* only (Node side): Vite exposes nothing but VITE_* to client code
           env: loadEnv(config.mode, config.envDir || root, 'R2_'),
           drafts,
+          updater: createUpdater({ root, server, logger: config.logger }),
           onWrite: (texts) => {
             editorWriteUntil = Date.now() + 2000;
             for (const [file, text] of texts || []) ownWrites.set(path.resolve(file), text);

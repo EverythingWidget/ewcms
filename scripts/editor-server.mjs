@@ -1089,6 +1089,7 @@ export function editorMiddleware({
   drafts = {},
   onWrite = () => {},
   render = () => import('../src/site/render.js'),
+  updater = null,
 }) {
   const log = (msg) => logger.info(`\x1b[32m✓\x1b[0m ${msg}`, { timestamp: true });
 
@@ -1162,6 +1163,15 @@ export function editorMiddleware({
       }
 
       if (route === 'GET /status') return sendJSON(res, 200, await contentStatus(root));
+
+      // the update notice (scripts/update.mjs): newer ewcms, the update and its progress
+      if (updater && route === 'GET /update') {
+        const force = /[?&]force=1/.test(req.url || '');
+        return sendJSON(res, 200, await updater.check(force));
+      }
+      if (updater && route === 'GET /update/status') return sendJSON(res, 200, updater.status());
+      if (updater && route === 'POST /update')
+        return sendJSON(res, 200, await updater.start((await readJSON(req)).to));
 
       if (route === 'POST /pages') {
         const op = await readJSON(req);

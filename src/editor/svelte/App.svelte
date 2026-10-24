@@ -19,6 +19,7 @@
   import MediaModal from './MediaModal.svelte';
   import { openMedia } from './media.svelte.js';
   import Toasts from './Toasts.svelte';
+  import UpdateNotice from './UpdateNotice.svelte';
   import WidgetToolbar from './WidgetToolbar.svelte';
   import { layerWidget } from '../layout-ops.js';
   import { targetFile } from '../layout-sync.js';
@@ -194,7 +195,7 @@
           title="Media: every photo, upload, alt text"
           onclick={() => openMedia({ key: ui.media.key })}
         />
-        <span class="ed-tools__gap"></span>
+        <span class="ed-tools__gap"><UpdateNotice /></span>
         <!-- toggles, on (the accent) or off: Preview (the site as visitors see it), the phone view -->
         <Button
           icon="play"
@@ -338,6 +339,7 @@
 
   // [ Sources Media ... phone undo redo ], then the modes; 16px edges
   .ed-head {
+    position: relative; // the update card's anchor
     flex: none;
     padding-top: var(--space-4);
     background: var(--c-panel-head);
@@ -368,6 +370,9 @@
 
   .ed-tools__gap {
     flex: 1 !important;
+    display: flex;
+    justify-content: flex-start;
+    min-width: 0;
   }
 
   // between Preview and phone / undo / redo: a 1px gap, 16px tall (borderless: no line drawn)

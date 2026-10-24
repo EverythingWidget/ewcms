@@ -40,6 +40,12 @@ export default mergeConfig(siteConfig({ root: import.meta.dirname }), {/* more *
 point at the engine's files (the dev server serves them as `/@fs/…`). The engine's `theme-default/`
 always loads; the site's `theme/` layers on it (see **Theme**).
 
+**Updates (dev only).** The editor checks the engine's GitHub tags: when one is newer than the
+`#vX.Y.Z` in the site's `package.json`, its header shows **Update available**; the card lists the
+versions and the commits between. **Update** sets the tag in `package.json`, runs `npm install`
+and restarts `ewcms dev` (the editor reloads by itself); then commit `package.json` and the
+lockfile. A failed install changes nothing. A linked or `file:` engine is never offered one.
+
 ## Working on ewcms and a site together (the workspace, no npm link)
 
 ```
