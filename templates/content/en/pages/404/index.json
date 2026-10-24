@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "kind": "page",
+  "id": "pg-078h",
+  "curtainText": "Not found",
+  "meta": {
+    "title": "Not found",
+    "description": "Page not found."
+  },
+  "sections": [
+    {
+      "id": "s-yzyj",
+      "height": "full",
+      "widgets": [
+        {
+          "id": "b-89og",
+          "type": "text",
+          "body": [
+            {
+              "style": "label",
+              "text": [
+                {
+                  "t": "Error 404"
+                }
+              ]
+            },
+            {
+              "style": "title",
+              "text": [
+                {
+                  "t": "Not found"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "text": [
+                {
+                  "t": "This page doesn’t exist (yet)."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "b-56q5",
+          "type": "button",
+          "label": "Back home",
+          "config": {
+            "link": {
+              "page": "pg-home"
+            }
+          },
+          "layout": {
+            "base": {
+              "link": {
+                "to": "b-89og",
+                "gap": 2
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

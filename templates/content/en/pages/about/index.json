@@ -1,0 +1,268 @@
+{
+  "version": 1,
+  "kind": "page",
+  "id": "pg-about",
+  "curtainText": "About",
+  "meta": {
+    "title": "About",
+    "description": "About this site and ewcms, the engine it is built with."
+  },
+  "sections": [
+    {
+      "id": "s-st15",
+      "widgets": [
+        {
+          "id": "b-st16",
+          "type": "text",
+          "body": [
+            {
+              "style": "label",
+              "text": [
+                {
+                  "t": "About"
+                }
+              ]
+            },
+            {
+              "style": "title",
+              "text": [
+                {
+                  "t": "Built with ewcms"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "text": [
+                {
+                  "t": "EverythingWidget CMS: a static site engine with an in-page visual editor."
+                }
+              ]
+            }
+          ],
+          "layout": {
+            "base": {
+              "col": 1,
+              "span": 64,
+              "row": 6
+            },
+            "phone": {
+              "col": 1,
+              "span": 60,
+              "row": 6
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "s-st17",
+      "widgets": [
+        {
+          "id": "b-st18",
+          "type": "text",
+          "body": [
+            {
+              "style": "subheading",
+              "text": [
+                {
+                  "t": "What it is"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "text": [
+                {
+                  "t": "A site is only its own things: content (JSON files in git), photos, a theme and a config file. ewcms builds everything else. Every page is prerendered to static HTML; the browser then takes over as a single-page app with GSAP page transitions."
+                }
+              ]
+            }
+          ],
+          "layout": {
+            "base": {
+              "col": 1,
+              "span": 64,
+              "row": 4
+            },
+            "phone": {
+              "col": 1,
+              "span": 60,
+              "row": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "s-st19",
+      "widgets": [
+        {
+          "id": "b-st20",
+          "type": "text",
+          "body": [
+            {
+              "style": "subheading",
+              "text": [
+                {
+                  "t": "Core technical points"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Vanilla JS and SCSS on the public site, built with "
+                },
+                {
+                  "t": "Vite",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": "; no framework ships to visitors."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "The editor (Svelte 5) runs in the dev server only and never ships."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Pages are sections of widgets on a square "
+                },
+                {
+                  "t": "120-column grid",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " (60 on phones)."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "The engine’s default theme always loads; the site’s theme layers on top."
+                }
+              ]
+            }
+          ],
+          "layout": {
+            "base": {
+              "col": 1,
+              "span": 64,
+              "row": 4
+            },
+            "phone": {
+              "col": 1,
+              "span": 60,
+              "row": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "s-st21",
+      "widgets": [
+        {
+          "id": "b-st22",
+          "type": "text",
+          "body": [
+            {
+              "style": "subheading",
+              "text": [
+                {
+                  "t": "Features"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Widgets: text, photo, button, hero, grids, albums, projects, panels, contact form; sites can add their own."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Sources: lists like people or projects that grids and item pages pull from."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Media: local photos resized to WebP, or uploads to Cloudflare R2."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Animations and page transitions with a curtain showing the next page’s name."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "SEO: titles, descriptions, share images, sitemap.xml, robots.txt and redirects."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Deploys as static files with a Cloudflare Pages Function for the contact form."
+                }
+              ]
+            }
+          ],
+          "layout": {
+            "base": {
+              "col": 1,
+              "span": 64,
+              "row": 4
+            },
+            "phone": {
+              "col": 1,
+              "span": 60,
+              "row": 4
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

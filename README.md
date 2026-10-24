@@ -176,7 +176,8 @@ functions/api/contact.js ← one line: export { onRequestPost } from 'ewcms/func
 — in ewcms —
 bin/ewcms.mjs       ← the ewcms command (scripts/cli.mjs: dev, build, check, …)
 vite.js             ← the Vite preset (ewcms/vite)
-templates/site/     ← what ewcms new-site copies (with templates/theme/ and the fixture's content)
+templates/site/     ← what ewcms new-site copies (with templates/theme/ and templates/content/)
+templates/content/  ← the starter site's content: Home (a short guide), About, 404; no sources or photos
 scripts/
   engine.mjs        ← where the engine is; %EWCMS% / /@fs/ paths to its files
   cli.mjs           ← the commands
@@ -512,7 +513,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   `{ "paragraph": { "size": 1.4, "line": 1.75, "tracking": 0, "min": 14 } }`: font size (cells),
   line height (× the size), letter spacing (em) and a minimum font size (px). Defaults: title
   19, heading 3, subheading 2, statement 5, paragraph 1.4, label 1 (also a button), small 1.05.
-  In the editor: the toolbar's **Fit** (edit mode, after Style).
+  In the editor: the toolbar's **Fit** icon (edit mode, after Style).
 - **Phones** (below 760px): every section is a **60-column** square grid (`--cell` = width /
   60, ~6px at 390px; its rows `--mrows`). Nothing stacks: a widget without a phone area of its
   own shows its **desktop area halved** (columns and rows, rounded to the cells it covers:
@@ -560,13 +561,20 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
 | `projects` | **list**: the project accordion of its items; with a `title` it gets a head (home)                                                                                           |
 | `album`    | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped                                                              |
 
-- **Text widget** (`src/site/text.js`): `body` is a list of lines `{ style, text: [runs] }`; a
+- **Text widget** (`src/site/text.js`): `body` is a list of lines `{ style, list?, text: [runs] }`; a
   style (title, heading, subheading, statement, paragraph, label, small: the site's typography)
   is a whole line's. Runs: `{ t, marks?: ["b","i"], link? }` text, `{ field, format? }` an item's
   field (from the widget's source, filled at build time), `{ count: { source } | { of: "items" } }`
   a count chip. Rendered to escaped HTML; the page's title is its first Text widget's title line.
-  Edited only in the preview (double-click it): the widget toolbar's style, B,
-  I, link and + Field act on the caret's line or the selection.
+  A line with `"list": "bullet" | "number"` is a list item (its style stays): on the site a run
+  of items with the same list is one `<ul>` / `<ol class="ts-list">` of `<li>`s; while edited
+  every line stays one element with `data-list`. The marker is CSS (`_text.scss`: a dot or a
+  counter from 1 each run, currentcolor at .6, a 1.6em hanging indent, .4em between items).
+  Edited only in the preview (double-click it): the widget toolbar's style, Fit (an icon), the
+  two list buttons, B, I, link and + Field act on the caret's line or the selection. Typing
+  `- ` (or `* `) or `1. ` at a line's start makes it an item; Enter continues the list, Enter on
+  an empty item ends it, Backspace at an item's start takes its list off. Pasted HTML lists
+  become list lines.
 - **Item pages:** a `[param]/index.json`'s widgets render once per page it builds. A widget From
   URL shows the items matching that page's address; a type marked `item` (the `album` widget)
   reads its first for its photos, and its texts, like any widget's, are bindings to it (below).

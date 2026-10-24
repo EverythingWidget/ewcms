@@ -94,8 +94,9 @@ test('paste: HTML: widgets are Paragraph lines; only bold, italic and safe links
       text: [{ t: 'a\nb ' }, { t: 'link', link: { href: 'https://x.nl' } }, { t: ' bad' }],
     },
     { style: 'paragraph', text: [{ t: 'plain' }] },
-    { style: 'paragraph', text: [{ t: 'x' }] },
-    { style: 'paragraph', text: [{ t: 'y' }] },
+    // a list's items: list lines (v0.1.42)
+    { style: 'paragraph', list: 'bullet', text: [{ t: 'x' }] },
+    { style: 'paragraph', list: 'bullet', text: [{ t: 'y' }] },
   ]);
 });
 

@@ -18,6 +18,10 @@
  *                          filled in when the page is built; format "{value} photos"
  *   { count: { source } }  how many items a source has; { count: { of: 'items' } }: how many
  *                          the widget's own source shows
+ * A line can be a list item: "list": "bullet" | "number" (its style stays). On the site the lines
+ * of one run of the same list are one <ul> / <ol> of <li>s (each with its style's class); while
+ * edited every line stays one element (rich.js maps the caret by them), [data-list] on it, its
+ * marker drawn by the CSS (src/client/styles/_text.scss) either way.
  * One line is one element (h1 / h2 / h3 / p) with its style's class (.ts--<style>). Every
  * value is escaped; fields and counts are chips (data-field / data-count) the editor's inline
  * editor (src/editor/rich.js) keeps whole.
@@ -44,6 +48,15 @@ const STYLE_IDS = LINE_STYLES.map(([s]) => s);
 export const tagOf = (style) => LINE_STYLES.find(([s]) => s === style)?.[2] || 'p';
 export const styleLabel = (style) => LINE_STYLES.find(([s]) => s === style)?.[1] || style;
 export const MARKS = ['b', 'i'];
+/** A line's list kinds: a bulleted or a numbered list item. */
+export const LISTS = ['bullet', 'number'];
+const listOf = (line) => (LISTS.includes(line?.list) ? line.list : undefined);
+/** A line's own keys (style, list) with new text. */
+const withText = (line, text) => ({
+  style: line.style,
+  ...(listOf(line) ? { list: line.list } : {}),
+  text,
+});
 
 const isText = (r) => isObject(r) && typeof r.t === 'string';
 const isField = (r) => isObject(r) && typeof r.field === 'string';
@@ -63,6 +76,8 @@ export function checkBody(body, key = 'body') {
     if (!isObject(line)) return void out.push(`"${at}" must be an object { style, text }`);
     if (!STYLE_IDS.includes(line.style))
       out.push(`"${at}.style" must be one of ${STYLE_IDS.join(', ')}`);
+    if (line.list !== undefined && !LISTS.includes(line.list))
+      out.push(`"${at}.list" must be one of ${LISTS.join(', ')}`);
     if (!Array.isArray(line.text)) return void out.push(`"${at}.text" must be a list of runs`);
     line.text.forEach((r, j) => {
       const rat = `${at}.text.${j}`;
@@ -140,15 +155,31 @@ export function renderBody(
   { value = () => '', href = () => '#', editing = false, attrs = () => '' } = {},
 ) {
   const lines = Array.isArray(body) && body.length ? body : [{ style: 'paragraph', text: [] }];
-  return lines
-    .map((line, i) => {
-      const style = STYLE_IDS.includes(line?.style) ? line.style : 'paragraph';
+  let out = '';
+  let open = ''; // the list being rendered (the site: its <ul> / <ol> still open)
+  lines.forEach((line, i) => {
+    const style = STYLE_IDS.includes(line?.style) ? line.style : 'paragraph';
+    const list = listOf(line);
+    const runs = (line?.text || []).map((r) => renderRun(r, { value, href, editing })).join('');
+    const data = list ? ` data-list="${list}"` : '';
+    // an empty line keeps its height (and a caret) with a <br>
+    const inner = `class="ts ts--${style}" data-line="${style}"${data}${attrs(i, style)}>${runs || '<br>'}`;
+    if (editing || !list) {
+      if (open) out += `</${open}>`;
+      open = '';
       const tag = tagOf(style);
-      const runs = (line?.text || []).map((r) => renderRun(r, { value, href, editing })).join('');
-      // an empty line keeps its height (and a caret) with a <br>
-      return `<${tag} class="ts ts--${style}" data-line="${style}"${attrs(i, style)}>${runs || '<br>'}</${tag}>`;
-    })
-    .join('');
+      out += `<${tag} ${inner}</${tag}>`;
+      return;
+    }
+    const tag = list === 'number' ? 'ol' : 'ul';
+    if (open !== tag) {
+      if (open) out += `</${open}>`;
+      out += `<${tag} class="ts-list">`;
+      open = tag;
+    }
+    out += `<li ${inner}</li>`;
+  });
+  return open ? `${out}</${open}>` : out;
 }
 
 function renderRun(r, { value, href, editing }) {
@@ -296,6 +327,44 @@ export function setStyle(body, i, style) {
   return out;
 }
 
+/** Lines `from`…`to` (positions) as `list` items; all of them that already: no list (a toggle). */
+export function toggleList(body, from, to, list) {
+  const [s, e] = ordered(from, to);
+  const out = clone(body.length ? body : [{ style: 'paragraph', text: [] }]);
+  const lines = out.slice(s.line, e.line + 1);
+  const off = lines.every((l) => l.list === list);
+  for (const l of lines) {
+    if (off || !LISTS.includes(list)) delete l.list;
+    else l.list = list;
+  }
+  return out;
+}
+
+/** Line `i` no list item any more (Backspace at its start). */
+export function unlist(body, i) {
+  const out = clone(body);
+  if (out[i]) delete out[i].list;
+  return out;
+}
+
+/**
+ * Typed "- " / "* " (a bullet) or "1. " (a number) at the start of a line that is no list
+ * item: the line becomes one, the marker typed taken out. { body, at } or null.
+ */
+export function autoList(body, pos) {
+  const line = body[pos.line];
+  if (!line || listOf(line) || !isText(line.text?.[0])) return null;
+  const m = /^([-*]|1[.)]) /.exec(line.text[0].t);
+  if (!m || pos.at !== m[0].length) return null;
+  const out = clone(body);
+  out[pos.line].list = m[1].startsWith('1') ? 'number' : 'bullet';
+  out[pos.line].text = tidyRuns([
+    { ...line.text[0], t: line.text[0].t.slice(m[0].length) },
+    ...line.text.slice(1),
+  ]);
+  return { body: out, at: { line: pos.line, at: 0 } };
+}
+
 /** A chip run (a field or a count) put in at a position. */
 export function insertRun(body, pos, run) {
   const out = clone(body.length ? body : [{ style: 'paragraph', text: [] }]);
@@ -317,11 +386,21 @@ export function splitLine(body, pos) {
   const out = clone(body.length ? body : [{ style: 'paragraph', text: [] }]);
   const line = out[pos.line];
   if (!line) return out;
+  // Enter in an empty list item ends the list: the line becomes a paragraph
+  if (listOf(line) && !lineLength(line)) {
+    delete line.list;
+    return out;
+  }
   const [a, b] = splitRuns(line.text, pos.at);
   line.text = tidyRuns(a);
   const atEnd = !tidyRuns(b).length && tidyRuns(a).length > 0;
   const style = atEnd && LEAD_STYLES.has(line.style) ? 'paragraph' : line.style;
-  out.splice(pos.line + 1, 0, { style, text: tidyRuns(b) });
+  // a list item's next line: the next item
+  out.splice(pos.line + 1, 0, {
+    style,
+    ...(listOf(line) ? { list: line.list } : {}),
+    text: tidyRuns(b),
+  });
   return out;
 }
 
@@ -329,6 +408,7 @@ export function splitLine(body, pos) {
 export const tidyBody = (body) =>
   (Array.isArray(body) ? body : []).map((l) => ({
     style: STYLE_IDS.includes(l?.style) ? l.style : 'paragraph',
+    ...(listOf(l) ? { list: l.list } : {}),
     text: tidyRuns(Array.isArray(l?.text) ? l.text : []),
   }));
 
@@ -339,10 +419,7 @@ export function deleteRange(body, from, to) {
   if (!out[s.line] || !out[e.line]) return out;
   const [head] = splitRuns(out[s.line].text, s.at);
   const [, tail] = splitRuns(out[e.line].text, e.at);
-  out.splice(s.line, e.line - s.line + 1, {
-    style: out[s.line].style,
-    text: tidyRuns([...head, ...tail]),
-  });
+  out.splice(s.line, e.line - s.line + 1, withText(out[s.line], tidyRuns([...head, ...tail])));
   return out;
 }
 
@@ -365,11 +442,11 @@ export function insertLines(body, from, to, lines) {
       at: { line: pos.line, at: pos.at + lineLength(lines[0]) },
     };
   }
-  const mid = lines.map((l) => ({ style: l.style, text: tidyRuns(l.text) }));
+  const mid = lines.map((l) => withText(l, tidyRuns(l.text)));
   const parts = [
-    ...(head.length ? [{ style: line.style, text: tidyRuns(head) }] : []),
+    ...(head.length ? [withText(line, tidyRuns(head))] : []),
     ...mid,
-    ...(tail.length ? [{ style: line.style, text: tidyRuns(tail) }] : []),
+    ...(tail.length ? [withText(line, tidyRuns(tail))] : []),
   ];
   base.splice(pos.line, 1, ...parts);
   const last = pos.line + (head.length ? 1 : 0) + mid.length - 1;
@@ -408,6 +485,8 @@ export function htmlLines(root, safe) {
   const lines = [];
   let cur = null;
   const pre = { on: 0 };
+  const lists = []; // the <ul> / <ol>s we are in
+  let item = null; // the list of the <li> we are in (a line closed in it is its item)
   const close = () => {
     if (cur) {
       // spaces at a line's edges and around its breaks go
@@ -419,7 +498,7 @@ export function htmlLines(root, safe) {
       const text = tidyRuns(
         runs.map((r) => (isText(r) ? { ...r, t: r.t.replace(/ ?\n ?/g, '\n') } : r)),
       );
-      if (text.length) lines.push({ style: 'paragraph', text });
+      if (text.length) lines.push({ style: 'paragraph', ...(item ? { list: item } : {}), text });
     }
     cur = null;
   };
@@ -469,9 +548,14 @@ export function htmlLines(root, safe) {
       nl = href && safe(href) ? { href } : null;
     }
     if (tag === 'PRE') pre.on++;
+    if (tag === 'UL' || tag === 'OL') lists.push(tag === 'OL' ? 'number' : 'bullet');
+    const was = item;
+    if (tag === 'LI') item = lists.at(-1) || 'bullet';
     for (const c of n.childNodes || []) walk(c, next, nl);
-    if (tag === 'PRE') pre.on--;
     if (block) close();
+    if (tag === 'LI') item = was;
+    if (tag === 'UL' || tag === 'OL') lists.pop();
+    if (tag === 'PRE') pre.on--;
   };
   walk(root, [], null);
   close();

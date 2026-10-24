@@ -37,6 +37,8 @@ import {
   plainLines,
   splitLine,
   toggleMark,
+  unlist,
+  autoList,
 } from '../site/text.js';
 import { isSafeHref } from '../site/hrefs.js';
 
@@ -484,6 +486,7 @@ export function createBridge({ store, labelFor }) {
       widget: rich.widget,
       edit: rich.edit,
       style: body[caret.line]?.style || 'paragraph',
+      list: body[caret.line]?.list || '',
       line: caret.line,
       selected: !!range,
       bold: range ? hasMark(body, sel.from, sel.to, 'b') : false,
@@ -573,12 +576,24 @@ export function createBridge({ store, labelFor }) {
       if (s && !isCaret(s)) doc.execCommand('delete');
       const sel = selectionOf(rich.el, win);
       if (!sel) return true;
-      const next = { line: sel.to.line + 1, at: 0 };
-      bridge.richApply((body) => ({
-        body: splitLine(body, sel.to),
-        sel: { from: next, to: next },
-      }));
+      bridge.richApply((body) => {
+        const line = body[sel.to.line];
+        // an empty list item: the list ends there (the line stays, a paragraph)
+        const ends = line?.list && !lineLength(line);
+        const next = ends ? { line: sel.to.line, at: 0 } : { line: sel.to.line + 1, at: 0 };
+        return { body: splitLine(body, sel.to), sel: { from: next, to: next } };
+      });
       return true;
+    }
+    // Backspace at the start of a list item: no list item any more (its text stays)
+    if (e.key === 'Backspace' && !mod && !e.altKey) {
+      const sel = selectionOf(rich.el, win);
+      const body = store.get(rich.file, rich.ptr) || [];
+      if (sel && isCaret(sel) && sel.to.at === 0 && body[sel.to.line]?.list) {
+        e.preventDefault();
+        bridge.richApply((b) => ({ body: unlist(b, sel.to.line), sel }));
+        return true;
+      }
     }
     if (mod && !e.altKey && (k === 'b' || k === 'i')) {
       e.preventDefault();
@@ -821,8 +836,16 @@ export function createBridge({ store, labelFor }) {
 
     doc.addEventListener('input', (e) => {
       if (rich && rich.el.contains(e.target)) {
-        writeRich(readBody(rich.el));
-        richSel = selectionOf(rich.el, win) || richSel;
+        const body = readBody(rich.el);
+        const sel = selectionOf(rich.el, win);
+        // "- " or "1. " typed at a line's start: a list item
+        const auto = sel && isCaret(sel) ? autoList(body, sel.to) : null;
+        writeRich(body);
+        if (auto) {
+          bridge.richApply(() => ({ body: auto.body, sel: { from: auto.at, to: auto.at } }));
+          return;
+        }
+        richSel = sel || richSel;
         emit('rich', richState());
         return;
       }

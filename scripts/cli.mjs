@@ -274,7 +274,7 @@ export function newSite(dir, { name = path.basename(path.resolve(dir)) } = {}) {
     path.join(dir, 'theme', 'theme.json'),
     `${JSON.stringify({ version: 1, name }, null, 2)}\n`,
   );
-  copy(enginePath('test', 'fixtures', 'site-a', 'content'), 'content');
+  copy(enginePath('templates', 'content'), 'content');
   fs.renameSync(path.join(dir, 'gitignore'), path.join(dir, '.gitignore'));
   const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
   pkg.name = name.toLowerCase().replace(/[^a-z0-9-]+/g, '-');

@@ -35,6 +35,7 @@
     lineLength,
     setLink,
     setStyle,
+    toggleList,
     styleLabel,
     toggleMark,
   } from '../../site/text.js';
@@ -114,7 +115,7 @@
 
   // its toolbar's width (measured), for where it goes and what moves into "…"
   let barW = $state(0);
-  const TEXT_W = 400; // style + Fit + B I link + Field, about
+  const TEXT_W = 440; // style + Fit + lists + B I link + Field, about
   const level = $derived.by(() => {
     if (!box) return 0;
     const room = Math.max(box.w, 280);
@@ -223,6 +224,15 @@
     const line = rich ? rich.line : 0;
     apply((body) => ({ body: setStyle(body, line, s) }));
   }
+  // the lines selected (or the caret's) as list items, or no list any more
+  const list = (kind) =>
+    apply((body, sel) => {
+      const at = sel || {
+        from: { line: rich?.line ?? 0, at: 0 },
+        to: { line: rich?.line ?? 0, at: 0 },
+      };
+      return { body: toggleList(body, at.from, at.to, kind), sel: sel || undefined };
+    });
   const mark = (m) =>
     apply((body, sel) => (sel ? { body: toggleMark(body, sel.from, sel.to, m) } : null));
 
@@ -295,6 +305,24 @@
 {#snippet marks()}
   <button
     type="button"
+    class={['btb__btn btb__icon', rich?.list === 'bullet' && 'is-on']}
+    disabled={!rich}
+    aria-label="Bulleted list"
+    aria-pressed={rich?.list === 'bullet'}
+    title="Bulleted list: the lines selected (or typed - at a line's start)"
+    onclick={() => list('bullet')}><i class="fa-solid fa-list-ul" aria-hidden="true"></i></button
+  >
+  <button
+    type="button"
+    class={['btb__btn btb__icon', rich?.list === 'number' && 'is-on']}
+    disabled={!rich}
+    aria-label="Numbered list"
+    aria-pressed={rich?.list === 'number'}
+    title="Numbered list: the lines selected (or typed 1. at a line's start)"
+    onclick={() => list('number')}><i class="fa-solid fa-list-ol" aria-hidden="true"></i></button
+  >
+  <button
+    type="button"
     class={['btb__btn btb__icon', rich?.bold && 'is-on']}
     disabled={!rich?.selected}
     aria-label="Bold"
@@ -329,7 +357,6 @@
     ><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Field</span></button
   >
 {/snippet}
-
 
 <!-- one element for the whole session: hidden when nothing shows, only its content swaps -->
 <div
@@ -367,14 +394,14 @@
         {#if canFit}
           <button
             type="button"
-            class={['btb__btn btb__fit', isFit && 'is-on']}
+            class={['btb__btn btb__icon', isFit && 'is-on']}
+            aria-label="Fit"
             aria-pressed={isFit}
             title={isFit
               ? "Fit on: its longest line fills the widget's width. Click: its styles' sizes"
               : "Fit: its longest line fills the widget's width (off: its styles' sizes)"}
             onclick={toggleFit}
-            ><i class="fa-solid fa-arrows-left-right-to-line" aria-hidden="true"></i><span>Fit</span
-            ></button
+            ><i class="fa-solid fa-arrows-left-right-to-line" aria-hidden="true"></i></button
           >
         {/if}
         {#if level === 0}{@render marks()}{/if}

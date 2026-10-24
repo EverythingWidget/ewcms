@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "header": [
+    {
+      "label": "Home",
+      "page": "pg-home"
+    },
+    {
+      "label": "About",
+      "page": "pg-about"
+    }
+  ]
+}

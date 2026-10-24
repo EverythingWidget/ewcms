@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "name": "Your site title",
+  "url": "https://example.com",
+  "mediaUrl": "",
+  "lang": "en",
+  "title": "Your site title",
+  "titleTemplate": "{page} | {site}",
+  "description": "A new site built with ewcms.",
+  "robots": "index",
+  "timezone": "Europe/Amsterdam",
+  "accent": "#cfc8b8",
+  "social": [],
+  "layout": {
+    "containedCols": 96
+  }
+}

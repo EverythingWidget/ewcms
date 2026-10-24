@@ -1,0 +1,498 @@
+{
+  "version": 1,
+  "kind": "page",
+  "id": "pg-home",
+  "curtainText": "Your new site",
+  "meta": {
+    "title": "Home",
+    "description": "A new site built with ewcms."
+  },
+  "sections": [
+    {
+      "id": "s-st01",
+      "widgets": [
+        {
+          "id": "b-st02",
+          "type": "text",
+          "body": [
+            {
+              "style": "label",
+              "text": [
+                {
+                  "t": "A short guide"
+                }
+              ]
+            },
+            {
+              "style": "title",
+              "text": [
+                {
+                  "t": "Your new site"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "text": [
+                {
+                  "t": "This page is a short guide to the editor. Read it, then replace it with your own content."
+                }
+              ]
+            }
+          ],
+          "layout": {
+            "base": {
+              "col": 1,
+              "span": 64,
+              "row": 12
+            },
+            "phone": {
+              "col": 1,
+              "span": 60,
+              "row": 12
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "s-st03",
+      "widgets": [
+        {
+          "id": "b-st04",
+          "type": "text",
+          "body": [
+            {
+              "style": "subheading",
+              "text": [
+                {
+                  "t": "Start the editor"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "text": [
+                {
+                  "t": "In your site’s folder run "
+                },
+                {
+                  "t": "npm run dev",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " and open "
+                },
+                {
+                  "t": "localhost:5173/?edit",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": ". Any page plus ?edit opens that page; Ctrl/⌘+Shift+E opens the page you are on."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "text": [
+                {
+                  "t": "The editor only exists while dev runs. The built site has none."
+                }
+              ]
+            }
+          ],
+          "layout": {
+            "base": {
+              "col": 1,
+              "span": 64,
+              "row": 4
+            },
+            "phone": {
+              "col": 1,
+              "span": 60,
+              "row": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "s-st05",
+      "widgets": [
+        {
+          "id": "b-st06",
+          "type": "text",
+          "body": [
+            {
+              "style": "subheading",
+              "text": [
+                {
+                  "t": "What you may change"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "text": [
+                {
+                  "t": "Only your site: the content the editor saves (content/), your photos (media/) and your theme. Never edit the engine in node_modules; update it by changing its version in package.json."
+                }
+              ]
+            }
+          ],
+          "layout": {
+            "base": {
+              "col": 1,
+              "span": 64,
+              "row": 4
+            },
+            "phone": {
+              "col": 1,
+              "span": 60,
+              "row": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "s-st07",
+      "widgets": [
+        {
+          "id": "b-st08",
+          "type": "text",
+          "body": [
+            {
+              "style": "subheading",
+              "text": [
+                {
+                  "t": "Pages"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "The "
+                },
+                {
+                  "t": "Content",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " tab starts at the pages list, in menu order. "
+                },
+                {
+                  "t": "+",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " adds a page."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Drag a row to reorder the menu, or into "
+                },
+                {
+                  "t": "Not linked",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " to take it out."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Double-click a row, or use the pen, to edit a page. Rename it in its "
+                },
+                {
+                  "t": "SEO",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " tab; links follow."
+                }
+              ]
+            }
+          ],
+          "layout": {
+            "base": {
+              "col": 1,
+              "span": 64,
+              "row": 4
+            },
+            "phone": {
+              "col": 1,
+              "span": 60,
+              "row": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "s-st09",
+      "widgets": [
+        {
+          "id": "b-st10",
+          "type": "text",
+          "body": [
+            {
+              "style": "subheading",
+              "text": [
+                {
+                  "t": "Sections and widgets"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "text": [
+                {
+                  "t": "A page is a stack of "
+                },
+                {
+                  "t": "sections",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": "; each holds "
+                },
+                {
+                  "t": "widgets",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": ": text, photo, button, list…"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Add section",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " at the bottom, "
+                },
+                {
+                  "t": "+ Add widget",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " in a section’s toolbar."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "In the preview, click selects a widget, drag moves it, the handles resize it on the grid."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Double-click a widget to open its settings; double-click text to edit it in place."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Ctrl/⌘+Z undoes, Shift+Ctrl/⌘+Z redoes. An ⓘ beside a setting explains it."
+                }
+              ]
+            }
+          ],
+          "layout": {
+            "base": {
+              "col": 1,
+              "span": 64,
+              "row": 4
+            },
+            "phone": {
+              "col": 1,
+              "span": 60,
+              "row": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "s-st11",
+      "widgets": [
+        {
+          "id": "b-st12",
+          "type": "text",
+          "body": [
+            {
+              "style": "subheading",
+              "text": [
+                {
+                  "t": "Sources, media, menu"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Sources",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " holds your lists, e.g. people or albums; a list widget shows one."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "Media",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " holds your photos; a photo field’s Change picks or uploads one."
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "list": "bullet",
+              "text": [
+                {
+                  "t": "The menu and footer belong to every page: open them under "
+                },
+                {
+                  "t": "Site",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " in the pages list."
+                }
+              ]
+            }
+          ],
+          "layout": {
+            "base": {
+              "col": 1,
+              "span": 64,
+              "row": 4
+            },
+            "phone": {
+              "col": 1,
+              "span": 60,
+              "row": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "s-st13",
+      "widgets": [
+        {
+          "id": "b-st14",
+          "type": "text",
+          "body": [
+            {
+              "style": "subheading",
+              "text": [
+                {
+                  "t": "Saving"
+                }
+              ]
+            },
+            {
+              "style": "paragraph",
+              "text": [
+                {
+                  "t": "Save",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " (Ctrl/⌘+S) writes your changes as a draft. "
+                },
+                {
+                  "t": "Publish",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "t": " commits and pushes everything saved, so the live site updates. ▶ previews the site as a visitor sees it."
+                }
+              ]
+            }
+          ],
+          "layout": {
+            "base": {
+              "col": 1,
+              "span": 64,
+              "row": 4
+            },
+            "phone": {
+              "col": 1,
+              "span": 60,
+              "row": 4
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -6,7 +6,8 @@
  * which the lines are rendered again and the selection put back where it was, by model
  * position ({ line, at }: a chip counts as one, a line break as one).
  *
- * The DOM it reads: one element per line ([data-line="<style>"]) under the body; in a line
+ * The DOM it reads: one element per line ([data-line="<style>"], a list item's [data-list]:
+ * flat, never a <ul>, so a position is still { line, at }) under the body; in a line
  * text, <br> (a line break), <strong>/<b>, <em>/<i>, <a data-ts-link> and the chips
  * ([data-field], [data-count]: atomic, contenteditable=false). Anything else the browser
  * makes (a pasted <div>, a <span style>) is read as its text, so the model stays clean.
@@ -28,7 +29,8 @@ export function readBody(root) {
   for (const n of els) {
     if (n.nodeType === 1 && n.matches(LINE)) {
       loose = null;
-      lines.push({ style: n.dataset.line, text: readRuns(n) });
+      const list = n.dataset.list ? { list: n.dataset.list } : {};
+      lines.push({ style: n.dataset.line, ...list, text: readRuns(n) });
     } else if (n !== root && (n.nodeType === 3 ? n.textContent : true)) {
       if (n.nodeType === 1 && n.tagName === 'BR') continue;
       if (!loose) lines.push((loose = { style: 'paragraph', text: [] }));

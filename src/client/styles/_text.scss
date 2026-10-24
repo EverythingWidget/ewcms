@@ -98,3 +98,54 @@
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
+// lists (a line's "list": src/site/text.js): one <ul> / <ol> of <li>s on the site, flat lines
+// with [data-list] while edited; the marker drawn here either way, a hanging indent.
+.ts-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: ts-n;
+  > li + li {
+    margin-top: 0.4em;
+  }
+}
+.text__body {
+  // the flat lines being edited: the item gap (not the lines' gap), the numbers from 1 a run
+  > [data-list] + [data-list] {
+    margin-top: calc(0.4em - 20px);
+  }
+  > [data-list='number']:first-child,
+  > :not([data-list='number']) + [data-list='number'] {
+    counter-reset: ts-n;
+  }
+}
+.ts[data-list] {
+  position: relative;
+  padding-left: 1.6em;
+  &::before {
+    position: absolute;
+    left: 0;
+    opacity: 0.6;
+    color: currentcolor;
+  }
+}
+.ts[data-list='bullet']::before {
+  content: '';
+  // a dot in the middle of the item's first line
+  left: 0.52em;
+  top: calc(0.5lh - 0.18em);
+  width: 0.36em;
+  height: 0.36em;
+  border-radius: 50%;
+  background: currentcolor;
+}
+.ts[data-list='number'] {
+  counter-increment: ts-n;
+  &::before {
+    content: counter(ts-n) '.';
+    top: 0;
+    width: 1.4em;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
