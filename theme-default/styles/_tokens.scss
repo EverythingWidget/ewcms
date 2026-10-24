@@ -1,6 +1,6 @@
 // The theme's design tokens: colours, fonts, radius, easing and the header's height (the
 // core's grid, breakpoints and text styles: site-core/_tokens.scss). --accent is tweened per
-// album by src/client/theme.js.
+// album by src/client/theme.js (glass tints, glows, album names); --brand never is.
 @use 'site-core/tokens' as *;
 
 :root {
@@ -12,6 +12,10 @@
   --solid-faint: #aaa;
   --line: rgb(255 255 255 / 0.1);
   --accent: #cfc8b8;
+  // the brand colour: fixed (site.json accent: --site-accent, set by the page head), never tweened
+  // per album like --accent. Links, the menu, focus rings, the header's dot: what stays on-brand.
+  // A site's theme sets its own in theme/tokens.scss.
+  --brand: var(--site-accent, #cfc8b8);
   --solid-card: #212121;
   --solid-card-peek: #2f2f2f;
   // text a step stronger than --muted (nav links, album summaries); on a --fg fill

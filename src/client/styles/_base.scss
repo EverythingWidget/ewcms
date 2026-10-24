@@ -85,7 +85,7 @@ sup {
 }
 
 :focus-visible {
-  outline: 1px solid var(--accent);
+  outline: 1px solid var(--brand, var(--accent));
   outline-offset: 3px;
   border-radius: 4px;
 }

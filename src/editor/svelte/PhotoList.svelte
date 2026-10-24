@@ -72,14 +72,14 @@
     }
   }
 
-  // items apart (an item's own fields, e.g. a Link, sit 8px under its photo)
+  // items apart (an item's own fields, e.g. a Link, sit --gap-items under its photo)
   .pl__list {
-    @include stack(var(--space-4));
+    @include stack(var(--gap-cards));
   }
 
   .pl__row {
     position: relative;
-    @include stack(var(--space-2));
+    @include stack(var(--gap-items));
     border-radius: var(--radius-md);
 
     // lifted while dragged: above the others, following the pointer
@@ -100,11 +100,11 @@
     }
 
     &.is-drop-before::before {
-      top: -8px;
+      top: calc(var(--gap-cards) / -2);
     }
 
     &.is-drop-after::after {
-      bottom: -8px;
+      bottom: calc(var(--gap-cards) / -2);
     }
   }
 

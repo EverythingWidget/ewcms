@@ -58,7 +58,8 @@ export function head(ctx, route, accent) {
     <meta name="twitter:card" content="${image ? 'summary_large_image' : 'summary'}" />
     <style id="accent-init">
       :root {
-        --accent: ${esc(accent)};${
+        --accent: ${esc(accent)};
+        --site-accent: ${esc(ctx.site.accent || accent)};${
           type
             ? `
         ${esc(type)};`

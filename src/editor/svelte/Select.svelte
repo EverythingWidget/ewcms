@@ -326,8 +326,6 @@
     font-size: var(--fs-base);
     font-weight: 400;
     line-height: 16px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--white-a20) transparent;
   }
 
   .is-up + .sel__list {

@@ -177,7 +177,7 @@
       0 12px 28px -12px var(--c-scrim);
   }
 
-  // where it lands: a line in the 4px gap above or below this row
+  // where it lands: a 2px line centred in the gap (--gap-rows) above or below this row
   .brow.is-drop-before::before,
   .brow.is-drop-after::after {
     content: '';
@@ -187,11 +187,11 @@
   }
 
   .brow.is-drop-before::before {
-    top: -4px;
+    top: calc(var(--gap-rows) / -2);
   }
 
   .brow.is-drop-after::after {
-    bottom: -4px;
+    bottom: calc(var(--gap-rows) / -2);
   }
 
   // the widgets' accent (their card colour's pair: a card's colour says its type)

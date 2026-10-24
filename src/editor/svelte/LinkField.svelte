@@ -22,6 +22,7 @@
     changed = false,
     binds = null,
     empty = '',
+    inline = false,
     onvalue,
     onfocus,
   } = $props();
@@ -60,7 +61,7 @@
   });
   const options = $derived.by(() => {
     const out = [
-      ...(empty ? [{ value: '', label: empty }] : []),
+      ...(empty ? [{ value: '', label: inline ? label : empty }] : []),
       ...pages.map((p) => ({ value: `page:${p.pid}`, label: p.title, hint: p.path })),
       ...items,
       ...(binds || []).map((b) => ({
@@ -87,8 +88,13 @@
 </script>
 
 <div class={['tf', changed && 'is-changed']} data-edit={edit}>
-  <label class="tf__label" for={uid}>{label}</label>
-  <Select id={uid} value={key} {options} placeholder="Pick…" onchange={pick} />
+  {#if inline}
+    <!-- under its photo (a photo list's row): no label above; the dropdown names it -->
+    <Select id={uid} value={key} {options} placeholder={label} aria-label={label} onchange={pick} />
+  {:else}
+    <label class="tf__label" for={uid}>{label}</label>
+    <Select id={uid} value={key} {options} placeholder="Pick…" onchange={pick} />
+  {/if}
 </div>
 {#if kind === 'href'}
   <Field

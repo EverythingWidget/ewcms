@@ -4,12 +4,18 @@
 $hero-em-per-char: 0.6;
 
 /* ---------------- Hero: name + scattered drifting photos ---------------- */
+// An Auto hero has no content height of its own (all of it is positioned): it fills what its
+// section's preset height leaves below the navbar (--sec-h, _layout.scss; the screen without one)
+.wgt--auto > .hero {
+  height: auto;
+  min-height: calc(var(--sec-h, 100svh) - var(--nav-h, 0px));
+}
+
 .hero {
   position: relative;
   isolation: isolate;
-  // the first section's grid starts below the navbar (--nav-h): the rest of the screen
-  height: calc(100svh - var(--nav-h, 0px));
-  min-height: calc(620px - var(--nav-h, 0px));
+  // its widget's area (Rows / Aspect: the rows dragged; every Style): the section grows with it
+  height: 100%;
   overflow-x: clip;
 
   &__photos {

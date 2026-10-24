@@ -135,6 +135,7 @@
       value={live.get(f.file, f.ptr)}
       changed={live.changed(f.file, f.ptr)}
       empty="No link"
+      inline={!!extra.inline}
       binds={bindings ? bindings.binds('link') : null}
       onfocus={() => bridge.focusEdit(f.edit)}
       onvalue={(value) =>
@@ -161,10 +162,14 @@
 {/snippet}
 
 <!-- fields in rows: a half field shares its row with the next half -->
-{#snippet rows(fields)}
+{#snippet rows(fields, extra = {})}
   {@const halves = pairedHalves(fields)}
   <div class="fields">
-    {#each fields as f (f.edit)}{@render field(f, halves.has(f.edit))}{/each}
+    {#each fields as f (f.edit)}{@render field(
+        f,
+        halves.has(f.edit),
+        f.type === 'link' ? extra : {},
+      )}{/each}
   </div>
 {/snippet}
 
@@ -235,6 +240,7 @@
             {@render field(fields.find(isPhoto), false, { ...ctl, label: `${f.label} ${i + 1}` })}
             {#if fields.some((sub) => !isPhoto(sub))}{@render rows(
                 fields.filter((sub) => !isPhoto(sub)),
+                { inline: true },
               )}{/if}
           {/snippet}
         </PhotoList>

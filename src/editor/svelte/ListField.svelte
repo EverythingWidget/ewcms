@@ -107,12 +107,12 @@
   }
 
   .lf__list {
-    @include stack(var(--space-2));
+    @include stack(var(--gap-items));
   }
 
   .lf__item {
     position: relative;
-    @include stack(var(--space-2));
+    @include stack(var(--gap-items));
     padding: var(--space-2);
     border-radius: var(--radius-xl);
     border: 1px solid var(--c-line-strong);
@@ -137,11 +137,11 @@
   }
 
   .lf__item.is-drop-before::before {
-    top: -4px;
+    top: calc(var(--gap-items) / -2);
   }
 
   .lf__item.is-drop-after::after {
-    bottom: -4px;
+    bottom: calc(var(--gap-items) / -2);
   }
 
   // the grip: the drag handle, a quiet 24px icon button

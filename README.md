@@ -547,18 +547,18 @@ ctx, b) }`; `list` makes it show a list of items (grid, albums, projects), `item
 needs (album). Which items a widget shows is its `source` (see "Widget sources"). A widget's content
 sits next to its type, how it works under `config` (`enabled`: on/off; look, …):
 
-| type       | what                                                                                                                                                                       |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `text`     | rich text: `body` lines (see "Text widget")                                                                                                                                |
-| `photo`    | one photo (`src`) with an optional `caption`; in an Aspect or Rows widget `photoFit` (`cover` / `contain`) and `photoPos` (one of nine spots, `left top` … `right bottom`) |
-| `button`   | a button: `label`; config `link` (see Links)                                                                                                                               |
-| `form`     | a contact form (see "Contact form")                                                                                                                                        |
-| `hero`     | the home hero: `title` (one word per line), `eyebrow`, `body`, scattered `photos`                                                                                          |
-| `grid`     | **list**: a head + tiles of its source's items; config `layout` (`staggered` / `even`); `places` shows cards                                                               |
-| `albums`   | **list**: album cards of its items (the people/places index); config `layout` (`portrait` / `landscape`)                                                                   |
-| `panels`   | big links to sources: `panels` `[{ source, title, unit }]` (photography)                                                                                                   |
-| `projects` | **list**: the project accordion of its items; with a `title` it gets a head (home)                                                                                         |
-| `album`    | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped                                                            |
+| type       | what                                                                                                                                                                         |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `text`     | rich text: `body` lines (see "Text widget")                                                                                                                                  |
+| `photo`    | one photo (`src`) with an optional `caption`; in an Aspect or Rows widget `photoFit` (`cover` / `contain`) and `photoPos` (one of nine spots, `left top` … `right bottom`)   |
+| `button`   | a button: `label`; config `link` (see Links)                                                                                                                                 |
+| `form`     | a contact form (see "Contact form")                                                                                                                                          |
+| `hero`     | the home hero: `title` (one word per line), `eyebrow`, `body`, scattered `photos`; as tall as its widget (Rows / Aspect), Auto: its section's preset height under the navbar |
+| `grid`     | **list**: a head + tiles of its source's items; config `layout` (`staggered` / `even`); `places` shows cards                                                                 |
+| `albums`   | **list**: album cards of its items (the people/places index); config `layout` (`portrait` / `landscape`)                                                                     |
+| `panels`   | big links to sources: `panels` `[{ source, title, unit }]` (photography)                                                                                                     |
+| `projects` | **list**: the project accordion of its items; with a `title` it gets a head (home)                                                                                           |
+| `album`    | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped                                                              |
 
 - **Text widget** (`src/site/text.js`): `body` is a list of lines `{ style, text: [runs] }`; a
   style (title, heading, subheading, statement, paragraph, label, small: the site's typography)
@@ -1044,6 +1044,9 @@ No CORS rule is needed: the dev server uploads, and pages only show the photos.
 Each person/place can set `"accent": "#hex"`. Without one, the accent is derived from the
 cover's vivid colour (greyscale covers fall back to the site accent). When you open an album,
 GSAP tweens the CSS variable `--accent`, which tints the glass UI and the background glow.
+`--brand` is the site's fixed colour (`site.json` `accent`, or the theme's own in
+`theme/tokens.scss`), never tweened: links, the menu's active item, focus rings and the header's
+dot stay on it (docs/THEME-MIGRATION.md).
 
 ### Animations: one config, one engine
 

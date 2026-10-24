@@ -189,7 +189,7 @@
   }
 
   .widgets {
-    @include stack(var(--space-1));
+    @include stack(var(--gap-rows));
     margin: 0;
     padding: 0;
     list-style: none;

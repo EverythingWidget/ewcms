@@ -27,3 +27,19 @@ optional:
 6. Delete `theme/styles/`. A `theme/` with only the engine's values can go entirely.
 7. `npx ewcms check` (no theme warning), then compare every page, desktop and mobile, before and
    after (screenshots).
+
+## 0.1.41: `--brand` and the hero's height
+
+- **`--brand`**: the site's fixed colour. It defaults to `site.json`'s `accent` (the page head
+  sets `--site-accent`; the engine's token is `--brand: var(--site-accent, #cfc8b8)`), and
+  `src/client/theme.js` never tweens it: only `--accent` follows the open album. The engine's
+  links (the nav's hover, the menu's active item), focus rings and the header's clock dot use
+  `--brand`; the glass tints, the background glow, `::selection` and the album and project names'
+  hover keep `--accent`. A site with its own brand colour sets `--brand` in `theme/tokens.scss`
+  (it wins over the engine's). Use `var(--brand)` for buttons and links that must stay on-brand.
+- **The hero takes its widget's height.** `.hero` no longer sets `calc(100svh - var(--nav-h))`
+  (and no `min-height`): a hero sized **Rows** or **Aspect** is as tall as its rows, in every
+  Style, and its section grows with it. A hero sized **Auto** (no rows of its own) fills what its
+  section's preset height (Third / Half / Full) leaves under the navbar, else the screen, as
+  before. A Rows hero that relied on the old screen height now needs its rows set to it (about
+  the screen's height divided by the cell: 68 rows on a 1440 × 900 full-width section).

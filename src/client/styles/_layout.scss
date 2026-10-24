@@ -70,13 +70,19 @@
     padding-inline: 0;
   }
   &--h-third {
-    min-height: 33.333svh;
+    --sec-h: 33.333svh;
+
+    min-height: var(--sec-h);
   }
   &--h-half {
-    min-height: 50svh;
+    --sec-h: 50svh;
+
+    min-height: var(--sec-h);
   }
   &--h-full {
-    min-height: 100svh;
+    --sec-h: 100svh;
+
+    min-height: var(--sec-h);
   }
 }
 
