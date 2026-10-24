@@ -97,6 +97,12 @@
   min-width: 0;
 }
 
+// a widget's text fills the widget's width: its width is the measure the editor sets (the text
+// styles' reading measures, 64ch / 1280px in _text.scss, are for text outside the grid only)
+.wgt .ts {
+  max-width: none;
+}
+
 // size: its columns' width × --ar (it spans the rows that holds; auto: its content's)
 .wgt--aspect {
   align-self: start;
