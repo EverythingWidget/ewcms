@@ -1099,13 +1099,17 @@ export function createOverlay({
   }
 
   function endLink() {
-    const { el, id, phone, near } = linking;
+    const { el, id, sec, phone, near } = linking;
     const was = linkOfEl(el);
     stopLink();
     if (near) {
-      // a new leader: flush below it (gap 0; the grid has no gutter), never left overlapping it
-      // as the rows between them were; the same leader again: its gap kept
-      if (was?.to !== near.id) onlink(id, near.id, 0, { mobile: phone });
+      // it stays where it is: the gap is the rows between them now (negative: it overlaps its
+      // leader); it is dragged where it should go from there
+      const flow = flowAreas(sec, phone, widgetOf);
+      const a = flow[near.id];
+      const b = flow[id];
+      if (a && b && (was?.to !== near.id || was.gap !== b.row - (a.row + a.rows)))
+        onlink(id, near.id, b.row - (a.row + a.rows), { mobile: phone });
     } else if (was) onlink(id, null, 0, { mobile: phone, row: shownRow(el) }); // dropped off: free
   }
 

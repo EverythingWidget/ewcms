@@ -28,7 +28,6 @@ import {
   setBase,
   setPhone,
   storesRows,
-  sizeOf,
 } from '../site/layout/index.js';
 import { resolveRows } from '../site/layout/flow.js';
 import { idsOf, newId } from '../site/layout/ids.js';
@@ -406,7 +405,7 @@ export function placeWidget(store, file, at, j, pos, key, { flow, rows = 0, size
  * On the phone, a widget without a phone area of its own gets one (its desktop area halved,
  * where it shows now), so its phone link is its own.
  */
-export function linkWidget(store, file, at, j, to, gap = 0, { phone = false, row, key } = {}) {
+export function linkWidget(store, file, at, j, to, gap = 0, { phone = false, row } = {}) {
   const section = listOf(store, file)[at];
   const b = section.widgets[j];
   if (!b) return null;
@@ -423,7 +422,7 @@ export function linkWidget(store, file, at, j, to, gap = 0, { phone = false, row
     setPhone(b, { link: next, ...stay });
   } else setBase(b, { link: next, ...stay });
   if (next && makesLoop(section.widgets, b.id, to, phone)) return null;
-  return writeSection(store, file, at, section, key);
+  return writeSection(store, file, at, section);
 }
 
 /** Widget `j` of section `at` one layer up (dir 1) or down (-1). */
@@ -464,61 +463,6 @@ export function setWidget(store, file, at, j, patch, key) {
     if (phoneOf(widget)) setPhone(widget, {});
   }
   return writeSection(store, file, at, section, key);
-}
-
-/**
- * Widget `j` of section `at`: its left column and / or width (columns) typed, as its handles
- * would (clamped to the grid: 120 columns, the phone's 60; the width to what's right of its
- * left). On the phone: its own phone area from then on. One undo step a key (typing merges).
- */
-export function setColumns(
-  store,
-  file,
-  at,
-  j,
-  { col, span, row, rows },
-  { phone = false, key } = {},
-) {
-  const section = listOf(store, file)[at];
-  const b = section?.widgets?.[j];
-  if (!b) return false;
-  const cols = phone ? MCOLS : COLS;
-  const now = phone ? phoneAreaOf(b) : placeOf(baseOf(b));
-  const whole = (v, d) => (Number.isFinite(v) ? Math.round(v) : d);
-  const clamp = (v, lo, hi) => Math.min(Math.max(lo, v), hi);
-  const c = clamp(whole(col, now.col), 1, cols);
-  const s = clamp(whole(span, now.span), 1, cols - c + 1);
-  // its top row and (a Rows widget's) rows: 1 up to the grid's most rows
-  const r = clamp(whole(row, now.row), 1, MAX_MIN_ROWS);
-  const own = storesRows(b) && sizeOf(b) === 'rows';
-  const n = own && rows !== undefined ? clamp(whole(rows, now.rows), 1, MAX_MIN_ROWS) : now.rows;
-  if (c === now.col && s === now.span && r === now.row && n === now.rows) return false;
-  const next = {
-    col: c,
-    span: s,
-    ...(r !== now.row && { row: r }),
-    ...(n !== now.rows && { rows: n }),
-  };
-  if (phone) {
-    const inherited = !hasMobileArea(phoneOf(b)) ? linkOf(b, true) : null;
-    setPhone(b, placeOf({ ...now, ...next }, MCOLS));
-    if (inherited) setPhone(b, { link: inherited });
-  } else setBase(b, next);
-  return writeSection(store, file, at, section, key);
-}
-
-/**
- * Widget `j` of section `at` follows its leader `gap` rows below it, typed (whole rows; negative
- * overlaps it, by design: links.js, but never above the leader's top: at least -leaderRows,
- * the rows it shows now). One undo step a key.
- */
-export function setGap(store, file, at, j, gap, { phone = false, key, leaderRows = 0 } = {}) {
-  const b = listOf(store, file)[at]?.widgets?.[j];
-  const link = b && linkOf(b, phone);
-  if (!link || !Number.isFinite(gap)) return false;
-  const g = Math.min(Math.max(-Math.max(0, leaderRows | 0), Math.round(gap)), MAX_MIN_ROWS) || 0;
-  if (g === link.gap) return false;
-  return linkWidget(store, file, at, j, link.to, g, { phone, key });
 }
 
 /**

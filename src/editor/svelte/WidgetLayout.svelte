@@ -5,20 +5,9 @@
   WidgetToolbar.svelte.)
 -->
 <script>
-  import Field from './Field.svelte';
   import InfoHelp from './InfoHelp.svelte';
-  import { NEW_ROWS, layerWidget, setColumns, setGap, setWidget } from '../layout-ops.js';
-  import {
-    ASPECTS,
-    COLS,
-    MCOLS,
-    baseOf,
-    linkOf,
-    phoneAreaOf,
-    placeOf,
-    ratioOf,
-    sizeOf,
-  } from '../../site/layout/index.js';
+  import { NEW_ROWS, layerWidget, setWidget } from '../layout-ops.js';
+  import { ASPECTS, baseOf, linkOf, ratioOf, sizeOf } from '../../site/layout/index.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import { nameOf } from './content-groups.js';
   import { ui } from './ui.svelte.js';
@@ -37,29 +26,7 @@
     return b ? nameOf(b) || WIDGET_TYPES[b.type]?.label || b.id : link.to;
   });
 
-  // its left column and width (columns), typed: the same grid fields its handles write
   const phoneView = $derived(ui.viewport === 'mobile');
-  const area = $derived(phoneView ? phoneAreaOf(widget) : placeOf(baseOf(widget)));
-  const cols = $derived(phoneView ? MCOLS : COLS);
-  const setCols = (patch, k) =>
-    setColumns(live.store, file, at, j, patch, {
-      phone: phoneView,
-      key: `layout:${file}#/sections/${at}/widgets/${j}/${phoneView ? 'phone/' : ''}${k}`,
-    });
-
-  // its top row (free) or its gap below its leader (following), and a Rows widget's rows
-  const setGapTo = (v) =>
-    setGap(live.store, file, at, j, v, {
-      phone: phoneView,
-      leaderRows: rowsShownOf(link?.to),
-      key: `layout:${file}#/sections/${at}/widgets/${j}/${phoneView ? 'phone/' : ''}gap`,
-    });
-  // the rows widget `wid` shows in the preview now (0: not shown)
-  function rowsShownOf(wid) {
-    const el = wid && bridge.doc?.querySelector(`[data-widget="${CSS.escape(wid)}"]`);
-    const n = parseInt(el?.style.getPropertyValue('--frs') ?? '', 10);
-    return Number.isInteger(n) && n > 0 ? n : 0;
-  }
 
   // the rows it shows now (the preview's), so a size it is given keeps its height
   function shownRows() {
@@ -229,56 +196,6 @@
       ></span
     >
   </div>
-  <Field
-    edit="{file}#/sections/{at}/widgets/{j}/layout/{phoneView ? 'phone' : 'base'}/span"
-    label="Width (columns)"
-    type="number"
-    half
-    value={area.span}
-    help={`1–${cols - area.col + 1} (the grid: ${cols})`}
-    onvalue={(v) => setCols({ span: v }, 'span')}
-  />
-  <Field
-    edit="{file}#/sections/{at}/widgets/{j}/layout/{phoneView ? 'phone' : 'base'}/col"
-    label="Left (column)"
-    type="number"
-    half
-    value={area.col}
-    help={`1–${cols}`}
-    onvalue={(v) => setCols({ col: v }, 'col')}
-  />
-  {#if link}
-    <Field
-      edit="{file}#/sections/{at}/widgets/{j}/layout/{phoneView ? 'phone' : 'base'}/link/gap"
-      label="Gap (rows)"
-      type="number"
-      half
-      value={link.gap}
-      help={`Below ${leader}; negative overlaps it`}
-      onvalue={setGapTo}
-    />
-  {:else}
-    <Field
-      edit="{file}#/sections/{at}/widgets/{j}/layout/{phoneView ? 'phone' : 'base'}/row"
-      label="Top (row)"
-      type="number"
-      half
-      value={area.row}
-      help="1 is the section's top"
-      onvalue={(v) => setCols({ row: v }, 'row')}
-    />
-  {/if}
-  {#if size === 'rows'}
-    <Field
-      edit="{file}#/sections/{at}/widgets/{j}/layout/{phoneView ? 'phone' : 'base'}/rows"
-      label="Rows"
-      type="number"
-      half
-      value={area.rows}
-      help="Its height, in rows"
-      onvalue={(v) => setCols({ rows: v }, 'rows')}
-    />
-  {/if}
   <p class="hint small wl__link">
     {#if link}Follows {leader}, gap {link.gap}{:else}Free (not linked){/if}
   </p>
