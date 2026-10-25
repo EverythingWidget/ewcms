@@ -11,6 +11,8 @@ import { albumCard } from '../../templates/partials.js';
  */
 export const albums = {
   type: 'albums',
+  // added from the editor: Auto, as tall as what it holds
+  added: { size: 'auto' },
   list: true,
   label: 'Album cards',
   icon: 'images',

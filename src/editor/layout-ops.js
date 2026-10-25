@@ -100,10 +100,17 @@ export const NEW_ROWS = 6;
 export const NEW_SPAN = 40;
 function addedWidget(type, taken, pos = {}) {
   const b = newWidget(type, taken, pos);
-  b.size = 'rows'; // first: an area keeps its rows only on a Rows (or Aspect) widget
   const own = WIDGET_TYPES[type]?.added || {};
   const span = own.span === 'all' ? COLS : Math.min(own.span || NEW_SPAN, COLS);
-  setBase(b, { span, rows: own.rows || NEW_ROWS, ...pos });
+  // content-sized types (text, button, form, lists): Auto (the default, left out), their rows
+  // measured on the page; the others Rows (first: an area keeps its rows only on Rows / Aspect)
+  if (own.size === 'auto') {
+    delete b.size;
+    setBase(b, { span, ...pos });
+  } else {
+    b.size = 'rows';
+    setBase(b, { span, rows: own.rows || NEW_ROWS, ...pos });
+  }
   return b;
 }
 

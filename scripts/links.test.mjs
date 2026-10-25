@@ -190,7 +190,7 @@ test('editor: link, drag a follower (its gap changes), unlink; new widgets are f
   // a copy is free; a new widget is free
   const copy = duplicateWidget(store, F, 0, 2);
   assert.ok(!('link' in flat(copy)));
-  const added = addWidget(store, F, 0, 'text');
+  const added = addWidget(store, F, 0, 'photo');
   assert.ok(!('link' in flat(added)) && !('link' in flat(newWidget('text', new Set()))));
   assert.deepEqual(checkContent(F, store.current[F]), []);
 });

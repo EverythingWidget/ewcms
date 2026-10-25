@@ -8,6 +8,8 @@ import { hrefOf } from '../../hrefs.js';
 /** A button linking somewhere (config.link: a page, an item or a URL; src/site/hrefs.js). */
 export const button = {
   type: 'button',
+  // added from the editor: Auto, as tall as what it holds
+  added: { size: 'auto' },
   label: 'Button',
   icon: 'arrow-right',
   line: 'A link to a page or a site',

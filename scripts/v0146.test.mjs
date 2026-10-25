@@ -20,8 +20,8 @@ const F = 'pages/index.json';
 const two = () => {
   const store = createStore();
   store.load({ [F]: { version: 1, kind: 'page', id: 'pg-t146', sections: [] } });
-  addSection(store, F, 'text');
-  addWidget(store, F, 0, 'text');
+  addSection(store, F, 'photo');
+  addWidget(store, F, 0, 'photo');
   return store;
 };
 const w = (store, j) => store.current[F].sections[0].widgets[j];

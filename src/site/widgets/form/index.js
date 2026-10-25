@@ -78,6 +78,8 @@ function input(f, id) {
 
 export const form = {
   type: 'form',
+  // added from the editor: Auto, as tall as what it holds
+  added: { size: 'auto' },
   label: 'Contact form',
   icon: 'envelope',
   line: 'Name, email and a message',

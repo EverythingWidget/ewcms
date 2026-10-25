@@ -160,6 +160,26 @@
   let open = $state(null);
   // under its own button: the button's left edge in the toolbar
   let anchor = $state(0);
+  // its menu over the bar when there's more room there than under it (a caret low in the
+  // preview), and never past the stage: scrolls inside instead (nothing moves)
+  let barEl = $state();
+  let popEl = $state();
+  let popUp = $state(false);
+  let popMax = $state(0);
+  $effect(() => {
+    if (!open || !popEl || !barEl) return;
+    void pos?.y;
+    const stage = barEl.closest('.btb')?.offsetParent?.getBoundingClientRect();
+    const bar = barEl.getBoundingClientRect();
+    if (!stage) return;
+    const GAP = 4;
+    const MARGIN = 8;
+    const below = Math.min(stage.bottom, innerHeight) - bar.bottom - GAP - MARGIN;
+    const above = bar.top - Math.max(stage.top, 0) - GAP - MARGIN;
+    const need = popEl.scrollHeight;
+    popUp = need > below && above > below;
+    popMax = Math.max(0, Math.floor(popUp ? above : below));
+  });
   const toggle = (name, e) => {
     if (e?.currentTarget) anchor = e.currentTarget.offsetLeft;
     open = open === name ? null : name;
@@ -370,7 +390,7 @@
   role="presentation"
 >
   {#if where && widget}
-    <div class="btb__bar" role="toolbar" aria-label="Widget">
+    <div class="btb__bar" bind:this={barEl} role="toolbar" aria-label="Widget">
       {#if hasText && !editing}
         <button
           type="button"
@@ -420,8 +440,9 @@
 
     {#if open}
       <div
-        class={['btb__pop', (open === 'style' || open === 'field') && 'is-list']}
-        style="margin-left: {anchor}px"
+        bind:this={popEl}
+        class={['btb__pop', (open === 'style' || open === 'field') && 'is-list', popUp && 'is-up']}
+        style="left: {anchor}px; max-height: {popMax ? `${popMax}px` : 'none'}"
       >
         {#if open === 'style'}
           {@render styleMenu()}
@@ -577,9 +598,20 @@
     font-size: var(--fs-2xs);
   }
 
+  // out of the flow (the bar's width and place never change with it): under the bar, or over it
   .btb__pop {
     @include stack(var(--space-2));
+    position: absolute;
+    top: calc(100% + var(--space-1));
     width: 280px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    &.is-up {
+      top: auto;
+      bottom: calc(100% + var(--space-1));
+    }
+
     padding: var(--space-2);
     border-radius: var(--radius-md);
     background: var(--c-card);

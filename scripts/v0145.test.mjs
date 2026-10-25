@@ -27,18 +27,18 @@ const memory = () => {
 
 test('v0.1.45: added widgets: col 1, below the lowest one as shown, never on top of each other', () => {
   const store = fresh();
-  addSection(store, F, 'text');
+  addSection(store, F, 'photo');
   const sec = () => store.current[F].sections[0];
   // the first one is an auto text at row 12 whose content takes 28 rows in the preview
   sec().widgets[0].size = undefined;
   sec().widgets[0].layout.base = { col: 1, span: 64, row: 12 };
-  const a = addWidget(store, F, 0, 'text', {
+  const a = addWidget(store, F, 0, 'photo', {
     shown: { [sec().widgets[0].id]: { row: 12, rows: 28 } },
   });
   assert.deepEqual([baseOf(a).col, baseOf(a).row], [1, 40]);
-  const b = addWidget(store, F, 0, 'text');
+  const b = addWidget(store, F, 0, 'photo');
   assert.equal(baseOf(b).row, 46); // below a (6 rows); no preview: as stored
-  const c = addWidget(store, F, 0, 'text', { shown: { bogus: { row: 1, rows: 'x' } } });
+  const c = addWidget(store, F, 0, 'photo', { shown: { bogus: { row: 1, rows: 'x' } } });
   assert.equal(baseOf(c).row, 52);
   assert.deepEqual(checkContent(F, store.current[F]), []);
 });
@@ -51,7 +51,7 @@ test('v0.1.45: a fixed-rows widget whose text spills: the section (not custom) r
 
 test('v0.1.45: unsaved edits kept over a dev-server reload, put back as one undo step', () => {
   const store = fresh();
-  addSection(store, F, 'text');
+  addSection(store, F, 'photo');
   store.markSaved([F]);
   store.set(F, '/meta', { title: 'Typed, not saved' });
   const s = memory();

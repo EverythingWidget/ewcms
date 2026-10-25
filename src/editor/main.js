@@ -837,3 +837,11 @@ boot();
 
 // a widget row clicked: it scrolls into view in the preview when out of it (overlay.js)
 hooks.reveal = (id) => overlay.reveal(id);
+// the preview caught up with the edits: the renders queued (an Auto size, typed text) swapped in,
+// then its rows flowed (rows.js) on the next frame
+hooks.settled = async () => {
+  for (let last; last !== rendering;) await (last = rendering);
+  const win = bridge.doc?.defaultView;
+  if (win) await new Promise((r) => win.requestAnimationFrame(() => r()));
+  bridge.api?.reflow?.();
+};

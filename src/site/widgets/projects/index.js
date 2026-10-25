@@ -12,6 +12,8 @@ import { sourcePage } from '../data.js';
  */
 export const projects = {
   type: 'projects',
+  // added from the editor: Auto, as tall as what it holds
+  added: { size: 'auto' },
   list: true,
   label: 'Project list',
   icon: 'list',

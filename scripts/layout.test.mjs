@@ -291,15 +291,15 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   const b = addWidget(store, F, 0, 'button');
   // an added widget: Rows, 6 rows by 40 columns (a new section's too), below the others
   assert.deepEqual(sections()[0].widgets[0].layout.base, { col: 1, span: 40, row: 1, rows: 6 });
-  assert.equal(sections()[0].widgets[0].size, 'rows');
-  assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 1, span: 40, row: 7, rows: 6 }); // below
-  assert.equal(sections()[0].widgets[1].size, 'rows');
-  assert.equal(rowsOf(sections()[0]), 12);
+  assert.equal(sections()[0].widgets[0].size, 'rows'); // a photo: Rows; text, button: Auto (v0.1.47)
+  assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 1, span: 40, row: 7 }); // below; Auto: no rows stored
+  assert.equal(sections()[0].widgets[1].size, undefined); // Auto: the default
+  assert.equal(rowsOf(sections()[0]), 7); // an Auto widget: its row (its rows measured on the page)
   assert.equal(sections()[0].rows, undefined); // its rows: down to its lowest widget, not stored
   assert.ok(isId(b.id, 'b'));
   duplicateWidget(store, F, 0, 1);
   assert.deepEqual(types()[0], 'photo+button+button');
-  assert.equal(flat(sections()[0].widgets[2]).pos.row, 13);
+  assert.equal(flat(sections()[0].widgets[2]).pos.row, 15); // below the Auto one's guessed 8 rows
   moveWidget(store, F, 0, 2, 0);
   assert.deepEqual(types()[0], 'button+photo+button');
   // to another section: free, below its widgets; one undo step
@@ -310,7 +310,7 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   assert.deepEqual(types()[0], 'button+photo+button');
   removeWidget(store, F, 0, 0);
   assert.deepEqual(types()[0], 'photo+button');
-  placeWidget(store, F, 0, 1, { col: 13, span: 12, row: 30, rows: 4 });
+  placeWidget(store, F, 0, 1, { col: 13, span: 12, row: 30, rows: 4 }, undefined, { size: 'rows' }); // its height dragged
   assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 13, span: 12, row: 30, rows: 4 }); // a Rows widget keeps its rows
   assert.equal(rowsOf(sections()[0]), 33); // a section grows to fit
   placeWidget(store, F, 0, 1, { col: 13, span: 12, row: 40, rows: 4 });
@@ -336,8 +336,8 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   store.undo(); // the second drag
   assert.equal(rowsOf(sections()[0]), 33);
   store.undo(); // the first drag
-  assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 1, span: 40, row: 7, rows: 6 });
-  assert.equal(rowsOf(sections()[0]), 12); // down to its lowest widget again
+  assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 1, span: 40, row: 7 });
+  assert.equal(rowsOf(sections()[0]), 7); // down to its lowest widget again
   store.undo(); // remove
   assert.deepEqual(types()[0], 'button+photo+button');
   store.redo();

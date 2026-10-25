@@ -15,6 +15,8 @@ import { hrefOf } from '../../hrefs.js';
  */
 export const text = {
   type: 'text',
+  // added from the editor: Auto, as tall as what it holds
+  added: { size: 'auto' },
   label: 'Text',
   icon: 'font',
   line: 'Titles, paragraphs, labels: any text',

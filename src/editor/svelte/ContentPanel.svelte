@@ -28,7 +28,7 @@
 <script>
   import { tick, untrack } from 'svelte';
   import { gsap } from 'gsap';
-  import { ui, selectWidgets } from './ui.svelte.js';
+  import { ui, selectWidgets, hooks } from './ui.svelte.js';
   import HeaderPart from './HeaderPart.svelte';
   import PageHead from './PageHead.svelte';
   import PagesList from './PagesList.svelte';
@@ -169,18 +169,28 @@
     const ids = (live.store.current[file]?.sections?.[at]?.widgets || []).map((b) => b.id);
     for (const id of ids) {
       const el = bridge?.doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`);
-      const st = el && win.getComputedStyle(el);
-      const row = parseInt(el?.style.getPropertyValue('--fr') || st?.getPropertyValue('--r'), 10);
-      const rows = parseInt(
-        el?.style.getPropertyValue('--frs') || st?.getPropertyValue('--rs'),
-        10,
-      );
+      if (!el || el.hidden) continue;
+      const st = win.getComputedStyle(el);
+      const row = parseInt(el.style.getPropertyValue('--fr') || st.getPropertyValue('--r'), 10);
+      // rows.js's rows, else (not flowed yet) its height in cells: an auto widget's stored --rs
+      // is a placeholder (1), never its content's
+      const cell = parseFloat(win.getComputedStyle(el.parentElement).getPropertyValue('--cell'));
+      const tall = cell > 0 ? Math.ceil(el.getBoundingClientRect().height / cell - 0.01) : 0;
+      const flowed = parseInt(el.style.getPropertyValue('--frs'), 10) || 0;
+      const stored = el.classList.contains('wgt--auto')
+        ? 0
+        : parseInt(st.getPropertyValue('--rs'), 10) || 0;
+      const rows = Math.max(flowed || stored, tall);
       if (row > 0 && rows > 0) out[id] = { row, rows };
     }
     return out;
   };
-  const addTo = (at, type) =>
+  // first the preview catches up with the last edits (typed text, a size: their renders and
+  // rows), so the new widget goes below what they make, not a stale height
+  async function addTo(at, type) {
+    await hooks.settled();
     openWidget(addWidget(live.store, file, at, type, { shown: shownRows(at) }).id);
+  }
 
   /** Open the widget holding `edit` and scroll to it (a Header label: its field); list items open the Sources modal. */
   async function reveal(edit) {

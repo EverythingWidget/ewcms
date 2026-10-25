@@ -138,6 +138,8 @@ export function selectSection(id) {
 }
 
 /** Set by main.js: the preview's (overlay.js reveal). */
-export const hooks = { reveal: () => {} };
+// settled(): the preview shows the latest edits (pending section renders swapped in, rows
+// flowed): main.js
+export const hooks = { reveal: () => {}, settled: async () => {} };
 /** A widget scrolled to in the preview, only when it is out of view. */
 export const reveal = (id) => hooks.reveal(id);
