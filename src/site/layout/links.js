@@ -8,11 +8,12 @@
  *
  * so it moves when the widget it follows grows or shrinks (its content at another width).
  * One widget it follows (its leader), any number following one widget, chains; never a loop,
- * never a widget of another section. A widget without a phone area of its own (it shows its
- * desktop area halved, grid.js phoneAreaOf) follows its desktop link there too, the gap
- * halved; one with a phone area has only its own phone link.
+ * never a widget of another section. On the phone a widget without a phone layout of its own
+ * follows the one before it in its section's default stack (grid.js phoneStack); one with a
+ * phone area or link has only its own phone link. (Without its section: its desktop link, the
+ * gap halved.)
  */
-import { baseOf, hasMobileArea, phoneOf } from './grid.js';
+import { baseOf, hasMobileArea, phoneOf, phoneStack } from './grid.js';
 import { isObject } from '../is.js';
 
 /** A link as stored, checked for shape only: { to, gap } or null. */
@@ -25,9 +26,12 @@ const linkShape = (l) =>
 const halfGap = (g) => Math.sign(g) * Math.round(Math.abs(g) / 2);
 
 /** The link a widget follows on the desktop grid, or on the phone grid (`phone`); null: free. */
-export function linkOf(b, phone = false) {
+export function linkOf(b, phone = false, widgets) {
   if (!phone) return linkShape(baseOf(b).link);
-  if (hasMobileArea(phoneOf(b))) return linkShape(phoneOf(b).link);
+  if (hasMobileArea(phoneOf(b)) || isObject(phoneOf(b)?.link)) return linkShape(phoneOf(b).link);
+  // its section's default phone stack (grid.js phoneStack): the widget before it
+  const s = widgets && phoneStack(widgets).get(b?.id);
+  if (s) return s.link;
   const l = linkShape(baseOf(b).link);
   return l && { to: l.to, gap: halfGap(l.gap) };
 }
@@ -40,7 +44,7 @@ export function linkOf(b, phone = false) {
 export function makesLoop(widgets, id, to, phone = false) {
   const byId = new Map((widgets || []).map((b) => [b?.id, b]));
   const seen = new Set();
-  for (let at = to; at; at = linkOf(byId.get(at), phone)?.to) {
+  for (let at = to; at; at = linkOf(byId.get(at), phone, widgets)?.to) {
     if (at === id) return true;
     if (seen.has(at)) return false;
     seen.add(at);

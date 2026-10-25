@@ -229,8 +229,17 @@ test('overlay: where widgets are now, the real rows over the stored area (own se
     b: { id: 'b', layout: { base: { col: 61, span: 60, row: 1, rows: 6 } } },
   };
   const els = [
-    el({ dataset: { widget: 'a' }, vars: { '--fr': 3, '--frs': 9 }, sec }),
-    el({ dataset: { widget: 'b' }, vars: { '--fr': 2 }, sec }), // no --frs: stored
+    el({
+      dataset: { widget: 'a' },
+      vars: { '--fr': 3, '--frs': 9, '--mc': 1, '--ms': 60, '--mr': 1, '--mrs': 2 },
+      sec,
+    }),
+    // no --frs: stored (the phone's: as rendered, its --m* vars)
+    el({
+      dataset: { widget: 'b' },
+      vars: { '--fr': 2, '--mc': 1, '--ms': 60, '--mr': 7, '--mrs': 3 },
+      sec,
+    }),
     el({ dataset: { widget: 'zz' }, sec }), // not a stored widget
     el({ dataset: { widget: 'c' }, sec: { id: 'nested' } }),
   ];
@@ -241,8 +250,8 @@ test('overlay: where widgets are now, the real rows over the stored area (own se
     b: { col: 61, span: 60, row: 1, rows: 6 },
   });
   assert.deepEqual(flowAreas(sec, true, widgetOf), {
-    a: { col: 1, span: 30, row: 3, rows: 9 },
-    b: { col: 31, span: 30, row: 1, rows: 3 },
+    a: { col: 1, span: 60, row: 3, rows: 9 },
+    b: { col: 1, span: 60, row: 7, rows: 3 },
   });
 });
 

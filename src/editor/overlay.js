@@ -17,8 +17,9 @@
  *             (onplace), which also stores where the section's other widgets are now (their
  *             real rows). A linked widget dragged up or down keeps its link: its gap changes.
  *             Esc cancels. Below 760px (the mobile preview) a drag edits the widget's phone
- *             area, on the phone grid of 60 columns (a widget without one shows its desktop
- *             area halved: that is where the drag starts). An aspect or auto widget's rows
+ *             area, on the phone grid of 60 columns (widgets without one stack full width in
+ *             reading order: that is where the drag starts; the first phone edit gives the
+ *             section's widgets those places as their own). An aspect or auto widget's rows
  *             follow its width: only its sides resize.
  *   Links     the selected widget only shows a filled circle above its top edge (drag it) and
  *             an empty one below its bottom edge (a drop target only; a hovered widget shows
@@ -88,6 +89,10 @@ const STYLE = `
 .sel { border: 2px solid ${T.accent}; }
 .sel.is-dragging { background: ${T.accent}; background: rgb(${T.accentRgb} / .08); }
 .label { position: absolute; right: 0; bottom: 100%; margin-bottom: 8px; padding: 4px 8px; border-radius: ${T.radiusSm}; background: ${T.accent}; color: ${T.black}; font: 500 12px/1 ${T.font}; white-space: nowrap; }
+.label .auto { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 16px; margin: -4px 4px -4px -4px; vertical-align: middle; border-radius: ${T.radiusXs}; color: color-mix(in srgb, ${T.black} 45%, ${T.accent}); pointer-events: auto; cursor: pointer; }
+.label .auto svg { position: static; width: 8px; height: 12px; fill: currentColor; }
+.label .auto:hover { background: rgb(0 0 0 / .14); color: ${T.black}; }
+.label .auto.is-on { background: ${T.black}; color: ${T.accent}; }
 .label .ch { margin: 0 -4px; padding: 0 4px; border-radius: ${T.radiusXs}; background: ${T.black}; color: ${T.accent}; font-weight: inherit; }
 .handle { position: absolute; width: 12px; height: 12px; translate: -50% -50%; box-sizing: border-box; border: 2px solid ${T.accent}; border-radius: ${T.radiusXs}; background: ${T.black}; pointer-events: auto; }
 .handle[data-h='n'], .handle[data-h='s'] { left: 50%; cursor: ns-resize; }
@@ -103,6 +108,12 @@ const STYLE = `
 .edge[data-h='w'] { left: 0; }
 .edge[data-h='e'] { left: 100%; }
 .sel.is-free.is-phone .handle:not([data-h='e']):not([data-h='w']) { display: none; }
+/* Auto (its height follows its content): only its sides resize; its top or bottom edge dragged
+   gives it rows (Size Rows, the toggle off) */
+.sel.is-auto .handle:not([data-h='e']):not([data-h='w']) { display: none; }
+.edge[data-h='n'], .edge[data-h='s'] { display: none; left: 0; right: 0; top: 0; bottom: auto; width: auto; height: 12px; translate: 0 -50%; cursor: ns-resize; }
+.edge[data-h='s'] { top: 100%; }
+.sel.is-auto:not(.is-phone) .edge[data-h='n'], .sel.is-auto:not(.is-phone) .edge[data-h='s'] { display: block; }
 .dot { position: absolute; left: 50%; width: 12px; height: 12px; translate: -50% -50%; box-sizing: border-box; border: 2px solid ${T.accent}; border-radius: 50%; background: ${T.black}; pointer-events: auto; }
 .dot[data-dot='top'] { top: -${DOT}px; background: ${T.accent}; cursor: grab; }
 .dot[data-dot='top']:hover { box-shadow: 0 0 0 4px rgb(${T.accentRgb} / .35); }
@@ -136,7 +147,8 @@ svg { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: no
  * (null when it isn't on the page); secNameOf(id): a section's name for its tag ("Section N"
  * without one); onrows(secId, rows, { mobile }): a Custom section's bottom
  * edge was dragged to `rows` (the phone's rows when mobile); onsectionpick(secId): a click on a
- * section's empty space (it alone selected).
+ * section's empty space (it alone selected); onsize(id, size, rows): the tag's Auto toggle
+ * clicked ('auto' or 'rows'; rows: the desktop rows it shows now).
  */
 export function createOverlay({
   ui,
@@ -148,6 +160,7 @@ export function createOverlay({
   onselect = () => {},
   onsectionpick = () => {},
   ongroupmove = () => {},
+  onsize = () => {},
   widgetOf,
   secNameOf = () => '',
 }) {
@@ -215,7 +228,7 @@ export function createOverlay({
     linkEls.clear();
     svgSize = '';
     tempPath = null;
-    shadow.innerHTML = `<style>${STYLE}</style><div class="layer"><div class="grids"></div><svg class="links" xmlns="${SVG}"></svg><div class="box peek" hidden><span class="tag"></span></div><div class="secrow" hidden><span class="count"></span></div><div class="box hover" hidden></div><div class="box sel" hidden><span class="label"></span><i class="edge" data-h="w"></i><i class="edge" data-h="e"></i>${HANDLES.map((h) => `<i class="handle" data-h="${h}"></i>`).join('')}${dots}</div><div class="targets"></div><div class="multi"></div><div class="marquee" hidden></div><div class="blocks"></div></div>`;
+    shadow.innerHTML = `<style>${STYLE}</style><div class="layer"><div class="grids"></div><svg class="links" xmlns="${SVG}"></svg><div class="box peek" hidden><span class="tag"></span></div><div class="secrow" hidden><span class="count"></span></div><div class="box hover" hidden></div><div class="box sel" hidden><span class="label"></span><i class="edge" data-h="w"></i><i class="edge" data-h="e"></i><i class="edge" data-h="n"></i><i class="edge" data-h="s"></i>${HANDLES.map((h) => `<i class="handle" data-h="${h}"></i>`).join('')}${dots}</div><div class="targets"></div><div class="multi"></div><div class="marquee" hidden></div><div class="blocks"></div></div>`;
     root = shadow.querySelector('.layer');
     els.grids = root.querySelector('.grids');
     els.links = root.querySelector('.links');
@@ -235,6 +248,17 @@ export function createOverlay({
       // another section while Ctrl/Cmd is held with a selection: not clickable
       if (e.target.closest?.('.block')) return void (e.preventDefault(), e.stopPropagation());
       if (e.target.closest?.('.secrow')) return startRows(e);
+      // the tag's Auto toggle: Auto ↔ Rows (the rows it shows now), one undo step
+      if (e.target.closest?.('[data-auto]') && ui.widget && !drag) {
+        e.preventDefault();
+        e.stopPropagation();
+        const el = widgetEl(ui.widget);
+        if (!el) return;
+        const auto = sizeOf(widgetOf(ui.widget)) === 'auto';
+        const rows = shownPlace(el, win).rows;
+        onsize(ui.widget, auto ? 'rows' : 'auto', mobile() ? rows * 2 : rows);
+        return kick();
+      }
       const h = e.target.dataset?.h;
       if (h && ui.widget) return start(e, widgetEl(ui.widget), h);
       const dot = e.target.dataset?.dot;
@@ -468,9 +492,15 @@ export function createOverlay({
       els.sel.classList.toggle('is-phone', mobile());
       // its size and place, the snapped ones while dragged or resized (widget-tag.js)
       const dragging = drag?.id === ui.widget && drag.pos;
+      // Auto: off once its top or bottom edge is dragged (it gets rows on release)
+      const auto =
+        sizeOf(b) === 'auto' &&
+        !(dragging && /[ns]/.test(drag.h) && drag.pos.rows !== drag.from.rows);
+      els.sel.classList.toggle('is-auto', sizeOf(b) === 'auto' && !dragging);
       const label = tagHtml(
         dragging ? drag.pos : shownPlace(sel, win),
         dragging ? drag.from : null,
+        auto,
       );
       if (label !== tagShown) els.label.innerHTML = tagShown = label;
     }

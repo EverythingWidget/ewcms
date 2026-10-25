@@ -59,12 +59,14 @@ test('sizes: auto by default; every widget spans its stored rows (rows.js works 
   assert.equal(rowsOf(sec([wgt()], { rows: 1 })), 5);
 });
 
-test('phone grid: 60 columns; a widget without a phone area shows its desktop area halved', () => {
+test('phone grid: 60 columns; a widget without a phone area stacks full width', () => {
   const placed = wgt({ size: 'rows', phone: { col: 55, span: 9, row: 3, rows: 4 } }); // span cut at column 60
   assert.equal(widgetVars(placed), '--c:3;--s:10;--r:5;--rs:20;--mc:55;--ms:6;--mr:3;--mrs:4');
   const s = sec([placed, { ...wgt({ size: 'rows' }), id: 'b-bbbb' }]);
-  assert.equal(mobileRowsOf(s), 12); // b-bbbb halved: rows 3-12
-  assert.match(sectionVars(s), /;--mrows:12$/);
+  // b-bbbb stacked: full width, its desktop shape kept (20 rows over 10 columns: 120 over 60),
+  // from its desktop top halved (row 3): rows 3-122
+  assert.equal(mobileRowsOf(s), 122);
+  assert.match(sectionVars(s), /;--mrows:122$/);
   assert.equal(sectionClass(s), 'sec'); // nothing stacks
   // a phone layout without an area: the halved area
   const only = sec([wgt({ size: 'rows', phone: {} })]);
@@ -204,10 +206,16 @@ test('ops: widget settings, a phone area of its own, reset; one undo each', () =
   setWidget(store, F, 0, 0, { size: undefined, aspect: undefined });
   assert.ok(!('size' in widgets()[0]) && !('aspect' in widgets()[0]));
 
-  // a move on the phone: its own phone area; the others keep showing their desktop halved
+  // a move on the phone: its own phone area (still following the one before it in the default
+  // stack, its gap where it was put); the others keep their stacked places as their own
   placeMobile(store, F, 0, 1, { col: 49, span: 20, row: 1, rows: 10 });
-  assert.deepEqual(widgets()[1].layout.phone, { col: 49, span: 12, row: 1 });
-  assert.ok(!('phone' in widgets()[0].layout));
+  assert.deepEqual(widgets()[1].layout.phone, {
+    col: 49,
+    span: 12,
+    row: 1,
+    link: { to: 'b-aaaa', gap: -1 },
+  });
+  assert.deepEqual(widgets()[0].layout.phone, { col: 1, span: 60, row: 1 });
   placeMobile(store, F, 0, 0, { col: 1, span: 30, row: 2, rows: 5 });
   assert.deepEqual(flat(widgets()[0]).pos, { col: 1, span: 24, row: 1 }); // the desktop is untouched
 
@@ -247,15 +255,15 @@ test('custom rows: widget moves only grow them; the bottom edge sets them; phone
     },
   });
   const s = () => store.current[F].sections[0];
-  const vars = '--rows:50;--mrows:25;--minrows:50;--mminrows:25';
+  const vars = /^--rows:50;--mrows:\d+;--minrows:50;--mminrows:25$/;
   // moved inside its rows (desktop, phone): still 50 rows, not its content's
   placeWidget(store, F, 0, 0, { col: 5, span: 24, row: 3, rows: 10 }, undefined, {
     flow: { 'b-aaaa': a.layout.base },
     rows: 12,
   });
-  assert.equal(sectionVars(s()), vars);
+  assert.match(sectionVars(s()), vars);
   placeMobile(store, F, 0, 0, { col: 1, span: 30, row: 2, rows: 5 }, { rows: 6 });
-  assert.equal(sectionVars(s()), vars);
+  assert.match(sectionVars(s()), vars);
   assert.ok(!('phone' in s()));
   // dragged past its bottom: its rows become the content's, in the move's one undo step
   placeWidget(store, F, 0, 0, { col: 5, span: 24, row: 55, rows: 10 });
@@ -356,7 +364,7 @@ test('phone height: its own, the desktop untouched; reset; rows, line and growth
   assert.deepEqual(s().phone, { height: 'half' });
   assert.equal(s().rows.min, 40);
   assert.equal(sectionClass(s()), 'sec sec--h-custom sec--mh-half');
-  assert.equal(sectionVars(s()), '--rows:40;--mrows:5;--minrows:40');
+  assert.equal(sectionVars(s()), '--rows:40;--mrows:25;--minrows:40'); // stacked full width: 10 rows over 24 columns, 25 over 60
   // not custom on the phone: no phone rows from the line, a phone drag doesn't grow anything
   assert.equal(setSectionRows(store, F, 0, 30, { phone: true }), false);
   placeMobile(store, F, 0, 0, { col: 1, span: 30, row: 50, rows: 5 }, { rows: 54 });

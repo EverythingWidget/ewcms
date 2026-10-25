@@ -108,13 +108,18 @@ test("a drag stores where the section's widgets are now (their real rows), one u
       },
     },
   );
-  // a widget with a phone area of its own stores its rows now; one without keeps none
+  // a widget with a phone area of its own stores its rows now
   assert.deepEqual(store.current[F].sections[0].widgets[2].layout.phone, {
     col: 1,
     span: 12,
     row: 7,
   });
-  assert.ok(!('phone' in store.current[F].sections[0].widgets[0].layout));
+  // the section's first phone edit: the others keep their default stacked places as their own
+  assert.deepEqual(store.current[F].sections[0].widgets[0].layout.phone, {
+    col: 1,
+    span: 60,
+    row: 1,
+  });
   // a section setting set and removed again
   setSection(store, F, 0, { name: 'Intro' });
   assert.equal(store.current[F].sections[0].name, 'Intro');

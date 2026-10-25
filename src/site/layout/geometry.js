@@ -47,8 +47,8 @@ export function widthOf(cs) {
 
 /**
  * Where the widgets of a section are now, as rows.js placed them (--fr / --frs over the stored
- * area): { id: area } (the phone grid's on the phone: a widget's own phone area, or its desktop
- * area halved). widgetOf(id): the widget's model.
+ * area): { id: area } (the phone grid's on the phone: a widget's own phone area, or its place
+ * in the default stack). widgetOf(id): the widget's model.
  */
 export function flowAreas(sec, phone, widgetOf) {
   const out = {};
@@ -56,7 +56,8 @@ export function flowAreas(sec, phone, widgetOf) {
     if (el.closest('[data-sec]') !== sec) continue;
     const b = widgetOf(el.dataset.widget);
     if (!b) continue;
-    const stored = phone ? phoneAreaOf(b) : placeOf(baseOf(b));
+    // the phone's: as rendered (its own area, or its place in the default stack)
+    const stored = phone ? areaOfEl(el, true) : placeOf(baseOf(b));
     const row = parseInt(el.style.getPropertyValue('--fr'), 10);
     const rows = parseInt(el.style.getPropertyValue('--frs'), 10);
     out[el.dataset.widget] = { ...stored, ...(row > 0 && rows > 0 ? { row, rows } : {}) };

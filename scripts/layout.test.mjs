@@ -128,12 +128,12 @@ test('render: sections are grids, widgets carry their area; off is hidden', () =
     section([widget('text', { body: lines('Three') })], { enabled: false }),
   ];
   const out = renderSections(ctxOf(page), page, F, list);
-  // rows: down to the lowest widget; the phone grid's rows: its widgets' halved areas
+  // rows: down to the lowest widget; the phone grid's rows: its widgets stacked full width
   // no space above or below (no --pt / --pb): the rows between sections are the space
   assert.match(out, /<section class="sec" style="--rows:5;--mrows:3">/);
   assert.match(
     out,
-    /<div class="wgt wgt--text wgt--auto" style="--c:3;--s:10;--r:2;--rs:4;--z:2;--mc:2;--ms:5;--mr:1;--mrs:2">/,
+    /<div class="wgt wgt--text wgt--auto" style="--c:3;--s:10;--r:2;--rs:4;--z:2;--mc:1;--ms:60;--mr:1;--mrs:2">/,
   );
   // a name: its anchor (id); a height preset: its min-height class
   assert.match(out, /<section id="our-people" class="sec sec--h-full sec--full"/);

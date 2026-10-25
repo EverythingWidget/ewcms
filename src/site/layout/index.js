@@ -15,8 +15,8 @@
  * (no gaps either way). src/client/modules/rows.js measures the width at runtime and sets
  * --cell on the section (a ResizeObserver and the window's resize keep it current);
  * _layout.scss has a CSS-only first guess from 100vw. Phones (below 760px) use MCOLS (60)
- * square cells of their own: every widget is on that grid, at its own phone area or else at
- * its desktop area halved (grid.js phoneAreaOf; nothing stacks).
+ * square cells of their own: every widget is on that grid, at its own phone area or else
+ * stacked full width in reading order (grid.js phoneStack; an Auto one pushes the rest down).
  *
  * A section:
  *   name     optional: its anchor, slugified into its HTML id ("Our people" -> id="our-people",
@@ -37,8 +37,8 @@
  *   layout   { base, phone? }: where it sits. base: { col, span, row, rows?, link? }: its
  *            grid area (columns 1-120, rows (cells) from 1) and its link. phone (optional,
  *            below 760px): any of the same keys over the phone grid of 60 columns: an area of
- *            its own (without one: base's area halved) and its phone link (without a phone
- *            area: base's, the gap halved). `rows` is stored only for size "aspect" / "rows";
+ *            its own and its phone link (without either: stacked full width in reading order,
+ *            grid.js phoneStack). `rows` is stored only for size "aspect" / "rows";
  *            an auto widget's rows are measured on the page (rows.js, ./flow.js).
  *   size     'auto' (default): as tall as its content | 'aspect': as tall as its columns'
  *            width × `aspect` ("4:5", "16:9", any "w:h") | 'rows': exactly its base rows (fixed)
@@ -70,6 +70,7 @@ export {
   halfArea,
   hasMobileArea,
   phoneAreaOf,
+  phoneStack,
   placeOf,
   baseOf,
   phoneOf,
@@ -165,7 +166,7 @@ export function mobileRowsOf(section) {
   return Math.max(
     Math.ceil(rowsOf(section) / 2),
     ...widgets.map((b) => {
-      const m = phoneAreaOf(b);
+      const m = phoneAreaOf(b, widgets);
       return m.row + m.rows - 1;
     }),
   );
@@ -245,11 +246,11 @@ export function widgetClass(b) {
 
 /**
  * The CSS variables of a widget's element: its grid area, layer, phone area (its own, or its
- * desktop area halved).
+ * place in its section's default phone stack: `widgets`, the section's).
  */
-export function widgetVars(b) {
+export function widgetVars(b, widgets) {
   const p = placeOf(baseOf(b));
-  const m = phoneAreaOf(b);
+  const m = phoneAreaOf(b, widgets);
   const ratio = sizeOf(b) === 'aspect' ? ratioOf(b?.aspect) : null;
   return (
     `--c:${p.col};--s:${p.span};--r:${p.row};--rs:${p.rows}` +
@@ -263,23 +264,23 @@ export function widgetVars(b) {
  * A widget's links as attributes of its element (src/client/modules/rows.js reads them):
  * data-link="<id> <gap>" (desktop), data-mlink (the phone grid's; ./links.js linkOf).
  */
-export function widgetLinks(b) {
+export function widgetLinks(b, widgets) {
   const d = linkOf(b);
-  const m = linkOf(b, true);
+  const m = linkOf(b, true, widgets);
   return {
     'data-link': d ? `${d.to} ${d.gap}` : null,
     'data-mlink': m ? `${m.to} ${m.gap}` : null,
   };
 }
 
-const linkAttrs = (b) =>
-  Object.entries(widgetLinks(b))
+const linkAttrs = (b, widgets) =>
+  Object.entries(widgetLinks(b, widgets))
     .filter(([, v]) => v !== null)
     .map(([k, v]) => ` ${k}="${esc(v)}"`)
     .join('');
 
 /** One widget of section `at` (its index `j`), rendered with its grid area. */
-function renderWidget(ctx, route, file, at, j, widget) {
+function renderWidget(ctx, route, file, at, j, widget, siblings) {
   const t = WIDGET_TYPES[widget?.type];
   const where = `${contentPath(file)} (sections/${at}/widgets/${j})`;
   if (!t) {
@@ -317,15 +318,14 @@ function renderWidget(ctx, route, file, at, j, widget) {
   const data = resolveWidget(widget, t, { item, source, ctx, at: where, placeholders: editable });
   const marker = editable ? ` data-widget="${esc(widget.id)}"` : '';
   const hidden = widget.config?.enabled === false ? ' hidden' : '';
-  return `<div class="${widgetClass(widget)}"${marker} style="${widgetVars(widget)}"${linkAttrs(widget)}${motionAttrs(widget)}${hidden}>${t.render(data, ctx, b)}</div>`;
+  return `<div class="${widgetClass(widget)}"${marker} style="${widgetVars(widget, siblings)}"${linkAttrs(widget, siblings)}${motionAttrs(widget)}${hidden}>${t.render(data, ctx, b)}</div>`;
 }
 
 /** Section `at` of a page file, rendered. */
 export function renderSection(ctx, route, file, section, at) {
   if (section?.enabled === false && !editable) return ''; // off: not on the public page
-  const widgets = (Array.isArray(section?.widgets) ? section.widgets : [])
-    .map((b, j) => renderWidget(ctx, route, file, at, j, b))
-    .join('');
+  const list = Array.isArray(section?.widgets) ? section.widgets : [];
+  const widgets = list.map((b, j) => renderWidget(ctx, route, file, at, j, b, list)).join('');
   const marker = editable ? ` data-sec="${esc(section?.id ?? '')}"` : '';
   const anchor = sectionAnchor(section);
   const hidden = section?.enabled === false ? ' hidden' : '';

@@ -22,6 +22,7 @@ import {
   newWidget,
   newSection,
   phoneAreaOf,
+  phoneStack,
   placeOf,
   baseOf,
   phoneOf,
@@ -47,6 +48,19 @@ const write = (store, file, list, structure = true) =>
  * for widgets with a phone area and link of their own), so the page's first render (before
  * rows.js measures, or without JS) already has every follower below its leader.
  */
+/**
+ * The first edit of a section's phone layout: every widget still in its default phone stack
+ * (grid.js phoneStack) gets that place as its own (its area and link), so the one edited
+ * leaves the stack without the others moving.
+ */
+function ownPhoneLayout(section) {
+  const stack = phoneStack(section.widgets);
+  for (const b of section.widgets || []) {
+    const s = stack.get(b.id);
+    if (s) setPhone(b, { ...s.area, ...(s.link && { link: s.link }) });
+  }
+}
+
 function settleLinks(section) {
   const widgets = section.widgets || [];
   const desk = resolveRows(
@@ -373,7 +387,7 @@ function storeFlow(section, j, flow = {}, phone = false) {
 function gapAt(section, link, row, flow = {}, phone = false) {
   const lead = section.widgets.find((b) => b.id === link.to);
   if (!lead) return link.gap;
-  const a = flow[lead.id] || (phone ? phoneAreaOf(lead) : placeOf(baseOf(lead)));
+  const a = flow[lead.id] || (phone ? phoneAreaOf(lead, section.widgets) : placeOf(baseOf(lead)));
   return row - (a.row + a.rows);
 }
 
@@ -418,7 +432,8 @@ export function linkWidget(store, file, at, j, to, gap = 0, { phone = false, row
   // stored rows (an auto leader's content may span more)
   const stay = !next && Number.isInteger(row) && row > 0 ? { row } : {};
   if (phone) {
-    if (!hasMobileArea(phoneOf(b))) setPhone(b, phoneAreaOf(b));
+    ownPhoneLayout(section);
+    if (!hasMobileArea(phoneOf(b))) setPhone(b, phoneAreaOf(b, section.widgets));
     setPhone(b, { link: next, ...stay });
   } else setBase(b, { link: next, ...stay });
   if (next && makesLoop(section.widgets, b.id, to, phone)) return null;
@@ -472,11 +487,10 @@ export function setWidget(store, file, at, j, patch, key) {
  */
 export function placeMobile(store, file, at, j, area, { key, flow, rows = 0 } = {}) {
   const section = listOf(store, file)[at];
+  ownPhoneLayout(section);
   storeFlow(section, j, flow, true);
   const b = section.widgets[j];
-  const inherited = !hasMobileArea(phoneOf(b)) ? linkOf(b, true) : null;
   setPhone(b, placeOf(area, MCOLS));
-  if (inherited) setPhone(b, { link: inherited });
   const l = linkOf(b, true);
   if (l) setPhone(b, { link: { to: l.to, gap: gapAt(section, l, phoneOf(b).row, flow, true) } });
   grow(section, Math.max(rows, mobileRowsOf(section)), true);
@@ -484,8 +498,8 @@ export function placeMobile(store, file, at, j, area, { key, flow, rows = 0 } = 
 }
 
 /**
- * Section `at` back to its desktop layout on phones (halved): its widgets' phone areas and
- * phone links removed.
+ * Section `at` back to its default phone layout (stacked: grid.js phoneStack): its widgets'
+ * phone areas and phone links removed.
  */
 export function resetMobile(store, file, at) {
   const section = listOf(store, file)[at];
@@ -519,6 +533,7 @@ export function moveWidgets(
   const section = listOf(store, file)[at];
   const js = indexesOf(section, ids);
   if (!js.length || (!dc && !dr)) return false;
+  if (phone) ownPhoneLayout(section);
   // the others where they show now (not the moved ones: they get their new areas)
   section.widgets.forEach((b) => {
     const a = !ids.includes(b.id) && flow[b.id];
@@ -531,11 +546,8 @@ export function moveWidgets(
     const b = section.widgets[j];
     const from = flow[b.id] || (phone ? phoneAreaOf(b) : placeOf(baseOf(b)));
     const p = { col: from.col + dc, span: from.span, row: from.row + dr, rows: from.rows };
-    if (phone) {
-      const inherited = !hasMobileArea(phoneOf(b)) ? linkOf(b, true) : null;
-      setPhone(b, placeOf(p, MCOLS));
-      if (inherited) setPhone(b, { link: inherited });
-    } else setBase(b, placeOf(p));
+    if (phone) setPhone(b, placeOf(p, MCOLS));
+    else setBase(b, placeOf(p));
     const l = linkOf(b, phone);
     if (l && !ids.includes(l.to)) {
       const gap = gapAt(section, l, p.row, flow, phone);

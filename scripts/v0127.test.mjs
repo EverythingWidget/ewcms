@@ -3,21 +3,24 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { tagParts, tagHtml, shownPlace } from '../src/editor/widget-tag.js';
+
+// the tag's parts after its Auto toggle (v0.1.49)
+const parts = (...a) => tagHtml(...a).replace(/^<i class="auto[^]*?<\/i>/, '');
 import { boxOf } from '../src/site/layout/geometry.js';
 
 const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
 
 test('tag: size and place only, a changed part highlighted while dragged', () => {
   const p = { col: 88, span: 13, row: 154, rows: 7 };
-  assert.equal(tagHtml(p), '13×7 · 154:88');
+  assert.equal(parts(p), '13×7 · 154:88');
   assert.deepEqual(tagParts(p, { ...p }), {
     size: '13×7',
     pos: '154:88',
     sizeCh: false,
     posCh: false,
   });
-  assert.equal(tagHtml(p, { ...p, col: 80 }), '13×7 · <b class="ch">154:88</b>');
-  assert.equal(tagHtml(p, { ...p, rows: 6 }), '<b class="ch">13×7</b> · 154:88');
+  assert.equal(parts(p, { ...p, col: 80 }), '13×7 · <b class="ch">154:88</b>');
+  assert.equal(parts(p, { ...p, rows: 6 }), '<b class="ch">13×7</b> · 154:88');
   const el = { style: { getPropertyValue: (k) => ({ '--fr': '154', '--frs': '' })[k] ?? '' } };
   const win = {
     getComputedStyle: () => ({

@@ -70,6 +70,7 @@ import {
   linkWidget,
   moveWidgets,
   placeWidget,
+  setWidget,
   removeWidgets,
   placeMobile,
   setSectionRows,
@@ -125,6 +126,17 @@ const overlay = createOverlay({
     if (!b) return;
     if (mobile) placeMobile(store, b.file, b.at, b.j, pos, { flow, rows });
     else placeWidget(store, b.file, b.at, b.j, pos, undefined, { flow, rows, size });
+  },
+  // the preview tag's Auto toggle: Size Auto ↔ Rows (keeping the rows it shows), one undo step
+  onsize(id, size, rows) {
+    const b = widgetAt(id);
+    if (!b) return;
+    const auto = size === 'auto';
+    setWidget(store, b.file, b.at, b.j, {
+      size: auto ? undefined : 'rows',
+      aspect: undefined,
+      rows: auto ? undefined : rows,
+    });
   },
   // a widget linked to another (its top circle dropped on that one's bottom circle) or freed
   onlink(id, to, gap, { mobile = false, row } = {}) {

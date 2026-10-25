@@ -127,10 +127,10 @@ function applyLayout(el, s, moved = [], touched = { layout: false }) {
       .filter(([, x]) => x)
       .map(([v, x]) => `;${v}:${x}`)
       .join('');
-    node.style.cssText = widgetVars(b) + kept;
+    node.style.cssText = widgetVars(b, s.widgets) + kept;
     node.hidden = b.config?.enabled === false;
     if (node.className + '|' + node.style.cssText + node.hidden !== wasNode) touched.layout = true;
-    for (const [name, value] of Object.entries(widgetLinks(b)))
+    for (const [name, value] of Object.entries(widgetLinks(b, s.widgets)))
       if (setAttr(node, name, value)) touched.layout = true;
     const [anim, options, parts] = motionOf(b);
     // its parts' animations are mounted with the view's: mount again
