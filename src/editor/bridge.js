@@ -176,7 +176,7 @@ export function createBridge({ store, labelFor }) {
           : sel.widget
             ? doc.querySelector(`[data-widget="${CSS.escape(sel.widget)}"]`)
             : doc.querySelectorAll('[data-router-view] [data-anim]')[sel.anim];
-        if (el) bridge.select(el, sel.kind);
+        if (el) bridge.select(el, sel.kind, { quiet: true }); // never opens a pop-up
       };
       win.location.reload();
       // The old page is going away: no calls into it until the new one connects. Its document
@@ -342,9 +342,10 @@ export function createBridge({ store, labelFor }) {
       return end > start ? Math.max(0, Math.min(1, (api.scrollTop() - start) / (end - start))) : 0;
     },
 
-    select(el, kind = mode === 'text' ? 'text' : 'anim') {
+    // quiet: put back (a reload, a refresh), not picked: the panel opens nothing for it
+    select(el, kind = mode === 'text' ? 'text' : 'anim', { quiet = false } = {}) {
       selected = el ? { el, kind } : null;
-      emit('select', selected);
+      emit('select', selected, { quiet });
       loop();
     },
     setHover(el) {

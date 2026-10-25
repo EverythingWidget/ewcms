@@ -576,11 +576,14 @@ bridge.on('navigate', (path) => {
   ui.previewVersion++;
   ui.anim = null;
 });
-bridge.on('select', (sel) => {
+// (quiet: the selection put back after a save's reload: kept, but nothing opens for it)
+bridge.on('select', (sel, { quiet = false } = {}) => {
   if (ui.mode === 'motion') ui.anim = pickAnim(sel);
   else
     ui.selection =
-      sel?.kind === 'text' ? { edit: sel.el.dataset.edit ?? sel.el.dataset.bound } : null;
+      sel?.kind === 'text'
+        ? { edit: sel.el.dataset.edit ?? sel.el.dataset.bound, ...(quiet && { quiet }) }
+        : null;
 });
 bridge.on('textFocus', (edit) => (ui.selection = { edit }));
 // the Text widget editor (bridge.js, rich.js): its state for the toolbar; an edit ended: its

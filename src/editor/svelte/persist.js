@@ -159,7 +159,8 @@ export async function restorePlace() {
         : `[data-anim-key="${CSS.escape(anim)}"]`)
     : edit && `[data-edit="${CSS.escape(edit)}"]`;
   const el = sel && bridge.doc.querySelector(sel);
-  if (el && (motion || ui.mode === 'text')) bridge.select(el, motion ? 'anim' : 'text');
+  if (el && (motion || ui.mode === 'text'))
+    bridge.select(el, motion ? 'anim' : 'text', { quiet: true });
   // quiet: the Content panel doesn't scroll to the field, the panel scroll is put back below
   if (el && !motion) ui.selection = { edit, quiet: true };
   await tick();

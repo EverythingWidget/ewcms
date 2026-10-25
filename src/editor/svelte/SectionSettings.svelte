@@ -20,7 +20,7 @@
     rowsOf,
   } from '../../site/layout/index.js';
 
-  let { live, file, at, sections } = $props();
+  let { live, bridge = null, file, at, sections } = $props();
   const s = $derived(sections[at] || {});
 
   // [value, label (its tooltip and aria-label), the share of the screen its icon fills]
@@ -45,13 +45,22 @@
     if (value === now) return;
     if (key === 'phoneHeight') return setPhoneHeight(live.store, file, at, value);
     if (key !== 'height') return set(at, { [key]: value });
-    // custom: its rows to start from (its last ones, or its content's); others: none
+    // custom: its rows to start from (its last ones, or the rows it shows now: its content's
+    // as the preview measured it, so an auto widget's real height counts); others: none
     const s = sections[at];
     // (its own phone rows go when the phone isn't custom then: setSection)
     set(at, {
       height: value,
-      rows: value === 'custom' ? { min: s.rows?.min || rowsOf(s) } : undefined,
+      rows:
+        value === 'custom' ? { min: s.rows?.min || shownRows(s, false) || rowsOf(s) } : undefined,
     });
+  };
+  // the rows a section shows in the preview now (rows.js's --frows: its own, or its content's
+  // when that needs more), 0 when not shown
+  const shownRows = (s, phone) => {
+    if (!s?.id || phone !== phoneView) return 0;
+    const el = bridge?.doc?.querySelector(`[data-sec="${CSS.escape(s.id)}"]`);
+    return parseInt(el?.style.getPropertyValue('--frows'), 10) || 0;
   };
   // the phone preview shows and edits a custom height's own phone rows (phone.rows.min)
   const phoneView = $derived(ui.viewport === 'mobile');

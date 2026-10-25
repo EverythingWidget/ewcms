@@ -30,7 +30,7 @@
   {#if top}<ViewTop {bridge} {id} {onback} />{/if}
   <div class="card">
     <h2 class="card__title">{title}</h2>
-    <SectionSettings {live} {file} {at} {sections} />
+    <SectionSettings {live} {bridge} {file} {at} {sections} />
   </div>
 {/if}
 
