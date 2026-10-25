@@ -7,7 +7,7 @@
 <script>
   import Field from './Field.svelte';
   import InfoHelp from './InfoHelp.svelte';
-  import { NEW_ROWS, layerWidget, setColumns, setWidget } from '../layout-ops.js';
+  import { NEW_ROWS, layerWidget, setColumns, setGap, setWidget } from '../layout-ops.js';
   import {
     ASPECTS,
     COLS,
@@ -47,11 +47,28 @@
       key: `layout:${file}#/sections/${at}/widgets/${j}/${phoneView ? 'phone/' : ''}${k}`,
     });
 
+  // its top row (free) or its gap below its leader (following), and a Rows widget's rows
+  const setGapTo = (v) =>
+    setGap(live.store, file, at, j, v, {
+      phone: phoneView,
+      leaderRows: rowsShownOf(link?.to),
+      key: `layout:${file}#/sections/${at}/widgets/${j}/${phoneView ? 'phone/' : ''}gap`,
+    });
+  // the rows widget `wid` shows in the preview now (0: not shown)
+  function rowsShownOf(wid) {
+    const el = wid && bridge.doc?.querySelector(`[data-widget="${CSS.escape(wid)}"]`);
+    const n = parseInt(el?.style.getPropertyValue('--frs') ?? '', 10);
+    return Number.isInteger(n) && n > 0 ? n : 0;
+  }
+
   // the rows it shows now (the preview's), so a size it is given keeps its height
   function shownRows() {
     const el = bridge.doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`);
     const n = parseInt(el?.style.getPropertyValue('--frs') ?? '', 10);
-    return Number.isInteger(n) && n > 0 ? n : baseOf(widget).rows || NEW_ROWS;
+    // the phone's rows are half the desktop's (its grid's cells are twice as big): Size writes
+    // the desktop rows
+    if (Number.isInteger(n) && n > 0) return phoneView ? n * 2 : n;
+    return baseOf(widget).rows || NEW_ROWS;
   }
   function setSize(next) {
     if (next === 'aspect') open = !open || size !== 'aspect';
@@ -230,6 +247,38 @@
     help={`1–${cols}`}
     onvalue={(v) => setCols({ col: v }, 'col')}
   />
+  {#if link}
+    <Field
+      edit="{file}#/sections/{at}/widgets/{j}/layout/{phoneView ? 'phone' : 'base'}/link/gap"
+      label="Gap (rows)"
+      type="number"
+      half
+      value={link.gap}
+      help={`Below ${leader}; negative overlaps it`}
+      onvalue={setGapTo}
+    />
+  {:else}
+    <Field
+      edit="{file}#/sections/{at}/widgets/{j}/layout/{phoneView ? 'phone' : 'base'}/row"
+      label="Top (row)"
+      type="number"
+      half
+      value={area.row}
+      help="1 is the section's top"
+      onvalue={(v) => setCols({ row: v }, 'row')}
+    />
+  {/if}
+  {#if size === 'rows'}
+    <Field
+      edit="{file}#/sections/{at}/widgets/{j}/layout/{phoneView ? 'phone' : 'base'}/rows"
+      label="Rows"
+      type="number"
+      half
+      value={area.rows}
+      help="Its height, in rows"
+      onvalue={(v) => setCols({ rows: v }, 'rows')}
+    />
+  {/if}
   <p class="hint small wl__link">
     {#if link}Follows {leader}, gap {link.gap}{:else}Free (not linked){/if}
   </p>

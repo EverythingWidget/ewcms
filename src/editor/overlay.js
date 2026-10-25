@@ -1097,16 +1097,13 @@ export function createOverlay({
   }
 
   function endLink() {
-    const { el, id, sec, phone, near } = linking;
+    const { el, id, phone, near } = linking;
     const was = linkOfEl(el);
     stopLink();
     if (near) {
-      // it stays where it is: the gap is the rows between them now
-      const flow = flowAreas(sec, phone, widgetOf);
-      const a = flow[near.id];
-      const b = flow[id];
-      if (a && b && (was?.to !== near.id || was.gap !== b.row - (a.row + a.rows)))
-        onlink(id, near.id, b.row - (a.row + a.rows), { mobile: phone });
+      // a new leader: flush below it (gap 0; the grid has no gutter), never left overlapping it
+      // as the rows between them were; the same leader again: its gap kept
+      if (was?.to !== near.id) onlink(id, near.id, 0, { mobile: phone });
     } else if (was) onlink(id, null, 0, { mobile: phone, row: shownRow(el) }); // dropped off: free
   }
 
@@ -1146,13 +1143,26 @@ export function createOverlay({
   // Arrange: clicks pick and drag widgets; the page's own clicks (links, buttons) are off. A
   // text being edited in place (contenteditable, bridge.js) keeps its clicks (the caret).
   const editing = (t) => !!t.closest?.('[contenteditable]');
+  /**
+   * The selected widget when the pointer is inside its box (widgets overlap: the selected one
+   * is dragged, not the topmost under it); null otherwise, with Ctrl/Cmd, or with several selected.
+   */
+  function selectedUnder(e, mod) {
+    if (mod || !ui.widget || ui.multi.length > 1) return null;
+    const el = widgetEl(ui.widget);
+    if (!el?.isConnected || el.hidden) return null;
+    const r = el.getBoundingClientRect();
+    const inside =
+      e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+    return inside ? el : null;
+  }
   function onpointerdown(e) {
     if (e.target.id === '__ed-layout') return; // the overlay's own (its shadow root handles it)
     if (!arranging() || e.button !== 0 || e.altKey || editing(e.target)) return;
     ui.link = null;
     const mod = e.ctrlKey || e.metaKey;
     const ids = selectedIds(ui);
-    const el = e.target.closest?.('[data-widget]');
+    const el = selectedUnder(e, mod) || e.target.closest?.('[data-widget]');
     if (!el) {
       // a section's empty grid: a selection box (Ctrl/Cmd: adds; another section's: refused)
       const sec = secOf(e.target);
