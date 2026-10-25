@@ -913,9 +913,11 @@ export function createOverlay({
     if (!moved) restore(); // a click changes nothing
     const tall = /[ns]/.test(drag.h) && pos.rows !== from.rows;
     const size = !phone && tall && sizeOf(widgetOf(id)) !== 'rows' ? 'rows' : undefined;
+    const click = drag.click;
     stop();
     drag = null;
     if (moved) onplace(id, pos, { mobile: phone, flow, rows, size });
+    else if (click) ((ui.anchor = click), onpick(click));
   }
 
   function cancel(e) {
@@ -1162,7 +1164,8 @@ export function createOverlay({
     ui.link = null;
     const mod = e.ctrlKey || e.metaKey;
     const ids = selectedIds(ui);
-    const el = selectedUnder(e, mod) || e.target.closest?.('[data-widget]');
+    const top = e.target.closest?.('[data-widget]');
+    const el = selectedUnder(e, mod) || top;
     if (!el) {
       // a section's empty grid: a selection box (Ctrl/Cmd: adds; another section's: refused)
       const sec = secOf(e.target);
@@ -1193,6 +1196,8 @@ export function createOverlay({
     ui.anchor = id;
     onpick(id);
     start(e, el);
+    // inside the selected widget, over another one: a click (no drag) selects that other one
+    if (drag && top && top !== el) drag.click = top.dataset.widget;
   }
   // a double click on a widget: its pop-up (a single click only selects it; a text's own edit
   // still starts, bridge.js)

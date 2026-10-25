@@ -62,7 +62,8 @@ test("v0.1.46: Gap (rows) typed: whole rows, negative down to the leader's top, 
 test('v0.1.46: a link drag onto a new leader: gap 0; the selected widget is dragged', () => {
   const o = read('src/editor/overlay.js');
   assert.match(o, /if \(was\?\.to !== near\.id\) onlink\(id, near\.id, 0, \{ mobile: phone \}\);/);
-  assert.match(o, /const el = selectedUnder\(e, mod\) \|\| e\.target\.closest/);
+  assert.match(o, /const el = selectedUnder\(e, mod\) \|\| top;/);
+  assert.match(o, /else if \(click\) \(\(ui\.anchor = click\), onpick\(click\)\);/); // a click: the one on top
   const l = read('src/editor/svelte/WidgetLayout.svelte');
   for (const label of ['Top (row)', 'Gap (rows)', 'label="Rows"'])
     assert.ok(l.includes(label), label);
