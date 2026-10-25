@@ -88,7 +88,7 @@ const STYLE = `
 .peek.is-inside .tag { left: 4px; top: 4px; bottom: auto; margin: 0; }
 .sel { border: 2px solid ${T.accent}; }
 .sel.is-dragging { background: ${T.accent}; background: rgb(${T.accentRgb} / .08); }
-.label { position: absolute; right: 0; bottom: 100%; margin-bottom: 8px; padding: 4px 8px; border-radius: ${T.radiusSm}; background: ${T.accent}; color: ${T.black}; font: 500 12px/1 ${T.font}; white-space: nowrap; }
+.label { display: none; position: absolute; right: 0; bottom: 100%; margin-bottom: 8px; padding: 4px 8px; border-radius: ${T.radiusSm}; background: ${T.accent}; color: ${T.black}; font: 500 12px/1 ${T.font}; white-space: nowrap; }
 .label .auto { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 16px; margin: -4px 4px -4px -4px; vertical-align: middle; border-radius: ${T.radiusXs}; color: color-mix(in srgb, ${T.black} 45%, ${T.accent}); pointer-events: auto; cursor: pointer; }
 .label .auto svg { position: static; width: 8px; height: 12px; fill: currentColor; }
 .label .auto:hover { background: rgb(0 0 0 / .14); color: ${T.black}; }

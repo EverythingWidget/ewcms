@@ -15,7 +15,9 @@
 
   Its layout (size, layer) is on the widget's card only (WidgetLayout.svelte); the
   keys [ and ] still move it down / up a layer (App.svelte). A widget without text has none
-  (nothing shows). A narrow widget puts the text marks into a "…" menu. The edit itself is bridge.js's
+  (nothing shows). A preview too narrow for the whole bar puts the text marks into a "…" menu (the widget's
+  own width doesn't matter). Its end: the layout part, the Auto toggle and its size and place
+  (`64×22 · 4:1`, `64×auto`), on every widget (one without text: that part alone). The edit itself is bridge.js's
   (rich.js).
 -->
 <script>
@@ -40,6 +42,8 @@
     toggleMark,
   } from '../../site/text.js';
   import { MOD } from '../lib/format.js';
+  import { sizeOf } from '../../site/layout/index.js';
+  import { shownPlace, tagParts } from '../widget-tag.js';
 
   let { live, bridge } = $props();
 
@@ -75,11 +79,12 @@
 
   // ---- where it is drawn: the widget's box in the frame, on the stage, every frame
   let box = $state(null); // { x, y, w, h, frameTop, frameBottom }
+  let place = $state(null); // { col, span, row, rows }: shownPlace
   let hidden = $state(false);
   // its section shown from the panel (the widget's section card hovered): none, as the frame
   const peeking = $derived(ui.peek?.from === 'panel');
   // shown: a widget picked, its box known, no drag and no peek (else hidden, still mounted)
-  const shown = $derived(!!(where && widget && hasText && pos && !hidden && !peeking));
+  const shown = $derived(!!(where && widget && pos && !hidden && !peeking));
   $effect(() => {
     if (!where) return void (box = null);
     const id = where.id;
@@ -105,6 +110,9 @@
         frameRight: Math.round(f.right - s.left),
       };
       if (!box || Object.keys(next).some((k) => next[k] !== box[k])) box = next;
+      // its size and place in cells as the preview shows it (the tag's, widget-tag.js)
+      const p = shownPlace(el, doc.defaultView);
+      if (!place || ['col', 'span', 'row', 'rows'].some((k) => p[k] !== place[k])) place = p;
       // a drag in the preview (overlay.js holds the rows): out of the way
       const drag = doc.documentElement.hasAttribute('data-flow-hold');
       if (drag !== hidden) hidden = drag;
@@ -115,13 +123,32 @@
 
   // its toolbar's width (measured), for where it goes and what moves into "…"
   let barW = $state(0);
-  const TEXT_W = 440; // style + Fit + lists + B I link + Field, about
+  // the whole bar, about: style + Fit + lists + B I link + Field, then the layout part
+  const TEXT_W = 440;
+  const LAYOUT_W = 13 + 32 + 4 + 136;
+  // the marks go into "…" only when the preview (the frame, 8px each side) can't hold the bar
   const level = $derived.by(() => {
     if (!box) return 0;
-    const room = Math.max(box.w, 280);
-    if (!editing || room >= TEXT_W + 48) return 0; // everything
+    const room = box.frameRight - box.frameLeft - 16;
+    if (!editing || room >= TEXT_W + LAYOUT_W + 16) return 0; // everything
     return 1; // the marks in "…"
   });
+  // ---- the layout part: Auto (its height follows its content) ↔ Rows (the rows it shows now)
+  const auto = $derived(sizeOf(widget) === 'auto');
+  const sizeText = $derived.by(() => {
+    if (!place) return '';
+    const t = tagParts(place, null, auto);
+    return `${t.size} · ${t.pos}`;
+  });
+  const toggleAuto = () => {
+    if (!where || !place) return;
+    const rows = ui.viewport === 'mobile' ? place.rows * 2 : place.rows;
+    setWidget(live.store, where.file, where.at, where.j, {
+      size: auto ? 'rows' : undefined,
+      aspect: undefined,
+      rows: auto ? rows : undefined,
+    });
+  };
   const BAR_H = 40;
   const CIRCLE_CLEAR = 24;
   const pos = $derived.by(() => {
@@ -436,6 +463,18 @@
           ><i class="fa-solid fa-ellipsis" aria-hidden="true"></i></button
         >
       {/if}
+      {#if hasText}<span class="btb__div" aria-hidden="true"></span>{/if}
+      <button
+        type="button"
+        class={['btb__btn btb__icon btb__auto', auto && 'is-on']}
+        aria-label="Auto height"
+        aria-pressed={auto}
+        title={auto
+          ? 'Auto: as tall as its content (click: fixed rows)'
+          : 'Auto: off (click: as tall as its content)'}
+        onclick={toggleAuto}><i class="fa-solid fa-up-down" aria-hidden="true"></i></button
+      >
+      <span class="btb__size">{sizeText}</span>
     </div>
 
     {#if open}
@@ -583,6 +622,34 @@
     justify-content: center;
     width: 32px;
     padding: 0;
+  }
+
+  // the layout part: a 1×18 divider (4px gap + 2px each side: 6px), Auto, its size and place
+  .btb__div {
+    flex: none;
+    width: 1px;
+    // the mock's 1×18 divider, 6px each side (the bar's 4px gap + 2px)
+    // stylelint-disable-next-line local/grid-4px
+    height: 18px;
+    // stylelint-disable-next-line local/grid-4px
+    margin: 0 2px;
+    background: var(--gray-38);
+  }
+
+  .btb__auto.is-on {
+    background: var(--gray-21);
+    box-shadow: inset 0 0 0 1px var(--gray-38);
+    color: var(--c-accent);
+  }
+
+  // fixed width: nothing moves between Auto on and off
+  .btb__size {
+    flex: none;
+    width: 16ch;
+    padding-right: var(--space-2);
+    color: color-mix(in srgb, var(--c-text-strong) 55%, transparent);
+    font-size: var(--fs-base);
+    white-space: nowrap;
   }
 
   .btb__style {
