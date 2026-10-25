@@ -101,7 +101,7 @@
   const CONTROLS =
     'a, button, input, select, textarea, label, [contenteditable], [data-row], [role="group"], [role="alertdialog"]';
   const free = (e) => !!onenter && !danger && !e.target.closest?.(CONTROLS);
-  const pick = (e) => free(e) && onselect?.();
+  const pick = (e) => free(e) && onselect?.(e);
   const enter = (e) => free(e) && onenter();
   // no word selected by a double click on the card (its fields still select)
   const noSelect = (e) => e.detail > 1 && free(e) && e.preventDefault();

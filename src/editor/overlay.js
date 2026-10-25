@@ -111,8 +111,9 @@ const STYLE = `
 /* Auto (its height follows its content): only its sides resize; its top or bottom edge dragged
    gives it rows (Size Rows, the toggle off) */
 .sel.is-auto .handle:not([data-h='e']):not([data-h='w']) { display: none; }
-.edge[data-h='n'], .edge[data-h='s'] { display: none; left: 0; right: 0; top: 0; bottom: auto; width: auto; height: 12px; translate: 0 -50%; cursor: ns-resize; }
-.edge[data-h='s'] { top: 100%; }
+/* inside its box only: a widget right under or over it (a tight stack) stays clickable there */
+.edge[data-h='n'], .edge[data-h='s'] { display: none; left: 0; right: 0; top: 0; bottom: auto; width: auto; height: 8px; translate: 0; cursor: ns-resize; }
+.edge[data-h='s'] { top: 100%; translate: 0 -100%; }
 .sel.is-auto:not(.is-phone) .edge[data-h='n'], .sel.is-auto:not(.is-phone) .edge[data-h='s'] { display: block; }
 .dot { position: absolute; left: 50%; width: 12px; height: 12px; translate: -50% -50%; box-sizing: border-box; border: 2px solid ${T.accent}; border-radius: 50%; background: ${T.black}; pointer-events: auto; }
 .dot[data-dot='top'] { top: -${DOT}px; background: ${T.accent}; cursor: grab; }

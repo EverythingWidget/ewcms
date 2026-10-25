@@ -20,9 +20,10 @@ test('InfoHelp: 16px circle, 11px icon, solid rest colour, 17% hover, a 232px no
   assert.match(s, /const up = /, 'flips above near the bottom');
 });
 
-test('placed on Source, Layer, Height / Width and the Curtain', () => {
+test('placed on Source, Height / Width and the Curtain', () => {
   assert.match(src('WidgetSource.svelte'), /<InfoHelp label="About Source"/);
-  assert.match(src('WidgetLayout.svelte'), /<InfoHelp label="About Layer"/);
+  // Layer's (v0.1.50): gone, its buttons' tooltips say it
+  assert.doesNotMatch(src('WidgetLayout.svelte'), /InfoHelp/);
   const ss = src('SectionSettings.svelte');
   assert.match(ss, /<InfoHelp label="About \{title\}"/);
   assert.match(ss, /<b>Width<\/b>/);

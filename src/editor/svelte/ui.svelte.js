@@ -80,6 +80,11 @@ export const ui = $state({
    * in the preview as a hovered one does (overlay.js) while the list shows.
    */
   selSection: null,
+  /**
+   * Content tab: two or more section cards selected (Ctrl/Cmd or Shift click), their ids in page
+   * order, [] otherwise. Sections or widgets, never both: selecting one kind clears the other.
+   */
+  selSections: [],
   /** Content tab: an empty section's own view open (its id; no widget to open), or null. */
   section: null,
   /** 'content' | 'motion' (its layout: on its card, WidgetLayout.svelte) */
@@ -122,6 +127,7 @@ export function selectWidgets(ids) {
   ui.widget = one;
   ui.section = null;
   ui.selSection = null;
+  ui.selSections = [];
 }
 
 /**
@@ -135,6 +141,18 @@ export function selectSection(id) {
   ui.widget = null;
   ui.section = null;
   ui.selSection = id;
+  ui.selSections = [];
+}
+
+/**
+ * Sections `ids` selected (in page order): one is selectSection's; several: ui.selSections, the
+ * last clicked (`last`) staying ui.selSection (the anchor of a Shift click). No widgets.
+ */
+export function selectSections(ids, last = ids.at(-1) ?? null) {
+  const list = ids.filter((id, i) => id && ids.indexOf(id) === i);
+  if (list.length < 2) return selectSection(list[0] ?? null);
+  selectSection(list.includes(last) ? last : list.at(-1));
+  ui.selSections = list;
 }
 
 /** Set by main.js: the preview's (overlay.js reveal). */

@@ -5,7 +5,6 @@
   WidgetToolbar.svelte.)
 -->
 <script>
-  import InfoHelp from './InfoHelp.svelte';
   import { NEW_ROWS, layerWidget, setWidget } from '../layout-ops.js';
   import { ASPECTS, baseOf, linkOf, ratioOf, sizeOf } from '../../site/layout/index.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
@@ -189,12 +188,6 @@
         onclick={() => layer(-1)}>{@render layerIcon(false)}</button
       >
     </div>
-    <span class="wl__help"
-      ><InfoHelp label="About Layer"
-        ><b>Layer</b>: which widget is on top where two overlap. Bring forward or send backward
-        (keys <b>]</b> and <b>[</b>).</InfoHelp
-      ></span
-    >
   </div>
   <p class="hint small wl__link">
     {#if link}Follows {leader}, gap {link.gap}{:else}Free (not linked){/if}
@@ -209,12 +202,6 @@
   }
 
   // the Layer (i): beside its buttons, centred on them
-  .wl__help {
-    display: inline-flex;
-    align-items: center;
-    margin-left: 0;
-  }
-
   .wl__row {
     display: flex;
     grid-column: 1 / -1;

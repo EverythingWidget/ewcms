@@ -34,7 +34,7 @@ import { execFile } from 'node:child_process';
 import { repoEnv } from './git-env.mjs';
 import { formatJSON } from '../src/editor/lib/json-format.js';
 import { loadSiteConfig, repoUrl } from './site-config.mjs';
-import { diff } from '../src/editor/lib/diff.js';
+import { countEdits } from '../src/editor/lib/edit-count.js';
 import {
   ANIMATIONS,
   NAV,
@@ -877,8 +877,7 @@ export async function contentStatus(root) {
           ? fs.readFileSync(path.join(root, f.path), 'utf8').split('\n').length - 1
           : 0);
       f.removed = Number(removed) || 0;
-      f.changes =
-        before === undefined || disk === undefined ? 1 : Math.max(1, diff(before, disk).length);
+      f.changes = before === undefined || disk === undefined ? 1 : countEdits(before, disk, f.name);
     }),
   );
   files.sort((a, b) => a.name.localeCompare(b.name));

@@ -5,21 +5,19 @@
     its widgets always shown under the title (not collapsible): WidgetRow.svelte each, in their
                order (drag a row's grip to reorder, within the section; their grid areas stay); none: the title alone (no placeholder)
   12px inside on every side. Its tools (Add widget, pen, move, ⋯) are the tab's section toolbar
-  (SectionToolbar.svelte), for the selected card. Delete asks over the card at its size (its
-  border red).
+  (SectionToolbar.svelte), for the selected card (Delete: its trash, at once; undo brings it
+  back). A Ctrl/Cmd or Shift click adds it to the selected sections (ui.selSections).
     live, file, at (its index), peek (hovered in the preview)
     selected, onselect, onsection (its settings), onopen(widgetId)
-    deleting  bindable: the id asking "Delete?" (the section's), '' for none
     changed    overrides the changed dot (the mock kit)
 -->
 <script>
   import { ui, selectWidgets, reveal } from './ui.svelte.js';
   import { range, selectedIds, toggle } from '../multi-select.js';
-  import Button from './Button.svelte';
   import Section from './Section.svelte';
   import WidgetRow from './WidgetRow.svelte';
   import { listDrag, rowsOf } from './list-drag.svelte.js';
-  import { moveWidget, removeSection } from '../layout-ops.js';
+  import { moveWidget } from '../layout-ops.js';
 
   let {
     live,
@@ -28,7 +26,6 @@
     peek = false,
     selected = false,
     changed = undefined,
-    deleting = $bindable(''),
     onselect,
     onsection,
     onopen,
@@ -43,8 +40,6 @@
   const widgets = $derived(Array.isArray(s.widgets) ? s.widgets : []);
   const n = $derived(widgets.length);
   const on = $derived(s.enabled !== false);
-
-  const asking = $derived(deleting === s.id);
 
   // Reorder by drag (its grip; list-drag.svelte.js, as the cards had it before 6b47b06): only within this
   // section (its own list is the only one, so a drop elsewhere moves nothing). The order is the
@@ -87,9 +82,6 @@
     selectWidgets([id]);
     reveal(id);
   }
-
-  // the delete confirm: Cancel takes the focus (Enter does not delete by accident)
-  const focusCancel = (el) => el.querySelector('.ask-btns > :last-child')?.focus();
 </script>
 
 <Section
@@ -97,44 +89,12 @@
   {title}
   off={!on}
   changed={changed ?? live.changed(file, `/sections/${at}`)}
-  class={peek && !selected && !asking ? 'is-peek' : ''}
-  danger={asking}
+  class={peek && !selected ? 'is-peek' : ''}
   foot={n ? list : undefined}
   {selected}
   {onselect}
   onenter={onsection}
->
-  {#snippet over()}
-    {#if asking}
-      <!-- over the card at its size and corners: the question top left, Delete / Cancel bottom left -->
-      <div
-        class="ask"
-        class:ask--row={!n}
-        role="alertdialog"
-        tabindex="-1"
-        aria-label={name ? `Delete “${name}”?` : `Delete ${title}?`}
-        {@attach focusCancel}
-        onkeydown={(e) => e.key === 'Escape' && (e.stopPropagation(), (deleting = ''))}
-      >
-        <p class="ask__msg">{name ? `Delete “${name}”?` : `Delete ${title}?`}</p>
-        <div class="ask-btns">
-          <Button
-            size="small"
-            variant="danger"
-            icon="trash"
-            iconOnly
-            label="Delete"
-            onclick={() => {
-              deleting = '';
-              removeSection(live.store, file, at);
-            }}
-          />
-          <Button size="small" onclick={() => (deleting = '')}>Cancel</Button>
-        </div>
-      </div>
-    {/if}
-  {/snippet}
-</Section>
+></Section>
 
 {#snippet list()}
   <ul class="widgets" aria-label="Widgets of {title}" bind:this={listEl}>
@@ -193,47 +153,5 @@
     margin: 0;
     padding: 0;
     list-style: none;
-  }
-
-  // Delete?: over the card at its size (no shift): the card's colour at 80% hides what is
-  // under it; the question at the top, Cancel / Delete at the bottom, 12px in
-  // the card's confirm: over it at its size and corners (inside its red border), opaque, 8px in
-  // on every side: 8 + 20 + 24 + 8 = 60px fits a card with a widget (100px+; never scrolls).
-  // A card without widgets (the title alone, 44px): one row, the question left, the buttons right
-  .ask {
-    @include stack(var(--space-2));
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    align-content: space-between;
-    padding: var(--space-2);
-    overflow: hidden;
-    border-radius: inherit;
-    background: var(--c-card);
-  }
-
-  .ask--row {
-    @include row(var(--space-2));
-    justify-content: space-between;
-
-    .ask__msg {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .ask-btns {
-      flex: none;
-    }
-  }
-
-  .ask__msg {
-    @include ellipsis;
-    margin: 0;
-    color: var(--c-text-strong);
-    font-size: var(--fs-base);
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    line-height: 20px;
-    text-transform: uppercase;
   }
 </style>

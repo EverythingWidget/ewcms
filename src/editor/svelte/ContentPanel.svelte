@@ -136,12 +136,12 @@
     locate(bridge, id);
     openSection(id);
   }
-  let deleting = $state(''); // the section asking "Delete?" over its card
   // a click on the list's empty space (no card, no control): no section selected
   const CONTROLS = 'a, button, input, select, textarea, label, [contenteditable], [role="menu"]';
   function deselect(e) {
     if (!ui.selSection || e.target.closest?.(`.sec, ${CONTROLS}`)) return;
     ui.selSection = null;
+    ui.selSections = [];
   }
 
   function back() {
@@ -320,7 +320,6 @@
       {live}
       {file}
       {bridge}
-      bind:deleting
       onsection={enterSection}
       onadd={(at) => widgetsModal.open(at)}
     />
@@ -343,14 +342,7 @@
           bind:this={listEl}
           inert={atWidget}
         >
-          <SectionsList
-            {live}
-            {bridge}
-            {file}
-            onopen={openWidget}
-            onsection={openSection}
-            bind:deleting
-          />
+          <SectionsList {live} {bridge} {file} onopen={openWidget} onsection={openSection} />
         </div>
         {#if held}
           <div class="slide__pane slide__pane--widget" bind:this={widgetEl} inert={!atWidget}>

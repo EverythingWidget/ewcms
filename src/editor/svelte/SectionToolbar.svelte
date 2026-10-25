@@ -3,9 +3,14 @@
   right under the tab line, outside the scrolling body (it never scrolls away and, with no
   fill of its own, never covers the panel's inset border), its line under it as the tab line's:
     [ + Add widget                    pen  ↑  ↓  ⋯ ]
+    [ + Add widget                    pen  ↑  ↓  trash  ⋯ ]
   pen: the section's settings (onsection, as a double click on its card); ↑ / ↓ move it (off
-  on the first / last); ⋯ a menu in the top layer: Hide / Show section, Duplicate, Delete (red;
-  asks over its card: `deleting`). Add widget (onadd(at)) is off while the section is hidden.
+  on the first / last); trash deletes it at once (one undo step brings it back); ⋯ a menu in the
+  top layer: Hide / Show section, Duplicate. Add widget (onadd(at)) is off while the section is
+  hidden, and only there while a section is selected.
+  Two or more sections selected (ui.selSections: Ctrl/Cmd or Shift click on their cards):
+    [ 3 sections                                       trash ]
+  Delete removes them all, one undo step.
   No section selected: "Select a section…" (muted) instead, the row's height the same.
   Two or more widgets selected (ui.multi, multi-select.js): widget mode, what they share:
     [ 3 widgets                 eye  copy  layer↓  layer↑  trash ]
@@ -13,11 +18,11 @@
   One widget selected (ui.widget): its actions, as its row had them, and its settings:
     [ Button                gear  locate  eye  copy  trash ]
   gear: its pop-up (as a double click on it, ui.popup). Its layer: in the pop-up, keys [ ].
-    live, file, bridge, onsection(id), onadd(at), deleting (bindable)
+    live, file, bridge, onsection(id), onadd(at)
 -->
 <script>
   import Button from './Button.svelte';
-  import { ui, selectWidgets } from './ui.svelte.js';
+  import { ui, selectWidgets, selectSection } from './ui.svelte.js';
   import { locate } from '../locate.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import {
@@ -25,14 +30,13 @@
     duplicateWidgets,
     layerWidgets,
     moveSection,
+    removeSections,
     removeWidgets,
     showWidgets,
     toggleSection,
   } from '../layout-ops.js';
 
-  // (deleting is only set here, read by the card asking: SectionCard.svelte)
-  // eslint-disable-next-line no-useless-assignment
-  let { live, file, bridge, onsection, onadd, deleting = $bindable('') } = $props();
+  let { live, file, bridge, onsection, onadd } = $props();
 
   const sections = $derived.by(() => {
     live.version;
@@ -62,6 +66,11 @@
     act();
   }
   const move = (to) => moveSection(live.store, file, at, to);
+  // several sections selected: the ones still on the page
+  const many = $derived(ui.selSections.filter((id) => sections.some((x) => x?.id === id)));
+  function removeSelected(ids) {
+    if (removeSections(live.store, file, ids)) selectSection(null);
+  }
 
   // ---- widget mode: one widget selected, or several (all in one section)
   const group = $derived.by(() => {
@@ -90,8 +99,22 @@
   }
 </script>
 
-<div class="stb" role="toolbar" aria-label={group ? 'Selected widgets' : 'Section'}>
-  {#if group}
+<div
+  class="stb"
+  role="toolbar"
+  aria-label={group ? 'Selected widgets' : many.length > 1 ? 'Selected sections' : 'Section'}
+>
+  {#if many.length > 1 && !group}
+    <p class="stb__count">{many.length} sections</p>
+    <span class="stb__gap"></span>
+    <Button
+      size="small"
+      icon="trash"
+      iconOnly
+      label="Delete {many.length} sections"
+      onclick={() => removeSelected(many)}
+    />
+  {:else if group}
     <p class="stb__count">{one ? oneLabel : `${group.ids.length} widgets`}</p>
     <span class="stb__gap"></span>
     {#if one}
@@ -178,6 +201,13 @@
     />
     <Button
       size="small"
+      icon="trash"
+      iconOnly
+      label="Delete {title}"
+      onclick={() => removeSelected([s.id])}
+    />
+    <Button
+      size="small"
       icon="ellipsis"
       iconOnly
       label="More for {title}"
@@ -219,14 +249,6 @@
       class="more__opt"
       onclick={() => pick(() => duplicateSection(live.store, file, at))}
       ><i class="fa-solid fa-copy" aria-hidden="true"></i><span>Duplicate</span></button
-    >
-    <hr class="more__sep" />
-    <button
-      type="button"
-      role="menuitem"
-      class="more__opt more__del"
-      onclick={() => pick(() => (deleting = s.id))}
-      ><i class="fa-solid fa-trash" aria-hidden="true"></i><span>Delete</span></button
     >
   {/if}
 </div>
@@ -345,17 +367,5 @@
     > span {
       flex: 1;
     }
-  }
-
-  .more__sep {
-    width: 100%;
-    height: 1px;
-    margin: var(--space-1) 0;
-    border: 0;
-    background: var(--c-line);
-  }
-
-  .more__del {
-    color: var(--c-error);
   }
 </style>

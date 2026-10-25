@@ -12,12 +12,11 @@
 <script>
   import { tick } from 'svelte';
   import SectionCard from './SectionCard.svelte';
-  import { ui, selectSection } from './ui.svelte.js';
+  import { ui, selectSection, selectSections } from './ui.svelte.js';
   import { addSection } from '../layout-ops.js';
   import { locate } from '../locate.js';
 
-  // deleting: the id of the section asking "Delete?" (bindable: the toolbar's ⋯ asks)
-  let { live, bridge, file, onopen, onsection, deleting = $bindable('') } = $props();
+  let { live, bridge, file, onopen, onsection } = $props();
 
   const sections = $derived.by(() => {
     const list = live.current(file)?.sections;
@@ -26,7 +25,6 @@
 
   // Add section: an empty section after the last one, scrolled into view
   async function add() {
-    deleting = '';
     addSection(live.store, file);
     await tick();
     const s = sections.at(-1);
@@ -35,6 +33,26 @@
     document
       .querySelector(`[data-section="${CSS.escape(s.id)}"]`)
       ?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  }
+
+  // a click selects one section (scrolled to); Ctrl/Cmd+click adds or removes one, Shift+click
+  // selects from the one clicked last: several sections (their toolbar: Delete them)
+  function pick(e, id) {
+    const ids = sections.map((x) => x.id);
+    const sel = ui.selSections.length ? ui.selSections : ui.selSection ? [ui.selSection] : [];
+    if (e?.ctrlKey || e?.metaKey) {
+      const next = sel.includes(id) ? sel.filter((x) => x !== id) : [...sel, id];
+      return selectSections(
+        ids.filter((x) => next.includes(x)),
+        next.includes(id) ? id : undefined,
+      );
+    }
+    if (e?.shiftKey && ui.selSection && ids.includes(ui.selSection)) {
+      const [a, b] = [ids.indexOf(ui.selSection), ids.indexOf(id)].sort((x, y) => x - y);
+      return selectSections(ids.slice(a, b + 1), ui.selSection);
+    }
+    selectSection(id);
+    locate(bridge, id);
   }
 
   // hover sync: a section card the pointer is over shows its section in the preview
@@ -65,12 +83,8 @@
     {file}
     {at}
     peek={ui.peek?.from === 'preview' && ui.peek.id === s.id}
-    selected={ui.selSection === s.id}
-    bind:deleting
-    onselect={() => {
-      selectSection(s.id);
-      locate(bridge, s.id);
-    }}
+    selected={ui.selSections.length ? ui.selSections.includes(s.id) : ui.selSection === s.id}
+    onselect={(e) => pick(e, s.id)}
     onsection={() => {
       locate(bridge, s.id);
       onsection(s.id);

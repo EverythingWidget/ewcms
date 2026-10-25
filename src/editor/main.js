@@ -273,6 +273,7 @@ function applyPart() {
   ui.widget = null;
   ui.section = null;
   ui.selSection = null;
+  ui.selSections = [];
   ui.selection = null;
   ui.link = null;
   if (bridge.selected) bridge.select(null);

@@ -17,14 +17,13 @@ const tweenVars = (spec, extra = {}) => ({
 });
 
 /**
- * A scroll position in the footer, kept where the page can scroll to (ScrollTrigger's clamp()):
- * the footer is the end of every page, so "top 85%" of its widgets may lie past the last scroll
- * position, and their reveal would never play (or a scrubbed one stay hidden).
+ * A scroll position kept where the page can scroll to (ScrollTrigger's clamp()): a widget at the
+ * end of the page (the footer's, or the last section's last one) may have its "top 85%" past
+ * the last scroll position, and its reveal would never play (or a scrubbed one stay hidden).
+ * Anywhere else clamp() changes nothing.
  */
-const reach = (pos, trigger) =>
-  typeof pos === 'string' && !pos.startsWith('clamp(') && trigger?.closest?.('[data-footer]')
-    ? `clamp(${pos})`
-    : pos;
+const reach = (pos) =>
+  typeof pos === 'string' && !pos.startsWith('clamp(') ? `clamp(${pos})` : pos;
 
 /**
  * trigger "load": play immediately. trigger "scroll": play once when `start` is reached,

@@ -152,6 +152,19 @@ export function moveSection(store, file, from, to) {
 }
 
 /** Section `at` removed. */
+/** The sections with ids `ids` removed: one undo step (their widgets go with them). */
+export function removeSections(store, file, ids) {
+  const list = listOf(store, file);
+  const gone = list.filter((s) => ids.includes(s?.id));
+  if (!gone.length) return false;
+  return writeDropMain(
+    store,
+    file,
+    list.filter((s) => !ids.includes(s?.id)),
+    gone.flatMap((s) => (s?.widgets || []).map((b) => b?.id)),
+  );
+}
+
 export function removeSection(store, file, at) {
   const list = listOf(store, file);
   const [gone] = list.splice(at, 1);
