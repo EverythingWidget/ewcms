@@ -6,6 +6,7 @@
   main.js holds the logic: it changes `ui` (ui.svelte.js) and passes `actions`.
 -->
 <script>
+  import { keptForReload } from '../keep-unsaved.js';
   import { untrack } from 'svelte';
   import Button from './Button.svelte';
   import Tabs from './Tabs.svelte';
@@ -160,7 +161,7 @@
 
   /** Leaving the page with unsaved edits: the browser asks first. */
   function onBeforeUnload(e) {
-    if (live.store.dirtyFiles().length) {
+    if (live.store.dirtyFiles().length && !keptForReload()) {
       e.preventDefault();
       e.returnValue = '';
     }

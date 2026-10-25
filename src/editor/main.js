@@ -80,6 +80,7 @@ import { restoreUi, restorePlace } from './svelte/persist.js';
 import { editorHref } from './lib/editor-url.js';
 import editorConfig from 'virtual:editor-config';
 import { setContentDir } from '../site/files.js';
+import { keepUnsaved, restoreUnsaved } from './keep-unsaved.js';
 
 // the site's content folder (site.config.mjs), for the paths the editor shows
 setContentDir(editorConfig.contentDir);
@@ -807,6 +808,9 @@ function onDiskChange({ content, external }) {
   }, 200);
 }
 import.meta.hot?.on('site:changed', onDiskChange);
+// the dev server reloads the editor itself (its code changed, not content): the unsaved edits
+// are kept and put back (keep-unsaved.js)
+import.meta.hot?.on('vite:beforeFullReload', () => keepUnsaved(store, sessionStorage));
 
 // ---------------------------------------------------------------- boot
 async function boot() {
@@ -819,6 +823,9 @@ async function boot() {
     return;
   }
   store.load(loaded.files);
+  const kept = restoreUnsaved(store, sessionStorage);
+  if (kept.length)
+    toast('Unsaved edits kept', { files: kept, note: 'the dev server reloaded the editor' });
   ui.status = `Content: ${loaded.from}`;
   updatePages();
   refreshStatus();

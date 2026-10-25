@@ -89,11 +89,27 @@ function readSection(sec, phone, row) {
     items.push({ id, ...area, need, link: linkOfEl(el, phone) });
     els.set(id, el);
   }
-  return { items, els };
+  return { items, els, row };
+}
+
+/**
+ * The row a section's fixed-rows widgets' content reaches when it spills out of their rows
+ * (text longer than they hold; 0 when none does): a section that isn't custom (that's its rows)
+ * reaches down to it, so it never runs over the next section. The widget keeps its rows.
+ */
+function spilt(sec, els, at, row) {
+  let end = 0;
+  for (const [id, el] of els) {
+    if (el.classList.contains('wgt--auto') || el.classList.contains('wgt--aspect')) continue;
+    if (el.scrollHeight <= el.clientHeight + 1) continue;
+    if (getComputedStyle(el).overflowY !== 'visible') continue;
+    end = Math.max(end, at[id].row + Math.ceil(el.scrollHeight / row - 0.01) - 1);
+  }
+  return end;
 }
 
 /** Write a section's resolved rows; true when something moved. */
-function writeSection(sec, phone, { items, els }) {
+function writeSection(sec, phone, { items, els, row }) {
   // a custom height: exactly its rows, or its content's when that needs more (the empty rows
   // below its last widget don't stack on top of a grown widget's)
   const min = parseInt(sec.style.getPropertyValue(phone ? '--mminrows' : '--minrows'), 10) || 0;
@@ -102,12 +118,14 @@ function writeSection(sec, phone, { items, els }) {
     : parseInt(sec.style.getPropertyValue(phone ? '--mrows' : '--rows'), 10) || 1;
   const resolved = resolveRows(items, stored);
   const { at } = resolved;
-  let changed = set(sec, '--frows', Math.max(resolved.rows, min));
+  let changed = false;
   for (const [id, el] of els) {
     const a = at[id];
     if (set(el, '--fr', a.row)) changed = true;
     if (set(el, '--frs', a.rows)) changed = true;
   }
+  const rows = Math.max(resolved.rows, min, min ? 0 : spilt(sec, els, at, row));
+  if (set(sec, '--frows', rows)) changed = true;
   return changed;
 }
 

@@ -51,6 +51,7 @@
   import { sourceIds as sourceIdsOf } from '../../site/files.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import { addWidget } from '../layout-ops.js';
+  import { PHONE_MQ } from '../../site/layout/grid.js';
   import { SLIDE, still, swapView } from '../lib/slide.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
@@ -159,7 +160,27 @@
       sketch,
     })),
   );
-  const addTo = (at, type) => openWidget(addWidget(live.store, file, at, type).id);
+  // where the section's widgets are in the preview now (rows.js's --fr / --frs: an auto
+  // widget's real height, a follower's row), so the new one goes below all of them
+  const shownRows = (at) => {
+    const out = {};
+    const win = bridge?.doc?.defaultView;
+    if (!win || win.matchMedia(PHONE_MQ).matches) return out; // the phone grid's rows: not these
+    const ids = (live.store.current[file]?.sections?.[at]?.widgets || []).map((b) => b.id);
+    for (const id of ids) {
+      const el = bridge?.doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`);
+      const st = el && win.getComputedStyle(el);
+      const row = parseInt(el?.style.getPropertyValue('--fr') || st?.getPropertyValue('--r'), 10);
+      const rows = parseInt(
+        el?.style.getPropertyValue('--frs') || st?.getPropertyValue('--rs'),
+        10,
+      );
+      if (row > 0 && rows > 0) out[id] = { row, rows };
+    }
+    return out;
+  };
+  const addTo = (at, type) =>
+    openWidget(addWidget(live.store, file, at, type, { shown: shownRows(at) }).id);
 
   /** Open the widget holding `edit` and scroll to it (a Header label: its field); list items open the Sources modal. */
   async function reveal(edit) {

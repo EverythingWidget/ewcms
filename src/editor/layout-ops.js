@@ -223,22 +223,29 @@ export function setSectionRows(store, file, at, rows, { phone = false, key } = {
 }
 
 /**
- * The first free row below every widget of a section (an auto widget stores no rows: it counts
- * as GUESS rows, about a heading's, so a new widget doesn't land on top of it).
+ * The first free row below every widget of a section: where each one is now (`shown`: { id:
+ * { row, rows } }, the preview's rows.js measured, so a follower's row and an auto widget's
+ * real height count), else as stored (an auto widget stores no rows: it counts as GUESS rows,
+ * about a heading's).
  */
 const GUESS = 8;
-const below = (section) =>
+const below = (section, shown = {}) =>
   Math.max(
     0,
-    ...(section.widgets || []).map((b) => placeOf(baseOf(b)).row + (baseOf(b).rows ?? GUESS) - 1),
+    ...(section.widgets || []).map((b) => {
+      const s = shown[b.id];
+      if (Number.isInteger(s?.row) && Number.isInteger(s?.rows) && s.rows > 0)
+        return s.row + s.rows - 1;
+      return placeOf(baseOf(b)).row + (baseOf(b).rows ?? GUESS) - 1;
+    }),
   ) + 1;
 
 /** A new widget of `type` in section `at` (addedWidget's size), below its other widgets (free: no link). */
-export function addWidget(store, file, at, type) {
+export function addWidget(store, file, at, type, { shown } = {}) {
   const list = listOf(store, file);
   const section = list[at];
   const first = !section.widgets?.length;
-  const widget = addedWidget(type, idsOf(list), { row: first ? 1 : below(section) });
+  const widget = addedWidget(type, idsOf(list), { col: 1, row: first ? 1 : below(section, shown) });
   // its source fitted to the page: From URL matches this page's params, or can't be here
   if (widget.source) {
     const id = pageIdOf(file) || '';
