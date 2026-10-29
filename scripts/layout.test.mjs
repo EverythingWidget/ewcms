@@ -379,7 +379,9 @@ test('render endpoint: one section of a page, from the editor copy over the draf
     ),
   );
   assert.match(html, /Edited caption/);
-  assert.match(html, /data-edit="pages\/about\/index\.json#\/sections\/0\/widgets\/0\/caption"/);
+  // the photo keeps its picker; its caption is edited in the popup only (no marker)
+  assert.match(html, /data-edit="pages\/about\/index\.json#\/sections\/0\/widgets\/0\/src"/);
+  assert.doesNotMatch(html, /widgets\/0\/caption"/);
   assert.match(html, /<\/section>$/);
   // the item of a [param] page
   const slug = routes.find((r) => r.album);

@@ -8,7 +8,9 @@ import { html, esc, img, sizes } from '../../helpers.js';
  * One photo, as wide as the text column, with an optional caption. In an Aspect or Rows widget
  * it fills the area: the widget's box (Fill: cover, cropped | Fit: contain, whole) at its
  * place (../../layout/place.js, media), through --fit / --pos on the widget
- * (src/client/styles/_layout.scss, the fill mixin).
+ * (src/client/styles/_layout.scss, the fill mixin). Its caption is edited in its settings popup
+ * only (no b.ed on it: only a Text widget's content is edited in the preview); the photo itself
+ * keeps b.ed('src', 'image') for picking.
  */
 export const photo = {
   type: 'photo',
@@ -26,7 +28,7 @@ export const photo = {
     html` <div class="photowidget">
       <figure class="photowidget__figure">
         ${s.src ? img(ctx, s.src, { sizes: sizes('100vw', '60vw'), attrs: b.ed('src', 'image') }) : ''}
-        ${s.caption ? html`<figcaption class="label muted" ${b.ed('caption')}>${esc(s.caption)}</figcaption>` : ''}
+        ${s.caption ? html`<figcaption class="label muted">${esc(s.caption)}</figcaption>` : ''}
       </figure>
     </div>`,
 };
