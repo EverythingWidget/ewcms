@@ -26,12 +26,12 @@ test('open, swap, close: one pop-up, its id', () => {
 test('placed 12px left of the panel, level with the row, inside the window', () => {
   assert.deepEqual(anchorPos(at), { left: 1028 - 12 - POP_W, top: 340 });
   // a row near the bottom: the pop-up lifted to fit
-  assert.deepEqual(anchorPos({ ...at, row: { top: 800 } }), { left: 656, top: 900 - 12 - 400 });
+  assert.deepEqual(anchorPos({ ...at, row: { top: 800 } }), { left: 636, top: 900 - 12 - 400 });
   // taller than the window: from its top edge (it scrolls)
   assert.equal(anchorPos({ ...at, h: 2000 }).top, 12);
   assert.deepEqual(clampPos({ left: -50, top: -9 }, { vw: 1440, vh: 900 }), { left: 12, top: 12 });
   assert.deepEqual(clampPos({ left: 5000, top: 0 }, { vw: 1440, vh: 900 }), {
-    left: 1068,
+    left: 1048,
     top: 12,
   });
 });
@@ -45,7 +45,7 @@ test('a dragged place is kept for the session and used for the next widget', () 
   assert.deepEqual(p.place(at), { left: 240, top: 97 });
   const again = createPopup(store); // the same tab, the editor reloaded
   assert.deepEqual(again.place(at), { left: 240, top: 97 });
-  assert.deepEqual(createPopup(mem()).place(at), { left: 656, top: 340 });
+  assert.deepEqual(createPopup(mem()).place(at), { left: 636, top: 340 });
 });
 
 test('the rows: a double click or Enter opens, a click selects; the open one highlighted', () => {

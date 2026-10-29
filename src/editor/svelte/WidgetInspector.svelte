@@ -9,7 +9,7 @@
   One level under the list of sections (a widget's row on its section's card, or the widget
   clicked in the preview): its top (ViewTop.svelte: ← Back to the list, Locate), then the widget
   in a card: its type and title (Main: the page's main widget), the tabs and their fields. Under it,
-  on every tab, its section's settings card (SectionView.svelte, put there by ContentPanel).
+  on every tab.
 -->
 <script>
   import GroupFields from './GroupFields.svelte';

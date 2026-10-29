@@ -35,7 +35,7 @@ test('Custom starts from the rows the preview shows (--frows), not the stored gu
   const s = src('svelte/SectionSettings.svelte');
   assert.match(s, /--frows/);
   assert.match(s, /min: s\.rows\?\.min \|\| shownRows\(s, false\) \|\| rowsOf\(s\)/);
-  assert.match(src('svelte/SectionView.svelte'), /<SectionSettings \{live\} \{bridge\}/);
+  assert.match(src('svelte/SectionPopup.svelte'), /<SectionSettings \{live\} \{bridge\}/);
 });
 
 test("a save's reload restores the selection quietly: no pop-up opens", () => {

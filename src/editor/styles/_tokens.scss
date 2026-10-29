@@ -25,9 +25,12 @@
   --gray-2a: #2a2a2a;
   --gray-2b: #2b2b2b;
   --gray-2f: #2f2f2f;
+  --gray-31: #313131;
+  --gray-34: #343433;
   --gray-38: #383838;
   --gray-3a: #3a3a38;
   --gray-4f: #4f4f4d;
+  --gray-6f: #6f6f6f;
   --gray-86: #868582;
   --gray-aa: #aaa;
   --gray-c1: #c1c1c1;
@@ -97,6 +100,9 @@
   --c-surface-3: var(--gray-1c);
   --c-settings: var(--slate-900); // settings surfaces' one background (the section view's settings)
   --c-card: var(--gray-21); // toasts, menus
+  --c-sec-pop-head: var(--gray-34); // the section pop-up's header (SectionPopup.svelte)
+  --c-sec-pop-fill: var(--gray-31); // its fields
+  --c-sec-pop-rest: var(--gray-6f); // its quiet text and icons
   // a card type: its fill and its accent text (paths, badges), the type told by its colour
   --c-page-card: var(--sand-900); // the pages list's (navigation) rows: 1.2:1 on the panel
   --c-page-accent: var(--sand-400); // paths, path crumbs (list, page head), "As /", drop slot: 7:1

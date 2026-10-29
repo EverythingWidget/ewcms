@@ -4,7 +4,8 @@
   fill of its own, never covers the panel's inset border), its line under it as the tab line's:
     [ + Add widget                    pen  ↑  ↓  ⋯ ]
     [ + Add widget                    pen  ↑  ↓  trash  ⋯ ]
-  pen: the section's settings (onsection, as a double click on its card); ↑ / ↓ move it (off
+  gear: the section's settings pop-up (onsection, as a double click on its card; pressed while
+  it is open, a press again closes it); ↑ / ↓ move it (off
   on the first / last); trash deletes it at once (one undo step brings it back); ⋯ a menu in the
   top layer: Hide / Show section, Duplicate. Add widget (onadd(at)) is off while the section is
   hidden, and only there while a section is selected.
@@ -178,9 +179,11 @@
     <span class="stb__gap"></span>
     <Button
       size="small"
-      icon="pen-to-square"
+      icon="gear"
       iconOnly
-      label="Edit {title}"
+      label="Settings of {title}"
+      title="Settings (or double-click it)"
+      aria-pressed={ui.section === s.id}
       onclick={() => onsection(s.id)}
     />
     <Button

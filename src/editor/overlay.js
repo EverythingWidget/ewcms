@@ -5,7 +5,7 @@
  *   Grid      the square cells (120 columns, the phone grid's 60, and its rows, all one
  *             --cell: src/site/layout/flow.js) of the selected widget's section only, while a
  *             widget is selected (and so while it is dragged or resized) or an empty
- *             section's view is open (ui.section), from the section's own computed grid: faint white lines, every 5th a little stronger. Nothing
+ *             section's settings pop-up is open (ui.section), from the section's own computed grid: faint white lines, every 5th a little stronger. Nothing
  *             selected: no grid
  *   Arrange   always on in the Content tab: a click picks a widget (the widget inspector opens),
  *             a click on empty space (no widget, handle, circle or link line) or Esc (main /

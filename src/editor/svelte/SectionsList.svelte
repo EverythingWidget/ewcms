@@ -3,7 +3,7 @@
   its title and its widgets count, which opens its widgets inside the card; the selected one's
   tools are SectionToolbar.svelte's, over the body), then the dashed Add section card, which adds an empty
   section after the last one. A click on a card selects it (ui.selSection: its section shown in
-  the preview, overlay.js); a double click (or the toolbar's pen) opens its settings (onsection); both
+  the preview, overlay.js); a double click (or the toolbar's gear) opens its settings pop-up (onsection); both
   scroll the preview to the section (locate.js, as Locate does; only from here, never for a
   selection made in the preview); a widget's
   row opens its settings (onopen), as a click on the widget in the preview does. Widgets have no

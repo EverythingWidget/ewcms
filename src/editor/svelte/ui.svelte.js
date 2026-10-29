@@ -85,7 +85,7 @@ export const ui = $state({
    * order, [] otherwise. Sections or widgets, never both: selecting one kind clears the other.
    */
   selSections: [],
-  /** Content tab: an empty section's own view open (its id; no widget to open), or null. */
+  /** Content tab: the section whose settings pop-up is open (SectionPopup.svelte; its id), or null. */
   section: null,
   /** 'content' | 'motion' (its layout: on its card, WidgetLayout.svelte) */
   widgetTab: 'content',

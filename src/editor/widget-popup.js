@@ -2,10 +2,10 @@
  * The widget settings pop-up (WidgetPopup.svelte): one only, ever. Which widget it shows is
  * ui.widget (a widget row's double click or Enter, a widget clicked in the preview); opening
  * another swaps its content in the same pop-up. Where it sits: 12px left of the editor panel,
- * level with the widget's row, 360px wide, kept 12px inside the window; once dragged by its
+ * level with the widget's row, 380px wide, kept 12px inside the window; once dragged by its
  * header, that place is kept for the session (sessionStorage) and used for every widget.
  */
-export const POP_W = 360;
+export const POP_W = 380; // its CSS width (WidgetPopup, SectionPopup)
 export const GAP = 12; // from the panel
 export const EDGE = 12; // from the window's edges
 const KEY = 'ewcms:widget-popup';
