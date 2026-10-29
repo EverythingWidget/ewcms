@@ -514,18 +514,19 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="pl" bind:this={root} {onkeydown}>
-  <!-- [ ← ] / photography/                    [ + ]   (the top: just / and +) -->
+  <!-- in a folder: ← RETURN TO /parent/ (the whole row one button, as Return to navigation);
+       then / photography/                    [ + ]   (the top: just / and +) -->
+  {#if level}
+    <button
+      type="button"
+      class="pl-return"
+      title="Up one level (Esc)"
+      onclick={() => go(parentId(level))}
+      ><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Return to
+      <span class="pl-return__path">{pathOfId(parentId(level))}</span></button
+    >
+  {/if}
   <div class="pl-top">
-    {#if level}
-      <button
-        type="button"
-        class="pl-top__back"
-        aria-label="Up one level (Esc)"
-        title="Up one level (Esc)"
-        onclick={() => go(parentId(level))}
-        ><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></button
-      >
-    {/if}
     <nav class="pl-top__path" aria-label="Where you are">
       {#each crumbsOf(level) as c, i (c.level)}
         {#if i === crumbsOf(level).length - 1}
@@ -607,28 +608,56 @@
     margin-bottom: var(--space-1);
   }
 
-  // text-style: just the arrow, no padding, muted until hovered
-  .pl-top__back {
-    display: grid;
-    flex: none;
-    place-items: center;
+  // ← RETURN TO /parent/: the whole row one button, 32px, as PageHead's Return to navigation
+  // (muted, 11px, uppercase; the path as it is); hovered: a --c-control-hover fill 8px past
+  // its content each side (drawn outside it: nothing moves), the text --c-text
+  .pl-return {
+    @include row(var(--space-2));
+    position: relative;
+    z-index: 0;
+    width: 100%;
     height: var(--size-control);
     padding: 0;
     border: 0;
     border-radius: var(--radius-sm);
     background: none;
     color: var(--c-text-muted);
+    font: inherit;
     font-size: var(--fs-sm);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: left;
     cursor: pointer;
     transition: color 0.2s;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0 calc(-1 * var(--space-2));
+      z-index: -1;
+      border-radius: var(--radius-md);
+      background: transparent;
+      transition: background 0.2s;
+    }
 
     &:hover {
       color: var(--c-text);
     }
 
+    &:hover::before {
+      background: var(--c-control-hover);
+    }
+
     &:focus-visible {
       @include focus-ring;
     }
+  }
+
+  .pl-return__path {
+    @include ellipsis;
+    min-width: 0;
+    text-transform: none;
   }
 
   // one line, never wrapping (the header stays 32px): the parts above shrink first, cut with
