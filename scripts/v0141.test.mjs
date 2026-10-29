@@ -67,7 +67,7 @@ test('v0.1.41: the panels a step apart; a photo row link without a label above',
   const link = read('src/editor/svelte/LinkField.svelte');
   assert.match(
     link,
-    /\{#if inline\}\s*<!--[^>]*-->\s*<Select [^>]*placeholder=\{label\} aria-label=\{label\}/,
+    /\{#if inline\}\s*<!--[^>]*-->\s*<Select\s[^>]*placeholder=\{label\}\s+aria-label=\{label\}/,
   );
   assert.match(read('src/editor/svelte/GroupFields.svelte'), /\{ inline: true \}/);
 });

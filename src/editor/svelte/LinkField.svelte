@@ -1,7 +1,7 @@
 <!--
   A link (src/site/hrefs.js): one Select of where it goes, a page of the site (by its id), a
   source item's page (by the item's id), a field of the widget's item (binds, a { bind }) or an
-  external URL, with the URL's input under it. value: the link ({ page } | { item } | { href }
+  external link (a URL), with the URL's input under it; the dropdown searchable. value: the link ({ page } | { item } | { href }
   | { bind }); onvalue(next) gets the next one (undefined: no link, when `empty` is set).
   Used by widget settings and list fields (GroupFields.svelte) and the header's menu (HeaderPart).
 -->
@@ -27,6 +27,7 @@
     onfocus,
   } = $props();
   const uid = $props.id();
+  const SEARCH = 'Search pages and items…';
 
   const bound = $derived(isBinding(value));
   const kind = $derived(bound ? 'bind' : linkKind(value));
@@ -59,22 +60,36 @@
         }));
     });
   });
+  // pinned at the top: No link (when it may be empty) and External link; then the search
+  // field (Select's search) and the groups under it: Pages, Items, this item's fields
   const options = $derived.by(() => {
     const out = [
-      ...(empty ? [{ value: '', label: inline ? label : empty }] : []),
-      ...pages.map((p) => ({ value: `page:${p.pid}`, label: p.title, hint: p.path })),
-      ...items,
-      ...(binds || []).map((b) => ({
-        value: `bind:${b.value}`,
-        label: `This item's ${b.label}`,
-        hint: 'from the item',
-      })),
-      { value: 'href', label: 'External URL' },
+      {
+        group: '',
+        pinned: true,
+        options: [
+          ...(empty ? [{ value: '', label: inline ? label : empty }] : []),
+          { value: 'href', label: 'External link' },
+        ],
+      },
+      {
+        group: 'Pages',
+        options: pages.map((p) => ({ value: `page:${p.pid}`, label: p.title, hint: p.path })),
+      },
+      { group: 'Items', options: items },
+      {
+        group: 'This item',
+        options: (binds || []).map((b) => ({
+          value: `bind:${b.value}`,
+          label: `This item's ${b.label}`,
+          hint: 'from the item',
+        })),
+      },
     ];
     // a link to something that isn't there (any more) stays, marked
-    if (key && !out.some((o) => o.value === key))
-      out.push({ value: key, label: `${key} (missing)` });
-    return out;
+    if (key && !out.some((g) => g.options.some((o) => o.value === key)))
+      out.push({ group: 'Missing', options: [{ value: key, label: `${key} (missing)` }] });
+    return out.filter((g) => g.pinned || g.options.length);
   });
 
   function pick(v) {
@@ -90,10 +105,18 @@
 <div class={['tf', changed && 'is-changed']} data-edit={edit}>
   {#if inline}
     <!-- under its photo (a photo list's row): no label above; the dropdown names it -->
-    <Select id={uid} value={key} {options} placeholder={label} aria-label={label} onchange={pick} />
+    <Select
+      id={uid}
+      value={key}
+      {options}
+      placeholder={label}
+      aria-label={label}
+      search={SEARCH}
+      onchange={pick}
+    />
   {:else}
     <label class="tf__label" for={uid}>{label}</label>
-    <Select id={uid} value={key} {options} placeholder="Pick…" onchange={pick} />
+    <Select id={uid} value={key} {options} placeholder="Pick…" search={SEARCH} onchange={pick} />
   {/if}
 </div>
 {#if kind === 'href'}
