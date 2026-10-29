@@ -10,6 +10,7 @@
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import { nameOf } from './content-groups.js';
   import { ui } from './ui.svelte.js';
+  import Popover from './Popover.svelte';
 
   let { live, bridge, file, at, j, id, widget } = $props();
 
@@ -47,24 +48,9 @@
     });
   }
 
-  // the ratios: open until a click outside or Esc
+  // the ratios: a Popover under Aspect, open until a click outside or Esc
   let open = $state(false);
-  let group = $state();
-  $effect(() => {
-    if (!open) return;
-    const away = (e) => {
-      if (!group?.contains(e.target)) open = false;
-    };
-    const esc = (e) => {
-      if (e.key === 'Escape') open = false;
-    };
-    document.addEventListener('pointerdown', away, true);
-    document.addEventListener('keydown', esc);
-    return () => {
-      document.removeEventListener('pointerdown', away, true);
-      document.removeEventListener('keydown', esc);
-    };
-  });
+  let aspectBtn = $state();
   let ratioText = $state('');
   const customRatio = $derived(!!widget.aspect && !ASPECTS.includes(widget.aspect));
   function typeRatio(v) {
@@ -108,7 +94,7 @@
 
 <div class="fields wl">
   <div class="wl__row">
-    <div class="wl__size" bind:this={group}>
+    <div class="wl__size">
       <div class="seg" role="radiogroup" aria-label="Size">
         <button
           type="button"
@@ -137,6 +123,7 @@
           role="radio"
           aria-checked={size === 'aspect'}
           title="Size: its width × a ratio"
+          bind:this={aspectBtn}
           class={['seg__btn wl__aspect', size === 'aspect' && 'is-active']}
           onclick={() => setSize('aspect')}
         >
@@ -144,33 +131,37 @@
           {size === 'aspect' ? `Aspect ${ratio}` : 'Aspect none'}
         </button>
       </div>
-      {#if open && size === 'aspect'}
-        <div class="wl__pop">
-          <span class="wl__grp">Ratio (width:height)</span>
-          <div class="seg wl__ratios" role="radiogroup" aria-label="Aspect ratio">
-            {#each ASPECTS as r (r)}
-              <button
-                type="button"
-                role="radio"
-                aria-checked={ratio === r}
-                class={['seg__btn', ratio === r && 'is-active']}
-                onclick={() => set({ aspect: r })}>{r}</button
-              >
-            {/each}
-          </div>
-          <label class="wl__line">
-            <span class="wl__hint">Custom</span>
-            <input
-              class="tf__input wl__input"
-              placeholder="5:7"
-              value={customRatio ? widget.aspect : ratioText}
-              aria-label="Custom ratio (width:height)"
-              aria-invalid={ratioText !== '' && !ratioOf(ratioText)}
-              oninput={(e) => typeRatio(e.currentTarget.value)}
-            />
-          </label>
+      <Popover
+        open={open && size === 'aspect'}
+        anchor={aspectBtn}
+        label="Aspect ratio"
+        class="wl__pop"
+        onclose={() => (open = false)}
+      >
+        <span class="pov__head">Ratio (width:height)</span>
+        <div class="seg wl__ratios" role="radiogroup" aria-label="Aspect ratio">
+          {#each ASPECTS as r (r)}
+            <button
+              type="button"
+              role="radio"
+              aria-checked={ratio === r}
+              class={['seg__btn', ratio === r && 'is-active']}
+              onclick={() => set({ aspect: r })}>{r}</button
+            >
+          {/each}
         </div>
-      {/if}
+        <label class="wl__line">
+          <span class="wl__hint">Custom</span>
+          <input
+            class="tf__input wl__input"
+            placeholder="5:7"
+            value={customRatio ? widget.aspect : ratioText}
+            aria-label="Custom ratio (width:height)"
+            aria-invalid={ratioText !== '' && !ratioOf(ratioText)}
+            oninput={(e) => typeRatio(e.currentTarget.value)}
+          />
+        </label>
+      </Popover>
     </div>
     <div class="hset" role="group" aria-label="Layer" title="Layer">
       <button
@@ -236,33 +227,10 @@
     opacity: 0.8;
   }
 
-  // the toolbar's menu (WidgetToolbar.svelte's .btb__pop): 280px, under the group
-  .wl__pop {
-    @include stack(var(--space-2));
-    position: absolute;
-    z-index: 5;
-    top: calc(100% + var(--space-1));
-    left: 0;
-    width: 280px;
-    padding: var(--space-2);
-    border-radius: var(--radius-md);
-    background: var(--c-card);
-    box-shadow:
-      inset 0 0 0 1px var(--c-line),
-      0 8px 24px var(--black-a40);
-  }
-
-  .wl__grp {
-    padding: var(--space-1) var(--space-1) 0;
-    color: var(--c-text-soft);
-    font-size: var(--fs-2xs);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .wl__ratios {
+  // in the popover (Popover.svelte): three a row
+  :global(.wl__pop) .wl__ratios {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .wl__line {

@@ -35,13 +35,14 @@
   import { showValue } from '../lib/show-value.js';
   import Button from './Button.svelte';
   import Select from './Select.svelte';
+  import Position from './Position.svelte';
   import { baseName } from '../../site/files.js';
   import { fallback, openMedia, photoInfo, photoLine, thumbUrl } from './media.svelte.js';
 
   // edit: the field's data-edit ("file#/pointer"), also on the label so others can find it.
   // type: 'text' | 'words' | 'number' | 'date' | 'block' | 'image' | 'boolean' | 'select' |
   // 'seg' (options as a button group, like Source; unset: the option shown when unset) |
-  // 'spot' (nine options, row by row, as a 3 x 3 grid of cells: a photo's position).
+  // 'spot' (nine options, row by row: a Position.svelte, its 3 x 3 grid in a popover; a photo's position).
   // onvalue(value) gets every valid input.
   // source: the content/en/sources/ file the value comes from ('' for the page's own), with
   // onsource() opening it.
@@ -252,23 +253,7 @@
       {/each}
     </div>
   {:else if type === 'spot'}
-    <div class="spot" role="radiogroup" aria-label={label}>
-      {#each options as [v, text] (v)}
-        {@const on = (value || unset) === v}
-        <button
-          type="button"
-          role="radio"
-          aria-checked={on}
-          aria-label={text}
-          title={text}
-          class={['spot__cell', on && 'is-active']}
-          onclick={() => {
-            onfocus?.();
-            onvalue(v);
-          }}><i class="spot__dot"></i></button
-        >
-      {/each}
-    </div>
+    <Position {options} {value} {unset} {label} id={uid} {onfocus} onchange={onvalue} />
   {:else if type === 'select'}
     <Select
       id={uid}
@@ -455,50 +440,5 @@
 
   .photo__meta {
     @include muted;
-  }
-
-  // a position (type 'spot'): nine joined 36px cells, no lines; a dot in each (35%), the picked
-  // cell light with a black dot, a hovered one a 17% wash with a white dot
-  .spot {
-    display: grid;
-    grid-template-columns: repeat(3, 36px);
-    grid-auto-rows: 36px;
-    justify-self: start;
-    width: max-content;
-    border-radius: var(--radius-md);
-    background: var(--on-card-fill);
-    overflow: hidden;
-
-    &__cell {
-      display: grid;
-      place-items: center;
-      padding: 0;
-      border: 0;
-      background: none;
-      color: var(--on-card-35);
-      cursor: pointer;
-
-      &:hover:not(.is-active) {
-        background: var(--on-card-hover);
-        color: var(--c-text-strong);
-      }
-
-      &.is-active {
-        background: var(--c-text);
-        color: var(--black);
-      }
-
-      &:focus-visible {
-        outline: 2px solid var(--c-focus-ring);
-        outline-offset: -2px;
-      }
-    }
-
-    &__dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: currentcolor;
-    }
   }
 </style>

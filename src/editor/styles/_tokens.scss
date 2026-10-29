@@ -96,6 +96,12 @@
   --c-bg: var(--gray-03); // the editor's page
   --c-bg-site: var(--gray-05); // the site's dark background, behind the preview
   --c-surface: var(--gray-10); // inputs, lists
+  // the shared popover (Popover.svelte): --c-surface, a #262626 ring, a deep shadow; inside it
+  // 7% white fills, 38% white placeholders and idle dots
+  --c-popover-ring: #262626;
+  --c-popover-shadow: var(--black-a60);
+  --c-popover-fill: rgb(255 255 255 / 0.07);
+  --c-popover-dim: rgb(255 255 255 / 0.38);
   --c-surface-2: var(--gray-14); // a nested panel
   --c-surface-3: var(--gray-1c);
   --c-settings: var(--slate-900); // settings surfaces' one background (the section view's settings)
