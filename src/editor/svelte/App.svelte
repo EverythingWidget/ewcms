@@ -304,7 +304,7 @@
     width: 100%;
     height: 100%;
     border: 0;
-    border-radius: var(--radius-xl);
+    border-radius: 0; // square: the page's own edges (the phone frame keeps its round corners)
     box-shadow:
       0 0 0 1px var(--c-fill-active),
       0 30px 80px -30px var(--c-scrim);

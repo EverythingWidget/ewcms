@@ -87,7 +87,8 @@ kbd {
 
 // One scrollbar for every scrolling area of the editor document (the Media dialog's): the panel,
 // modals, pop-ups, lists, source lists and textareas, also what is mounted outside .ed. One size,
-// no variants: no other rule styles a scrollbar. Not the preview (an iframe: the site's own page).
+// no variants: no other rule styles a scrollbar. The preview's page gets the same one (an iframe:
+// injected by bridge.js, INJECTED_CSS, the editor only; visitors keep the browser's).
 // Chrome and Firefox: the standard properties (Chrome then ignores the ::-webkit- ones);
 // Safari: the ::-webkit- ones, the same thin rounded thumb on a transparent track.
 :root,

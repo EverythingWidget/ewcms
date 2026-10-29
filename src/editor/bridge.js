@@ -43,6 +43,10 @@ import {
 import { isSafeHref } from '../site/hrefs.js';
 
 const INJECTED_CSS = `
+html { scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / .2) transparent; }
+html::-webkit-scrollbar { width: 8px; height: 8px; }
+html::-webkit-scrollbar-track, html::-webkit-scrollbar-corner { background: transparent; }
+html::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: 999px; background: rgb(255 255 255 / .2) padding-box; }
 html.__ed-text [data-edit], html.__ed-text [data-bound] { outline-offset: 3px; border-radius: ${T.radiusXs}; pointer-events: auto; }
 html.__ed-text [data-edit]:hover { outline: 1px dashed rgb(255 255 255 / .5); }
 html.__ed-text [data-bound]:hover { outline: 1px dotted rgb(255 255 255 / .5); }

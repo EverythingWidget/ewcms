@@ -46,7 +46,8 @@ test('v0.1.41: one scrollbar style in the editor, defined once', () => {
       else if (/\.(svelte|scss|css|js)$/.test(e.name)) files.push(path.join(d, e.name));
   })('src/editor');
   const hits = files.filter((f) => /scrollbar-(width|color)|::-webkit-scrollbar/.test(read(f)));
-  assert.deepEqual(hits, ['src/editor/styles/editor.scss']);
+  // (and its copy for the preview's page, injected: bridge.js)
+  assert.deepEqual(hits, ['src/editor/bridge.js', 'src/editor/styles/editor.scss']);
   assert.match(
     read('src/editor/styles/editor.scss'),
     /:root,\n:root \* \{\n {2}scrollbar-width: thin;/,
