@@ -389,10 +389,15 @@ export function createOverlay({
 
   /** The links of the shown sections as lines (and the one being dragged). */
   function drawLinks() {
+    // the page's size without the svg itself: sized to the document's scroll size, it would
+    // hold a taller page's height after going to a shorter one (it is part of that size)
     const h = doc.documentElement;
-    const size = `${h.scrollWidth}x${h.scrollHeight}`;
+    const body = doc.body;
+    const size = `${body.scrollWidth}x${body.scrollHeight}`;
     if (size !== svgSize) {
       svgSize = size;
+      els.links.setAttribute('width', 0);
+      els.links.setAttribute('height', 0);
       els.links.setAttribute('width', h.scrollWidth);
       els.links.setAttribute('height', h.scrollHeight);
     }
