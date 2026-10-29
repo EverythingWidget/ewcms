@@ -12,13 +12,16 @@ test("a widget's own fields: one a row (only list items pair halves)", () => {
   assert.match(g, /pairedHalves\(fields\)/); // a list item's rows
 });
 
-test('the photo field in the pop-up: its fill, a 12% thumb, 35% text and icons, 17% hover', () => {
+test('the photo field in the pop-up: its fill, a 12% thumb, 35% text and icons, a hover wash', () => {
+  // the photo reads the role colours; the pop-up (a surface) sets them
+  const f = read('Field.svelte');
+  assert.match(f, /\.photo \{[^}]*background: var\(--field-bg, var\(--c-input\)\);/);
+  assert.match(f, /background: var\(--field-tile, var\(--c-switch\)\);/);
   const p = read('WidgetPopup.svelte');
-  assert.match(p, /:global\(\.photo\) \{\s*background: var\(--on-card-fill\);\s*box-shadow: none;/);
-  assert.match(p, /:global\(\.photo__thumb\) \{\s*background: var\(--on-card-12\);/);
+  assert.match(p, /@include surface\(/);
   assert.match(
     p,
-    /:global\(\.photo \.btn--icon:hover:not\(:disabled\)\) \{\s*background: var\(--on-card-hover\);/,
+    /:global\(\.photo \.btn--icon:hover:not\(:disabled\)\),\s*:global\(\.sc \.btn:hover\) \{\s*background: var\(--field-hover\);/,
   );
 });
 
@@ -32,6 +35,6 @@ test('Height / Width: joined, no padding or gaps, 40px buttons, a hover wash', (
   assert.match(btn, /border-radius: 0/);
   assert.match(
     btn,
-    /&:hover \{\s*color: var\(--c-text-strong\);\s*background: var\(--c-pop-hover\);/,
+    /&:hover \{\s*color: var\(--text-strong, var\(--c-text-strong\)\);\s*background: var\(--field-hover, var\(--white-a17\)\);/,
   );
 });

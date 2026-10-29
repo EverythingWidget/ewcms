@@ -117,7 +117,7 @@
       background: var(--white-a17);
     }
     &:focus-visible {
-      outline: 1px solid var(--c-focus-ring);
+      outline: 1px solid var(--focus-line);
       outline-offset: 1px;
     }
   }

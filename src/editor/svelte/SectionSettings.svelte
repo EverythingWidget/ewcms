@@ -218,7 +218,7 @@
     height: var(--size-control);
     border-radius: var(--radius-md);
     overflow: hidden;
-    background: var(--c-shadow); // filled, as .seg (borderless: no ring)
+    background: var(--field-bg, var(--c-shadow)); // filled, as .seg (borderless: no ring)
     justify-self: start;
   }
 
@@ -260,20 +260,20 @@
     border: 0;
     border-radius: 0;
     background: none;
-    color: var(--c-text-muted);
+    color: var(--text-quiet, var(--c-text-muted));
     cursor: pointer;
     transition:
       color 0.2s,
       background 0.2s;
 
     &:hover {
-      color: var(--c-text-strong);
-      background: var(--c-pop-hover);
+      color: var(--text-strong, var(--c-text-strong));
+      background: var(--field-hover, var(--white-a17));
     }
 
     &.is-active {
-      background: var(--c-fill-active);
-      color: var(--c-accent);
+      background: var(--selected-bg, var(--c-fill-active));
+      color: var(--selected-fg, var(--c-accent));
     }
 
     &:focus-visible {

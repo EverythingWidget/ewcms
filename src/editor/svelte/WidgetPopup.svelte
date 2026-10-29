@@ -133,8 +133,13 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  // borderless: the widgets' card colour, a layered shadow; over the preview (z above it)
+  // borderless: a surface (the widgets' card colour, its header a touch of the accent; its
+  // controls' role colours: _mixins.scss surface()), a layered shadow; over the preview
   .wpop {
+    @include surface(
+      var(--c-widget-card),
+      color-mix(in srgb, var(--c-widget-accent) 9%, var(--c-widget-card))
+    );
     position: fixed;
     z-index: 40;
     display: flex;
@@ -142,7 +147,7 @@
     width: 380px;
     max-height: min(600px, calc(100vh - 24px));
     border-radius: var(--radius-lg);
-    background: var(--c-widget-card);
+    background: var(--surface);
     box-shadow: var(--shadow-pop);
     overflow: hidden;
 
@@ -157,7 +162,7 @@
     flex: none;
     height: 48px;
     padding: 0 var(--space-2) 0 var(--space-3);
-    background: var(--c-pop-head);
+    background: var(--surface-head);
     cursor: move;
     touch-action: none;
     user-select: none;
@@ -170,7 +175,7 @@
   .wpop__icon {
     flex: none;
     width: 16px;
-    color: var(--c-pop-rest);
+    color: var(--text-quiet);
     text-align: center;
   }
 
@@ -191,15 +196,15 @@
     border: 0;
     border-radius: var(--radius-md);
     background: none;
-    color: var(--c-pop-rest);
+    color: var(--text-quiet);
     cursor: pointer;
     transition:
       color 0.2s,
       background 0.2s;
 
     &:hover {
-      background: var(--c-pop-hover);
-      color: var(--c-text-strong);
+      background: var(--field-hover);
+      color: var(--text-strong);
     }
 
     &:focus-visible {
@@ -215,130 +220,51 @@
     overscroll-behavior: contain;
   }
 
-  // inside it (v2): fills at 7%, rest text and icons at 35%, tiles at 12%; hovered: a 17%
-  // white wash and white. The tabs stay put (48px) while the body scrolls. (.wpop .wpop__body:
-  // above the controls' own scoped rules)
+  // inside it: the controls read the role colours (surface() above); left here, what is the
+  // pop-up's own shape: the tabs stay put (48px) while the body scrolls, the layer buttons one
+  // joined group (40px each), and the icon buttons on a card (Button.svelte's look) quiet
   .wpop .wpop__body {
     :global(.card__tabs) {
       position: sticky;
       top: 0;
       z-index: 2;
-      background: var(--c-widget-card);
+      background: var(--surface);
     }
 
     :global(.tabs__btn) {
       height: 48px;
     }
 
-    :global(.tabs__btn:not(.is-active)) {
-      color: var(--on-card-35);
-    }
-
-    :global(.tabs__btn:not(.is-active):hover) {
-      color: var(--c-text-strong);
-    }
-
-    :global(.seg),
-    :global(.sc),
-    :global(.sel),
-    :global(.tf__input),
-    :global(.tf__pick) {
-      background: var(--on-card-fill);
-      box-shadow: none;
-    }
-
-    // the layer buttons: one joined group like the segmented control, each its own fill
     :global(.hset) {
       gap: 0;
       padding: 0;
       overflow: hidden;
-      background: var(--on-card-fill);
     }
 
     :global(.hset__btn) {
       width: 40px;
       height: 100%;
       border-radius: 0;
-      background: none;
-      color: var(--on-card-35);
     }
 
-    :global(.seg__btn:not(.is-active)),
-    :global(.tf__label),
-    :global(.tf__name),
-    :global(.tf__pick),
-    :global(.bs__shows),
-    :global(.sc__label),
-    :global(.sc__meta) {
-      color: var(--on-card-35);
-    }
-
-    :global(.tf__pick) {
-      border-radius: var(--radius-md);
-    }
-
-    :global(.tf__input::placeholder) {
-      color: var(--on-card-35);
-    }
-
-    :global(.sc:hover) {
-      background: var(--on-card-10);
-    }
-
-    :global(.sc__tile) {
-      background: var(--on-card-12);
-    }
-
-    :global(.sc__name) {
-      color: var(--c-text-strong);
-    }
-
-    // the pen: a quiet icon button; Change: a 12% tile with white text, no pill
-    :global(.sc .btn--icon) {
+    // the pen and a photo's icons: quiet icon buttons; Change: a tile with white text, no pill
+    :global(.sc .btn--icon),
+    :global(.photo .btn--icon) {
       background: none;
       box-shadow: none;
-      color: var(--on-card-35);
+      color: var(--text-quiet);
     }
 
     :global(.sc .btn:not(.btn--icon)) {
-      background: var(--on-card-12);
+      background: var(--field-tile);
       box-shadow: none;
-      color: var(--c-text-strong);
+      color: var(--text-strong);
     }
 
-    // a photo field (v2, variant A): the pop-up's fill, no line, its thumbnail flush left on a
-    // 12% tile; label, sizes and icons at 35%, a hovered icon white on a 17% wash; 64px
-    :global(.photo) {
-      background: var(--on-card-fill);
-      box-shadow: none;
-    }
-
-    :global(.photo__thumb) {
-      background: var(--on-card-12);
-      color: var(--on-card-35);
-    }
-
-    :global(.photo__label),
-    :global(.photo__meta),
-    :global(.photo .btn--icon) {
-      color: var(--on-card-35);
-    }
-
-    :global(.photo .btn--icon) {
-      background: none;
-      box-shadow: none;
-    }
-
-    :global(.photo .btn--icon:hover:not(:disabled)) {
-      background: var(--on-card-hover);
-      color: var(--c-text-strong);
-    }
-
-    :global(.hset__btn:hover:not(:disabled)),
-    :global(.seg__btn:not(.is-active):hover),
+    :global(.photo .btn--icon:hover:not(:disabled)),
     :global(.sc .btn:hover) {
-      background: var(--on-card-hover);
-      color: var(--c-text-strong);
+      background: var(--field-hover);
+      color: var(--text-strong);
     }
   }
 </style>

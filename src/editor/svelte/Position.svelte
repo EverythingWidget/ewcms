@@ -120,7 +120,7 @@
     padding: 0 var(--space-3);
     border: 0;
     border-radius: var(--radius-md);
-    background: var(--on-card-fill);
+    background: var(--field-bg, var(--c-shadow));
     color: var(--c-text);
     font: inherit;
     font-size: var(--fs-xs);
@@ -129,7 +129,7 @@
     cursor: pointer;
 
     &:hover:not(:disabled) {
-      background: var(--on-card-hover);
+      background: var(--field-hover, var(--white-a17));
     }
 
     // dimmed where it is (a Fill content box has no place)
@@ -158,7 +158,7 @@
     width: 4px;
     height: 4px;
     border-radius: 1px;
-    background: var(--c-popover-dim);
+    background: color-mix(in srgb, var(--white) 38%, var(--field-bg, var(--c-shadow)));
 
     &.is-on {
       background: var(--c-text);
@@ -188,7 +188,7 @@
     place-self: center;
     overflow: hidden;
     border-radius: var(--radius-md);
-    background: var(--c-popover-fill);
+    background: var(--field-bg);
   }
 
   .pos__cell {
@@ -197,22 +197,21 @@
     padding: 0;
     border: 0;
     background: none;
-    color: var(--c-popover-dim);
+    color: var(--text-quiet);
     cursor: pointer;
 
     &:hover:not(.is-active) {
-      background: var(--c-popover-fill);
-      color: var(--c-text);
+      background: var(--field-tile);
+      color: var(--text-strong);
     }
 
     &.is-active {
-      background: var(--c-text);
-      color: var(--black);
+      background: var(--selected-bg);
+      color: var(--selected-fg);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--c-focus-ring);
-      outline-offset: -2px;
+      @include focus-ring;
     }
   }
 

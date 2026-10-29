@@ -305,7 +305,9 @@
     justify-content: flex-end;
     max-width: 70%;
     margin-left: auto;
-    color: var(--c-text-muted);
+    border-radius: var(--radius-md);
+    background: var(--field-bg, none);
+    color: var(--text-quiet, var(--c-text-muted));
 
     &.is-bound {
       color: var(--c-widget-accent);
@@ -362,7 +364,7 @@
     padding-right: var(--space-2);
     border-radius: var(--radius-md);
     overflow: hidden;
-    background: var(--c-input);
+    background: var(--field-bg, var(--c-input));
     box-shadow: inset 0 0 0 1px var(--c-line);
   }
 
@@ -377,8 +379,8 @@
     border-radius: var(--radius-md) 0 0 var(--radius-md);
     overflow: hidden;
     cursor: pointer;
-    color: var(--c-text-faint);
-    background: var(--c-switch);
+    color: var(--text-quiet, var(--c-text-faint));
+    background: var(--field-tile, var(--c-switch));
     font-size: var(--fs-lg);
     transition: background 0.2s;
 
@@ -420,6 +422,7 @@
   .photo__label {
     @include row(var(--space-2));
     @include muted;
+    color: var(--text-quiet, var(--c-text-muted));
   }
 
   .photo__label,
@@ -440,5 +443,6 @@
 
   .photo__meta {
     @include muted;
+    color: var(--text-quiet, var(--c-text-muted));
   }
 </style>

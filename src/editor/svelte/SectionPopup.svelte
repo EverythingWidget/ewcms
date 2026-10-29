@@ -134,8 +134,10 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  // grey (the section cards' --c-card): its head, fields and quiet text
+  // grey: a surface (the section cards' --c-card, its header a touch lighter; its controls'
+  // role colours: _mixins.scss surface())
   .spop {
+    @include surface(var(--c-card), color-mix(in srgb, var(--white) 9%, var(--c-card)));
     position: fixed;
     z-index: 40;
     display: flex;
@@ -143,7 +145,7 @@
     width: 380px;
     max-height: min(600px, calc(100vh - 24px));
     border-radius: var(--radius-lg);
-    background: var(--c-card);
+    background: var(--surface);
     box-shadow: var(--shadow-pop);
     overflow: hidden;
 
@@ -158,7 +160,7 @@
     flex: none;
     height: 48px;
     padding: 0 var(--space-2) 0 var(--space-3);
-    background: var(--c-sec-pop-head);
+    background: var(--surface-head);
     cursor: move;
     touch-action: none;
     user-select: none;
@@ -171,7 +173,7 @@
   .spop__icon {
     flex: none;
     width: 16px;
-    color: var(--c-sec-pop-rest);
+    color: var(--text-quiet);
     text-align: center;
   }
 
@@ -192,15 +194,15 @@
     border: 0;
     border-radius: var(--radius-md);
     background: none;
-    color: var(--c-sec-pop-rest);
+    color: var(--text-quiet);
     cursor: pointer;
     transition:
       color 0.2s,
       background 0.2s;
 
     &:hover {
-      background: var(--c-pop-hover);
-      color: var(--c-text-strong);
+      background: var(--field-hover);
+      color: var(--text-strong);
     }
 
     &:focus-visible {
@@ -214,34 +216,5 @@
     padding: var(--space-3);
     overflow: auto;
     overscroll-behavior: contain;
-  }
-
-  // its fields grey, quiet text #6f6f6f; the picked option as the widget pop-up's (light, dark icon)
-  .spop .spop__body {
-    :global(.tf__input),
-    :global(.hset) {
-      background: var(--c-sec-pop-fill);
-      box-shadow: none;
-    }
-
-    :global(.tf__label),
-    :global(.tf__help),
-    :global(.hset__btn:not(.is-active)) {
-      color: var(--c-sec-pop-rest);
-    }
-
-    :global(.tf__input::placeholder) {
-      color: var(--c-sec-pop-rest);
-    }
-
-    :global(.hset__btn:not(.is-active):hover) {
-      background: var(--c-pop-hover);
-      color: var(--c-text-strong);
-    }
-
-    :global(.hset__btn.is-active) {
-      background: var(--c-text);
-      color: var(--c-on-light);
-    }
   }
 </style>

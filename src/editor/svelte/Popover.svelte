@@ -89,7 +89,12 @@
 {/if}
 
 <style lang="scss">
+  @use '../styles/mixins' as *;
+
+  // a surface (its controls' role colours: _mixins.scss surface(); quiet text at 38%) on
+  // --c-surface: a #262626 ring, a deep shadow
   .pov {
+    @include surface(var(--c-surface), $quiet: 38%);
     display: flex;
     position: fixed;
     z-index: 2147483000;
@@ -98,7 +103,7 @@
     box-sizing: border-box;
     padding: var(--space-2);
     border-radius: var(--radius-md);
-    background: var(--c-surface);
+    background: var(--surface);
     box-shadow:
       0 0 0 1px var(--c-popover-ring),
       0 12px 32px var(--c-popover-shadow);
@@ -113,24 +118,5 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     white-space: nowrap;
-  }
-
-  // inside: 7% fills, the text light, placeholders 38%; the picked one light with black text
-  .pov :global(.seg) {
-    background: var(--c-popover-fill);
-  }
-
-  .pov :global(input) {
-    background: var(--c-popover-fill);
-    color: var(--c-text);
-
-    &::placeholder {
-      color: var(--c-popover-dim);
-    }
-  }
-
-  .pov :global(.seg__btn.is-active) {
-    background: var(--c-text);
-    color: var(--black);
   }
 </style>

@@ -187,6 +187,8 @@
 {/if}
 
 <style lang="scss">
+  @use '../styles/mixins' as *;
+
   .upd-pill {
     display: inline-flex;
     align-items: center;
@@ -195,7 +197,9 @@
     padding: 0 var(--space-3);
     border: 0;
     border-radius: var(--radius-pill);
-    background: var(--on-card-fill);
+    // the widget card's tones (a surface of its own: _mixins.scss surface()) in the header
+    @include surface(var(--c-widget-card));
+    background: var(--field-bg);
     color: var(--c-widget-accent);
     font: inherit;
     font-size: var(--fs-sm);
@@ -204,13 +208,12 @@
 
     &:hover,
     &[aria-expanded='true'] {
-      background: var(--on-card-hover);
+      background: var(--field-hover);
       color: var(--c-text-strong);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--c-focus-ring);
-      outline-offset: 2px;
+      @include focus-ring;
     }
   }
 
@@ -233,7 +236,8 @@
     width: min(calc(100% - 24px), 320px);
     padding: var(--space-4);
     border-radius: var(--radius-lg);
-    background: var(--c-widget-card);
+    @include surface(var(--c-widget-card));
+    background: var(--surface);
     box-shadow: var(--shadow-pop);
     color: var(--c-text);
     font-size: var(--fs-base);
@@ -258,7 +262,7 @@
   }
 
   .upd-card__muted {
-    color: var(--on-card-35);
+    color: var(--text-quiet);
     font-size: var(--fs-sm);
   }
 
@@ -266,7 +270,7 @@
     height: 4px;
     margin-top: var(--space-2);
     border-radius: var(--radius-pill);
-    background: var(--on-card-fill);
+    background: var(--field-bg);
     overflow: hidden;
 
     span {
@@ -283,7 +287,7 @@
     margin: var(--space-2) 0 0;
     padding: var(--space-3);
     border-radius: var(--radius-md);
-    background: var(--on-card-fill);
+    background: var(--field-bg);
     font-size: var(--fs-sm);
   }
 
@@ -307,7 +311,7 @@
   }
 
   .upd-log {
-    color: var(--on-card-35);
+    color: var(--text-quiet);
     font-family: inherit;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
@@ -323,15 +327,15 @@
       height: 32px;
       border: 0;
       border-radius: var(--radius-sm);
-      background: var(--on-card-fill);
-      color: var(--on-card-35);
+      background: var(--field-bg);
+      color: var(--text-quiet);
       font: inherit;
       font-size: var(--fs-sm);
       text-transform: uppercase;
       cursor: pointer;
 
       &:hover {
-        background: var(--on-card-hover);
+        background: var(--field-hover);
         color: var(--c-text-strong);
       }
 
@@ -345,8 +349,7 @@
       }
 
       &:focus-visible {
-        outline: 2px solid var(--c-focus-ring);
-        outline-offset: 2px;
+        @include focus-ring;
       }
     }
   }

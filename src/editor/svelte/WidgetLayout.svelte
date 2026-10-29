@@ -296,7 +296,7 @@
     height: var(--size-control);
     padding: var(--space-1);
     border-radius: var(--radius-md);
-    background: var(--c-shadow); // filled, as .seg (borderless: no ring)
+    background: var(--field-bg, var(--c-shadow)); // filled, as .seg (borderless: no ring)
     justify-self: start;
   }
 
@@ -310,7 +310,7 @@
     border: 0;
     border-radius: var(--radius-sm);
     background: none;
-    color: var(--c-text-muted);
+    color: var(--text-quiet, var(--c-text-muted));
     cursor: pointer;
     transition:
       color 0.2s,
@@ -321,7 +321,8 @@
     }
 
     &:hover:not(:disabled) {
-      color: var(--c-text);
+      background: var(--field-hover, none);
+      color: var(--text-strong, var(--c-text));
     }
 
     &:disabled {

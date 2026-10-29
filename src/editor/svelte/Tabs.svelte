@@ -92,6 +92,7 @@
     background: none;
     cursor: pointer;
     @include muted;
+    color: var(--text-quiet, var(--c-text-muted));
     font-weight: 600; // every tab: no width change when picked
     letter-spacing: 0.06em;
     line-height: 16px;
@@ -102,12 +103,12 @@
       box-shadow 0.2s;
 
     &:hover {
-      color: var(--c-text);
+      color: var(--text-strong, var(--c-text));
     }
 
     &:focus-visible {
       @include focus-ring;
-      color: var(--c-text);
+      color: var(--text-strong, var(--c-text));
     }
 
     &.is-active {

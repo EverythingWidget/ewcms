@@ -266,12 +266,12 @@
     @include row(var(--space-3));
     padding: var(--space-2);
     border-radius: var(--radius-md);
-    background: var(--c-input);
+    background: var(--field-bg, var(--c-input));
     box-shadow: inset 0 0 0 1px var(--c-line);
     cursor: pointer;
 
     &:hover {
-      background: var(--c-card-peek);
+      background: var(--field-tile, var(--c-card-peek));
     }
   }
 
@@ -290,8 +290,7 @@
     cursor: pointer;
 
     &:focus-visible {
-      outline: none;
-      box-shadow: 0 0 0 1px var(--c-accent);
+      @include focus-ring;
     }
   }
 
@@ -302,7 +301,7 @@
     width: 48px;
     height: 48px;
     border-radius: var(--radius-md);
-    background: var(--c-switch);
+    background: var(--field-tile, var(--c-switch));
     color: var(--c-accent);
     font-size: var(--fs-lg);
     object-fit: cover;
@@ -322,6 +321,7 @@
   .sc__label {
     @include row(var(--space-2));
     @include muted;
+    color: var(--text-quiet, var(--c-text-muted));
   }
 
   .sc__label,
@@ -343,6 +343,7 @@
 
   .sc__meta {
     @include muted;
+    color: var(--text-quiet, var(--c-text-muted));
 
     .is-empty & {
       white-space: normal;

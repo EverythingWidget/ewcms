@@ -19,11 +19,15 @@ test('the pop-up: rows icon, name, Locate, ×; the section settings; 380px, grey
   assert.match(pop, /fa-xmark/);
   assert.match(pop, /<SectionSettings \{live\} \{bridge\} \{file\} \{at\} \{sections\} \/>/);
   assert.match(pop, /width: 380px;/);
-  assert.match(pop, /background: var\(--c-card\);/);
-  assert.match(pop, /background: var\(--c-sec-pop-head\);/);
-  assert.match(pop, /background: var\(--c-text\);\s*color: var\(--c-on-light\);/);
-  const tok = src('styles/_tokens.scss');
-  for (const v of ['#313131', '#343433', '#6f6f6f']) assert.ok(tok.includes(v), v);
+  // a surface on the cards' grey, its head 9% lighter; fields and quiet text from it (7%: #303030,
+  // 35%: #6f6f6f), the picked option light with black text (_mixins.scss surface())
+  assert.match(
+    pop,
+    /@include surface\(var\(--c-card\), color-mix\(in srgb, var\(--white\) 9%, var\(--c-card\)\)\);/,
+  );
+  assert.match(pop, /background: var\(--surface-head\);/);
+  const mix = src('styles/_mixins.scss');
+  assert.match(mix, /--selected-bg: var\(--c-text\);\s*--selected-fg: var\(--c-on-light\);/);
   // Esc: the editor's own Esc skips it (.wpop), it closes itself
   assert.match(pop, /class=\{\['wpop', 'spop'/);
 });

@@ -96,19 +96,14 @@
   --c-bg: var(--gray-03); // the editor's page
   --c-bg-site: var(--gray-05); // the site's dark background, behind the preview
   --c-surface: var(--gray-10); // inputs, lists
-  // the shared popover (Popover.svelte): --c-surface, a #262626 ring, a deep shadow; inside it
-  // 7% white fills, 38% white placeholders and idle dots
+  // the shared popover (Popover.svelte): a surface (_mixins.scss surface()) on --c-surface, a
+  // #262626 ring, a deep shadow
   --c-popover-ring: #262626;
   --c-popover-shadow: var(--black-a60);
-  --c-popover-fill: rgb(255 255 255 / 0.07);
-  --c-popover-dim: rgb(255 255 255 / 0.38);
   --c-surface-2: var(--gray-14); // a nested panel
   --c-surface-3: var(--gray-1c);
   --c-settings: var(--slate-900); // settings surfaces' one background (the section view's settings)
   --c-card: var(--gray-21); // toasts, menus
-  --c-sec-pop-head: var(--gray-34); // the section pop-up's header (SectionPopup.svelte)
-  --c-sec-pop-fill: var(--gray-31); // its fields
-  --c-sec-pop-rest: var(--gray-6f); // its quiet text and icons
   // a card type: its fill and its accent text (paths, badges), the type told by its colour
   --c-page-card: var(--sand-900); // the pages list's (navigation) rows: 1.2:1 on the panel
   --c-page-accent: var(--sand-400); // paths, path crumbs (list, page head), "As /", drop slot: 7:1
@@ -116,19 +111,7 @@
   --c-widget-accent: var(--teal-400); // a widget row's title line (its accent text): 8.15:1
   // a hovered widget row's ring (1px inset, no fill change): its accent at 50%
   --c-widget-line-hover: color-mix(in srgb, var(--c-widget-accent) 50%, transparent);
-  // the widget settings pop-up (WidgetPopup.svelte): on the widgets' card colour, its header a
-  // touch of the accent; inside it, controls rest at 35% white and fill at 7% (solid), hovered
-  // a 17% white wash with white icons and text
-  --c-pop-head: color-mix(in srgb, var(--c-widget-accent) 9%, var(--c-widget-card));
-  --c-pop-rest: color-mix(in srgb, var(--white) 35%, var(--c-widget-card));
-  --c-pop-fill: color-mix(in srgb, var(--white) 7%, var(--c-widget-card));
-  --c-pop-hover: var(--white-a17);
-  // on the widget card (the pop-up): fills, rest text, tiles, hover
-  --on-card-fill: var(--c-pop-fill); // 7%: #1b2725
-  --on-card-35: var(--c-pop-rest); // 35%: #606867
-  --on-card-12: color-mix(in srgb, var(--white) 12%, var(--c-widget-card)); // #2b3634
-  --on-card-10: color-mix(in srgb, var(--white) 10%, var(--c-widget-card)); // #222f2d
-  --on-card-hover: var(--c-pop-hover); // 17% white wash
+  // the pop-ups' and popovers' controls: role colours from their surface (_mixins.scss surface())
   --shadow-pop:
     0 1px 2px var(--black-a30), 0 4px 8px var(--black-a30), 0 12px 24px var(--black-a35),
     0 24px 48px var(--black-a45);
@@ -227,9 +210,10 @@
   --panel-w: 400px; // the side panel
 
   // ---- semantic: states
-  // a focused control (keyboard) or a selected field: its accent line and a 4px glow
-  --focus-ring:
-    inset 0 0 0 1px var(--c-accent), 0 0 0 4px color-mix(in srgb, var(--c-accent) 12%, transparent);
+  // a focused control (keyboard) or a selected field: one whitish 1px inset line, 60% white
+  // over the page (a surface redeclares it from its own colour: _mixins.scss surface())
+  --focus-line: color-mix(in srgb, var(--white) 60%, var(--c-bg));
+  --focus-ring: inset 0 0 0 1px var(--focus-line);
   --o-disabled: 0.35; // a control that can't be used now (disabled, or inherited and inert)
   --o-dim: 0.55; // something that is off or inactive but still readable
 }
