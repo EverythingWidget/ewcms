@@ -550,9 +550,9 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
 
 | type       | what                                                                                                                                                                         |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `text`     | rich text: `body` lines (see "Text widget")                                                                                                                                  |
-| `photo`    | one photo (`src`) with an optional `caption`; in an Aspect or Rows widget `photoFit` (`cover` / `contain`) and `photoPos` (one of nine spots, `left top` … `right bottom`)   |
-| `button`   | a button: `label`; config `link` (see Links)                                                                                                                                 |
+| `text`     | rich text: `body` lines (see "Text widget"); `place` top to bottom (`top` / `center` / `bottom`)                                                                             |
+| `photo`    | one photo (`src`) with an optional `caption`; in an Aspect or Rows widget its `box` (`fill`: cover / `fit`: contain) and `place` (one of nine, `left top` … `right bottom`)  |
+| `button`   | a button: `label`; config `link` (see Links); `box` (`fit`: hugs its label / `fill`: the whole widget) and `place` (nine)                                                    |
 | `form`     | a contact form (see "Contact form")                                                                                                                                          |
 | `hero`     | the home hero: `title` (one word per line), `eyebrow`, `body`, scattered `photos`; as tall as its widget (Rows / Aspect), Auto: its section's preset height under the navbar |
 | `grid`     | **list**: a head + tiles of its source's items; config `layout` (`staggered` / `even`); `places` shows cards                                                                 |

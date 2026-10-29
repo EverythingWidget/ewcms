@@ -2,7 +2,7 @@
   A position picker: a button showing the picked spot (a small 3 x 3 icon, the spot filled, and
   its name) that opens a Popover with the grid; a pick closes it.
   options: [value, label] row by row (9 for axes 'both'; 3 for 'v', top to bottom, or 'h', left
-  to right); value / unset (shown when unset); onchange(value).
+  to right); value / unset (shown when unset); onchange(value); disabled: dimmed in place.
 -->
 <script>
   import Popover from './Popover.svelte';
@@ -16,6 +16,7 @@
     id,
     onchange,
     onfocus,
+    disabled = false,
   } = $props();
 
   let open = $state(false);
@@ -47,6 +48,7 @@
   class={['pos', open && 'is-open']}
   aria-haspopup="dialog"
   aria-expanded={open}
+  {disabled}
   aria-label="{label}: {name}"
   onclick={() => (open = !open)}
 >
@@ -102,8 +104,14 @@
     text-transform: uppercase;
     cursor: pointer;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: var(--on-card-hover);
+    }
+
+    // dimmed where it is (a Fill content box has no place)
+    &:disabled {
+      opacity: var(--o-disabled);
+      cursor: default;
     }
 
     &:focus-visible {

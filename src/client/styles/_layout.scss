@@ -153,6 +153,34 @@
   @include fill;
 }
 
+// a widget's content box, placed in it (src/site/layout/place.js): its root in a 1 x 1 grid,
+// at --ph / --pv (Fit: as big as its content) or stretched over it (Fill: rows: the widget's
+// width and height; auto: its width; aspect: the ratio box)
+.wgt--placed {
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  place-items: var(--pv, start) var(--ph, start);
+}
+// one column (a text): always its full width, placed top to bottom
+.wgt--place-v {
+  justify-items: stretch;
+}
+// Fit in an aspect widget: its content's height, not the box's (the fill mixin's)
+.wgt--placed:not(.wgt--fill) > * {
+  height: auto;
+}
+.wgt--placed.wgt--fill {
+  place-items: stretch;
+}
+// a Fill button: the button over the whole box, its label centred
+.wgt--fill > .buttonwidget {
+  display: flex;
+  > .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
 @media (width <= $bp-sm) {
   // the phone grid: 60 square columns; text scales by the 120-column cell (half of one)
   .sec {

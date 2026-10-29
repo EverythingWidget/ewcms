@@ -11,6 +11,8 @@
   import { nameOf } from './content-groups.js';
   import { ui } from './ui.svelte.js';
   import Popover from './Popover.svelte';
+  import Position from './Position.svelte';
+  import { fillOf, placeOfBox, placementOf, placesOf } from '../../site/layout/place.js';
 
   let { live, bridge, file, at, j, id, widget } = $props();
 
@@ -51,6 +53,12 @@
   // the ratios: a Popover under Aspect, open until a click outside or Esc
   let open = $state(false);
   let aspectBtn = $state();
+  // its content box (../../site/layout/place.js): Fit | Fill (types with the switch) and its
+  // place; under Fill the place dims where it is (a photo's still crops: it stays)
+  const placement = $derived(placementOf(widget.type));
+  const fill = $derived(fillOf(widget));
+  const setBox = (box) => box !== (fill ? 'fill' : 'fit') && set({ box });
+
   let ratioText = $state('');
   const customRatio = $derived(!!widget.aspect && !ASPECTS.includes(widget.aspect));
   function typeRatio(v) {
@@ -183,6 +191,37 @@
   <p class="hint small wl__link">
     {#if link}Follows {leader}, gap {link.gap}{:else}Free (not linked){/if}
   </p>
+  {#if placement}
+    {#if placement.box}
+      <div class="tf is-half">
+        <span class="tf__label">Size</span>
+        <div class="seg" role="radiogroup" aria-label="Size of its content">
+          {#each [['fit', 'Fit'], ['fill', 'Fill']] as [v, text] (v)}
+            {@const on = (fill ? 'fill' : 'fit') === v}
+            <button
+              type="button"
+              role="radio"
+              aria-checked={on}
+              title={v === 'fit' ? 'Fit: as big as its content' : 'Fill: over the whole widget'}
+              class={['seg__btn', on && 'is-active']}
+              onclick={() => setBox(v)}>{text}</button
+            >
+          {/each}
+        </div>
+      </div>
+    {/if}
+    <div class={['tf', placement.box && 'is-half']}>
+      <span class="tf__label">Placement</span>
+      <Position
+        label="Placement"
+        options={placesOf(placement)}
+        value={placeOfBox(widget)}
+        axes={placement.axes}
+        disabled={fill && !placement.media}
+        onchange={(place) => set({ place })}
+      />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">

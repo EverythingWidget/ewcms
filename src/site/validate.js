@@ -44,6 +44,7 @@ import {
 } from './layout/index.js';
 import { linkProblems } from './layout/links.js';
 import { checkFit, checkTypography } from './layout/type.js';
+import { checkPlacement } from './layout/place.js';
 import { checkLayout } from './layout/contain.js';
 import { isId } from './layout/ids.js';
 import { linkProblem } from './hrefs.js';
@@ -425,6 +426,7 @@ function checkWidget(b, where) {
     bad('aspect', 'a ratio like "4:5"');
   if (b.z !== undefined && !Number.isInteger(b.z)) bad('z', 'a whole number');
   out.push(...checkFit(b).map((p) => `${name}: ${p}`));
+  out.push(...checkPlacement(b).map((p) => `${name}: ${p}`));
   if (b.motion !== undefined) out.push(...checkMotion(b.motion).map((p) => `${name}: ${p}`));
   if (!t) return out; // an unknown type only warns (render)
   if (b.item !== undefined) bad('item', 'left out: its "source" says which item');

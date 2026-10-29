@@ -14,6 +14,8 @@ export const button = {
   icon: 'arrow-right',
   line: 'A link to a page or a site',
   sketch: 'button',
+  // its content box (the button): Fit hugs its label, Fill fills the widget; placed in it
+  placement: { axes: 'both', box: true, place: 'left top' },
   fields: [{ key: 'label', label: 'Label' }],
   config: [{ key: 'link', label: 'Link', type: 'link' }],
   defaults: {

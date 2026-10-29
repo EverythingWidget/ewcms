@@ -40,6 +40,7 @@
  *            its own and its phone link (without either: stacked full width in reading order,
  *            grid.js phoneStack). `rows` is stored only for size "aspect" / "rows";
  *            an auto widget's rows are measured on the page (rows.js, ./flow.js).
+ *   box      'fit' | 'fill', place: its content box in it (./place.js)
  *   size     'auto' (default): as tall as its content | 'aspect': as tall as its columns'
  *            width × `aspect` ("4:5", "16:9", any "w:h") | 'rows': exactly its base rows (fixed)
  *   link     (in base / phone) optional { to, gap }: it follows widget `to` of its section, its
@@ -62,6 +63,7 @@ import { widgetItems } from './source.js';
 import { COLS, baseOf, phoneAreaOf, placeOf, setBase } from './grid.js';
 import { linkOf } from './links.js';
 import { fitted } from './type.js';
+import { placeClass, placeVars } from './place.js';
 import { contentPath } from '../files.js';
 
 export {
@@ -240,6 +242,7 @@ export function widgetClass(b) {
     `wgt wgt--${b?.type}` +
     (aspect ? ' wgt--aspect' : size === 'auto' || size === 'aspect' ? ' wgt--auto' : '') +
     (fitted(b) ? ' wgt--fit' : '') +
+    placeClass(b) +
     (b?.layout?.phone === null ? ' wgt--m-hidden' : '')
   );
 }
@@ -256,6 +259,7 @@ export function widgetVars(b, widgets) {
     `--c:${p.col};--s:${p.span};--r:${p.row};--rs:${p.rows}` +
     (Number.isInteger(b?.z) && b.z !== 0 ? `;--z:${b.z}` : '') +
     (ratio ? `;--ar:${ratio[0]} / ${ratio[1]}` : '') +
+    placeVars(b) +
     `;--mc:${m.col};--ms:${m.span};--mr:${m.row};--mrs:${m.rows}`
   );
 }

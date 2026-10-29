@@ -21,6 +21,8 @@ export const text = {
   icon: 'font',
   line: 'Titles, paragraphs, labels: any text',
   sketch: 'text',
+  // always full width: no Fit / Fill, only where it sits top to bottom
+  placement: { axes: 'v', box: false, place: 'top' },
   fields: [{ key: 'body', label: 'Text', type: 'rich' }],
   config: [],
   defaults: { body: [{ style: 'paragraph', text: [{ t: 'Some text.' }] }], config: {} },
