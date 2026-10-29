@@ -41,6 +41,22 @@
   }
 </script>
 
+<!-- one axis: an alignment icon, a frame with two bars at its top / middle / bottom ('v') or
+     left / centre / right ('h'), i the place's index (0, 1, 2) -->
+{#snippet bars(i, size)}
+  {@const at = [3, 5, 7][i] ?? 5}
+  <svg class="pos__bars" width={size} height={size} viewBox="0 0 16 16" aria-hidden="true">
+    <rect x="0.5" y="0.5" width="15" height="15" rx="2" fill="none" stroke="currentColor" />
+    {#if axes === 'h'}
+      <rect x={at} y="4" width="2" height="8" rx="1" fill="currentColor" />
+      <rect x={at + 4} y="4" width="2" height="8" rx="1" fill="currentColor" />
+    {:else}
+      <rect x="4" y={at} width="8" height="2" rx="1" fill="currentColor" />
+      <rect x="4" y={at + 4} width="8" height="2" rx="1" fill="currentColor" />
+    {/if}
+  </svg>
+{/snippet}
+
 <button
   bind:this={btn}
   {id}
@@ -52,9 +68,13 @@
   aria-label="{label}: {name}"
   onclick={() => (open = !open)}
 >
-  <span class="pos__icon" style:--cols={cols} aria-hidden="true">
-    {#each options as [v], i (v)}<i class={['pos__px', i === at && 'is-on']}></i>{/each}
-  </span>
+  {#if axes === 'both'}
+    <span class="pos__icon" style:--cols={cols} aria-hidden="true">
+      {#each options as [v], i (v)}<i class={['pos__px', i === at && 'is-on']}></i>{/each}
+    </span>
+  {:else}
+    {@render bars(at, 12)}
+  {/if}
   <span class="pos__name">{name}</span>
   <i class="fa-solid fa-chevron-down pos__caret" aria-hidden="true"></i>
 </button>
@@ -77,7 +97,11 @@
         aria-label={text}
         title={text}
         class={['pos__cell', on && 'is-active']}
-        onclick={() => pick(v)}><i class="pos__dot"></i></button
+        onclick={() => pick(v)}
+        >{#if axes === 'both'}<i class="pos__dot"></i>{:else}{@render bars(
+            options.findIndex(([o]) => o === v),
+            16,
+          )}{/if}</button
       >
     {/each}
   </div>
@@ -190,6 +214,11 @@
       outline: 2px solid var(--c-focus-ring);
       outline-offset: -2px;
     }
+  }
+
+  .pos__bars {
+    display: block;
+    flex: none;
   }
 
   .pos__dot {

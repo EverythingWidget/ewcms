@@ -5,7 +5,11 @@
 import { html, esc, extAttrs } from '../../helpers.js';
 import { hrefOf } from '../../hrefs.js';
 
-/** A button linking somewhere (config.link: a page, an item or a URL; src/site/hrefs.js). */
+/**
+ * A button linking somewhere (config.link: a page, an item or a URL; src/site/hrefs.js). Its
+ * label is edited in its settings popup only (no b.ed: never inline in the preview; only a Text
+ * widget's content is).
+ */
 export const button = {
   type: 'button',
   // added from the editor: Auto, as tall as what it holds
@@ -23,10 +27,10 @@ export const button = {
     config: { link: { href: '/about/' } },
     motion: { anim: 'fade-in' },
   },
-  render: (s, ctx, b) => {
+  render: (s, ctx) => {
     const href = hrefOf(ctx, s.config?.link, 'a button') || '/';
     return html` <div class="buttonwidget">
-      <a class="btn glass" href="${esc(href)}"${extAttrs(href)}><span${b.ed('label')}>${esc(s.label)}</span> <span aria-hidden="true">→</span></a>
+      <a class="btn glass" href="${esc(href)}"${extAttrs(href)}><span>${esc(s.label)}</span> <span aria-hidden="true">→</span></a>
     </div>`;
   },
 };
