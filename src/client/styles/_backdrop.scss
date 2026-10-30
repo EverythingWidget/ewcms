@@ -1,4 +1,4 @@
-// The page's backdrop (src/site/backdrop.js, modules/backdrop.js): images in its own fixed
+// The page's backdrop (src/site/backdrop.js, modules/backdrop.js): photos in its own fixed
 // layer #backdrop, over the ground (glow and grain) and under the view; the sections have no
 // background of their own. A screen tall (the large viewport: phones' address bar doesn't
 // resize it). Layers (body): .ground 0 < #backdrop 1 < .view 2 < #portal 3 < .curtain 80.
@@ -20,7 +20,7 @@
   }
 }
 
-// a dim over the images (above the track, under the view), so the text on them reads; an
+// a dim over the photos (above the track, under the view), so the text on them reads; an
 // element of its own, not ::after
 .backdrop__shade {
   position: absolute;
@@ -30,7 +30,7 @@
   opacity: 0.45; // the page's shade (style, src/site/backdrop.js)
 }
 
-.backdrop__image {
+.backdrop__photo {
   overflow: hidden;
   img {
     width: 100%;
@@ -55,7 +55,7 @@
   height: 100%;
 }
 
-.backdrop--scroll .backdrop__image {
+.backdrop--scroll .backdrop__photo {
   flex: 1 1 0;
   min-width: 0;
   min-height: 0;
@@ -67,7 +67,7 @@
   inset: 0;
 }
 
-.backdrop--fade .backdrop__image {
+.backdrop--fade .backdrop__photo {
   position: absolute;
   inset: 0;
   &:not(:first-child) {

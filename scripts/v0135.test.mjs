@@ -1,4 +1,4 @@
-// v0.1.35 (fields v2): a widget's fields one a row in the pop-up, the image field in the
+// v0.1.35 (fields v2): a widget's fields one a row in the pop-up, the photo field in the
 // pop-up's scheme (variant A), a section's Height / Width as joined button groups
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,16 +12,16 @@ test("a widget's own fields: one a row (only list items pair halves)", () => {
   assert.match(g, /pairedHalves\(fields\)/); // a list item's rows
 });
 
-test('the image field in the pop-up: its fill, a 12% thumb, 35% text and icons, a hover wash', () => {
-  // the image reads the role colours; the pop-up (a surface) sets them
+test('the photo field in the pop-up: its fill, a 12% thumb, 35% text and icons, a hover wash', () => {
+  // the photo reads the role colours; the pop-up (a surface) sets them
   const f = read('Field.svelte');
-  assert.match(f, /\.image \{[^}]*background: var\(--field-bg\);/);
+  assert.match(f, /\.photo \{[^}]*background: var\(--field-bg\);/);
   assert.match(f, /background: var\(--field-tile\);/);
   const p = read('WidgetPopup.svelte');
   assert.match(p, /@include surface\(/);
   assert.match(
     p,
-    /:global\(\.image \.btn--icon:hover:not\(:disabled\)\),\s*:global\(\.sc \.btn:hover\) \{\s*background: var\(--field-hover\);/,
+    /:global\(\.photo \.btn--icon:hover:not\(:disabled\)\),\s*:global\(\.sc \.btn:hover\) \{\s*background: var\(--field-hover\);/,
   );
 });
 

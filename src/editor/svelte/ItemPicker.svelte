@@ -10,7 +10,7 @@
     picked), sourceIds, itemsOf(id) a source's items, nameOf(id, item) an item's name,
     onpick(value | undefined); onclear(): back to empty (the ✕ beside Change, when picked);
     store: the editor's store (the sources' schemas: a list's name, an
-    item's image); label: its own label (a setting's, "Count of"), else by what it picks
+    item's photo); label: its own label (a setting's, "Count of"), else by what it picks
     onsource(file, index, edit, then): open the Source Explorer (SourcesModal.svelte); each
               row's edit button closes this window and opens it there, and this window opens
               again on the same source or item when the Source Explorer closes (then)
@@ -49,16 +49,16 @@
   let source = $state(''); // the source open in the list ('' = the list of sources)
   let query = $state('');
 
-  // the card: a list's name and count, or an item's name and image (its first image field)
+  // the card: a list's name and count, or an item's name and photo (its first photo field)
   const schema = $derived(current && store ? schemaFor(store, sourceFile(current)) : null);
   const picked = $derived(
     items_ && current ? (itemsOf(current).find((i) => i?.id === value?.id) ?? null) : null,
   );
-  const image = $derived.by(() => {
+  const photo = $derived.by(() => {
     const fs = schema?.fields || [];
-    for (const f of fs.filter((f) => f.type === 'image'))
+    for (const f of fs.filter((f) => f.type === 'photo'))
       if (typeof picked?.[f.key] === 'string' && picked[f.key]) return picked[f.key];
-    for (const f of fs.filter((f) => f.type === 'images'))
+    for (const f of fs.filter((f) => f.type === 'photos'))
       if (Array.isArray(picked?.[f.key]) && picked[f.key][0]) return picked[f.key][0];
     return '';
   });
@@ -137,8 +137,8 @@
       title={items_ ? 'Pick the item this widget shows' : 'Pick the source list'}
       onclick={(e) => (e.stopPropagation(), open())}
     >
-      {#if image}
-        <img class="sc__tile" src={thumbUrl(image)} alt="" {@attach fallback(image)} />
+      {#if photo}
+        <img class="sc__tile" src={thumbUrl(photo)} alt="" {@attach fallback(photo)} />
       {:else}
         <span class="sc__tile" aria-hidden="true">
           <i class="fa-solid fa-{!card ? 'plus' : items_ ? 'database' : 'table-cells'}"></i>
@@ -172,7 +172,7 @@
       onclick={(e) => (e.stopPropagation(), open())}>{card ? 'Change' : 'Choose'}</Button
     >
     {#if card && onclear}
-      <!-- like the image card's ✕: back to none -->
+      <!-- like the photo card's ✕: back to none -->
       <Button
         size="small"
         icon="xmark"

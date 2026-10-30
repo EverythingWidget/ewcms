@@ -3,7 +3,7 @@
 // the display font's widest average glyph, in em: sizes the longest word of the name to fit
 $hero-em-per-char: 0.6;
 
-/* ---------------- Hero: name + scattered drifting images ---------------- */
+/* ---------------- Hero: name + scattered drifting photos ---------------- */
 // An Auto hero has no content height of its own (all of it is positioned): it fills what its
 // section's preset height leaves below the navbar (--sec-h, _layout.scss; the screen without one)
 .wgt--auto > .hero {
@@ -18,7 +18,7 @@ $hero-em-per-char: 0.6;
   height: 100%;
   overflow-x: clip;
 
-  &__images {
+  &__photos {
     position: absolute;
     inset: 8px var(--pad) 70px;
   }
@@ -103,7 +103,7 @@ $hero-em-per-char: 0.6;
   }
 
   @media (max-width: $bp-sm) {
-    &__images {
+    &__photos {
       inset: 0 0 90px;
     }
     &__title {
@@ -176,8 +176,8 @@ $hero-em-per-char: 0.6;
   }
 }
 
-/* ---------------- Hero styles: image beside / behind (style; scattered is the above) ---------------- */
-// the name's size beside or over one image: smaller than scattered, capped by its longest word
+/* ---------------- Hero styles: photo beside / behind (style; scattered is the above) ---------------- */
+// the name's size beside or over one photo: smaller than scattered, capped by its longest word
 // (--hero-word) so it fits the width it has (--hero-room)
 @mixin hero-name-size($max) {
   font-size: min(#{$max}, calc(var(--hero-room) / (var(--hero-word, 1) * #{$hero-em-per-char})));
@@ -185,7 +185,7 @@ $hero-em-per-char: 0.6;
 
 .hero--beside,
 .hero--behind {
-  .hero__image {
+  .hero__photo {
     position: absolute;
     overflow: hidden;
     img {
@@ -210,9 +210,9 @@ $hero-em-per-char: 0.6;
   }
 }
 
-// text left, the first image fills the right half (4px corners)
+// text left, the first photo fills the right half (4px corners)
 .hero--beside {
-  .hero__image {
+  .hero__photo {
     top: 8px;
     right: var(--pad);
     bottom: 70px;
@@ -225,12 +225,12 @@ $hero-em-per-char: 0.6;
   }
 }
 
-// the first image full-bleed under a dark gradient, the name bottom-left
+// the first photo full-bleed under a dark gradient, the name bottom-left
 .hero--behind {
   --fg: var(--hero-fg);
   --muted: var(--hero-muted);
   color: var(--hero-fg);
-  .hero__image {
+  .hero__photo {
     inset: 0;
     z-index: 0;
     &::after {
@@ -252,9 +252,9 @@ $hero-em-per-char: 0.6;
 }
 
 @media (max-width: $bp-sm) {
-  // phones: the image on top, the name under it
+  // phones: the photo on top, the name under it
   .hero--beside {
-    .hero__image {
+    .hero__photo {
       left: var(--pad);
       width: auto;
       bottom: 42%;
@@ -273,7 +273,7 @@ $hero-em-per-char: 0.6;
   }
 }
 
-/* ---------------- Widget heads (image grid, project list) ---------------- */
+/* ---------------- Widget heads (photo grid, project list) ---------------- */
 .section {
   &__head {
     display: grid;
@@ -304,7 +304,7 @@ $hero-em-per-char: 0.6;
   }
 }
 
-// Hannah Miles style image tiles with staggered columns (or even rows: .tiles--even)
+// Hannah Miles style photo tiles with staggered columns (or even rows: .tiles--even)
 .tiles {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

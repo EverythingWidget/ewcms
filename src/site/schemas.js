@@ -10,12 +10,12 @@
  *     "fields": [{ key, label, type, width?, required?, help?, options?, list? }]
  *   }
  *
- *   type      text | multiline (lines) | number | image (a media/ path or R2 key) |
- *             images (a list of image paths; alt and credit live in photos.json) | link (https://…, /path/ or mailto:) |
+ *   type      text | multiline (lines) | number | photo (a media/ path or R2 key) |
+ *             photos (a list of photo paths; alt and credit live in photos.json) | link (https://…, /path/ or mailto:) |
  *             choice (one of options: ["a", "b"]) | boolean | date (YYYY-MM-DD)
  *             (the field types: ./field-types.js, SOURCE_FIELD_TYPES)
  *   width     'half': two half fields side by side in the editor
- *   required  must have a value (an images list: at least one image)
+ *   required  must have a value (a photos list: at least one photo)
  *   help      a short hint under the label
  *   list      shown under the title in the editor's item lists (Source Explorer)
  *
@@ -29,7 +29,7 @@ import { isId, newId } from './layout/ids.js';
 import { isObject, isExternal } from './is.js';
 import { SOURCE_FIELD_TYPES, blankOf } from './field-types.js';
 
-const IMAGE = /^[\w-][\w./-]*\.(?:jpe?g|png|webp|avif|gif)$/i;
+const PHOTO = /^[\w-][\w./-]*\.(?:jpe?g|png|webp|avif|gif)$/i;
 const LINK = /^(?:https?:\/\/|\/|mailto:)\S*$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -42,8 +42,8 @@ export const labelOf = (key) => {
   return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
-/** An image's path or R2 key (a list of them is an images field). */
-const IMAGE_PATH = /\.(jpe?g|png|webp|avif|gif)$/i;
+/** A photo's path or R2 key (a list of them is a photos field). */
+const PHOTO_PATH = /\.(jpe?g|png|webp|avif|gif)$/i;
 
 /** A field's type from all of its values (the same for every item, so the editor is stable). */
 function inferType(values) {
@@ -51,12 +51,12 @@ function inferType(values) {
   if (values.every((v) => typeof v === 'boolean')) return { type: 'boolean' };
   if (values.every((v) => typeof v === 'number')) return { type: 'number', width: 'half' };
   if (values.every((v) => Array.isArray(v)))
-    return values.flat().every((p) => typeof p === 'string' && IMAGE_PATH.test(p))
-      ? { type: 'images' }
+    return values.flat().every((p) => typeof p === 'string' && PHOTO_PATH.test(p))
+      ? { type: 'photos' }
       : null;
   if (!values.every((v) => typeof v === 'string')) return null;
   const filled = values.filter(Boolean);
-  if (filled.length && filled.every((v) => IMAGE.test(v))) return { type: 'image' };
+  if (filled.length && filled.every((v) => PHOTO.test(v))) return { type: 'photo' };
   if (filled.some((v) => v.includes('\n') || v.length > 80)) return { type: 'multiline' };
   if (filled.every((v) => v.length <= 24)) return { type: 'text', width: 'half' };
   return { type: 'text' };
@@ -64,7 +64,7 @@ function inferType(values) {
 
 /**
  * The schema of a source without a schema file, from its items: every key in item order,
- * typed by all its values (numbers, booleans, image lists, media paths, long or short text);
+ * typed by all its values (numbers, booleans, photo lists, media paths, long or short text);
  * keys with mixed or other values (objects) are left out. The title is "name", else "title",
  * else the first text field; the slug is "slug" when the items have one.
  */
@@ -141,20 +141,20 @@ export function checkSchema(s) {
 const empty = (v) => v === undefined || v === null || v === '';
 
 /** Problems with one value of a field (its type), [] when fine. */
-function checkValue(f, v, imageExists) {
-  if (empty(v) && f.type !== 'images') return [];
+function checkValue(f, v, photoExists) {
+  if (empty(v) && f.type !== 'photos') return [];
   const want = (what) => [`must be ${what}`];
   switch (f.type) {
     case 'number':
       return Number.isFinite(v) ? [] : want('a number');
     case 'boolean':
       return typeof v === 'boolean' ? [] : want('true or false');
-    case 'images': {
+    case 'photos': {
       if (v === undefined) return [];
       if (!Array.isArray(v) || !v.every((p) => typeof p === 'string' && p))
-        return want('a list of image paths');
+        return want('a list of photo paths');
       return v.flatMap((p, j) =>
-        checkValue({ type: 'image' }, p, imageExists).map((m) => `image ${j + 1} ${m}`),
+        checkValue({ type: 'photo' }, p, photoExists).map((m) => `photo ${j + 1} ${m}`),
       );
     }
     default:
@@ -164,17 +164,17 @@ function checkValue(f, v, imageExists) {
   if (f.type === 'date' && !DATE.test(v)) return want('a date (YYYY-MM-DD)');
   if (f.type === 'choice' && !f.options?.includes(v))
     return want(`one of ${f.options?.join(', ')}`);
-  if (f.type === 'image' && imageExists && !isExternal(v) && !imageExists(v))
-    return [`"${v}" is not an image in media/ or ${contentPath(PHOTOS)}`];
+  if (f.type === 'photo' && photoExists && !isExternal(v) && !photoExists(v))
+    return [`"${v}" is not a photo in media/ or ${contentPath(PHOTOS)}`];
   return [];
 }
 
 /**
  * Problems of a source's items against its schema ([] when fine): required values, types,
- * choice options, images that exist (imageExists(key), when given), valid unique slugs.
+ * choice options, photos that exist (photoExists(key), when given), valid unique slugs.
  * "item 2 (Noor Vermeer): "Year" must be a number".
  */
-export function checkItems(list, schema, { imageExists } = {}) {
+export function checkItems(list, schema, { photoExists } = {}) {
   if (!Array.isArray(list)) return [];
   const out = [];
   const slugs = new Set();
@@ -190,15 +190,15 @@ export function checkItems(list, schema, { imageExists } = {}) {
     for (const f of schema.fields || []) {
       const v = item[f.key];
       const label = `"${f.label || labelOf(f.key)}"`;
-      if (f.required && (f.type === 'images' ? !v?.length : empty(v)))
+      if (f.required && (f.type === 'photos' ? !v?.length : empty(v)))
         out.push(`${name}: ${label} is required`);
-      out.push(...checkValue(f, v, imageExists).map((m) => `${name}: ${label} ${m}`));
+      out.push(...checkValue(f, v, photoExists).map((m) => `${name}: ${label} ${m}`));
     }
-    // the cover: one of its own images (its path)
-    const images = (schema.fields || []).find((f) => f.type === 'images')?.key;
-    if (images && typeof item.cover === 'string' && item.cover)
-      if (!(Array.isArray(item[images]) && item[images].includes(item.cover)))
-        out.push(`${name}: "cover" must be one of its images ("${item.cover}" isn't)`);
+    // the cover: one of its own photos (its path)
+    const photos = (schema.fields || []).find((f) => f.type === 'photos')?.key;
+    if (photos && typeof item.cover === 'string' && item.cover)
+      if (!(Array.isArray(item[photos]) && item[photos].includes(item.cover)))
+        out.push(`${name}: "cover" must be one of its photos ("${item.cover}" isn't)`);
     const slug = schema.slug ? item[schema.slug] : undefined;
     if (empty(slug) || typeof slug !== 'string') return;
     if (!isSlug(slug)) out.push(`${name}: slug "${slug}" must be lowercase words with dashes`);
@@ -208,17 +208,17 @@ export function checkItems(list, schema, { imageExists } = {}) {
   return out;
 }
 
-/** Is `key` a known image: in the media manifest or in photos.json (R2)? */
-export const imageChecker = (media, photos) => (key) => !!(media?.[key] || photos?.[key]);
+/** Is `key` a known photo: in the media manifest or in photos.json (R2)? */
+export const photoChecker = (media, photos) => (key) => !!(media?.[key] || photos?.[key]);
 
 /**
  * Every source's problems against its schema, for the build: ["content/en/sources/people.json:
  * item 2 (…): …"]. content: loadContent's (sources, schemas, media, photos).
  */
 export function checkSources(content) {
-  const imageExists = imageChecker(content.media, content.photos);
+  const photoExists = photoChecker(content.media, content.photos);
   return Object.keys(content.sources || {}).flatMap((id) =>
-    checkItems(content.sources[id], schemaOf(content, id), { imageExists }).map(
+    checkItems(content.sources[id], schemaOf(content, id), { photoExists }).map(
       (p) => `${contentPath(sourceFile(id))}: ${p}`,
     ),
   );

@@ -143,13 +143,13 @@ test('head: description, canonical, og, twitter card, robots, image size; <html 
 
 test('share image: R2 keys and full URLs', () => {
   const ctx = {
-    site: { ...site, mediaUrl: 'https://images.example.com/' },
+    site: { ...site, mediaUrl: 'https://photos.example.com/' },
     media: {},
     photos: {
       'photos/x': { srcset: [{ key: 'photos/x-960.webp', w: 960 }], width: 960, height: 640 },
     },
   };
-  assert.equal(shareImage(ctx, 'photos/x').url, 'https://images.example.com/photos/x');
+  assert.equal(shareImage(ctx, 'photos/x').url, 'https://photos.example.com/photos/x');
   assert.equal(
     shareImage(ctx, 'https://cdn.example.com/y.jpg').url,
     'https://cdn.example.com/y.jpg',

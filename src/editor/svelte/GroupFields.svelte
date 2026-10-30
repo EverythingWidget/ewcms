@@ -19,7 +19,7 @@
   import Field from './Field.svelte';
   import LinkField from './LinkField.svelte';
   import ListField from './ListField.svelte';
-  import ImageList from './ImageList.svelte';
+  import PhotoList from './PhotoList.svelte';
   import { ui } from './ui.svelte.js';
   import { runsOf, isSource } from './content-groups.js';
   import { parse } from '../lib/pointer.js';
@@ -57,16 +57,16 @@
     setList(f, list);
   }
 
-  /** A new item at the end; an image list opens the Media window to pick its images instead. */
+  /** A new item at the end; a photo list opens the Media window to pick its photos instead. */
   function addItem(f) {
-    if (f.image !== null)
-      return openMedia({ multi: { list: f.edit, item: f.item, image: f.image || '' } });
+    if (f.photo !== null)
+      return openMedia({ multi: { list: f.edit, item: f.item, photo: f.photo || '' } });
     setList(f, [...listOf(f), structuredClone(f.item)]);
   }
 
-  /** A list whose items have an image (the Hero's): ImageList.svelte, the image first. */
-  const imageList = (f) => f.image !== null && f.items.every((fs) => fs.some(isImage));
-  const isImage = (sub) => sub.type === 'image';
+  /** A list whose items have a photo (the Hero's): PhotoList.svelte, the photo first. */
+  const photoList = (f) => f.photo !== null && f.items.every((fs) => fs.some(isPhoto));
+  const isPhoto = (sub) => sub.type === 'image';
 
   /** A list item's name in its bar: its label or title, else "<list> <n>". */
   function itemName(f, fields, i) {
@@ -111,7 +111,7 @@
   );
 </script>
 
-<!-- one field: a Field (text, image, switch, choice), or a source field (a list item's
+<!-- one field: a Field (text, photo, switch, choice), or a source field (a list item's
      source, ItemPicker.svelte) -->
 {#snippet field(f, half, extra = {})}
   {#if f.type === 'source'}
@@ -227,29 +227,29 @@
       {#each run.fields as f (f.edit)}{@render field(f, false)}{/each}
     {:else}
       {@const f = run.list}
-      {#if imageList(f)}
-        <ImageList
+      {#if photoList(f)}
+        <PhotoList
           label={f.label}
           items={f.items}
-          addLabel="Add image"
+          addLabel="Add photo"
           onmove={(from, to) => moveItem(f, from, to)}
           onremove={(i) => removeItem(f, i)}
           onadd={() => addItem(f)}
         >
           {#snippet row(fields, i, ctl)}
-            {@render field(fields.find(isImage), false, { ...ctl, label: `${f.label} ${i + 1}` })}
-            {#if fields.some((sub) => !isImage(sub))}{@render rows(
-                fields.filter((sub) => !isImage(sub)),
+            {@render field(fields.find(isPhoto), false, { ...ctl, label: `${f.label} ${i + 1}` })}
+            {#if fields.some((sub) => !isPhoto(sub))}{@render rows(
+                fields.filter((sub) => !isPhoto(sub)),
                 { inline: true },
               )}{/if}
           {/snippet}
-        </ImageList>
+        </PhotoList>
       {:else}
         <ListField
           label={f.label}
           items={f.items}
           name={(fields, i) => itemName(f, fields, i)}
-          addLabel={f.image === null ? 'Add' : 'Add image'}
+          addLabel={f.photo === null ? 'Add' : 'Add photo'}
           onmove={(from, to) => moveItem(f, from, to)}
           onremove={(i) => removeItem(f, i)}
           onadd={() => addItem(f)}

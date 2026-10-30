@@ -139,7 +139,7 @@
               "style": "paragraph",
               "text": [
                 {
-                  "t": "Only your site: the content the editor saves (content/), your images (media/) and your theme. Never edit the engine in node_modules; update it by changing its version in package.json."
+                  "t": "Only your site: the content the editor saves (content/), your photos (media/) and your theme. Never edit the engine in node_modules; update it by changing its version in package.json."
                 }
               ]
             }
@@ -290,7 +290,7 @@
                   ]
                 },
                 {
-                  "t": ": text, image, button, list…"
+                  "t": ": text, photo, button, list…"
                 }
               ]
             },
@@ -402,7 +402,7 @@
                   ]
                 },
                 {
-                  "t": " holds your images; an image field’s Change picks or uploads one."
+                  "t": " holds your photos; a photo field’s Change picks or uploads one."
                 }
               ]
             },

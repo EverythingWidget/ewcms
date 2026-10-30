@@ -125,15 +125,15 @@ export { isExternal };
 export const extAttrs = (url) => (isExternal(url) ? ' target="_blank" rel="noopener"' : '');
 
 /**
- * URL of an image in the content. `src` is one of:
+ * URL of a photo in the content. `src` is one of:
  *   "people/x/01.jpg"               a file in media/, resized by scripts/images.mjs: /media/...
  *   "photos/x-3f9a0c1b2d-1600.webp" an object in Cloudflare R2 (uploaded and resized in the
  *                                   editor, scripts/r2.mjs): site.mediaUrl (settings/site.json)
  *                                   + "/" + key; its other sizes are in ctx.photos
  *   "https://..."                a full URL, as is
- * Files in the media manifest are local; anything else is read from site.mediaUrl, so an image
+ * Files in the media manifest are local; anything else is read from site.mediaUrl, so a photo
  * moved from media/ to R2 under the same key needs no content change. The content keeps keys,
- * not URLs: the image domain can change in one place.
+ * not URLs: the photo domain can change in one place.
  */
 export function mediaUrl(ctx, src = '') {
   if (isExternal(src)) return src;
@@ -152,12 +152,12 @@ export function warnOnce(msg, tag = 'photos') {
 }
 
 /**
- * Sizes of an image, the same shape for both kinds: { src, srcset: [{ url, w }], width, height,
+ * Sizes of a photo, the same shape for both kinds: { src, srcset: [{ url, w }], width, height,
  * color, lqip }, or null when there are none (a full URL, or a key missing from photos.json).
- *   media/ images: the generated manifest (.generated/media.json, scripts/images.mjs)
- *   R2 images:     content/en/settings/photos.json (written by the upload), keys made URLs here
+ *   media/ photos: the generated manifest (.generated/media.json, scripts/images.mjs)
+ *   R2 photos:     content/en/settings/photos.json (written by the upload), keys made URLs here
  */
-export function imageOf(ctx, src) {
+export function photoOf(ctx, src) {
   if (!src || isExternal(src)) return null;
   const local = ctx.media?.[src];
   if (local) return local;
@@ -168,7 +168,7 @@ export function imageOf(ctx, src) {
   }
   if (!ctx.site?.mediaUrl)
     warnOnce(
-      `"${src}" is in R2, but no Images address is set (Settings > Images, site.json mediaUrl)`,
+      `"${src}" is in R2, but no Photos address is set (Settings > Photos, site.json mediaUrl)`,
     );
   return {
     ...r2,
@@ -178,15 +178,15 @@ export function imageOf(ctx, src) {
 }
 
 /**
- * Loading of the i-th image at the top of a page (the hero, the first cards of a grid, the
+ * Loading of the i-th photo at the top of a page (the hero, the first cards of a grid, the
  * photography panels): the first is the likely LCP (eager + fetchpriority="high"), the next
  * two are eager too (the rest of the first row), everything after that is lazy.
- * img(ctx, src, { ...firstImages(i) }). Album slides and the About image set their own.
+ * img(ctx, src, { ...firstPhotos(i) }). Album slides and the About photo set their own.
  */
-export const firstImages = (i) => ({ priority: i === 0, loading: i < 3 ? 'eager' : 'lazy' });
+export const firstPhotos = (i) => ({ priority: i === 0, loading: i < 3 ? 'eager' : 'lazy' });
 
 /**
- * An image's alt text: it belongs to the image, in content/en/settings/photos.json ({ alt } per
+ * A photo's alt text: it belongs to the photo, in content/en/settings/photos.json ({ alt } per
  * media/ path or R2 key), not to the page using it. Missing: '' and a build warning.
  */
 export function altOf(ctx, src) {
@@ -201,9 +201,9 @@ export function altOf(ctx, src) {
 }
 
 /**
- * Responsive <img> for an image (`src`: see mediaUrl): srcset, intrinsic size and blurred
- * placeholder from imageOf(), for media/ and R2 images alike. The alt text is the image's own
- * (altOf); `decorative` images (thumbnails next to their text, repeats) get alt="".
+ * Responsive <img> for a photo (`src`: see mediaUrl): srcset, intrinsic size and blurred
+ * placeholder from photoOf(), for media/ and R2 photos alike. The alt text is the photo's own
+ * (altOf); `decorative` photos (thumbnails next to their text, repeats) get alt="".
  */
 /** An <img> sizes: its width on phones (PHONE_MQ), else on wider screens. */
 export const sizes = (phone, wider) => `${PHONE_MQ} ${phone}, ${wider}`;
@@ -221,7 +221,7 @@ export function img(
   } = {},
 ) {
   const alt = decorative ? '' : altOf(ctx, src);
-  const m = imageOf(ctx, src);
+  const m = photoOf(ctx, src);
   const url = m?.src || mediaUrl(ctx, src);
   const srcset = m && m.srcset.length > 1 ? m.srcset.map((s) => `${s.url} ${s.w}w`).join(', ') : '';
   const dims = m && m.width ? ` width="${m.width}" height="${m.height}"` : '';
@@ -237,9 +237,9 @@ export function img(
   />`;
 }
 
-/** Aspect ratio of an image (w/h), fallback 4/5. */
+/** Aspect ratio of a photo (w/h), fallback 4/5. */
 export const ratio = (ctx, src) => {
-  const m = imageOf(ctx, src);
+  const m = photoOf(ctx, src);
   return m && m.width ? m.width / m.height : 0.8;
 };
 
@@ -300,7 +300,7 @@ const hsl = (h, s, l) => {
 export function accentOf(ctx, album) {
   if (album?.accent) return album.accent;
   const cover = coverOf(album);
-  const color = cover && imageOf(ctx, cover)?.color;
+  const color = cover && photoOf(ctx, cover)?.color;
   if (!color) return ctx.site.accent;
   const [h, s] = rgbToHsl(hexToRgb(color));
   if (s < 0.12) return ctx.site.accent;
@@ -308,19 +308,19 @@ export function accentOf(ctx, album) {
 }
 
 /**
- * Images of an album: their paths ([] when it has none yet, e.g. a person just added in the
- * editor). Alt text and credits belong to the image (content/en/settings/photos.json).
+ * Photos of an album: their paths ([] when it has none yet, e.g. a person just added in the
+ * editor). Alt text and credits belong to the photo (content/en/settings/photos.json).
  */
 export const imagesOf = (album) =>
   Array.isArray(album?.images) ? album.images.filter((p) => typeof p === 'string' && p) : [];
 
-/** Cover image of an album, its path (undefined when it has no images). */
+/** Cover photo of an album, its path (undefined when it has no photos). */
 export const coverOf = (album) =>
   imagesOf(album).find((p) => album?.cover && p === album.cover) || imagesOf(album)[0];
 
-/** An image's credit ({ name, url, source, license }), from photos.json; undefined: none. */
+/** A photo's credit ({ name, url, source, license }), from photos.json; undefined: none. */
 export const creditOf = (ctx, src) => ctx.photos?.[src]?.credit;
 
-/** "Image: Name / Unsplash" credit line (placeholder images). */
+/** "Photo: Name / Unsplash" credit line (placeholder images). */
 export const creditText = (credit) =>
-  credit ? `Image: ${credit.name}${credit.license ? ' / Unsplash' : ''}` : '';
+  credit ? `Photo: ${credit.name}${credit.license ? ' / Unsplash' : ''}` : '';

@@ -15,7 +15,7 @@ const jpeg = (r) =>
     .jpeg()
     .toBuffer();
 
-test('an image goes to media/ and gets its WebP sizes, placeholder and colour', async () => {
+test('a photo goes to media/ and gets its WebP sizes, placeholder and colour', async () => {
   const root = site();
   const body = await jpeg(200);
   const { status, body: out } = await uploadLocal(root, {
@@ -40,7 +40,7 @@ test('an image goes to media/ and gets its WebP sizes, placeholder and colour', 
   fs.rmSync(root, { recursive: true });
 });
 
-test('the same image again is not copied; another one by that name gets its own file', async () => {
+test('the same photo again is not copied; another one by that name gets its own file', async () => {
   const root = site();
   const a = await jpeg(200);
   const first = await uploadLocal(root, { name: 'x.jpg', type: 'image/jpeg', body: a });

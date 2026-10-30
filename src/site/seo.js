@@ -15,10 +15,10 @@
  *   entityType     the home page's JSON-LD @type ("Person", the default; "Organization", ...)
  *   name           the site's name: og:site_name, JSON-LD, the editor's title
  * A page's own, in its file's "meta" (src/site/routes.js reads them into its route):
- *   title, description, image (an image: media/ path or R2 key), noindex, canonical
+ *   title, description, image (a photo: media/ path or R2 key), noindex, canonical
  * [param] pages: see routes.js (the item's name, summary and cover, then the template's meta).
  */
-import { altOf, isExternal, mediaUrl, imageOf } from './helpers.js';
+import { altOf, isExternal, mediaUrl, photoOf } from './helpers.js';
 
 /** Search engines show about this much of a title / description. */
 export const TITLE_MAX = 60;
@@ -37,19 +37,19 @@ export const fillTitle = (site, page) =>
     .replaceAll('{site}', site?.name ?? '');
 
 /**
- * A share image: { url (absolute), width, height, alt } of image `src` (media/ path, R2 key or
- * URL), the size of the file the URL points at (from the image's sizes); null without one.
+ * A share image: { url (absolute), width, height, alt } of photo `src` (media/ path, R2 key or
+ * URL), the size of the file the URL points at (from the photo's sizes); null without one.
  */
 export function shareImage(ctx, src) {
   if (!src) return null;
   const url = absolute(ctx.site, mediaUrl(ctx, src));
-  const image = imageOf(ctx, src);
-  const size = image?.srcset?.find((s) => absolute(ctx.site, s.url) === url);
-  const width = size?.w || image?.width;
+  const photo = photoOf(ctx, src);
+  const size = photo?.srcset?.find((s) => absolute(ctx.site, s.url) === url);
+  const width = size?.w || photo?.width;
   return {
     url,
     width,
-    height: width && image?.width ? Math.round((width * image.height) / image.width) : undefined,
+    height: width && photo?.width ? Math.round((width * photo.height) / photo.width) : undefined,
     alt: altOf(ctx, src),
   };
 }

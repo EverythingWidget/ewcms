@@ -1,19 +1,19 @@
 <!--
-  A list of images (a widget's list whose items have an image, e.g. the Hero's): each item its
-  image card (Field.svelte's, 64px) and its other fields under it, the image the drag handle (and a click on it
+  A list of photos (a widget's list whose items have a photo, e.g. the Hero's): each item its
+  photo card (Field.svelte's, 64px) and its other fields under it, the photo the drag handle (and a click on it
   opens Media), ✕ removes it; Add at the end. No ↑ / ↓: drag it, or Alt+↑/↓ on a focused card.
   The drag as the widget rows' (SectionsList.svelte): a press moves SLACK px to be a drag, a
   line shows where it lands, letting go at its own place moves nothing, Esc cancels, and a
   drag isn't a click (Media doesn't open). One undo step (the parent's onmove).
     label, items (each item's fields), addLabel, onmove(from, to), onremove(i), onadd()
-    row       snippet (fields, i, { grab, remove }): the item's image Field (given those), its other fields
+    row       snippet (fields, i, { grab, remove }): the item's photo Field (given those), its other fields
 -->
 <script>
   import { tick } from 'svelte';
   import Button from './Button.svelte';
   import { listDrag, rowsOf } from './list-drag.svelte.js';
 
-  let { label, items = [], addLabel = 'Add image', onmove, onremove, onadd, row } = $props();
+  let { label, items = [], addLabel = 'Add photo', onmove, onremove, onadd, row } = $props();
   const uid = $props.id();
 
   let list = $state();
@@ -37,7 +37,7 @@
     if (to < 0 || to >= items.length) return;
     onmove(j, to);
     await tick();
-    list.querySelector(`[data-prow="${to}"] .image__thumb`)?.focus();
+    list.querySelector(`[data-prow="${to}"] .photo__thumb`)?.focus();
   }
 </script>
 
@@ -72,7 +72,7 @@
     }
   }
 
-  // items apart (an item's own fields, e.g. a Link, sit --gap-items under its image)
+  // items apart (an item's own fields, e.g. a Link, sit --gap-items under its photo)
   .pl__list {
     @include stack(var(--gap-cards));
   }

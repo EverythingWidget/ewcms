@@ -4,7 +4,7 @@
   name and details
   (settings/site.json), its search and share defaults (SEO: titles, description, share image,
   address, robots, language; a page's own are in Nav > SEO), the global page-transition curtain and the page
-  fade (settings/animations.json), where uploaded images are served from (site.json mediaUrl)
+  fade (settings/animations.json), where uploaded photos are served from (site.json mediaUrl)
   and the text styles scaled text uses (Typography: site.json typography, in cells,
   src/site/layout/type.js; the preview follows them as they are typed).
   Per-page things stay in Nav, on the page (sections; Motion: its animations, backdrop and
@@ -226,15 +226,15 @@
 
   <RedirectSettings {live} />
 
-  <Section key="settings:media" title="Images">
+  <Section key="settings:media" title="Photos">
     <p class="hint">
-      Images you upload in the editor go to Cloudflare R2 (keys in .env.local, see the README). The
-      content stores their key (photos/…); the site shows them from this address. Images in media/
+      Photos you upload in the editor go to Cloudflare R2 (keys in .env.local, see the README). The
+      content stores their key (photos/…); the site shows them from this address. Photos in media/
       keep working.
     </p>
     <Field
       edit="{SITE}#/mediaUrl"
-      label="Image address (R2 public URL)"
+      label="Photo address (R2 public URL)"
       placeholder="https://photos.eeliyarasta.com"
       value={live.get(SITE, '/mediaUrl')}
       changed={live.changed(SITE, '/mediaUrl')}

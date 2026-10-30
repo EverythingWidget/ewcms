@@ -11,18 +11,18 @@
  *     "source": { "mode": "all", "from": "people" },
  *     "layout": { "base": { "col": 1, "span": 120, "row": 1 } } }
  *
- * The widget's own content (texts, images) sits next to its type, the items it shows under
+ * The widget's own content (texts, photos) sits next to its type, the items it shows under
  * "source" (../layout/source.js); how it works (its look, on/off) is under "config"; where it sits is the layout's (id, layout, z,
  * size: layout keys, never a field key). A type:
  *
  *   type      its name in the content
  *   label     its name in the editor; icon: a Font Awesome icon name (no "fa-")
  *   line      one line on what it is, under its name in the editor's Add widget modal
- *   sketch    the modal's drawing of it: a type's name (album draws as 'image')
+ *   sketch    the modal's drawing of it: a type's name (album draws as 'photo')
  *   placement optional { axes, box, fill, place, media }: its content box's Fit / Fill and
  *             place in the widget (../layout/place.js)
  *   fields    its content fields for the editor: [{ key, label, type?, width?, list?, item? }]
- *               type: 'text' (default) | 'multiline' (multi-line) | 'words' | 'number' | 'image'
+ *               type: 'text' (default) | 'multiline' (multi-line) | 'words' | 'number' | 'photo'
  *                     (the field types: ../field-types.js)
  *               width: 'half' shares a row with a half field next to it (short texts)
  *               list: the field is a list: a type for a list of values ('multiline'), or
@@ -45,7 +45,7 @@
  *             of its fields, and what its source shows (widgetItems, ../layout/source.js)
  */
 import text from './text/index.js';
-import image from './image/index.js';
+import photo from './photo/index.js';
 import button from './button/index.js';
 import form from './form/index.js';
 import hero from './hero/index.js';
@@ -58,7 +58,7 @@ import album from './album/index.js';
 /** The built-in widgets, always on, in the order the editor offers them. */
 export const BUILTIN_WIDGETS = Object.freeze([
   text,
-  image,
+  photo,
   button,
   form,
   hero,

@@ -36,7 +36,7 @@
   const NO_PARAMS = 'This page’s address has no params to match';
   const ANY_WHY =
     'Not on the main widget: it decides which pages exist, so each address must match real items (no match shows the 404 page). A param it ignores would make the same page under many addresses.';
-  // what a URL part can be compared with: one value, not images, long texts or lists
+  // what a URL part can be compared with: one value, not photos, long texts or lists
   const MATCHABLE = [...MATCH_TYPES, 'select']; // and a widget's select field
   const ANY = ''; // the Select's value for Any (no rule)
 

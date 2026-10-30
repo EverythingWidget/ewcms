@@ -104,7 +104,7 @@
 
 <div class={['tf', changed && 'is-changed']} data-edit={edit}>
   {#if inline}
-    <!-- under its image (an image list's row): no label above; the dropdown names it -->
+    <!-- under its photo (a photo list's row): no label above; the dropdown names it -->
     <Select
       id={uid}
       value={key}

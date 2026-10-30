@@ -5,9 +5,9 @@
  *
  *   section  enabled: true, width: "contained", height: "fit"
  *   widget    size: "auto", config.enabled: true
- *   hero     images[].layer: "back"
+ *   hero     photos[].layer: "back"
  *   backdrop the page's (src/site/backdrop.js BACKDROP_DEFAULTS); and the other transition's
- *            options, and a backdrop without images, are left out too
+ *            options, and a backdrop without photos, are left out too
  *
  * omitDefaults also tidies (not a validation error): no empty "config" or "meta", and a widget's
  * area without col 1, row 1 or a span to the last column (no "layout": full width at row 1).
@@ -25,7 +25,7 @@ export const DEFAULTS = {
   section: { enabled: true, width: 'contained', height: 'fit' },
   widget: { size: 'auto' },
   config: { enabled: true },
-  heroImage: { layer: 'back' },
+  heroPhoto: { layer: 'back' },
 };
 
 /** Every [object, defaults, where] of a page's data that can hold a default. */
@@ -38,9 +38,9 @@ function* places(data) {
       const where = `section ${at + 1}, widget ${j + 1}`;
       yield [widget, DEFAULTS.widget, where];
       if (isObject(widget.config)) yield [widget.config, DEFAULTS.config, `${where} config`];
-      if (widget.type === 'hero' && Array.isArray(widget.images))
-        for (const [i, p] of widget.images.entries())
-          if (isObject(p)) yield [p, DEFAULTS.heroImage, `${where} image ${i + 1}`];
+      if (widget.type === 'hero' && Array.isArray(widget.photos))
+        for (const [i, p] of widget.photos.entries())
+          if (isObject(p)) yield [p, DEFAULTS.heroPhoto, `${where} photo ${i + 1}`];
     }
   }
 }

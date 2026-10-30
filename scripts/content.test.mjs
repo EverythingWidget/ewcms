@@ -64,7 +64,7 @@ test('checkContent per kind', () => {
     ['"animations" must be an object'],
   );
   assert.deepEqual(checkContent('settings/photos.json', { version: 1, photos: { a: 1 } }), [
-    'image "a" must be an object',
+    'photo "a" must be an object',
   ]);
   assert.deepEqual(checkContent('sources/people.json', { version: 1 }), [
     '"items" is missing (a list, a JSON array)',
@@ -240,7 +240,7 @@ test('editor markers: only when rendering for the editor (dev), never in the bui
   assert.match(dev.body, /data-curtain-edit="/);
 });
 
-test('photos.json: alt per image, sizes for R2 photos', () => {
+test('photos.json: alt per photo, sizes for R2 photos', () => {
   const PH = 'settings/photos.json';
   assert.deepEqual(
     checkContent(PH, {
@@ -253,11 +253,11 @@ test('photos.json: alt per image, sizes for R2 photos', () => {
     [],
   );
   assert.deepEqual(checkContent(PH, { version: 1, photos: { 'a/b.jpg': 'A' } }), [
-    'image "a/b.jpg" must be an object',
+    'photo "a/b.jpg" must be an object',
   ]);
   assert.match(
     checkContent(PH, { version: 1, photos: { 'a/b.jpg': { alt: 3 } } })[0],
-    /image "a\/b\.jpg": "alt" must be a string/,
+    /photo "a\/b\.jpg": "alt" must be a string/,
   );
   assert.match(
     checkContent(PH, { version: 1, photos: { k: { srcset: [{ w: 1 }] } } })[0],
@@ -265,7 +265,7 @@ test('photos.json: alt per image, sizes for R2 photos', () => {
   );
 });
 
-test('alt text comes from photos.json; decorative images and missing alts are empty', async () => {
+test('alt text comes from photos.json; decorative photos and missing alts are empty', async () => {
   const { img, altOf } = await import('../src/site/helpers.js');
   const ctx = { photos: { 'a.jpg': { alt: 'A "cat"' } }, media: {}, site: {} };
   assert.match(img(ctx, 'a.jpg'), /alt="A &quot;cat&quot;"/);
@@ -281,9 +281,9 @@ test('alt text comes from photos.json; decorative images and missing alts are em
   assert.match(warned.join('\n'), /"missing\.jpg" has no alt text/);
 });
 
-test('image library: no alt or credit in pages or sources, every image they use has alt in photos.json', () => {
+test('photo library: no alt or credit in pages or sources, every photo they use has alt in photos.json', () => {
   const content = loadContent(SITE_A);
-  const images = content.photos;
+  const photos = content.photos;
   const used = [];
   const walk = (v, where) => {
     if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${where}/${i}`));
@@ -295,8 +295,7 @@ test('image library: no alt or credit in pages or sources, every image they use 
           `${where}/${k}: credits belong in photos.json`,
         );
         if (['src', 'image', 'cover'].includes(k) && typeof x === 'string' && x) used.push(x);
-        if (k === 'images' && Array.isArray(x))
-          used.push(...x.filter((s) => typeof s === 'string'));
+        if (k === 'images' && Array.isArray(x)) used.push(...x);
         walk(x, `${where}/${k}`);
       }
   };
@@ -308,7 +307,7 @@ test('image library: no alt or credit in pages or sources, every image they use 
           `${dir}/${f}`,
         );
   assert.ok(used.length > 20);
-  for (const src of used) assert.ok(images[src]?.alt, `${src} has no alt in photos.json`);
+  for (const src of used) assert.ok(photos[src]?.alt, `${src} has no alt in photos.json`);
 });
 
 test('draft: pages render the unsaved edits; only existing, valid files; {} clears', async () => {

@@ -115,7 +115,7 @@ export const heightOf = (s) => (HEIGHTS.includes(s?.height) ? s.height : 'fit');
 
 /** A section name's anchor: "Our People" -> "our-people" ('' when it has no letters or digits). */
 export const anchorOf = (name) => slugify(typeof name === 'string' ? name : '');
-/** Whether an anchor can be a section's id: a letter first (a number is an album image's hash). */
+/** Whether an anchor can be a section's id: a letter first (a number is an album photo's hash). */
 const isAnchor = (a) => /^[a-z][a-z0-9-]*$/.test(a) && !RESERVED_IDS.includes(a);
 /** A widget's height: its content (the default), its width × an aspect ratio, or fixed rows. */
 export const SIZES = ['auto', 'aspect', 'rows'];
@@ -217,7 +217,7 @@ export function nameProblems(sections) {
     if (typeof name !== 'string') return 'must be text';
     const a = anchorOf(name);
     if (!a) return "needs a letter or a digit (it becomes the section's #anchor)";
-    if (!/^[a-z]/.test(a)) return `#${a} must start with a letter (a number is an image's link)`;
+    if (!/^[a-z]/.test(a)) return `#${a} must start with a letter (a number is a photo's link)`;
     if (RESERVED_IDS.includes(a)) return `#${a} is taken by the page itself`;
     if (first.has(a)) return `#${a} is already section ${first.get(a) + 1}'s anchor`;
     first.set(a, at);

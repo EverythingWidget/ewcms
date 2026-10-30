@@ -9,11 +9,11 @@ import { checkContent } from '../src/site/validate.js';
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 const F = 'content/pages/t.json';
 
-test('v0.1.47: added text, button, form, lists: Auto (no rows); image and hero as before', () => {
+test('v0.1.47: added text, button, form, lists: Auto (no rows); photo and hero as before', () => {
   const store = createStore();
   store.load({ [F]: { version: 1, kind: 'page', id: 'pg-t047', sections: [] } });
   addSection(store, F, 'text');
-  for (const t of ['button', 'form', 'projects', 'albums', 'image', 'hero'])
+  for (const t of ['button', 'form', 'projects', 'albums', 'photo', 'hero'])
     addWidget(store, F, 0, t);
   const ws = store.current[F].sections[0].widgets;
   const by = Object.fromEntries(ws.map((w) => [w.type, w]));
@@ -21,8 +21,8 @@ test('v0.1.47: added text, button, form, lists: Auto (no rows); image and hero a
     assert.equal(by[t].size, undefined, t);
     assert.equal(by[t].layout.base.rows, undefined, t);
   }
-  assert.equal(by.image.size, 'rows');
-  assert.equal(by.image.layout.base.rows, 6);
+  assert.equal(by.photo.size, 'rows');
+  assert.equal(by.photo.layout.base.rows, 6);
   assert.equal(by.hero.layout.base.rows, 68);
   // stacked, never on one row
   const rows = ws.map((w) => w.layout.base.row ?? 1);

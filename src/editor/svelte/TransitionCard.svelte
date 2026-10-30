@@ -21,12 +21,12 @@
     const at = route && splitEdit(route.transitionEdit);
     return at ? curtainMode(live.get(at.file, at.ptr)) : 'global';
   });
-  // on: shown (an image, not switched off), as the backdrop's switch
+  // on: shown (a photo, not switched off), as the backdrop's switch
   const backdrop = $derived.by(() => {
     live.version;
     const b = live.get(file, '/backdrop');
     if (!isObject(b)) return 'off';
-    const has = Array.isArray(b.images) && b.images.some(Boolean);
+    const has = Array.isArray(b.photos) && b.photos.some(Boolean);
     return has && b.enabled !== false ? 'on' : 'off';
   });
 </script>

@@ -9,7 +9,7 @@ import {
   ed,
   lines,
   itemHref,
-  firstImages,
+  firstPhotos,
   sizes,
 } from '../helpers.js';
 import { sourceFile } from '../files.js';
@@ -44,7 +44,7 @@ export const albumCard = (ctx, kind, album, { landscape = false, index = 0 } = {
     data-card-cycle
   >
     <div class="acard__media">
-      ${first.map((im, i) => img(ctx, im, { decorative: i > 0, sizes: widths, cls: i === 0 ? 'is-active' : '', ...(i === 0 ? firstImages(index) : {}) }))}
+      ${first.map((im, i) => img(ctx, im, { decorative: i > 0, sizes: widths, cls: i === 0 ? 'is-active' : '', ...(i === 0 ? firstPhotos(index) : {}) }))}
       <span class="acard__count">${pad(imagesOf(album).length)}</span>
     </div>
     <div class="acard__info">

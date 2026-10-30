@@ -1,5 +1,5 @@
 // Content-box placement (src/site/layout/place.js): a widget's content box Fit | Fill and its
-// place in the widget; Text: one column, no Fit | Fill; Image: object-fit / object-position.
+// place in the widget; Text: one column, no Fit | Fill; Photo: object-fit / object-position.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -20,7 +20,7 @@ const w = (type, extra = {}) => ({
   ...extra,
 });
 
-test('placement per type: button 3 x 3 with Fit | Fill, text one column, image media', () => {
+test('placement per type: button 3 x 3 with Fit | Fill, text one column, photo media', () => {
   assert.deepEqual(placementOf('button'), {
     axes: 'both',
     box: true,
@@ -35,12 +35,12 @@ test('placement per type: button 3 x 3 with Fit | Fill, text one column, image m
     placesOf(t).map(([v]) => v),
     ['top', 'center', 'bottom'],
   );
-  assert.equal(placementOf('image').media, true);
+  assert.equal(placementOf('photo').media, true);
   assert.equal(placementOf('grid'), null);
 });
 
 test('defaults render as before: no class, no variables', () => {
-  for (const type of ['button', 'text', 'image']) {
+  for (const type of ['button', 'text', 'photo']) {
     assert.doesNotMatch(widgetClass(w(type)), /placed|fill/);
     assert.doesNotMatch(widgetVars(w(type)), /--ph|--pv|--fit|--pos/);
   }
@@ -65,16 +65,16 @@ test('text: vertical only, never Fill', () => {
   assert.equal(placeOfBox(w('text', { place: 'left top' })), 'top');
 });
 
-test('image: Fill cover, Fit contain, the place its object-position', () => {
+test('photo: Fill cover, Fit contain, the place its object-position', () => {
   assert.match(
-    widgetVars(w('image', { box: 'fit', place: 'left top' })),
+    widgetVars(w('photo', { box: 'fit', place: 'left top' })),
     /;--fit:contain;--pos:left top/,
   );
   assert.match(
-    widgetVars(w('image', { place: 'right center' })),
+    widgetVars(w('photo', { place: 'right center' })),
     /;--fit:cover;--pos:right center/,
   );
-  assert.doesNotMatch(widgetClass(w('image', { box: 'fit' })), /placed/);
+  assert.doesNotMatch(widgetClass(w('photo', { box: 'fit' })), /placed/);
 });
 
 test('align and checks', () => {

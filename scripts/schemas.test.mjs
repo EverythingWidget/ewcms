@@ -29,8 +29,8 @@ const PEOPLE = {
     { key: 'kind', label: 'Kind', type: 'choice', options: ['model', 'band'] },
     { key: 'url', label: 'Link', type: 'link' },
     { key: 'shot', label: 'Shot on', type: 'date' },
-    { key: 'image', label: 'Image', type: 'image' },
-    { key: 'images', label: 'Images', type: 'images' },
+    { key: 'image', label: 'Photo', type: 'photo' },
+    { key: 'images', label: 'Photos', type: 'photos' },
     { key: 'placeholder', label: 'Placeholder', type: 'boolean' },
   ],
 };
@@ -51,7 +51,7 @@ test('schema files: their own name, not a source; checked as a schema', () => {
     checkContent('sources/people.schema.json', { version: 1, title: 'x', fields: [{}] }),
     [
       'field 1: needs a "key"',
-      'field 1: "type" must be one of text, multiline, number, image, images, link, choice, boolean, date',
+      'field 1: "type" must be one of text, multiline, number, photo, photos, link, choice, boolean, date',
       '"title" must be the key of one of its fields',
     ],
   );
@@ -96,17 +96,17 @@ test('inferSchema: one type per field from all items, title and slug', () => {
     name: ['text', undefined], // one of them is longer than 24 characters
     year: ['number', 'half'],
     bio: ['multiline', undefined], // a line break somewhere
-    cover: ['image', undefined],
+    cover: ['photo', undefined],
     on: ['boolean', undefined],
-    images: ['images', undefined],
+    images: ['photos', undefined],
   }); // credit (an object) and mixed (number and text) are left out
   assert.equal(inferSchema('projects', [{ title: 'T' }]).title, 'title');
   assert.equal(inferSchema('x', [{ label: 'L' }]).title, 'label');
   assert.equal(inferSchema('x', [{ label: 'L' }]).slug, '');
 });
 
-test('checkItems: required, types, choices, links, dates, images, slugs', () => {
-  const imageExists = (k) => k === 'ok.jpg';
+test('checkItems: required, types, choices, links, dates, photos, slugs', () => {
+  const photoExists = (k) => k === 'ok.jpg';
   const items = [
     {
       id: 'p-t001',
@@ -130,36 +130,36 @@ test('checkItems: required, types, choices, links, dates, images, slugs', () => 
       shot: '2024-02-01',
     },
   ];
-  assert.deepEqual(checkItems(items, PEOPLE, { imageExists }), [
+  assert.deepEqual(checkItems(items, PEOPLE, { photoExists }), [
     'item 1 (Ann): "Year" must be a number',
     'item 1 (Ann): "Kind" must be one of model, band',
     'item 1 (Ann): "Link" must be a link (https://…, /path/ or mailto:…)',
     'item 1 (Ann): "Shot on" must be a date (YYYY-MM-DD)',
-    'item 1 (Ann): "Image" "missing.jpg" is not an image in media/ or content/en/settings/photos.json',
-    'item 1 (Ann): "Images" image 2 "gone.jpg" is not an image in media/ or content/en/settings/photos.json',
+    'item 1 (Ann): "Photo" "missing.jpg" is not a photo in media/ or content/en/settings/photos.json',
+    'item 1 (Ann): "Photos" photo 2 "gone.jpg" is not a photo in media/ or content/en/settings/photos.json',
     'item 1 (Ann): "Placeholder" must be true or false',
     'item 2: "Name" is required',
     'item 2: another item has the slug "ann"',
     'item 3 (C): slug "Bad Slug" must be lowercase words with dashes',
   ]);
-  // an id each, unique; a cover is one of its own images
+  // an id each, unique; a cover is one of its own photos
   const a = { id: 'p-aaaa', slug: 'a', name: 'A', images: ['a.jpg'], cover: 'b.jpg' };
   assert.deepEqual(
     checkItems([a, { ...a, slug: 'b', cover: 'a.jpg' }, { slug: 'c', name: 'C' }], PEOPLE),
     [
-      'item 1 (A): "cover" must be one of its images ("b.jpg" isn\'t)',
+      'item 1 (A): "cover" must be one of its photos ("b.jpg" isn\'t)',
       'item 2 (A): another item has the id "p-aaaa"',
       'item 3 (C): "id" must be an item id ("p-k3x9")',
     ],
   );
-  // without imageExists, images are not looked up
+  // without photoExists, photos are not looked up
   assert.deepEqual(
     checkItems([{ id: 'p-t004', slug: 'a', name: 'A', image: 'x.jpg' }], PEOPLE),
     [],
   );
 });
 
-test('checkSources: every source, with its schema or inferred; images from media and photos.json', () => {
+test('checkSources: every source, with its schema or inferred; photos from media and photos.json', () => {
   const content = {
     ...contentFromFiles({
       'sources/people.json': {
@@ -176,7 +176,7 @@ test('checkSources: every source, with its schema or inferred; images from media
     media: {},
   };
   assert.deepEqual(checkSources(content), [
-    'content/en/sources/people.json: item 1 (A): "Image" "people/a.jpg" is not an image in media/ or content/en/settings/photos.json',
+    'content/en/sources/people.json: item 1 (A): "Photo" "people/a.jpg" is not a photo in media/ or content/en/settings/photos.json',
   ]);
   content.media = { 'people/a.jpg': {} };
   assert.deepEqual(checkSources(content), []);
@@ -262,7 +262,7 @@ test('save: a source that breaks its schema is not written', () => {
       items: [{ id: 'p-t009', slug: 'a', name: 'A', image: 'nope.jpg' }],
     },
   });
-  assert.match(r.body.error, /"nope\.jpg" is not an image/);
+  assert.match(r.body.error, /"nope\.jpg" is not a photo/);
   // a new schema is checked against the saved items too
   const strict = {
     ...PEOPLE,
@@ -294,7 +294,7 @@ test('editor: half fields pair with the next half; a lone half takes the row', a
     f('f', true),
   ]);
   assert.deepEqual([...set], ['a', 'b', 'e', 'f']);
-  // fields from the schema: no slug (its own input), an image per images item
+  // fields from the schema: no slug (its own input), a photo per photos item
   const fields = itemFields('sources/people.json', { images: ['x.jpg'] }, 0, PEOPLE);
   assert.deepEqual(
     fields.map((x) => [x.key, x.label, x.type, x.half]),
@@ -304,8 +304,8 @@ test('editor: half fields pair with the next half; a lone half takes the row', a
       ['kind', 'Kind', 'select', false],
       ['url', 'Link', 'text', false],
       ['shot', 'Shot on', 'date', false],
-      ['image', 'Image', 'image', false],
-      ['images.0', 'Image 1', 'image', false],
+      ['image', 'Photo', 'image', false],
+      ['images.0', 'Photo 1', 'image', false],
       ['placeholder', 'Placeholder', 'boolean', false],
     ],
   );

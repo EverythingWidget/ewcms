@@ -62,11 +62,11 @@ import {
   contentFromFiles,
   FOLDERS,
 } from '../src/site/files.js';
-import { checkItems, imageChecker, schemaOf } from '../src/site/schemas.js';
+import { checkItems, photoChecker, schemaOf } from '../src/site/schemas.js';
 import { NAMED_VIEWS, getRoutes, pathOfId, titleCase } from '../src/site/routes.js';
 import { MAX_UPLOAD, deletePhoto, r2Config, uploadPhoto, writePhotos } from './r2.mjs';
 import { uploadLocal } from './local-upload.mjs';
-import { imageUses } from '../src/editor/lib/image-uses.js';
+import { photoUses } from '../src/editor/lib/photo-uses.js';
 import {
   loadContent,
   readContentDir,
@@ -497,14 +497,14 @@ function sourceProblems(root, files) {
         ? readContentFile(root, file, { check: false })
         : undefined;
   const photos = read(PHOTOS)?.photos || {};
-  const imageExists = imageChecker(readMediaManifest(root), photos);
+  const photoExists = photoChecker(readMediaManifest(root), photos);
   return [...ids].flatMap((id) => {
     const list = itemsOf(read(sourceFile(id)));
     const schema = schemaOf(
       { sources: { [id]: list }, schemas: { [id]: read(schemaFile(id)) } },
       id,
     );
-    return checkItems(list, schema, { imageExists }).map(
+    return checkItems(list, schema, { photoExists }).map(
       (p) => `${contentRel(root)}/${sourceFile(id)}: ${p}`,
     );
   });
@@ -698,7 +698,7 @@ export async function mediaOp(root, env, { op, key, alt, credit } = {}, onWrite 
     return done({ key });
   }
 
-  const uses = imageUses(readContentFiles(root), key);
+  const uses = photoUses(readContentFiles(root), key);
   if (uses.length)
     return fail(409, `${key} is used in ${uses.map((u) => `${u.file}#${u.ptr}`).join(', ')}`, {
       uses,

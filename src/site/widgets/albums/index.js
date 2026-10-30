@@ -7,7 +7,7 @@ import { albumCard } from '../../templates/partials.js';
 
 /**
  * Album cards of its source's items (a list widget: all of them, or the ones From URL
- * matches), each linking to its page; config.layout landscape for wide images.
+ * matches), each linking to its page; config.layout landscape for wide photos.
  */
 export const albums = {
   type: 'albums',

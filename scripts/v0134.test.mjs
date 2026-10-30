@@ -8,12 +8,12 @@ import { bindTypeOf } from '../src/site/layout/bindings.js';
 
 const ctx = { site: { name: 'Site' }, media: {}, strings: {}, lang: 'en' };
 const widget = { ed: () => '' };
-const images = [
+const photos = [
   { src: '', x: 1, y: 1, w: 10 },
   { src: 'a/one.jpg', x: 10, y: 10, w: 16, depth: 1 },
   { src: 'a/two.jpg', x: 50, y: 20, w: 16, depth: 1 },
 ];
-const out = (s) => hero.render({ title: 'Noor', images, ...s }, ctx, widget);
+const out = (s) => hero.render({ title: 'Noor', photos, ...s }, ctx, widget);
 
 test('the Style field: a button group, scattered when unset, nothing to bind', () => {
   const f = hero.fields[0];
@@ -32,19 +32,19 @@ test('unset or unknown: the scattered hero as before', () => {
     const h = out(s);
     assert.match(h, /class="hero hero--scattered"/);
     assert.equal((h.match(/class="scatter /g) || []).length, 2);
-    assert.doesNotMatch(h, /hero__image"/);
+    assert.doesNotMatch(h, /hero__photo"/);
   }
 });
 
-test('beside / behind: the first image with a file, alone, no scatter', () => {
+test('beside / behind: the first photo with a file, alone, no scatter', () => {
   for (const look of ['beside', 'behind']) {
     const h = out({ style: look });
     assert.match(h, new RegExp(`class="hero hero--${look}"`));
-    assert.match(h, /class="hero__image"/);
+    assert.match(h, /class="hero__photo"/);
     assert.match(h, /one/);
     assert.doesNotMatch(h, /two|scatter/);
   }
-  assert.doesNotMatch(hero.render({ style: 'beside', images: [] }, ctx, widget), /hero__image"/);
+  assert.doesNotMatch(hero.render({ style: 'beside', photos: [] }, ctx, widget), /hero__photo"/);
 });
 
 test('the theme lays out beside (right half, 4px corners) and behind (gradient)', () => {
@@ -52,8 +52,8 @@ test('the theme lays out beside (right half, 4px corners) and behind (gradient)'
   const css = sass.compileString(
     src.replace("@use 'site-core/tokens' as *;", '$bp-sm: 640px;'),
   ).css;
-  assert.match(css, /\.hero--beside \.hero__image \{[^}]*border-radius: 4px/);
-  assert.match(css, /\.hero--beside \.hero__image \{[^}]*width: calc\(50% - var\(--pad\) - 12px\)/);
+  assert.match(css, /\.hero--beside \.hero__photo \{[^}]*border-radius: 4px/);
+  assert.match(css, /\.hero--beside \.hero__photo \{[^}]*width: calc\(50% - var\(--pad\) - 12px\)/);
   assert.match(
     css,
     /linear-gradient\(to top, var\(--shade-78\) 0%, var\(--shade-45\) 55%, var\(--shade-15\) 100%\)/,

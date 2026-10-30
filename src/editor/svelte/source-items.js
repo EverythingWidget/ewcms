@@ -55,15 +55,15 @@ function fieldOf(file, i, path, f, label = f.label) {
 
 /**
  * The editable fields of one item, from the schema, except the slug (its own input): every
- * image of an images field is one field ("Image 2").
+ * photo of a photos field is one field ("Photo 2").
  */
 export function itemFields(file, item, i, schema) {
   return (schema.fields || []).flatMap((f) => {
     if (f.key === schema.slug) return [];
-    if (f.type !== 'images') return [fieldOf(file, i, [f.key], f)];
+    if (f.type !== 'photos') return [fieldOf(file, i, [f.key], f)];
     const list = Array.isArray(item?.[f.key]) ? item[f.key] : [];
     return list.map((_, j) =>
-      fieldOf(file, i, [f.key, j], { ...f, type: 'image' }, `Image ${j + 1}`),
+      fieldOf(file, i, [f.key, j], { ...f, type: 'photo' }, `Photo ${j + 1}`),
     );
   });
 }

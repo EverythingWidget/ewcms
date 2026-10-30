@@ -1,14 +1,14 @@
 /**
- * The built-in Image panels widget (panels): a widget module like any custom one (../index.js has
+ * The built-in Photo panels widget (panels): a widget module like any custom one (../index.js has
  * the format), its default export the definition.
  */
-import { html, esc, img, pad, coverOf, firstImages, sizes } from '../../helpers.js';
+import { html, esc, img, pad, coverOf, firstPhotos, sizes } from '../../helpers.js';
 import { sourcePage } from '../data.js';
 
 /** Big panels linking to sources' pages: panels [{ source, title, unit }] ("People", "models"). */
 export const panels = {
   type: 'panels',
-  label: 'Image panels',
+  label: 'Photo panels',
   icon: 'table-columns',
   line: 'Big panels to your lists',
   sketch: 'panels',
@@ -34,7 +34,7 @@ export const panels = {
       const cover = list.map(coverOf).find(Boolean);
       return html` <a class="ppanel" href="${esc(sourcePage(ctx, source))}" data-anim-item>
       <span class="ppanel__media"
-        >${cover ? img(ctx, cover, { sizes: sizes('100vw', '50vw'), ...firstImages(i), attrs: 'data-anim="place.card.image"' }) : ''}</span
+        >${cover ? img(ctx, cover, { sizes: sizes('100vw', '50vw'), ...firstPhotos(i), attrs: 'data-anim="place.card.image"' }) : ''}</span
       >
       <span class="ppanel__info"
         ><span class="ppanel__title"${widget.ed(['panels', i, 'title'])}>${esc(title)}</span

@@ -255,7 +255,7 @@
     }
   },
   "targets": {
-    "hero.images": {
+    "hero.photos": {
       "animation": "scatter-drift"
     },
     "hero.title": {

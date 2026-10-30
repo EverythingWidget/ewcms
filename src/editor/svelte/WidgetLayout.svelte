@@ -56,7 +56,7 @@
   let open = $state(false);
   let aspectBtn = $state();
   // its content box (../../site/layout/place.js): Fit | Fill (types with the switch) and its
-  // place; under Fill the place dims where it is (an image's still crops: it stays)
+  // place; under Fill the place dims where it is (a photo's still crops: it stays)
   const placement = $derived(placementOf(widget.type));
   const fill = $derived(fillOf(widget));
   const setBox = (box) => box !== (fill ? 'fill' : 'fit') && set({ box });

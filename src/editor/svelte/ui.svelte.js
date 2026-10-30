@@ -120,7 +120,7 @@ export const ui = $state({
    */
   explorer: { open: false, file: '', index: 0, field: '' },
   /**
-   * The Media window: open or not, the selected image (media/ path or R2 key), the list filter
+   * The Media window: open or not, the selected photo (media/ path or R2 key), the list filter
    * ('all' | 'r2' | 'local') and the field it picks for (its data-edit, '' = just managing).
    */
   media: { open: false, key: '', filter: 'all', pick: '' },

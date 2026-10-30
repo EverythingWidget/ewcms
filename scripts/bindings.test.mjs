@@ -37,7 +37,7 @@ test('resolve: custom values stay, { bind } takes the whole value, a format wrap
   assert.equal(resolve('Plain text', { ...o, def: { type: 'text' } }), 'Plain text');
   assert.equal(resolve({ bind: 'title' }, { ...o, def: { type: 'text' } }), 'Noor Vermeer');
   assert.equal(resolve({ bind: 'images' }, { ...o, def: { list: 'image' } }), noor.images);
-  // a list of { src } (the hero's placed images) gets the paths as { src }
+  // a list of { src } (the hero's placed photos) gets the paths as { src }
   assert.deepEqual(
     resolve({ bind: 'images' }, { ...o, def: { list: { src: 'image' } } }),
     noor.images.map((src) => ({ src })),
@@ -99,7 +99,7 @@ test('resolveWidget: bound fields and config links resolved; an unbound widget i
   assert.equal(out.config.link, noor.slug);
   assert.deepEqual(bound.title, { bind: 'title' }); // not changed in place
   assert.equal(bindTypeOf(t.fields[0]), 'text');
-  assert.equal(bindTypeOf(WIDGET_TYPES.hero.fields.find((f) => f.key === 'images')), 'images');
+  assert.equal(bindTypeOf(WIDGET_TYPES.hero.fields.find((f) => f.key === 'photos')), 'photos');
   assert.equal(bindTypeOf(WIDGET_TYPES.form.fields.find((f) => f.key === 'fields')), null);
   assert.equal(bindTypeOf({ key: 'link', type: 'link' }, { config: true }), 'link');
   assert.ok(isBinding({ bind: 'a' }) && !isBinding('{{a}}') && !isBinding(''));
@@ -243,7 +243,7 @@ test('bindingProblems: schema-aware errors and warnings', () => {
   assert.deepEqual(at(6), ['warn']);
   assert.match(
     out.find((p) => p.message.includes('widgets/2)')).message,
-    /people\.images \(images\) doesn't fit a text field/,
+    /people\.images \(photos\) doesn't fit a text field/,
   );
   // the site's own pages: nothing wrong
   assert.deepEqual(render.bindingChecks(content), []);
@@ -272,7 +272,7 @@ test('validation: the shape of bindings and items', () => {
   assert.match(one({ item: { source: 'People!', id: 'p-aaaa' } }), /"item" must be/);
   assert.match(one({ fields: { bind: 'body' } }, 'form'), /"fields" must be a list of its own/);
   assert.match(
-    one({ src: { bind: 'cover', format: '{value}.jpg' } }, 'image'),
+    one({ src: { bind: 'cover', format: '{value}.jpg' } }, 'photo'),
     /"src.format" must be left out/,
   );
   assert.match(

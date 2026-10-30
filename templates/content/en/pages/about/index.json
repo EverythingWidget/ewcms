@@ -74,7 +74,7 @@
               "style": "paragraph",
               "text": [
                 {
-                  "t": "A site is only its own things: content (JSON files in git), images, a theme and a config file. ewcms builds everything else. Every page is prerendered to static HTML; the browser then takes over as a single-page app with GSAP page transitions."
+                  "t": "A site is only its own things: content (JSON files in git), photos, a theme and a config file. ewcms builds everything else. Every page is prerendered to static HTML; the browser then takes over as a single-page app with GSAP page transitions."
                 }
               ]
             }
@@ -199,7 +199,7 @@
               "list": "bullet",
               "text": [
                 {
-                  "t": "Widgets: text, image, button, hero, grids, albums, projects, panels, contact form; sites can add their own."
+                  "t": "Widgets: text, photo, button, hero, grids, albums, projects, panels, contact form; sites can add their own."
                 }
               ]
             },
@@ -217,7 +217,7 @@
               "list": "bullet",
               "text": [
                 {
-                  "t": "Media: local images resized to WebP, or uploads to Cloudflare R2."
+                  "t": "Media: local photos resized to WebP, or uploads to Cloudflare R2."
                 }
               ]
             },

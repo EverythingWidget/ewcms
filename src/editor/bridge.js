@@ -7,7 +7,7 @@
  *  - re-applies edited text to every [data-edit] element whenever a page mounts,
  *  - Arrange clicks ('arrange'; ui.svelte.js previewClicks): a double click turns a [data-edit] element into an inline editor
  *    until it loses focus (a single click picks its widget: overlay.js); a double-clicked
- *    image (data-edit-type="image") or bound value opens its field in the panel. Links,
+ *    photo (data-edit-type="image") or bound value opens its field in the panel. Links,
  *    buttons and forms don't act on clicks (Alt+click does),
  *  - lets you hover/click widgets ([data-widget]) and [data-anim] elements to select them (animate
  *    clicks, 'animate': the innermost one under the pointer); visitor clicks ('visitor'):
@@ -276,7 +276,7 @@ export function createBridge({ store, labelFor }) {
         for (const [el, value] of pending) {
           applied.set(el, value);
           if (el.dataset.editType === 'image') {
-            // a new image: its URL and, for an R2 image, its sizes (the sizes attribute stays)
+            // a new photo: its URL and, for an R2 photo, its sizes (the sizes attribute stays)
             const url = imageUrl(value);
             if (el.getAttribute('src') !== url) {
               const srcset = imageSrcset(value);
@@ -723,7 +723,7 @@ export function createBridge({ store, labelFor }) {
     );
     doc.documentElement.addEventListener('pointerleave', () => (hoverEl = null));
 
-    /** A text's (or image's, bound value's) field opens in the panel. */
+    /** A text's (or photo's, bound value's) field opens in the panel. */
     const pickField = (hit) => {
       bridge.select(hit, 'text');
       emit('textFocus', hit.dataset.edit ?? hit.dataset.bound);
@@ -785,7 +785,7 @@ export function createBridge({ store, labelFor }) {
       true,
     );
 
-    // Arrange clicks: a double click edits a text in place; an image or a bound value opens its
+    // Arrange clicks: a double click edits a text in place; a photo or a bound value opens its
     // field in the panel.
     doc.addEventListener(
       'dblclick',

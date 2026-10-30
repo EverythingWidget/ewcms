@@ -11,7 +11,7 @@
  *             slug, or the number without one)
  *     animation    Settings > Motion's Animations library, open on that animation (&animation=fade-up)
  *     pages   the pages list (Nav), open on that folder (&pages=/people/; / is the root)
- *     media   + pick: the Media window, on that image (&media=photos/x-1600.webp; / for none),
+ *     media   + pick: the Media window, on that photo (&media=photos/x-1600.webp; / for none),
  *             picking for that field (&pick=sources/people.json#/0/images/0/src)
  *   sessionStorage (this browser tab only, survives a refresh): the finer things. Open/closed
  *     sections and each page's tab, the selected field or Motion element, the explorer's list,

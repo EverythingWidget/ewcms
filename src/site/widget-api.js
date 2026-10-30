@@ -7,7 +7,7 @@
  *   esc(text)        text made safe for HTML (attributes too)
  *   lines(text)      esc, line breaks as <br>
  *   words(text)      one <span> per word (split animations)
- *   img(ctx, src, o) an image: srcset, sizes, placeholder, alt from photos.json
+ *   img(ctx, src, o) a photo: srcset, sizes, placeholder, alt from photos.json
  *   sizes(phone, wider), pad(n), extAttrs(url), hrefOf(ctx, link, where)
  *   t(ctx, 'group.key', vars)  UI text (strings.json over the core's English)
  *   warnOnce(message)          a build/dev warning, once

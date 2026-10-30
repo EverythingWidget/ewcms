@@ -38,7 +38,7 @@
     {
       "key": "image",
       "label": "Photo",
-      "type": "image"
+      "type": "photo"
     },
     {
       "key": "url",

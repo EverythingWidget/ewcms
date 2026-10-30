@@ -5,7 +5,7 @@
  *
  *   source   a source schema can use it ("type" in content/en/sources/<id>.schema.json)
  *   widget   a widget's field can use it (its definition's `fields`)
- *   value    what it stores: 'string' | 'number' | 'boolean' | 'list' (of image paths)
+ *   value    what it stores: 'string' | 'number' | 'boolean' | 'list' (of photo paths)
  *   control  the editor's input for it (Field.svelte `type`)
  *   format   a bound value can have a text around it ({ "bind", "format" }, ../layout/bindings.js)
  *   binds    the source field types whose value it can show ({ "bind": "<field>" })
@@ -52,15 +52,15 @@ export const FIELD_TYPES = Object.freeze({
     binds: ['number'],
     blank: 0,
   },
-  image: {
+  photo: {
     source: true,
     widget: true,
     value: 'string',
     control: 'image',
-    binds: ['image'],
+    binds: ['photo'],
     blank: '',
   },
-  images: { source: true, value: 'list', control: 'image', binds: ['images'], blank: [] },
+  photos: { source: true, value: 'list', control: 'image', binds: ['photos'], blank: [] },
   link: {
     source: true,
     value: 'string',

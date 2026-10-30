@@ -52,12 +52,12 @@
     {
       "key": "images",
       "label": "Photos",
-      "type": "images"
+      "type": "photos"
     },
     {
       "key": "cover",
       "label": "Cover photo",
-      "type": "image",
+      "type": "photo",
       "width": "half",
       "help": "One of its photos; empty: the first"
     },

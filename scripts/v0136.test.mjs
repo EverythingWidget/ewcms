@@ -29,7 +29,7 @@ test('a Save with nothing typed meanwhile leaves nothing unsaved', () => {
   assert.deepEqual(store.rebase({ [FILE]: structuredClone(store.current[FILE]) }), []);
 });
 
-test('the Media pane: one column, its head (Use this image) sticky', () => {
+test('the Media pane: one column, its head (Use this photo) sticky', () => {
   const m = readFileSync(
     new URL('../src/editor/svelte/MediaModal.svelte', import.meta.url),
     'utf8',

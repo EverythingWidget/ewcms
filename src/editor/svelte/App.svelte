@@ -193,7 +193,7 @@
           icon="images"
           iconOnly
           label="Media"
-          title="Media: every image, upload, alt text"
+          title="Media: every photo, upload, alt text"
           onclick={() => openMedia({ key: ui.media.key })}
         />
         <span class="ed-tools__gap"><UpdateNotice /></span>

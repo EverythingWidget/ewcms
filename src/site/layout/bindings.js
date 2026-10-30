@@ -2,9 +2,9 @@
  * Bindings: a widget's field can show a value of a source item instead of its own.
  *
  *   "title": "Models"                       custom: the widget's own value
- *   "title": { "bind": "name" }             the item's whole value (any field type: an image,
- *                                           a link, a list of images), when the types fit
- *   "title": { "bind": "count", "format": "{value} images" }
+ *   "title": { "bind": "name" }             the item's whole value (any field type: a photo,
+ *                                           a link, a list of photos), when the types fit
+ *   "title": { "bind": "count", "format": "{value} photos" }
  *                                           a text around the value ({value}; text fields only,
  *                                           an empty value leaves the whole field empty)
  *
@@ -14,7 +14,7 @@
  * resolver only swaps values (resolveWidget, applied to every widget before it renders).
  *
  * Which fields can bind: every field of a widget type (src/site/widgets/index.js) and its
- * config's text fields (links); a list of { src } binds to an images field as a whole; in a list
+ * config's text fields (links); a list of { src } binds to a photos field as a whole; in a list
  * of objects, each text subkey can be bound. BIND_TYPES (../field-types.js) says which
  * source field types fit each widget field type.
  */
@@ -28,7 +28,7 @@ import { BIND_TYPES, TEXT_TYPES } from '../field-types.js';
 /** { "bind": "<field>" } */
 export const isBinding = (v) => isObject(v) && typeof v.bind === 'string';
 
-/** The bound value in its format ("{value} images"); empty stays empty. */
+/** The bound value in its format ("{value} photos"); empty stays empty. */
 const formatted = (v, format) =>
   typeof format !== 'string' || v === undefined || v === null || v === ''
     ? v
@@ -36,15 +36,15 @@ const formatted = (v, format) =>
 
 /**
  * The bind type of a field definition: its type, 'link' for a config link field,
- * 'images' for a list of { src } objects; null when it can't bind as a whole (other lists).
+ * 'photos' for a list of { src } objects; null when it can't bind as a whole (other lists).
  */
 export function bindTypeOf(def, { config = false } = {}) {
   if (!def) return null;
   if (config) return def.type === 'link' ? 'link' : null;
   if (def.type === 'seg' || def.type === 'spot') return null; // a choice of looks: nothing to bind
   if (!def.list) return def.type || 'text';
-  if (def.list === 'image') return 'images';
-  return def.list.src === 'image' ? 'images' : null;
+  if (def.list === 'photo') return 'photos';
+  return def.list.src === 'photo' ? 'photos' : null;
 }
 
 /** The field keys of a source (its schema), null without a source. */
@@ -73,7 +73,7 @@ export function resolve(
     if (keys && !keys.has(value.bind) && !(value.bind in item))
       return (warn(`the item has no field "${value.bind}"`), missing(value.bind));
     const v = formatted(item[value.bind], value.format) ?? empty(def);
-    // an item's image paths in a list of { src } (e.g. the hero's placed images)
+    // an item's photo paths in a list of { src } (e.g. the hero's placed photos)
     return Array.isArray(v) && isObject(def?.list) ? v.map((src) => ({ src })) : v;
   }
   if (Array.isArray(value) && isObject(def?.list))

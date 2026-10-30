@@ -7,7 +7,7 @@
  *            / bottom; its content is always full width) or one row ('h')
  *     box    whether it has the Fit | Fill switch (a Text widget: no)
  *     fill   its default box (true: Fill), place its default place
- *     media  its content is an image or video: Fit is `object-fit: contain`, Fill `cover`, the
+ *     media  its content is a photo or video: Fit is `object-fit: contain`, Fill `cover`, the
  *            place its object-position (cropped, Fill still places it)
  *
  * Stored on the widget, layout keys beside `size` (never a field key):
@@ -91,7 +91,7 @@ export function alignOf(place) {
 }
 
 // set: a box or place stored (a widget at its type's defaults renders as it always has: its
-// content at the top left, an image cover and centred: the stylesheet's defaults)
+// content at the top left, a photo cover and centred: the stylesheet's defaults)
 const isSet = (widget) => widget?.box !== undefined || widget?.place !== undefined;
 
 /** The classes of its placement: wgt--placed (its content box placed), wgt--fill. */
@@ -103,7 +103,7 @@ export function placeClass(widget) {
   );
 }
 
-/** Its variables: --ph / --pv (grid alignment), an image's --fit / --pos. */
+/** Its variables: --ph / --pv (grid alignment), a photo's --fit / --pos. */
 export function placeVars(widget) {
   const p = placementOf(widget?.type);
   if (!p || !isSet(widget)) return '';

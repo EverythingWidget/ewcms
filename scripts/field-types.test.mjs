@@ -20,8 +20,8 @@ test('field types: one list; schemas and widgets use its names', () => {
     'words',
     'multiline',
     'number',
-    'image',
-    'images',
+    'photo',
+    'photos',
     'link',
     'choice',
     'boolean',
@@ -31,17 +31,17 @@ test('field types: one list; schemas and widgets use its names', () => {
     'text',
     'multiline',
     'number',
-    'image',
-    'images',
+    'photo',
+    'photos',
     'link',
     'choice',
     'boolean',
     'date',
   ]);
-  assert.deepEqual(WIDGET_FIELD_TYPES, ['text', 'words', 'multiline', 'number', 'image']);
+  assert.deepEqual(WIDGET_FIELD_TYPES, ['text', 'words', 'multiline', 'number', 'photo']);
   assert.deepEqual(FORMAT_TYPES, ['text', 'words', 'multiline', 'link']);
   // the old names are gone
-  for (const old of ['longtext', 'photo', 'photos'])
+  for (const old of ['longtext', 'image', 'images'])
     assert.match(checkSchema({ title: 'a', fields: [{ key: 'a', type: old }] })[0], /"type"/);
   // every bind lists source types only
   for (const list of Object.values(BIND_TYPES))
@@ -59,15 +59,15 @@ test('field types: stored value, editor input, blank, parse', () => {
   assert.equal(storedAs('seg'), 'string');
   assert.equal(controlOf('choice'), 'select');
   assert.equal(controlOf('link'), 'text');
-  assert.equal(controlOf('images'), 'image');
-  assert.deepEqual(['text', 'number', 'boolean', 'images', 'x'].map(blankOf), [
+  assert.equal(controlOf('photos'), 'image');
+  assert.deepEqual(['text', 'number', 'boolean', 'photos', 'x'].map(blankOf), [
     '',
     0,
     false,
     [],
     '',
   ]);
-  assert.notEqual(blankOf('images'), blankOf('images'), 'a new list each time');
+  assert.notEqual(blankOf('photos'), blankOf('photos'), 'a new list each time');
   assert.equal(parseInput('multiline', 'a\nb'), 'a\nb');
   assert.equal(parseInput('text', 'a\n b'), 'a b');
   assert.equal(parseInput('words', '  '), undefined);
@@ -77,7 +77,7 @@ test('field types: stored value, editor input, blank, parse', () => {
     fields: [
       { key: 'name', type: 'text' },
       { key: 'body', type: 'multiline' },
-      { key: 'images', type: 'images' },
+      { key: 'images', type: 'photos' },
       { key: 'kind', type: 'choice', required: true, options: ['a', 'b'] },
     ],
   });

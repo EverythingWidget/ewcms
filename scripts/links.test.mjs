@@ -48,8 +48,8 @@ test('links: a follower sits its gap below its leader; it moves when the leader 
 });
 
 test('links: negative gaps overlap; a follower never goes above row 1', () => {
-  const { at } = resolveRows([it('image', 1, 20, 20), it('cap', 30, 3, 3, to('image', -4))]);
-  assert.deepEqual(at.cap, { row: 17, rows: 3 }); // its top 4 rows into the image
+  const { at } = resolveRows([it('photo', 1, 20, 20), it('cap', 30, 3, 3, to('photo', -4))]);
+  assert.deepEqual(at.cap, { row: 17, rows: 3 }); // its top 4 rows into the photo
   assert.equal(resolveRows([it('a', 1, 2, 2), it('b', 9, 1, 1, to('a', -10))]).at.b.row, 1);
 });
 
@@ -193,7 +193,7 @@ test('editor: link, drag a follower (its gap changes), unlink; new widgets are f
   // a copy is free; a new widget is free
   const copy = duplicateWidget(store, F, 0, 2);
   assert.ok(!('link' in flat(copy)));
-  const added = addWidget(store, F, 0, 'image');
+  const added = addWidget(store, F, 0, 'photo');
   assert.ok(!('link' in flat(added)) && !('link' in flat(newWidget('text', new Set()))));
   assert.deepEqual(checkContent(F, store.current[F]), []);
 });
@@ -263,8 +263,8 @@ test('fit text: per widget, one boolean; site typography over the defaults', () 
   assert.doesNotMatch(widgetClass(t({ fit: false })), /fit/);
   assert.doesNotMatch(widgetVars(t({ fit: true })), /--tk/);
   // only text widgets fit
-  assert.doesNotMatch(widgetClass({ ...t({ fit: true }), type: 'image' }), /fit/);
-  assert.deepEqual(checkFit({ type: 'image', fit: true }), [
+  assert.doesNotMatch(widgetClass({ ...t({ fit: true }), type: 'photo' }), /fit/);
+  assert.deepEqual(checkFit({ type: 'photo', fit: true }), [
     '"fit" is for text widgets (text, button)',
   ]);
   assert.deepEqual(checkFit({ type: 'text', fit: 'yes' }), ['"fit" must be true or false']);

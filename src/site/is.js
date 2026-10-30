@@ -6,5 +6,5 @@
 /** A plain object: not null, not an array. */
 export const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
-/** An absolute http(s) URL (a link or image off the site). */
+/** An absolute http(s) URL (a link or photo off the site). */
 export const isExternal = (url = '') => /^https?:\/\//.test(url);

@@ -1,10 +1,10 @@
 <!--
-  The page's backdrop (src/site/backdrop.js): images behind its sections as it scrolls, in the
-  page's Motion tab (the Transition card), plain fields under a "Backdrop" heading. Its images (ImageList.svelte: drag an image to move
-  it, Media to change, ✕ to remove, Add image opens Media), then its transition: Scroll (a
+  The page's backdrop (src/site/backdrop.js): photos behind its sections as it scrolls, in the
+  page's Motion tab (the Transition card), plain fields under a "Backdrop" heading. Its photos (PhotoList.svelte: drag a photo to move
+  it, Media to change, ✕ to remove, Add photo opens Media), then its transition: Scroll (a
   direction) or Fade (direct or through black, Parallax, Scrub). The options sit in one slot of
   a fixed height, so switching Scroll and Fade moves nothing under it. The heading's switch turns
-  it off (enabled: false) without losing its images. Every change is one undo step; a value
+  it off (enabled: false) without losing its photos. Every change is one undo step; a value
   set back to its default is left out (BACKDROP_DEFAULTS), and so is an empty backdrop on
   save. The preview shows it at once (main.js syncBackdrop).
     live  reactive store; file  the page file
@@ -12,7 +12,7 @@
 <script>
   import { plural } from '../lib/format.js';
   import Field from './Field.svelte';
-  import ImageList from './ImageList.svelte';
+  import PhotoList from './PhotoList.svelte';
   import { openMedia } from './media.svelte.js';
   import {
     BACKDROP_DEFAULTS,
@@ -31,8 +31,8 @@
     // a copy: the store changes its objects in place, and a derived of the same object stays put
     return isObject(v) ? { ...v } : {};
   });
-  const images = $derived(Array.isArray(b.images) ? [...b.images] : []);
-  const has = $derived(images.some(Boolean));
+  const photos = $derived(Array.isArray(b.photos) ? [...b.photos] : []);
+  const has = $derived(photos.some(Boolean));
   // a stored value, or its default when it isn't one of the choices
   const valueOf = (key, list) => (list.includes(b[key]) ? b[key] : BACKDROP_DEFAULTS[key]);
   const LABELS = {
@@ -50,13 +50,13 @@
     Math.round((typeof b.shade === 'number' ? b.shade : BACKDROP_DEFAULTS.shade) * 100),
   );
   const items = $derived(
-    images.map((_, i) => [
+    photos.map((_, i) => [
       {
         edit: `${file}#/backdrop/photos/${i}`,
         file,
         ptr: `/backdrop/photos/${i}`,
         type: 'image',
-        label: `Image ${i + 1}`,
+        label: `Photo ${i + 1}`,
       },
     ]),
   );
@@ -68,23 +68,23 @@
     if (value === BACKDROP_DEFAULTS[key]) live.store.remove(file, ptr, { source: 'panel' });
     else live.store.set(file, ptr, value, { source: 'panel', key: `backdrop:${file}${ptr}` });
   }
-  const setImages = (list) => live.store.set(file, '/backdrop/images', list, { source: 'panel' });
+  const setPhotos = (list) => live.store.set(file, '/backdrop/photos', list, { source: 'panel' });
   function move(from, to) {
-    const list = [...images];
+    const list = [...photos];
     list.splice(to, 0, ...list.splice(from, 1));
-    setImages(list);
+    setPhotos(list);
   }
   function removeAt(i) {
-    const list = [...images];
+    const list = [...photos];
     list.splice(i, 1);
-    setImages(list);
+    setPhotos(list);
   }
-  /** Media opens to pick images (they land at the end of the list, in the order picked). */
+  /** Media opens to pick photos (they land at the end of the list, in the order picked). */
   function add() {
-    openMedia({ multi: { list: `${file}#/backdrop/images`, item: '', image: '' } });
+    openMedia({ multi: { list: `${file}#/backdrop/photos`, item: '', photo: '' } });
   }
 
-  const name = $derived(has ? `${plural(images.length, 'image')} · ${LABELS[transition]}` : '');
+  const name = $derived(has ? `${plural(photos.length, 'photo')} · ${LABELS[transition]}` : '');
 </script>
 
 <!-- a value picker (not tabs): a group of buttons, the picked one filled -->
@@ -112,7 +112,7 @@
     type="checkbox"
     class="switch"
     aria-label="Show the backdrop"
-    title={!has ? 'Add an image first' : on ? 'Shown behind the sections' : 'Hidden'}
+    title={!has ? 'Add a photo first' : on ? 'Shown behind the sections' : 'Hidden'}
     disabled={!has}
     checked={has && on}
     onchange={(e) => set('enabled', e.currentTarget.checked)}
@@ -121,14 +121,14 @@
 <div class={['fields', has && !on && 'bd--off']}>
   {#if !has}
     <p class="hint small transition-backdrop__hint">
-      Images behind the sections, one after another: the first at the top, the last until the end.
+      Photos behind the sections, one after another: the first at the top, the last until the end.
       Section backgrounds sit on top.
     </p>
   {/if}
-  <ImageList
-    label="Images"
+  <PhotoList
+    label="Photos"
     {items}
-    addLabel="Add image"
+    addLabel="Add photo"
     onmove={move}
     onremove={removeAt}
     onadd={add}
@@ -137,18 +137,18 @@
       {@const f = fields[0]}
       <Field
         {...f}
-        value={images[i]}
+        value={photos[i]}
         changed={live.changed(file, f.ptr)}
         grab={ctl.grab}
         remove={ctl.remove}
         onvalue={(v) => (v ? live.store.set(file, f.ptr, v, { source: 'panel' }) : removeAt(i))}
       />
     {/snippet}
-  </ImageList>
+  </PhotoList>
   {#if has}
     <hr class="transition-backdrop__line" />
     {@render choice('transition', 'Transition', options(TRANSITIONS), transition)}
-    <!-- the dim over the images, for both transitions; the value has a fixed width -->
+    <!-- the dim over the photos, for both transitions; the value has a fixed width -->
     <div class={['tf', changed('shade') && 'is-changed']}>
       <span class="tf__label">Shade</span>
       <div class="transition-backdrop__shade">
@@ -195,7 +195,7 @@
           valueOf('direction', DIRECTIONS),
         )}
         <p class="hint small transition-backdrop__note">
-          The images scroll by with the page; the last is fully in view at its end.
+          The photos scroll by with the page; the last is fully in view at its end.
         </p>
       {/if}
     </div>
@@ -206,7 +206,7 @@
   @use '../styles/mixins' as *;
 
   // switched off: the labels and values go quiet (colour only: nothing moves)
-  .bd--off :global(:is(.tf__label, .image__label, .transition-backdrop__val, .seg__btn)) {
+  .bd--off :global(:is(.tf__label, .photo__label, .transition-backdrop__val, .seg__btn)) {
     color: var(--c-text-faint);
   }
 

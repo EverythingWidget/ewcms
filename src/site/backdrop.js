@@ -1,17 +1,17 @@
 /**
- * A page's backdrop: images behind its sections, one after another, as the page scrolls.
+ * A page's backdrop: photos behind its sections, one after another, as the page scrolls.
  *
  *   "backdrop": {
- *     "images": ["places/kasteel-de-haar/02.jpg", ...],   media/ paths or R2 keys, in order
+ *     "photos": ["places/kasteel-de-haar/02.jpg", ...],   media/ paths or R2 keys, in order
  *     "transition": "scroll" | "fade",                    default "scroll"
  *     "direction": "vertical" | "horizontal",             scroll only, default "vertical"
  *     "through": "none" | "black",                        fade only, default "black"
  *     "parallax": true, "scrub": true,                    fade only, default false
- *     "shade": 0.3,                                       the dim over the images, 0 to 0.8, default 0.45
+ *     "shade": 0.3,                                       the dim over the photos, 0 to 0.8, default 0.45
  *     "enabled": false                                    the editor's switch, default true
  *   }
  *
- * The first image shows at the top of the page and the last stays to its end: scroll moves a
+ * The first photo shows at the top of the page and the last stays to its end: scroll moves a
  * strip of them by its length less one screen (the last fully in view at the end); fade gives
  * each an equal share of the page and crossfades between them (directly, or through black),
  * tied to the scroll (scrub) or as a short timed fade at each point. Parallax: a slow zoom and
@@ -19,7 +19,7 @@
  * sections have no background of their own, so they show it.
  *
  * Defaults are left out on save (BACKDROP_DEFAULTS, src/site/defaults.js), and so are the
- * other transition's options and a backdrop without images (tidyBackdrop).
+ * other transition's options and a backdrop without photos (tidyBackdrop).
  */
 import { esc, html, img } from './helpers.js';
 import { isObject } from './is.js';
@@ -42,24 +42,24 @@ export const BACKDROP = '__backdrop';
 export const SHADE_MAX = 0.8;
 // a transition's own options: the other's are left out
 const OWN = { scroll: ['direction'], fade: ['through', 'parallax', 'scrub'] };
-const KEYS = ['images', ...Object.keys(BACKDROP_DEFAULTS)];
+const KEYS = ['photos', ...Object.keys(BACKDROP_DEFAULTS)];
 
-/** A backdrop with every value filled in (defaults), or null: none, off, or no images. */
+/** A backdrop with every value filled in (defaults), or null: none, off, or no photos. */
 export function backdropOf(b) {
   if (!isObject(b)) return null;
-  const images = Array.isArray(b.images) ? b.images.filter((p) => typeof p === 'string' && p) : [];
-  const v = { ...BACKDROP_DEFAULTS, ...b, images };
-  return v.enabled === false || !images.length ? null : v;
+  const photos = Array.isArray(b.photos) ? b.photos.filter((p) => typeof p === 'string' && p) : [];
+  const v = { ...BACKDROP_DEFAULTS, ...b, photos };
+  return v.enabled === false || !photos.length ? null : v;
 }
 
 /** Problems of a page's "backdrop": ['backdrop: "transition" must be scroll or fade']. */
 export function checkBackdrop(b) {
   if (b === undefined) return [];
-  if (!isObject(b)) return ['"backdrop" must be an object { images, transition, ... }'];
+  if (!isObject(b)) return ['"backdrop" must be an object { photos, transition, ... }'];
   const out = [];
   const bad = (key, want) => out.push(`backdrop: "${key}" must be ${want}`);
-  if (!Array.isArray(b.images) || b.images.some((p) => typeof p !== 'string' || !p.trim()))
-    bad('images', 'a list of images (media/ paths or R2 keys)');
+  if (!Array.isArray(b.photos) || b.photos.some((p) => typeof p !== 'string' || !p.trim()))
+    bad('photos', 'a list of photos (media/ paths or R2 keys)');
   if (b.transition !== undefined && !TRANSITIONS.includes(b.transition))
     bad('transition', TRANSITIONS.join(' or '));
   if (b.direction !== undefined && !DIRECTIONS.includes(b.direction))
@@ -84,13 +84,13 @@ export function checkBackdrop(b) {
 
 /**
  * A backdrop tidied for saving, in place on `page`: its defaults and the other transition's
- * options left out; none at all without images. found(message) for each default left out.
+ * options left out; none at all without photos. found(message) for each default left out.
  */
 export function tidyBackdrop(page, found = () => {}) {
   const b = page?.backdrop;
   if (!isObject(b)) return;
-  if (Array.isArray(b.images)) b.images = b.images.filter((p) => typeof p === 'string' && p);
-  if (!Array.isArray(b.images) || !b.images.length) {
+  if (Array.isArray(b.photos)) b.photos = b.photos.filter((p) => typeof p === 'string' && p);
+  if (!Array.isArray(b.photos) || !b.photos.length) {
     delete page.backdrop;
     return;
   }
@@ -105,8 +105,8 @@ export function tidyBackdrop(page, found = () => {}) {
 }
 
 /**
- * The backdrop's HTML: a fixed layer (rendered in the view; main.js moves it into #backdrop) with its images,
- * cover and centred, and its settings for the script. '' without one. The first image loads
+ * The backdrop's HTML: a fixed layer (rendered in the view; main.js moves it into #backdrop) with its photos,
+ * cover and centred, and its settings for the script. '' without one. The first photo loads
  * first (eager, high priority), the next eagerly too, the rest lazily (the script loads them
  * once the page is idle).
  */
@@ -124,14 +124,14 @@ export function renderBackdrop(ctx, b) {
   return html`<div
     class="backdrop backdrop--${v.transition}${dir}${black}"
     data-backdrop="${esc(JSON.stringify(opts))}"
-    style="--n:${v.images.length}"
+    style="--n:${v.photos.length}"
     aria-hidden="true"
   >
     <div class="backdrop__track">
-      ${v.images
+      ${v.photos
         .map(
           (src, i) =>
-            html`<div class="backdrop__image">
+            html`<div class="backdrop__photo">
               ${img(ctx, src, {
                 decorative: true,
                 loading: i < 2 ? 'eager' : 'lazy',
