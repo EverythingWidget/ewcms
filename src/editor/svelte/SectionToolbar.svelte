@@ -127,7 +127,6 @@
         title="Settings (or double-click it)"
         onclick={() => {
           ui.popup = true;
-          ui.widgetTab = 'content';
         }}
       />
       <Button

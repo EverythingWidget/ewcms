@@ -70,7 +70,6 @@
     const has = problem?.kind !== 'none';
     ui.widget = has ? main : null;
     ui.popup = has;
-    ui.widgetTab = 'content';
     ui.focusParam = has ? { widget: main, param: problem?.param ?? '' } : null;
   }
 </script>

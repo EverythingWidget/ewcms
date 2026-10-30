@@ -75,3 +75,15 @@ test('Esc and the panels select through the ui helpers', () => {
   assert.match(card, /setAnchor\(id\)/);
   assert.doesNotMatch(src('svelte/persist.js'), /ui\.selection =/);
 });
+
+test('Motion shows the whole page; the widget pop-up has no Motion tab and stays on Motion', () => {
+  const mp = src('svelte/MotionPanel.svelte');
+  assert.doesNotMatch(mp, /picks/);
+  assert.match(mp, /\{#if ui\.anim\?\.widget === widget\.id\}/);
+  const wi = src('svelte/WidgetInspector.svelte');
+  assert.match(wi, /const TABS = \[\['content', 'Content'\]\];/);
+  assert.doesNotMatch(wi, /WidgetMotion|widgetTab/);
+  assert.doesNotMatch(src('svelte/ui.svelte.js'), /widgetTab/);
+  assert.match(src('svelte/ContentPanel.svelte'), /\{#if popG && !ui\.pagesWin\.open\}/);
+  assert.doesNotMatch(src('main.js'), /editMotion/);
+});

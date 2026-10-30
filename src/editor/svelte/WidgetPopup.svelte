@@ -7,7 +7,7 @@
   open menu inside first) and the focus goes back to the row.
   Header: the type's icon, the widget's name once (--c-widget-accent), Locate, ×. Then the
   widget's tabs and fields (WidgetInspector.svelte, bare: no Back, no card, no title line).
-    g, live, bridge, sourceIds, onsource, onmotion, onlibrary   as WidgetInspector's
+    g, live, bridge, sourceIds, onsource   as WidgetInspector's
     popup     createPopup() (its place)
     onclose   () => close it (ui.widget = null)
 -->
@@ -17,7 +17,7 @@
   import { locate } from '../locate.js';
   import { clampPos } from '../widget-popup.js';
 
-  let { g, live, bridge, sourceIds, onsource, onmotion, onlibrary, popup, onclose } = $props();
+  let { g, live, bridge, sourceIds, onsource, popup, onclose } = $props();
 
   let el = $state();
   let pos = $state({ left: -9999, top: 0 });
@@ -116,17 +116,7 @@
     >
   </header>
   <div class="wpop__body">
-    <WidgetInspector
-      bare
-      {g}
-      {live}
-      {bridge}
-      {sourceIds}
-      {onsource}
-      onback={close}
-      {onmotion}
-      {onlibrary}
-    />
+    <WidgetInspector bare {g} {live} {bridge} {sourceIds} {onsource} onback={close} />
   </div>
 </div>
 

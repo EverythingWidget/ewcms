@@ -56,7 +56,7 @@
   import { swapView } from '../lib/slide.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
-  // actions: main.js (editMotion: open an element in the page's Motion tab)
+  // actions: main.js
   let { live, bridge, actions } = $props();
 
   let panel = $state();
@@ -143,7 +143,6 @@
     ui.section = null;
     selectWidgets([id]);
     ui.popup = true;
-    ui.widgetTab = 'content';
   }
   // a section card's double click or the toolbar's gear: its settings pop-up (selected; a
   // widget's pop-up closes)
@@ -327,7 +326,7 @@
   />
 {/if}
 
-{#if popG && !ui.pagesWin.open && previewClicks() === 'arrange'}
+{#if popG && !ui.pagesWin.open}
   <WidgetPopup
     g={popG}
     {live}
@@ -339,11 +338,6 @@
       // closed: the widget stays selected
       ui.selection = null;
       ui.popup = false;
-    }}
-    onmotion={(el) => actions.editMotion(el)}
-    onlibrary={(name) => {
-      ui.library = { name };
-      actions.setPanel('settings');
     }}
   />
 {/if}

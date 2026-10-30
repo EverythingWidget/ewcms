@@ -34,7 +34,6 @@ import {
   selectSection,
   hooks,
   previewClicks,
-  pickAnim,
   pickElement,
   selectText,
   hoverElement,
@@ -129,7 +128,6 @@ const overlay = createOverlay({
   onopen(id) {
     selectWidgets([id]);
     ui.popup = true;
-    ui.widgetTab = 'content';
   },
   // several widgets (Ctrl/Cmd+click, a selection box): selectWidgets; never the pop-up (a box
   // touching its first widget selects it, nothing opens)
@@ -207,7 +205,6 @@ mount(App, {
       save,
       refreshStatus,
       pagesOp,
-      editMotion,
     },
   },
 });
@@ -466,16 +463,6 @@ function widgetAt(id) {
     if (j >= 0) return { file, at, j };
   }
   return null;
-}
-
-/** Open an animated element of the preview in the page's Motion tab. */
-function editMotion(el) {
-  const file = targetFile(ui.target, bridge.doc);
-  if (file) ui.sections[`pagetab:${file}`] = 'motion'; // kept per page (ContentPanel.svelte)
-  setPanel('nav');
-  setPageTab('motion');
-  ui.anim = pickAnim({ kind: 'anim', el });
-  pickElement(el, 'anim');
 }
 
 // ---------------------------------------------------------------- preview events

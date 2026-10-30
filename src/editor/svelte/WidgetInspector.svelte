@@ -1,11 +1,10 @@
 <!--
-  One widget of the page (ui.widget), in two tabs (its size, text size and layer: at the top of
+  One widget of the page (ui.widget), its Content tab (its size, text size and layer: at the top of
   Content, WidgetLayout.svelte; where it sits is dragged in the preview, overlay.js):
     Content  its source (WidgetSource.svelte: Item / All, From URL or None, and on a [param] page
              whether it is the main widget), then its settings and texts (GroupFields.svelte),
              each bindable field with its picker: Custom or a field of the item it shows
-    Motion   its motion: its animation and own timing, and its parts with their own animation,
-             which open in the Motion tab (WidgetMotion.svelte, as in the Motion tab)
+  (its motion is in the page's Motion tab, MotionPanel.svelte)
   One level under the list of sections (a widget's row on its section's card, or the widget
   clicked in the preview): its top (ViewTop.svelte: ← Back to the list, Locate), then the widget
   in a card: its type and title (Main: the page's main widget), the tabs and their fields. Under it,
@@ -22,31 +21,15 @@
   import { widgetItems, sourceOf } from '../../site/layout/source.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import { ui } from './ui.svelte.js';
-  import WidgetMotion from './WidgetMotion.svelte';
-  import { ANIMATIONS } from '../../site/files.js';
   import ViewTop from './ViewTop.svelte';
   import WidgetLayout from './WidgetLayout.svelte';
 
-  // onmotion(el): open a part in the Motion tab; onlibrary(name): an animation in Animations
   // bare: in the pop-up (WidgetPopup.svelte, its header has the type and name): no Back row,
   // no card, no title line
-  let {
-    g,
-    live,
-    bridge,
-    sourceIds,
-    onsource,
-    onback,
-    onmotion,
-    onlibrary,
-    bare = false,
-  } = $props();
+  let { g, live, bridge, sourceIds, onsource, onback, bare = false } = $props();
 
   // (its layout: on the card, WidgetLayout.svelte; where it sits is dragged in the preview)
-  const TABS = [
-    ['content', 'Content'],
-    ['motion', 'Motion'],
-  ];
+  const TABS = [['content', 'Content']];
   const { at, j } = $derived(g.widget);
   const base = $derived(`/sections/${at}/widgets/${j}`);
   const widget = $derived.by(() => {
@@ -108,13 +91,6 @@
     item,
     items: shown.items?.length ?? 0,
   });
-
-  // the widget's element in the preview, read again after every edit
-  const widgetEl = $derived.by(() => {
-    live.version;
-    ui.previewVersion;
-    return bridge.doc?.querySelector(`[data-widget="${CSS.escape(g.id)}"]`) || null;
-  });
 </script>
 
 {#if !bare}<ViewTop {bridge} id={g.id} {onback} />{/if}
@@ -133,51 +109,28 @@
     </div>
   {/if}
 
-  <Tabs
-    class="card__tabs"
-    label="Widget"
-    tabs={TABS}
-    value={ui.widgetTab}
-    onpick={(id) => (ui.widgetTab = id)}
-  />
+  <Tabs class="card__tabs" label="Widget" tabs={TABS} value="content" onpick={() => {}} />
 
   <div class="card__body">
-    {#if ui.widgetTab === 'motion'}
-      {#key widgetEl}
-        <WidgetMotion
-          {live}
-          {bridge}
-          gsap={bridge.api?.gsap}
-          cfg={live.current(ANIMATIONS)}
-          file={g.file}
-          {at}
-          {j}
-          el={widgetEl}
-          {onlibrary}
-          onelement={onmotion}
-        />
-      {/key}
-    {:else}
-      <!-- its layout (size, layer; a Text widget's text size), then a line -->
-      <WidgetLayout {live} {bridge} file={g.file} {at} {j} id={g.id} {widget} />
-      <!-- its source first (a widget whose type shows items), then its settings and fields -->
-      {#snippet lead()}
-        <WidgetSource {g} {live} {base} list={!!type.list} {shown} {sourceIds} {onsource} />
-      {/snippet}
-      <GroupFields
-        {g}
-        {live}
-        {bridge}
-        {sourceIds}
-        {onsource}
-        {bindings}
-        lead={type.list || type.item || g.fields.some((f) => f.bindType) || widget.source
-          ? lead
-          : undefined}
-      />
-      {#if !g.fields.length && !g.config?.length}
-        <p class="hint small">No texts or settings in this widget.</p>
-      {/if}
+    <!-- its layout (size, layer; a Text widget's text size), then a line -->
+    <WidgetLayout {live} {bridge} file={g.file} {at} {j} id={g.id} {widget} />
+    <!-- its source first (a widget whose type shows items), then its settings and fields -->
+    {#snippet lead()}
+      <WidgetSource {g} {live} {base} list={!!type.list} {shown} {sourceIds} {onsource} />
+    {/snippet}
+    <GroupFields
+      {g}
+      {live}
+      {bridge}
+      {sourceIds}
+      {onsource}
+      {bindings}
+      lead={type.list || type.item || g.fields.some((f) => f.bindType) || widget.source
+        ? lead
+        : undefined}
+    />
+    {#if !g.fields.length && !g.config?.length}
+      <p class="hint small">No texts or settings in this widget.</p>
     {/if}
   </div>
 </div>

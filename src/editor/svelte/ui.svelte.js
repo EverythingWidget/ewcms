@@ -103,8 +103,6 @@ export const ui = $state({
   selSections: [],
   /** Sections tab: the section whose settings pop-up is open (SectionPopup.svelte; its id), or null. */
   section: null,
-  /** 'content' | 'motion' (its layout: on its card, WidgetLayout.svelte) */
-  widgetTab: 'content',
   /**
    * A Text widget edited in place in the preview (bridge.js richState): { widget, edit, style,
    * line, selected, bold, italic, link }, or null.

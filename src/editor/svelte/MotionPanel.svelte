@@ -1,19 +1,17 @@
 <!--
-  A page's Motion tab (ContentPanel.svelte), one view:
-    nothing picked   the page's widgets, a card per section, each with its animation and its
-                     elements that have their own (data-anim inside it: the hero's photos, a
-                     heading's title, ...), then the animated elements outside the widgets
-                     (fixed elements), then the Transition card (TransitionCard.svelte: the
-                     backdrop and the curtain).
-    a widget picked  (ui.anim.widget, from the preview or the list): its motion (WidgetMotion).
-    an element picked    its animation (AnimEditor).
+  A page's Motion tab (ContentPanel.svelte), always the whole page: its widgets, a card per
+  section, each with its animation and its elements that have their own (data-anim inside it:
+  the hero's photos, a heading's title, ...), then the animated elements outside the widgets
+  (fixed elements), then the Transition card (TransitionCard.svelte: the backdrop and the
+  curtain). The widget or element picked (ui.anim, from the preview or the list; a second click
+  on its row drops it) opens in place, under its row: a widget's motion (WidgetMotion), an
+  element's animation (AnimEditor).
   The animations themselves (the library) and the default timing are in Settings
   (MotionSettings.svelte). The widget picked is the Sections tab's widget too.
 -->
 <script>
   import AnimEditor from './AnimEditor.svelte';
   import WidgetMotion from './WidgetMotion.svelte';
-  import Button from './Button.svelte';
   import TransitionCard from './TransitionCard.svelte';
   import Section from './Section.svelte';
   import { ui, pickElement, hoverElement } from './ui.svelte.js';
@@ -50,17 +48,11 @@
     return motionSections(file ? live.get(file, '/sections') : null, bridge.doc, items);
   });
   const outside = $derived(items.filter((it) => !it.el.closest('[data-widget]')));
-  // the widget picked, where it is
-  const picks = $derived.by(() => {
-    const id = ui.anim?.widget;
-    for (const s of sections)
-      for (const widget of s.widgets) if (widget.id === id) return { s, widget };
-    return null;
-  });
 
   /** Pick an element or widget (as a click in the preview does). */
   function pick(el) {
     if (!el) return;
+    if (ui.anim?.el === el) return pickElement(null);
     bridge.reveal(el);
     pickElement(el, 'anim');
   }
@@ -81,36 +73,7 @@
       </span>
       <span class="muted">{animationOf(cfg, { id, el }) || '?'}</span>
     </button>
-  </li>
-{/snippet}
-
-{#if !gsap}
-  <p class="hint">Waiting for the preview…</p>
-{:else}
-  <div class="mview">
-    {#if picks}
-      {#key ui.anim}
-        <div class="msel__head">
-          <Button size="small" icon="arrow-left" onclick={() => pickElement(null)}>Elements</Button>
-          <h3 class="msel__title">{picks.widget.label}</h3>
-          <span class="muted"
-            >Section {picks.s.at + 1}{picks.widget.name ? ` · ${picks.widget.name}` : ''}</span
-          >
-        </div>
-        <WidgetMotion
-          {live}
-          {bridge}
-          {gsap}
-          {cfg}
-          {file}
-          at={picks.s.at}
-          j={picks.widget.j}
-          el={picks.widget.el}
-          onlibrary={openLibrary}
-          onelement={pick}
-        />
-      {/key}
-    {:else if ui.anim && !ui.anim.widget}
+    {#if ui.anim && !ui.anim.widget && ui.anim.el === el}
       {#key ui.anim}
         <AnimEditor
           {live}
@@ -123,50 +86,71 @@
           onlibrary={openLibrary}
         />
       {/key}
-    {:else}
-      <p class="hint">
-        Click a widget or an animated element of it in the preview, or pick one below. Hold Alt to
-        click through to links.
-      </p>
-      {#each sections as s (s.id)}
-        <Section key="motion:{s.id}" title="Section {s.at + 1}" name={s.name}>
-          <ol class="list">
-            {#each s.widgets as widget (widget.id)}
-              <li>
-                <button
-                  type="button"
-                  class="mlist__item"
-                  data-widget-item={widget.id}
-                  disabled={!widget.el}
-                  onclick={() => pick(widget.el)}
-                  onpointerenter={() => hoverElement(widget.el)}
-                  onpointerleave={() => hoverElement(null)}
-                >
-                  <span class="mlist__id"
-                    >{widget.label}{widget.name ? ` · ${widget.name}` : ''}</span
-                  >
-                  <span class="muted">{widget.animation || 'none'}</span>
-                </button>
-                {#if widget.elements.length}
-                  <ol class="list mlist__elements">
-                    {#each widget.elements as p (p.el)}{@render element(p)}{/each}
-                  </ol>
-                {/if}
-              </li>
-            {/each}
-          </ol>
-        </Section>
-      {/each}
-      {#if outside.length}
-        <Section key="motion:elements" title="Outside the widgets" name="Fixed elements">
-          {#snippet bar()}<span class="mlist__count">{outside.length}</span>{/snippet}
-          <ol class="list">
-            {#each outside as it (it.el)}{@render element(it)}{/each}
-          </ol>
-        </Section>
-      {/if}
-      <TransitionCard {live} {file} onsettings={() => actions.setPanel('settings')} />
     {/if}
+  </li>
+{/snippet}
+
+{#if !gsap}
+  <p class="hint">Waiting for the preview…</p>
+{:else}
+  <div class="mview">
+    <p class="hint">
+      Click a widget or an animated element of it in the preview, or pick one below. Hold Alt to
+      click through to links.
+    </p>
+    {#each sections as s (s.id)}
+      <Section key="motion:{s.id}" title="Section {s.at + 1}" name={s.name}>
+        <ol class="list">
+          {#each s.widgets as widget (widget.id)}
+            <li>
+              <button
+                type="button"
+                class="mlist__item"
+                data-widget-item={widget.id}
+                disabled={!widget.el}
+                onclick={() => pick(widget.el)}
+                onpointerenter={() => hoverElement(widget.el)}
+                onpointerleave={() => hoverElement(null)}
+              >
+                <span class="mlist__id">{widget.label}{widget.name ? ` · ${widget.name}` : ''}</span
+                >
+                <span class="muted">{widget.animation || 'none'}</span>
+              </button>
+              {#if ui.anim?.widget === widget.id}
+                {#key ui.anim}
+                  <WidgetMotion
+                    {live}
+                    {bridge}
+                    {gsap}
+                    {cfg}
+                    {file}
+                    at={s.at}
+                    j={widget.j}
+                    el={widget.el}
+                    onlibrary={openLibrary}
+                    onelement={pick}
+                  />
+                {/key}
+              {/if}
+              {#if widget.elements.length}
+                <ol class="list mlist__elements">
+                  {#each widget.elements as p (p.el)}{@render element(p)}{/each}
+                </ol>
+              {/if}
+            </li>
+          {/each}
+        </ol>
+      </Section>
+    {/each}
+    {#if outside.length}
+      <Section key="motion:elements" title="Outside the widgets" name="Fixed elements">
+        {#snippet bar()}<span class="mlist__count">{outside.length}</span>{/snippet}
+        <ol class="list">
+          {#each outside as it (it.el)}{@render element(it)}{/each}
+        </ol>
+      </Section>
+    {/if}
+    <TransitionCard {live} {file} onsettings={() => actions.setPanel('settings')} />
   </div>
 {/if}
 
@@ -176,20 +160,6 @@
   // the hint and the cards: spaced by the panel body (.ed-body's gap), as before
   .mview {
     display: contents;
-  }
-
-  .msel__head {
-    @include stack(var(--space-1));
-    margin-bottom: var(--space-3);
-    justify-items: start;
-  }
-
-  .msel__title {
-    margin: var(--space-2) 0 0;
-    font-family: var(--f-display);
-    font-weight: 400;
-    font-size: var(--fs-3xl);
-    line-height: 1;
   }
 
   // a widget's elements, under it
