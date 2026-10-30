@@ -56,7 +56,7 @@ const old = () => [
       ],
     },
   },
-  // the image library keeps its file name and "photos" key
+  // photos keep their names
   { rel: 'en/settings/photos.json', data: { version: 1, photos: { 'a.jpg': { alt: 'A' } } } },
 ];
 
@@ -68,22 +68,22 @@ test('rename-0-2-0 converts every old name, keeping key order', () => {
   const [lib, page, schema, library] = files.map((f) => f.data);
   assert.deepEqual(Object.keys(lib), ['version', 'animations', 'targets', 'transitions']);
   assert.deepEqual(lib.targets['hero.title'], { animation: 'fade-up', delay: 0.1 });
-  assert.deepEqual(Object.keys(lib.targets), ['hero.title', 'hero.images']);
-  assert.deepEqual(page.backdrop, { images: ['a.jpg'], transition: 'fade' });
+  assert.deepEqual(Object.keys(lib.targets), ['hero.title', 'hero.photos']);
+  assert.deepEqual(page.backdrop, { photos: ['a.jpg'], transition: 'fade' });
   assert.deepEqual(
     schema.fields.map((f) => f.type),
-    ['multiline', 'image', 'images', 'text'],
+    ['multiline', 'photo', 'photos', 'text'],
   );
   assert.deepEqual(library, { version: 1, photos: { 'a.jpg': { alt: 'A' } } });
   assert.deepEqual(page.transition, { curtain: 'off' });
-  const [hero, image, button] = page.sections[0].widgets;
-  assert.deepEqual(Object.keys(hero), ['id', 'type', 'images', 'title', 'motion']);
-  assert.deepEqual(image, { id: 'w-ef56', type: 'image', src: 'a.jpg' });
+  const [hero, photo, button] = page.sections[0].widgets;
+  assert.deepEqual(Object.keys(hero), ['id', 'type', 'photos', 'title', 'motion']);
+  assert.deepEqual(photo, { id: 'w-ef56', type: 'photo', src: 'a.jpg' });
   assert.equal(hero.id, 'w-ab12');
   assert.equal(button.target, 'w-ab12');
   assert.equal(button.link, '#b-ab12'); // only whole ids are ids
   assert.deepEqual(button.motion, { animation: 'fade-up', delay: 0.2 });
-  assert.deepEqual(hero.motion, { elements: { 'hero.images': { animation: 'scatter' } } });
+  assert.deepEqual(hero.motion, { elements: { 'hero.photos': { animation: 'scatter' } } });
 });
 
 test('rename-0-2-0 changes nothing the second time', () => {
