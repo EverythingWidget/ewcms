@@ -1,7 +1,7 @@
 <!--
   A page's Motion tab (ContentPanel.svelte), one view:
     nothing picked   the page's widgets, a card per section, each with its animation and its
-                     elements that have their own (data-anim inside it: the hero's photos, a
+                     elements that have their own (data-anim inside it: the hero's images, a
                      heading's title, ...), then the animated elements outside the widgets
                      (fixed elements), then the Transition card (TransitionCard.svelte: the
                      backdrop and the curtain).

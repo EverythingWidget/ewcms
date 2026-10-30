@@ -4,7 +4,7 @@
  *   "title": "Models"                       custom: the widget's own value
  *   "title": { "bind": "name" }             the item's whole value (any field type: an image,
  *                                           a link, a list of images), when the types fit
- *   "title": { "bind": "count", "format": "{value} photos" }
+ *   "title": { "bind": "count", "format": "{value} images" }
  *                                           a text around the value ({value}; text fields only,
  *                                           an empty value leaves the whole field empty)
  *
@@ -28,7 +28,7 @@ import { BIND_TYPES, TEXT_TYPES } from '../field-types.js';
 /** { "bind": "<field>" } */
 export const isBinding = (v) => isObject(v) && typeof v.bind === 'string';
 
-/** The bound value in its format ("{value} photos"); empty stays empty. */
+/** The bound value in its format ("{value} images"); empty stays empty. */
 const formatted = (v, format) =>
   typeof format !== 'string' || v === undefined || v === null || v === ''
     ? v

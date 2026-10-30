@@ -10,7 +10,7 @@
  *
  * An item with "children" (one level) or "items" (the items of a content/en/sources list) opens a
  * dropdown; "all" labels its link to the item's own page. Items of a source with pages of their
- * own (a [param] page shows it) are listed with a photo and their photo count; other items (e.g.
+ * own (a [param] page shows it) are listed with an image and their image count; other items (e.g.
  * projects) by title and kind, linking to their spot on the item's page, or to their own site
  * when "linkOut" is on. The menu, close and clock labels are in strings.json "nav".
  */
@@ -71,7 +71,7 @@ function itemsOf(ctx, item) {
 const spotHref = (items, p) =>
   p.linkOut && p.url ? p.url : `${items.page}#${itemSlug(p, items.schema)}`;
 
-/** Dropdown rows: photo, title and photo count (items with pages), or title and type. */
+/** Dropdown rows: image, title and image count (items with pages), or title and type. */
 const ddLinks = (ctx, items) =>
   items.pages
     ? items.list.map(

@@ -54,7 +54,7 @@ test('v0.1.41: one scrollbar style in the editor, defined once', () => {
   );
 });
 
-test('v0.1.41: the panels a step apart; a photo row link without a label above', () => {
+test('v0.1.41: the panels a step apart; an image row link without a label above', () => {
   const tokens = read('src/editor/styles/_tokens.scss');
   for (const [k, v] of [
     ['fields', 16],

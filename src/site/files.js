@@ -12,8 +12,8 @@
  *   content/en/settings/<id>.json  site-wide settings (site.json, nav.json: the menus,
  *                               animations.json, redirects.json: a list, footer.json: the
  *                               footer, a document like a page's: kind "part"), and photos.json:
- *                               every photo's alt text (media/ paths and R2 keys) plus the
- *                               sizes of photos uploaded to R2; written by the editor's Media
+ *                               every image's alt text (media/ paths and R2 keys) plus the
+ *                               sizes of images uploaded to R2; written by the editor's Media
  *                               window and the upload (not by Save), committed by Publish
  *
  * Paths are relative to content/ and are also the keys the editor uses
@@ -94,7 +94,7 @@ export const isSlug = (s) => SLUG.test(String(s ?? ''));
 
 /**
  * Top-level names that are not pages (pages/<name>/ can't be one): home and 404 (their files
- * are pages/index.json and pages/404/), the editor, Vite's assets, the photos, the sandbox.
+ * are pages/index.json and pages/404/), the editor, Vite's assets, the images, the sandbox.
  */
 export const RESERVED = ['home', '404', 'edit', 'assets', 'media', 'sandbox'];
 /** Is `name` a name no page can have in folder `parent` ('' the top)? */
@@ -179,7 +179,7 @@ export function contentFromFiles(files) {
     sources,
     schemas: byId(schemaIdOf),
     animations: files[ANIMATIONS] || {},
-    // { path or key: { alt, and for R2 photos width, height, srcset, color, lqip } }
+    // { path or key: { alt, and for R2 images width, height, srcset, color, lqip } }
     photos: files[PHOTOS]?.photos || {},
     redirects: Array.isArray(files[REDIRECTS]?.redirects) ? files[REDIRECTS].redirects : [],
     footer: files[FOOTER] || { kind: 'part', sections: [] },

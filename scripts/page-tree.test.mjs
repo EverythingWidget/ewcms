@@ -367,8 +367,8 @@ test("a row's Edit opens its page: the page at its path, a [param] page's entry,
     },
     { kind: 'part', id: 'header', title: 'Header' },
   ];
-  const photo = levelOf(f, 'photography');
-  assert.equal(entryFor(PAGES, photo.own).title, 'Photography'); // its root row: itself
+  const image = levelOf(f, 'photography');
+  assert.equal(entryFor(PAGES, image.own).title, 'Photography'); // its root row: itself
   const people = levelOf(f, 'photography/people');
   assert.equal(entryFor(PAGES, people.own).title, 'People'); // not its [param] page's entry
   assert.equal(entryFor(PAGES, people.sub[0]).template, 'photography/people/[person]');
@@ -384,8 +384,8 @@ test('a drop that would move a page to a reserved top name is refused (placehold
   assert.equal(plan.kind, 'refuse');
   assert.match(plan.why, /reserved/);
   // elsewhere the name is fine
-  const photo = levelOf(f, 'photography');
-  assert.equal(dropOf(f, photo, row, 0).kind, 'move');
+  const image = levelOf(f, 'photography');
+  assert.equal(dropOf(f, image, row, 0).kind, 'move');
 });
 
 test("a [param] page counts the pages it builds: none without items, or when its main widget can't decide", () => {

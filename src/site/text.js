@@ -15,7 +15,7 @@
  *   { t, marks?, link? }   text ("\n" a line break), marks: 'b' bold, 'i' italic, a link (a
  *                          page, an item or a URL: ./hrefs.js)
  *   { field, format? }     a field of the item the widget shows (its source: ./layout/source.js),
- *                          filled in when the page is built; format "{value} photos"
+ *                          filled in when the page is built; format "{value} images"
  *   { count: { source } }  how many items a source has; { count: { of: 'items' } }: how many
  *                          the widget's own source shows
  * A line can be a list item: "list": "bullet" | "number" (its style stays). On the site the lines

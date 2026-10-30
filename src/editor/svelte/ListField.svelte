@@ -1,9 +1,9 @@
 <!--
   A list in a panel: each item in a box with a grip (its drag handle), its name and Remove, its
   fields below (the `item` snippet), and an Add button at the end. Drag the grip, or Alt+↑/↓ in
-  the item, to move it: the drag as PhotoList's (a press moves SLACK px to be a drag, a line
+  the item, to move it: the drag as ImageList's (a press moves SLACK px to be a drag, a line
   shows where it lands, its own place moves nothing, Esc cancels). The parent owns the data and makes each
-  change one undo step. Used for the list fields of sections (Content: hero photos, facts,
+  change one undo step. Used for the list fields of sections (Content: hero images, facts,
   panels, ...) and the header's menu (Nav > Header, nested for sub-items).
     label     the list's name, on top
     items     the list

@@ -1,6 +1,6 @@
 /**
  * The Media window's dev-server ops (mediaOp in scripts/editor-server.mjs): alt text in
- * photos.json, and deleting unused photos (local media/ files, R2 photos against a mock).
+ * photos.json, and deleting unused images (local media/ files, R2 photos against a mock).
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { mediaOp } from './editor-server.mjs';
-import { photoUses } from '../src/editor/lib/photo-uses.js';
+import { imageUses } from '../src/editor/lib/image-uses.js';
 
 let server;
 let env;
@@ -40,7 +40,7 @@ const r2Photo = {
   ],
 };
 
-/** A project with one used and one unused photo of each kind. */
+/** A project with one used and one unused image of each kind. */
 function project() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'media-'));
   const write = (f, data) => {
@@ -53,7 +53,7 @@ function project() {
     kind: 'page',
     id: 'pg-t027',
 
-    hero: { photos: [{ src: 'a/used.jpg' }] },
+    hero: { images: [{ src: 'a/used.jpg' }] },
   });
   write('content/en/sources/people.json', {
     version: 1,
@@ -91,17 +91,17 @@ function project() {
 const photosOf = (root) =>
   JSON.parse(fs.readFileSync(path.join(root, 'content/en/settings/photos.json'), 'utf8')).photos;
 
-test('photoUses: every place a key is stored, as file + pointer', () => {
+test('imageUses: every place a key is stored, as file + pointer', () => {
   const files = {
-    'pages/index.json': { hero: { photos: [{ src: 'k' }, { src: 'x' }] } },
+    'pages/index.json': { hero: { images: [{ src: 'k' }, { src: 'x' }] } },
     'sources/p.json': { version: 1, items: [{ image: 'k', 'a/b': 'k' }] },
   };
-  assert.deepEqual(photoUses(files, 'k'), [
-    { file: 'pages/index.json', ptr: '/hero/photos/0/src' },
+  assert.deepEqual(imageUses(files, 'k'), [
+    { file: 'pages/index.json', ptr: '/hero/images/0/src' },
     { file: 'sources/p.json', ptr: '/items/0/image' },
     { file: 'sources/p.json', ptr: '/items/0/a~1b' },
   ]);
-  assert.deepEqual(photoUses(files, ''), []);
+  assert.deepEqual(imageUses(files, ''), []);
 });
 
 test('alt: set, trimmed, removed; local and R2 photos; unknown keys refused', async () => {
@@ -120,13 +120,13 @@ test('alt: set, trimmed, removed; local and R2 photos; unknown keys refused', as
   assert.equal((await mediaOp(root, env, { op: 'move', key: R2 })).status, 400);
 });
 
-test('delete: a used photo is refused and names where it is used', async () => {
+test('delete: a used image is refused and names where it is used', async () => {
   const root = project();
   const before = photosOf(root);
   deletes = [];
   const local = await mediaOp(root, env, { op: 'delete', key: 'a/used.jpg' });
   assert.equal(local.status, 409);
-  assert.deepEqual(local.body.uses, [{ file: 'pages/index.json', ptr: '/hero/photos/0/src' }]);
+  assert.deepEqual(local.body.uses, [{ file: 'pages/index.json', ptr: '/hero/images/0/src' }]);
   const r2 = await mediaOp(root, env, { op: 'delete', key: 'photos/used-1600.webp' });
   assert.equal(r2.status, 409);
   assert.match(r2.body.error, /sources\/people\.json#\/items\/0\/images\/0/);
@@ -135,7 +135,7 @@ test('delete: a used photo is refused and names where it is used', async () => {
   assert.equal(deletes.length, 0);
 });
 
-test('delete: a local photo loses its file, sizes, manifest entry and alt', async () => {
+test('delete: a local image loses its file, sizes, manifest entry and alt', async () => {
   const root = project();
   const r = await mediaOp(root, env, { op: 'delete', key: 'a/free.jpg' });
   assert.equal(r.status, 200);
@@ -151,7 +151,7 @@ test('delete: a local photo loses its file, sizes, manifest entry and alt', asyn
   assert.equal(photosOf(root)['a/used.jpg'].alt, 'Used');
 });
 
-test('delete: an R2 photo loses every size in R2 and its photos.json entry', async () => {
+test('delete: an R2 image loses every size in R2 and its photos.json entry', async () => {
   const root = project();
   deletes = [];
   const r = await mediaOp(root, env, { op: 'delete', key: R2 });

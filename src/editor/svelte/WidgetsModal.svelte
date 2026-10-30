@@ -79,7 +79,7 @@
     {#if type === 'text'}<b class="w40 h4"></b><b class="w70 h12"></b><b class="w90 h4"></b><b
         class="w60 h4"
       ></b>
-    {:else if type === 'photo'}<b class="img"></b><b class="w40 h4"></b>
+    {:else if type === 'image'}<b class="img"></b><b class="w40 h4"></b>
     {:else if type === 'button'}<b class="pill"></b>
     {:else if type === 'form'}<b class="w90 h8 box"></b><b class="w90 h8 box"></b><b
         class="w90 h16 box"

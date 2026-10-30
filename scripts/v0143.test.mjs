@@ -23,12 +23,12 @@ test('v0.1.43: an added Hero: all columns, 68 rows (Rows); other widgets still 4
   const hero = addWidget(store, F, 0, 'hero');
   assert.deepEqual(hero.layout.base, { col: 1, span: COLS, row: 1, rows: 68 });
   assert.equal(hero.size, 'rows');
-  const text = addWidget(store, F, 0, 'photo');
+  const text = addWidget(store, F, 0, 'image');
   assert.equal(text.layout.base.span, 40);
   assert.equal(text.layout.base.rows, 6);
   addSection(store, F, 'hero');
   assert.equal(store.current[F].sections[1].widgets[0].layout.base.span, COLS);
-  // an empty Hero (no photo, no name) is valid content and renders
+  // an empty Hero (no image, no name) is valid content and renders
   assert.deepEqual(checkContent(F, store.current[F]), []);
 });
 
@@ -76,7 +76,7 @@ test("v0.1.44: every handle shows on a selected widget; an Auto one's height dra
   assert.doesNotMatch(o, /\.sel\.is-free \.handle:not/);
   const store = createStore();
   store.load({ [F]: { version: 1, kind: 'page', id: 'pg-t145', sections: [] } });
-  addSection(store, F, 'photo');
+  addSection(store, F, 'image');
   const widget = () => store.current[F].sections[0].widgets[0];
   store.current[F].sections[0].widgets[0].size = undefined;
   placeWidget(store, F, 0, 0, { col: 1, span: 40, row: 1, rows: 20 }, undefined, { size: 'rows' });

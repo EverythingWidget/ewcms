@@ -12,7 +12,7 @@
  * on the widget's element itself. Scroll positions are measured on what moves (a reveal: its
  * first target; a split: each target; scroll: the widget).
  *
- * An element (inside a widget type, with its own markup: the hero's photos and title,
+ * An element (inside a widget type, with its own markup: the hero's images and title,
  * album elements, the project preview):
  *
  *   spec = defaults ⟵ animations[animation] ⟵ targets[id] ⟵ its widget's elements[id] ⟵ data-anim-options (JSON)

@@ -210,7 +210,7 @@ src/
     seo.js          ← titles, descriptions, canonical, Open Graph
     redirects.js    ← redirects.json → _redirects, moved items
     hrefs.js        ← links to pages, items and anchors
-    backdrop.js     ← a page's photo backdrop
+    backdrop.js     ← a page's image backdrop
     layout/         ← sections and widgets on the square 120-column grid, real rows, ids (see "Layout")
     widgets/         ← the widget registry: every widget type (see "Layout")
     templates/      ← layout, header/menu, footer (its sections), partials
@@ -283,7 +283,7 @@ site settings can live side by side):
 | `content/en/strings.json`             | UI text of the templates: the menu button and clock labels (`nav.menu`, `nav.close`, `nav.clock`)                                                                                                                                                                                                                 |
 | `content/en/settings/site.json`       | name, the **SEO defaults** (`title`, `titleTemplate`, `description`, `ogImage`, `url`, `robots`, `lang`; see "SEO"), `forms` (where contact forms send, see "Contact form"), socials, email, `timezone` of the clock, `jobTitle` / `country` (structured data on home)                                            |
 | `content/en/settings/animations.json` | **every animation** (see below)                                                                                                                                                                                                                                                                                   |
-| `content/en/pages/index.json`         | home: its `sections` of widgets (the hero first: the big name, its text and the **scattered hero photos**, position `x/y/w` in %, `phone` over them (`{ x?, y?, w? }`, `null`: hidden on phones), `depth`, `layer` back/front), curtain text                                                                      |
+| `content/en/pages/index.json`         | home: its `sections` of widgets (the hero first: the big name, its text and the **scattered hero images** (`images`), position `x/y/w` in %, `phone` over them (`{ x?, y?, w? }`, `null`: hidden on phones), `depth`, `layer` back/front), curtain text                                                           |
 | `content/en/pages/<page>/index.json`  | the other pages: their `sections` of widgets (see "Layout"), curtain text, `meta`: its title, description, share image, `noindex`, canonical (see "SEO")                                                                                                                                                          |
 | `content/en/sources/people.json`      | models: `id`, `slug`, `title`, role, `body`, location, `accent`, `cover` (the path of one of its photos), `images[]` (photo paths)                                                                                                                                                                                |
 | `content/en/sources/places.json`      | places, same shape                                                                                                                                                                                                                                                                                                |
@@ -313,7 +313,7 @@ shaped like the widget registry's fields (`src/site/schemas.js`):
     { "key": "name", "label": "Name", "type": "text", "required": true },
     { "key": "role", "label": "Role", "type": "text", "width": "half", "list": true },
     { "key": "year", "label": "Year", "type": "number", "width": "half" },
-    { "key": "images", "label": "Photos", "type": "images" }
+    { "key": "images", "label": "Images", "type": "images" }
   ]
 }
 ```
@@ -375,7 +375,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
     },
     {
       "id": "w-2fq0",
-      "type": "photo",
+      "type": "image",
       "src": "people/noor/01.jpg",
       "size": "aspect",
       "aspect": "4:5",
@@ -471,7 +471,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   (first column 1–120, columns, first row; without a layout it is full width in row 1), and its
   `link`. `phone`: only what changes on phones, over what it would show there (its
   base area halved, its base link with the gap halved); `null`: hidden on phones.
-  The same rule as hero photos (`x/y/w` plus `phone`).
+  The same rule as hero images (`x/y/w` plus `phone`).
 - **The navbar** (v0.1.19): a page's first section starts at the very top of the page (its
   background and preset height run behind the fixed header), but its grid starts below it: row 1
   begins at the navbar's bottom edge (its `padding-top: var(--nav-h)`), so no widget sits under
@@ -552,10 +552,10 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
 | type       | what                                                                                                                                                                         |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `text`     | rich text: `body` lines (see "Text widget"); `place` top to bottom (`top` / `center` / `bottom`)                                                                             |
-| `photo`    | one photo (`src`) with an optional `caption`; in an Aspect or Rows widget its `box` (`fill`: cover / `fit`: contain) and `place` (one of nine, `left top` … `right bottom`)  |
+| `image`    | one image (`src`) with an optional `caption`; in an Aspect or Rows widget its `box` (`fill`: cover / `fit`: contain) and `place` (one of nine, `left top` … `right bottom`)  |
 | `button`   | a button: `label`; config `link` (see Links); `box` (`fit`: hugs its label / `fill`: the whole widget) and `place` (nine)                                                    |
 | `form`     | a contact form (see "Contact form")                                                                                                                                          |
-| `hero`     | the home hero: `title` (one word per line), `eyebrow`, `body`, scattered `photos`; as tall as its widget (Rows / Aspect), Auto: its section's preset height under the navbar |
+| `hero`     | the home hero: `title` (one word per line), `eyebrow`, `body`, scattered `images`; as tall as its widget (Rows / Aspect), Auto: its section's preset height under the navbar |
 | `grid`     | **list**: a head + tiles of its source's items; config `layout` (`staggered` / `even`); `places` shows cards                                                                 |
 | `albums`   | **list**: album cards of its items (the people/places index); config `layout` (`portrait` / `landscape`)                                                                     |
 | `panels`   | big links to sources: `panels` `[{ source, title, unit }]` (photography)                                                                                                     |
@@ -580,7 +580,7 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
   URL shows the items matching that page's address; a type marked `item` (the `album` widget)
   reads its first for its photos, and its texts, like any widget's, are bindings to it (below).
 - **Animations:** a widget's `motion` picks its animation (a new widget gets its type's default
-  from the registry, e.g. text `lines-up`, photo `image-reveal`, grid `grid-reveal`). Composite
+  from the registry, e.g. text `lines-up`, image `image-reveal`, grid `grid-reveal`). Composite
   widgets (hero, heading, album, section heads) keep `data-anim` **elements** inside them
   for their own pieces (see Animations).
 - **A new type:** add it to a file in `src/site/widgets/` and to `WIDGET_TYPES` in `index.js`
@@ -682,7 +682,7 @@ Which items a widget shows is its `source` (`src/site/layout/source.js`), one of
 
 ### Bindings
 
-Any text, long text, photo or link field of a widget (and a link in its config, `link`) can show a
+Any text, multi-line text, image or link field of a widget (and a link in its config, `link`) can show a
 value of a **source item** instead of its own (`src/site/layout/bindings.js`):
 
 ```json
@@ -780,7 +780,7 @@ A link in the content says what it points at; its URL is made at build time
 never breaks one: `{ "page": "pg-k3x9" }` (a page by its id, the `"id"` in its file),
 `{ "item": { "source": "people", "id": "p-k3x9" } }` (an item's page) or
 `{ "href": "https://…" }` (a full URL, `mailto:`, `#anchor`). Widget settings (a button's,
-a heading's `link`), hero photos and the menus use them; the editor picks them from one list
+a heading's `link`), hero images and the menus use them; the editor picks them from one list
 (pages, items, the widget's item fields, External URL). Redirects stay paths: they are for
 URLs from outside.
 
@@ -986,7 +986,7 @@ Only source items can be placeholders.
 480/960/1600 px WebP files in `public/media/` and writes `.generated/media.json` with sizes,
 a tiny blurred placeholder (LQIP) and the image's most vivid colour. Templates use it for
 `srcset`, `width/height` (no layout shift) and lazy loading. Unchanged images are skipped.
-Photos load lazily, except the first ones at the top of a page (`firstPhotos(i)` in
+Photos load lazily, except the first ones at the top of a page (`firstImages(i)` in
 `src/site/helpers.js`, by template position): the first hero photo, people/places card and
 photography panel gets `loading="eager" fetchpriority="high"`, the next two `loading="eager"`.
 Album pages load their first two slides eagerly, and About its photo.
@@ -1020,7 +1020,7 @@ Media window write it right away). A key missing from it renders as a plain `<im
 build warns. **Delete** in the Media window (only for photos nothing uses) removes every size
 from R2 (`deletePhoto`, a SigV4 `DELETE` per key) and the entry.
 
-The content stores keys, not URLs: `mediaUrl()` / `photoOf()` (`src/site/helpers.js`) turn a
+The content stores keys, not URLs: `mediaUrl()` / `imageOf()` (`src/site/helpers.js`) turn a
 value into URLs when the page is rendered. A path that is in `media/` stays local, a full
 `https://` URL is used as is, anything else is `site.json` `mediaUrl` + `/` + key (Settings >
 Photos). So the photo domain can change in one place, and existing photos keep working.
@@ -1044,7 +1044,7 @@ Setup, once:
 4. Copy `.env.example` to `.env.local` and fill in `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`,
    `R2_SECRET_ACCESS_KEY` and `R2_BUCKET`.
 5. Restart `npm run dev`.
-6. Editor > Settings > **Photos**: set the photo address to `https://photos.eeliyarasta.com`,
+6. Editor > Settings > **Images**: set the image address to `https://photos.eeliyarasta.com`,
    Save.
 
 No CORS rule is needed: the dev server uploads, and pages only show the photos.
@@ -1100,7 +1100,7 @@ Markup only says **what** an element is: `data-anim="hero.title"`. All the **how
 
 **No defaults, no comments.** A value equal to its default is left out
 (`src/site/defaults.js`): a section's `enabled: true`, `width: "contained"`, `height: "fit"`; a
-widget's `size: "auto"` and `config.enabled: true`; a hero photo's `layer: "back"`. Validation
+widget's `size: "auto"` and `config.enabled: true`; a hero image's `layer: "back"`. Validation
 reports a stored default, and the editor's save strips them. Keys starting with `_` (comments)
 are refused anywhere in content: this README documents the shape. The animation library is the
 exception: each animation carries every value it uses (there is no global layer below it).
@@ -1122,7 +1122,7 @@ are a widget's `motion.elements` (`{ "<target>": { … } }`), written by the vis
 `end` when `"scrub"` is `true` or a number (seconds of smoothing).
 Types (`src/client/anim/types.js`): `reveal`, `split` (SplitText chars/words/lines, masked),
 `scroll` (from → to tied to the scrollbar between `start` and `end`, always scrubbed, linear by
-default), `scrub-words`, `parallax`, `scatter` (hero photo burst + endless drift + scroll depth),
+default), `scrub-words`, `parallax`, `scatter` (hero image burst + endless drift + scroll depth),
 `hero-title`, `hover-preview`. New effect = new type function + animation. Entrance animations
 (reveal/split, played once on load or when scrolled to) and scroll-linked ones (scroll,
 scrub-words, parallax, or any reveal with `scrub`) are all just animations: the library has e.g.
@@ -1133,7 +1133,7 @@ while it crosses the screen), `fade-scrub` (fades in from `top 95%` to `top 55%`
 **Widget motion.** A widget (Layout, above) picks its animation in its own content:
 
 ```json
-{ "id": "w-2fq0", "type": "photo", "motion": { "animation": "parallax-y", "end": "bottom 20%" } }
+{ "id": "w-2fq0", "type": "image", "motion": { "animation": "parallax-y", "end": "bottom 20%" } }
 ```
 
 `animation` is an animation id; every other key is a timing override (`TIMING_KEYS` in
@@ -1148,8 +1148,8 @@ scroll, scrub-words, parallax); `scatter`, `hero-title` and `hover-preview` stay
 `data-anim` elements.
 
 `data-anim` is still used for what is not a widget (curtain, header, menu) and for the
-**elements** of composite widgets (hero photos/title/meta, a heading's title and intro,
-album, section heads). The old per-element hooks widgets replace (text, photo, form title,
+**elements** of composite widgets (hero images/title/meta, a heading's title and intro,
+album, section heads). The old per-element hooks widgets replace (text, image, form title,
 intro, grids, album grids/panels, projects list) are gone: their targets were removed from
 `animations.json`.
 
@@ -1273,9 +1273,9 @@ title in `--c-widget-accent`); **Add widget** adds one below the others, **Add s
 section (empty, or with a widget). Clicking a widget (or a text of it in the preview) opens the
 **widget inspector**: **Content** (its settings and fields, from the registry), **Layout**
 (see below) and **Motion** (the widget's animation and timing, the same view as in the Motion
-tab). Its head row is the quiet ← (back to the sections) and the widget's name. A list field (hero photos,
+tab). Its head row is the quiet ← (back to the sections) and the widget's name. A list field (hero images,
 photography panels) has its items in boxes with ↑ / ↓ / Remove and an
-**Add** button (a new photo opens the Media window). Each of these is one undo step. Typing in
+**Add** button (a new image opens the Media window). Each of these is one undo step. Typing in
 a field (a number in Layout too) is one undo step until you leave it, press Enter or pause for a
 second. A field's **Source** switch binds it to an item (see "Bindings").
 
@@ -1291,7 +1291,7 @@ whole left or right edge is a grip, not only its middle handle). A widget added 
 is Rows, 40 columns × 6 rows; a Hero the section's full width × 68 rows (about a screen under
 the header at 1440 × 900; a type's `added: { span, rows }`). A
 **double click** on a text edits it in place (until you click elsewhere, press Esc or Enter in
-a one-line text); a double click on a photo or a bound value opens its field in the panel.
+a one-line text); a double click on an image or a bound value opens its field in the panel.
 Links, buttons and forms in the preview don't act on clicks (Alt+click follows a link).
 **Links:** the selected and the hovered widget show a small circle above their top edge and one
 below their bottom edge. Drag a widget's **top circle onto another widget's bottom circle** (the
@@ -1358,13 +1358,13 @@ section you are scrolling through stays on top of the panel. The footer sums up 
 one line (`Unsaved changes`, `2 changes to publish`, `All published`); its tooltip has the
 details (files, commits not pushed, the last save).
 
-**Photo fields** show the photo (64 px), its file name and sizes (`1600×2000 · 3 sizes · R2`,
+**Image fields** show the image (64 px), its file name and sizes (`1600×2000 · 3 sizes · R2`,
 `1280×1600 · local`); no text input. The thumbnail or **Change** opens the **Media window**
-(also the images button in the toolbar): every photo, R2 and local, filtered All / R2 / Local,
-with Upload (see [Photos on Cloudflare R2](#photos-on-cloudflare-r2)). The selected photo shows
+(also the images button in the toolbar): every image, R2 and local, filtered All / R2 / Local,
+with Upload (see [Photos on Cloudflare R2](#photos-on-cloudflare-r2)). The selected image shows
 its sizes, where the content uses it (click to go there) and its alt text. Opened from a field,
-**Use this photo** puts it in the field (one undo step). **Delete** is offered only for photos
-nothing uses: an R2 photo loses all its sizes, a local one its file in `media/` (Publish only
+**Use this image** puts it in the field (one undo step). **Delete** is offered only for images
+nothing uses: an R2 image loses all its sizes, a local one its file in `media/` (Publish only
 commits `content/`, so commit that removal yourself). `&media=<key>` (and `&pick=<field>`)
 in the URL reopens it.
 

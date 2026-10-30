@@ -2,11 +2,11 @@
  * The built-in Hero widget (hero): a widget module like any custom one (../index.js has
  * the format), its default export the definition.
  */
-import { html, esc, img, lines, words, firstPhotos, sizes } from '../../helpers.js';
+import { html, esc, img, lines, words, firstImages, sizes } from '../../helpers.js';
 import { t } from '../../strings.js';
 import { hrefOf } from '../../hrefs.js';
 
-const heroPhoto = (ctx, widget, p, i) => {
+const heroImage = (ctx, widget, p, i) => {
   // phone: its own x / y / w over the desktop's (partly or all); null: hidden on phones
   const mobile = p.phone !== null;
   const ph = { x: p.x, y: p.y, w: p.w, ...(p.phone || {}) };
@@ -14,14 +14,14 @@ const heroPhoto = (ctx, widget, p, i) => {
   if (!p.src) return '';
   return html` <a
     class="scatter scatter--${p.layer === 'front' ? 'front' : 'back'}${mobile ? '' : ' scatter--desktop'}"
-    href="${esc(hrefOf(ctx, p.link, 'a hero photo'))}"
+    href="${esc(hrefOf(ctx, p.link, 'a hero image'))}"
     style="${style}"
     data-depth="${p.depth}"
     aria-label="${esc(p.label)}"
   >
     <span class="scatter__drift"
       ><span class="scatter__frame">
-        ${img(ctx, p.src, { decorative: true, sizes: sizes(`${mobile ? ph.w : 30}vw`, `${p.w}vw`), ...firstPhotos(i), attrs: widget.ed(['photos', i, 'src'], 'image') })}
+        ${img(ctx, p.src, { decorative: true, sizes: sizes(`${mobile ? ph.w : 30}vw`, `${p.w}vw`), ...firstImages(i), attrs: widget.ed(['images', i, 'src'], 'image') })}
       </span></span
     >
   </a>`;
@@ -41,31 +41,31 @@ export const longestWord = (text) =>
       .map((w) => [...w].length),
   );
 
-/** The Hero's looks (style): the first photo beside the name or behind it, or all scattered. */
+/** The Hero's looks (style): the first image beside the name or behind it, or all scattered. */
 export const HERO_STYLES = [
-  ['beside', 'Photo beside'],
-  ['behind', 'Photo behind'],
+  ['beside', 'Image beside'],
+  ['behind', 'Image behind'],
   ['scattered', 'Scattered'],
 ];
 const styleOf = (s) => (HERO_STYLES.some(([v]) => v === s.style) ? s.style : 'scattered');
 
-// beside / behind: the first photo with a file, one big photo (no scatter, no drift)
-const leadPhoto = (ctx, widget, photos, look) => {
-  const i = photos.findIndex((p) => p?.src);
+// beside / behind: the first image with a file, one big image (no scatter, no drift)
+const leadImage = (ctx, widget, images, look) => {
+  const i = images.findIndex((p) => p?.src);
   if (i < 0) return '';
-  return html`<div class="hero__photo">
-    ${img(ctx, photos[i].src, { decorative: true, sizes: look === 'beside' ? '50vw' : '100vw', ...firstPhotos(0), attrs: widget.ed(['photos', i, 'src'], 'image') })}
+  return html`<div class="hero__image">
+    ${img(ctx, images[i].src, { decorative: true, sizes: look === 'beside' ? '50vw' : '100vw', ...firstImages(0), attrs: widget.ed(['images', i, 'src'], 'image') })}
   </div>`;
 };
 
 /**
- * The big name with photos (style: beside | behind | scattered, see HERO_STYLES; scattered when
- * unset) (photos: [{ src, link, label, x, y, w, phone?: { x?, y?, w? } | null, depth?, layer? }]). */
+ * The big name with images (style: beside | behind | scattered, see HERO_STYLES; scattered when
+ * unset) (images: [{ src, link, label, x, y, w, phone?: { x?, y?, w? } | null, depth?, layer? }]). */
 export const hero = {
   type: 'hero',
   label: 'Hero',
   icon: 'star',
-  line: 'Your name with a photo beside or behind it, or photos scattered around',
+  line: 'Your name with an image beside or behind it, or images scattered around',
   sketch: 'hero',
   fields: [
     { key: 'style', label: 'Style', type: 'seg', options: HERO_STYLES, unset: 'scattered' },
@@ -73,26 +73,26 @@ export const hero = {
     { key: 'eyebrow', label: 'Eyebrow', width: 'half' },
     { key: 'body', label: 'Subline', type: 'multiline' },
     {
-      key: 'photos',
-      label: 'Photos',
+      key: 'images',
+      label: 'Images',
       list: { src: 'image', link: { type: 'link', label: 'Link' } },
-      // a new photo: in the middle, behind the name (x / y / w in % of the hero; see heroPhoto)
+      // a new image: in the middle, behind the name (x / y / w in % of the hero; see heroImage)
       item: { src: '', x: 40, y: 30, w: 16, depth: 1 },
     },
   ],
   // added from the editor: the section's whole width and about a screen under the menu (68 rows
   // of 12px at 1440px wide, the viewport's 900px less the header), not the usual 40 × 6
   added: { span: 'all', rows: 68 },
-  defaults: { style: 'scattered', title: 'Your name', eyebrow: '', body: '', photos: [] },
+  defaults: { style: 'scattered', title: 'Your name', eyebrow: '', body: '', images: [] },
   render: (s, ctx, widget) => {
     const look = styleOf(s);
     return html` <div class="hero hero--${look}" data-hero>
       ${
         look === 'scattered'
-          ? html`<div class="hero__photos" data-anim="hero.photos">
-            ${(s.photos || []).map((p, i) => heroPhoto(ctx, widget, p, i))}
+          ? html`<div class="hero__images" data-anim="hero.images">
+            ${(s.images || []).map((p, i) => heroImage(ctx, widget, p, i))}
           </div>`
-          : leadPhoto(ctx, widget, s.photos || [], look)
+          : leadImage(ctx, widget, s.images || [], look)
       }
       <h1
         class="hero__title"

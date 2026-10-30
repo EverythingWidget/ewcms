@@ -18,9 +18,9 @@ test('v0.1.40: newest tag, the site dependency, changelog lines', () => {
     },
   );
   assert.equal(engineDep({ dependencies: { ewcms: 'file:../ewcms' } }), null);
-  assert.deepEqual(changeLine('fa15000abc', 'v0.1.36: Photo fit; more\n\nbody'), {
+  assert.deepEqual(changeLine('fa15000abc', 'v0.1.36: Image fit; more\n\nbody'), {
     ref: 'v0.1.36',
-    text: 'Photo fit',
+    text: 'Image fit',
   });
   assert.deepEqual(changeLine('fa15000abc', 'Hero title wraps'), {
     ref: 'fa15000',

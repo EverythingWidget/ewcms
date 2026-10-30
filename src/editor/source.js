@@ -88,8 +88,8 @@ export const pagesOp = (body) =>
   });
 
 /**
- * The Media window's photo ops (POST /__editor/media, mediaOp in scripts/editor-server.mjs):
- * { op: 'alt', key, alt } or { op: 'delete', key }. Takes the fresh photo lists it answers.
+ * The Media window's image ops (POST /__editor/media, mediaOp in scripts/editor-server.mjs):
+ * { op: 'alt', key, alt } or { op: 'delete', key }. Takes the fresh image lists it answers.
  */
 export async function mediaOp(body) {
   const res = await json('/__editor/media', {
@@ -103,8 +103,8 @@ export async function mediaOp(body) {
 }
 
 /**
- * Upload a photo (POST /__editor/upload), which the dev server resizes: to Cloudflare R2,
- * resolving to { key, photo }, or without the R2 keys to the site's media/ folder, resolving to
+ * Upload an image (POST /__editor/upload), which the dev server resizes: to Cloudflare R2,
+ * resolving to { key, image }, or without the R2 keys to the site's media/ folder, resolving to
  * { key, local: true, media } (the fresh media/ list). key is the value to store in the content. onprogress(0..1)
  * follows the bytes going up (fetch can't, so XMLHttpRequest); at 1 the server is resizing.
  */

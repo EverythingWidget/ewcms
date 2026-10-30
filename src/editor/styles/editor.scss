@@ -225,7 +225,7 @@ kbd {
 // parts (has its own values): centered in their left padding, absolute.
 .tf.is-changed > .tf__label::before,
 .tf.is-changed .sc__label::before,
-.tf.is-changed .photo__label::before,
+.tf.is-changed .image__label::before,
 .sec.is-changed > .sec__bar::before,
 .pane__head.is-changed::before,
 :is(.xrow, .mlist__element).is-changed::before {
@@ -237,7 +237,7 @@ kbd {
 
 .tf.is-changed > .tf__label,
 .tf.is-changed .sc__label,
-.tf.is-changed .photo__label {
+.tf.is-changed .image__label {
   color: var(--c-text);
 }
 

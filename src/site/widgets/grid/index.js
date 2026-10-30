@@ -1,5 +1,5 @@
 /**
- * The built-in Photo grid widget (grid): a widget module like any custom one (../index.js has
+ * The built-in Image grid widget (grid): a widget module like any custom one (../index.js has
  * the format), its default export the definition.
  */
 import { html, esc, img, pad, itemHref, ed, coverOf, sizes } from '../../helpers.js';
@@ -8,11 +8,11 @@ import { schemaOf } from '../../schemas.js';
 import { sectionHead } from '../../templates/partials.js';
 import { sourcePage } from '../data.js';
 
-/** Photo paths of a source item: albums have images[], projects a single image. */
+/** Image paths of a source item: albums have images[], projects a single image. */
 const imagesOf = (item) =>
   Array.isArray(item?.images) ? item.images : item?.image ? [item.image] : [];
 
-/** Interleave the first N images of each item (e.g. 4 per person) for a photo-tile grid. */
+/** Interleave the first N images of each item (e.g. 4 per person) for an image-tile grid. */
 const interleave = (items, indexOf, perItem = 4) => {
   const tiles = [];
   for (let i = 0; i < perItem; i++)
@@ -24,8 +24,8 @@ const interleave = (items, indexOf, perItem = 4) => {
   return tiles;
 };
 
-/** Photo tiles (people look): the first 4 images of every item, interleaved. */
-const photoTiles = (ctx, source, items, layout, indexOf) => {
+/** Image tiles (people look): the first 4 images of every item, interleaved. */
+const imageTiles = (ctx, source, items, layout, indexOf) => {
   const { title } = schemaOf(ctx, source); // the field that names an item
   return html` <div class="tiles${layout === 'even' ? ' tiles--even' : ''}">
     ${interleave(items, indexOf).map(
@@ -38,7 +38,7 @@ const photoTiles = (ctx, source, items, layout, indexOf) => {
   </div>`;
 };
 
-/** Landscape cards (places look): cover image, name, location · year · photo count. */
+/** Landscape cards (places look): cover image, name, location · year · image count. */
 const placeCards = (ctx, source, items, layout, indexOf) =>
   html` <div
     class="placecards${layout === 'even' ? ' placecards--even' : ''}"
@@ -57,19 +57,19 @@ const placeCards = (ctx, source, items, layout, indexOf) =>
     })}
   </div>`;
 
-/** Which tile look a grid uses, by source. Anything not listed gets photo tiles. */
+/** Which tile look a grid uses, by source. Anything not listed gets image tiles. */
 const GRID_LOOKS = { places: placeCards };
 
 /**
- * A head (eyebrow, title, button), then its source's photos as tiles (or place cards for
+ * A head (eyebrow, title, button), then its source's images as tiles (or place cards for
  * places): a list widget (its items: all of a source, or the ones From URL matches).
  */
 export const grid = {
   type: 'grid',
   list: true,
-  label: 'Photo grid',
+  label: 'Image grid',
   icon: 'table-cells',
-  line: 'Photos from a source list',
+  line: 'Images from a source list',
   sketch: 'grid',
   fields: [
     { key: 'eyebrow', label: 'Label', width: 'half' },
@@ -98,7 +98,7 @@ export const grid = {
   render: (s, ctx, widget) => {
     // no source (None): its head without a link, and no tiles
     const source = widget.source || '';
-    const look = GRID_LOOKS[source] || photoTiles;
+    const look = GRID_LOOKS[source] || imageTiles;
     const layout = s.config?.layout === 'even' ? 'even' : 'staggered';
     return html` <div class="gridwidget gridwidget--${esc(source)}">
       ${sectionHead({ at: widget.ed, ...s, href: source && sourcePage(ctx, source) })}

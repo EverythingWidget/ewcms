@@ -1,13 +1,13 @@
 <!--
-  Media window: every photo the site can use, the ones uploaded to Cloudflare R2
+  Media window: every image the site can use, the ones uploaded to Cloudflare R2
   (content/en/settings/photos.json) and the ones in media/ (the media manifest). Like the
-  Pages and Sources windows: the header with where it is, the photos left (a grid, filtered
+  Pages and Sources windows: the header with where it is, the images left (a grid, filtered
   by All / R2 / Local), the selected one right: a larger preview, its sizes, where the
-  content uses it (click to go there) and its alt text, which belongs to the photo.
+  content uses it (click to go there) and its alt text, which belongs to the image.
   Upload (or drop files anywhere on the window) resizes and stores them in R2, a few at a
-  time, each tile showing how far it is. Opened from a photo field (openMedia, with `pick`)
-  it offers "Use this photo": the field gets the key, one undo step. Delete is only there for
-  photos nothing uses. Alt text, credit and Delete go straight to disk (source.mediaOp), like uploads.
+  time, each tile showing how far it is. Opened from an image field (openMedia, with `pick`)
+  it offers "Use this image": the field gets the key, one undo step. Delete is only there for
+  images nothing uses. Alt text, credit and Delete go straight to disk (source.mediaOp), like uploads.
   Where it is lives in ui.media (persist.js).
 -->
 <script>
@@ -23,14 +23,14 @@
     fallback,
     imageUrl,
     isR2,
-    photoInfo,
-    photoLine,
+    imageInfo,
+    imageLine,
     thumbUrl,
   } from './media.svelte.js';
   import { labelFor } from './content-groups.js';
   import { splitEdit } from '../../site/helpers.js';
-  import { photoUses } from '../lib/photo-uses.js';
-  import { appendPhotos } from '../lib/photo-list.js';
+  import { imageUses } from '../lib/image-uses.js';
+  import { appendImages } from '../lib/image-list.js';
   import { parse } from '../lib/pointer.js';
   import { mediaOp, upload } from '../source.js';
   import { toast } from './toasts.svelte.js';
@@ -48,10 +48,10 @@
   ];
   // without the R2 keys (media.r2), the window's own words: Upload saves to media/
   const HINTS = {
-    all: 'Every photo the site can use, in media/. Pick one to see where it is used and to edit its alt text. Drop photos on this window to upload them.',
+    all: 'Every image the site can use, in media/. Pick one to see where it is used and to edit its alt text. Drop images on this window to upload them.',
     local:
-      "Local photos are saved in your site's media/ folder and resized to WebP (480, 960, 1600 px) with their size and colour. Pick one to see where it is used and to edit its alt text.",
-    r2: 'Photos uploaded to Cloudflare R2 show here once it is set up. Photos in media/ are under Local.',
+      "Local images are saved in your site's media/ folder and resized to WebP (480, 960, 1600 px) with their size and colour. Pick one to see where it is used and to edit its alt text.",
+    r2: 'Images uploaded to Cloudflare R2 show here once it is set up. Images in media/ are under Local.',
   };
   const R2_HELP = 'https://github.com/EverythingWidget/ewcms#photos-on-cloudflare-r2';
   const uid = $props.id();
@@ -72,14 +72,14 @@
   );
   const setUpR2 = $derived(!media.r2 && ui.media.filter === 'r2');
   const known = $derived(!!key && (isR2(key) || !!media.manifest[key]));
-  // where the content (with unsaved edits) uses the selected photo
+  // where the content (with unsaved edits) uses the selected image
   const uses = $derived.by(() => {
     live.version;
-    return known ? photoUses(live.store.current, key) : [];
+    return known ? imageUses(live.store.current, key) : [];
   });
   const pick = $derived(ui.media.pick ? splitEdit(ui.media.pick) : null);
   const current = $derived(pick ? live.get(pick.file, pick.ptr) : undefined);
-  // a photo list's Add photo (openMedia multi): clicks toggle, in pick order; Add appends them
+  // an image list's Add image (openMedia multi): clicks toggle, in pick order; Add appends them
   const multi = $derived(ui.media.multi?.list ? ui.media.multi : null);
   let picked = $state([]);
   const n = $derived(picked.length);
@@ -91,7 +91,7 @@
 
   function addPicked() {
     const { file, ptr } = splitEdit(multi.list);
-    const list = appendPhotos(live.get(file, ptr), picked, multi);
+    const list = appendImages(live.get(file, ptr), picked, multi);
     live.store.set(file, ptr, list, { source: 'panel', structure: true });
     close();
   }
@@ -103,7 +103,7 @@
     credit = { name: '', source: '', ...media.photos[next]?.credit };
   }
 
-  /** Open the window (on its photo); pick: see openMedia in media.svelte.js. */
+  /** Open the window (on its image); pick: see openMedia in media.svelte.js. */
   export function open() {
     picked = [];
     select(ui.media.key);
@@ -218,7 +218,7 @@
     },
   };
 
-  // ---- the selected photo
+  // ---- the selected image
   async function saveAlt() {
     const text = alt.replace(/\s+/g, ' ').trim();
     if (text === (media.photos[key]?.alt || '')) return;
@@ -246,7 +246,7 @@
     busy = true;
     try {
       await mediaOp({ op: 'delete', key });
-      toast(`Deleted ${photoInfo(key).name}`, { kind: 'ok', note: key });
+      toast(`Deleted ${imageInfo(key).name}`, { kind: 'ok', note: key });
       delete media.blobs[key];
       select('');
     } catch (err) {
@@ -267,11 +267,11 @@
     close();
   }
 
-  /** A use as a row: "Noor Vermeer / photo 4" in "people.json" */
+  /** A use as a row: "Noor Vermeer / image 4" in "people.json" */
   const where = (u) => ({
     name: labelFor(live.store, u).replace(
-      /(?:images|photos) \/ #?(\d+)(?: \/ src)?$/,
-      (_, n) => `photo ${Number(n) + 1}`,
+      /(?:images|images) \/ #?(\d+)(?: \/ src)?$/,
+      (_, n) => `image ${Number(n) + 1}`,
     ),
     meta: u.file,
   });
@@ -330,12 +330,12 @@
     sep="/"
     crumbs={[
       { label: 'media', onclick: () => select('') },
-      ...(key ? [{ label: photoInfo(key).name }] : []),
+      ...(key ? [{ label: imageInfo(key).name }] : []),
     ]}
     onclose={close}
   />
 
-  <nav class="md-list" aria-label="Photos">
+  <nav class="md-list" aria-label="Images">
     <div class="row md-list__head">
       <Tabs
         class="md-filter"
@@ -349,8 +349,8 @@
         size="small"
         icon="upload"
         title={media.r2
-          ? 'Upload photos to R2 (or drop them here)'
-          : 'Upload photos to media/ (or drop them here)'}
+          ? 'Upload images to R2 (or drop them here)'
+          : 'Upload images to media/ (or drop them here)'}
         onclick={pickFiles}
       >
         Upload
@@ -362,7 +362,7 @@
         <i class="fa-solid fa-cloud md-setup__icon" aria-hidden="true"></i>
         <b class="md-setup__title">R2 isn’t set up yet</b>
         <span>
-          Photos on Cloudflare R2 load from your own photo domain. Add these keys to
+          Images on Cloudflare R2 load from your own image domain. Add these keys to
           <code>.env.local</code> in your site, then restart <code>npm run dev</code>:
         </span>
         <span class="md-setup__keys">
@@ -397,8 +397,8 @@
               (multi ? picked.includes(k) : k === key) && 'is-selected',
               k === current && 'is-current',
             ]}
-            title="{k} · {photoLine(k)}"
-            aria-label={photoInfo(k).name}
+            title="{k} · {imageLine(k)}"
+            aria-label={imageInfo(k).name}
             aria-current={!multi && k === key}
             aria-pressed={multi ? picked.includes(k) : undefined}
             onclick={() => (multi ? toggle(k) : select(k))}
@@ -412,13 +412,13 @@
       {/each}
     </ul>
     {#if !keys.length && !pending.length && !setUpR2}
-      <p class="hint small">No photos here yet: upload some, or drop them on this window.</p>
+      <p class="hint small">No images here yet: upload some, or drop them on this window.</p>
     {/if}
   </nav>
 
   <section class="md-detail">
     {#if key && known}
-      {@const info = photoInfo(key)}
+      {@const info = imageInfo(key)}
       <header class="md-detail__head">
         <h4 class="md-detail__title">{info.name}</h4>
         {#if pick}
@@ -429,15 +429,15 @@
             disabled={key === current}
             onclick={use}
           >
-            Use this photo
+            Use this image
           </Button>
         {/if}
       </header>
       <img class="md-preview" src={imageUrl(key)} alt="" {@attach fallback(key)} />
-      <p class="hint small">{photoLine(key)} · {key}</p>
+      <p class="hint small">{imageLine(key)} · {key}</p>
 
       <label class="tf" for="{uid}-alt">
-        <span class="tf__label">Alt text (what the photo shows, for screen readers)</span>
+        <span class="tf__label">Alt text (what the image shows, for screen readers)</span>
         <textarea
           id="{uid}-alt"
           class="tf__input"
@@ -510,11 +510,11 @@
     {:else}
       <p class="hint">
         {multi
-          ? 'Pick the photos to add, in order: each one you click gets its number. Click it again to leave it out.'
+          ? 'Pick the images to add, in order: each one you click gets its number. Click it again to leave it out.'
           : pick
-            ? 'Pick a photo on the left, or upload one, then Use this photo.'
+            ? 'Pick an image on the left, or upload one, then Use this image.'
             : media.r2
-              ? 'Every photo the site can use: uploaded to R2, or in media/. Pick one to see where it is used and to edit its alt text. Drop photos on this window to upload them.'
+              ? 'Every image the site can use: uploaded to R2, or in media/. Pick one to see where it is used and to edit its alt text. Drop images on this window to upload them.'
               : HINTS[ui.media.filter] || HINTS.all}
       </p>
     {/if}
@@ -526,7 +526,7 @@
       <span class="hint small">{n ? `${n} picked` : 'None picked'}</span>
       <Button size="small" onclick={close}>Cancel</Button>
       <Button variant="primary" size="small" icon="plus" disabled={!n} onclick={addPicked}>
-        {n ? `Add ${plural(n, 'photo')}` : 'Add photos'}
+        {n ? `Add ${plural(n, 'image')}` : 'Add images'}
       </Button>
     </footer>
   {/if}
@@ -535,7 +535,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  // like the Pages and Sources windows: header on top, the photos left, the selected one right
+  // like the Pages and Sources windows: header on top, the images left, the selected one right
   dialog.md-modal {
     width: min(1040px, 92vw);
     height: min(720px, calc(100vh - 64px));
@@ -650,7 +650,7 @@
         0 0 0 4px color-mix(in srgb, var(--c-accent) 24%, transparent);
     }
 
-    // the field's photo now
+    // the field's image now
     &.is-current::after {
       content: 'in use here';
       position: absolute;
@@ -715,7 +715,7 @@
   }
 
   // one column as wide as the pane (minmax(0, 1fr): a long name, key or use never widens it;
-  // they cut or wrap), scrolling up and down only; its head (the name and Use this photo)
+  // they cut or wrap), scrolling up and down only; its head (the name and Use this image)
   // stays at the top while it scrolls, so the button is always there
   .md-detail {
     min-width: 0;

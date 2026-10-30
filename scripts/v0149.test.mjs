@@ -9,7 +9,7 @@ const w = (id, base, extra = {}) => ({ id, type: 'text', layout: { base }, ...ex
 test('phone stack: reading order, full width, each following the one before', () => {
   const list = [
     w('w-dddd', { col: 61, span: 60, row: 20 }), // contact button, right of the email line
-    w('w-aaaa', { col: 1, span: 30, row: 1 }), // photo row: 4 thumbnails
+    w('w-aaaa', { col: 1, span: 30, row: 1 }), // image row: 4 thumbnails
     w('w-cccc', { col: 1, span: 60, row: 20 }), // email line
     w('w-bbbb', { col: 31, span: 30, row: 1 }),
   ];

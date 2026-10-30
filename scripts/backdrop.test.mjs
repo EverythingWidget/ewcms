@@ -9,22 +9,22 @@ const page = (backdrop) => ({ version: 1, kind: 'page', id: 'pg-t001', sections:
 const P = ['a/1.jpg', 'a/2.jpg', 'a/3.jpg'];
 
 test('a valid backdrop passes; bad values are named', () => {
-  assert.deepEqual(checkContent(FILE, page({ photos: P })), []);
+  assert.deepEqual(checkContent(FILE, page({ images: P })), []);
   assert.deepEqual(
-    checkContent(FILE, page({ photos: P, transition: 'fade', through: 'none', scrub: true })),
+    checkContent(FILE, page({ images: P, transition: 'fade', through: 'none', scrub: true })),
     [],
   );
   assert.deepEqual(checkBackdrop('x'), [
-    '"backdrop" must be an object { photos, transition, ... }',
+    '"backdrop" must be an object { images, transition, ... }',
   ]);
   const out = checkBackdrop({
-    photos: ['a.jpg', ''],
+    images: ['a.jpg', ''],
     transition: 'slide',
     direction: 'up',
     parallax: 'yes',
     color: 1,
   });
-  assert.ok(out.some((p) => p.includes('"photos"')));
+  assert.ok(out.some((p) => p.includes('"images"')));
   assert.ok(out.some((p) => p.includes('"transition" must be scroll or fade')));
   assert.ok(out.some((p) => p.includes('"direction" must be vertical or horizontal')));
   assert.ok(out.some((p) => p.includes('"parallax" must be true or false')));
@@ -32,18 +32,18 @@ test('a valid backdrop passes; bad values are named', () => {
 });
 
 test("a transition's options belong to it", () => {
-  assert.deepEqual(checkBackdrop({ photos: P, direction: 'horizontal' }), []);
-  assert.deepEqual(checkBackdrop({ photos: P, transition: 'fade', direction: 'horizontal' }), [
+  assert.deepEqual(checkBackdrop({ images: P, direction: 'horizontal' }), []);
+  assert.deepEqual(checkBackdrop({ images: P, transition: 'fade', direction: 'horizontal' }), [
     'backdrop: "direction" is only for the scroll transition',
   ]);
-  assert.deepEqual(checkBackdrop({ photos: P, scrub: true }), [
+  assert.deepEqual(checkBackdrop({ images: P, scrub: true }), [
     'backdrop: "scrub" is only for the fade transition',
   ]);
 });
 
 test('save leaves out defaults, the other transition, and an empty backdrop', () => {
   const full = {
-    photos: P,
+    images: P,
     transition: 'scroll',
     direction: 'vertical',
     through: 'black',
@@ -51,20 +51,20 @@ test('save leaves out defaults, the other transition, and an empty backdrop', ()
     scrub: true,
     enabled: true,
   };
-  assert.deepEqual(omitDefaults(FILE, page(full)).backdrop, { photos: P });
+  assert.deepEqual(omitDefaults(FILE, page(full)).backdrop, { images: P });
   assert.deepEqual(
     omitDefaults(FILE, page({ ...full, transition: 'fade', direction: 'horizontal' })).backdrop,
-    { photos: P, transition: 'fade', scrub: true },
+    { images: P, transition: 'fade', scrub: true },
   );
-  assert.equal(omitDefaults(FILE, page({ photos: [], transition: 'fade' })).backdrop, undefined);
-  assert.deepEqual(storedDefaults(FILE, page({ photos: P, transition: 'scroll' })), [
+  assert.equal(omitDefaults(FILE, page({ images: [], transition: 'fade' })).backdrop, undefined);
+  assert.deepEqual(storedDefaults(FILE, page({ images: P, transition: 'scroll' })), [
     'backdrop: "transition" is the default ("scroll"): leave it out',
   ]);
 });
 
-test('backdropOf fills in defaults; off or without photos: none', () => {
-  assert.deepEqual(backdropOf({ photos: P }), {
-    photos: P,
+test('backdropOf fills in defaults; off or without images: none', () => {
+  assert.deepEqual(backdropOf({ images: P }), {
+    images: P,
     transition: 'scroll',
     direction: 'vertical',
     through: 'black',
@@ -73,15 +73,15 @@ test('backdropOf fills in defaults; off or without photos: none', () => {
     shade: 0.45,
     enabled: true,
   });
-  assert.equal(backdropOf({ photos: P, enabled: false }), null);
-  assert.equal(backdropOf({ photos: [] }), null);
+  assert.equal(backdropOf({ images: P, enabled: false }), null);
+  assert.equal(backdropOf({ images: [] }), null);
   assert.equal(backdropOf(undefined), null);
 });
 
-test('renderBackdrop: a fixed layer with its photos and settings', () => {
+test('renderBackdrop: a fixed layer with its images and settings', () => {
   const ctx = { site: {}, media: {}, photos: {} };
   assert.equal(renderBackdrop(ctx, undefined), '');
-  const out = renderBackdrop(ctx, { photos: P, transition: 'fade', through: 'none' });
+  const out = renderBackdrop(ctx, { images: P, transition: 'fade', through: 'none' });
   assert.match(out, /class="backdrop backdrop--fade"/);
   assert.match(out, /<\/div>\s*<div class="backdrop__shade"[^>]*><\/div>\s*<\/div>$/); // over the track
   assert.doesNotMatch(out, /data-portal/); // its own layer #backdrop, not the portal
@@ -92,10 +92,10 @@ test('renderBackdrop: a fixed layer with its photos and settings', () => {
   const opts = JSON.parse(out.match(/data-backdrop="([^"]*)"/)[1].replace(/&quot;/g, '"'));
   assert.deepEqual(opts, { transition: 'fade', through: 'none', parallax: false, scrub: false });
   assert.match(
-    renderBackdrop(ctx, { photos: P, direction: 'horizontal' }),
+    renderBackdrop(ctx, { images: P, direction: 'horizontal' }),
     /backdrop--scroll backdrop--horizontal/,
   );
-  assert.match(renderBackdrop(ctx, { photos: P, transition: 'fade' }), /backdrop--black/);
+  assert.match(renderBackdrop(ctx, { images: P, transition: 'fade' }), /backdrop--black/);
 });
 
 test('layers: the ground, the backdrop, the view, the portal, the curtain (in this order)', async () => {
@@ -116,14 +116,14 @@ test('layers: the ground, the backdrop, the view, the portal, the curtain (in th
 
 test('shade: a number from 0 to 0.8, 0.45 left out on save, on the shade element', () => {
   const ctx = { site: {}, media: {}, photos: {} };
-  assert.deepEqual(checkBackdrop({ photos: P, shade: 0.2 }), []);
+  assert.deepEqual(checkBackdrop({ images: P, shade: 0.2 }), []);
   for (const shade of [-0.1, 0.9, '0.3'])
-    assert.ok(checkBackdrop({ photos: P, shade }).some((p) => p.includes('"shade"')));
-  assert.deepEqual(omitDefaults(FILE, page({ photos: P, shade: 0.45 })).backdrop, { photos: P });
-  assert.deepEqual(omitDefaults(FILE, page({ photos: P, shade: 0 })).backdrop, {
-    photos: P,
+    assert.ok(checkBackdrop({ images: P, shade }).some((p) => p.includes('"shade"')));
+  assert.deepEqual(omitDefaults(FILE, page({ images: P, shade: 0.45 })).backdrop, { images: P });
+  assert.deepEqual(omitDefaults(FILE, page({ images: P, shade: 0 })).backdrop, {
+    images: P,
     shade: 0,
   });
-  assert.match(renderBackdrop(ctx, { photos: P }), /backdrop__shade" style="opacity:0.45"/);
-  assert.match(renderBackdrop(ctx, { photos: P, shade: 0.2 }), /style="opacity:0.2"/);
+  assert.match(renderBackdrop(ctx, { images: P }), /backdrop__shade" style="opacity:0.45"/);
+  assert.match(renderBackdrop(ctx, { images: P, shade: 0.2 }), /style="opacity:0.2"/);
 });

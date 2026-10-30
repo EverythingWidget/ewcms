@@ -1,7 +1,7 @@
 /**
  * The album widget: one item (a person or a place), Faint Film "slider view": a big current
  * image, numbered thumbnail strip, 01/08 counter, keyboard / drag / wheel navigation and a
- * Slider ⇄ Grid toggle. Its photos are its source's item (../../layout/source.js: on a [param]
+ * Slider ⇄ Grid toggle. Its images are its source's item (../../layout/source.js: on a [param]
  * page usually From URL, the page's own; item: true, without one it is skipped). A widget module (../index.js has the format).
  * Its texts are fields bound to the item (../../layout/bindings.js): the title { "bind": "title" },
  * the facts ("Role" / { "bind": "role" }; a fact whose value is empty is left out, "Photos" and the
@@ -29,8 +29,8 @@ export const album = {
   type: 'album',
   label: 'Album (the item)',
   icon: 'film',
-  line: 'The item: its title, facts and photos',
-  sketch: 'photo',
+  line: 'The item: its title, facts and images',
+  sketch: 'image',
   item: true,
   fields: [
     { key: 'title', label: 'Title' },
@@ -62,8 +62,8 @@ function albumOf(s, ctx, route, widget) {
   const n = images.length;
   const file = sourceFile(widget.source);
   const at = (field, type) => ed(file, ['items', widget.index, field], type);
-  // a photo's path, edited (and uploaded) in the editor
-  const photo = (i) => ed(file, ['items', widget.index, 'images', i], 'image');
+  // an image's path, edited (and uploaded) in the editor
+  const image = (i) => ed(file, ['items', widget.index, 'images', i], 'image');
   // back: the page around it (a [param] page's), else the page of all of its source
   const back = route.parent ?? sourcePage(ctx, widget.source);
   const section = route.section ?? titleCase(widget.source);
@@ -76,7 +76,7 @@ function albumOf(s, ctx, route, widget) {
       widget.ed(['meta', i, 'value']),
       widget.ed(['meta', i, 'label']),
     ]),
-    ['Photos', pad(n), '', ''],
+    ['Photos', pad(n), '', ''], // visitor text: a photo site's words
   ].filter((m) => m[0] && m[1] !== undefined && m[1] !== null && String(m[1]) !== '');
 
   return html` <div class="album" data-album data-view="slider" data-count="${n}">
@@ -112,7 +112,7 @@ function albumOf(s, ctx, route, widget) {
             aria-label="${esc(t(ctx, 'album.slide', { n: i + 1, total: n }))}"
             ${i === 0 ? '' : ' aria-hidden="true"'}
           >
-            ${img(ctx, im, { sizes: sizes('100vw', '70vw'), priority: i === 0, loading: i < 2 ? 'eager' : 'lazy', attrs: photo(i) })}
+            ${img(ctx, im, { sizes: sizes('100vw', '70vw'), priority: i === 0, loading: i < 2 ? 'eager' : 'lazy', attrs: image(i) })}
           </figure>`,
       )}
       <button
@@ -157,7 +157,7 @@ function albumOf(s, ctx, route, widget) {
                 aria-label="${esc(t(ctx, 'album.show', { n: i + 1 }))}"
               >
                 <span class="thumb__num">${pad(i + 1)}</span
-                >${img(ctx, im, { decorative: true, sizes: '80px', attrs: photo(i) })}
+                >${img(ctx, im, { decorative: true, sizes: '80px', attrs: image(i) })}
               </button>
             </li>`,
         )}
@@ -175,7 +175,7 @@ function albumOf(s, ctx, route, widget) {
           >
             <span class="gcell__num">${pad(i + 1)}</span>
             <span class="gcell__media"
-              >${img(ctx, im, { sizes: sizes('50vw', '20vw'), attrs: photo(i) })}</span
+              >${img(ctx, im, { sizes: sizes('50vw', '20vw'), attrs: image(i) })}</span
             >
           </button>`,
       )}

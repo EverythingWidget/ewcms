@@ -93,7 +93,7 @@ const startPath = () => location.pathname;
 
 const store = createStore();
 const live = createLive(store);
-connectMedia(live); // photo URLs read site.json's mediaUrl from it
+connectMedia(live); // image URLs read site.json's mediaUrl from it
 const bridge = createBridge({ store, labelFor: (p) => labelFor(store, p) });
 // the preview's layout overlay (arranging in the Sections tab, Grid; overlay.js): widgetAt and
 // placeWidget below

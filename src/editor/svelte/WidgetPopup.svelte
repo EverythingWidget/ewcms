@@ -247,9 +247,9 @@
       border-radius: 0;
     }
 
-    // the pen and a photo's icons: quiet icon buttons; Change: a tile with white text, no pill
+    // the pen and an image's icons: quiet icon buttons; Change: a tile with white text, no pill
     :global(.sc .btn--icon),
-    :global(.photo .btn--icon) {
+    :global(.image .btn--icon) {
       background: none;
       box-shadow: none;
       color: var(--text-quiet);
@@ -261,7 +261,7 @@
       color: var(--text-strong);
     }
 
-    :global(.photo .btn--icon:hover:not(:disabled)),
+    :global(.image .btn--icon:hover:not(:disabled)),
     :global(.sc .btn:hover) {
       background: var(--field-hover);
       color: var(--text-strong);

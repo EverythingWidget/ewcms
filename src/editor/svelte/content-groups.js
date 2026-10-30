@@ -55,15 +55,15 @@ export function labelFor(store, { file, ptr }) {
 }
 
 /**
- * A field's label: its key made readable; a photo in a list (".../photos/1/src") is "Photo 2",
+ * A field's label: its key made readable; an image in a list (".../photos/1/src") is "Image 2",
  * a column's title "<Name> column title".
  */
 function fieldLabel(f) {
   const parts = parse(f.ptr);
   if (f.type === 'image' && parts.at(-1) === 'src' && /^\d+$/.test(parts.at(-2)))
-    return `Photo ${Number(parts.at(-2)) + 1}`;
+    return `Image ${Number(parts.at(-2)) + 1}`;
   if (f.type === 'image' && parts.at(-2) === 'images' && /^\d+$/.test(parts.at(-1)))
-    return `Photo ${Number(parts.at(-1)) + 1}`;
+    return `Image ${Number(parts.at(-1)) + 1}`;
   if (parts.at(-3) === 'columns') return `${labelOf(parts.at(-2))} column title`;
   return labelOf(parts.at(-1));
 }
@@ -91,15 +91,15 @@ export function nameOf(s) {
 /**
  * The fields of a widget from its type's registry entry: [{ edit, file, ptr, type, label }].
  * base: the widget's path in its file (['sections', 0, 'widgets', 1]).
- * A list field is one entry { list: true, edit, file, ptr, label, item, photo, items }: items
- * holds each item's fields ([[field, ...], ...]), item a new item, photo the subkey of a
- * photo item ('' for a list of photos, null for none) so Add can open the Media window.
+ * A list field is one entry { list: true, edit, file, ptr, label, item, image, items }: items
+ * holds each item's fields ([[field, ...], ...]), item a new item, image the subkey of a
+ * image item ('' for a list of images, null for none) so Add can open the Media window.
  */
 function registryFields(file, base, s, t) {
   // a list item's subkey type can be { type, label, options } (src/site/widgets/index.js).
   // bindType: what it can show of an item as a whole (src/site/layout/bindings.js; a list
   // item's text subkey binds as text, other list items can't, null); textual: a bound one
-  // can have a format ("{value} photos")
+  // can have a format ("{value} images")
   const field = (path, type, label, whole = false, sub = false) => {
     const ptr = pointer([...base, ...path]);
     const def = type && typeof type === 'object' ? type : { type };
@@ -132,7 +132,7 @@ function registryFields(file, base, s, t) {
       ptr,
       label: f.label,
       item: f.item ?? (subs ? Object.fromEntries(subs.map(([k]) => [k, ''])) : ''),
-      photo: subs
+      image: subs
         ? (subs.find(([, type]) => (type?.type ?? type) === 'image')?.[0] ?? null)
         : f.list === 'image'
           ? ''
@@ -140,7 +140,7 @@ function registryFields(file, base, s, t) {
       items: items.map((_, j) =>
         subs
           ? subs.map(([sub, type]) =>
-              field([f.key, j, sub], type, sub === 'src' ? 'Photo' : labelOf(sub), false, true),
+              field([f.key, j, sub], type, sub === 'src' ? 'Image' : labelOf(sub), false, true),
             )
           : [field([f.key, j], f.list, `${f.label} ${j + 1}`)],
       ),
@@ -246,7 +246,7 @@ export function contentGroups(store, bridge, target) {
     }),
   );
 
-  // a widget's text its type doesn't list (e.g. a photo credit): added to its group
+  // a widget's text its type doesn't list (e.g. an image credit): added to its group
   for (const f of fieldsOf(bridge, file)) {
     const [, i, , j] = parse(f.ptr);
     const g = at[`${i}/${j}`];

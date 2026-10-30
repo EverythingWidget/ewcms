@@ -140,7 +140,7 @@ test('section names: an anchor (id) from the name, unique on the page, a letter 
   assert.equal(anchorOf('  Café & Crème — 2026! '), 'cafe-creme-2026');
   assert.equal(sectionAnchor(sec([], { name: 'Our People' })), 'our-people');
   assert.equal(sectionAnchor(sec([], {})), '');
-  assert.equal(sectionAnchor(sec([], { name: '2026' })), ''); // a number: an album photo's hash
+  assert.equal(sectionAnchor(sec([], { name: '2026' })), ''); // a number: an album image's hash
   assert.equal(sectionAnchor(sec([], { name: 'Main' })), ''); // the page's own id
   const named = (...names) => names.map((name, i) => sec([], { id: `s-n${i}00`, name }));
   assert.deepEqual(nameProblems(named('Our people', '', undefined, 'Work')), ['', '', '', '']);
@@ -154,7 +154,7 @@ test('section names: an anchor (id) from the name, unique on the page, a letter 
     'section 1: "name" needs a letter or a digit (it becomes the section\'s #anchor)',
   ]);
   assert.deepEqual(of('3 rooms'), [
-    'section 1: "name" #3-rooms must start with a letter (a number is a photo\'s link)',
+    'section 1: "name" #3-rooms must start with a letter (a number is an image\'s link)',
   ]);
   assert.deepEqual(of('portal'), ['section 1: "name" #portal is taken by the page itself']);
   assert.deepEqual(

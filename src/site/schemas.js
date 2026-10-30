@@ -141,7 +141,7 @@ export function checkSchema(s) {
 const empty = (v) => v === undefined || v === null || v === '';
 
 /** Problems with one value of a field (its type), [] when fine. */
-function checkValue(f, v, photoExists) {
+function checkValue(f, v, imageExists) {
   if (empty(v) && f.type !== 'images') return [];
   const want = (what) => [`must be ${what}`];
   switch (f.type) {
@@ -154,7 +154,7 @@ function checkValue(f, v, photoExists) {
       if (!Array.isArray(v) || !v.every((p) => typeof p === 'string' && p))
         return want('a list of image paths');
       return v.flatMap((p, j) =>
-        checkValue({ type: 'image' }, p, photoExists).map((m) => `image ${j + 1} ${m}`),
+        checkValue({ type: 'image' }, p, imageExists).map((m) => `image ${j + 1} ${m}`),
       );
     }
     default:
@@ -164,17 +164,17 @@ function checkValue(f, v, photoExists) {
   if (f.type === 'date' && !DATE.test(v)) return want('a date (YYYY-MM-DD)');
   if (f.type === 'choice' && !f.options?.includes(v))
     return want(`one of ${f.options?.join(', ')}`);
-  if (f.type === 'image' && photoExists && !isExternal(v) && !photoExists(v))
+  if (f.type === 'image' && imageExists && !isExternal(v) && !imageExists(v))
     return [`"${v}" is not an image in media/ or ${contentPath(PHOTOS)}`];
   return [];
 }
 
 /**
  * Problems of a source's items against its schema ([] when fine): required values, types,
- * choice options, photos that exist (photoExists(key), when given), valid unique slugs.
+ * choice options, images that exist (imageExists(key), when given), valid unique slugs.
  * "item 2 (Noor Vermeer): "Year" must be a number".
  */
-export function checkItems(list, schema, { photoExists } = {}) {
+export function checkItems(list, schema, { imageExists } = {}) {
   if (!Array.isArray(list)) return [];
   const out = [];
   const slugs = new Set();
@@ -192,7 +192,7 @@ export function checkItems(list, schema, { photoExists } = {}) {
       const label = `"${f.label || labelOf(f.key)}"`;
       if (f.required && (f.type === 'images' ? !v?.length : empty(v)))
         out.push(`${name}: ${label} is required`);
-      out.push(...checkValue(f, v, photoExists).map((m) => `${name}: ${label} ${m}`));
+      out.push(...checkValue(f, v, imageExists).map((m) => `${name}: ${label} ${m}`));
     }
     // the cover: one of its own images (its path)
     const images = (schema.fields || []).find((f) => f.type === 'images')?.key;
@@ -208,17 +208,17 @@ export function checkItems(list, schema, { photoExists } = {}) {
   return out;
 }
 
-/** Is `key` a known photo: in the media manifest or in photos.json (R2)? */
-export const photoChecker = (media, photos) => (key) => !!(media?.[key] || photos?.[key]);
+/** Is `key` a known image: in the media manifest or in photos.json (R2)? */
+export const imageChecker = (media, photos) => (key) => !!(media?.[key] || photos?.[key]);
 
 /**
  * Every source's problems against its schema, for the build: ["content/en/sources/people.json:
  * item 2 (…): …"]. content: loadContent's (sources, schemas, media, photos).
  */
 export function checkSources(content) {
-  const photoExists = photoChecker(content.media, content.photos);
+  const imageExists = imageChecker(content.media, content.photos);
   return Object.keys(content.sources || {}).flatMap((id) =>
-    checkItems(content.sources[id], schemaOf(content, id), { photoExists }).map(
+    checkItems(content.sources[id], schemaOf(content, id), { imageExists }).map(
       (p) => `${contentPath(sourceFile(id))}: ${p}`,
     ),
   );

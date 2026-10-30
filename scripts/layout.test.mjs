@@ -62,7 +62,7 @@ test('ids: s-/b- with 4+ letters or digits, new ones never taken', () => {
   const taken = new Set();
   for (let i = 0; i < 300; i++) assert.ok(isId(newId('w', taken), 'w'));
   assert.equal(taken.size, 300);
-  const list = [section([widget('text'), widget('photo')])];
+  const list = [section([widget('text'), widget('image')])];
   assert.equal(idsOf(list).size, 3);
 });
 
@@ -175,7 +175,7 @@ test('render: sections are grids, widgets carry their area; off is hidden', () =
 });
 
 test('render: editor markers point into the widgets, only when editable', () => {
-  const list = [section([widget('photo'), widget('text')])];
+  const list = [section([widget('image'), widget('text')])];
   assert.doesNotMatch(renderSections(ctxOf(page), page, F, list), /data-edit|data-sec|data-widget/);
   setEditable(true);
   try {
@@ -273,45 +273,45 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   store.load({ [F]: { version: 1, kind: 'page', id: 'pg-t008', sections: [] } });
   const sections = () => store.current[F].sections;
   const types = () => sections().map((s) => s.widgets.map((widget) => widget.type).join('+'));
-  addSection(store, F, 'photo');
+  addSection(store, F, 'image');
   addSection(store, F, 'text', 0);
   addSection(store, F); // empty
-  assert.deepEqual(types(), ['text', 'photo', '']);
+  assert.deepEqual(types(), ['text', 'image', '']);
   assert.ok(
     sections().every((s) => isId(s.id, 's') && s.widgets.every((widget) => isId(widget.id, 'w'))),
   );
   duplicateSection(store, F, 0);
-  assert.deepEqual(types(), ['text', 'text', 'photo', '']);
+  assert.deepEqual(types(), ['text', 'text', 'image', '']);
   assert.notEqual(sections()[0].id, sections()[1].id);
   assert.notEqual(sections()[0].widgets[0].id, sections()[1].widgets[0].id);
   moveSection(store, F, 2, 0);
-  assert.deepEqual(types(), ['photo', 'text', 'text', '']);
+  assert.deepEqual(types(), ['image', 'text', 'text', '']);
   assert.equal(moveSection(store, F, 0, -1), false);
   removeSection(store, F, 3);
-  assert.deepEqual(types(), ['photo', 'text', 'text']);
+  assert.deepEqual(types(), ['image', 'text', 'text']);
 
   const w = addWidget(store, F, 0, 'button');
   // an added widget: Rows, 6 rows by 40 columns (a new section's too), below the others
   assert.deepEqual(sections()[0].widgets[0].layout.base, { col: 1, span: 40, row: 1, rows: 6 });
-  assert.equal(sections()[0].widgets[0].size, 'rows'); // a photo: Rows; text, button: Auto (v0.1.47)
+  assert.equal(sections()[0].widgets[0].size, 'rows'); // an image: Rows; text, button: Auto (v0.1.47)
   assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 1, span: 40, row: 7 }); // below; Auto: no rows stored
   assert.equal(sections()[0].widgets[1].size, undefined); // Auto: the default
   assert.equal(rowsOf(sections()[0]), 7); // an Auto widget: its row (its rows measured on the page)
   assert.equal(sections()[0].rows, undefined); // its rows: down to its lowest widget, not stored
   assert.ok(isId(w.id, 'w'));
   duplicateWidget(store, F, 0, 1);
-  assert.deepEqual(types()[0], 'photo+button+button');
+  assert.deepEqual(types()[0], 'image+button+button');
   assert.equal(flat(sections()[0].widgets[2]).pos.row, 15); // below the Auto one's guessed 8 rows
   moveWidget(store, F, 0, 2, 0);
-  assert.deepEqual(types()[0], 'button+photo+button');
+  assert.deepEqual(types()[0], 'button+image+button');
   // to another section: free, below its widgets; one undo step
   moveWidgetTo(store, F, 0, 0, 1, 0);
-  assert.deepEqual(types().slice(0, 2), ['photo+button', 'button+text']);
+  assert.deepEqual(types().slice(0, 2), ['image+button', 'button+text']);
   assert.equal(flat(sections()[1].widgets[0]).pos.row > 1, true);
   store.undo();
-  assert.deepEqual(types()[0], 'button+photo+button');
+  assert.deepEqual(types()[0], 'button+image+button');
   removeWidget(store, F, 0, 0);
-  assert.deepEqual(types()[0], 'photo+button');
+  assert.deepEqual(types()[0], 'image+button');
   placeWidget(store, F, 0, 1, { col: 13, span: 12, row: 30, rows: 4 }, undefined, { size: 'rows' }); // its height dragged
   assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 13, span: 12, row: 30, rows: 4 }); // a Rows widget keeps its rows
   assert.equal(rowsOf(sections()[0]), 33); // a section grows to fit
@@ -341,9 +341,9 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   assert.deepEqual(flat(sections()[0].widgets[1]).pos, { col: 1, span: 40, row: 7 });
   assert.equal(rowsOf(sections()[0]), 7); // down to its lowest widget again
   store.undo(); // remove
-  assert.deepEqual(types()[0], 'button+photo+button');
+  assert.deepEqual(types()[0], 'button+image+button');
   store.redo();
-  assert.deepEqual(types()[0], 'photo+button');
+  assert.deepEqual(types()[0], 'image+button');
 
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'layout-'));
   for (const f of ['settings/site.json', 'settings/animations.json', 'pages/index.json']) {
@@ -381,7 +381,7 @@ test('render endpoint: one section of a page, from the editor copy over the draf
     ),
   );
   assert.match(html, /Edited caption/);
-  // the photo keeps its picker; its caption is edited in the popup only (no marker)
+  // the image keeps its picker; its caption is edited in the popup only (no marker)
   assert.match(html, /data-edit="pages\/about\/index\.json#\/sections\/0\/widgets\/0\/src"/);
   assert.doesNotMatch(html, /widgets\/0\/caption"/);
   assert.match(html, /<\/section>$/);

@@ -117,7 +117,7 @@ export function navOrder(nav) {
   return out;
 }
 
-/** "photo-walks" → "Photo Walks": a name from a slug. */
+/** "image-walks" → "Image Walks": a name from a slug. */
 export const titleCase = (s) =>
   String(s)
     .split('-')

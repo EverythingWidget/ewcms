@@ -8,7 +8,7 @@
       "widgets": [
         {
           "id": "w-wrvr",
-          "type": "photo",
+          "type": "image",
           "src": "about/x100v.jpg",
           "caption": "Photo: Aleksandrs Karevs / Unsplash",
           "size": "aspect",

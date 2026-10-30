@@ -62,7 +62,7 @@ const ownPhone = (widget) => {
  * The default phone layout of a section's widgets (`widgets`): the ones without a phone layout
  * of their own (not hidden there or switched off) stack full width in reading order (their
  * desktop top, then left), each following the one before with STACK_GAP rows between them (its
- * desktop gap halved when it follows that one on the desktop too: a caption over a photo), so an
+ * desktop gap halved when it follows that one on the desktop too: a caption over an image), so an
  * Auto one that grows pushes the rest down (src/client/modules/rows.js); the first keeps its
  * desktop top halved. A Rows widget keeps its desktop shape (its rows over its width). Map
  * id -> { area, link } (link null: the first).

@@ -142,7 +142,7 @@
   <section class="grp">
     <h4 class="grp__title">Later</h4>
     <p class="hint">
-      Swapping and reordering album photos will be added here; for now edit
+      Swapping and reordering album images will be added here; for now edit
       content/en/sources/*.json and media/ by hand.
     </p>
   </section>

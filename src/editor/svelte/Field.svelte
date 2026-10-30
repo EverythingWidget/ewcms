@@ -3,10 +3,10 @@
   its file, e.g. people.json, that opens it in the Source Explorer) with an input, or a
   textarea for longer text, a switch (boolean) or a Select (select, options [[value, label]]).
   bare: no label row (label is the input's aria-label; say it in the placeholder); help: a hint under it; half: it shares a row with the next field (the parent's grid).
-  type 'image': a photo (its media/ path or R2 key) as a 64px card: the photo, its label
+  type 'image': an image (its media/ path or R2 key) as a 64px card: the image, its label
   (inside), file name and sizes, Media and ✕ (clears it; remove: the parent's, a list item's);
-  grab: a pointerdown on the photo (a list's drag handle, PhotoList.svelte); the thumbnail or Change opens the Media window on it (MediaModal.svelte), which
-  stores the photo picked there in this field: one undo step. No text input.
+  grab: a pointerdown on the image (a list's drag handle, ImageList.svelte); the thumbnail or Change opens the Media window on it (MediaModal.svelte), which
+  stores the image picked there in this field: one undo step. No text input.
   Used by the Nav panel, the Sources modal and Settings.
   Bindings (a widget's field, src/site/layout/bindings.js):
     binds     the item's fields this one can show, [{ value, label, hint }] (null: it can't
@@ -14,7 +14,7 @@
               becomes it) or one of them (stores { "bind": "<field>" }); no source: only Custom.
               Bound, its value is the item's, dimmed and read only (a lock); `from` names the
               item in the picker's group
-    formats   a text field: when bound, a Format input under it ("{value} photos"); empty or
+    formats   a text field: when bound, a Format input under it ("{value} images"); empty or
               just {value} stores { "bind" } alone
 -->
 <script>
@@ -25,12 +25,12 @@
   import Select from './Select.svelte';
   import Position from './Position.svelte';
   import { baseName } from '../../site/files.js';
-  import { fallback, openMedia, photoInfo, photoLine, thumbUrl } from './media.svelte.js';
+  import { fallback, openMedia, imageInfo, imageLine, thumbUrl } from './media.svelte.js';
 
   // edit: the field's data-edit ("file#/pointer"), also on the label so others can find it.
   // type: 'text' | 'words' | 'number' | 'date' | 'multiline' | 'image' | 'boolean' | 'select' |
   // 'seg' (options as a button group, like Source; unset: the option shown when unset) |
-  // 'spot' (nine options, row by row: a Position.svelte, its 3 x 3 grid in a popover; a photo's position).
+  // 'spot' (nine options, row by row: a Position.svelte, its 3 x 3 grid in a popover; an image's position).
   // onvalue(value) gets every valid input.
   // source: the content/en/sources/ file the value comes from ('' for the page's own), with
   // onsource() opening it.
@@ -61,13 +61,13 @@
 
   const uid = $props.id();
   let invalid = $state(false);
-  const photo = $derived(type === 'image');
-  // a label element around an input, a switch; photos and Selects label their own buttons
+  const image = $derived(type === 'image');
+  // a label element around an input, a switch; images and Selects label their own buttons
   const tag = $derived(
-    photo || type === 'select' || type === 'seg' || type === 'spot' || bound ? 'div' : 'label',
+    image || type === 'select' || type === 'seg' || type === 'spot' || bound ? 'div' : 'label',
   );
-  // a photo's label goes inside its card, unless the label row has more (a picker, a file)
-  const inner = $derived(photo && !bound && !binds && !source);
+  // an image's label goes inside its card, unless the label row has more (a picker, a file)
+  const inner = $derived(image && !bound && !binds && !source);
 
   /** Show the stored value, except while the user is typing in the field. */
   const show = (value) => showValue(String(value ?? ''));
@@ -116,7 +116,7 @@
   }
 </script>
 
-<!-- a photo has no input to label: a div, its buttons say what they do -->
+<!-- an image has no input to label: a div, its buttons say what they do -->
 <svelte:element
   this={tag}
   for={tag === 'label' && type !== 'boolean' ? uid : undefined}
@@ -168,7 +168,7 @@
       aria-readonly="true"
       title="From the item’s {value.bind} (read only): Custom to write your own"
     >
-      {#if photo && resolved}<img
+      {#if image && resolved}<img
           src={thumbUrl(resolved)}
           alt=""
           {@attach fallback(resolved)}
@@ -187,12 +187,12 @@
         oninput={(e) => setFormat(e.currentTarget.value)}
       />
     {/if}
-  {:else if photo}
-    <div class={['photo', !value && 'is-empty']}>
+  {:else if image}
+    <div class={['image', !value && 'is-empty']}>
       <button
         type="button"
-        class={['photo__thumb', grab && 'is-grab']}
-        aria-label={value ? `Change ${label}: ${photoInfo(value).name}` : `Choose ${label}`}
+        class={['image__thumb', grab && 'is-grab']}
+        aria-label={value ? `Change ${label}: ${imageInfo(value).name}` : `Choose ${label}`}
         title={grab ? 'Drag to move (Alt+↑/↓), click to change' : undefined}
         aria-keyshortcuts={grab ? 'Alt+ArrowUp Alt+ArrowDown' : undefined}
         onpointerdown={grab}
@@ -204,10 +204,10 @@
           <i class="fa-solid fa-plus" aria-hidden="true"></i>
         {/if}
       </button>
-      <span class="photo__info">
-        {#if inner && !bare}<span class="photo__label">{label}</span>{/if}
-        <span class="photo__name" title={value}>{value ? photoInfo(value).name : 'No photo'}</span>
-        {#if value}<span class="photo__meta">{photoLine(value)}</span>{/if}
+      <span class="image__info">
+        {#if inner && !bare}<span class="image__label">{label}</span>{/if}
+        <span class="image__name" title={value}>{value ? imageInfo(value).name : 'No image'}</span>
+        {#if value}<span class="image__meta">{imageLine(value)}</span>{/if}
       </span>
       <Button
         icon="images"
@@ -343,10 +343,10 @@
     margin-top: var(--space-2);
   }
 
-  // a photo: a card as an input (its background, line, 8px corners), 64px in every state:
-  // the photo its full height on the left (a + tile when empty; a list's drag handle), its
+  // an image: a card as an input (its background, line, 8px corners), 64px in every state:
+  // the image its full height on the left (a + tile when empty; a list's drag handle), its
   // label, file name and sizes, then Media (change) and ✕ (remove), icon-only
-  .photo {
+  .image {
     @include row(var(--space-3));
     height: 64px;
     padding-right: var(--space-2);
@@ -356,7 +356,7 @@
     box-shadow: inset 0 0 0 1px var(--c-line);
   }
 
-  .photo__thumb {
+  .image__thumb {
     flex: none;
     display: grid;
     place-items: center;
@@ -398,7 +398,7 @@
     }
   }
 
-  .photo__info {
+  .image__info {
     flex: 1;
     min-width: 0;
     display: grid;
@@ -407,19 +407,19 @@
   }
 
   // (changed: the dot before it, editor.scss)
-  .photo__label {
+  .image__label {
     @include row(var(--space-2));
     @include muted;
     color: var(--text-quiet);
   }
 
-  .photo__label,
-  .photo__name,
-  .photo__meta {
+  .image__label,
+  .image__name,
+  .image__meta {
     @include ellipsis;
   }
 
-  .photo__name {
+  .image__name {
     color: var(--c-text-strong);
     font-weight: 500;
 
@@ -429,7 +429,7 @@
     }
   }
 
-  .photo__meta {
+  .image__meta {
     @include muted;
     color: var(--text-quiet);
   }

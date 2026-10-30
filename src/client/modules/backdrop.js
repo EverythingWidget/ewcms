@@ -1,5 +1,5 @@
 /**
- * The page's backdrop (src/site/backdrop.js): its photos in a fixed layer under the sections,
+ * The page's backdrop (src/site/backdrop.js): its images in a fixed layer under the sections,
  * driven by the page's scroll from its top to its bottom (one ScrollTrigger).
  *   scroll  a strip of them (down or across) moves by its length less one screen: the first in
  *           view at the top, the last fully in view at the end
@@ -7,7 +7,7 @@
  *           fades in (directly, or the current out to black, then the next in). scrub: the fades
  *           follow the scroll; else each plays as a short timed fade once its point is passed.
  *           parallax: a slow zoom and drift over the whole page
- * Reduced motion: no movement, each photo shows in its share and changes at once.
+ * Reduced motion: no movement, each image shows in its share and changes at once.
  * el: the layer (in #backdrop). Returns its cleanup (or null without a backdrop).
  */
 import { gsap, ScrollTrigger, reducedMotion } from '../lib/env.js';
@@ -24,9 +24,9 @@ export function backdrop(el) {
     /* none */
   }
   const track = el.querySelector('.backdrop__track');
-  const photos = [...el.querySelectorAll('.backdrop__photo')];
-  const imgs = photos.map((p) => p.querySelector('img'));
-  const n = photos.length;
+  const images = [...el.querySelectorAll('.backdrop__image')];
+  const imgs = images.map((p) => p.querySelector('img'));
+  const n = images.length;
   // the rest load once the page is idle (lazy ones far down the strip would show late)
   const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1200));
   const load = idle(() => imgs.forEach((im) => im && (im.loading = 'eager')));
@@ -50,9 +50,9 @@ export function backdrop(el) {
       );
       return;
     }
-    // fade (and scroll with reduced motion: a photo per share, changed at once)
+    // fade (and scroll with reduced motion: an image per share, changed at once)
     const black = opts.transition === 'fade' && opts.through === 'black';
-    gsap.set(photos, { autoAlpha: (i) => (i === 0 ? 1 : 0) });
+    gsap.set(images, { autoAlpha: (i) => (i === 0 ? 1 : 0) });
     if (opts.parallax && !still)
       gsap.fromTo(
         imgs.filter(Boolean),
@@ -67,32 +67,32 @@ export function backdrop(el) {
       for (let k = 1; k < n; k++) {
         const at = k - SPAN / 2;
         if (black) {
-          tl.to(photos[k - 1], { autoAlpha: 0, duration: SPAN / 2, ease: 'none' }, at);
-          tl.to(photos[k], { autoAlpha: 1, duration: SPAN / 2, ease: 'none' }, at + SPAN / 2);
+          tl.to(images[k - 1], { autoAlpha: 0, duration: SPAN / 2, ease: 'none' }, at);
+          tl.to(images[k], { autoAlpha: 1, duration: SPAN / 2, ease: 'none' }, at + SPAN / 2);
         } else {
-          tl.to(photos[k], { autoAlpha: 1, duration: SPAN, ease: 'none' }, at);
-          tl.set(photos[k - 1], { autoAlpha: 0 }, at + SPAN);
+          tl.to(images[k], { autoAlpha: 1, duration: SPAN, ease: 'none' }, at);
+          tl.set(images[k - 1], { autoAlpha: 0 }, at + SPAN);
         }
       }
       return;
     }
-    // timed (or at once): the photo of the share the scroll is in
+    // timed (or at once): the image of the share the scroll is in
     let now = 0;
     let tl = null;
     const show = (k) => {
       if (k === now) return;
-      const from = photos[now];
-      const to = photos[k];
+      const from = images[now];
+      const to = images[k];
       now = k;
       tl?.progress(1);
       if (still) {
-        gsap.set(photos, { autoAlpha: (i) => (i === k ? 1 : 0) });
+        gsap.set(images, { autoAlpha: (i) => (i === k ? 1 : 0) });
         return;
       }
       tl = gsap.timeline({
         onComplete: () =>
           gsap.set(
-            photos.filter((p) => p !== to),
+            images.filter((p) => p !== to),
             { autoAlpha: 0 },
           ),
       });

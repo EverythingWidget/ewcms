@@ -4,7 +4,7 @@
   on any widget) and its own timing, each field with a Custom switch (MotionGroups, scope
   'widget': off shows the animation's value, dimmed). What the animation does is read-only here:
   it is edited in the Animations sub-tab (Edit). Below, the widget's elements with their own
-  animation (data-anim inside it: the hero's photos, a heading's title, ...), each opening in
+  animation (data-anim inside it: the hero's images, a heading's title, ...), each opening in
   the Motion tab.
   Used by the Motion tab (MotionPanel) and the widget inspector's Motion tab (WidgetInspector).
     file, at, j   where the widget is: sections[at].widgets[j] of the page file

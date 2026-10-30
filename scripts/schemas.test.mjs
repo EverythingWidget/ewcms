@@ -29,8 +29,8 @@ const PEOPLE = {
     { key: 'kind', label: 'Kind', type: 'choice', options: ['model', 'band'] },
     { key: 'url', label: 'Link', type: 'link' },
     { key: 'shot', label: 'Shot on', type: 'date' },
-    { key: 'image', label: 'Photo', type: 'image' },
-    { key: 'images', label: 'Photos', type: 'images' },
+    { key: 'image', label: 'Image', type: 'image' },
+    { key: 'images', label: 'Images', type: 'images' },
     { key: 'placeholder', label: 'Placeholder', type: 'boolean' },
   ],
 };
@@ -105,8 +105,8 @@ test('inferSchema: one type per field from all items, title and slug', () => {
   assert.equal(inferSchema('x', [{ label: 'L' }]).slug, '');
 });
 
-test('checkItems: required, types, choices, links, dates, photos, slugs', () => {
-  const photoExists = (k) => k === 'ok.jpg';
+test('checkItems: required, types, choices, links, dates, images, slugs', () => {
+  const imageExists = (k) => k === 'ok.jpg';
   const items = [
     {
       id: 'p-t001',
@@ -130,19 +130,19 @@ test('checkItems: required, types, choices, links, dates, photos, slugs', () => 
       shot: '2024-02-01',
     },
   ];
-  assert.deepEqual(checkItems(items, PEOPLE, { photoExists }), [
+  assert.deepEqual(checkItems(items, PEOPLE, { imageExists }), [
     'item 1 (Ann): "Year" must be a number',
     'item 1 (Ann): "Kind" must be one of model, band',
     'item 1 (Ann): "Link" must be a link (https://…, /path/ or mailto:…)',
     'item 1 (Ann): "Shot on" must be a date (YYYY-MM-DD)',
-    'item 1 (Ann): "Photo" "missing.jpg" is not an image in media/ or content/en/settings/photos.json',
-    'item 1 (Ann): "Photos" image 2 "gone.jpg" is not an image in media/ or content/en/settings/photos.json',
+    'item 1 (Ann): "Image" "missing.jpg" is not an image in media/ or content/en/settings/photos.json',
+    'item 1 (Ann): "Images" image 2 "gone.jpg" is not an image in media/ or content/en/settings/photos.json',
     'item 1 (Ann): "Placeholder" must be true or false',
     'item 2: "Name" is required',
     'item 2: another item has the slug "ann"',
     'item 3 (C): slug "Bad Slug" must be lowercase words with dashes',
   ]);
-  // an id each, unique; a cover is one of its own photos
+  // an id each, unique; a cover is one of its own images
   const a = { id: 'p-aaaa', slug: 'a', name: 'A', images: ['a.jpg'], cover: 'b.jpg' };
   assert.deepEqual(
     checkItems([a, { ...a, slug: 'b', cover: 'a.jpg' }, { slug: 'c', name: 'C' }], PEOPLE),
@@ -152,14 +152,14 @@ test('checkItems: required, types, choices, links, dates, photos, slugs', () => 
       'item 3 (C): "id" must be an item id ("p-k3x9")',
     ],
   );
-  // without photoExists, photos are not looked up
+  // without imageExists, images are not looked up
   assert.deepEqual(
     checkItems([{ id: 'p-t004', slug: 'a', name: 'A', image: 'x.jpg' }], PEOPLE),
     [],
   );
 });
 
-test('checkSources: every source, with its schema or inferred; photos from media and photos.json', () => {
+test('checkSources: every source, with its schema or inferred; images from media and photos.json', () => {
   const content = {
     ...contentFromFiles({
       'sources/people.json': {
@@ -176,7 +176,7 @@ test('checkSources: every source, with its schema or inferred; photos from media
     media: {},
   };
   assert.deepEqual(checkSources(content), [
-    'content/en/sources/people.json: item 1 (A): "Photo" "people/a.jpg" is not an image in media/ or content/en/settings/photos.json',
+    'content/en/sources/people.json: item 1 (A): "Image" "people/a.jpg" is not an image in media/ or content/en/settings/photos.json',
   ]);
   content.media = { 'people/a.jpg': {} };
   assert.deepEqual(checkSources(content), []);
@@ -294,7 +294,7 @@ test('editor: half fields pair with the next half; a lone half takes the row', a
     f('f', true),
   ]);
   assert.deepEqual([...set], ['a', 'b', 'e', 'f']);
-  // fields from the schema: no slug (its own input), a photo per photos item
+  // fields from the schema: no slug (its own input), an image per images item
   const fields = itemFields('sources/people.json', { images: ['x.jpg'] }, 0, PEOPLE);
   assert.deepEqual(
     fields.map((x) => [x.key, x.label, x.type, x.half]),
@@ -304,7 +304,7 @@ test('editor: half fields pair with the next half; a lone half takes the row', a
       ['kind', 'Kind', 'select', false],
       ['url', 'Link', 'text', false],
       ['shot', 'Shot on', 'date', false],
-      ['image', 'Photo', 'image', false],
+      ['image', 'Image', 'image', false],
       ['images.0', 'Image 1', 'image', false],
       ['placeholder', 'Placeholder', 'boolean', false],
     ],

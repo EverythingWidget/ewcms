@@ -6,8 +6,8 @@
  *   parseContent(text, file)   JSON.parse, with "content/<file>: invalid JSON … (line L, column C)"
  *   checkContent(file, data)   a list of problems ([] when fine), e.g. "footer must be an object"
  *
- * A source's items against its schema (required fields, types, photos) are checked by
- * checkItems (src/site/schemas.js): that needs the schema and the photos, not one file.
+ * A source's items against its schema (required fields, types, images) are checked by
+ * checkItems (src/site/schemas.js): that needs the schema and the images, not one file.
  */
 import { AREA_KEYS, storesRows } from './layout/grid.js';
 import { storedDefaults } from './defaults.js';
@@ -423,15 +423,15 @@ function checkWidget(widget, where) {
   if (!isId(widget.id, 'w')) bad('id', 'a widget id like "w-7qpa"');
   out.push(...checkWidgetLayout(widget).map((p) => `${name}: ${p}`));
   if (widget.size !== undefined && !SIZES.includes(widget.size)) bad('size', SIZES.join(', '));
-  if (widget.type === 'hero' && Array.isArray(widget.photos))
-    widget.photos.forEach((p, i) => {
+  if (widget.type === 'hero' && Array.isArray(widget.images))
+    widget.images.forEach((p, i) => {
       const ph = p?.phone;
       if (ph === undefined || ph === null) return;
       if (!isObject(ph) || Object.keys(ph).some((k) => !['x', 'y', 'w'].includes(k)))
-        bad(`photos.${i}.phone`, 'null (hidden on phones) or { x?, y?, w? }');
+        bad(`images.${i}.phone`, 'null (hidden on phones) or { x?, y?, w? }');
       else
         for (const [k, v] of Object.entries(ph))
-          if (typeof v !== 'number') bad(`photos.${i}.phone.${k}`, 'a number');
+          if (typeof v !== 'number') bad(`images.${i}.phone.${k}`, 'a number');
     });
   if ((widget.size === 'aspect' || widget.aspect !== undefined) && !isRatio(widget.aspect))
     bad('aspect', 'a ratio like "4:5"');
@@ -511,14 +511,14 @@ function checkWidget(widget, where) {
 }
 
 /**
- * photos.json, the one photo library: { alt?, credit?: { name, url?, source?, license? },
- * focal?: { x, y } (0–100, where to keep in view when cropped), and for R2 photos
- * srcset: [{ key, w }], width, height, ... } per photo. Content refers to photos by path only.
+ * photos.json, the one image library: { alt?, credit?: { name, url?, source?, license? },
+ * focal?: { x, y } (0–100, where to keep in view when cropped), and for R2 images
+ * srcset: [{ key, w }], width, height, ... } per image. Content refers to images by path only.
  */
 function checkPhotos(d) {
   return Object.entries(d).flatMap(([k, v]) => {
-    if (!isObject(v)) return [`photo "${k}" must be an object`];
-    const out = optional(v, { alt: 'string', srcset: 'array' }).map((p) => `photo "${k}": ${p}`);
+    if (!isObject(v)) return [`image "${k}" must be an object`];
+    const out = optional(v, { alt: 'string', srcset: 'array' }).map((p) => `image "${k}": ${p}`);
     if (
       v.credit !== undefined &&
       !(
@@ -530,12 +530,12 @@ function checkPhotos(d) {
         )
       )
     )
-      out.push(`photo "${k}": "credit" must be { "name", "url"?, "source"?, "license"? } (texts)`);
+      out.push(`image "${k}": "credit" must be { "name", "url"?, "source"?, "license"? } (texts)`);
     const pct = (n) => Number.isFinite(n) && n >= 0 && n <= 100;
     if (v.focal !== undefined && !(isObject(v.focal) && pct(v.focal.x) && pct(v.focal.y)))
-      out.push(`photo "${k}": "focal" must be { "x", "y" } (0 to 100)`);
+      out.push(`image "${k}": "focal" must be { "x", "y" } (0 to 100)`);
     if (Array.isArray(v.srcset) && !v.srcset.every((s) => isObject(s) && typeof s.key === 'string'))
-      out.push(`photo "${k}": every size in "srcset" needs a "key"`);
+      out.push(`image "${k}": every size in "srcset" needs a "key"`);
     return out;
   });
 }

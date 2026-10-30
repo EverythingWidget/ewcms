@@ -190,7 +190,7 @@ function parallax(el, spec, ctx) {
 }
 
 /**
- * Home hero: photos burst out from the centre, then drift forever and fly off
+ * Home hero: images burst out from the centre, then drift forever and fly off
  * at different speeds (by depth) while scrolling. They never follow the pointer.
  * Markup: .scatter[data-depth] > .scatter__drift > .scatter__frame > img
  */

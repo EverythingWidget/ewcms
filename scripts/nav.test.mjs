@@ -74,7 +74,7 @@ test('render: the header and mobile menu follow nav.json', () => {
     h,
     /<a class="dropdown__head" href="\/photography\/people\/"><span>Faces<\/span> <sup>04<\/sup><\/a>/,
   );
-  assert.match(h, /class="dd-link" href="\/photography\/people\/noor-vermeer\/"/); // items with pages: photo rows
+  assert.match(h, /class="dd-link" href="\/photography\/people\/noor-vermeer\/"/); // items with pages: image rows
   assert.match(h, /class="dd-link dd-link--text" href="\/projects\/#/); // without: their spot
   assert.match(h, /<a class="dropdown__all" href="\/projects\/"><span>Every build<\/span>/);
   assert.match(
