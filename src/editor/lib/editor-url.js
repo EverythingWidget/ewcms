@@ -4,7 +4,7 @@
  * path and its other params (tab, view, source, …: src/editor/svelte/persist.js) follow:
  *
  *   /?edit                         the editor on the home page
- *   /photography/people/?edit&tab=motion
+ *   /photography/people/?edit&tab=settings
  *
  * Dev only: a build has no editor page (only index.html is bundled), so there ?edit is an
  * ignored param on a static page. The editor's preview iframe loads the same paths without
@@ -26,7 +26,7 @@ export function wantsEditor(url, headers = {}) {
   );
 }
 
-/** An editor URL as text, its bare `edit` flag first: "/about/?edit&tab=motion". */
+/** An editor URL as text, its bare `edit` flag first: "/about/?edit&tab=settings". */
 export function editorHref(url) {
   const q = new URLSearchParams(url.search);
   q.delete(EDIT_PARAM);
@@ -35,8 +35,8 @@ export function editorHref(url) {
 }
 
 /**
- * The old editor URLs (dev, before the `edit` param): /edit/?path=/about/&tab=motion ->
- * /about/?edit&tab=motion, /edit/sandbox/… -> /sandbox/…; null for anything else.
+ * The old editor URLs (dev, before the `edit` param): /edit/?path=/about/&tab=settings ->
+ * /about/?edit&tab=settings, /edit/sandbox/… -> /sandbox/…; null for anything else.
  */
 export function legacyRedirect(url) {
   const p = url.pathname;

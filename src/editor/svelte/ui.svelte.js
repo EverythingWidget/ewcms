@@ -6,7 +6,11 @@ import { popupStays } from '../multi-select.js';
 export const ui = $state({
   /** Why the content could not be loaded; App shows it instead of the editor. */
   loadError: '',
-  /** 'text' (the Content tab) | 'motion' | 'settings' | 'preview' (the toolbar's Preview: the site as visitors see it) */
+  /**
+   * 'text' (the Nav tab: the pages list, a page's Sections or SEO) | 'motion' (the Nav tab, a
+   * page's Motion: the preview picks animations) | 'settings' | 'preview' (the toolbar's
+   * Preview: the site as visitors see it)
+   */
   mode: 'text',
   /** The tab Preview (and Ctrl+E) goes back to. */
   lastEdit: 'text',
@@ -110,8 +114,8 @@ export const ui = $state({
   media: { open: false, key: '', filter: 'all', pick: '' },
   /** The pages list (Content tab): open or not, and the folder it shows ('' = content/en/pages/ itself). */
   pagesWin: { open: false, folder: '' },
-  /** Motion tab: the Animations sub-tab (open) or Elements, and its animation ('' = the list). */
-  library: { open: false, name: '' },
+  /** Settings > Motion, the Animations library: the animation open ('' = the list). */
+  library: { name: '' },
 });
 
 /**

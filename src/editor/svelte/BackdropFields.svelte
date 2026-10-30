@@ -1,6 +1,6 @@
 <!--
   The page's backdrop (src/site/backdrop.js): photos behind its sections as it scrolls, in the
-  Content tab's Transitions pane, plain fields under a "Backdrop" heading. Its photos (PhotoList.svelte: drag a photo to move
+  page's Motion tab (the Page transition card), plain fields under a "Backdrop" heading. Its photos (PhotoList.svelte: drag a photo to move
   it, Media to change, ✕ to remove, Add photo opens Media), then its transition: Scroll (a
   direction) or Fade (direct or through black, Parallax, Scrub). The options sit in one slot of
   a fixed height, so switching Scroll and Fade moves nothing under it. The heading's switch turns

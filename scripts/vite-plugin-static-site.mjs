@@ -11,7 +11,7 @@
  * index.html is the shell; it contains two markers: <!--ssr-head--> and <!--ssr-body-->.
  *
  * Visual editor (src/editor/index.html → src/editor) is DEV ONLY:
- *  dev   → any page with ?edit (/?edit, /about/?edit&tab=motion: src/editor/lib/editor-url.js)
+ *  dev   → any page with ?edit (/?edit, /about/?edit&tab=settings: src/editor/lib/editor-url.js)
  *          gets the editor app instead (its preview iframe, ?draft=…, always gets the site; the
  *          old /edit/?path=… redirects there, /edit/sandbox/ to /sandbox/), and /__editor/*
  *          (scripts/editor-server.mjs, localhost only) loads, saves and publishes the content JSON files and uploads photos to

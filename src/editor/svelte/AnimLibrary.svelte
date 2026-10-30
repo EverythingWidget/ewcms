@@ -1,5 +1,5 @@
 <!--
-  Motion tab, Animations: the animations in content/en/settings/animations.json ("presets"
+  Settings > Motion, the Animations library: the animations in content/en/settings/animations.json ("presets"
   there), inline in the panel so the preview stays in view while editing. It starts on the
   list of animations, each with its type and how many widgets and elements use it; click one to
   edit its own values, Back returns to the list. The only place that defines what an animation

@@ -1,17 +1,19 @@
 <!--
-  Content tab: the pages list (PagesList.svelte, while ui.pagesWin.open), or the page in the
+  Nav tab: the pages list (PagesList.svelte, while ui.pagesWin.open), or the page in the
   preview or a site part (the Header: HeaderPart.svelte; the Footer) under PageHead.svelte
   (Return to navigation: back to the pages list). The two swap with a slide (lib/slide.js):
   a page opened comes in from the right, the list comes back from the left. A page is a list of sections
   holding widgets (src/site/layout/), and nothing else. A page's panel has three tabs (Tabs.svelte,
-  the open one kept per page in ui.sections["pagetab:<file>"]):
+  the open one kept per page in ui.sections["pagetab:<file>"]; unknown: Sections):
     Sections     SectionsList.svelte: the section cards and the dashed Add section card. One
                  Settings are not in the panel: a section's open in a floating pop-up
                  (SectionPopup.svelte, ui.section; a card's double click or the toolbar's
                  gear), a widget's in another (WidgetPopup.svelte, ui.widget; a widget row's
                  double click or Enter, or the widget clicked in the preview); one at a time. The Add widget modal (WidgetsModal.svelte): the
                  widget added opens
-    Transitions  the Backdrop (BackdropFields.svelte) and the Curtain (PageCurtain.svelte)
+    Motion       MotionPanel.svelte: the widgets' animations, then the Page transition card
+                 (the Backdrop and the Curtain). Its own mode (ui.mode 'motion', main.js): the
+                 preview picks a widget or an animated part. The top tab stays Nav.
     SEO          SeoSection.svelte
   The footer is sections only (no tabs). While this tab is open the preview is a
   layout canvas (overlay.js): a click picks a widget, a drag moves it, its handles resize it and
@@ -31,8 +33,7 @@
   import HeaderPart from './HeaderPart.svelte';
   import PageHead from './PageHead.svelte';
   import PagesList from './PagesList.svelte';
-  import BackdropFields from './BackdropFields.svelte';
-  import PageCurtain from './PageCurtain.svelte';
+  import MotionPanel from './MotionPanel.svelte';
   import Tabs from './Tabs.svelte';
   import WidgetPopup from './WidgetPopup.svelte';
   import { createPopup } from '../widget-popup.js';
@@ -54,7 +55,7 @@
   import { swapView } from '../lib/slide.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
-  // actions: main.js (editMotion: open an element in the Motion tab)
+  // actions: main.js (editMotion: open an element in the page's Motion tab)
   let { live, bridge, actions } = $props();
 
   let panel = $state();
@@ -102,17 +103,37 @@
 
   // a page's tabs, the open one per page file
   const TABS = [
-    ['sections', 'Sections & Widgets'],
-    ['transitions', 'Transitions'],
+    ['sections', 'Sections'],
+    ['motion', 'Motion'],
     ['seo', 'SEO'],
   ];
   const isPage = $derived(!!file && ui.target.kind === 'page');
-  const tab = $derived((isPage && ui.sections[`pagetab:${file}`]) || 'sections');
-  const shownTab = $derived(tab);
+  const tab = $derived.by(() => {
+    const v = isPage && ui.sections[`pagetab:${file}`];
+    return TABS.some(([t]) => t === v) ? v : 'sections';
+  });
+  // Motion is a mode of its own (the preview picks animations); the others are 'text'
+  const shownTab = $derived(ui.mode === 'motion' ? 'motion' : tab === 'motion' ? 'sections' : tab);
   function pickTab(v) {
     if (ui.section && v !== 'sections') ui.section = null;
     ui.sections[`pagetab:${file}`] = v;
+    const mode = v === 'motion' ? 'motion' : 'text';
+    if (ui.mode !== mode) actions.setMode(mode);
   }
+  // The page's Motion tab and the mode go together: a page opened on Motion (kept per page)
+  // picks animations, the pages list or a site part picks texts; Motion entered elsewhere (a
+  // widget's part opened from its pop-up) opens the page's Motion tab.
+  $effect(() => {
+    const listing = ui.pagesWin.open || ui.target.kind !== 'page';
+    const mode = ui.mode;
+    const f = file;
+    const kept = tab;
+    untrack(() => {
+      if (mode === 'motion' && listing) actions.setMode('text');
+      else if (mode === 'motion' && kept !== 'motion' && f) ui.sections[`pagetab:${f}`] = 'motion';
+      else if (mode === 'text' && !listing && f && kept === 'motion') actions.setMode('motion');
+    });
+  });
   const tabsId = $props.id();
 
   const onsource = (f, item, edit, then) => sourcesModal.open(f, item, edit, then);
@@ -280,11 +301,9 @@
         <SectionsList {live} {bridge} {file} onopen={openWidget} onsection={openSection} />
       </div>
     {:else}
-      {#if isPage && tab === 'transitions'}
-        <BackdropFields {live} {file} />
-        <hr class="pane__line" />
-        <PageCurtain {live} onsettings={() => actions.setMode('settings')} />
-      {:else if isPage && tab === 'seo'}
+      {#if isPage && shownTab === 'motion'}
+        <MotionPanel {live} {bridge} {actions} {file} />
+      {:else if isPage && shownTab === 'seo'}
         <SeoSection {live} {file} {actions} />
       {:else if ui.target.id === 'header'}
         <HeaderPart {live} />
@@ -295,7 +314,7 @@
   </section>
 {/if}
 
-{#if popSection && file && !ui.pagesWin.open}
+{#if popSection && file && !ui.pagesWin.open && ui.mode === 'text'}
   <SectionPopup
     {live}
     {bridge}
@@ -306,7 +325,7 @@
   />
 {/if}
 
-{#if popG && !ui.pagesWin.open}
+{#if popG && !ui.pagesWin.open && ui.mode === 'text'}
   <WidgetPopup
     g={popG}
     {live}
@@ -321,8 +340,8 @@
     }}
     onmotion={(el) => actions.editMotion(el)}
     onlibrary={(name) => {
-      ui.library = { open: true, name };
-      actions.setMode('motion');
+      ui.library = { name };
+      actions.setMode('settings');
     }}
   />
 {/if}

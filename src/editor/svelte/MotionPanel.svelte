@@ -1,47 +1,35 @@
 <!--
-  Motion tab, two sub-tabs (ui.library.open: Animations):
-  Elements    nothing picked: the page's widgets (its curtain is in Content > Transitions, the
-              curtain itself in Settings), a box per
-              section, each with its animation and its parts that have their own (data-anim
-              inside it: the hero's photos, a heading's title, ...), then the animated elements
-              outside the widgets (fixed parts).
-              A widget picked (ui.anim.widget, from the preview or the list): its motion
-              (WidgetMotion). A part or element picked: its animation (AnimEditor).
-  Animations  the library (AnimLibrary): every animation, edit one with the preview in view.
-  Picking in the preview goes to Elements; the widget picked is the Content tab's widget too.
+  A page's Motion tab (ContentPanel.svelte), one view:
+    nothing picked   the page's widgets, a card per section, each with its animation and its
+                     parts that have their own (data-anim inside it: the hero's photos, a
+                     heading's title, ...), then the animated elements outside the widgets
+                     (fixed parts), then the Page transition card (PageTransition.svelte: the
+                     backdrop and the curtain).
+    a widget picked  (ui.anim.widget, from the preview or the list): its motion (WidgetMotion).
+    a part picked    its animation (AnimEditor).
+  The animations themselves (the library) and the default timing are in Settings
+  (MotionSettings.svelte). The widget picked is the Sections tab's widget too.
 -->
 <script>
   import AnimEditor from './AnimEditor.svelte';
-  import AnimLibrary from './AnimLibrary.svelte';
   import WidgetMotion from './WidgetMotion.svelte';
   import Button from './Button.svelte';
-  import Tabs from './Tabs.svelte';
+  import PageTransition from './PageTransition.svelte';
   import Section from './Section.svelte';
   import { ui } from './ui.svelte.js';
-  import { nameOf } from './content-groups.js';
-  import { targetFile } from '../layout-sync.js';
-  import { WIDGET_TYPES } from '../../site/widgets/index.js';
+  import { motionSections } from './page-motion.js';
   import { ANIMATIONS } from '../../site/files.js';
   import { animationOf, partOf } from './motion.js';
 
-  // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
-  let { live, bridge } = $props();
+  // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js); actions: main.js;
+  // file: the page file
+  let { live, bridge, actions, file } = $props();
 
-  const TABS = [
-    [false, 'Elements'],
-    [true, 'Animations'],
-  ];
-  /** Open the Animations sub-tab, on animation `name` ('' = the list). */
+  /** Open animation `name` in the library (Settings > Motion). */
   function openLibrary(name = '') {
-    ui.library = { open: true, name };
+    ui.library = { name };
+    actions.setMode('settings');
   }
-
-  // A new pick (preview click or the list) shows it: back to Elements.
-  let picked = ui.anim;
-  $effect(() => {
-    if (ui.anim && ui.anim !== picked) ui.library.open = false;
-    picked = ui.anim;
-  });
 
   const cfg = $derived(live.current(ANIMATIONS));
   // The preview's GSAP and animated elements: re-read when it shows another page.
@@ -56,32 +44,10 @@
   });
 
   // The page's sections and widgets (its file), each widget with its element and parts.
-  const file = $derived.by(() => {
-    ui.previewVersion;
-    return targetFile(ui.target, bridge.doc);
-  });
   const sections = $derived.by(() => {
     ui.previewVersion;
     live.version;
-    const list = file ? live.get(file, '/sections') : null;
-    if (!Array.isArray(list) || !bridge.doc) return [];
-    return list.map((s, at) => ({
-      id: s.id,
-      at,
-      name: (s.widgets || []).map(nameOf).find(Boolean) || '',
-      widgets: (s.widgets || []).map((b, j) => {
-        const el = bridge.doc.querySelector(`[data-widget="${CSS.escape(b.id)}"]`);
-        return {
-          id: b.id,
-          j,
-          el,
-          label: WIDGET_TYPES[b.type]?.label || b.type,
-          name: nameOf(b),
-          anim: b.motion?.anim || '',
-          parts: el ? items.filter((it) => it.el.closest('[data-widget]') === el) : [],
-        };
-      }),
-    }));
+    return motionSections(file ? live.get(file, '/sections') : null, bridge.doc, items);
   });
   const outside = $derived(items.filter((it) => !it.el.closest('[data-widget]')));
   // the widget picked, where it is
@@ -117,20 +83,11 @@
   </li>
 {/snippet}
 
-<section class="ed-body">
-  {#if !gsap}
-    <p class="hint">Waiting for the preview…</p>
-  {:else}
-    <Tabs
-      class="mtabs"
-      label="Motion"
-      tabs={TABS}
-      value={ui.library.open}
-      onpick={(lib) => (ui.library.open = lib)}
-    />
-    {#if ui.library.open}
-      <AnimLibrary {live} {bridge} {cfg} {items} {sections} {gsap} />
-    {:else if picks}
+{#if !gsap}
+  <p class="hint">Waiting for the preview…</p>
+{:else}
+  <div class="mview">
+    {#if picks}
       {#key ui.anim}
         <div class="msel__head">
           <Button size="small" icon="arrow-left" onclick={() => bridge.select(null)}
@@ -207,16 +164,17 @@
           </ol>
         </Section>
       {/if}
+      <PageTransition {live} {file} onsettings={() => actions.setMode('settings')} />
     {/if}
-  {/if}
-</section>
+  </div>
+{/if}
 
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  // Elements | Animations, above everything else in the tab
-  :global(.mtabs) {
-    margin-bottom: var(--space-4);
+  // the hint and the cards: spaced by the panel body (.ed-body's gap), as before
+  .mview {
+    display: contents;
   }
 
   .msel__head {

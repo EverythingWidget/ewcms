@@ -1,20 +1,20 @@
 /**
  * Keeps the editor where it was across a refresh, in two places:
  *
- *   The URL (shareable): /photography/people/?edit&tab=motion (src/editor/lib/editor-url.js)
- *     tab     content | motion | settings | preview
+ *   The URL (shareable): /photography/people/?edit&tab=settings (src/editor/lib/editor-url.js)
+ *     tab     nav | settings | preview (nav: also a page's Motion tab, its own mode, kept per
+ *             page in sessionStorage; an unknown tab: nav)
  *     (path)  the URL's own path is the page in the preview (main.js keeps it up to date)
  *     view    header | footer, when a site part (Header, Footer) is edited instead of a page
  *     source  + item (+ field): the Source Explorer, open on that file and item, with that field
  *             highlighted (&source=people&item=noor-vermeer&field=summary; item is the
  *             slug, or the number without one)
- *     motion  animations: the Motion tab's Animations sub-tab (the list of animations)
- *     anim    that sub-tab, open on that animation (&anim=fade-up)
- *     pages   the pages list, open on that folder (&pages=/people/; / is the root)
+ *     anim    Settings > Motion's Animations library, open on that animation (&anim=fade-up)
+ *     pages   the pages list (Nav), open on that folder (&pages=/people/; / is the root)
  *     media   + pick: the Media window, on that photo (&media=photos/x-1600.webp; / for none),
  *             picking for that field (&pick=sources/people.json#/0/images/0/src)
  *   sessionStorage (this browser tab only, survives a refresh): the finer things. Open/closed
- *     sections, the selected field or Motion element, the explorer's and library's lists,
+ *     sections and each page's tab, the selected field or Motion element, the explorer's list,
  *     the panel and preview scroll.
  *
  * On load the URL wins; what it doesn't say comes from sessionStorage. Values that don't
@@ -33,14 +33,14 @@ import { ui } from './ui.svelte.js';
 import { sourceIdOf } from '../../site/files.js';
 
 const KEY = 'editor:ui';
-// URL tab name -> ui.mode
-// the first name of a mode is the one written; browse: links from before Preview
+// URL tab name -> ui.mode ('motion', a page's Motion tab, is written as nav)
 const TABS = {
-  content: 'text',
-  motion: 'motion',
+  nav: 'text',
   settings: 'settings',
   preview: 'preview',
 };
+const tabOf = (mode) =>
+  mode === 'motion' ? 'nav' : Object.keys(TABS).find((t) => TABS[t] === mode);
 const VIEWS = { header: 'Header', footer: 'Footer' };
 
 let bridge, live; // the preview (../bridge.js) and the content (live.svelte.js)
@@ -58,7 +58,11 @@ function readSession() {
 function readState() {
   const state = readSession();
   const q = new URLSearchParams(location.search);
-  if (q.has('tab')) state.mode = TABS[q.get('tab')] || 'text';
+  // nav: the page's Motion tab when it was open (the session's), else the pages or Sections
+  if (q.has('tab')) {
+    const mode = TABS[q.get('tab')] || 'text';
+    if (!(mode === 'text' && state.mode === 'motion')) state.mode = mode;
+  }
   if (q.has('view'))
     state.part = VIEWS[q.get('view')] && {
       kind: 'part',
@@ -66,7 +70,7 @@ function readState() {
       title: VIEWS[q.get('view')],
     };
   if (q.has('source')) {
-    if (!q.has('tab')) state.mode = 'text'; // the explorer is in the Content tab
+    if (!q.has('tab')) state.mode = 'text'; // the explorer is in the Nav tab
     state.explorer = {
       open: true,
       file: `sources/${q.get('source')}.json`,
@@ -83,13 +87,13 @@ function readState() {
       pick: q.get('pick') || '',
     };
   if (q.has('pages')) {
-    if (!q.has('tab')) state.mode = 'text'; // the pages list is in the Content tab
+    if (!q.has('tab')) state.mode = 'text'; // the pages list is in the Nav tab
     state.pagesWin = { open: true, folder: q.get('pages').replace(/^\/+|\/+$/g, '') };
   }
-  if (q.get('motion') === 'animations' || q.has('anim')) {
-    if (!q.has('tab')) state.mode = 'motion'; // the library is in the Motion tab
-    state.library = { open: true, name: q.get('anim') || '' }; // an unknown name: the list
-  } else if (q.get('tab') === 'motion') state.library = { open: false, name: '' };
+  if (q.has('anim')) {
+    if (!q.has('tab')) state.mode = 'settings'; // the library is in Settings > Motion
+    state.library = { name: q.get('anim') }; // an unknown name: the list
+  } else if (q.get('tab') === 'settings') state.library = { name: '' };
   return state;
 }
 
@@ -98,13 +102,13 @@ export function restoreUi(preview, content) {
   bridge = preview;
   live = content;
   saved = readState();
-  if (Object.values(TABS).includes(saved.mode)) ui.mode = saved.mode;
+  if ([...Object.values(TABS), 'motion'].includes(saved.mode)) ui.mode = saved.mode;
   if (['text', 'motion', 'settings'].includes(saved.lastEdit)) ui.lastEdit = saved.lastEdit;
   if (saved.part) ui.target = saved.part; // Header or Footer (pages: the URL's path)
   ui.sections = saved.sections || {};
-  // the Motion tab's sub-tab: Elements, or Animations (ui.library.open) on an animation
-  if (saved.library) ui.library = saved.library;
-  if (saved.pagesWin) ui.pagesWin = saved.pagesWin; // the Content tab shows the pages list (PagesList)
+  // Settings > Motion's library, on an animation
+  if (typeof saved.library?.name === 'string') ui.library = { name: saved.library.name };
+  if (saved.pagesWin) ui.pagesWin = saved.pagesWin; // the Nav tab shows the pages list (PagesList)
   if (saved.media) ui.media = saved.media; // and MediaModal
 
   addEventListener('pagehide', () => {
@@ -138,8 +142,8 @@ export async function restorePlace() {
   const { explorer, item, path, edit, anim, panelY, previewY } = saved;
   saved = null; // only after the refresh, not on later page changes
 
-  // The explorer lives in the Content tab; SourcesModal opens itself when ui.explorer.open is set.
-  if (explorer?.open && ui.mode === 'text') {
+  // The explorer lives in the Nav tab; SourcesModal opens itself when ui.explorer.open is set.
+  if (explorer?.open && (ui.mode === 'text' || ui.mode === 'motion')) {
     const list = live.current(explorer.file)?.items;
     const at = Array.isArray(list) ? list.findIndex((it, i) => itemId(it, i) === item) : -1;
     ui.explorer = { ...explorer, index: at >= 0 ? at : explorer.index };
@@ -147,10 +151,8 @@ export async function restorePlace() {
 
   if (path !== bridge.path()) return;
   bridge.api.scrollTop(previewY);
-  // Motion: the picked element; Content (and the others, for later): the selected field
-  // (not on the Animations sub-tab: a pick goes to Elements)
+  // a page's Motion tab: the picked element; Nav (and the others, for later): the selected field
   const motion = ui.mode === 'motion';
-  if (motion && ui.library.open) return;
   const sel = motion
     ? anim &&
       (anim.startsWith('widget:')
@@ -177,19 +179,14 @@ export function writeUrl() {
   const url = new URL(location.href);
   const q = url.searchParams;
   const set = (key, value) => (value ? q.set(key, value) : q.delete(key));
-  set(
-    'tab',
-    Object.keys(TABS).find((tab) => TABS[tab] === ui.mode),
-  );
+  set('tab', tabOf(ui.mode));
   set('view', ui.target?.kind === 'part' && ui.target.id);
   const { open, file, index } = ui.explorer;
   const list = open && file ? live.current(file)?.items : null;
   set('source', list && sourceIdOf(file));
   set('item', Array.isArray(list) && list[index] && itemId(list[index], index));
   set('field', Array.isArray(list) && list[index] && ui.explorer.field);
-  const library = ui.mode === 'motion' && ui.library.open;
-  set('motion', library && 'animations');
-  set('anim', library && ui.library.name);
+  set('anim', ui.mode === 'settings' && ui.library.name);
   set(
     'pages',
     ui.mode === 'text' && ui.pagesWin.open && `/${ui.pagesWin.folder}/`.replace('//', '/'),

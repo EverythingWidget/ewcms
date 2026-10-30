@@ -19,7 +19,7 @@
   its name is taken here. 404 and [param] pages don't move. A click selects a row and shows
   it in the preview; a double click (or Enter) goes into a page's level (any page, a plain one
   too: its root row and "No sub pages yet"; a [param] page's: it can hold another), and on a
-  level's root row, on Home, 404, Header or Footer opens it (its Sections, Transitions, SEO:
+  level's root row, on Home, 404, Header or Footer opens it (its Sections, Motion, SEO:
   PageHead.svelte goes back). Each row's edit button (pen) opens it the same way, one click
   (no select, no drag). Delete asks over the row: one line when nothing links to it,
   else with where its address and links go (a redirect). Adding, moving and deleting go to

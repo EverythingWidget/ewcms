@@ -1,5 +1,5 @@
 /**
- * Visual editor (any page with ?edit: /?edit, /about/?edit&tab=motion): the real site in an iframe + a side panel.
+ * Visual editor (any page with ?edit: /?edit, /about/?edit&tab=settings): the real site in an iframe + a side panel.
  *
  *   Content - click text in the preview to edit it (animations paused)
  *   Motion  - click an animated element to edit its animation / timing / trigger
@@ -404,7 +404,7 @@ async function refreshStatus() {
 }
 
 /**
- * A pick in the preview (bridge 'select') -> ui.anim for the Motion tab: a widget
+ * A pick in the preview (bridge 'select') -> ui.anim for a page's Motion tab: a widget
  * ({ el, widget }) or a data-anim part ({ el, id, key, scope }). The widget (or the part's) is
  * also the Content tab's widget (ui.widget), so both tabs show the same one.
  */
@@ -447,7 +447,7 @@ function widgetAt(id) {
   return null;
 }
 
-/** Open an animated element of the preview in the Motion tab. */
+/** Open an animated element of the preview in the page's Motion tab. */
 function editMotion(el) {
   setMode('motion');
   ui.anim = pickAnim({ kind: 'anim', el });

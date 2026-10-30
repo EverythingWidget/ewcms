@@ -91,7 +91,7 @@ export function clampTo(field, v, plan) {
 }
 
 /**
- * A page's curtain (Content > Transitions), as one undo step. `page` is where the page's
+ * A page's curtain (Nav > a page > Motion > Page transition), as one undo step. `page` is where the page's
  * "transition" is stored ({ file, ptr }, see src/site/routes.js): Global is no "transition",
  * Off { preset: 'none' }.
  */

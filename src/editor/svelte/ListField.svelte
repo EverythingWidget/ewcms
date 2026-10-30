@@ -4,7 +4,7 @@
   the item, to move it: the drag as PhotoList's (a press moves SLACK px to be a drag, a line
   shows where it lands, its own place moves nothing, Esc cancels). The parent owns the data and makes each
   change one undo step. Used for the list fields of sections (Content: hero photos, facts,
-  panels, ...) and the header's menu (Content > Header, nested for sub-items).
+  panels, ...) and the header's menu (Nav > Header, nested for sub-items).
     label     the list's name, on top
     items     the list
     name      (item, i) → an item's name (default "<label> <n>")

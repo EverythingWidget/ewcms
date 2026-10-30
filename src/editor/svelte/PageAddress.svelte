@@ -1,5 +1,5 @@
 <!--
-  Content > SEO > Address: the page's URL. Its name (the last part) renames the page's folder,
+  Nav > SEO > Address: the page's URL. Its name (the last part) renames the page's folder,
   with every page in it, straight on disk (actions.pagesOp 'rename'): links to it and the
   redirects are updated, a redirect from the old address is added. Not for home or 404 (their
   address is fixed). A [param] page: its param's name ([person] -> [model]): the URLs stay,

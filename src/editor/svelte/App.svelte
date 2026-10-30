@@ -1,7 +1,8 @@
 <!--
   The editor shell: the site preview on the left, the side panel on the right with the
-  toolbar (Sources, Media | Preview, phone, undo, redo; the mode tabs), the current tab's
-  panel (the page edited on top: PageHead.svelte; the pages list is in the Content tab) (Preview's while it is on) and the Save / Publish footer. Also the
+  toolbar (Sources, Media | Preview, phone, undo, redo; the top tabs Nav | Settings), the current
+  tab's panel (Nav: the pages list, or the page open with its tabs Sections | Motion | SEO,
+  ContentPanel.svelte) (Preview's while it is on) and the Save / Publish footer. Also the
   publish dialog, the toasts and the keyboard shortcuts.
   main.js holds the logic: it changes `ui` (ui.svelte.js) and passes `actions`.
 -->
@@ -13,10 +14,8 @@
   import { SITE, contentPath } from '../../site/files.js';
   import PreviewPanel from './PreviewPanel.svelte';
   import ContentPanel from './ContentPanel.svelte';
-  import MotionPanel from './MotionPanel.svelte';
   import SettingsPanel from './SettingsPanel.svelte';
   import PublishDialog from './PublishDialog.svelte';
-  import PageHead from './PageHead.svelte';
   import MediaModal from './MediaModal.svelte';
   import { openMedia } from './media.svelte.js';
   import Toasts from './Toasts.svelte';
@@ -34,19 +33,20 @@
 
   let publishDialog = $state();
   const publish = () => publishDialog.open();
-  // The Source Explorer lives in the Content tab (ContentPanel.svelte); it opens itself when
+  // The Source Explorer lives in the Nav tab (ContentPanel.svelte); it opens itself when
   // ui.explorer.open is set (SourcesModal.svelte), on the list of files.
   function openSources() {
     ui.explorer = { open: true, file: '', index: 0, field: '' };
-    if (ui.mode !== 'text') actions.setMode('text');
+    if (!nav) actions.setMode('text');
   }
 
-  // [mode, label, icon]: a tab with an icon shows only the icon
+  // [mode, label, icon]: a tab with an icon shows only the icon. Nav is 'text' and 'motion' (a
+  // page's Motion tab, ContentPanel.svelte): the preview picks texts or animations
   const TABS = [
-    ['text', 'Content'],
-    ['motion', 'Motion'],
+    ['text', 'Nav'],
     ['settings', 'Settings'],
   ];
+  const nav = $derived(ui.mode === 'text' || ui.mode === 'motion');
   const mobile = $derived(ui.viewport === 'mobile');
   // Preview: a toggle; off goes back to the tab it came from
   const previewing = $derived(ui.mode === 'preview');
@@ -239,17 +239,14 @@
           fill
           label="Mode"
           tabs={TABS}
-          value={ui.mode}
-          onpick={(mode) => actions.setMode(mode)}
+          value={nav ? 'text' : ui.mode}
+          onpick={(mode) => !(nav && mode === 'text') && actions.setMode(mode)}
         />
       {/if}
     </header>
 
-    {#if ui.mode === 'text'}
+    {#if nav}
       <ContentPanel {live} {bridge} {actions} />
-    {:else if ui.mode === 'motion'}
-      <PageHead {live} {actions} />
-      <MotionPanel {live} {bridge} />
     {:else if ui.mode === 'settings'}
       <SettingsPanel {live} {bridge} />
     {:else}

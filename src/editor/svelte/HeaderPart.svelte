@@ -1,5 +1,5 @@
 <!--
-  Content > Header, a site part (picked in the page picker's "Site" group, or by clicking the
+  Nav > Header, a site part (picked in the page picker's "Site" group, or by clicking the
   header in the preview): the menu of content/en/settings/nav.json (src/site/templates/header.js:
   the nav pill and the mobile menu), then the header's labels (strings.json "nav": the menu
   and close buttons, the clock). (The footer is page-like: settings/footer.json.)

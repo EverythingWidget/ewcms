@@ -1,13 +1,14 @@
 <!--
-  Settings tab: what is the same on every page. Where contact forms send (Forms), the site's
+  Settings tab: what is the same on every page. First Motion (MotionSettings.svelte: the
+  default timing and the Animations library), then where contact forms send (Forms), the site's
   name and details
   (settings/site.json), its search and share defaults (SEO: titles, description, share image,
-  address, robots, language; a page's own are in Content > SEO), the global page-transition curtain and the page
+  address, robots, language; a page's own are in Nav > SEO), the global page-transition curtain and the page
   fade (settings/animations.json), where uploaded photos are served from (site.json mediaUrl)
   and the text styles scaled text uses (Typography: site.json typography, in cells,
   src/site/layout/type.js; the preview follows them as they are typed).
-  Per-page things stay in Content (sections, the backdrop and curtain, SEO) and Motion (its
-  animations); the header's menu and labels are the Header site part in Content
+  Per-page things stay in Nav, on the page (sections; Motion: its animations, backdrop and
+  curtain; SEO); the header's menu and labels are the Header site part in Content
   (HeaderPart.svelte). redirects.json is in Redirects (RedirectSettings.svelte).
 -->
 <script>
@@ -16,6 +17,7 @@
   import Section from './Section.svelte';
   import Select from './Select.svelte';
   import CurtainSection from './CurtainSection.svelte';
+  import MotionSettings from './MotionSettings.svelte';
   import PageFadeSection from './PageFadeSection.svelte';
   import { ui } from './ui.svelte.js';
   import { SEO_SETTINGS, SITE_SETTINGS } from './content-groups.js';
@@ -91,6 +93,8 @@
 </script>
 
 <section class="ed-body">
+  <MotionSettings {live} {bridge} {gsap} />
+
   <Section key="settings:site" title="Name & Details">
     <p class="hint">
       Used on every page: the clock and search engines' details about you. The preview shows them
@@ -110,8 +114,8 @@
 
   <Section key="settings:seo" title="SEO">
     <p class="hint">
-      What search engines and share cards show. Pages can set their own in Content > SEO; these are
-      the defaults.
+      What search engines and share cards show. Pages can set their own in Nav > SEO; these are the
+      defaults.
     </p>
     {#each SEO_SETTINGS as [key, label, type] (key)}
       <Field
