@@ -2,7 +2,7 @@
   Settings tab: what is the same on every page. First Motion (MotionSettings.svelte: the
   default timing and the Animations library), then where contact forms send (Forms), the site's
   name and details
-  (settings/site.json), its search and share defaults (SEO: titles, description, share image,
+  (settings/site.json), its search and share defaults (SEO: titles, description, share photo,
   address, robots, language; a page's own are in Nav > SEO), the global page-transition curtain and the page
   fade (settings/animations.json), where uploaded photos are served from (site.json mediaUrl)
   and the text styles scaled text uses (Typography: site.json typography, in cells,

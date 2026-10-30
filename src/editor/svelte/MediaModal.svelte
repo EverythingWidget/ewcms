@@ -270,7 +270,7 @@
   /** A use as a row: "Noor Vermeer / photo 4" in "people.json" */
   const where = (u) => ({
     name: labelFor(live.store, u).replace(
-      /(?:images|photos) \/ #?(\d+)(?: \/ src)?$/,
+      /photos \/ #?(\d+)(?: \/ src)?$/,
       (_, n) => `photo ${Number(n) + 1}`,
     ),
     meta: u.file,

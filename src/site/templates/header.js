@@ -24,7 +24,7 @@ import {
   isExternal,
   ed,
   coverOf,
-  imagesOf,
+  photosOf,
   itemHref,
   itemSlug,
   slugify,
@@ -82,7 +82,7 @@ const ddLinks = (ctx, items) =>
             >${coverOf(a) ? img(ctx, coverOf(a), { decorative: true, sizes: '48px' }) : ''}</span
           >
           <span class="dd-link__name">${esc(a.title)}</span>
-          <span class="dd-link__count">${pad(imagesOf(a).length)}</span>
+          <span class="dd-link__count">${pad(photosOf(a).length)}</span>
         </a>
       </li>`,
       )

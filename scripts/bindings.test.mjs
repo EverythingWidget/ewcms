@@ -25,7 +25,7 @@ import { SITE_A } from '../test/fixtures/index.mjs';
 const content = loadContent(SITE_A);
 const { routes } = buildRoutes(content);
 const noor = content.sources.people.find((p) => p.slug === 'noor-vermeer');
-const keys = new Set(['title', 'role', 'year', 'body', 'images']);
+const keys = new Set(['title', 'role', 'year', 'body', 'photos']);
 const warnings = () => {
   const list = [];
   return Object.assign(list, { onwarn: (m) => list.push(m) });
@@ -36,11 +36,11 @@ test('resolve: custom values stay, { bind } takes the whole value, a format wrap
   const o = { item: noor, keys, onwarn: w.onwarn };
   assert.equal(resolve('Plain text', { ...o, def: { type: 'text' } }), 'Plain text');
   assert.equal(resolve({ bind: 'title' }, { ...o, def: { type: 'text' } }), 'Noor Vermeer');
-  assert.equal(resolve({ bind: 'images' }, { ...o, def: { list: 'photo' } }), noor.images);
+  assert.equal(resolve({ bind: 'photos' }, { ...o, def: { list: 'photo' } }), noor.photos);
   // a list of { src } (the hero's placed photos) gets the paths as { src }
   assert.deepEqual(
-    resolve({ bind: 'images' }, { ...o, def: { list: { src: 'photo' } } }),
-    noor.images.map((src) => ({ src })),
+    resolve({ bind: 'photos' }, { ...o, def: { list: { src: 'photo' } } }),
+    noor.photos.map((src) => ({ src })),
   );
   assert.equal(
     resolve({ bind: 'year', format: '({value}) {value}' }, { ...o, def: { type: 'text' } }),
@@ -66,7 +66,7 @@ test('resolve: unknown fields and missing items are empty, with a warning ({{tit
   assert.equal(resolve({ bind: 'title' }, { ...o, item: null, def: { type: 'text' } }), '');
   // an empty value stays empty: no format around nothing
   assert.equal(resolve({ bind: 'nope', format: 'x {value}' }, { ...o, def: { type: 'text' } }), '');
-  assert.deepEqual(resolve({ bind: 'images' }, { ...o, item: null, def: { list: {} } }), []);
+  assert.deepEqual(resolve({ bind: 'photos' }, { ...o, item: null, def: { list: {} } }), []);
   assert.equal(w.length, 4);
   assert.match(w[0], /^x: the item has no field "nope"/);
   // the editor's preview shows what can't be filled
@@ -214,7 +214,7 @@ test('bindingProblems: schema-aware errors and warnings', () => {
               source: { mode: 'item', from: 'people', id: 'p-qw7b' },
             }),
             widget({
-              title: { bind: 'images' },
+              title: { bind: 'photos' },
               source: { mode: 'item', from: 'people', id: 'p-qw7b' },
             }),
             widget({
@@ -243,7 +243,7 @@ test('bindingProblems: schema-aware errors and warnings', () => {
   assert.deepEqual(at(6), ['warn']);
   assert.match(
     out.find((p) => p.message.includes('widgets/2)')).message,
-    /people\.images \(photos\) doesn't fit a text field/,
+    /people\.photos \(photos\) doesn't fit a text field/,
   );
   // the site's own pages: nothing wrong
   assert.deepEqual(render.bindingChecks(content), []);
@@ -318,7 +318,7 @@ test('Save refuses bindings that do not fit the schema', () => {
   const bad = save(root, { [F]: page({ bind: 'nope' }) });
   assert.equal(bad.status, 400);
   assert.match(bad.body.error, /people has no field "nope"/);
-  assert.equal(save(root, { [F]: page({ bind: 'images' }) }).status, 400);
+  assert.equal(save(root, { [F]: page({ bind: 'photos' }) }).status, 400);
   // a schema change that breaks a saved page's binding is refused too
   const schema = JSON.parse(
     fs.readFileSync(path.join(root, 'content/en/sources/people.schema.json')),

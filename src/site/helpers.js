@@ -311,12 +311,12 @@ export function accentOf(ctx, album) {
  * Photos of an album: their paths ([] when it has none yet, e.g. a person just added in the
  * editor). Alt text and credits belong to the photo (content/en/settings/photos.json).
  */
-export const imagesOf = (album) =>
-  Array.isArray(album?.images) ? album.images.filter((p) => typeof p === 'string' && p) : [];
+export const photosOf = (album) =>
+  Array.isArray(album?.photos) ? album.photos.filter((p) => typeof p === 'string' && p) : [];
 
 /** Cover photo of an album, its path (undefined when it has no photos). */
 export const coverOf = (album) =>
-  imagesOf(album).find((p) => album?.cover && p === album.cover) || imagesOf(album)[0];
+  photosOf(album).find((p) => album?.cover && p === album.cover) || photosOf(album)[0];
 
 /** A photo's credit ({ name, url, source, license }), from photos.json; undefined: none. */
 export const creditOf = (ctx, src) => ctx.photos?.[src]?.credit;

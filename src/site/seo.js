@@ -7,7 +7,7 @@
  *   titleTemplate  every other page's title: "{page}" is the page's own title, "{site}" the
  *                  site name ("{page} | {site}", the default)
  *   description    the description of pages without their own
- *   ogImage        the share image of pages without their own
+ *   ogPhoto        the share photo of pages without their own
  *   url            the site's address: canonical links, og:url, sitemap.xml
  *   robots         "index" (default) or "noindex": keeps the whole site out of search engines
  *   lang           <html lang> (also the editor's page)
@@ -15,7 +15,7 @@
  *   entityType     the home page's JSON-LD @type ("Person", the default; "Organization", ...)
  *   name           the site's name: og:site_name, JSON-LD, the editor's title
  * A page's own, in its file's "meta" (src/site/routes.js reads them into its route):
- *   title, description, image (a photo: media/ path or R2 key), noindex, canonical
+ *   title, description, photo (a photo: media/ path or R2 key), noindex, canonical
  * [param] pages: see routes.js (the item's name, summary and cover, then the template's meta).
  */
 import { altOf, isExternal, mediaUrl, photoOf } from './helpers.js';
@@ -37,10 +37,10 @@ export const fillTitle = (site, page) =>
     .replaceAll('{site}', site?.name ?? '');
 
 /**
- * A share image: { url (absolute), width, height, alt } of photo `src` (media/ path, R2 key or
+ * A share photo: { url (absolute), width, height, alt } of photo `src` (media/ path, R2 key or
  * URL), the size of the file the URL points at (from the photo's sizes); null without one.
  */
-export function shareImage(ctx, src) {
+export function sharePhoto(ctx, src) {
   if (!src) return null;
   const url = absolute(ctx.site, mediaUrl(ctx, src));
   const photo = photoOf(ctx, src);
@@ -54,7 +54,7 @@ export function shareImage(ctx, src) {
   };
 }
 
-/** Everything <head> says about `route`: { title, description, url, image, noindex }. */
+/** Everything <head> says about `route`: { title, description, url, photo, noindex }. */
 export function seoOf(ctx, route) {
   const { site } = ctx;
   const path = route.out === '404.html' ? '/404' : route.path;
@@ -62,7 +62,7 @@ export function seoOf(ctx, route) {
     title: route.title,
     description: route.description || '',
     url: absolute(site, route.canonical || path),
-    image: shareImage(ctx, route.image || site.ogImage),
+    photo: sharePhoto(ctx, route.photo || site.ogPhoto),
     noindex: !!route.noindex,
   };
 }

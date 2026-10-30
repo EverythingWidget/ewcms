@@ -108,7 +108,7 @@ export async function buildPhotos(root = process.cwd()) {
   fs.mkdirSync(path.dirname(MANIFEST), { recursive: true });
   fs.writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2));
   console.log(
-    `[images] ${files.length} images, ${built} (re)built → public/media, manifest → .generated/media.json`,
+    `[photos] ${files.length} photos, ${built} (re)built → public/media, manifest → .generated/media.json`,
   );
   return { files: files.length, built };
 }

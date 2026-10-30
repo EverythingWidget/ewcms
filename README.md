@@ -10,18 +10,18 @@ A **site** is only its own things; ewcms is everything else:
 
 | The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                          | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                         |
 | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/site` (templates, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `scripts/` (Vite plugin, dev server API, build, images, R2), `functions/contact.js`, `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
+| `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/site` (templates, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `scripts/` (Vite plugin, dev server API, build, photos, R2), `functions/contact.js`, `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
 | `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                             | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                             |
 | `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                            |
 
 ## A site's commands
 
 ```bash
-ewcms dev [--port N] [--host] [--no-images]   # photo sizes, then http://localhost:5173 (pages on the fly, hot reload; editor: ?edit)
-ewcms build [--no-images]                     # photo sizes, then dist/ (one index.html per route + 404.html, sitemap.xml, _redirects)
+ewcms dev [--port N] [--host] [--no-photos]   # photo sizes, then http://localhost:5173 (pages on the fly, hot reload; editor: ?edit)
+ewcms build [--no-photos]                     # photo sizes, then dist/ (one index.html per route + 404.html, sitemap.xml, _redirects)
 ewcms preview [--port N]                      # serve dist/ on http://localhost:4173
 ewcms check [--links] [--no-lint]             # content (every file, sources, bindings, motion) + the site's JS/SCSS; --links: dist/'s links
-ewcms images                                  # media/ → public/media/*.webp sizes + .generated/media.json
+ewcms photos                                  # media/ → public/media/*.webp sizes + .generated/media.json
 ewcms publish-media                           # media/ photos → Cloudflare R2 (.env.local R2_* keys), like the editor's uploads
 ewcms new-site <dir>                          # a new site: a theme over theme-default, starter content, package.json
 ```
@@ -281,13 +281,13 @@ site settings can live side by side):
 | `content/en/settings/nav.json`        | the **menus**: the header (nav pill, dropdowns, mobile menu; see "Menu")                                                                                                                                                                                                                                          |
 | `content/en/settings/footer.json`     | the **footer**: `{ version, kind: "part", sections }`, sections and widgets exactly like a page's, under every page (see "Footer")                                                                                                                                                                                |
 | `content/en/strings.json`             | UI text of the templates: the menu button and clock labels (`nav.menu`, `nav.close`, `nav.clock`)                                                                                                                                                                                                                 |
-| `content/en/settings/site.json`       | name, the **SEO defaults** (`title`, `titleTemplate`, `description`, `ogImage`, `url`, `robots`, `lang`; see "SEO"), `forms` (where contact forms send, see "Contact form"), socials, email, `timezone` of the clock, `jobTitle` / `country` (structured data on home)                                            |
+| `content/en/settings/site.json`       | name, the **SEO defaults** (`title`, `titleTemplate`, `description`, `ogPhoto`, `url`, `robots`, `lang`; see "SEO"), `forms` (where contact forms send, see "Contact form"), socials, email, `timezone` of the clock, `jobTitle` / `country` (structured data on home)                                            |
 | `content/en/settings/animations.json` | **every animation** (see below)                                                                                                                                                                                                                                                                                   |
 | `content/en/pages/index.json`         | home: its `sections` of widgets (the hero first: the big name, its text and the **scattered hero photos**, position `x/y/w` in %, `phone` over them (`{ x?, y?, w? }`, `null`: hidden on phones), `depth`, `layer` back/front), curtain text                                                                      |
-| `content/en/pages/<page>/index.json`  | the other pages: their `sections` of widgets (see "Layout"), curtain text, `meta`: its title, description, share image, `noindex`, canonical (see "SEO")                                                                                                                                                          |
-| `content/en/sources/people.json`      | models: `id`, `slug`, `title`, role, `body`, location, `accent`, `cover` (the path of one of its photos), `images[]` (photo paths)                                                                                                                                                                                |
+| `content/en/pages/<page>/index.json`  | the other pages: their `sections` of widgets (see "Layout"), curtain text, `meta`: its title, description, share photo, `noindex`, canonical (see "SEO")                                                                                                                                                          |
+| `content/en/sources/people.json`      | models: `id`, `slug`, `title`, role, `body`, location, `accent`, `cover` (the path of one of its photos), `photos[]` (photo paths)                                                                                                                                                                                |
 | `content/en/sources/places.json`      | places, same shape                                                                                                                                                                                                                                                                                                |
-| `content/en/sources/projects.json`    | projects: title, type, year, body, url, image; `linkOut: true` makes the menus link straight to its `url`                                                                                                                                                                                                         |
+| `content/en/sources/projects.json`    | projects: title, type, year, body, url, photo; `linkOut: true` makes the menus link straight to its `url`                                                                                                                                                                                                         |
 | `content/en/settings/redirects.json`  | **redirects** from old addresses: `[{ "from", "to", "status"? }]` (see "Redirects")                                                                                                                                                                                                                               |
 | `content/en/settings/photos.json`     | the **photo library**: every photo's `alt`, `credit` (`{ name, url?, source?, license? }`) and optional `focal` (`{ x, y }`, 0–100), keyed by media/ path or R2 key (`{ "people/noor-vermeer/01.jpg": { "alt": "…" } }`) and the sizes of photos uploaded to R2; written by the editor's Media window and uploads |
 
@@ -313,7 +313,7 @@ shaped like the widget registry's fields (`src/site/schemas.js`):
     { "key": "name", "label": "Name", "type": "text", "required": true },
     { "key": "role", "label": "Role", "type": "text", "width": "half", "list": true },
     { "key": "year", "label": "Year", "type": "number", "width": "half" },
-    { "key": "images", "label": "Photos", "type": "photos" }
+    { "key": "photos", "label": "Photos", "type": "photos" }
   ]
 }
 ```
@@ -580,7 +580,7 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
   URL shows the items matching that page's address; a type marked `item` (the `album` widget)
   reads its first for its photos, and its texts, like any widget's, are bindings to it (below).
 - **Animations:** a widget's `motion` picks its animation (a new widget gets its type's default
-  from the registry, e.g. text `lines-up`, photo `image-reveal`, grid `grid-reveal`). Composite
+  from the registry, e.g. text `lines-up`, photo `photo-reveal`, grid `grid-reveal`). Composite
   widgets (hero, heading, album, section heads) keep `data-anim` **elements** inside them
   for their own pieces (see Animations).
 - **A new type:** add it to a file in `src/site/widgets/` and to `WIDGET_TYPES` in `index.js`
@@ -832,7 +832,7 @@ move. A page's own file is
   `<html>`, for styles and scripts) is its `view` field, else its own name for the built-in
   pages (`home`, `photography`, `people`, `places`, `projects`, `about`, `404`), else `page`.
   A template's is `album`. New pages start with a section holding a Text widget (a label and a title line).
-- **Head:** title, description, share image and robots come from the page's `meta` and the
+- **Head:** title, description, share photo and robots come from the page's `meta` and the
   site's defaults; see "SEO".
 - Links to an item (menu dropdowns, grids, next) come from the routes, and a grid's "See all"
   goes to the page that shows its source (the folder of its top-level `[param]` page, else the first page
@@ -953,26 +953,26 @@ preview and the 60/160 character counts).
 | `title`         | home's title, in full                                                                              |
 | `titleTemplate` | every other page's title: `{page}` is its own title, `{site}` the site `name` (`{page} \| {site}`) |
 | `description`   | the description of pages without their own                                                         |
-| `ogImage`       | the share image of pages without their own (a media/ path or R2 key)                               |
+| `ogPhoto`       | the share photo of pages without their own (a media/ path or R2 key)                               |
 | `url`           | the site's address: canonical links, `og:url`, `og:image`, `sitemap.xml`                           |
 | `robots`        | `index` (default) or `noindex`: keeps the whole site out of search engines                         |
 | `lang`          | `<html lang>` (default `en`)                                                                       |
 
 **A page's own** (`"meta"` in its `index.json`), every key optional: `title` (else its first
-heading's title, else its folder name), `description`, `image` (share image), `noindex: true`
+heading's title, else its folder name), `description`, `photo` (share photo), `noindex: true`
 (not in search, not in `sitemap.xml`), `canonical` (a path or URL, when the page copies
 another; else its own URL).
 
 **Item pages** (`[param]/index.json`), least magic: the title is `<item name> | <section>` in the
 template; the description is the item's `body`, else the template's `meta.description`, else
-the site's; the share image is the item's cover, else the template's `meta.image`, else the
+the site's; the share photo is the item's cover, else the template's `meta.photo`, else the
 site's. The template's `meta.noindex` hides every item page; an item with `"placeholder": true`
 gets `noindex` too. 404 is always `noindex`.
 
 **Output:** `<title>`, `description`, `canonical`, `og:title` / `description` / `url` / `type`,
 `og:image` (absolute: the R2 address or the site URL + the local path, the 960px size, with its
 `width` / `height` from the photo's sizes and `og:image:alt` from its alt text), `twitter:card`
-(`summary_large_image` with an image, else `summary`), `robots` when noindex, and the JSON-LD on
+(`summary_large_image` with a share photo, else `summary`), `robots` when noindex, and the JSON-LD on
 home (a Person: `name`, `url`, `jobTitle`, `country`). `npm run build` prints `[seo]` warnings
 for indexable pages without a description (and no site default), titles over ~60 characters and
 descriptions over ~160. `checkContent` validates `meta` and the defaults.
@@ -997,7 +997,7 @@ shared with photos uploaded to R2 (below).
 **Alt text and credits belong to the photo**, not to the page using it: one entry per photo in
 `content/en/settings/photos.json` (`alt`, `credit`, `focal`), keyed by its `media/` path or R2
 key, edited in the editor's Media window. Everything else refers to a photo by its path only
-(a source's `images` is a list of paths, `cover` and `image` are paths). Every `<img>` takes it from there (`altOf()` / `img()` in
+(a source's `photos` is a list of paths, `cover` and `photo` are paths). Every `<img>` takes it from there (`altOf()` / `img()` in
 `src/site/helpers.js`); thumbnails and repeats are `decorative` (`alt=""`). A photo without
 alt text renders `alt=""` and the build warns.
 
@@ -1502,18 +1502,29 @@ node node_modules/ewcms/scripts/rename-0-2-0.mjs content            # what it wo
 node node_modules/ewcms/scripts/rename-0-2-0.mjs content --write    # change the files
 ```
 
-It writes the files as the editor's Save does; running it again changes nothing.
+It writes the files as the editor's Save does; running it again changes nothing. It also renames
+`ewcms images` / `--no-images` in the scripts of the site's `package.json` (next to `content/`),
+changing only those lines; a script it can't match exactly it names, to change by hand.
 
-| Where                               | Old                                | New                                   |
-| ----------------------------------- | ---------------------------------- | ------------------------------------- |
-| widget ids (and every link to them) | `"b-xxxx"`                         | `"w-xxxx"`                            |
-| `settings/animations.json`          | `"presets": { … }`                 | `"animations": { … }`                 |
-| `settings/animations.json`          | `targets["…"].preset`              | `targets["…"].animation`              |
-| a widget's `motion`                 | `"anim": "fade-up"`                | `"animation": "fade-up"`              |
-| a widget's `motion`                 | `"parts": { "hero.title": { … } }` | `"elements": { "hero.title": { … } }` |
-| an element in `motion.elements`     | `"preset": "stagger-up"`           | `"animation": "stagger-up"`           |
-| a page's `transition`               | `{ "preset": "none" }`             | `{ "curtain": "off" }`                |
-| a source's `*.schema.json` field    | `"type": "longtext"`               | `"type": "multiline"`                 |
+| Where                                         | Old                                            | New                                            |
+| --------------------------------------------- | ---------------------------------------------- | ---------------------------------------------- |
+| widget ids (and every link to them)           | `"b-xxxx"`                                     | `"w-xxxx"`                                     |
+| `settings/animations.json`                    | `"presets": { … }`                             | `"animations": { … }`                          |
+| `settings/animations.json`                    | `targets["…"].preset`                          | `targets["…"].animation`                       |
+| a widget's `motion`                           | `"anim": "fade-up"`                            | `"animation": "fade-up"`                       |
+| a widget's `motion`                           | `"parts": { "hero.title": { … } }`             | `"elements": { "hero.title": { … } }`          |
+| an element in `motion.elements`               | `"preset": "stagger-up"`                       | `"animation": "stagger-up"`                    |
+| a page's `transition`                         | `{ "preset": "none" }`                         | `{ "curtain": "off" }`                         |
+| a source's `*.schema.json` field              | `"type": "longtext"`                           | `"type": "multiline"`                          |
+| a source's `*.schema.json` field              | `"key": "images"` / `"key": "image"`           | `"key": "photos"` / `"key": "photo"`           |
+| a source item (people, places, projects)      | `"images": [ … ]` / `"image": "…"`             | `"photos": [ … ]` / `"photo": "…"`             |
+| a widget's binding                            | `{ "bind": "images" }` / `{ "bind": "image" }` | `{ "bind": "photos" }` / `{ "bind": "photo" }` |
+| `settings/animations.json`                    | `"image-reveal"` (the animation)               | `"photo-reveal"`                               |
+| `settings/animations.json`, `motion.elements` | `"place.card.image"` (the target)              | `"place.card.photo"`                           |
+| a widget's `motion` or an element             | `"animation": "image-reveal"`                  | `"animation": "photo-reveal"`                  |
+| `settings/site.json`                          | `"ogImage"`                                    | `"ogPhoto"`                                    |
+| a page's `meta`                               | `"image"` (its share photo)                    | `"photo"`                                      |
+| the site's `package.json` scripts             | `"images": "ewcms images"`, `--no-images`      | `"photos": "ewcms photos"`, `--no-photos`      |
 
 A theme's own widget code (not content) needs, by hand: field type `'block'` is
 `'multiline'` (also in `ed(…, 'multiline')`); the third argument of `render(data, ctx, widget)`
@@ -1521,8 +1532,12 @@ is called `widget` in the docs (only the name); a widget field's `type: 'image'`
 (also a list's `src: 'image'`); the edit type `ed(…, 'image')` is `ed(…, 'photo')` too. The editor's URL
 `&anim=` is `&animation=`.
 
-Photos keep their names: the Photo widget (`"type": "photo"`), a hero's and a backdrop's
-`"photos"`, the field types `photo` / `photos`, `settings/photos.json` and the CSS classes.
+The commands are `ewcms photos` (was `ewcms images`) and `--no-photos` (was `--no-images`).
+"image" stays only where it names the DOM element or an outside standard: `<img>`, the
+`og:image` tags and `summary_large_image` (the output is unchanged), MIME types `image/*`, CSS
+`background-image`, `as: 'image'` and icon names. Photos keep their names: the Photo widget
+(`"type": "photo"`), a hero's and a backdrop's `"photos"`, the field types `photo` / `photos`,
+`settings/photos.json` and the CSS classes.
 
 ## Deploy
 

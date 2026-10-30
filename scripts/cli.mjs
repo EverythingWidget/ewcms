@@ -7,7 +7,7 @@
  *   preview        serve the build
  *   check          content (every file, sources, bindings, motion), then lint (the theme's SCSS,
  *                  the site's own JS) when ESLint / Stylelint are installed; --links: the build's links
- *   images         media/ → public/media sizes + .generated/media.json
+ *   photos         media/ → public/media sizes + .generated/media.json
  *   publish-media  upload media/ photos to Cloudflare R2 (.env.local R2_* keys), like the editor
  *   new-site <dir> a new site: a theme layered on theme-default, starter content, package.json
  */

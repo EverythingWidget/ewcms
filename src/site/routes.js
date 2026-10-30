@@ -39,9 +39,9 @@
  *
  * Search and share meta (src/site/seo.js): a page's title is its meta.title, else its first
  * heading's title, else its folder name, in the site's titleTemplate (home: meta.title, else
- * site.title, in full); description, image, canonical and noindex come from its "meta".
+ * site.title, in full); description, photo, canonical and noindex come from its "meta".
  * A [param] page: "<item name> | <section>", the item's body and cover, else the template's
- * meta.description / meta.image; its meta.noindex keeps every item page out.
+ * meta.description / meta.photo; its meta.noindex keeps every item page out.
  * Routes with noindex (404, meta.noindex, items with "placeholder": true, or site.json
  * "robots": "noindex") get <meta name="robots" content="noindex"> and stay out of sitemap.xml.
  */
@@ -194,7 +194,7 @@ export function buildRoutes(content, { unbuilt = false } = {}) {
       ...(id === '404' ? { out: '404.html' } : {}),
       title,
       description: meta.description || site.description,
-      image: meta.image || undefined,
+      photo: meta.photo || undefined,
       canonical: meta.canonical || undefined,
       noindex: siteNoindex || id === '404' || !!meta.noindex,
       ...pageCurtain(id, title),
@@ -362,7 +362,7 @@ export function buildRoutes(content, { unbuilt = false } = {}) {
       file: source ? sourceFile(source) : undefined,
       title,
       description: item.body || meta.description || site.description,
-      image: coverOf(item) || meta.image || undefined,
+      photo: coverOf(item) || meta.photo || undefined,
       // Placeholder items (stock photos) are not for search engines: noindex, no sitemap.
       noindex: siteNoindex || !!meta.noindex || !!item.placeholder || !!at.unbuilt,
       curtain: curtainOf(item.curtainText, title),

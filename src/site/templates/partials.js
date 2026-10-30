@@ -5,7 +5,7 @@ import {
   pad,
   extAttrs,
   coverOf,
-  imagesOf,
+  photosOf,
   ed,
   lines,
   itemHref,
@@ -33,7 +33,7 @@ export const albumCard = (ctx, kind, album, { landscape = false, index = 0 } = {
   const at = (field, type) => ed(sourceFile(kind), ['items', index, field], type);
   const meta = [['role'], ['location'], ['year', 'number']].filter(([f]) => album[f]);
   const cover = coverOf(album);
-  const first = [cover, ...imagesOf(album).filter((p) => p !== cover)].filter(Boolean).slice(0, 4);
+  const first = [cover, ...photosOf(album).filter((p) => p !== cover)].filter(Boolean).slice(0, 4);
   const widths = landscape
     ? sizes('100vw', '50vw')
     : sizes('100vw', '(max-width: 1200px) 50vw, 40vw');
@@ -45,7 +45,7 @@ export const albumCard = (ctx, kind, album, { landscape = false, index = 0 } = {
   >
     <div class="acard__media">
       ${first.map((im, i) => img(ctx, im, { decorative: i > 0, sizes: widths, cls: i === 0 ? 'is-active' : '', ...(i === 0 ? firstPhotos(index) : {}) }))}
-      <span class="acard__count">${pad(imagesOf(album).length)}</span>
+      <span class="acard__count">${pad(photosOf(album).length)}</span>
     </div>
     <div class="acard__info">
       <h2 class="acard__name" ${at('title')}>${esc(album.title)}</h2>
@@ -79,7 +79,7 @@ export const projectList = (
       </button>
       <div class="prow__body" id="prow-${esc(p.slug)}" hidden>
         <div class="prow__inner">
-          <div class="prow__media">${p.image ? img(ctx, p.image, { sizes: sizes('100vw', '30vw'), attrs: ed(PROJECTS, ['items', at, 'image'], 'photo') }) : ''}</div>
+          <div class="prow__media">${p.photo ? img(ctx, p.photo, { sizes: sizes('100vw', '30vw'), attrs: ed(PROJECTS, ['items', at, 'photo'], 'photo') }) : ''}</div>
           <div class="prow__text">
             <p${ed(PROJECTS, ['items', at, 'body'], 'multiline')}>${lines(p.body)}</p>
             ${p.placeholder ? html`<span class="tag">${esc(t(ctx, 'tag.placeholder'))}</span>` : ''}
@@ -98,7 +98,7 @@ export const projectList = (
       aria-hidden="true"
     >
       <div class="preview__frame">
-        ${projects.map((p, i) => (p.image ? img(ctx, p.image, { decorative: true, sizes: '360px', attrs: ed(PROJECTS, ['items', indexOf(p, i), 'image'], 'photo') }) : '<img alt="" />'))}
+        ${projects.map((p, i) => (p.photo ? img(ctx, p.photo, { decorative: true, sizes: '360px', attrs: ed(PROJECTS, ['items', indexOf(p, i), 'photo'], 'photo') }) : '<img alt="" />'))}
       </div>
     </div>`;
 };

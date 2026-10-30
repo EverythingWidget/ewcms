@@ -110,7 +110,7 @@ function checkSite(d) {
       title: 'string',
       titleTemplate: 'string',
       description: 'string',
-      ogImage: 'string',
+      ogPhoto: 'string',
       lang: 'string',
       entityType: 'string',
       themeColor: 'string',
@@ -196,7 +196,7 @@ function checkMeta(meta) {
   return optional(meta, {
     title: 'string',
     description: 'string',
-    image: 'string',
+    photo: 'string',
     canonical: 'string',
     noindex: 'boolean',
   }).map((p) => `meta: ${p}`);

@@ -4,7 +4,7 @@
  *   npm run mock -- <name> [<name> ...] [--width N] [--out path] [--bare]
  *
  * One name: <MOCK_DIR>/<name>.png (MOCK_DIR: default ../mocks, next to the checkout). Several:
- * stacked with their names in one image (<MOCK_DIR>/<first>+N.png, or --out). It reuses the dev server on MOCK_PORT (5173) or
+ * stacked with their names in one PNG (<MOCK_DIR>/<first>+N.png, or --out). It reuses the dev server on MOCK_PORT (5173) or
  * starts one (left running for the next call), drives headless Chrome (CHROME, default
  * Chrome's usual path on Windows / macOS, else /usr/bin/google-chrome) over the DevTools protocol and prints the PNG's path.
  */
@@ -59,7 +59,7 @@ if (!(await up())) {
   // node + the engine's CLI (no npx, no shell): the same on Windows. The site: engine.mjs mockSite
   const site = mockSite();
   const cli = enginePath('bin', 'ewcms.mjs');
-  spawn(process.execPath, [cli, 'dev', '--port', String(port), '--no-images'], {
+  spawn(process.execPath, [cli, 'dev', '--port', String(port), '--no-photos'], {
     cwd: site,
     detached: true,
     stdio: ['ignore', log, log],

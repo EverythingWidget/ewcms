@@ -36,7 +36,7 @@
       "type": "multiline"
     },
     {
-      "key": "image",
+      "key": "photo",
       "label": "Photo",
       "type": "photo"
     },

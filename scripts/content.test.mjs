@@ -289,13 +289,11 @@ test('photo library: no alt or credit in pages or sources, every photo they use 
     if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${where}/${i}`));
     else if (v && typeof v === 'object')
       for (const [k, x] of Object.entries(v)) {
-        assert.ok(k !== 'alt' && k !== 'imageAlt', `${where}/${k}: alt belongs in photos.json`);
-        assert.ok(
-          k !== 'credit' && k !== 'imageCredit',
-          `${where}/${k}: credits belong in photos.json`,
-        );
-        if (['src', 'image', 'cover'].includes(k) && typeof x === 'string' && x) used.push(x);
-        if (k === 'images' && Array.isArray(x)) used.push(...x);
+        assert.ok(k !== 'alt', `${where}/${k}: alt belongs in photos.json`);
+        assert.ok(k !== 'credit', `${where}/${k}: credits belong in photos.json`);
+        if (['src', 'photo', 'cover'].includes(k) && typeof x === 'string' && x) used.push(x);
+        if (k === 'photos' && Array.isArray(x))
+          used.push(...x.filter((p) => typeof p === 'string' && p));
         walk(x, `${where}/${k}`);
       }
   };

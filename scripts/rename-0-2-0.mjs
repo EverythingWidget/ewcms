@@ -8,7 +8,7 @@
  *
  * Run it once, on a clean checkout (git shows what it changed). Running it again changes nothing.
  */
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { formatJSON } from '../src/editor/lib/json-format.js';
@@ -144,11 +144,118 @@ const steps = [
       return notes;
     },
   },
+  {
+    name: 'source photos: "images" -> "photos", "image" -> "photo" (items, schemas, bindings)',
+    run(files) {
+      const notes = [];
+      const keys = { images: 'photos', image: 'photo' };
+      for (const f of files) {
+        const rel = f.rel.replaceAll('\\', '/');
+        if (/(^|\/)sources\/[^/]+\.schema\.json$/.test(rel)) {
+          let n = 0;
+          for (const field of Array.isArray(f.data?.fields) ? f.data.fields : [])
+            if (isObject(field) && keys[field.key]) ((field.key = keys[field.key]), n++);
+          if (n) notes.push(`${f.rel}: ${plural(n, 'field')} "images"/"image" -> "photos"/"photo"`);
+          continue;
+        }
+        if (/(^|\/)sources\/[^/]+\.json$/.test(rel)) {
+          let n = 0;
+          for (const item of Array.isArray(f.data?.items) ? f.data.items : [])
+            for (const [from, to] of Object.entries(keys)) if (renameKey(item, from, to)) n++;
+          if (n)
+            notes.push(`${f.rel}: ${plural(n, 'item key')} "images"/"image" -> "photos"/"photo"`);
+          continue;
+        }
+        let n = 0;
+        walk(f.data, (v, k, parent) => {
+          if (k === 'bind' && isObject(parent) && typeof v === 'string' && keys[v])
+            return (n++, keys[v]);
+        });
+        if (n) notes.push(`${f.rel}: ${plural(n, 'binding')} "images"/"image" -> "photos"/"photo"`);
+      }
+      return notes;
+    },
+  },
+  {
+    name: 'animation "image-reveal" -> "photo-reveal", target "place.card.image" -> "place.card.photo"',
+    run(files) {
+      const notes = [];
+      const NAMES = { 'image-reveal': 'photo-reveal' };
+      for (const f of files) {
+        let n = 0;
+        if (isAnimations(f)) {
+          if (renameKey(f.data.animations, 'image-reveal', 'photo-reveal')) n++;
+          if (renameKey(f.data.targets, 'place.card.image', 'place.card.photo')) n++;
+        }
+        for (const w of widgetsIn(f.data))
+          if (
+            isObject(w.motion?.elements) &&
+            renameKey(w.motion.elements, 'place.card.image', 'place.card.photo')
+          )
+            n++;
+        walk(f.data, (v, k) => {
+          if (k === 'animation' && typeof v === 'string' && NAMES[v]) return (n++, NAMES[v]);
+        });
+        if (n)
+          notes.push(`${f.rel}: ${plural(n, 'name')} "image-reveal"/"place.card.image" -> photo`);
+      }
+      return notes;
+    },
+  },
+  {
+    name: 'share photo: site "ogImage" -> "ogPhoto", a page\'s "meta.image" -> "meta.photo"',
+    run(files) {
+      const notes = [];
+      for (const f of files) {
+        const rel = f.rel.replaceAll('\\', '/');
+        if (rel.endsWith('settings/site.json') && renameKey(f.data, 'ogImage', 'ogPhoto'))
+          notes.push(`${f.rel}: "ogImage" -> "ogPhoto"`);
+        if (isObject(f.data?.meta) && renameKey(f.data.meta, 'image', 'photo'))
+          notes.push(`${f.rel}: "meta.image" -> "meta.photo"`);
+      }
+      return notes;
+    },
+  },
 ];
 
 /** Convert loaded files ({ rel, data }) in place; returns [{ name, notes }] per step. */
 export function convert(files) {
   return steps.map((step) => ({ name: step.name, notes: step.run(files) }));
+}
+
+/**
+ * A package.json's text with `ewcms images` -> `ewcms photos` and `--no-images` -> `--no-photos`
+ * in its scripts, and a script named "images" that runs `ewcms photos` named "photos". Text in,
+ * text out (its formatting kept); { text (null: unchanged or not safe), notes }.
+ */
+export function renamePackage(text) {
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return { text: null, notes: [] };
+  }
+  const scripts = isObject(data?.scripts) ? data.scripts : {};
+  const old = Object.entries(scripts).filter(
+    ([, v]) => typeof v === 'string' && /\bewcms\b.*(\bimages\b|--no-images)/.test(v),
+  );
+  if (!old.length) return { text: null, notes: [] };
+  let out = text;
+  const notes = [];
+  for (const [k, v] of old) {
+    const to = v
+      .replace(/\bewcms images\b/g, 'ewcms photos')
+      .replaceAll('--no-images', '--no-photos');
+    const name = k === 'images' && !('photos' in scripts) ? 'photos' : k;
+    const from = `${JSON.stringify(k)}: ${JSON.stringify(v)}`;
+    if (out.split(from).length !== 2) {
+      notes.push(`package.json: script "${k}" runs "${v}": change it by hand to "${to}"`);
+      continue;
+    }
+    out = out.replace(from, `${JSON.stringify(name)}: ${JSON.stringify(to)}`);
+    notes.push(`package.json: script "${k}": "${v}" -> "${name}": "${to}"`);
+  }
+  return { text: out === text ? null : out, notes };
 }
 
 // the command (not when a test imports convert)
@@ -173,8 +280,17 @@ function main() {
     for (const n of notes) console.log(`  ${n}`);
     total += notes.length;
   }
+  // the site's package.json (next to content/): its "images": "ewcms images" script
+  const pkgPath = join(dir, '..', 'package.json');
+  const pkg = existsSync(pkgPath) ? renamePackage(readFileSync(pkgPath, 'utf8')) : null;
+  console.log(`package.json: ${pkg?.notes.length ? '' : 'nothing to change'}`);
+  for (const n of pkg?.notes || []) console.log(`  ${n}`);
+  if (pkg?.notes.length) {
+    total += pkg.notes.length;
+    if (write && pkg.text) writeFileSync(pkgPath, pkg.text);
+  }
   // written as the editor's Save writes them (src/editor/lib/json-format.js)
-  let changed = 0;
+  let changed = pkg?.text ? 1 : 0;
   for (const f of files) {
     if (JSON.stringify(JSON.parse(f.text)) === JSON.stringify(f.data)) continue;
     changed++;

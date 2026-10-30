@@ -29,8 +29,8 @@ const PEOPLE = {
     { key: 'kind', label: 'Kind', type: 'choice', options: ['model', 'band'] },
     { key: 'url', label: 'Link', type: 'link' },
     { key: 'shot', label: 'Shot on', type: 'date' },
-    { key: 'image', label: 'Photo', type: 'photo' },
-    { key: 'images', label: 'Photos', type: 'photos' },
+    { key: 'photo', label: 'Photo', type: 'photo' },
+    { key: 'photos', label: 'Photos', type: 'photos' },
     { key: 'placeholder', label: 'Placeholder', type: 'boolean' },
   ],
 };
@@ -81,7 +81,7 @@ test('inferSchema: one type per field from all items, title and slug', () => {
       bio: 'Two\nlines',
       cover: '',
       on: false,
-      images: ['people/b/01.jpg'],
+      photos: ['people/b/01.jpg'],
       credit: { name: 'x' },
       mixed: 1,
     },
@@ -98,7 +98,7 @@ test('inferSchema: one type per field from all items, title and slug', () => {
     bio: ['multiline', undefined], // a line break somewhere
     cover: ['photo', undefined],
     on: ['boolean', undefined],
-    images: ['photos', undefined],
+    photos: ['photos', undefined],
   }); // credit (an object) and mixed (number and text) are left out
   assert.equal(inferSchema('projects', [{ title: 'T' }]).title, 'title');
   assert.equal(inferSchema('x', [{ label: 'L' }]).title, 'label');
@@ -116,8 +116,8 @@ test('checkItems: required, types, choices, links, dates, photos, slugs', () => 
       kind: 'other',
       url: 'example.com',
       shot: '1/2/2024',
-      image: 'missing.jpg',
-      images: ['ok.jpg', 'gone.jpg'],
+      photo: 'missing.jpg',
+      photos: ['ok.jpg', 'gone.jpg'],
       placeholder: 'yes',
     },
     { id: 'p-t002', slug: 'ann', name: '' },
@@ -126,7 +126,7 @@ test('checkItems: required, types, choices, links, dates, photos, slugs', () => 
       slug: 'Bad Slug',
       name: 'C',
       url: 'https://x.y/',
-      image: 'https://cdn/x.jpg',
+      photo: 'https://cdn/x.jpg',
       shot: '2024-02-01',
     },
   ];
@@ -143,7 +143,7 @@ test('checkItems: required, types, choices, links, dates, photos, slugs', () => 
     'item 3 (C): slug "Bad Slug" must be lowercase words with dashes',
   ]);
   // an id each, unique; a cover is one of its own photos
-  const a = { id: 'p-aaaa', slug: 'a', name: 'A', images: ['a.jpg'], cover: 'b.jpg' };
+  const a = { id: 'p-aaaa', slug: 'a', name: 'A', photos: ['a.jpg'], cover: 'b.jpg' };
   assert.deepEqual(
     checkItems([a, { ...a, slug: 'b', cover: 'a.jpg' }, { slug: 'c', name: 'C' }], PEOPLE),
     [
@@ -154,7 +154,7 @@ test('checkItems: required, types, choices, links, dates, photos, slugs', () => 
   );
   // without photoExists, photos are not looked up
   assert.deepEqual(
-    checkItems([{ id: 'p-t004', slug: 'a', name: 'A', image: 'x.jpg' }], PEOPLE),
+    checkItems([{ id: 'p-t004', slug: 'a', name: 'A', photo: 'x.jpg' }], PEOPLE),
     [],
   );
 });
@@ -164,12 +164,12 @@ test('checkSources: every source, with its schema or inferred; photos from media
     ...contentFromFiles({
       'sources/people.json': {
         version: 1,
-        items: [{ id: 'p-t005', slug: 'a', name: 'A', image: 'people/a.jpg' }],
+        items: [{ id: 'p-t005', slug: 'a', name: 'A', photo: 'people/a.jpg' }],
       },
       'sources/people.schema.json': PEOPLE,
       'sources/places.json': {
         version: 1,
-        items: [{ id: 'p-pppp', name: 'P', images: ['places/p.jpg'], cover: 'places/p.jpg' }],
+        items: [{ id: 'p-pppp', name: 'P', photos: ['places/p.jpg'], cover: 'places/p.jpg' }],
       },
       'settings/photos.json': { version: 1, photos: { 'places/p.jpg': { srcset: [] } } },
     }),
@@ -229,7 +229,7 @@ test('newItemOf: a new id, every field empty, a unique slug and title', () => {
   assert.equal(Object.keys(item)[0], 'id');
   assert.equal(item.name, 'New item 3');
   assert.equal(item.year, new Date().getFullYear());
-  assert.deepEqual(item.images, []);
+  assert.deepEqual(item.photos, []);
   assert.equal(item.placeholder, false);
   assert.equal(item.kind, ''); // not required: no choice made
   assert.equal(
@@ -259,7 +259,7 @@ test('save: a source that breaks its schema is not written', () => {
   r = save(root, {
     'sources/people.json': {
       version: 1,
-      items: [{ id: 'p-t009', slug: 'a', name: 'A', image: 'nope.jpg' }],
+      items: [{ id: 'p-t009', slug: 'a', name: 'A', photo: 'nope.jpg' }],
     },
   });
   assert.match(r.body.error, /"nope\.jpg" is not a photo/);
@@ -295,7 +295,7 @@ test('editor: half fields pair with the next half; a lone half takes the row', a
   ]);
   assert.deepEqual([...set], ['a', 'b', 'e', 'f']);
   // fields from the schema: no slug (its own input), a photo per photos item
-  const fields = itemFields('sources/people.json', { images: ['x.jpg'] }, 0, PEOPLE);
+  const fields = itemFields('sources/people.json', { photos: ['x.jpg'] }, 0, PEOPLE);
   assert.deepEqual(
     fields.map((x) => [x.key, x.label, x.type, x.half]),
     [
@@ -304,10 +304,10 @@ test('editor: half fields pair with the next half; a lone half takes the row', a
       ['kind', 'Kind', 'select', false],
       ['url', 'Link', 'text', false],
       ['shot', 'Shot on', 'date', false],
-      ['image', 'Photo', 'photo', false],
-      ['images.0', 'Photo 1', 'photo', false],
+      ['photo', 'Photo', 'photo', false],
+      ['photos.0', 'Photo 1', 'photo', false],
       ['placeholder', 'Placeholder', 'boolean', false],
     ],
   );
-  assert.equal(fields[6].edit, 'sources/people.json#/items/0/images/0');
+  assert.equal(fields[6].edit, 'sources/people.json#/items/0/photos/0');
 });

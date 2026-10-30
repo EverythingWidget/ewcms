@@ -17,7 +17,7 @@ import {
   ratio,
   ed,
   lines,
-  imagesOf,
+  photosOf,
   sizes,
 } from '../../helpers.js';
 import { sourceFile } from '../../files.js';
@@ -58,12 +58,12 @@ export const album = {
 
 function albumOf(s, ctx, route, widget) {
   const a = widget.item;
-  const images = imagesOf(a);
-  const n = images.length;
+  const photos = photosOf(a);
+  const n = photos.length;
   const file = sourceFile(widget.source);
   const at = (field, type) => ed(file, ['items', widget.index, field], type);
   // a photo's path, edited (and uploaded) in the editor
-  const photo = (i) => ed(file, ['items', widget.index, 'images', i], 'photo');
+  const photo = (i) => ed(file, ['items', widget.index, 'photos', i], 'photo');
   // back: the page around it (a [param] page's), else the page of all of its source
   const back = route.parent ?? sourcePage(ctx, widget.source);
   const section = route.section ?? titleCase(widget.source);
@@ -101,7 +101,7 @@ function albumOf(s, ctx, route, widget) {
       aria-roledescription="carousel"
       aria-label="${esc(t(ctx, 'album.photos', { title: title || a.title }))}"
     >
-      ${images.map(
+      ${photos.map(
         (im, i) =>
           html` <figure
             class="slide${i === 0 ? ' is-active' : ''}"
@@ -141,13 +141,13 @@ function albumOf(s, ctx, route, widget) {
       <a
         class="album__credit label muted"
         data-album-credit
-        href="${esc(creditOf(ctx, images[0])?.source || '#')}"
+        href="${esc(creditOf(ctx, photos[0])?.source || '#')}"
         target="_blank"
         rel="noopener"
-        >${esc(creditText(creditOf(ctx, images[0])))}</a
+        >${esc(creditText(creditOf(ctx, photos[0])))}</a
       >
       <ol class="album__thumbs" data-anim="album.thumbs" data-album-thumbs>
-        ${images.map(
+        ${photos.map(
           (im, i) =>
             html` <li>
               <button
@@ -165,7 +165,7 @@ function albumOf(s, ctx, route, widget) {
     </div>
 
     <div class="album__grid" data-album-grid hidden>
-      ${images.map(
+      ${photos.map(
         (im, i) =>
           html` <button
             class="gcell"

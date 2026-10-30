@@ -4,7 +4,7 @@ import { paramPage } from './test-layout.mjs';
 import { buildRoutes, sitemapXml } from '../src/site/routes.js';
 import { renderRoute } from '../src/site/render.js';
 import { contentFromFiles } from '../src/site/files.js';
-import { seoOf, seoWarnings, shareImage } from '../src/site/seo.js';
+import { seoOf, seoWarnings, sharePhoto } from '../src/site/seo.js';
 import { checkContent } from '../src/site/validate.js';
 
 const site = {
@@ -12,7 +12,7 @@ const site = {
   url: 'https://example.com',
   title: 'Site home',
   description: 'The site.',
-  ogImage: 'a/share.jpg',
+  ogPhoto: 'a/share.jpg',
 };
 const media = {
   'a/share.jpg': {
@@ -58,13 +58,13 @@ test('a page: its meta, else the site defaults; canonical override', () => {
   const c = content({
     'pages/a/index.json': {},
     'pages/b/index.json': {
-      meta: { description: 'B.', image: 'b.jpg', canonical: '/a/', noindex: true },
+      meta: { description: 'B.', photo: 'b.jpg', canonical: '/a/', noindex: true },
     },
   });
   const a = seoOf(c, routeOf(c, '/a/'));
   assert.equal(a.description, 'The site.');
   assert.equal(a.url, 'https://example.com/a/');
-  assert.deepEqual(a.image, {
+  assert.deepEqual(a.photo, {
     url: 'https://example.com/media/a/share-960.webp',
     width: 960,
     height: 480,
@@ -74,7 +74,7 @@ test('a page: its meta, else the site defaults; canonical override', () => {
   const b = seoOf(c, routeOf(c, '/b/'));
   assert.equal(b.description, 'B.');
   assert.equal(b.url, 'https://example.com/a/');
-  assert.equal(b.image.url, 'https://example.com/media/b.jpg');
+  assert.equal(b.photo.url, 'https://example.com/media/b.jpg');
   assert.equal(b.noindex, true);
   assert.doesNotMatch(sitemapXml(buildRoutes(c).routes, site.url), /\/b\//);
 });
@@ -85,20 +85,20 @@ test('[param] pages: the item title, body and cover, then the template meta', ()
     'pages/people/[person]/index.json': {
       ...paramPage('people/[person]', 'people'),
       section: 'People',
-      meta: { description: 'A person.', image: 'p.jpg' },
+      meta: { description: 'A person.', photo: 'p.jpg' },
     },
     'sources/people.json': {
       version: 1,
-      items: [{ title: 'Noor', body: 'Noor.', images: ['n.jpg'] }, { title: 'Daan' }],
+      items: [{ title: 'Noor', body: 'Noor.', photos: ['n.jpg'] }, { title: 'Daan' }],
     },
   });
   const noor = routeOf(c, '/people/noor/');
   assert.equal(noor.title, 'Noor | People | Site');
   assert.equal(noor.description, 'Noor.');
-  assert.equal(noor.image, 'n.jpg');
+  assert.equal(noor.photo, 'n.jpg');
   const daan = routeOf(c, '/people/daan/');
   assert.equal(daan.description, 'A person.');
-  assert.equal(daan.image, 'p.jpg');
+  assert.equal(daan.photo, 'p.jpg');
   const off = content({
     'pages/people/[person]/index.json': paramPage(
       'people/[person]',
@@ -118,7 +118,7 @@ test('site robots "noindex": every page noindex, an empty sitemap', () => {
   assert.doesNotMatch(sitemapXml(routes, site.url), /<url>/);
 });
 
-test('head: description, canonical, og, twitter card, robots, image size; <html lang>', () => {
+test('head: description, canonical, og, twitter card, robots, share photo size; <html lang>', () => {
   const c = content(
     { 'pages/index.json': {}, 'pages/b/index.json': { meta: { noindex: true } } },
     { lang: 'nl' },
@@ -135,13 +135,13 @@ test('head: description, canonical, og, twitter card, robots, image size; <html 
   assert.match(out.head, /og:image:width" content="960"[\s\S]*og:image:height" content="480"/);
   assert.match(out.head, /twitter:card" content="summary_large_image"/);
   assert.equal(out.lang, 'nl');
-  const bare = content({ 'pages/index.json': {} }, { ogImage: undefined });
+  const bare = content({ 'pages/index.json': {} }, { ogPhoto: undefined });
   const home = renderRoute(buildRoutes(bare).routes[0], bare);
   assert.doesNotMatch(home.head, /og:image/);
   assert.match(home.head, /twitter:card" content="summary"/);
 });
 
-test('share image: R2 keys and full URLs', () => {
+test('share photo: R2 keys and full URLs', () => {
   const ctx = {
     site: { ...site, mediaUrl: 'https://photos.example.com/' },
     media: {},
@@ -149,12 +149,12 @@ test('share image: R2 keys and full URLs', () => {
       'photos/x': { srcset: [{ key: 'photos/x-960.webp', w: 960 }], width: 960, height: 640 },
     },
   };
-  assert.equal(shareImage(ctx, 'photos/x').url, 'https://photos.example.com/photos/x');
+  assert.equal(sharePhoto(ctx, 'photos/x').url, 'https://photos.example.com/photos/x');
   assert.equal(
-    shareImage(ctx, 'https://cdn.example.com/y.jpg').url,
+    sharePhoto(ctx, 'https://cdn.example.com/y.jpg').url,
     'https://cdn.example.com/y.jpg',
   );
-  assert.equal(shareImage(ctx, ''), null);
+  assert.equal(sharePhoto(ctx, ''), null);
 });
 
 test('warnings: indexable pages without a description, long titles and descriptions', () => {

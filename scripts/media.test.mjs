@@ -60,7 +60,7 @@ function project() {
     kind: 'page',
     id: 'pg-t028',
 
-    items: [{ name: 'N', images: ['photos/used-1600.webp'] }],
+    items: [{ name: 'N', photos: ['photos/used-1600.webp'] }],
   });
   write('content/en/settings/photos.json', {
     version: 1,
@@ -94,11 +94,11 @@ const photosOf = (root) =>
 test('photoUses: every place a key is stored, as file + pointer', () => {
   const files = {
     'pages/index.json': { hero: { photos: [{ src: 'k' }, { src: 'x' }] } },
-    'sources/p.json': { version: 1, items: [{ image: 'k', 'a/b': 'k' }] },
+    'sources/p.json': { version: 1, items: [{ photo: 'k', 'a/b': 'k' }] },
   };
   assert.deepEqual(photoUses(files, 'k'), [
     { file: 'pages/index.json', ptr: '/hero/photos/0/src' },
-    { file: 'sources/p.json', ptr: '/items/0/image' },
+    { file: 'sources/p.json', ptr: '/items/0/photo' },
     { file: 'sources/p.json', ptr: '/items/0/a~1b' },
   ]);
   assert.deepEqual(photoUses(files, ''), []);
@@ -129,7 +129,7 @@ test('delete: a used photo is refused and names where it is used', async () => {
   assert.deepEqual(local.body.uses, [{ file: 'pages/index.json', ptr: '/hero/photos/0/src' }]);
   const r2 = await mediaOp(root, env, { op: 'delete', key: 'photos/used-1600.webp' });
   assert.equal(r2.status, 409);
-  assert.match(r2.body.error, /sources\/people\.json#\/items\/0\/images\/0/);
+  assert.match(r2.body.error, /sources\/people\.json#\/items\/0\/photos\/0/);
   assert.ok(fs.existsSync(path.join(root, 'media/a/used.jpg')));
   assert.deepEqual(photosOf(root), before);
   assert.equal(deletes.length, 0);

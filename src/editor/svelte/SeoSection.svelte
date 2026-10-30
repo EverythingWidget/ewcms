@@ -1,7 +1,7 @@
 <!--
   Nav > SEO (a tab of the page panel), plain fields: its address (PageAddress.svelte:
   renames it), then what search engines and share cards say about the page in the preview, from
-  its file's "meta" (src/site/seo.js). A page: title, description, share image, noindex and
+  its file's "meta" (src/site/seo.js). A page: title, description, share photo, noindex and
   canonical. A [param] page: its template's defaults for every item page (an item's own name,
   summary and cover come first). Below, a search result and a share card as the build makes
   them, with the character counts search engines show. Empty fields fall back to the site's
@@ -31,7 +31,7 @@
     if (!route) return null;
     const content = contentFromFiles(live.store.current);
     const ctx = { ...content, media: media.manifest, photos: media.photos };
-    return { ...seoOf(ctx, route), src: route.image || content.site?.ogImage || '' };
+    return { ...seoOf(ctx, route), src: route.photo || content.site?.ogPhoto || '' };
   });
   const host = $derived(seo ? seo.url.replace(/^\w+:\/\//, '').replace(/\/$/, '') : '');
 
@@ -72,17 +72,17 @@
     onvalue={(v) => set('description', v.trim())}
   />
   <Field
-    edit="{file}#/meta/image"
-    label={template ? 'Share image (items without a cover)' : 'Share image'}
+    edit="{file}#/meta/photo"
+    label={template ? 'Share photo (items without a cover)' : 'Share photo'}
     type="photo"
-    value={get('image')}
-    changed={changed('image')}
-    onvalue={(v) => set('image', v)}
+    value={get('photo')}
+    changed={changed('photo')}
+    onvalue={(v) => set('photo', v)}
   />
-  {#if get('image')}
+  {#if get('photo')}
     <div class="seo__row">
-      <Button size="small" icon="xmark" onclick={() => set('image', '')}>
-        Use the site's share image
+      <Button size="small" icon="xmark" onclick={() => set('photo', '')}>
+        Use the site's share photo
       </Button>
     </div>
   {/if}
@@ -197,7 +197,7 @@
     -webkit-line-clamp: 2;
   }
 
-  // a share card: the image (1.91:1, as most sites crop it) above the text
+  // a share card: the photo (1.91:1, as most sites crop it) above the text
   .seo__card {
     padding: 0 0 var(--space-3);
     overflow: hidden;

@@ -8,9 +8,9 @@ import { schemaOf } from '../../schemas.js';
 import { sectionHead } from '../../templates/partials.js';
 import { sourcePage } from '../data.js';
 
-/** Photo paths of a source item: albums have images[], projects a single image. */
-const imagesOf = (item) =>
-  Array.isArray(item?.images) ? item.images : item?.image ? [item.image] : [];
+/** Photo paths of a source item: albums have photos[], projects a single photo. */
+const photosOf = (item) =>
+  Array.isArray(item?.photos) ? item.photos : item?.photo ? [item.photo] : [];
 
 /** Interleave the first N photos of each item (e.g. 4 per person) for a photo-tile grid. */
 const interleave = (items, indexOf, perItem = 4) => {
@@ -18,8 +18,8 @@ const interleave = (items, indexOf, perItem = 4) => {
   for (let i = 0; i < perItem; i++)
     items.forEach((item) => {
       const at = indexOf(item);
-      const image = imagesOf(item)[i];
-      if (image) tiles.push({ item, at, image, index: i });
+      const photo = photosOf(item)[i];
+      if (photo) tiles.push({ item, at, photo, index: i });
     });
   return tiles;
 };
@@ -29,9 +29,9 @@ const photoTiles = (ctx, source, items, layout, indexOf) => {
   const { title } = schemaOf(ctx, source); // the field that names an item
   return html` <div class="tiles${layout === 'even' ? ' tiles--even' : ''}">
     ${interleave(items, indexOf).map(
-      ({ item, at, image, index }) => html`
+      ({ item, at, photo, index }) => html`
       <a class="tile" href="${esc(itemHref(ctx, source, item))}#${index + 1}" data-anim-item>
-        <span class="tile__media">${img(ctx, image, { sizes: sizes('50vw', '25vw') })}</span>
+        <span class="tile__media">${img(ctx, photo, { sizes: sizes('50vw', '25vw') })}</span>
         <span class="tile__cap"><span${ed(sourceFile(source), ['items', at, title])}>${esc(item[title])}</span><span>${pad(index + 1)}</span></span>
       </a>`,
     )}
@@ -48,10 +48,10 @@ const placeCards = (ctx, source, items, layout, indexOf) =>
       const cover = coverOf(p);
       return html`
       <a class="placecard" href="${esc(itemHref(ctx, source, p))}" data-anim-item>
-        <span class="placecard__media">${cover ? img(ctx, cover, { sizes: sizes('100vw', '50vw'), attrs: 'data-anim="place.card.image"' }) : ''}</span>
+        <span class="placecard__media">${cover ? img(ctx, cover, { sizes: sizes('100vw', '50vw'), attrs: 'data-anim="place.card.photo"' }) : ''}</span>
         <span class="placecard__info">
           <span class="placecard__name"${ed(sourceFile(source), ['items', i, 'title'])}>${esc(p.title)}</span>
-          <span class="label"><span${ed(sourceFile(source), ['items', i, 'location'])}>${esc(p.location)}</span> · <span${ed(sourceFile(source), ['items', i, 'year'], 'number')}>${esc(p.year)}</span> · ${pad(imagesOf(p).length)} photos</span>
+          <span class="label"><span${ed(sourceFile(source), ['items', i, 'location'])}>${esc(p.location)}</span> · <span${ed(sourceFile(source), ['items', i, 'year'], 'number')}>${esc(p.year)}</span> · ${pad(photosOf(p).length)} photos</span>
         </span>
       </a>`;
     })}

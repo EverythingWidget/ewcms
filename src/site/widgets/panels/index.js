@@ -34,7 +34,7 @@ export const panels = {
       const cover = list.map(coverOf).find(Boolean);
       return html` <a class="ppanel" href="${esc(sourcePage(ctx, source))}" data-anim-item>
       <span class="ppanel__media"
-        >${cover ? img(ctx, cover, { sizes: sizes('100vw', '50vw'), ...firstPhotos(i), attrs: 'data-anim="place.card.image"' }) : ''}</span
+        >${cover ? img(ctx, cover, { sizes: sizes('100vw', '50vw'), ...firstPhotos(i), attrs: 'data-anim="place.card.photo"' }) : ''}</span
       >
       <span class="ppanel__info"
         ><span class="ppanel__title"${widget.ed(['panels', i, 'title'])}>${esc(title)}</span

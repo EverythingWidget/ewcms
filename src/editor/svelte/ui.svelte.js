@@ -116,7 +116,7 @@ export const ui = $state({
   sections: {},
   /**
    * The Source Explorer: open or not, its file ('' = the list of files), item index and the
-   * highlighted field (its key in source-items.js itemFields, e.g. "name", "images.1").
+   * highlighted field (its key in source-items.js itemFields, e.g. "name", "photos.1").
    */
   explorer: { open: false, file: '', index: 0, field: '' },
   /**

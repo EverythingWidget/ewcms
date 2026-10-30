@@ -77,9 +77,9 @@ test('field types: stored value, editor input, blank, parse', () => {
     fields: [
       { key: 'name', type: 'text' },
       { key: 'body', type: 'multiline' },
-      { key: 'images', type: 'photos' },
+      { key: 'photos', type: 'photos' },
       { key: 'kind', type: 'choice', required: true, options: ['a', 'b'] },
     ],
   });
-  assert.deepEqual([item.body, item.images, item.kind], ['', [], 'a']);
+  assert.deepEqual([item.body, item.photos, item.kind], ['', [], 'a']);
 });

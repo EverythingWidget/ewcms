@@ -27,7 +27,7 @@ export const SEO_SETTINGS = [
   ['title', 'Home page title (in full)', 'text'],
   ['titleTemplate', 'Title of other pages: {page} is the page, {site} the site name', 'text'],
   ['description', 'Description (pages without their own)', 'multiline'],
-  ['ogImage', 'Share image (pages without their own)', 'photo'],
+  ['ogPhoto', 'Share photo (pages without their own)', 'photo'],
   ['url', 'Site URL (canonical links, og:url, sitemap.xml)', 'text'],
   ['lang', 'Language (<html lang>, e.g. en)', 'text'],
 ];
@@ -62,7 +62,7 @@ function fieldLabel(f) {
   const parts = parse(f.ptr);
   if (f.type === 'photo' && parts.at(-1) === 'src' && /^\d+$/.test(parts.at(-2)))
     return `Photo ${Number(parts.at(-2)) + 1}`;
-  if (f.type === 'photo' && parts.at(-2) === 'images' && /^\d+$/.test(parts.at(-1)))
+  if (f.type === 'photo' && parts.at(-2) === 'photos' && /^\d+$/.test(parts.at(-1)))
     return `Photo ${Number(parts.at(-1)) + 1}`;
   if (parts.at(-3) === 'columns') return `${labelOf(parts.at(-2))} column title`;
   return labelOf(parts.at(-1));

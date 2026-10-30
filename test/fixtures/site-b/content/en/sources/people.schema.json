@@ -50,7 +50,7 @@
       "help": "Under the name on the album page; also its search description"
     },
     {
-      "key": "images",
+      "key": "photos",
       "label": "Photos",
       "type": "photos"
     },

@@ -8,7 +8,7 @@
     "build": "ewcms build",
     "preview": "ewcms preview",
     "check": "ewcms check",
-    "images": "ewcms images"
+    "photos": "ewcms photos"
   },
   "dependencies": {
     "ewcms": "github:EverythingWidget/ewcms"

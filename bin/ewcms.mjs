@@ -2,11 +2,11 @@
 /**
  * ewcms: the site's commands (scripts/cli.mjs). Run in the site's folder (npm scripts do):
  *
- *   ewcms dev [--port N] [--host] [--no-images]
- *   ewcms build [--no-images]
+ *   ewcms dev [--port N] [--host] [--no-photos]
+ *   ewcms build [--no-photos]
  *   ewcms preview [--port N]
  *   ewcms check [--links] [--no-lint]
- *   ewcms images
+ *   ewcms photos
  *   ewcms publish-media
  *   ewcms new-site <dir>
  *
@@ -55,7 +55,7 @@ async function main() {
     if (a === '--port') opts.port = Number(rest[++i]);
     else if (a === '--root') opts.root = rest[++i];
     else if (a === '--host') opts.host = true;
-    else if (a === '--no-images') opts.photos = false;
+    else if (a === '--no-photos') opts.photos = false;
     else if (a === '--no-lint') opts.lint = false;
     else if (a === '--links') opts.links = true;
     else args.push(a);
@@ -63,7 +63,7 @@ async function main() {
   const root = path.resolve(opts.root || process.cwd());
 
   const USAGE = `ewcms ${ENGINE_VERSION}
-usage: ewcms <dev | build | preview | check | images | publish-media | new-site <dir>> [options]`;
+usage: ewcms <dev | build | preview | check | photos | publish-media | new-site <dir>> [options]`;
 
   try {
     switch (command) {
@@ -79,7 +79,7 @@ usage: ewcms <dev | build | preview | check | images | publish-media | new-site 
       case 'check':
         if (!(await cli.check(root, opts))) process.exitCode = 1;
         break;
-      case 'images': {
+      case 'photos': {
         const { buildPhotos } = await import('../scripts/photos.mjs');
         await buildPhotos(root);
         break;

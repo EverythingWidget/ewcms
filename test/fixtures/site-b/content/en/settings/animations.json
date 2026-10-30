@@ -52,7 +52,7 @@
       "delay": 0,
       "start": "top 85%"
     },
-    "image-reveal": {
+    "photo-reveal": {
       "type": "reveal",
       "from": {
         "clipPath": "inset(100% 0% 0% 0%)",
@@ -274,7 +274,7 @@
     "section.title": {
       "animation": "split-lines"
     },
-    "place.card.image": {
+    "place.card.photo": {
       "animation": "parallax"
     },
     "projects.preview": {
@@ -303,7 +303,7 @@
       "duration": 0.9
     },
     "album.stage": {
-      "animation": "image-reveal",
+      "animation": "photo-reveal",
       "trigger": "load",
       "delay": 0.1
     },

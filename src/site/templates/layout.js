@@ -10,7 +10,7 @@ import { t } from '../strings.js';
 export function head(ctx, route, accent) {
   const { site } = ctx;
   const seo = seoOf(ctx, route);
-  const image = seo.image;
+  const photo = seo.photo;
   // site.json typography: the text styles fitted text uses (layout/type.js), where they differ
   // site.json typography and layout (a contained section's columns: layout/contain.js)
   const type = [typographyVars(site), layoutVars(site)].filter(Boolean).join('; ');
@@ -40,22 +40,22 @@ export function head(ctx, route, accent) {
     <meta property="og:description" content="${esc(seo.description)}" />
     <meta property="og:url" content="${esc(seo.url)}" />
     ${
-      image
-        ? html`<meta property="og:image" content="${esc(image.url)}" />${
-            image.width
+      photo
+        ? html`<meta property="og:image" content="${esc(photo.url)}" />${
+            photo.width
               ? html`
-    <meta property="og:image:width" content="${image.width}" />
-    <meta property="og:image:height" content="${image.height}" />`
+    <meta property="og:image:width" content="${photo.width}" />
+    <meta property="og:image:height" content="${photo.height}" />`
               : ''
           }${
-            image.alt
+            photo.alt
               ? html`
-    <meta property="og:image:alt" content="${esc(image.alt)}" />`
+    <meta property="og:image:alt" content="${esc(photo.alt)}" />`
               : ''
           }`
         : ''
     }
-    <meta name="twitter:card" content="${image ? 'summary_large_image' : 'summary'}" />
+    <meta name="twitter:card" content="${photo ? 'summary_large_image' : 'summary'}" />
     <style id="accent-init">
       :root {
         --accent: ${esc(accent)};
