@@ -11,10 +11,7 @@ test('InfoHelp: 16px circle, 11px icon, the surface roles, a 232px note of its o
   assert.match(s, /font-size: var\(--fs-sm\)/); // 11px
   assert.match(s, /color: var\(--text-quiet\);/);
   assert.match(s, /color: var\(--text-strong\);\s*background: var\(--field-hover\);/);
-  assert.match(
-    s,
-    /@include surface\(color-mix\(in srgb, var\(--white\) 12%, var\(--c-widget-card\)\)\);/,
-  );
+  assert.match(s, /@include surface\(var\(--c-help-note\)\);/);
   assert.doesNotMatch(s, /ih-bg|\bbg\b =/, 'no bg prop');
   assert.match(s, /width: 232px/);
   assert.match(s, /font: 400 var\(--fs-base\) \/ 18px var\(--f-mono\)/);

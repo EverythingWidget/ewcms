@@ -111,6 +111,9 @@
     0 1px 2px var(--black-a30), 0 4px 8px var(--black-a30), 0 12px 24px var(--black-a35),
     0 24px 48px var(--black-a45);
   --c-card-peek: var(--gray-2f);
+  // the help note (InfoHelp.svelte): a slate-blue surface, a 1px ring a step lighter
+  --c-help-note: #16202e;
+  --c-help-note-ring: #26324a;
   --c-control: var(--gray-2a); // Button.svelte: solid, on the panel and in windows
   --c-control-hover: var(--gray-38);
   --c-switch: var(--gray-26);

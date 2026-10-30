@@ -3,7 +3,7 @@
   (top-aligned in the 16px label line: the row keeps its height, nothing shifts); at rest the
   quiet text of the surface it sits on (--text-quiet, _mixins.scss surface()), hovered or open
   its strong text on its hover wash (--text-strong, --field-hover). A click opens a
-  floating note (232px, DM Mono 12/18; a surface of its own, the widget card's tile) in the top layer, under the icon, flipped to stay in view
+  floating note (232px, DM Mono 12/18; a slate-blue surface of its own, a 1px ring) in the top layer, under the icon, flipped to stay in view
   (left when it would leave the right edge or sits in a dialog's right half, above when it would leave the bottom). Esc or a click
   outside closes it.
     label:    what it explains (its button's name: "About Source")
@@ -125,12 +125,14 @@
     border: 0;
     border-radius: 8px;
     overflow: visible;
-    // its own surface (in the top layer, over any surface): what it looked like on the widget
-    // card, that card's tile (12% white)
-    @include surface(color-mix(in srgb, var(--white) 12%, var(--c-widget-card)));
+    // its own surface (in the top layer, over any surface): slate blue, the same in every
+    // pop-up; a 1px ring (a shadow: no border), the pop-ups' shadow
+    @include surface(var(--c-help-note));
     color: var(--c-text);
     background: var(--surface);
-    box-shadow: var(--shadow-pop);
+    box-shadow:
+      0 0 0 1px var(--c-help-note-ring),
+      var(--shadow-pop);
     font: 400 var(--fs-base) / 18px var(--f-mono);
     letter-spacing: 0;
     text-transform: none;
@@ -150,12 +152,15 @@
       height: 8px;
       background: inherit;
       border-radius: var(--radius-xs) 0 0;
+      // the ring on its two outer sides; it covers the note's ring where it meets it
+      box-shadow: -1px -1px 0 0 var(--c-help-note-ring);
       transform: rotate(45deg);
     }
     &:global(.is-up)::before {
       top: auto;
       bottom: -4px;
       border-radius: 0 0 var(--radius-xs);
+      box-shadow: 1px 1px 0 0 var(--c-help-note-ring);
     }
   }
 </style>
