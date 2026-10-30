@@ -12,8 +12,9 @@
                  double click or Enter, or the widget clicked in the preview); one at a time. The Add widget modal (WidgetsModal.svelte): the
                  widget added opens
     Motion       MotionPanel.svelte: the widgets' animations, then the Page transition card
-                 (the Backdrop and the Curtain). Its own mode (ui.mode 'motion', main.js): the
-                 preview picks a widget or an animated part. The top tab stays Nav.
+                 (the Backdrop and the Curtain). While it is open (ui.pageTab 'motion') the
+                 preview's clicks animate (previewClicks, ui.svelte.js): they pick a widget or
+                 an animated part. The top tab stays Nav.
     SEO          SeoSection.svelte
   The footer is sections only (no tabs). While this tab is open the preview is a
   layout canvas (overlay.js): a click picks a widget, a drag moves it, its handles resize it and
@@ -29,7 +30,7 @@
 -->
 <script>
   import { tick, untrack } from 'svelte';
-  import { ui, selectWidgets, selectSection, hooks } from './ui.svelte.js';
+  import { ui, selectWidgets, selectSection, hooks, previewClicks } from './ui.svelte.js';
   import HeaderPart from './HeaderPart.svelte';
   import PageHead from './PageHead.svelte';
   import PagesList from './PagesList.svelte';
@@ -112,26 +113,25 @@
     const v = isPage && ui.sections[`pagetab:${file}`];
     return TABS.some(([t]) => t === v) ? v : 'sections';
   });
-  // Motion is a mode of its own (the preview picks animations); the others are 'text'
-  const shownTab = $derived(ui.mode === 'motion' ? 'motion' : tab === 'motion' ? 'sections' : tab);
+  const shownTab = $derived(tab);
   function pickTab(v) {
     if (ui.section && v !== 'sections') ui.section = null;
     ui.sections[`pagetab:${file}`] = v;
-    const mode = v === 'motion' ? 'motion' : 'text';
-    if (ui.mode !== mode) actions.setMode(mode);
+    actions.setPageTab(v);
   }
-  // The page's Motion tab and the mode go together: a page opened on Motion (kept per page)
-  // picks animations, the pages list or a site part picks texts; Motion entered elsewhere (a
-  // widget's part opened from its pop-up) opens the page's Motion tab.
+  // ui.pageTab is the open page's tab (kept per page), null for the pages list or a site part;
+  // on Motion the preview's clicks animate (main.js setPageTab). Motion stays open from page to
+  // page (and after a refresh); the pages list or a site part ends it.
   $effect(() => {
     const listing = ui.pagesWin.open || ui.target.kind !== 'page';
-    const mode = ui.mode;
     const f = file;
     const kept = tab;
     untrack(() => {
-      if (mode === 'motion' && listing) actions.setMode('text');
-      else if (mode === 'motion' && kept !== 'motion' && f) ui.sections[`pagetab:${f}`] = 'motion';
-      else if (mode === 'text' && !listing && f && kept === 'motion') actions.setMode('motion');
+      if (listing) {
+        if (ui.pageTab !== null) actions.setPageTab(null);
+      } else if (f && ui.pageTab === 'motion' && kept !== 'motion') {
+        ui.sections[`pagetab:${f}`] = 'motion';
+      } else if (f && ui.pageTab !== kept) actions.setPageTab(kept); // f: the page is known
     });
   });
   const tabsId = $props.id();
@@ -314,7 +314,7 @@
   </section>
 {/if}
 
-{#if popSection && file && !ui.pagesWin.open && ui.mode === 'text'}
+{#if popSection && file && !ui.pagesWin.open && previewClicks() === 'arrange'}
   <SectionPopup
     {live}
     {bridge}
@@ -325,7 +325,7 @@
   />
 {/if}
 
-{#if popG && !ui.pagesWin.open && ui.mode === 'text'}
+{#if popG && !ui.pagesWin.open && previewClicks() === 'arrange'}
   <WidgetPopup
     g={popG}
     {live}
@@ -341,7 +341,7 @@
     onmotion={(el) => actions.editMotion(el)}
     onlibrary={(name) => {
       ui.library = { name };
-      actions.setMode('settings');
+      actions.setPanel('settings');
     }}
   />
 {/if}

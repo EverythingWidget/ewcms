@@ -7,7 +7,7 @@
  *             widget is selected (and so while it is dragged or resized) or an empty
  *             section's settings pop-up is open (ui.section), from the section's own computed grid: faint white lines, every 5th a little stronger. Nothing
  *             selected: no grid
- *   Arrange   always on in the Content tab: a click picks a widget (the widget inspector opens),
+ *   Arrange   arrange clicks (ui.svelte.js previewClicks: Nav, not a page's Motion tab): a click picks a widget (the widget inspector opens),
  *             a click on empty space (no widget, handle, circle or link line) or Esc (main /
  *             App.svelte) drops the selection (the panel shows the sections again),
  *             a drag moves it and the handles on its edges and corners resize it; a double
@@ -45,7 +45,7 @@
  * page holds its rows (data-flow-hold on <html>).
  *
  * The overlay follows the page with a frame loop while it shows something; it reads `ui`
- * (mode, widget, link) every frame, and the section metrics once per drag, so the grid
+ * (clicks(), widget, link) every frame, and the section metrics once per drag, so the grid
  * doesn't move under the pointer while the page reflows.
  */
 import { COLS, MAX_MIN_ROWS, MCOLS, makesLoop, sizeOf } from '../site/layout/index.js';
@@ -141,7 +141,8 @@ svg { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: no
 `;
 
 /**
- * onpick(id): a widget was clicked; onplace(id, pos, { mobile, flow, rows }): a drag ended with
+ * clicks(): what a click in the preview does (ui.svelte.js previewClicks; it arranges only on
+ * 'arrange'); onpick(id): a widget was clicked; onplace(id, pos, { mobile, flow, rows }): a drag ended with
  * the widget at `pos` (mobile: its phone area; flow: where the section's widgets are now, { id:
  * area }, and rows: the rows its content needs now); onlink(id, to, gap, { mobile }): widget `id` follows `to`
  * with `gap` cells between them (to null: it is free again); widgetOf(id): the stored widget
@@ -153,6 +154,7 @@ svg { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: no
  */
 export function createOverlay({
   ui,
+  clicks = () => 'visitor',
   onpick,
   onopen,
   onplace,
@@ -190,7 +192,7 @@ export function createOverlay({
   let boxing = null; // a selection box being drawn on a section's empty grid
   const els = {};
 
-  const arranging = () => ui.mode === 'text';
+  const arranging = () => clicks() === 'arrange';
   const shown = () => doc && arranging();
   const mobile = () => win.innerWidth <= MOBILE;
   const widgetEl = (id) => (id ? doc.querySelector(`[data-widget="${CSS.escape(id)}"]`) : null);
@@ -200,7 +202,7 @@ export function createOverlay({
     !doc.querySelector('[data-header][data-ed-open]') &&
     !!sec.closest('[data-footer]') === !!doc.querySelector('[data-footer][data-ed-open]');
   const secById = (id) => doc.querySelector(`[data-sec="${CSS.escape(id)}"]:not([hidden])`);
-  /** The section under the pointer in the preview: its row in the Content tab shows it. */
+  /** The section under the pointer in the preview: its row in the Sections tab shows it. */
   const peekAt = (sec) => {
     const id = sec?.dataset.sec;
     if (id) {
@@ -208,7 +210,7 @@ export function createOverlay({
     } else if (ui.peek?.from === 'preview') ui.peek = null;
   };
   const unpeek = () => peekAt(null);
-  /** The widget under the pointer in the preview: its row in the Content tab lights. */
+  /** The widget under the pointer in the preview: its row in the Sections tab lights. */
   const hotAt = (id) => {
     if (id) {
       if (ui.hot?.id !== id || ui.hot.from !== 'preview') ui.hot = { id, from: 'preview' };
@@ -462,7 +464,7 @@ export function createOverlay({
   const gapOf = (id, l) => (drag?.id === id && drag.gap != null ? drag.gap : l.gap);
 
   /**
-   * The section card hovered in the Content tab, else the one selected (`sec`, null: none): a soft white 1px line on
+   * The section card hovered in the Sections tab, else the one selected (`sec`, null: none): a soft white 1px line on
    * its section and its name in a tag above its top edge, left (just inside it when there is
    * no room above, e.g. the first section). Only it is outlined: nothing else is dimmed (a row
    * hovered highlights, it doesn't fade the page). All on this layer: the page's own styles don't change (no reflow).
@@ -510,7 +512,7 @@ export function createOverlay({
       );
       if (label !== tagShown) els.label.innerHTML = tagShown = label;
     }
-    // the section card hovered in the Content tab, else the one selected while the list shows:
+    // the section card hovered in the Sections tab, else the one selected while the list shows:
     // its section (under the widget boxes)
     // (a widget row hovered: only its widget is outlined, not its section too)
     const peekId =
@@ -1324,7 +1326,7 @@ export function createOverlay({
       if (el && offscreen(el.getBoundingClientRect(), win.innerHeight))
         el.scrollIntoView({ block: 'center', behavior: 'smooth' });
     },
-    /** ui.mode, ui.widget or ui.link changed: show or hide what they ask for. */
+    /** previewClicks(), ui.widget or ui.link changed: show or hide what they ask for. */
     refresh() {
       if (!doc || !root) return;
       gridKey = '';

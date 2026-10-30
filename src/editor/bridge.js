@@ -5,12 +5,13 @@
  * src/client/main.js), before it mounts the first page. From then on the editor:
  *  - pushes the edited settings/animations.json into the preview and re-mounts animations,
  *  - re-applies edited text to every [data-edit] element whenever a page mounts,
- *  - Content mode ('text'): a double click turns a [data-edit] element into an inline editor
+ *  - Arrange clicks ('arrange'; ui.svelte.js previewClicks): a double click turns a [data-edit] element into an inline editor
  *    until it loses focus (a single click picks its widget: overlay.js); a double-clicked
  *    photo (data-edit-type="image") or bound value opens its field in the panel. Links,
  *    buttons and forms don't act on clicks (Alt+click does),
- *  - lets you hover/click widgets ([data-widget]) and [data-anim] parts to select them (Motion
- *    mode: the innermost one under the pointer),
+ *  - lets you hover/click widgets ([data-widget]) and [data-anim] parts to select them (animate
+ *    clicks, 'animate': the innermost one under the pointer); visitor clicks ('visitor'):
+ *    links work, nothing is picked,
  *  - a bound value ([data-bound], src/site/layout/bindings.js) is not typed in the preview:
  *    its field in the panel shows the binding.
  */
@@ -47,24 +48,24 @@ html { scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / .2) transparent
 html::-webkit-scrollbar { width: 8px; height: 8px; }
 html::-webkit-scrollbar-track, html::-webkit-scrollbar-corner { background: transparent; }
 html::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: 999px; background: rgb(255 255 255 / .2) padding-box; }
-html.__ed-text [data-edit], html.__ed-text [data-bound] { outline-offset: 3px; border-radius: ${T.radiusXs}; pointer-events: auto; }
-html.__ed-text [data-edit]:hover { outline: 1px dashed rgb(255 255 255 / .5); }
-html.__ed-text [data-bound]:hover { outline: 1px dotted rgb(255 255 255 / .5); }
-html.__ed-text [data-edit][contenteditable] { outline: 1.5px solid ${T.accent}; caret-color: ${T.accent}; cursor: text !important; }
-html.__ed-text [data-edit].__ed-invalid { outline-color: ${T.error} !important; }
-html.__ed-text [data-widget], html.__ed-text [data-widget] *:not([contenteditable], [contenteditable] *) { cursor: default !important; }
+html.__ed-arrange [data-edit], html.__ed-arrange [data-bound] { outline-offset: 3px; border-radius: ${T.radiusXs}; pointer-events: auto; }
+html.__ed-arrange [data-edit]:hover { outline: 1px dashed rgb(255 255 255 / .5); }
+html.__ed-arrange [data-bound]:hover { outline: 1px dotted rgb(255 255 255 / .5); }
+html.__ed-arrange [data-edit][contenteditable] { outline: 1.5px solid ${T.accent}; caret-color: ${T.accent}; cursor: text !important; }
+html.__ed-arrange [data-edit].__ed-invalid { outline-color: ${T.error} !important; }
+html.__ed-arrange [data-widget], html.__ed-arrange [data-widget] *:not([contenteditable], [contenteditable] *) { cursor: default !important; }
 [data-bound-missing] { opacity: .4; }
-html.__ed-text .hero__title { z-index: 5; }
-:is(html.__ed-text, html.__ed-motion) :is([data-header], [data-footer]):not([data-ed-open]) *, :is(html.__ed-text, html.__ed-motion):has([data-ed-open]) [data-router-view] * { pointer-events: none !important; }
-:is(html.__ed-text, html.__ed-motion) :is([data-header], [data-footer]):not([data-ed-open]) { cursor: pointer; pointer-events: auto; }
-:is(html.__ed-text, html.__ed-motion) :is([data-header], [data-footer]):not([data-ed-open]):hover { outline: 1px dashed rgb(255 255 255 / .6); outline-offset: -1px; }
-:is(html.__ed-text, html.__ed-motion) :is([data-header], [data-footer])[data-ed-open] { outline: 2px solid ${T.accent}; outline-offset: -2px; }
-:is(html.__ed-text, html.__ed-motion) [data-footer]:not(:has([data-sec])) { min-height: 96px; }
-:is(html.__ed-text, html.__ed-motion) :is([data-header], [data-footer])::before { position: absolute; left: 8px; top: 8px; z-index: 30; padding: 4px 8px; border-radius: ${T.radiusSm}; font: 500 ${T.fsXs}/1 ${T.font}; letter-spacing: .04em; background: ${T.black}; color: ${T.white}; pointer-events: none; }
-:is(html.__ed-text, html.__ed-motion) [data-footer]::before { content: 'Footer'; }
-:is(html.__ed-text, html.__ed-motion) [data-header]:is(:hover, [data-ed-open])::before { content: 'Header'; top: auto; bottom: -28px; }
-:is(html.__ed-text, html.__ed-motion) :is([data-header], [data-footer])[data-ed-open]::before { background: ${T.accent}; color: ${T.onAccent}; }
-html.__ed-motion [data-anim], html.__ed-motion [data-anim] *, html.__ed-motion [data-widget], html.__ed-motion [data-widget] * { cursor: pointer !important; }
+html.__ed-arrange .hero__title { z-index: 5; }
+:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]):not([data-ed-open]) *, :is(html.__ed-arrange, html.__ed-animate):has([data-ed-open]) [data-router-view] * { pointer-events: none !important; }
+:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]):not([data-ed-open]) { cursor: pointer; pointer-events: auto; }
+:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]):not([data-ed-open]):hover { outline: 1px dashed rgb(255 255 255 / .6); outline-offset: -1px; }
+:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])[data-ed-open] { outline: 2px solid ${T.accent}; outline-offset: -2px; }
+:is(html.__ed-arrange, html.__ed-animate) [data-footer]:not(:has([data-sec])) { min-height: 96px; }
+:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])::before { position: absolute; left: 8px; top: 8px; z-index: 30; padding: 4px 8px; border-radius: ${T.radiusSm}; font: 500 ${T.fsXs}/1 ${T.font}; letter-spacing: .04em; background: ${T.black}; color: ${T.white}; pointer-events: none; }
+:is(html.__ed-arrange, html.__ed-animate) [data-footer]::before { content: 'Footer'; }
+:is(html.__ed-arrange, html.__ed-animate) [data-header]:is(:hover, [data-ed-open])::before { content: 'Header'; top: auto; bottom: -28px; }
+:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])[data-ed-open]::before { background: ${T.accent}; color: ${T.onAccent}; }
+html.__ed-animate [data-anim], html.__ed-animate [data-anim] *, html.__ed-animate [data-widget], html.__ed-animate [data-widget] * { cursor: pointer !important; }
 .__ed-box { position: fixed; z-index: 2147483646; pointer-events: none; border-radius: ${T.radiusSm}; opacity: 0; transition: opacity .15s; left: 0; top: 0; }
 .__ed-box.is-on { opacity: 1; }
 .__ed-box--hover { border: 1px dashed rgb(255 255 255 / .6); }
@@ -74,16 +75,16 @@ html.__ed-motion [data-anim], html.__ed-motion [data-anim] *, html.__ed-motion [
 .__ed-box--sel span { background: ${T.accent}; color: ${T.onAccent}; }
 .__ed-box.is-low span { bottom: auto; top: 100%; margin: 4px 0 0; }
 html.__ed-tb-above .__ed-box--sel:not(.is-low) span, html.__ed-tb-below .__ed-box--sel.is-low span { visibility: hidden; }
-html.__ed-text :is(.ts__chip, .ts__count) { border-radius: ${T.radiusXs}; background: rgb(${T.chipRgb} / .16); box-shadow: inset 0 0 0 1px rgb(${T.chipRgb} / .45); color: inherit; }
-html.__ed-text [contenteditable] :is(.ts__chip, .ts__count) { color: rgb(${T.chipRgb}); user-select: all; cursor: default; }
-html.__ed-text [data-edit-type="rich"][contenteditable] { outline-offset: 6px; }
-html.__ed-text [data-edit-type="rich"][contenteditable] a { cursor: text !important; }
-html.__ed-text [data-widget] :is([data-edit], [data-bound]):not(.__ed-invalid) { outline: none !important; }
+html.__ed-arrange :is(.ts__chip, .ts__count) { border-radius: ${T.radiusXs}; background: rgb(${T.chipRgb} / .16); box-shadow: inset 0 0 0 1px rgb(${T.chipRgb} / .45); color: inherit; }
+html.__ed-arrange [contenteditable] :is(.ts__chip, .ts__count) { color: rgb(${T.chipRgb}); user-select: all; cursor: default; }
+html.__ed-arrange [data-edit-type="rich"][contenteditable] { outline-offset: 6px; }
+html.__ed-arrange [data-edit-type="rich"][contenteditable] a { cursor: text !important; }
+html.__ed-arrange [data-widget] :is([data-edit], [data-bound]):not(.__ed-invalid) { outline: none !important; }
 `;
 
-/** What Motion mode picks under the pointer: a data-anim part, else its widget. */
+/** What animate clicks pick under the pointer: a data-anim part, else its widget. */
 const MOTION_PICK = '[data-anim], [data-widget]';
-/** What would act on a click (follow, open, send): off in Content mode. */
+/** What would act on a click (follow, open, send): off with arrange clicks. */
 const ACTIVE = 'a, button, [role="button"], label, summary, input, select, textarea';
 
 const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -108,7 +109,7 @@ export function createBridge({ store, labelFor }) {
   let api = null;
   let win = null;
   let doc = null;
-  let mode = 'browse';
+  let clicks = 'visitor'; // what a click in the preview does (ui.svelte.js: previewClicks)
   let hoverEl = null;
   let selected = null; // { el, kind }
   let boxes = null;
@@ -192,18 +193,18 @@ export function createBridge({ store, labelFor }) {
       else if (!api) iframe.src = withDraft(path);
     },
 
-    setMode(next) {
-      mode = next;
+    setClickMode(next) {
+      clicks = next;
       if (!doc) return;
-      doc.documentElement.classList.toggle('__ed-text', mode === 'text');
-      doc.documentElement.classList.toggle('__ed-motion', mode === 'motion');
+      doc.documentElement.classList.toggle('__ed-arrange', clicks === 'arrange');
+      doc.documentElement.classList.toggle('__ed-animate', clicks === 'animate');
       // Freeze first: reverting split-text animations re-creates their inner elements,
       // which would drop contenteditable from editable text inside them (page titles, hero name).
       if (api) {
-        if (mode === 'text') api.freeze();
+        if (clicks === 'arrange') api.freeze();
         else api.unfreeze();
       }
-      if (mode !== 'text') endEdits();
+      if (clicks !== 'arrange') endEdits();
       hoverEl = null;
       bridge.select(null);
       loop();
@@ -292,8 +293,8 @@ export function createBridge({ store, labelFor }) {
           } else if (el.textContent !== String(value)) el.textContent = String(value);
         }
       };
-      // Outside Text mode, split-text animations own the DOM: revert, write, re-mount.
-      if (!plain && mode !== 'text' && api) {
+      // Without arrange clicks, split-text animations own the DOM: revert, write, re-mount.
+      if (!plain && clicks !== 'arrange' && api) {
         api.freeze();
         run();
         api.unfreeze();
@@ -303,7 +304,7 @@ export function createBridge({ store, labelFor }) {
     updateAnimations(cfg, { replay = true } = {}) {
       if (!api) return;
       api.setAnimations(cfg);
-      if (replay && mode !== 'text')
+      if (replay && clicks !== 'arrange')
         bridge.replay(selected?.kind === 'anim' ? selected.el : null, { scroll: false });
     },
 
@@ -347,7 +348,7 @@ export function createBridge({ store, labelFor }) {
     },
 
     // quiet: put back (a reload, a refresh), not picked: the panel opens nothing for it
-    select(el, kind = mode === 'text' ? 'text' : 'anim', { quiet = false } = {}) {
+    select(el, kind = clicks === 'arrange' ? 'text' : 'anim', { quiet = false } = {}) {
       selected = el ? { el, kind } : null;
       emit('select', selected, { quiet });
       loop();
@@ -442,7 +443,7 @@ export function createBridge({ store, labelFor }) {
   };
 
   /**
-   * Edit a text in place (a double click in Content mode): editable until it loses focus,
+   * Edit a text in place (a double click with arrange clicks): editable until it loses focus,
    * the caret where it was clicked (x, y).
    */
   function startEdit(el, x, y) {
@@ -648,7 +649,7 @@ export function createBridge({ store, labelFor }) {
 
   function placeBox(box, el, kind) {
     const r = el?.isConnected ? el.getBoundingClientRect() : null;
-    const on = !!r && (r.width > 0 || r.height > 0) && mode !== 'browse';
+    const on = !!r && (r.width > 0 || r.height > 0) && clicks !== 'visitor';
     box.classList.toggle('is-on', on);
     if (!on) return;
     box.style.transform = `translate(${r.left - 4}px, ${r.top - 4}px)`;
@@ -665,11 +666,15 @@ export function createBridge({ store, labelFor }) {
       raf = 0;
       if (!boxes?.hover.isConnected) return;
       const sameAsSel = selected && hoverEl === selected.el;
-      // a text in a widget (Content mode): the overlay's frame on the widget is its one border
-      const own = (el) => (mode === 'text' && el?.closest?.('[data-widget]') ? null : el);
-      placeBox(boxes.hover, sameAsSel ? null : own(hoverEl), mode === 'text' ? 'text' : 'anim');
+      // a text in a widget (arrange clicks): the overlay's frame on the widget is its one border
+      const own = (el) => (clicks === 'arrange' && el?.closest?.('[data-widget]') ? null : el);
+      placeBox(
+        boxes.hover,
+        sameAsSel ? null : own(hoverEl),
+        clicks === 'arrange' ? 'text' : 'anim',
+      );
       placeBox(boxes.sel, own(selected?.el), selected?.kind);
-      if (mode !== 'browse') raf = requestAnimationFrame(tick);
+      if (clicks !== 'visitor') raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
   }
@@ -709,8 +714,8 @@ export function createBridge({ store, labelFor }) {
     doc.addEventListener(
       'pointermove',
       (e) => {
-        // (Content mode: the overlay shows the widget under the pointer, CSS the text)
-        if (mode !== 'motion') return;
+        // (arrange clicks: the overlay shows the widget under the pointer, CSS the text)
+        if (clicks !== 'animate') return;
         const t = e.target instanceof win.Element ? e.target : null;
         hoverEl = t?.closest(MOTION_PICK) || null;
       },
@@ -724,14 +729,14 @@ export function createBridge({ store, labelFor }) {
       emit('textFocus', hit.dataset.edit ?? hit.dataset.bound);
     };
 
-    // Clicks: in edit modes, clicks select instead of navigating. In Content mode no link,
+    // Clicks: arrange and animate clicks select instead of navigating. With arrange clicks no link,
     // button or form acts (a click in a widget picks it: overlay.js; outside the widgets it
-    // picks the text's field); in Motion a click on an animated element picks it. Hold Alt
+    // picks the text's field); with animate clicks a click on an animated element picks it. Hold Alt
     // to click through.
     win.addEventListener(
       'click',
       (e) => {
-        if (mode === 'browse' || e.altKey) return;
+        if (clicks === 'visitor' || e.altKey) return;
         const t = e.target instanceof win.Element ? e.target : null;
         // A site part (the header, the footer): a click on it (locked) opens it, picking
         // nothing in it yet; a click outside it (open) locks it again (the page is picked
@@ -749,7 +754,7 @@ export function createBridge({ store, labelFor }) {
             return;
           }
         }
-        if (mode === 'text') {
+        if (clicks === 'arrange') {
           if (t?.closest('[contenteditable]')) {
             if (t.closest('a, button')) e.preventDefault(); // the caret moves, nothing follows
             return;
@@ -773,19 +778,19 @@ export function createBridge({ store, labelFor }) {
     doc.addEventListener(
       'submit',
       (e) => {
-        if (mode === 'browse') return;
+        if (clicks === 'visitor') return;
         e.preventDefault();
         e.stopPropagation();
       },
       true,
     );
 
-    // Content mode: a double click edits a text in place; a photo or a bound value opens its
+    // Arrange clicks: a double click edits a text in place; a photo or a bound value opens its
     // field in the panel.
     doc.addEventListener(
       'dblclick',
       (e) => {
-        if (mode !== 'text' || e.altKey) return;
+        if (clicks !== 'arrange' || e.altKey) return;
         const t = e.target instanceof win.Element ? e.target : null;
         const found = t?.closest('[data-edit], [data-bound]');
         // a widget's text: anywhere on the widget (its own edit mode, as its toolbar's Edit)
@@ -805,7 +810,7 @@ export function createBridge({ store, labelFor }) {
 
     doc.addEventListener('focusin', (e) => {
       const el = e.target.closest?.('[data-edit]');
-      if (mode !== 'text' || !el) return;
+      if (clicks !== 'arrange' || !el) return;
       // Word-split text (hero name) is edited as plain text and re-split on blur.
       if (el.dataset.editType === 'words') {
         const { file, ptr } = splitEdit(el.dataset.edit);
@@ -855,7 +860,7 @@ export function createBridge({ store, labelFor }) {
         return;
       }
       const el = e.target.closest?.('[data-edit]');
-      if (mode !== 'text' || !el) return;
+      if (clicks !== 'arrange' || !el) return;
       const value = readValue(el);
       el.classList.toggle('__ed-invalid', value === undefined);
       if (value === undefined) return;
@@ -953,11 +958,11 @@ export function createBridge({ store, labelFor }) {
       selected = null;
       hoverEl = null;
       api.setAnimations(store.current[ANIMATIONS]);
-      if (mode === 'text') api.freeze();
+      if (clicks === 'arrange') api.freeze();
       api.hooks.beforeMount.add(() => bridge.applyTexts({ force: true, plain: true }));
       api.hooks.afterMount.add(() => {
-        doc.documentElement.classList.toggle('__ed-text', mode === 'text');
-        doc.documentElement.classList.toggle('__ed-motion', mode === 'motion');
+        doc.documentElement.classList.toggle('__ed-arrange', clicks === 'arrange');
+        doc.documentElement.classList.toggle('__ed-animate', clicks === 'animate');
         bridge.select(null);
         emit('navigate', win.location.pathname);
         restore?.();

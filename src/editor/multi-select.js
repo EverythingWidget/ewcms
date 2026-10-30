@@ -1,5 +1,5 @@
 /**
- * Multi-select (v0.1.24): the Content tab's selection is a set of widgets, all in one section.
+ * Multi-select (v0.1.24): the Sections tab's selection is a set of widgets, all in one section.
  * There is no primary widget: every selected one looks and acts the same. One selected is
  * ui.widget (its pop-up, toolbar and handles, as before); two or more are ui.multi (no pop-up,
  * no handles: the shared actions only). Pure helpers, no DOM: the overlay (preview) and the

@@ -1,11 +1,13 @@
 /**
  * Visual editor (any page with ?edit: /?edit, /about/?edit&tab=settings): the real site in an iframe + a side panel.
  *
- *   Content - click text in the preview to edit it (animations paused)
- *   Motion  - click an animated element to edit its animation / timing / trigger
- *   Settings - site-wide values: site name and meta, the global page-transition curtain
- *   Preview - the toolbar's toggle: the site as visitors see it (links work); the panel
- *             shows the unsaved and unpublished changes
+ * The side panel (ui.panel; the names are explained in svelte/ui.svelte.js):
+ *   Nav      - the pages list, or a page with its tabs: Sections (arrange: pick and move
+ *              widgets, double click a text to type it; animations paused), Motion (animate:
+ *              click a widget or an animated element to edit its animation), SEO
+ *   Settings - site-wide values: site name and meta, the animations, the curtain
+ *   Preview  - the toolbar's toggle: the site as visitors see it (links work); the panel
+ *              shows the unsaved and unpublished changes
  *
  * Edits only touch in-memory copies of content/*.json (see store.js).
  *   Save    - writes the changed files to content/ on disk (a draft: the preview and
@@ -26,7 +28,7 @@ import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/solid.css';
 import { mount } from 'svelte';
 import App from './svelte/App.svelte';
-import { ui, selectWidgets, selectSection, hooks } from './svelte/ui.svelte.js';
+import { ui, selectWidgets, selectSection, hooks, previewClicks } from './svelte/ui.svelte.js';
 import { toast } from './svelte/toasts.svelte.js';
 import { createLive } from './svelte/live.svelte.js';
 import { connectMedia } from './svelte/media.svelte.js';
@@ -93,9 +95,10 @@ const store = createStore();
 const live = createLive(store);
 connectMedia(live); // photo URLs read site.json's mediaUrl from it
 const bridge = createBridge({ store, labelFor: (p) => labelFor(store, p) });
-// the preview's layout overlay (arranging in the Content tab, Grid; overlay.js): widgetAt and
+// the preview's layout overlay (arranging in the Sections tab, Grid; overlay.js): widgetAt and
 // placeWidget below
 const overlay = createOverlay({
+  clicks: previewClicks,
   ui,
   onpick(id) {
     selectWidgets(id ? [id] : []);
@@ -178,7 +181,16 @@ mount(App, {
   props: {
     live,
     bridge,
-    actions: { setMode, pickTarget, lockPart, save, refreshStatus, pagesOp, editMotion },
+    actions: {
+      setPanel,
+      setPageTab,
+      pickTarget,
+      lockPart,
+      save,
+      refreshStatus,
+      pagesOp,
+      editMotion,
+    },
   },
 });
 
@@ -406,7 +418,7 @@ async function refreshStatus() {
 /**
  * A pick in the preview (bridge 'select') -> ui.anim for a page's Motion tab: a widget
  * ({ el, widget }) or a data-anim part ({ el, id, key, scope }). The widget (or the part's) is
- * also the Content tab's widget (ui.widget), so both tabs show the same one.
+ * also the Sections tab's widget (ui.widget), so both tabs show the same one.
  */
 function pickAnim(sel) {
   if (sel?.kind !== 'anim') return null;
@@ -419,20 +431,32 @@ function pickAnim(sel) {
   return { el, id: el.dataset.anim, key: el.dataset.animKey, owner, scope: null };
 }
 
-/** The preview's mode: Preview and Settings have nothing to pick (browse: links work). */
-const previewMode = () => (['preview', 'settings'].includes(ui.mode) ? 'browse' : ui.mode);
-
-function setMode(mode) {
-  ui.mode = mode;
-  if (mode !== 'preview') ui.lastEdit = mode;
-  bridge.setMode(previewMode());
+/** Tell the preview what a click does now (previewClicks); entering animate picks the widget. */
+function applyClicks(before) {
+  const clicks = previewClicks();
+  bridge.setClickMode(clicks);
   overlay.refresh();
-  if (mode === 'motion') {
+  if (clicks === 'animate' && before !== 'animate') {
     ui.anim = null;
-    // the widget open in the Content tab is the one picked here
+    // the widget open in the Sections tab is the one picked here
     const el = ui.widget && bridge.doc?.querySelector(`[data-widget="${CSS.escape(ui.widget)}"]`);
     if (el) bridge.select(el, 'anim');
   }
+}
+
+/** Show a panel: 'nav' | 'settings' | 'preview' (ui.svelte.js). */
+function setPanel(panel) {
+  const before = previewClicks();
+  ui.panel = panel;
+  if (panel !== 'preview') ui.panelBeforePreview = panel;
+  applyClicks(before);
+}
+
+/** The open page's tab: 'sections' | 'motion' | 'seo', or null (no page open). */
+function setPageTab(tab) {
+  const before = previewClicks();
+  ui.pageTab = tab;
+  applyClicks(before);
 }
 
 // ---------------------------------------------------------------- layout overlay
@@ -449,14 +473,17 @@ function widgetAt(id) {
 
 /** Open an animated element of the preview in the page's Motion tab. */
 function editMotion(el) {
-  setMode('motion');
+  const file = targetFile(ui.target, bridge.doc);
+  if (file) ui.sections[`pagetab:${file}`] = 'motion'; // kept per page (ContentPanel.svelte)
+  setPanel('nav');
+  setPageTab('motion');
   ui.anim = pickAnim({ kind: 'anim', el });
   bridge.select(el, 'anim');
 }
 
 // ---------------------------------------------------------------- preview events
 bridge.on('connect', () => {
-  bridge.setMode(previewMode());
+  bridge.setClickMode(previewClicks());
   overlay.attach(bridge.doc.defaultView);
   applyPart();
   pushCurtains();
@@ -578,7 +605,7 @@ bridge.on('navigate', (path) => {
 });
 // (quiet: the selection put back after a save's reload: kept, but nothing opens for it)
 bridge.on('select', (sel, { quiet = false } = {}) => {
-  if (ui.mode === 'motion') ui.anim = pickAnim(sel);
+  if (previewClicks() === 'animate') ui.anim = pickAnim(sel);
   else
     ui.selection =
       sel?.kind === 'text'
@@ -628,7 +655,8 @@ document.addEventListener('keyup', trackMod, true);
 window.addEventListener('blur', () => (ui.mod = false));
 const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
 function selectionKey(e) {
-  if (e.defaultPrevented || ui.mode !== 'text' || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.defaultPrevented || previewClicks() !== 'arrange' || e.altKey || e.ctrlKey || e.metaKey)
+    return;
   if (
     e.target.closest?.('input, textarea, select, [contenteditable], dialog, .wpop, [role="menu"]')
   )

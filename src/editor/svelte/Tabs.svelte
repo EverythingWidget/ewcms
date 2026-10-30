@@ -15,7 +15,7 @@
     id      the tabs' ids are "<id>-<value>" (tablist: the panel's aria-labelledby)
     panel   the id of the panel they switch (tablist: aria-controls)
   A tablist is one Tab stop: ←/→ (Home/End) move to the next tab and pick it.
-  Used by the modes (App.svelte: Content / Motion / Settings), the page tabs (ContentPanel), the
+  Used by the panel tabs (App.svelte: Nav / Settings), the page tabs (ContentPanel), the
   widget card (Content / Motion), the Motion panel (Elements / Animations) and the Media
   window's filter (All / R2 / Local). Segmented value pickers (.seg) are not tabs.
 -->

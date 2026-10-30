@@ -28,7 +28,7 @@
   /** Open animation `name` in the library (Settings > Motion). */
   function openLibrary(name = '') {
     ui.library = { name };
-    actions.setMode('settings');
+    actions.setPanel('settings');
   }
 
   const cfg = $derived(live.current(ANIMATIONS));
@@ -164,7 +164,7 @@
           </ol>
         </Section>
       {/if}
-      <PageTransition {live} {file} onsettings={() => actions.setMode('settings')} />
+      <PageTransition {live} {file} onsettings={() => actions.setPanel('settings')} />
     {/if}
   </div>
 {/if}

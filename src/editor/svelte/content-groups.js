@@ -1,5 +1,5 @@
 /**
- * What the Content tab shows: the editable texts of the page in the preview (or of the
+ * What the Nav tab shows: the editable texts of the page in the preview (or of the
  * footer's widgets), grouped by widget (a page's sections hold widgets, src/site/layout/). Plain
  * functions over the store and the preview; ContentPanel.svelte renders the result.
  */
@@ -227,7 +227,7 @@ function fieldsOf(bridge, file) {
 }
 
 /**
- * The Content tab's groups for `target`: the page's (or footer's) widgets, in section and
+ * The Nav tab's groups for `target`: the page's (or footer's) widgets, in section and
  * widget order (`widget`: { at, j }, where it is), each with its fields.
  * [{ id, title, name?, widget?, file?, icon?, toggle?, config?, fields: [{ edit, file, ptr, type, label }] }]
  */

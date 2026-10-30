@@ -23,12 +23,12 @@
   import WidgetToolbar from './WidgetToolbar.svelte';
   import { layerWidget } from '../layout-ops.js';
   import { targetFile } from '../layout-sync.js';
-  import { ui } from './ui.svelte.js';
+  import { ui, previewClicks } from './ui.svelte.js';
   import { writeUrl } from './persist.js';
   import { MOD, plural } from '../lib/format.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
-  // actions: setMode, pickTarget, save, refreshStatus, pagesOp
+  // actions: setPanel, setPageTab, pickTarget, save, refreshStatus, pagesOp
   let { live, bridge, actions } = $props();
 
   let publishDialog = $state();
@@ -37,20 +37,19 @@
   // ui.explorer.open is set (SourcesModal.svelte), on the list of files.
   function openSources() {
     ui.explorer = { open: true, file: '', index: 0, field: '' };
-    if (!nav) actions.setMode('text');
+    if (!nav) actions.setPanel('nav');
   }
 
-  // [mode, label, icon]: a tab with an icon shows only the icon. Nav is 'text' and 'motion' (a
-  // page's Motion tab, ContentPanel.svelte): the preview picks texts or animations
+  // [panel, label, icon]: a tab with an icon shows only the icon (ui.panel, ui.svelte.js)
   const TABS = [
-    ['text', 'Nav'],
+    ['nav', 'Nav'],
     ['settings', 'Settings'],
   ];
-  const nav = $derived(ui.mode === 'text' || ui.mode === 'motion');
+  const nav = $derived(ui.panel === 'nav');
   const mobile = $derived(ui.viewport === 'mobile');
   // Preview: a toggle; off goes back to the tab it came from
-  const previewing = $derived(ui.mode === 'preview');
-  const togglePreview = () => actions.setMode(previewing ? ui.lastEdit : 'preview');
+  const previewing = $derived(ui.panel === 'preview');
+  const togglePreview = () => actions.setPanel(previewing ? ui.panelBeforePreview : 'preview');
   const unpublished = $derived(ui.pub?.files || []);
   const ahead = $derived(ui.pub?.ahead || 0);
   const unpublishedChanges = $derived(unpublished.reduce((n, f) => n + (f.changes || 1), 0));
@@ -110,11 +109,11 @@
       else live.store.undo();
     } else if ((e.key === '[' || e.key === ']') && !e.metaKey && (!e.ctrlKey || e.altKey)) {
       // a widget's layer: [ down, ] up (by character: AltGr / Ctrl+Alt on other layouts),
-      // a widget picked in the Content tab, not while typing, the desktop layout
+      // a widget picked in the Sections tab, not while typing, the desktop layout
       const typing =
         e.target instanceof Element &&
         e.target.closest?.('input, textarea, select, [contenteditable]');
-      if (typing || ui.mode !== 'text' || !ui.widget || mobile) return;
+      if (typing || previewClicks() !== 'arrange' || !ui.widget || mobile) return;
       const file = targetFile(ui.target, bridge.doc);
       const list = live.get(file, '/sections') || [];
       for (const [at, s] of list.entries()) {
@@ -128,14 +127,14 @@
       // in the widget pop-up: its own (an open menu first, then the pop-up; WidgetPopup.svelte)
       if (e.target instanceof Element && e.target.closest('.wpop')) return;
       // A dialog closes itself on Esc; this also covers Esc pressed in the preview.
-      // Content tab: then the selected link, else the selected widget (the panel shows the
+      // arrange clicks: then the selected link, else the selected widget (the panel shows the
       // sections again, the grid hides); not while typing in a field of the panel.
       const open = document.querySelector('dialog[open]');
       if (open) open.close();
       else {
         const picked = !!bridge.selected;
         if (picked) bridge.select(null);
-        if (ui.mode === 'text' && !inField) {
+        if (previewClicks() === 'arrange' && !inField) {
           if (ui.link) ui.link = null;
           else if (ui.widget || ui.section || ui.multi.length) {
             ui.selection = null;
@@ -146,7 +145,7 @@
             ui.selSection = null;
             ui.selSections = [];
           } else if (!picked) actions.lockPart(); // nothing picked, a site part open: locked
-        } else if (ui.mode === 'motion' && !inField && !picked) actions.lockPart();
+        } else if (previewClicks() === 'animate' && !inField && !picked) actions.lockPart();
       }
     }
   }
@@ -234,20 +233,20 @@
            Hidden while previewing (the rows above stay put; Preview's panel takes their place) -->
       {#if !previewing}
         <Tabs
-          class="ed-modes"
+          class="ed-panels"
           role="navigation"
           fill
-          label="Mode"
+          label="Panel"
           tabs={TABS}
-          value={nav ? 'text' : ui.mode}
-          onpick={(mode) => !(nav && mode === 'text') && actions.setMode(mode)}
+          value={ui.panel}
+          onpick={(panel) => panel !== ui.panel && actions.setPanel(panel)}
         />
       {/if}
     </header>
 
     {#if nav}
       <ContentPanel {live} {bridge} {actions} />
-    {:else if ui.mode === 'settings'}
+    {:else if ui.panel === 'settings'}
       <SettingsPanel {live} {bridge} />
     {:else}
       <PreviewPanel {live} onpublish={publish} />
@@ -382,7 +381,7 @@
     margin-inline: var(--space-1);
   }
 
-  :global(.ed-modes) {
+  :global(.ed-panels) {
     margin-top: var(--space-1);
   }
 

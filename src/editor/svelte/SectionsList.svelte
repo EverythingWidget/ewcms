@@ -1,5 +1,5 @@
 <!--
-  The page's sections in the Content tab (src/site/layout/): a card each (SectionCard.svelte:
+  The page's sections in the Sections tab (src/site/layout/): a card each (SectionCard.svelte:
   its title and its widgets count, which opens its widgets inside the card; the selected one's
   tools are SectionToolbar.svelte's, over the body), then the dashed Add section card, which adds an empty
   section after the last one. A click on a card selects it (ui.selSection: its section shown in

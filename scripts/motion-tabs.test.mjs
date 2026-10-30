@@ -39,7 +39,7 @@ test("the engine starts every spec from the defaults (not the scroll types' ease
 
 test('top tabs Nav | Settings; page tabs Sections | Motion | SEO', () => {
   const app = read('editor/svelte/App.svelte');
-  assert.match(app, /\['text', 'Nav'\],\s*\['settings', 'Settings'\],\s*\];/);
+  assert.match(app, /\['nav', 'Nav'\],\s*\['settings', 'Settings'\],\s*\];/);
   assert.doesNotMatch(app, /MotionPanel/);
   const c = read('editor/svelte/ContentPanel.svelte');
   assert.match(c, /\['sections', 'Sections'\],\s*\['motion', 'Motion'\],\s*\['seo', 'SEO'\],/);
@@ -51,9 +51,18 @@ test('top tabs Nav | Settings; page tabs Sections | Motion | SEO', () => {
   assert.match(read('editor/svelte/MotionSettings.svelte'), /<AnimLibrary /);
 });
 
-test('URL tabs: nav, settings, preview; Motion is written as nav', () => {
+test('URL tabs are ui.panel: nav, settings, preview; clicks: arrange, animate, visitor', () => {
   const p = read('editor/svelte/persist.js');
-  assert.match(p, /nav: 'text',\s*settings: 'settings',\s*preview: 'preview',/);
-  assert.match(p, /mode === 'motion' \? 'nav'/);
-  assert.doesNotMatch(p, /content: 'text'|motion: 'motion'/);
+  assert.match(p, /PANELS = \['nav', 'settings', 'preview'\]/);
+  assert.match(p, /set\('tab', ui\.panel\)/);
+  const u = read('editor/svelte/ui.svelte.js');
+  assert.match(u, /if \(ui\.panel !== 'nav'\) return 'visitor';/);
+  assert.match(u, /ui\.pageTab === 'motion' \? 'animate' : 'arrange'/);
+  for (const f of [
+    'editor/main.js',
+    'editor/bridge.js',
+    'editor/overlay.js',
+    'editor/svelte/App.svelte',
+  ])
+    assert.doesNotMatch(read(f), /ui\.mode\b|lastEdit|previewMode|'browse'/, f);
 });

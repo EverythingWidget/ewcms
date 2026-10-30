@@ -2,7 +2,7 @@
  * Keeps the editor where it was across a refresh, in two places:
  *
  *   The URL (shareable): /photography/people/?edit&tab=settings (src/editor/lib/editor-url.js)
- *     tab     nav | settings | preview (nav: also a page's Motion tab, its own mode, kept per
+ *     tab     ui.panel: nav | settings | preview (the page's own tab, ui.pageTab, is kept per
  *             page in sessionStorage; an unknown tab: nav)
  *     (path)  the URL's own path is the page in the preview (main.js keeps it up to date)
  *     view    header | footer, when a site part (Header, Footer) is edited instead of a page
@@ -29,18 +29,13 @@
  */
 import { tick } from 'svelte';
 import { editorHref } from '../lib/editor-url.js';
-import { ui } from './ui.svelte.js';
+import { ui, previewClicks } from './ui.svelte.js';
 import { sourceIdOf } from '../../site/files.js';
 
 const KEY = 'editor:ui';
-// URL tab name -> ui.mode ('motion', a page's Motion tab, is written as nav)
-const TABS = {
-  nav: 'text',
-  settings: 'settings',
-  preview: 'preview',
-};
-const tabOf = (mode) =>
-  mode === 'motion' ? 'nav' : Object.keys(TABS).find((t) => TABS[t] === mode);
+// the URL's tab is ui.panel (ui.svelte.js)
+const PANELS = ['nav', 'settings', 'preview'];
+const PAGE_TABS = ['sections', 'motion', 'seo'];
 const VIEWS = { header: 'Header', footer: 'Footer' };
 
 let bridge, live; // the preview (../bridge.js) and the content (live.svelte.js)
@@ -58,11 +53,8 @@ function readSession() {
 function readState() {
   const state = readSession();
   const q = new URLSearchParams(location.search);
-  // nav: the page's Motion tab when it was open (the session's), else the pages or Sections
-  if (q.has('tab')) {
-    const mode = TABS[q.get('tab')] || 'text';
-    if (!(mode === 'text' && state.mode === 'motion')) state.mode = mode;
-  }
+  // nav: the page's tab stays the session's (ui.pageTab)
+  if (q.has('tab')) state.panel = PANELS.includes(q.get('tab')) ? q.get('tab') : 'nav';
   if (q.has('view'))
     state.part = VIEWS[q.get('view')] && {
       kind: 'part',
@@ -70,7 +62,7 @@ function readState() {
       title: VIEWS[q.get('view')],
     };
   if (q.has('source')) {
-    if (!q.has('tab')) state.mode = 'text'; // the explorer is in the Nav tab
+    if (!q.has('tab')) state.panel = 'nav'; // the explorer is in the Nav tab
     state.explorer = {
       open: true,
       file: `sources/${q.get('source')}.json`,
@@ -87,11 +79,11 @@ function readState() {
       pick: q.get('pick') || '',
     };
   if (q.has('pages')) {
-    if (!q.has('tab')) state.mode = 'text'; // the pages list is in the Nav tab
+    if (!q.has('tab')) state.panel = 'nav'; // the pages list is in the Nav tab
     state.pagesWin = { open: true, folder: q.get('pages').replace(/^\/+|\/+$/g, '') };
   }
   if (q.has('anim')) {
-    if (!q.has('tab')) state.mode = 'settings'; // the library is in Settings > Motion
+    if (!q.has('tab')) state.panel = 'settings'; // the library is in Settings > Motion
     state.library = { name: q.get('anim') }; // an unknown name: the list
   } else if (q.get('tab') === 'settings') state.library = { name: '' };
   return state;
@@ -102,8 +94,10 @@ export function restoreUi(preview, content) {
   bridge = preview;
   live = content;
   saved = readState();
-  if ([...Object.values(TABS), 'motion'].includes(saved.mode)) ui.mode = saved.mode;
-  if (['text', 'motion', 'settings'].includes(saved.lastEdit)) ui.lastEdit = saved.lastEdit;
+  if (PANELS.includes(saved.panel)) ui.panel = saved.panel;
+  if (['nav', 'settings'].includes(saved.panelBeforePreview))
+    ui.panelBeforePreview = saved.panelBeforePreview;
+  if (PAGE_TABS.includes(saved.pageTab)) ui.pageTab = saved.pageTab;
   if (saved.part) ui.target = saved.part; // Header or Footer (pages: the URL's path)
   ui.sections = saved.sections || {};
   // Settings > Motion's library, on an animation
@@ -115,8 +109,9 @@ export function restoreUi(preview, content) {
     sessionStorage.setItem(
       KEY,
       JSON.stringify({
-        mode: ui.mode,
-        lastEdit: ui.lastEdit,
+        panel: ui.panel,
+        panelBeforePreview: ui.panelBeforePreview,
+        pageTab: ui.pageTab,
         part: ui.target?.kind === 'part' ? ui.target : null,
         sections: ui.sections,
         explorer: ui.explorer,
@@ -143,7 +138,7 @@ export async function restorePlace() {
   saved = null; // only after the refresh, not on later page changes
 
   // The explorer lives in the Nav tab; SourcesModal opens itself when ui.explorer.open is set.
-  if (explorer?.open && (ui.mode === 'text' || ui.mode === 'motion')) {
+  if (explorer?.open && ui.panel === 'nav') {
     const list = live.current(explorer.file)?.items;
     const at = Array.isArray(list) ? list.findIndex((it, i) => itemId(it, i) === item) : -1;
     ui.explorer = { ...explorer, index: at >= 0 ? at : explorer.index };
@@ -152,7 +147,8 @@ export async function restorePlace() {
   if (path !== bridge.path()) return;
   bridge.api.scrollTop(previewY);
   // a page's Motion tab: the picked element; Nav (and the others, for later): the selected field
-  const motion = ui.mode === 'motion';
+  const clicks = previewClicks();
+  const motion = clicks === 'animate';
   const sel = motion
     ? anim &&
       (anim.startsWith('widget:')
@@ -160,9 +156,8 @@ export async function restorePlace() {
         : `[data-anim-key="${CSS.escape(anim)}"]`)
     : edit && `[data-edit="${CSS.escape(edit)}"]`;
   const el = sel && bridge.doc.querySelector(sel);
-  if (el && (motion || ui.mode === 'text'))
-    bridge.select(el, motion ? 'anim' : 'text', { quiet: true });
-  // quiet: the Content panel doesn't scroll to the field, the panel scroll is put back below
+  if (el && clicks !== 'visitor') bridge.select(el, motion ? 'anim' : 'text', { quiet: true });
+  // quiet: the Nav panel doesn't scroll to the field, the panel scroll is put back below
   if (el && !motion) ui.selection = { edit, quiet: true };
   await tick();
   requestAnimationFrame(() => {
@@ -179,17 +174,17 @@ export function writeUrl() {
   const url = new URL(location.href);
   const q = url.searchParams;
   const set = (key, value) => (value ? q.set(key, value) : q.delete(key));
-  set('tab', tabOf(ui.mode));
+  set('tab', ui.panel);
   set('view', ui.target?.kind === 'part' && ui.target.id);
   const { open, file, index } = ui.explorer;
   const list = open && file ? live.current(file)?.items : null;
   set('source', list && sourceIdOf(file));
   set('item', Array.isArray(list) && list[index] && itemId(list[index], index));
   set('field', Array.isArray(list) && list[index] && ui.explorer.field);
-  set('anim', ui.mode === 'settings' && ui.library.name);
+  set('anim', ui.panel === 'settings' && ui.library.name);
   set(
     'pages',
-    ui.mode === 'text' && ui.pagesWin.open && `/${ui.pagesWin.folder}/`.replace('//', '/'),
+    ui.panel === 'nav' && ui.pagesWin.open && `/${ui.pagesWin.folder}/`.replace('//', '/'),
   );
   set('media', ui.media.open && (ui.media.key || '/'));
   set('pick', ui.media.open && ui.media.pick);

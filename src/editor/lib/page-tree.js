@@ -1,5 +1,5 @@
 /**
- * The pages list (PagesList.svelte, the Content tab): the site's pages one folder at a time,
+ * The pages list (PagesList.svelte, the Nav tab): the site's pages one folder at a time,
  * from the content files ({ "pages/index.json": data, …, "settings/nav.json": … }).
  *
  * A level is a page's folder (its page id; '' is the top, home's folder). It shows:

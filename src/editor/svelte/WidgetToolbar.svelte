@@ -1,5 +1,5 @@
 <!--
-  One toolbar, on the selected widget only (ui.widget, Content tab), over the preview: drawn on
+  One toolbar, on the selected widget only (ui.widget, Sections tab), over the preview: drawn on
   the stage (App.svelte) at the widget's top left edge, above it (below it when there is no
   room, inside it when it is taller than the frame), never moving the page. Two parts:
 
@@ -21,7 +21,7 @@
   (rich.js).
 -->
 <script>
-  import { ui } from './ui.svelte.js';
+  import { ui, previewClicks } from './ui.svelte.js';
   import { targetFile } from '../layout-sync.js';
   import { schemaFor } from './source-items.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
@@ -52,7 +52,7 @@
     live.version;
     ui.previewVersion;
     const id = ui.widget;
-    if (!id || ui.mode !== 'text') return null;
+    if (!id || previewClicks() !== 'arrange') return null;
     const file = targetFile(ui.target, bridge.doc);
     const list = live.get(file, '/sections') || [];
     for (const [at, s] of list.entries()) {

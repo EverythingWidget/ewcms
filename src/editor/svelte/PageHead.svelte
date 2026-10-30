@@ -6,7 +6,7 @@
     / photography/ people/          (a site part: its title only)
     Preview noor-vermeer / 2018 ▾   (a [param] page: the page of it the preview shows)
     ⚠ No pages are built: …        (only when its main widget can't decide its pages)
-  Return to navigation opens the pages list (in the Content tab) where the page was opened (its
+  Return to navigation opens the pages list (in the Nav tab) where the page was opened (its
   own folder, or the one it is in), a path part at that folder. The path's [param]/ parts and
   the Preview line's values are in the widget accent (a param and its value read as a pair).
   A [param] page previews the page of it shown last (ui.previewAt, main.js pickTarget), else its
@@ -21,7 +21,7 @@
   import { isParam, pageFile, paramsOf } from '../../site/files.js';
   import { mainProblem } from '../../site/layout/source.js';
 
-  // live: reactive store; actions: pickTarget, setMode (main.js)
+  // live: reactive store; actions: pickTarget, setPanel, setPageTab (main.js)
   let { live, actions } = $props();
 
   // the store's files (live.svelte.js: one shared copy per change)
@@ -50,7 +50,7 @@
   };
   function list(level = backTo()) {
     ui.pagesWin = { open: true, folder: level };
-    if (ui.mode !== 'text') actions.setMode('text');
+    if (ui.panel !== 'nav') actions.setPanel('nav');
   }
 
   // ---- a [param] page: the page of it shown, and why it builds none
@@ -64,7 +64,7 @@
   /** The warning: the main widget open on its Content tab, its wrong param row focused. */
   function toMain() {
     const main = live.get(pageFile(id), '/main');
-    if (ui.mode !== 'text') actions.setMode('text');
+    if (ui.panel !== 'nav') actions.setPanel('nav');
     ui.pagesWin = { ...ui.pagesWin, open: false };
     ui.section = null;
     const has = problem?.kind !== 'none';

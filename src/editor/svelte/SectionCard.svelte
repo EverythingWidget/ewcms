@@ -1,5 +1,5 @@
 <!--
-  One page section's card in the Content tab's list (SectionsList.svelte), not collapsible:
+  One page section's card in the Sections tab's list (SectionsList.svelte), not collapsible:
     title row  the changed dot, its title (its name, else "Section N"; one line, cut with …);
                a click selects it, a double click opens its settings (onsection)
     its widgets always shown under the title (not collapsible): WidgetRow.svelte each, in their

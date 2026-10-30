@@ -1,5 +1,5 @@
 <!--
-  Pages (the Content tab, while ui.pagesWin.open): the site's pages one folder at a time
+  Pages (the Nav tab, while ui.pagesWin.open): the site's pages one folder at a time
   (src/editor/lib/page-tree.js), its rows on the pages' card colour (--c-page-card). Another
   level slides in (lib/slide.js): a deeper one from the right, a higher one from the left.
     header      one 32px row: ← (up one level, Esc; where the page head's back arrow is) | the

@@ -37,7 +37,7 @@
   import { SITE, pageIdOf, sourceIdOf } from '../../site/files.js';
   import { pathOfId } from '../../site/routes.js';
 
-  // live: reactive store (live.svelte.js); bridge: the preview; actions: setMode, pickTarget
+  // live: reactive store (live.svelte.js); bridge: the preview; actions: setPanel, pickTarget
   let { live, bridge, actions } = $props();
 
   const ACCEPT = 'image/jpeg,image/png,image/webp,image/avif,image/gif,image/tiff';
@@ -279,8 +279,8 @@
   /** Go to a use: a list item in the Source Explorer, a page's field, a setting. */
   function go(u) {
     close();
-    if (u.file === SITE) return actions.setMode('settings');
-    actions.setMode('text');
+    if (u.file === SITE) return actions.setPanel('settings');
+    actions.setPanel('nav');
     const parts = parse(u.ptr);
     if (sourceIdOf(u.file)) {
       ui.explorer = {
@@ -299,7 +299,7 @@
       const el = bridge.doc?.querySelector(`[data-edit="${CSS.escape(edit)}"]`);
       if (!el) return toast(`${where(u).name} is not shown on ${path}`, { kind: 'error' });
       bridge.focusEdit(edit);
-      ui.selection = { edit }; // the Content tab opens its group and scrolls to it
+      ui.selection = { edit }; // the Sections tab opens its group and scrolls to it
     };
     if (bridge.path() === path) return pickField();
     // another page: pick the field once the preview has loaded it (and set itself up)
