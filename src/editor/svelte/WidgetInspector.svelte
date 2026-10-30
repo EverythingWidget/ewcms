@@ -153,7 +153,7 @@
           {j}
           el={widgetEl}
           {onlibrary}
-          onpart={onmotion}
+          onelement={onmotion}
         />
       {/key}
     {:else}

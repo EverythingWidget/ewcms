@@ -1,7 +1,7 @@
 <!--
   Motion tab, one animated element (ui.anim, picked in the preview or in the Elements list):
-  replay and scroll it, pick where edits go (this widget's parts with its data-anim name, the
-  widget's motion.parts in the page file; or every element with that name), its animation, and its timing (a Custom switch per field, MotionGroups).
+  replay and scroll it, pick where edits go (this widget's elements with its data-anim name, the
+  widget's motion.elements in the page file; or every element with that name), its animation, and its timing (a Custom switch per field, MotionGroups).
   What the animation does is shown read-only: it is edited in the Animations sub-tab
   (AnimLibrary.svelte). Older overrides of those values get a notice: move them into the
   animation, or drop them.
@@ -29,13 +29,13 @@
         if (widget.id === sel.owner) return `/sections/${s.at}/widgets/${widget.j}`;
     return null;
   });
-  const part = $derived.by(() => {
+  const element = $derived.by(() => {
     live.version;
-    return base ? live.get(file, `${base}/motion/parts`)?.[sel.id] : undefined;
+    return base ? live.get(file, `${base}/motion/elements`)?.[sel.id] : undefined;
   });
-  // where edits go: picked, else this widget's parts when they have values, else All
-  const scope = $derived(sel.scope || (part ? 'element' : 'target'));
-  const m = $derived(animModel(cfg, sel, part));
+  // where edits go: picked, else this widget's elements when they have values, else All
+  const scope = $derived(sel.scope || (element ? 'element' : 'target'));
+  const m = $derived(animModel(cfg, sel, element));
   const sameTarget = $derived(items.filter((x) => x.id === sel.id).length);
   const sameWidget = $derived(
     items.filter(
@@ -44,7 +44,7 @@
   );
   const scopes = $derived([
     ...(base
-      ? [['element', 'This widget', `The "${sel.id}" parts of this widget (${sameWidget})`]]
+      ? [['element', 'This widget', `The "${sel.id}" elements of this widget (${sameWidget})`]]
       : []),
     [
       'target',
@@ -163,7 +163,7 @@
         source: 'motion-structure',
       })}
   >
-    Remove all overrides of this widget's parts
+    Remove all overrides of this widget's elements
   </Button>
 {/if}
 

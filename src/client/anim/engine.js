@@ -12,12 +12,12 @@
  * on the widget's element itself. Scroll positions are measured on what moves (a reveal: its
  * first target; a split: each target; scroll: the widget).
  *
- * An element (parts of a widget type with their own markup: the hero's photos and title,
- * album parts, the project preview):
+ * An element (inside a widget type, with its own markup: the hero's photos and title,
+ * album elements, the project preview):
  *
- *   spec = defaults ⟵ animations[animation] ⟵ targets[id] ⟵ its widget's parts[id] ⟵ data-anim-options (JSON)
+ *   spec = defaults ⟵ animations[animation] ⟵ targets[id] ⟵ its widget's elements[id] ⟵ data-anim-options (JSON)
  *
- * A widget's `motion.parts` (data-anim-parts on its element, src/site/layout/motion.js) may
+ * A widget's `motion.elements` (data-anim-elements on its element, src/site/layout/motion.js) may
  * pick another animation (`animation`) or timing for the elements with that name inside it.
  * `key` is a per-element id assigned at mount time, "<path>|<target id>|<n>" (n = index among
  * elements with that target on the page): the editor uses it to find an element again.
@@ -70,8 +70,9 @@ const defaultsFor = (animation) => {
   return rest;
 };
 
-/** An element's own values from its widget's motion.parts ({} when none). */
-const partOf = (el, id) => parse(el?.closest?.('[data-anim-parts]')?.dataset.animParts)?.[id] || {};
+/** An element's own values from its widget's motion.elements ({} when none). */
+const elementOf = (el, id) =>
+  parse(el?.closest?.('[data-anim-elements]')?.dataset.animElements)?.[id] || {};
 
 export function resolve(id, el) {
   const target = config.targets[id];
@@ -80,7 +81,7 @@ export function resolve(id, el) {
     return null;
   }
   const key = el?.dataset.animKey;
-  const own = partOf(el, id);
+  const own = elementOf(el, id);
   const animationName = own.animation || target.animation;
   const animation = config.animations[animationName];
   if (!animation) {
@@ -182,7 +183,7 @@ export function mount(root, { extraRoots = [] } = {}) {
   const els = roots.flatMap((r) => [...r.querySelectorAll('[data-anim]')]);
   assignKeys(els);
   const widgets = roots.flatMap((r) => [...r.querySelectorAll('[data-motion]')]);
-  // widgets first: a part inside a widget is measured with the widget's from-state in place
+  // widgets first: an element inside a widget is measured with the widget's from-state in place
   const running = [...widgets, ...els].map((el) => play(el, reduce));
   return {
     revert() {

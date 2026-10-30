@@ -23,13 +23,13 @@ import { kindOf } from '../site/widgets/index.js';
 
 /**
  * A widget's motion attributes as the site renders them:
- * [data-motion, data-motion-options, data-anim-parts].
+ * [data-motion, data-motion-options, data-anim-elements].
  */
 function motionOf(widget) {
   const m = widget?.motion;
   if (!m || typeof m !== 'object') return [null, null, null];
-  const { animation, parts, ...timing } = m;
-  const own = parts && typeof parts === 'object' ? JSON.stringify(parts) : null;
+  const { animation, elements, ...timing } = m;
+  const own = elements && typeof elements === 'object' ? JSON.stringify(elements) : null;
   if (typeof animation !== 'string') return [null, null, own];
   return [animation, Object.keys(timing).length ? JSON.stringify(timing) : null, own];
 }
@@ -95,7 +95,7 @@ export function markRendered(doc, store, view = pageView(doc)) {
 
 /**
  * Apply a section's layout (and its widgets') to its element. True when a widget's animated
- * parts changed: the view needs mounting again. Widgets whose motion changed are added to
+ * elements changed: the view needs mounting again. Widgets whose motion changed are added to
  * `moved` (their animation plays again).
  */
 function applyLayout(el, s, moved = [], touched = { layout: false }) {
@@ -133,9 +133,9 @@ function applyLayout(el, s, moved = [], touched = { layout: false }) {
     if (node.className + '|' + node.style.cssText + node.hidden !== wasNode) touched.layout = true;
     for (const [name, value] of Object.entries(widgetLinks(widget, s.widgets)))
       if (setAttr(node, name, value)) touched.layout = true;
-    const [animation, options, parts] = motionOf(widget);
-    // its parts' animations are mounted with the view's: mount again
-    if (setAttr(node, 'data-anim-parts', parts)) remount = true;
+    const [animation, options, elements] = motionOf(widget);
+    // its elements' animations are mounted with the view's: mount again
+    if (setAttr(node, 'data-anim-elements', elements)) remount = true;
     const a = setAttr(node, 'data-motion', animation);
     if (setAttr(node, 'data-motion-options', options) || a) moved.push(node);
   }
@@ -146,7 +146,7 @@ function applyLayout(el, s, moved = [], touched = { layout: false }) {
  * Sync the preview's sections (`root`'s: the page's view, or the footer) with the store's file: order, layout, removed sections.
  * Returns the ids of the sections to render again (`structure`: also those whose content
  * changed; otherwise only missing ones, e.g. a section added in another tab is not), with
- * `remount` set when a widget's animated parts changed (the view's modules need mounting again), `motion`: the
+ * `remount` set when a widget's animated elements changed (the view's modules need mounting again), `motion`: the
  * widget elements whose motion changed, and `layout`: whether anything the rows and scroll
  * triggers measure changed (a name alone changes the id only).
  */

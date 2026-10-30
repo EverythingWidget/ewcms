@@ -136,19 +136,19 @@ test('editor: a widget layer over its animation, inherit and keep', () => {
   assert.equal(widgetModel(content.animations, undefined).type, undefined);
 });
 
-test('widget parts: shape, attributes; defaults and comments are refused', async () => {
+test('widget elements: shape, attributes; defaults and comments are refused', async () => {
   const { checkMotion, motionAttrs } = await import('../src/site/layout/motion.js');
   const { omitDefaults, storedDefaults } = await import('../src/site/defaults.js');
-  assert.deepEqual(checkMotion({ parts: { 'hero.title': { animation: 'x', delay: 0.2 } } }), []);
-  assert.deepEqual(checkMotion({ parts: { 'hero.title': { from: {} } } }), [
-    '"motion.parts.hero.title.from" must be left out: only duration, ease, delay, stagger, trigger, start, end, scrub can be set',
+  assert.deepEqual(checkMotion({ elements: { 'hero.title': { animation: 'x', delay: 0.2 } } }), []);
+  assert.deepEqual(checkMotion({ elements: { 'hero.title': { from: {} } } }), [
+    '"motion.elements.hero.title.from" must be left out: only duration, ease, delay, stagger, trigger, start, end, scrub can be set',
   ]);
-  assert.deepEqual(checkMotion({ delay: 1, parts: { a: { delay: 1 } } }), [
+  assert.deepEqual(checkMotion({ delay: 1, elements: { a: { delay: 1 } } }), [
     '"motion.animation" must be set when the widget sets its own timing',
   ]);
   assert.equal(
-    motionAttrs({ motion: { parts: { a: { delay: 1 } } } }),
-    ' data-anim-parts="{&quot;a&quot;:{&quot;delay&quot;:1}}"',
+    motionAttrs({ motion: { elements: { a: { delay: 1 } } } }),
+    ' data-anim-elements="{&quot;a&quot;:{&quot;delay&quot;:1}}"',
   );
   const F = 'pages/x/index.json';
   const page = {

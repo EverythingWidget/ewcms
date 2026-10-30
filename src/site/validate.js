@@ -208,7 +208,9 @@ function checkAnimations(d) {
   ];
   out.push(...defaultsProblems(d.defaults));
   if (d.elements !== undefined)
-    out.push('"elements" is gone: a widget\'s own part animations are its "motion.parts"');
+    out.push(
+      '"elements" must be left out: a widget\'s own element animations are its "motion.elements"',
+    );
   for (const group of ['animations', 'targets'])
     for (const [k, v] of Object.entries(isObject(d[group]) ? d[group] : {}))
       if (!isObject(v)) out.push(`${group}["${k}"] must be an object`);

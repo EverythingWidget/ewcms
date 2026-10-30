@@ -52,7 +52,7 @@ test('rename-0-2-0 converts every old name, keeping key order', () => {
   assert.equal(button.target, 'w-ab12');
   assert.equal(button.link, '#b-ab12'); // only whole ids are ids
   assert.deepEqual(button.motion, { animation: 'fade-up', delay: 0.2 });
-  assert.deepEqual(Object.values(hero.motion)[0], { 'hero.title': { animation: 'fade-up' } });
+  assert.deepEqual(hero.motion, { elements: { 'hero.title': { animation: 'fade-up' } } });
 });
 
 test('rename-0-2-0 changes nothing the second time', () => {

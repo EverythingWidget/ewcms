@@ -105,6 +105,18 @@ const steps = [
       return notes;
     },
   },
+  {
+    name: 'widget motion: "parts" -> "elements"',
+    run(files) {
+      const notes = [];
+      for (const f of files) {
+        let n = 0;
+        for (const w of widgetsIn(f.data)) if (renameKey(w.motion, 'parts', 'elements')) n++;
+        if (n) notes.push(`${f.rel}: ${plural(n, 'widget')} motion "parts" -> "elements"`);
+      }
+      return notes;
+    },
+  },
 ];
 
 /** Convert loaded files ({ rel, data }) in place; returns [{ name, notes }] per step. */

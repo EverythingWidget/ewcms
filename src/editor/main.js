@@ -417,7 +417,7 @@ async function refreshStatus() {
 
 /**
  * A pick in the preview (bridge 'select') -> ui.anim for a page's Motion tab: a widget
- * ({ el, widget }) or a data-anim part ({ el, id, key, scope }). The widget (or the part's) is
+ * ({ el, widget }) or a data-anim element ({ el, id, key, scope }). The widget (or the element's) is
  * also the Sections tab's widget (ui.widget), so both tabs show the same one.
  */
 function pickAnim(sel) {
@@ -427,7 +427,7 @@ function pickAnim(sel) {
   if (owner) ui.widget = owner;
   if (el.dataset.anim === undefined)
     return el.dataset.widget ? { el, widget: el.dataset.widget } : null;
-  // scope: where edits go, set by AnimEditor (its widget's parts if they have values, else All)
+  // scope: where edits go, set by AnimEditor (its widget's elements if they have values, else All)
   return { el, id: el.dataset.anim, key: el.dataset.animKey, owner, scope: null };
 }
 

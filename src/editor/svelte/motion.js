@@ -3,7 +3,7 @@
  * A widget's values (widgetModel): its `motion` in its page file (the animation and its own
  * timing, src/site/layout/motion.js), then the animation's in the library.
  * A data-anim element's values live at one of these layers:
- *   element -> its widget's motion.parts["<target>"] in the page file (this widget's only)
+ *   element -> its widget's motion.elements["<target>"] in the page file (this widget's only)
  *   target  -> animations.json targets["<target>"]  (every element with that data-anim, "All")
  *   animation  -> animations.json animations["<animation>"] (the animation's own values: the library)
  * A value is read from the first layer that has it: element, target, animation. There is no
@@ -306,13 +306,13 @@ const isTimingPath = (path) => TIMING_KEYS.has(path.at(-1));
 export const isTiming = (def) => isTimingPath(def.paths ? def.paths[0] : def.path);
 
 /**
- * The picked element's animation. cfg: animations.json, sel: { id }, part: its widget's
- * motion.parts[id] ({} or undefined when none).
+ * The picked element's animation. cfg: animations.json, sel: { id }, element: its widget's
+ * motion.elements[id] ({} or undefined when none).
  * spec: the merged values; layers: each scope's own values (for the Custom switches).
  */
-export function animModel(cfg, sel, part) {
+export function animModel(cfg, sel, element) {
   const target = cfg.targets[sel.id] || {};
-  const own = part && typeof part === 'object' ? part : {};
+  const own = element && typeof element === 'object' ? element : {};
   const animationName = own.animation || target.animation;
   const animation = cfg.animations[animationName] || {};
   const strip = ({ animation: _p, ...rest }) => rest;
@@ -326,7 +326,7 @@ export function animModel(cfg, sel, part) {
  * the 'widget' layer, over the animation's values.
  */
 export function widgetModel(cfg, motion) {
-  const { animation: animationName, parts: _p, ...own } = motion || {}; // eslint-disable-line no-unused-vars
+  const { animation: animationName, elements: _p, ...own } = motion || {}; // eslint-disable-line no-unused-vars
   const animation = cfg.animations[animationName] || {};
   const layers = { element: {}, target: {}, widget: own, animation };
   const spec = merge(animation, own);
@@ -349,10 +349,10 @@ export function animationModel(cfg, name) {
   };
 }
 
-/** An element's part values as the preview shows them (its widget's data-anim-parts). */
-export function partOf(el, id) {
+/** An element's own values as the preview shows them (its widget's data-anim-elements). */
+export function elementOf(el, id) {
   try {
-    return JSON.parse(el?.closest?.('[data-anim-parts]')?.dataset.animParts || '{}')[id];
+    return JSON.parse(el?.closest?.('[data-anim-elements]')?.dataset.animElements || '{}')[id];
   } catch {
     return undefined;
   }
@@ -360,7 +360,7 @@ export function partOf(el, id) {
 
 /** The animation an element uses (items from bridge.animElements()): its widget's, else its target's. */
 export const animationOf = (cfg, { id, el }) =>
-  partOf(el, id)?.animation || cfg.targets[id]?.animation;
+  elementOf(el, id)?.animation || cfg.targets[id]?.animation;
 
 /**
  * Pointer of a scope's object: 'element' in the page file (base: its widget's pointer,
@@ -368,14 +368,14 @@ export const animationOf = (cfg, { id, el }) =>
  */
 export const layerPtr = (m, sel, scope, base = '') =>
   scope === 'element'
-    ? `${base}/motion/parts${compile([sel.id])}`
+    ? `${base}/motion/elements${compile([sel.id])}`
     : scope === 'target'
       ? `/targets${compile([sel.id])}`
       : `/animations${compile([m.animationName])}`;
 
 /**
  * How many path levels store.remove keeps when a scope's object gets empty (a widget's motion,
- * /sections/<i>/widgets/<j>/motion, keeps its `animation`: never empty; a part's goes, and with it
+ * /sections/<i>/widgets/<j>/motion, keeps its `animation`: never empty; an element's goes, and with it
  * its widget's motion when nothing else is left).
  */
 export const keepFor = (scope) => (scope === 'element' ? 4 : scope === 'widget' ? 5 : 2);

@@ -3,14 +3,14 @@
   scroll slider for it in the preview, its animation (none, or one of the library's that works
   on any widget) and its own timing, each field with a Custom switch (MotionGroups, scope
   'widget': off shows the animation's value, dimmed). What the animation does is read-only here:
-  it is edited in the Animations sub-tab (Edit). Below, the widget's parts with their own
+  it is edited in the Animations sub-tab (Edit). Below, the widget's elements with their own
   animation (data-anim inside it: the hero's photos, a heading's title, ...), each opening in
   the Motion tab.
   Used by the Motion tab (MotionPanel) and the widget inspector's Motion tab (WidgetInspector).
     file, at, j   where the widget is: sections[at].widgets[j] of the page file
     el            its element in the preview (null when not shown)
     onlibrary     (name) open the animation in the Animations sub-tab
-    onpart        (el) open a part in the Motion tab
+    onelement        (el) open an element in the Motion tab
 -->
 <script>
   import Button from './Button.svelte';
@@ -18,7 +18,7 @@
   import Select from './Select.svelte';
   import { GENERIC_TYPES, widgetModel } from './motion.js';
 
-  let { live, bridge, gsap, cfg, file, at, j, el = null, onlibrary, onpart } = $props();
+  let { live, bridge, gsap, cfg, file, at, j, el = null, onlibrary, onelement } = $props();
 
   const base = $derived(`/sections/${at}/widgets/${j}`);
   const motion = $derived.by(() => {
@@ -35,8 +35,8 @@
       .filter(([name, p]) => GENERIC_TYPES.has(p.type) || name === m.animationName)
       .map(([name, p]) => ({ value: name, label: name, hint: p.type })),
   ]);
-  // the parts of the widget with their own animation (data-anim inside it)
-  const parts = $derived.by(() => {
+  // the elements of the widget with their own animation (data-anim inside it)
+  const elements = $derived.by(() => {
     live.version;
     return el ? [...el.querySelectorAll('[data-anim]')] : [];
   });
@@ -132,14 +132,15 @@
   <p class="hint small">This widget doesn't move. Pick an animation to give it one.</p>
 {/if}
 
-{#if parts.length}
-  <h4 class="bm__parts">Parts with their own animation</h4>
+{#if elements.length}
+  <h4 class="bm__elements">Elements with their own animation</h4>
   <ul class="list">
-    {#each parts as part, i (i)}
+    {#each elements as element, i (i)}
       <li>
-        <button type="button" class="bm__part" onclick={() => onpart(part)}>
-          <span>{part.dataset.anim}</span>
-          <span class="muted">{bridge.api?.resolve(part.dataset.anim, part)?.animation || '?'}</span
+        <button type="button" class="bm__element" onclick={() => onelement(element)}>
+          <span>{element.dataset.anim}</span>
+          <span class="muted"
+            >{bridge.api?.resolve(element.dataset.anim, element)?.animation || '?'}</span
           >
         </button>
       </li>
@@ -173,7 +174,7 @@
     color: var(--c-text);
   }
 
-  .bm__parts {
+  .bm__elements {
     margin: var(--space-4) 0 var(--space-2);
     color: var(--c-text-muted);
     font-size: var(--fs-xs);
@@ -182,7 +183,7 @@
     text-transform: uppercase;
   }
 
-  .bm__part {
+  .bm__element {
     width: 100%;
     display: flex;
     justify-content: space-between;

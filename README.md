@@ -580,7 +580,7 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
   reads its first for its photos, and its texts, like any widget's, are bindings to it (below).
 - **Animations:** a widget's `motion` picks its animation (a new widget gets its type's default
   from the registry, e.g. text `lines-up`, photo `image-reveal`, grid `grid-reveal`). Composite
-  widgets (hero, heading, album, section heads) keep `data-anim` **parts** inside them
+  widgets (hero, heading, album, section heads) keep `data-anim` **elements** inside them
   for their own pieces (see Animations).
 - **A new type:** add it to a file in `src/site/widgets/` and to `WIDGET_TYPES` in `index.js`
   (and its styles); the editor shows it with no editor code.
@@ -1114,8 +1114,8 @@ The page scrolls natively (`src/client/scroll.js`); every ScrollTrigger reads th
 scroll position.
 
 The final spec for an element is
-`animation ← target overrides ← its widget's part overrides ← data-anim-options`. Part overrides
-are a widget's `motion.parts` (`{ "<target>": { … } }`), written by the visual editor. With
+`animation ← target overrides ← its widget's element overrides ← data-anim-options`. Element overrides
+are a widget's `motion.elements` (`{ "<target>": { … } }`), written by the visual editor. With
 `"trigger": "scroll"`, reveals play once at `start`, or follow the scrollbar between `start` and
 `end` when `"scrub"` is `true` or a number (seconds of smoothing).
 Types (`src/client/anim/types.js`): `reveal`, `split` (SplitText chars/words/lines, masked),
@@ -1143,10 +1143,10 @@ the animation does (type, from/to, split, …) only comes from the library. The 
 `list-up`), never the widget element itself; scroll positions are measured on that content.
 Only the types that work on any markup can go on a widget (`WIDGET_ANIM_TYPES`: reveal, split,
 scroll, scrub-words, parallax); `scatter`, `hero-title` and `hover-preview` stay on their
-`data-anim` parts.
+`data-anim` elements.
 
 `data-anim` is still used for what is not a widget (curtain, header, menu) and for the
-**parts** of composite widgets (hero photos/title/meta, a heading's title and intro,
+**elements** of composite widgets (hero photos/title/meta, a heading's title and intro,
 album, section heads). The old per-element hooks widgets replace (text, photo, form title,
 intro, grids, album grids/panels, projects list) are gone: their targets were removed from
 `animations.json`.
@@ -1384,19 +1384,19 @@ form acts). Hold **Alt** to click through.
 
 In the editor and in `animations.json` (`animations`) it is an **animation**. The
 Motion tab's **Elements** list is the page's **widgets**, grouped by section (each with its
-animation or "none", and the `data-anim` parts inside it nested below), then **Outside the
+animation or "none", and the `data-anim` elements inside it nested below), then **Outside the
 widgets** (curtain, header…). Selecting a widget in the preview selects it in the list
 and the other way round; a widget selected in the Content tab is the one shown when you switch
 to Motion. A **widget** shows its Animation (none or any widget animation; the edit button opens
 it in the library), its timing (Custom switches, stored in the widget's `motion`) and **Use the
-animation's timing** (drops all its overrides); **Replay** plays just that widget. A **part**
+animation's timing** (drops all its overrides); **Replay** plays just that widget. An **element**
 or global element is edited as before; choose where its edits go:
 
-- **This widget**: the widget's `motion.parts["<target>"]` in the page file, e.g.
-  `"motion": { "parts": { "hero.title": { "animation": "stagger-up" } } }`. Only the parts with
-  that `data-anim` name inside this widget. This is how you give a widget's part a different
-  animation without touching templates (`animation`, plus timing only). A widget with only parts
-  has no `animation`. Parts outside the widgets (header) only have **All**.
+- **This widget**: the widget's `motion.elements["<target>"]` in the page file, e.g.
+  `"motion": { "elements": { "hero.title": { "animation": "stagger-up" } } }`. Only the elements with
+  that `data-anim` name inside this widget. This is how you give a widget's element a different
+  animation without touching templates (`animation`, plus timing only). A widget with only elements
+  has no `animation`. Elements outside the widgets (header) only have **All**.
 - **All "target"**: `targets["hero.title"]`. Every element with that `data-anim`.
 
 Timing fields (`TIMING_KEYS` in `src/editor/svelte/motion.js`) each have a **Custom**

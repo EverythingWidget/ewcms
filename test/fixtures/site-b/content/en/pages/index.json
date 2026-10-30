@@ -128,7 +128,7 @@
             }
           ],
           "motion": {
-            "parts": {
+            "elements": {
               "hero.title": { "animation": "stagger-up" }
             }
           }

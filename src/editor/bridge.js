@@ -9,7 +9,7 @@
  *    until it loses focus (a single click picks its widget: overlay.js); a double-clicked
  *    photo (data-edit-type="image") or bound value opens its field in the panel. Links,
  *    buttons and forms don't act on clicks (Alt+click does),
- *  - lets you hover/click widgets ([data-widget]) and [data-anim] parts to select them (animate
+ *  - lets you hover/click widgets ([data-widget]) and [data-anim] elements to select them (animate
  *    clicks, 'animate': the innermost one under the pointer); visitor clicks ('visitor'):
  *    links work, nothing is picked,
  *  - a bound value ([data-bound], src/site/layout/bindings.js) is not typed in the preview:
@@ -82,7 +82,7 @@ html.__ed-arrange [data-edit-type="rich"][contenteditable] a { cursor: text !imp
 html.__ed-arrange [data-widget] :is([data-edit], [data-bound]):not(.__ed-invalid) { outline: none !important; }
 `;
 
-/** What animate clicks pick under the pointer: a data-anim part, else its widget. */
+/** What animate clicks pick under the pointer: a data-anim element, else its widget. */
 const MOTION_PICK = '[data-anim], [data-widget]';
 /** What would act on a click (follow, open, send): off with arrange clicks. */
 const ACTIVE = 'a, button, [role="button"], label, summary, input, select, textarea';

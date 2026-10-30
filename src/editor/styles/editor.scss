@@ -228,7 +228,7 @@ kbd {
 .tf.is-changed .photo__label::before,
 .sec.is-changed > .sec__bar::before,
 .pane__head.is-changed::before,
-:is(.xrow, .mlist__part).is-changed::before {
+:is(.xrow, .mlist__element).is-changed::before {
   @include changed-dot;
   content: '';
   order: -1;
@@ -245,7 +245,7 @@ kbd {
   margin: calc((20px - var(--size-changed)) / 2) 0;
 }
 
-:is(.xrow, .mlist__part).is-changed {
+:is(.xrow, .mlist__element).is-changed {
   position: relative;
 
   &::before {

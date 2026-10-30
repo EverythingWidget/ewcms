@@ -1,7 +1,7 @@
 /**
  * The page's sections and widgets as the Motion views list them (MotionPanel.svelte, and the
  * library's "uses on this page" in MotionSettings.svelte): each widget with its element in the
- * preview, its animation and its animated parts (data-anim inside it).
+ * preview, its animation and its animated elements (data-anim inside it).
  *   list   the page file's sections; doc  the preview's document; items  bridge.animElements()
  */
 import { nameOf } from './content-groups.js';
@@ -22,7 +22,7 @@ export function motionSections(list, doc, items) {
         label: WIDGET_TYPES[widget.type]?.label || widget.type,
         name: nameOf(widget),
         animation: widget.motion?.animation || '',
-        parts: el ? items.filter((it) => it.el.closest('[data-widget]') === el) : [],
+        elements: el ? items.filter((it) => it.el.closest('[data-widget]') === el) : [],
       };
     }),
   }));

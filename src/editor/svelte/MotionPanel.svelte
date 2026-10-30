@@ -1,12 +1,12 @@
 <!--
   A page's Motion tab (ContentPanel.svelte), one view:
     nothing picked   the page's widgets, a card per section, each with its animation and its
-                     parts that have their own (data-anim inside it: the hero's photos, a
+                     elements that have their own (data-anim inside it: the hero's photos, a
                      heading's title, ...), then the animated elements outside the widgets
-                     (fixed parts), then the Page transition card (PageTransition.svelte: the
+                     (fixed elements), then the Page transition card (PageTransition.svelte: the
                      backdrop and the curtain).
     a widget picked  (ui.anim.widget, from the preview or the list): its motion (WidgetMotion).
-    a part picked    its animation (AnimEditor).
+    an element picked    its animation (AnimEditor).
   The animations themselves (the library) and the default timing are in Settings
   (MotionSettings.svelte). The widget picked is the Sections tab's widget too.
 -->
@@ -19,7 +19,7 @@
   import { ui } from './ui.svelte.js';
   import { motionSections } from './page-motion.js';
   import { ANIMATIONS } from '../../site/files.js';
-  import { animationOf, partOf } from './motion.js';
+  import { animationOf, elementOf } from './motion.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js); actions: main.js;
   // file: the page file
@@ -43,7 +43,7 @@
     return bridge.api ? bridge.animElements() : [];
   });
 
-  // The page's sections and widgets (its file), each widget with its element and parts.
+  // The page's sections and widgets (its file), each widget with its element and the animated elements inside it.
   const sections = $derived.by(() => {
     ui.previewVersion;
     live.version;
@@ -66,12 +66,12 @@
   }
 </script>
 
-{#snippet part({ el, id })}
+{#snippet element({ el, id })}
   <li>
     <button
       type="button"
-      class={['mlist__item', 'mlist__part', partOf(el, id) && 'is-changed']}
-      title={partOf(el, id) ? 'Has its own values in this widget' : undefined}
+      class={['mlist__item', 'mlist__element', elementOf(el, id) && 'is-changed']}
+      title={elementOf(el, id) ? 'Has its own values in this widget' : undefined}
       onclick={() => pick(el)}
       onpointerenter={() => bridge.setHover(el)}
       onpointerleave={() => bridge.setHover(null)}
@@ -109,7 +109,7 @@
           j={picks.widget.j}
           el={picks.widget.el}
           onlibrary={openLibrary}
-          onpart={pick}
+          onelement={pick}
         />
       {/key}
     {:else if ui.anim && !ui.anim.widget}
@@ -127,7 +127,7 @@
       {/key}
     {:else}
       <p class="hint">
-        Click a widget or an animated part of it in the preview, or pick one below. Hold Alt to
+        Click a widget or an animated element of it in the preview, or pick one below. Hold Alt to
         click through to links.
       </p>
       {#each sections as s (s.id)}
@@ -149,9 +149,9 @@
                   >
                   <span class="muted">{widget.animation || 'none'}</span>
                 </button>
-                {#if widget.parts.length}
-                  <ol class="list mlist__parts">
-                    {#each widget.parts as p (p.el)}{@render part(p)}{/each}
+                {#if widget.elements.length}
+                  <ol class="list mlist__elements">
+                    {#each widget.elements as p (p.el)}{@render element(p)}{/each}
                   </ol>
                 {/if}
               </li>
@@ -160,10 +160,10 @@
         </Section>
       {/each}
       {#if outside.length}
-        <Section key="motion:elements" title="Outside the widgets" name="Fixed parts">
+        <Section key="motion:elements" title="Outside the widgets" name="Fixed elements">
           {#snippet bar()}<span class="mlist__count">{outside.length}</span>{/snippet}
           <ol class="list">
-            {#each outside as it (it.el)}{@render part(it)}{/each}
+            {#each outside as it (it.el)}{@render element(it)}{/each}
           </ol>
         </Section>
       {/if}
@@ -194,12 +194,12 @@
     line-height: 1;
   }
 
-  // a widget's parts, under it
-  .mlist__parts {
+  // a widget's elements, under it
+  .mlist__elements {
     margin: var(--space-1) 0 0 var(--space-4);
   }
 
-  .mlist__part {
+  .mlist__element {
     font-size: var(--fs-sm);
   }
 
