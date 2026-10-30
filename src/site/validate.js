@@ -237,10 +237,10 @@ function checkDoc(file, d) {
   if (!isId(d.id, 'pg')) out.push('"id" must be a page id like "pg-k3x9"');
   // the grid is always COLS (120) columns: not stored
   if (d.grid !== undefined) out.push(`"grid" must be left out: the page grid is always ${COLS}`);
-  // its page transition: none (the site's curtain) or { preset: "none" } (no curtain)
+  // its page transition: none (the site's curtain) or { curtain: "off" } (no curtain)
   const t = d.transition;
-  if (t !== undefined && !(isObject(t) && t.preset === 'none' && Object.keys(t).length === 1))
-    out.push('"transition" must be { "preset": "none" } or left out (the site\'s curtain)');
+  if (t !== undefined && !(isObject(t) && t.curtain === 'off' && Object.keys(t).length === 1))
+    out.push('"transition" must be { "curtain": "off" } or left out (the site\'s curtain)');
   // a [param] page: its main widget decides which pages exist (layout/source.js)
   const template = isTemplate(pageIdOf(file));
   if (d.template !== undefined)

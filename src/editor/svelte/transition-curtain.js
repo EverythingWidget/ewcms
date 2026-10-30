@@ -1,6 +1,6 @@
 /**
- * Page-transition curtain: the edit rules behind the curtain section (CurtainSection.svelte,
- * CurtainTimeline.svelte): the global curtain in Settings, a page's own one in Motion.
+ * Page-transition curtain: the edit rules behind the curtain section (TransitionCurtain.svelte,
+ * TransitionCurtainTimeline.svelte): the global curtain in Settings, a page's own one in Motion.
  * No DOM here. Times come only from normalizeCurtain + curtainPlan (src/client/anim/curtain.js).
  */
 import { ANIMATIONS } from '../../site/files.js';
@@ -91,12 +91,12 @@ export function clampTo(field, v, plan) {
 }
 
 /**
- * A page's curtain (Nav > a page > Motion > Page transition), as one undo step. `page` is where the page's
+ * A page's curtain (Nav > a page > Motion > Transition), as one undo step. `page` is where the page's
  * "transition" is stored ({ file, ptr }, see src/site/routes.js): Global is no "transition",
- * Off { preset: 'none' }.
+ * Off { curtain: 'off' }.
  */
 export function setCurtainMode(store, page, mode) {
-  store.set(page.file, page.ptr, mode === 'off' ? { preset: 'none' } : undefined, {
+  store.set(page.file, page.ptr, mode === 'off' ? { curtain: 'off' } : undefined, {
     source: 'panel',
   });
 }

@@ -8,7 +8,7 @@
   import { showValue } from '../lib/show-value.js';
   import EasePicker from './EasePicker.svelte';
   import Section from './Section.svelte';
-  import { fmtS } from './curtain-edit.js';
+  import { fmtS } from './transition-curtain.js';
   import { ANIMATIONS } from '../../site/files.js';
 
   // live: reactive store (live.svelte.js); gsap: the preview's, for the ease curves.
@@ -53,7 +53,7 @@
   }
 </script>
 
-<Section class="ptg" key="settings:fade" title="Page fade">
+<Section class="transition" key="settings:fade" title="Transition: page fade">
   <p class="hint">
     The old page fades out, the new one fades in: the whole page change when a page's curtain is
     Off, behind the curtain otherwise. Duration and ease.

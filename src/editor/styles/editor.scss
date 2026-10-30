@@ -255,7 +255,7 @@ kbd {
   }
 }
 
-// a tab pane's heading (Nav > a page > Motion > Page transition: Backdrop, Curtain): 32px, uppercase, a switch
+// a tab pane's heading (Nav > a page > Motion > Transition: Backdrop, Curtain): 32px, uppercase, a switch
 // at its end; plain fields under it (no card)
 .pane__head {
   @include row(var(--space-2));
@@ -761,12 +761,12 @@ dialog.modal__box {
 }
 
 // ------------------------------------------------------------ page transition fields
-// CurtainSection restyles the fields of MotionField and EasePicker. These rules stay here
+// TransitionCurtain restyles the fields of MotionField and EasePicker. These rules stay here
 // (not in a component's <style>) because they reach into other components and their order
 // against the ease picker rules above matters.
 
 /* Page-transition ease toggles match the duration number input height (32px). */
-.ptg {
+.transition {
   .tf__input,
   .f__num {
     box-sizing: border-box;
@@ -822,15 +822,15 @@ dialog.modal__box {
   opacity: var(--o-dim);
 }
 
-.ptg .tf.is-ease-inactive .ease {
+.transition .tf.is-ease-inactive .ease {
   opacity: var(--o-dim);
 }
 
-.ptg .tf.is-ease-inactive .ease__toggle {
+.transition .tf.is-ease-inactive .ease__toggle {
   cursor: pointer;
 }
 
-.ptg__ease.is-individual .ease__toggle {
+.transition__ease.is-individual .ease__toggle {
   box-shadow: inset 0 0 0 1px var(--white-a12);
 }
 

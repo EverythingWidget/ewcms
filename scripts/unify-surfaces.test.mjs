@@ -25,7 +25,7 @@ test('the page, the panel, the cards and the dialogs are surfaces', () => {
   );
   for (const f of ['Toasts', 'SectionToolbar', 'WidgetToolbar'])
     assert.match(read(`svelte/${f}.svelte`), /@include surface\(var\(--c-card\)\);/, f);
-  for (const f of ['Section', 'CurtainSection', 'PagesList'])
+  for (const f of ['Section', 'TransitionCurtain', 'PagesList'])
     assert.match(
       read(`svelte/${f}.svelte`),
       /@include surface\(var\(--c-card\), \$quiet: 45%\);/,

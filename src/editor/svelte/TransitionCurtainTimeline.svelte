@@ -6,10 +6,10 @@
              end pins the right one and the other way round). The gap is how long the
              text stays.
   Arrow keys nudge a focused bar or end by 0.01s; hold Shift for 0.1s (drags snap the same).
-  plan: curtainPlan(); edit: curtainEdits() (curtain-edit.js), which also clamps every value.
+  plan: curtainPlan(); edit: curtainEdits() (transition-curtain.js), which also clamps every value.
 -->
 <script module>
-  import { clampTo, fmtS } from './curtain-edit.js';
+  import { clampTo, fmtS } from './transition-curtain.js';
 
   /** Bar ends you can drag, in time order per row. at(plan) = where the end sits. */
   const ENDS = [
@@ -228,14 +228,14 @@
 </script>
 
 <div
-  class={['ptl', drag && 'is-dragging', drag?.kind === 'move' && 'is-moving']}
+  class={['curtain-timeline', drag && 'is-dragging', drag?.kind === 'move' && 'is-moving']}
   style:--tick={pct(0.5)}
 >
   {#each rows as row (row.id)}
-    <div class="ptl__row">
-      <span class="ptl__name">{row.name}</span>
+    <div class="curtain-timeline__row">
+      <span class="curtain-timeline__name">{row.name}</span>
       <div
-        class="ptl__track"
+        class="curtain-timeline__track"
         role="group"
         aria-label={row.name}
         bind:clientWidth={width}
@@ -245,11 +245,11 @@
         onpointercancel={up}
         onlostpointercapture={up}
       >
-        <div class="ptl__bars">
+        <div class="curtain-timeline__bars">
           {#each row.bars as b, i (i)}
             {#if b.move}
               <i
-                class="ptl__bar is-move is-text"
+                class="curtain-timeline__bar is-move is-text"
                 style:left={b.left}
                 style:width={b.width}
                 title={b.title}
@@ -261,28 +261,37 @@
                 aria-valuemax={plan.total}
                 onkeydown={(e) => nudgeBar(b.move, e)}
               >
-                <span class="ptl__len" aria-hidden="true" hidden={!b.fits}>{b.len}</span>
+                <span class="curtain-timeline__len" aria-hidden="true" hidden={!b.fits}
+                  >{b.len}</span
+                >
               </i>
             {:else}
-              <i class="ptl__bar is-move" style:left={b.left} style:width={b.width} title={b.title}>
-                <span class="ptl__len" aria-hidden="true" hidden={!b.fits}>{b.len}</span>
+              <i
+                class="curtain-timeline__bar is-move"
+                style:left={b.left}
+                style:width={b.width}
+                title={b.title}
+              >
+                <span class="curtain-timeline__len" aria-hidden="true" hidden={!b.fits}
+                  >{b.len}</span
+                >
               </i>
             {/if}
           {/each}
           <span
-            class="ptl__gap"
+            class="curtain-timeline__gap"
             style:left={row.gap.left}
             style:width={row.gap.width}
             title="{row.gap.title} {row.gap.len}"
             aria-hidden="true"
           >
-            <span class="ptl__len" hidden={!row.gap.fits}>{row.gap.len}</span>
+            <span class="curtain-timeline__len" hidden={!row.gap.fits}>{row.gap.len}</span>
           </span>
         </div>
         {#each ENDS.filter((end) => end.row === row.id) as end, i (i)}
           <button
             type="button"
-            class={['ptl__handle', drag?.end === end && 'is-active']}
+            class={['curtain-timeline__handle', drag?.end === end && 'is-active']}
             style:left={pct(Math.min(total, Math.max(0, end.at(plan))))}
             title="{end.label} (drag, or arrow keys)"
             aria-label={end.label}
@@ -292,7 +301,7 @@
       </div>
     </div>
   {/each}
-  <div class="ptl__axis">
+  <div class="curtain-timeline__axis">
     {#each marks as t (t)}<span style:left={pct(t)}>{fmtS(t)}s</span>{/each}
   </div>
 </div>
@@ -300,37 +309,37 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  .ptl {
+  .curtain-timeline {
     @include stack(var(--space-3));
     padding: 0;
     background: none;
     box-shadow: none;
   }
 
-  .ptl.is-dragging {
+  .curtain-timeline.is-dragging {
     user-select: none;
     cursor: ew-resize;
   }
 
   /* Label above bar so the track can use the full width. */
-  .ptl__row {
+  .curtain-timeline__row {
     @include stack(var(--space-1));
   }
 
-  .ptl__name {
+  .curtain-timeline__name {
     font-size: var(--fs-xs);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--c-text-muted);
   }
 
-  .ptl__track {
+  .curtain-timeline__track {
     position: relative;
     height: 28px;
     touch-action: none;
   }
 
-  .ptl__bars {
+  .curtain-timeline__bars {
     position: absolute;
     inset: 0;
     border-radius: var(--radius-sm);
@@ -351,7 +360,7 @@
     }
   }
 
-  .ptl__bar {
+  .curtain-timeline__bar {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -361,7 +370,7 @@
     box-sizing: border-box;
   }
 
-  .ptl__len {
+  .curtain-timeline__len {
     font-size: var(--fs-2xs);
     line-height: 1;
     letter-spacing: 0.02em;
@@ -374,12 +383,12 @@
     transform: translateY(1px);
   }
 
-  .ptl__bar.is-text.is-move .ptl__len {
+  .curtain-timeline__bar.is-text.is-move .curtain-timeline__len {
     color: var(--c-on-bar-active);
   }
 
   // Stay length centered in the empty gap between text-in and text-out.
-  .ptl__gap {
+  .curtain-timeline__gap {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -389,20 +398,20 @@
     pointer-events: none;
     box-sizing: border-box;
 
-    .ptl__len {
+    .curtain-timeline__len {
       color: var(--c-text-soft);
     }
   }
 
-  .ptl__bar.is-move {
+  .curtain-timeline__bar.is-move {
     background: var(--white-a55);
   }
 
-  .ptl__bar.is-text.is-move {
+  .curtain-timeline__bar.is-text.is-move {
     background: var(--c-link);
   }
 
-  .ptl__bar.is-text {
+  .curtain-timeline__bar.is-text {
     pointer-events: auto;
     cursor: grab;
     outline: none;
@@ -412,11 +421,11 @@
     }
   }
 
-  .ptl.is-moving .ptl__bar.is-text {
+  .curtain-timeline.is-moving .curtain-timeline__bar.is-text {
     cursor: grabbing;
   }
 
-  .ptl__handle {
+  .curtain-timeline__handle {
     position: absolute;
     z-index: 2;
     top: -4px;
@@ -445,7 +454,7 @@
         box-shadow 0.15s;
     }
 
-    .ptl:hover &::before {
+    .curtain-timeline:hover &::before {
       background: var(--c-text);
     }
 
@@ -460,7 +469,7 @@
     }
   }
 
-  .ptl__axis {
+  .curtain-timeline__axis {
     position: relative;
     height: 12px;
     font-size: var(--fs-xs);

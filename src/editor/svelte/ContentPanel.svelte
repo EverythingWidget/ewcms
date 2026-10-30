@@ -11,7 +11,7 @@
                  gear), a widget's in another (WidgetPopup.svelte, ui.widget; a widget row's
                  double click or Enter, or the widget clicked in the preview); one at a time. The Add widget modal (WidgetsModal.svelte): the
                  widget added opens
-    Motion       MotionPanel.svelte: the widgets' animations, then the Page transition card
+    Motion       MotionPanel.svelte: the widgets' animations, then the Transition card
                  (the Backdrop and the Curtain). While it is open (ui.pageTab 'motion') the
                  preview's clicks animate (previewClicks, ui.svelte.js): they pick a widget or
                  an animated part. The top tab stays Nav.

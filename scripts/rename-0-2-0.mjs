@@ -117,6 +117,19 @@ const steps = [
       return notes;
     },
   },
+  {
+    name: 'page transition: { "preset": "none" } -> { "curtain": "off" }',
+    run(files) {
+      const notes = [];
+      for (const f of files) {
+        const t = f.data?.transition;
+        if (!isObject(t) || t.preset !== 'none' || Object.keys(t).length !== 1) continue;
+        f.data.transition = { curtain: 'off' };
+        notes.push(`${f.rel}: "transition" { "preset": "none" } -> { "curtain": "off" }`);
+      }
+      return notes;
+    },
+  },
 ];
 
 /** Convert loaded files ({ rel, data }) in place; returns [{ name, notes }] per step. */

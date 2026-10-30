@@ -16,6 +16,7 @@ const old = () => [
   {
     rel: 'en/pages/index.json',
     data: {
+      transition: { preset: 'none' },
       sections: [
         {
           id: 's-aaaa',
@@ -47,6 +48,7 @@ test('rename-0-2-0 converts every old name, keeping key order', () => {
   const [lib, page] = files.map((f) => f.data);
   assert.deepEqual(Object.keys(lib), ['version', 'animations', 'targets', 'transitions']);
   assert.deepEqual(lib.targets['hero.title'], { animation: 'fade-up', delay: 0.1 });
+  assert.deepEqual(page.transition, { curtain: 'off' });
   const [hero, button] = page.sections[0].widgets;
   assert.equal(hero.id, 'w-ab12');
   assert.equal(button.target, 'w-ab12');

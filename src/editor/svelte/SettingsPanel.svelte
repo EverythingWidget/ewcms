@@ -16,9 +16,9 @@
   import RedirectSettings from './RedirectSettings.svelte';
   import Section from './Section.svelte';
   import Select from './Select.svelte';
-  import CurtainSection from './CurtainSection.svelte';
+  import TransitionCurtain from './TransitionCurtain.svelte';
   import MotionSettings from './MotionSettings.svelte';
-  import PageFadeSection from './PageFadeSection.svelte';
+  import TransitionFade from './TransitionFade.svelte';
   import { ui } from './ui.svelte.js';
   import { SEO_SETTINGS, SITE_SETTINGS } from './content-groups.js';
   import { TARGETS } from '../../site/widgets/form/index.js';
@@ -243,8 +243,8 @@
   </Section>
 
   {#if gsap}
-    <CurtainSection {live} {bridge} {gsap} />
-    <PageFadeSection {live} {gsap} />
+    <TransitionCurtain {live} {bridge} {gsap} />
+    <TransitionFade {live} {gsap} />
   {:else}
     <p class="hint">Waiting for the preview…</p>
   {/if}

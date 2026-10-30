@@ -1,5 +1,5 @@
 <!--
-  Nav > a page > Motion > Page transition: the page's curtain, plain fields under a "Curtain" heading. Global (the
+  Nav > a page > Motion > Transition: the page's curtain, plain fields under a "Curtain" heading. Global (the
   site's curtain, its timing in Settings) or Off (no curtain when you navigate here: a fade),
   and the curtain's text: unset, the page's title (the placeholder); ✕ stores "" (No label:
   none). A [param] page: the choice is for every item page (its template), the
@@ -11,7 +11,7 @@
   import Button from './Button.svelte';
   import Field from './Field.svelte';
   import { ui } from './ui.svelte.js';
-  import { setCurtainMode } from './curtain-edit.js';
+  import { setCurtainMode } from './transition-curtain.js';
   import { splitEdit } from '../../site/helpers.js';
   import { CURTAIN_MODES, curtainMode } from '../../client/anim/curtain.js';
 
@@ -69,7 +69,7 @@
       </div>
     </div>
     <!-- one line for both choices, so switching moves nothing -->
-    <p class="hint small pc__note">
+    <p class="hint small page-curtain__note">
       {#if mode === 'off'}
         No curtain when you navigate here: the page fades in.
       {:else}
@@ -81,15 +81,15 @@
     {#if stored === ''}
       <div class={['tf', textChanged && 'is-changed']}>
         <span class="tf__label">{textLabel}</span>
-        <div class="pc__row">
-          <span class="pc__none">No label</span>
+        <div class="page-curtain__row">
+          <span class="page-curtain__none">No label</span>
           <Button size="small" icon="rotate-left" onclick={() => setText(undefined)}>
             Use the title
           </Button>
         </div>
       </div>
     {:else}
-      <div class="pc__field">
+      <div class="page-curtain__field">
         <Field
           edit={route.curtainEdit}
           label={textLabel}
@@ -115,24 +115,24 @@
   @use '../styles/mixins' as *;
 
   // the field with its ✕ at the end of its input's row (the label row above stays the field's)
-  .pc__field {
+  .page-curtain__field {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
     gap: var(--space-2);
   }
 
-  .pc__row {
+  .page-curtain__row {
     @include row;
     justify-content: space-between;
     height: 32px;
   }
 
-  .pc__none {
+  .page-curtain__none {
     color: var(--c-text-muted);
   }
 
-  .pc__note {
+  .page-curtain__note {
     min-height: 32px;
     margin: 0;
   }

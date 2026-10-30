@@ -1,17 +1,17 @@
 <!--
-  A page-transition curtain: a fixed total duration, the timeline (CurtainTimeline), one ease
+  A page-transition curtain: a fixed total duration, the timeline (TransitionCurtainTimeline), one ease
   for every step or per-step eases (Advanced), and every value as a number under Advanced.
-  All edits go through curtain-edit.js. The Settings tab's: the one curtain every page uses
-  (settings/animations.json); a page only turns it off (Nav > a page > Motion > Page transition, PageCurtain.svelte).
+  All edits go through transition-curtain.js. The Settings tab's: the one curtain every page uses
+  (settings/animations.json); a page only turns it off (Nav > a page > Motion > Transition, TransitionPageCurtain.svelte).
 -->
 <script>
   import { showValue } from '../lib/show-value.js';
   import Button from './Button.svelte';
-  import CurtainTimeline from './CurtainTimeline.svelte';
+  import TransitionCurtainTimeline from './TransitionCurtainTimeline.svelte';
   import EasePicker from './EasePicker.svelte';
   import Section from './Section.svelte';
   import { ui } from './ui.svelte.js';
-  import { CURTAIN, CURTAIN_ROWS, TOTAL_MAX, curtainEdits, fmtS } from './curtain-edit.js';
+  import { CURTAIN, CURTAIN_ROWS, TOTAL_MAX, curtainEdits, fmtS } from './transition-curtain.js';
   import { ANIMATIONS } from '../../site/files.js';
 
   // gsap: the preview's, for the ease curves
@@ -86,13 +86,13 @@
   />
 {/snippet}
 
-<Section class="ptg" key="settings:curtain" title="Curtain">
+<Section class="transition" key="settings:curtain" title="Transition: curtain">
   <p class="hint">
-    The curtain every page uses, unless a page turns it off (a page's Motion tab: Page transition).
-    Drag the bar ends or type the values. Changes apply to the next page change in the preview.
+    The curtain every page uses, unless a page turns it off (a page's Motion tab: Transition). Drag
+    the bar ends or type the values. Changes apply to the next page change in the preview.
   </p>
 
-  <div class="ptg__box">
+  <div class="transition__box">
     <!-- drawn at the right of the row after it, like a grid's Source edit button -->
     <Button
       size="small"
@@ -111,9 +111,9 @@
       </span>
     </label>
 
-    <CurtainTimeline {plan} {edit} />
+    <TransitionCurtainTimeline {plan} {edit} />
 
-    <div class={['tf ptg__ease', individual && 'is-individual']}>
+    <div class={['tf transition__ease', individual && 'is-individual']}>
       <EasePicker
         {gsap}
         value={shared}
@@ -128,18 +128,18 @@
       </p>
     </div>
 
-    <div class="ptg__advanced">
+    <div class="transition__advanced">
       <button
         type="button"
-        class="ptg__toggle"
+        class="transition__toggle"
         aria-expanded={advanced}
         aria-controls="{advancedId}-advanced"
         onclick={() => (ui.sections['curtain:advanced'] = !advanced)}
       >
-        <i class="fa-solid fa-chevron-right ptg__caret" aria-hidden="true"></i>
+        <i class="fa-solid fa-chevron-right transition__caret" aria-hidden="true"></i>
         Advanced
       </button>
-      <div class="ptg__advanced-body" id="{advancedId}-advanced" hidden={!advanced}>
+      <div class="transition__advanced-body" id="{advancedId}-advanced" hidden={!advanced}>
         {#each CURTAIN_ROWS as row (row.label)}
           {#if row.pair}
             {@const ease = row.pair + '/ease'}
@@ -180,7 +180,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  /* Page transition: timeline (Motion tab, CurtainSection.svelte) */
+  /* Transition: timeline (Motion tab, TransitionCurtain.svelte) */
   .tf__hint {
     display: block;
     margin: var(--space-2) 0 0;
@@ -188,7 +188,7 @@
 
   /* One bordered curtain group: total, timeline, ease, Advanced (edge to edge: the box has no
      side padding, its other parts 8px each). */
-  .ptg__box {
+  .transition__box {
     position: relative;
     margin: 0 0 var(--space-4);
     padding: var(--space-2) 0 0;
@@ -197,7 +197,7 @@
     background: var(--c-card);
     @include stack(var(--space-3));
 
-    > :global(:not(.ptg__advanced, .btn)) {
+    > :global(:not(.transition__advanced, .btn)) {
       padding-inline: var(--space-2);
     }
 
@@ -208,18 +208,18 @@
     }
   }
 
-  .ptg__box > :global(.btn) {
+  .transition__box > :global(.btn) {
     position: absolute;
     top: 12px;
     right: 8px;
   }
 
-  .ptg__ease {
+  .transition__ease {
     margin: 0;
   }
 
   /* Advanced sits on the bottom edge of the curtain box (same border). */
-  .ptg__advanced {
+  .transition__advanced {
     margin: 0;
     padding: 0;
     border-radius: 0 0 var(--radius-lg) var(--radius-lg);
@@ -228,7 +228,7 @@
   }
 
   // caret + "Advanced", 40px tall; the caret turns down when open
-  .ptg__toggle {
+  .transition__toggle {
     display: block;
     width: 100%;
     padding: var(--space-3);
@@ -253,7 +253,7 @@
     }
   }
 
-  .ptg__caret {
+  .transition__caret {
     width: 1em;
     margin-right: var(--space-1);
     color: var(--c-text-faint);
@@ -265,7 +265,7 @@
     }
   }
 
-  .ptg__advanced-body {
+  .transition__advanced-body {
     @include stack(var(--space-2));
     // Same 6px rhythm as .tf__label → control and .tf__hint (title / field / help).
     padding: 0 var(--space-3) var(--space-3);

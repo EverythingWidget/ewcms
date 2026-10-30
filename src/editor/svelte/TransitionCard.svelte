@@ -1,13 +1,13 @@
 <!--
-  A page's Motion tab, last: the Page transition card, a section card (Section.svelte) whose
+  A page's Motion tab, last: the Transition card, a section card (Section.svelte) whose
   second line sums it up ("Curtain: global · Backdrop: off"). The page's backdrop
-  (BackdropFields.svelte) and its curtain (PageCurtain.svelte), as they were in the old
+  (TransitionBackdrop.svelte) and its curtain (TransitionPageCurtain.svelte), as they were in the old
   Transitions tab.
     live  reactive store; file  the page file; onsettings  open Settings (the curtain's timing)
 -->
 <script>
-  import BackdropFields from './BackdropFields.svelte';
-  import PageCurtain from './PageCurtain.svelte';
+  import TransitionBackdrop from './TransitionBackdrop.svelte';
+  import TransitionPageCurtain from './TransitionPageCurtain.svelte';
   import Section from './Section.svelte';
   import { ui } from './ui.svelte.js';
   import { isObject } from '../../site/is.js';
@@ -34,9 +34,9 @@
 
 <Section
   key="motion:transition"
-  title="Page transition"
+  title="Transition"
   name="Curtain: {curtain} · Backdrop: {backdrop}"
 >
-  <BackdropFields {live} {file} />
-  <PageCurtain {live} {onsettings} />
+  <TransitionBackdrop {live} {file} />
+  <TransitionPageCurtain {live} {onsettings} />
 </Section>

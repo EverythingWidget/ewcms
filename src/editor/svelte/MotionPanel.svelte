@@ -3,7 +3,7 @@
     nothing picked   the page's widgets, a card per section, each with its animation and its
                      elements that have their own (data-anim inside it: the hero's photos, a
                      heading's title, ...), then the animated elements outside the widgets
-                     (fixed elements), then the Page transition card (PageTransition.svelte: the
+                     (fixed elements), then the Transition card (TransitionCard.svelte: the
                      backdrop and the curtain).
     a widget picked  (ui.anim.widget, from the preview or the list): its motion (WidgetMotion).
     an element picked    its animation (AnimEditor).
@@ -14,7 +14,7 @@
   import AnimEditor from './AnimEditor.svelte';
   import WidgetMotion from './WidgetMotion.svelte';
   import Button from './Button.svelte';
-  import PageTransition from './PageTransition.svelte';
+  import TransitionCard from './TransitionCard.svelte';
   import Section from './Section.svelte';
   import { ui } from './ui.svelte.js';
   import { motionSections } from './page-motion.js';
@@ -167,7 +167,7 @@
           </ol>
         </Section>
       {/if}
-      <PageTransition {live} {file} onsettings={() => actions.setPanel('settings')} />
+      <TransitionCard {live} {file} onsettings={() => actions.setPanel('settings')} />
     {/if}
   </div>
 {/if}

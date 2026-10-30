@@ -49,7 +49,7 @@ test('top tabs Nav | Settings; page tabs Sections | Motion | SEO', () => {
   assert.doesNotMatch(c, /transitions/);
   const m = read('editor/svelte/MotionPanel.svelte');
   assert.doesNotMatch(m, /AnimLibrary|Tabs/);
-  assert.match(m, /<PageTransition /);
+  assert.match(m, /<TransitionCard /);
   assert.match(read('editor/svelte/SettingsPanel.svelte'), /<MotionSettings /);
   assert.match(read('editor/svelte/MotionSettings.svelte'), /<AnimLibrary /);
 });

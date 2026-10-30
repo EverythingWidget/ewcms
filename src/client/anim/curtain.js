@@ -17,7 +17,7 @@
  * Per page, a "transition" next to the page's curtain text (see src/site/routes.js); the
  * timing is the site's alone:
  *   missing                                   the site-wide curtain above
- *   { preset: 'none' }                        no curtain when navigating to this page (a fade)
+ *   { curtain: 'off' }                        no curtain when navigating to this page (a fade)
  * The page you go to decides: leaving a page with its own curtain (or none) changes nothing.
  */
 const CURTAIN_DEFAULTS = {
@@ -29,8 +29,8 @@ const CURTAIN_DEFAULTS = {
 
 export const CURTAIN_MODES = ['global', 'off'];
 
-/** A page transition's mode in the editor: 'off' (preset none) or 'global'. */
-export const curtainMode = (transition) => (transition?.preset === 'none' ? 'off' : 'global');
+/** A page transition's mode in the editor: 'off' ({ curtain: 'off' }) or 'global'. */
+export const curtainMode = (transition) => (transition?.curtain === 'off' ? 'off' : 'global');
 
 /** The raw curtain for a page (what normalizeCurtain takes): the global one, or null. */
 export const curtainFor = (transition, global) =>

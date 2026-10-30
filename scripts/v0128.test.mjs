@@ -29,5 +29,8 @@ test('placed on Source, Height / Width and the Curtain', () => {
   const ss = src('SectionSettings.svelte');
   assert.match(ss, /<InfoHelp label="About \{title\}"/);
   assert.match(ss, /<b>Width<\/b>/);
-  assert.match(src('PageCurtain.svelte'), /<b>Curtain<\/b>: a panel that covers the screen/);
+  assert.match(
+    src('TransitionPageCurtain.svelte'),
+    /<b>Curtain<\/b>: a panel that covers the screen/,
+  );
 });

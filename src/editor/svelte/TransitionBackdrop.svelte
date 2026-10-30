@@ -1,6 +1,6 @@
 <!--
   The page's backdrop (src/site/backdrop.js): photos behind its sections as it scrolls, in the
-  page's Motion tab (the Page transition card), plain fields under a "Backdrop" heading. Its photos (PhotoList.svelte: drag a photo to move
+  page's Motion tab (the Transition card), plain fields under a "Backdrop" heading. Its photos (PhotoList.svelte: drag a photo to move
   it, Media to change, ✕ to remove, Add photo opens Media), then its transition: Scroll (a
   direction) or Fade (direct or through black, Parallax, Scrub). The options sit in one slot of
   a fixed height, so switching Scroll and Fade moves nothing under it. The heading's switch turns
@@ -120,7 +120,7 @@
 </h3>
 <div class={['fields', has && !on && 'bd--off']}>
   {#if !has}
-    <p class="hint small bd__hint">
+    <p class="hint small transition-backdrop__hint">
       Photos behind the sections, one after another: the first at the top, the last until the end.
       Section backgrounds sit on top.
     </p>
@@ -146,12 +146,12 @@
     {/snippet}
   </PhotoList>
   {#if has}
-    <hr class="bd__line" />
+    <hr class="transition-backdrop__line" />
     {@render choice('transition', 'Transition', options(TRANSITIONS), transition)}
     <!-- the dim over the photos, for both transitions; the value has a fixed width -->
     <div class={['tf', changed('shade') && 'is-changed']}>
       <span class="tf__label">Shade</span>
-      <div class="bd__shade">
+      <div class="transition-backdrop__shade">
         <input
           type="range"
           class="f__range"
@@ -162,14 +162,14 @@
           value={shade}
           oninput={(e) => set('shade', Math.round(+e.currentTarget.value) / 100)}
         />
-        <span class="bd__val">{shade}%</span>
+        <span class="transition-backdrop__val">{shade}%</span>
       </div>
     </div>
     <!-- the transition's options: one slot of a fixed height (a choice, then a 40px row) -->
-    <div class="bd__slot">
+    <div class="transition-backdrop__slot">
       {#if transition === 'fade'}
         {@render choice('through', 'Fade', options(THROUGH), valueOf('through', THROUGH))}
-        <div class="bd__pair">
+        <div class="transition-backdrop__pair">
           <Field
             edit="{file}#/backdrop/parallax"
             label="Parallax"
@@ -194,7 +194,7 @@
           options(DIRECTIONS),
           valueOf('direction', DIRECTIONS),
         )}
-        <p class="hint small bd__note">
+        <p class="hint small transition-backdrop__note">
           The photos scroll by with the page; the last is fully in view at its end.
         </p>
       {/if}
@@ -206,16 +206,16 @@
   @use '../styles/mixins' as *;
 
   // switched off: the labels and values go quiet (colour only: nothing moves)
-  .bd--off :global(:is(.tf__label, .photo__label, .bd__val, .seg__btn)) {
+  .bd--off :global(:is(.tf__label, .photo__label, .transition-backdrop__val, .seg__btn)) {
     color: var(--c-text-faint);
   }
 
-  .bd__hint,
-  .bd__note {
+  .transition-backdrop__hint,
+  .transition-backdrop__note {
     margin: 0;
   }
 
-  .bd__line {
+  .transition-backdrop__line {
     margin: var(--space-1) 0;
     border: 0;
     border-top: 1px solid var(--c-line);
@@ -223,17 +223,17 @@
 
   // Scroll's and Fade's options in one slot: a 32px choice with its label, then a 40px row
   // (the switches, or the note), so switching never moves what is under it
-  .bd__slot {
+  .transition-backdrop__slot {
     display: grid;
     grid-template-rows: auto 40px;
     gap: var(--space-3);
   }
 
-  .bd__note {
+  .transition-backdrop__note {
     align-self: center;
   }
 
-  .bd__shade {
+  .transition-backdrop__shade {
     @include row(var(--space-3));
     height: 32px;
 
@@ -243,14 +243,14 @@
   }
 
   // a fixed width ("80%" fits), so dragging never moves the slider
-  .bd__val {
+  .transition-backdrop__val {
     width: 40px;
     text-align: right;
     font-variant-numeric: tabular-nums;
     color: var(--c-text);
   }
 
-  .bd__pair {
+  .transition-backdrop__pair {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-3);
