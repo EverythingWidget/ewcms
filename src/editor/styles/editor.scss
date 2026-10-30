@@ -573,21 +573,15 @@ kbd {
 }
 
 // text fields (Field.svelte, also used by the curtain timeline)
-// selected: a tint 4px round it (a spread shadow: nothing moves, no negative margin)
+// selected: no fill, the label goes whitish (--text-strong) and the input gets the focus ring
 .tf {
   display: block;
-  transition:
-    background 0.6s,
-    box-shadow 0.6s;
   border-radius: var(--radius-md);
 }
 
 .tf.is-selected {
-  background: var(--c-accent-bg);
-  box-shadow: 0 0 0 var(--space-1) var(--c-accent-bg);
-
   .tf__label {
-    color: var(--c-accent);
+    color: var(--text-strong, var(--c-text));
   }
 
   .tf__input {
