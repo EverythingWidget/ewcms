@@ -218,8 +218,8 @@ export function pickElement(
 }
 
 /** A text's field focused (its `data-edit` path): the panel shows that field. */
-export function selectText(edit) {
-  ui.selection = { edit };
+export function selectText(edit, { quiet = false } = {}) {
+  ui.selection = { edit, ...(quiet && { quiet }) };
 }
 
 /** The element under the pointer in the preview (or a Motion row's), or null. */

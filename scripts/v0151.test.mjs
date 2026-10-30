@@ -73,7 +73,14 @@ test('Esc and the panels select through the ui helpers', () => {
   const card = src('svelte/SectionCard.svelte');
   assert.doesNotMatch(card, /ui\.(anchor|hot) =/);
   assert.match(card, /setAnchor\(id\)/);
-  assert.doesNotMatch(src('svelte/persist.js'), /ui\.selection =/);
+  const persist = src('svelte/persist.js');
+  assert.doesNotMatch(persist, /ui\.selection =/);
+  // visitor clicks: no pick, the text field still restored (quietly)
+  assert.match(persist, /if \(el && !motion\) selectText\(edit, \{ quiet: true \}\);/);
+  assert.match(
+    src('svelte/ui.svelte.js'),
+    /ui\.selection = \{ edit, \.\.\.\(quiet && \{ quiet \}\) \};/,
+  );
 });
 
 test('Motion shows the whole page; the widget pop-up has no Motion tab and stays on Motion', () => {
