@@ -24,8 +24,10 @@
   const link = $derived(linkOf(widget, ui.viewport === 'mobile'));
   const leader = $derived.by(() => {
     if (!link) return '';
-    const b = (live.get(file, `/sections/${at}`)?.widgets || []).find((w) => w?.id === link.to);
-    return b ? nameOf(b) || WIDGET_TYPES[b.type]?.label || b.id : link.to;
+    const widget = (live.get(file, `/sections/${at}`)?.widgets || []).find(
+      (w) => w?.id === link.to,
+    );
+    return widget ? nameOf(widget) || WIDGET_TYPES[widget.type]?.label || widget.id : link.to;
   });
 
   const phoneView = $derived(ui.viewport === 'mobile');

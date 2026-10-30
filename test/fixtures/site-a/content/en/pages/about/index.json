@@ -7,7 +7,7 @@
       "id": "s-ud3l",
       "widgets": [
         {
-          "id": "b-wrvr",
+          "id": "w-wrvr",
           "type": "photo",
           "src": "about/x100v.jpg",
           "caption": "Photo: Aleksandrs Karevs / Unsplash",
@@ -29,7 +29,7 @@
           }
         },
         {
-          "id": "b-ab7l",
+          "id": "w-ab7l",
           "type": "text",
           "body": [
             {
@@ -52,14 +52,14 @@
               "span": 60,
               "row": 1,
               "link": {
-                "to": "b-wrvr",
+                "to": "w-wrvr",
                 "gap": 4
               }
             }
           }
         },
         {
-          "id": "b-ab0h",
+          "id": "w-ab0h",
           "type": "text",
           "body": [
             {
@@ -76,7 +76,7 @@
               "col": 60,
               "span": 50,
               "link": {
-                "to": "b-ab7l",
+                "to": "w-ab7l",
                 "gap": 2
               }
             },
@@ -85,14 +85,14 @@
               "span": 60,
               "row": 1,
               "link": {
-                "to": "b-ab7l",
+                "to": "w-ab7l",
                 "gap": 2
               }
             }
           }
         },
         {
-          "id": "b-ab1t",
+          "id": "w-ab1t",
           "type": "text",
           "body": [
             {
@@ -125,7 +125,7 @@
               "col": 60,
               "span": 46,
               "link": {
-                "to": "b-ab0h",
+                "to": "w-ab0h",
                 "gap": 3
               }
             },
@@ -134,14 +134,14 @@
               "span": 60,
               "row": 1,
               "link": {
-                "to": "b-ab0h",
+                "to": "w-ab0h",
                 "gap": 2
               }
             }
           }
         },
         {
-          "id": "b-ab2f",
+          "id": "w-ab2f",
           "type": "text",
           "body": [
             {
@@ -182,7 +182,7 @@
               "col": 60,
               "span": 29,
               "link": {
-                "to": "b-ab1t",
+                "to": "w-ab1t",
                 "gap": 3
               }
             },
@@ -190,7 +190,7 @@
               "col": 1,
               "span": 29,
               "link": {
-                "to": "b-ab1t",
+                "to": "w-ab1t",
                 "gap": 2
               },
               "row": 1
@@ -198,7 +198,7 @@
           }
         },
         {
-          "id": "b-ab3f",
+          "id": "w-ab3f",
           "type": "text",
           "body": [
             {
@@ -239,7 +239,7 @@
               "col": 92,
               "span": 29,
               "link": {
-                "to": "b-ab1t",
+                "to": "w-ab1t",
                 "gap": 3
               }
             },
@@ -247,7 +247,7 @@
               "col": 31,
               "span": 30,
               "link": {
-                "to": "b-ab1t",
+                "to": "w-ab1t",
                 "gap": 2
               },
               "row": 1
@@ -255,7 +255,7 @@
           }
         },
         {
-          "id": "b-ab4e",
+          "id": "w-ab4e",
           "type": "button",
           "label": "Email me",
           "config": {
@@ -268,7 +268,7 @@
               "col": 60,
               "span": 12,
               "link": {
-                "to": "b-ab2f",
+                "to": "w-ab2f",
                 "gap": 3
               }
             },
@@ -276,7 +276,7 @@
               "col": 1,
               "span": 20,
               "link": {
-                "to": "b-ab2f",
+                "to": "w-ab2f",
                 "gap": 2
               },
               "row": 1
@@ -284,7 +284,7 @@
           }
         },
         {
-          "id": "b-ab5i",
+          "id": "w-ab5i",
           "type": "button",
           "label": "Instagram",
           "config": {
@@ -297,7 +297,7 @@
               "col": 73,
               "span": 14,
               "link": {
-                "to": "b-ab2f",
+                "to": "w-ab2f",
                 "gap": 3
               }
             },
@@ -305,7 +305,7 @@
               "col": 22,
               "span": 24,
               "link": {
-                "to": "b-ab2f",
+                "to": "w-ab2f",
                 "gap": 2
               },
               "row": 1
@@ -313,7 +313,7 @@
           }
         },
         {
-          "id": "b-ab6y",
+          "id": "w-ab6y",
           "type": "button",
           "label": "YouTube",
           "config": {
@@ -326,7 +326,7 @@
               "col": 88,
               "span": 13,
               "link": {
-                "to": "b-ab2f",
+                "to": "w-ab2f",
                 "gap": 3
               }
             },
@@ -334,7 +334,7 @@
               "col": 1,
               "span": 22,
               "link": {
-                "to": "b-ab4e",
+                "to": "w-ab4e",
                 "gap": 2
               },
               "row": 1

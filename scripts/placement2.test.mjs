@@ -7,12 +7,12 @@ const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 
 test('the button widget has no inline-edit marker (its label: the popup only)', () => {
   const src = read('src/site/widgets/button/index.js');
-  assert.doesNotMatch(src, /b\.ed\(/);
+  assert.doesNotMatch(src, /widget\.ed\(/);
   assert.match(src, /key: 'label'/);
 });
 
 test('the text widget stays editable in the preview', () => {
-  assert.match(read('src/site/widgets/text/index.js'), /b\.ed\('body', 'rich'\)/);
+  assert.match(read('src/site/widgets/text/index.js'), /widget\.ed\('body', 'rich'\)/);
 });
 
 test('Position: bars for one axis (trigger and cells), the dot grid for both', () => {

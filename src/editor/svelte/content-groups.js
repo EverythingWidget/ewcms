@@ -25,7 +25,7 @@ export const SITE_SETTINGS = [
 export const SEO_SETTINGS = [
   ['title', 'Home page title (in full)', 'text'],
   ['titleTemplate', 'Title of other pages: {page} is the page, {site} the site name', 'text'],
-  ['description', 'Description (pages without their own)', 'block'],
+  ['description', 'Description (pages without their own)', 'multiline'],
   ['ogImage', 'Share image (pages without their own)', 'image'],
   ['url', 'Site URL (canonical links, og:url, sitemap.xml)', 'text'],
   ['lang', 'Language (<html lang>, e.g. en)', 'text'],
@@ -164,7 +164,7 @@ export function runsOf(fields) {
 /** Every field of a group, list items included. */
 export const allFields = (g) => g.fields.flatMap((f) => (f.list ? f.items.flat() : [f]));
 
-const TEXT_TYPES = ['text', 'words', 'block'];
+const TEXT_TYPES = ['text', 'words', 'multiline'];
 
 /**
  * Group for widget `j` of section `at` of page file `file`: id the widget's, titled by its
@@ -242,7 +242,7 @@ export function contentGroups(store, bridge, target) {
   // Every widget, even the ones without text (they still have a toggle and settings).
   const at = {}; // widget group ids by their place ("0/1")
   sectionsOf(store, file).forEach((s, i) =>
-    (Array.isArray(s?.widgets) ? s.widgets : []).forEach((b, j) => {
+    (Array.isArray(s?.widgets) ? s.widgets : []).forEach((widget, j) => {
       at[`${i}/${j}`] = add(widgetGroup(store, file, i, j));
     }),
   );

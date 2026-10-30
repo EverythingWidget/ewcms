@@ -16,14 +16,14 @@ test('save tidies a page: no empty config or meta, an area without its defaults'
         id: 's-t100',
         widgets: [
           {
-            id: 'b-t101',
+            id: 'w-t101',
             type: 'heading',
             config: {},
             layout: { base: { col: 1, span: 120, row: 1 } },
           },
-          { id: 'b-t102', type: 'heading', layout: { base: { col: 13, span: 108, row: 4 } } },
+          { id: 'w-t102', type: 'heading', layout: { base: { col: 13, span: 108, row: 4 } } },
           {
-            id: 'b-t103',
+            id: 'w-t103',
             type: 'heading',
             layout: { base: { col: 1, span: 60, row: 1 }, phone: null },
           },
@@ -34,7 +34,7 @@ test('save tidies a page: no empty config or meta, an area without its defaults'
   const out = omitDefaults(F, page);
   assert.equal(out.meta, undefined);
   const [a, b, c] = out.sections[0].widgets;
-  assert.deepEqual(a, { id: 'b-t101', type: 'heading' });
+  assert.deepEqual(a, { id: 'w-t101', type: 'heading' });
   assert.deepEqual(b.layout, { base: { col: 13, row: 4 } });
   assert.deepEqual(c.layout, { base: { span: 60 }, phone: null });
   // tidied is valid, and the whole areas the editor keeps are too (not errors)
@@ -45,7 +45,7 @@ test('save tidies a page: no empty config or meta, an area without its defaults'
 test('a [param] page: its main widget decides its pages; "template" and "grid" are gone', () => {
   const T = 'pages/people/[person]/index.json';
   const base = { version: 1, kind: 'page', id: 'pg-t110', sections: [] };
-  const ok = { ...base, main: 'b-t111' };
+  const ok = { ...base, main: 'w-t111' };
   assert.deepEqual(checkContent(T, ok), []);
   assert.deepEqual(checkContent(T, { ...ok, grid: 120 }), [
     '"grid" must be left out: the page grid is always 120',
@@ -67,7 +67,7 @@ test('changes: a layout value at its default is no change (a widget moved back)'
       version: 1,
       kind: 'page',
       id: 'pg-t120',
-      sections: [{ id: 's-t120', widgets: [{ id: 'b-t121', type: 'heading' }] }],
+      sections: [{ id: 's-t120', widgets: [{ id: 'w-t121', type: 'heading' }] }],
     },
   });
   const ptr = '/sections/0/widgets/0/layout';

@@ -31,17 +31,17 @@ export const projects = {
     source: { mode: 'all', from: 'projects' },
     motion: { anim: 'list-up' },
   },
-  render: (s, ctx, b) => {
-    const source = b.source || ''; // None: an empty list
-    const list = b.items;
-    const { indexOf } = b;
+  render: (s, ctx, widget) => {
+    const source = widget.source || ''; // None: an empty list
+    const list = widget.items;
+    const { indexOf } = widget;
     if (!s.title)
       return html` <div class="projectswidget">
-        ${projectList(ctx, list, { id: `projects-${b.id}`, source, headingLevel: 2, indexOf })}
+        ${projectList(ctx, list, { id: `projects-${widget.id}`, source, headingLevel: 2, indexOf })}
       </div>`;
     return html` <div class="projectswidget">
-      ${sectionHead({ at: b.ed, ...s, href: source && sourcePage(ctx, source) })}
-      ${projectList(ctx, list, { id: `projects-${b.id}`, source, indexOf })}
+      ${sectionHead({ at: widget.ed, ...s, href: source && sourcePage(ctx, source) })}
+      ${projectList(ctx, list, { id: `projects-${widget.id}`, source, indexOf })}
     </div>`;
   },
 };

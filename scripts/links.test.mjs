@@ -76,30 +76,33 @@ test('links: a loop or a missing leader counts as free (and resolving ends)', ()
 });
 
 test('links on the phone: its own phone link, else the desktop link with the gap halved', () => {
-  const b = lay({ id: 'b-bbbb', type: 'text', link: to('b-aaaa', 5) });
-  assert.deepEqual(linkOf(b), to('b-aaaa', 5));
-  assert.deepEqual(linkOf(b, true), to('b-aaaa', 3));
-  assert.deepEqual(linkOf(lay({ ...flat(b), link: to('b-aaaa', -3) }), true), to('b-aaaa', -2));
+  const widget = lay({ id: 'w-bbbb', type: 'text', link: to('w-aaaa', 5) });
+  assert.deepEqual(linkOf(widget), to('w-aaaa', 5));
+  assert.deepEqual(linkOf(widget, true), to('w-aaaa', 3));
+  assert.deepEqual(
+    linkOf(lay({ ...flat(widget), link: to('w-aaaa', -3) }), true),
+    to('w-aaaa', -2),
+  );
   // a phone area of its own: only its own phone link
-  const own = lay({ ...flat(b), phone: { col: 1, span: 60, row: 1 } });
+  const own = lay({ ...flat(widget), phone: { col: 1, span: 60, row: 1 } });
   assert.equal(linkOf(own, true), null);
   assert.deepEqual(
-    linkOf(lay({ ...flat(own), phone: { ...flat(own).phone, link: to('b-cccc', -1) } }), true),
-    to('b-cccc', -1),
+    linkOf(lay({ ...flat(own), phone: { ...flat(own).phone, link: to('w-cccc', -1) } }), true),
+    to('w-cccc', -1),
   );
-  assert.deepEqual(widgetLinks(b), { 'data-link': 'b-aaaa 5', 'data-mlink': 'b-aaaa 3' });
+  assert.deepEqual(widgetLinks(widget), { 'data-link': 'w-aaaa 5', 'data-mlink': 'w-aaaa 3' });
   assert.deepEqual(widgetLinks({ id: 'b-x' }), { 'data-link': null, 'data-mlink': null });
 });
 
 test('links: loops are found; validation rejects unknown, other sections, self, loops', () => {
   const widgets = [
-    lay({ id: 'b-aaaa', type: 'text' }),
-    lay({ id: 'b-bbbb', type: 'text', link: to('b-aaaa') }),
-    lay({ id: 'b-cccc', type: 'text', link: to('b-bbbb') }),
+    lay({ id: 'w-aaaa', type: 'text' }),
+    lay({ id: 'w-bbbb', type: 'text', link: to('w-aaaa') }),
+    lay({ id: 'w-cccc', type: 'text', link: to('w-bbbb') }),
   ];
-  assert.equal(makesLoop(widgets, 'b-aaaa', 'b-cccc'), true);
-  assert.equal(makesLoop(widgets, 'b-aaaa', 'b-aaaa'), true);
-  assert.equal(makesLoop(widgets, 'b-cccc', 'b-aaaa'), false);
+  assert.equal(makesLoop(widgets, 'w-aaaa', 'w-cccc'), true);
+  assert.equal(makesLoop(widgets, 'w-aaaa', 'w-aaaa'), true);
+  assert.equal(makesLoop(widgets, 'w-cccc', 'w-aaaa'), false);
   assert.deepEqual(linkProblems(widgets), []);
   const F = 'pages/t/index.json';
   const page = (s1, s2 = []) => ({
@@ -113,32 +116,32 @@ test('links: loops are found; validation rejects unknown, other sections, self, 
     ],
   });
   assert.deepEqual(checkContent(F, page(widgets)), []);
-  const loop = [lay({ id: 'b-aaaa', type: 'text', link: to('b-cccc') }), ...widgets.slice(1)];
+  const loop = [lay({ id: 'w-aaaa', type: 'text', link: to('w-cccc') }), ...widgets.slice(1)];
   assert.deepEqual(checkContent(F, page(loop)), [
-    'section 1: links make a loop: b-aaaa -> b-cccc -> b-bbbb -> b-aaaa',
+    'section 1: links make a loop: w-aaaa -> w-cccc -> w-bbbb -> w-aaaa',
   ]);
   assert.deepEqual(
-    checkContent(F, page([lay({ id: 'b-aaaa', type: 'text', link: to('b-zzzz') })])),
-    ['section 1: widget "b-aaaa" layout.base.link follows "b-zzzz", which isn\'t on the page'],
+    checkContent(F, page([lay({ id: 'w-aaaa', type: 'text', link: to('w-zzzz') })])),
+    ['section 1: widget "w-aaaa" layout.base.link follows "w-zzzz", which isn\'t on the page'],
   );
   assert.deepEqual(
     checkContent(
       F,
       page(
-        [lay({ id: 'b-aaaa', type: 'text', phone: { link: to('b-dddd') } })],
-        [lay({ id: 'b-dddd', type: 'text' })],
+        [lay({ id: 'w-aaaa', type: 'text', phone: { link: to('w-dddd') } })],
+        [lay({ id: 'w-dddd', type: 'text' })],
       ),
     ),
     [
-      'section 1: widget "b-aaaa" layout.phone.link follows "b-dddd" of another section (links stay in their section)',
+      'section 1: widget "w-aaaa" layout.phone.link follows "w-dddd" of another section (links stay in their section)',
     ],
   );
   assert.deepEqual(
-    checkContent(F, page([lay({ id: 'b-aaaa', type: 'text', link: to('b-aaaa') })])),
-    ['section 1: widget "b-aaaa" layout.base.link can\'t follow the widget itself'],
+    checkContent(F, page([lay({ id: 'w-aaaa', type: 'text', link: to('w-aaaa') })])),
+    ['section 1: widget "w-aaaa" layout.base.link can\'t follow the widget itself'],
   );
   assert.match(
-    checkContent(F, page([lay({ id: 'b-aaaa', type: 'text', link: { to: 'b-x', gap: 1.5 } })]))[0],
+    checkContent(F, page([lay({ id: 'w-aaaa', type: 'text', link: { to: 'b-x', gap: 1.5 } })]))[0],
     /must be \{ "to"/,
   );
 });
@@ -158,25 +161,25 @@ test('editor: link, drag a follower (its gap changes), unlink; new widgets are f
       sections: [
         {
           id: 's-aaaa',
-          widgets: [at('b-aaaa', pos(1, 10)), at('b-bbbb', pos(14, 4)), at('b-cccc', pos(20, 4))],
+          widgets: [at('w-aaaa', pos(1, 10)), at('w-bbbb', pos(14, 4)), at('w-cccc', pos(20, 4))],
         },
-        { id: 's-bbbb', widgets: [at('b-dddd', pos(1, 4))] },
+        { id: 's-bbbb', widgets: [at('w-dddd', pos(1, 4))] },
       ],
     },
   });
   const widgets = () => store.current[F].sections[0].widgets;
-  assert.equal(linkWidget(store, F, 0, 1, 'b-aaaa', 3), true);
-  assert.deepEqual(flat(widgets()[1]).link, to('b-aaaa', 3));
+  assert.equal(linkWidget(store, F, 0, 1, 'w-aaaa', 3), true);
+  assert.deepEqual(flat(widgets()[1]).link, to('w-aaaa', 3));
   assert.equal(flat(widgets()[1]).pos.row, 14); // where it was: 10 + 1 + 3
-  assert.equal(linkWidget(store, F, 0, 2, 'b-bbbb', -2), true);
+  assert.equal(linkWidget(store, F, 0, 2, 'w-bbbb', -2), true);
   assert.equal(flat(widgets()[2]).pos.row, 16); // stored rows settle to the links: 17 - 2 + 1
   // a loop, another section's widget, itself: refused
-  assert.equal(linkWidget(store, F, 0, 0, 'b-cccc', 0), null);
-  assert.equal(linkWidget(store, F, 0, 0, 'b-dddd', 0), null);
-  assert.equal(linkWidget(store, F, 0, 0, 'b-aaaa', 0), null);
+  assert.equal(linkWidget(store, F, 0, 0, 'w-cccc', 0), null);
+  assert.equal(linkWidget(store, F, 0, 0, 'w-dddd', 0), null);
+  assert.equal(linkWidget(store, F, 0, 0, 'w-aaaa', 0), null);
   // dragged up 6 rows: still linked, the gap -3 (overlapping); its follower comes along
   placeWidget(store, F, 0, 1, pos(8, 4));
-  assert.deepEqual(flat(widgets()[1]).link, to('b-aaaa', -3));
+  assert.deepEqual(flat(widgets()[1]).link, to('w-aaaa', -3));
   assert.equal(flat(widgets()[2]).pos.row, 10);
   // the leader removed: its followers are free
   store.batch(() => {});
@@ -209,42 +212,48 @@ test('editor: phone links are separate; the first phone move brings the desktop 
           id: 's-aaaa',
           widgets: [
             lay({
-              id: 'b-aaaa',
+              id: 'w-aaaa',
               type: 'text',
               size: 'rows',
               pos: { col: 1, span: 120, row: 1, rows: 10 },
             }),
             lay({
-              id: 'b-bbbb',
+              id: 'w-bbbb',
               type: 'text',
               size: 'rows',
               pos: { col: 1, span: 60, row: 15, rows: 4 },
-              link: to('b-aaaa', 4),
+              link: to('w-aaaa', 4),
             }),
           ],
         },
       ],
     },
   });
-  const b = () => store.current[F].sections[0].widgets[1];
+  const widget = () => store.current[F].sections[0].widgets[1];
   // on the phone a's halved area ends at row 5; b dropped at row 9: gap 3
   placeMobile(store, F, 0, 1, { col: 1, span: 60, row: 9, rows: 2 });
-  assert.deepEqual(flat(b()).phone, { col: 1, span: 60, row: 9, rows: 2, link: to('b-aaaa', 3) });
-  assert.deepEqual(flat(b()).link, to('b-aaaa', 4)); // the desktop's unchanged
+  assert.deepEqual(flat(widget()).phone, {
+    col: 1,
+    span: 60,
+    row: 9,
+    rows: 2,
+    link: to('w-aaaa', 3),
+  });
+  assert.deepEqual(flat(widget()).link, to('w-aaaa', 4)); // the desktop's unchanged
   linkWidget(store, F, 0, 1, null, 0, { phone: true });
-  assert.ok(!('link' in flat(b()).phone) && flat(b()).link);
+  assert.ok(!('link' in flat(widget()).phone) && flat(widget()).link);
   store.undo();
   // unlinked where the preview shows it (an auto leader grew): it stays on that row
   linkWidget(store, F, 0, 1, null, 0, { phone: true, row: 14 });
-  assert.equal(flat(b()).phone.row, 14);
+  assert.equal(flat(widget()).phone.row, 14);
   linkWidget(store, F, 0, 1, null, 0, { row: 30 });
-  assert.ok(!('link' in flat(b())));
-  assert.equal(flat(b()).pos.row, 30);
+  assert.ok(!('link' in flat(widget())));
+  assert.equal(flat(widget()).pos.row, 30);
 });
 
 test('fit text: per widget, one boolean; site typography over the defaults', () => {
   const t = (more) => ({
-    id: 'b-aaaa',
+    id: 'w-aaaa',
     type: 'text',
     layout: { base: { col: 1, span: 120, row: 1, rows: 1 } },
     ...more,

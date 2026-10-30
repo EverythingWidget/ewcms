@@ -112,11 +112,11 @@ test('phone grid: 60 columns, desktop areas halved to the cells they cover, link
     row: 4,
     rows: 1,
   });
-  const b = {
+  const widget = {
     layout: { base: { col: 31, span: 60, row: 11, rows: 8, link: { to: 'x', gap: 3 } } },
   };
-  assert.deepEqual(phoneAreaOf(b), { col: 16, span: 30, row: 6, rows: 4 });
-  assert.deepEqual(linkOf(b, true), { to: 'x', gap: 2 });
+  assert.deepEqual(phoneAreaOf(widget), { col: 16, span: 30, row: 6, rows: 4 });
+  assert.deepEqual(linkOf(widget, true), { to: 'x', gap: 2 });
   assert.deepEqual(linkOf({ layout: { base: { link: { to: 'x', gap: -3 } } } }, true), {
     to: 'x',
     gap: -2,
@@ -131,7 +131,7 @@ test('phone grid: 60 columns, desktop areas halved to the cells they cover, link
 test("rows.js: a widget element's stored area and link on each grid", () => {
   const e = el({
     vars: { '--c': 3, '--s': 10, '--r': 5, '--rs': 20, '--mc': 2, '--ms': 5, '--mr': 3 },
-    dataset: { link: 'b-aaaa 2', mlink: 'b-bbbb -1' },
+    dataset: { link: 'w-aaaa 2', mlink: 'w-bbbb -1' },
   });
   assert.deepEqual(areaOf(e, false), { col: 3, span: 10, row: 5, rows: 20 });
   assert.deepEqual(areaOf(e, true), { col: 2, span: 5, row: 3, rows: 1 });
@@ -143,9 +143,9 @@ test("rows.js: a widget element's stored area and link on each grid", () => {
     row: 1,
     rows: 1,
   });
-  assert.deepEqual(linkOfEl(e, false), { to: 'b-aaaa', gap: 2 });
-  assert.deepEqual(linkOfEl(e, true), { to: 'b-bbbb', gap: -1 });
-  for (const v of [undefined, '', 'b-aaaa', 'b-aaaa 1.5', 'a b 2'])
+  assert.deepEqual(linkOfEl(e, false), { to: 'w-aaaa', gap: 2 });
+  assert.deepEqual(linkOfEl(e, true), { to: 'w-bbbb', gap: -1 });
+  for (const v of [undefined, '', 'w-aaaa', 'w-aaaa 1.5', 'a b 2'])
     assert.equal(linkOfEl(el({ dataset: { link: v } }), false), null, String(v));
 });
 

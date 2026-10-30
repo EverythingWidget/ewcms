@@ -143,7 +143,7 @@ test('main widget: a page per value of its own param among the items the outer p
   const c = site();
   const ctx = { ...c, routes: buildRoutes(c).routes };
   assert.equal(itemHref(ctx, 'shoots', shoots[1]), '/people/noor/2024/');
-  assert.equal(mainAt(site().pages['people/[person]']).widget.id, 'b-main');
+  assert.equal(mainAt(site().pages['people/[person]']).widget.id, 'w-main');
 });
 
 test('main widget: a list widget decides too (a page exists if at least one item matches)', () => {
@@ -153,7 +153,7 @@ test('main widget: a list widget decides too (a page exists if at least one item
         id: 's-main',
         widgets: [
           {
-            id: 'b-main',
+            id: 'w-main',
             type: 'albums',
             source: {
               mode: 'url',
@@ -220,7 +220,7 @@ test('source shapes: modes per widget kind, where rules', () => {
     version: 1,
     kind: 'page',
     id: 'pg-t201',
-    sections: [{ id: 's-t201', widgets: [{ id: 'b-t201', type, source }] }],
+    sections: [{ id: 's-t201', widgets: [{ id: 'w-t201', type, source }] }],
   });
   const F = 'pages/people/[person]/index.json';
   const check = (...a) => checkContent(F, page(...a));

@@ -45,7 +45,7 @@ test('section rows: its lowest widget now, plus the empty rows it had below', ()
 
 test('sections count every widget by its stored rows (aspect and auto too)', () => {
   const wgt = (size, row, rows) => ({
-    id: 'b-aaaa',
+    id: 'w-aaaa',
     type: 'text',
     size,
     layout: { base: { col: 1, span: 24, row, rows } },
@@ -64,10 +64,10 @@ test("a drag stores where the section's widgets are now (their real rows), one u
       {
         id: 's-aaaa',
         widgets: [
-          lay({ id: 'b-aaaa', type: 'text', pos: pos(1, 4) }),
-          lay({ id: 'b-bbbb', type: 'text', size: 'rows', pos: pos(6, 4) }),
+          lay({ id: 'w-aaaa', type: 'text', pos: pos(1, 4) }),
+          lay({ id: 'w-bbbb', type: 'text', size: 'rows', pos: pos(6, 4) }),
           lay({
-            id: 'b-cccc',
+            id: 'w-cccc',
             type: 'text',
             pos: pos(12, 2),
             phone: { col: 1, span: 12, row: 3, rows: 2 },
@@ -79,7 +79,7 @@ test("a drag stores where the section's widgets are now (their real rows), one u
   const store = createStore();
   store.load({ [F]: structuredClone(page) });
   // where rows.js showed them (a needs 10 rows now); c is dragged to row 30
-  const flow = { 'b-aaaa': pos(1, 10), 'b-bbbb': pos(12, 4), 'b-cccc': pos(18, 2) };
+  const flow = { 'w-aaaa': pos(1, 10), 'w-bbbb': pos(12, 4), 'w-cccc': pos(18, 2) };
   placeWidget(store, F, 0, 2, pos(30, 2), undefined, { flow });
   const s = store.current[F].sections[0];
   assert.deepEqual(
@@ -103,8 +103,8 @@ test("a drag stores where the section's widgets are now (their real rows), one u
     { col: 1, span: 12, row: 1, rows: 3 },
     {
       flow: {
-        'b-aaaa': { col: 1, span: 12, row: 1, rows: 9 },
-        'b-cccc': { col: 1, span: 12, row: 7, rows: 3 },
+        'w-aaaa': { col: 1, span: 12, row: 1, rows: 9 },
+        'w-cccc': { col: 1, span: 12, row: 7, rows: 3 },
       },
     },
   );

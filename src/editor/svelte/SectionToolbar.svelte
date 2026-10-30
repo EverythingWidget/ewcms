@@ -78,12 +78,12 @@
     const ids = ui.multi.length > 1 ? ui.multi : ui.widget ? [ui.widget] : [];
     if (!ids.length) return null;
     for (const [k, sec] of sections.entries()) {
-      const widgets = (sec?.widgets || []).filter((b) => ids.includes(b?.id));
-      if (widgets.length) return { at: k, ids: widgets.map((b) => b.id), widgets };
+      const widgets = (sec?.widgets || []).filter((widget) => ids.includes(widget?.id));
+      if (widgets.length) return { at: k, ids: widgets.map((widget) => widget.id), widgets };
     }
     return null;
   });
-  const allOff = $derived(!!group?.widgets.every((b) => b?.config?.enabled === false));
+  const allOff = $derived(!!group?.widgets.every((widget) => widget?.config?.enabled === false));
   const run = (fn, ...rest) => group && fn(live.store, file, group.at, group.ids, ...rest);
   function removeGroup() {
     run(removeWidgets);

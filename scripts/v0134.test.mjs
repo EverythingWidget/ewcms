@@ -7,13 +7,13 @@ import { hero, HERO_STYLES } from '../src/site/widgets/hero/index.js';
 import { bindTypeOf } from '../src/site/layout/bindings.js';
 
 const ctx = { site: { name: 'Site' }, media: {}, strings: {}, lang: 'en' };
-const b = { ed: () => '' };
+const widget = { ed: () => '' };
 const photos = [
   { src: '', x: 1, y: 1, w: 10 },
   { src: 'a/one.jpg', x: 10, y: 10, w: 16, depth: 1 },
   { src: 'a/two.jpg', x: 50, y: 20, w: 16, depth: 1 },
 ];
-const out = (s) => hero.render({ title: 'Noor', photos, ...s }, ctx, b);
+const out = (s) => hero.render({ title: 'Noor', photos, ...s }, ctx, widget);
 
 test('the Style field: a button group, scattered when unset, nothing to bind', () => {
   const f = hero.fields[0];
@@ -44,7 +44,7 @@ test('beside / behind: the first photo with a file, alone, no scatter', () => {
     assert.match(h, /one/);
     assert.doesNotMatch(h, /two|scatter/);
   }
-  assert.doesNotMatch(hero.render({ style: 'beside', photos: [] }, ctx, b), /hero__photo"/);
+  assert.doesNotMatch(hero.render({ style: 'beside', photos: [] }, ctx, widget), /hero__photo"/);
 });
 
 test('the theme lays out beside (right half, 4px corners) and behind (gradient)', () => {

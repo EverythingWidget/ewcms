@@ -77,9 +77,9 @@ test("v0.1.44: every handle shows on a selected widget; an Auto one's height dra
   const store = createStore();
   store.load({ [F]: { version: 1, kind: 'page', id: 'pg-t145', sections: [] } });
   addSection(store, F, 'photo');
-  const b = () => store.current[F].sections[0].widgets[0];
+  const widget = () => store.current[F].sections[0].widgets[0];
   store.current[F].sections[0].widgets[0].size = undefined;
   placeWidget(store, F, 0, 0, { col: 1, span: 40, row: 1, rows: 20 }, undefined, { size: 'rows' });
-  assert.equal(b().size, 'rows');
-  assert.equal(b().layout.base.rows, 20);
+  assert.equal(widget().size, 'rows');
+  assert.equal(widget().layout.base.rows, 20);
 });

@@ -42,7 +42,7 @@ export const album = {
         value: { type: 'text', label: 'Value', width: 'half' },
       },
     },
-    { key: 'body', label: 'Summary', type: 'block' },
+    { key: 'body', label: 'Summary', type: 'multiline' },
   ],
   defaults: {
     source: { mode: 'url', from: 'people', where: { op: 'and', rules: [] } },
@@ -53,28 +53,28 @@ export const album = {
     ],
     body: { bind: 'body' },
   },
-  render: (s, ctx, b) => albumOf(s, ctx, ctx.route, b),
+  render: (s, ctx, widget) => albumOf(s, ctx, ctx.route, widget),
 };
 
-function albumOf(s, ctx, route, b) {
-  const a = b.item;
+function albumOf(s, ctx, route, widget) {
+  const a = widget.item;
   const images = imagesOf(a);
   const n = images.length;
-  const file = sourceFile(b.source);
-  const at = (field, type) => ed(file, ['items', b.index, field], type);
+  const file = sourceFile(widget.source);
+  const at = (field, type) => ed(file, ['items', widget.index, field], type);
   // a photo's path, edited (and uploaded) in the editor
-  const photo = (i) => ed(file, ['items', b.index, 'images', i], 'image');
+  const photo = (i) => ed(file, ['items', widget.index, 'images', i], 'image');
   // back: the page around it (a [param] page's), else the page of all of its source
-  const back = route.parent ?? sourcePage(ctx, b.source);
-  const section = route.section ?? titleCase(b.source);
+  const back = route.parent ?? sourcePage(ctx, widget.source);
+  const section = route.section ?? titleCase(widget.source);
   const title = String(s.title ?? '');
   const summary = String(s.body ?? '');
   const meta = [
     ...(Array.isArray(s.meta) ? s.meta : []).map((m, i) => [
       m?.label,
       m?.value,
-      b.ed(['meta', i, 'value']),
-      b.ed(['meta', i, 'label']),
+      widget.ed(['meta', i, 'value']),
+      widget.ed(['meta', i, 'label']),
     ]),
     ['Photos', pad(n), '', ''],
   ].filter((m) => m[0] && m[1] !== undefined && m[1] !== null && String(m[1]) !== '');
@@ -84,13 +84,13 @@ function albumOf(s, ctx, route, b) {
       <a class="album__back label" href="${esc(back)}"
         ><span aria-hidden="true">←</span> <span>${esc(section)}</span></a
       >
-      <h1 class="album__title" data-anim="album.title" ${b.ed('title')}>${esc(title)}</h1>
+      <h1 class="album__title" data-anim="album.title" ${widget.ed('title')}>${esc(title)}</h1>
       <div class="album__details" data-anim="album.meta">
         <dl class="album__meta">
           ${meta.map(([k, v, attr, labelAttr]) => html`<div><dt class="label"${labelAttr}>${esc(k)}</dt><dd${attr}>${esc(v)}</dd></div>`)}
         </dl>
-        ${summary ? html`<p class="album__summary" ${b.ed('body', 'block')}>${lines(summary)}</p>` : ''}
-        ${a.placeholder ? html`<p class="album__note"><span class="tag">${esc(t(ctx, 'tag.placeholder'))}</span> <span${at('note', 'block')}>${lines(a.note || '')}</span></p>` : ''}
+        ${summary ? html`<p class="album__summary" ${widget.ed('body', 'multiline')}>${lines(summary)}</p>` : ''}
+        ${a.placeholder ? html`<p class="album__note"><span class="tag">${esc(t(ctx, 'tag.placeholder'))}</span> <span${at('note', 'multiline')}>${lines(a.note || '')}</span></p>` : ''}
       </div>
     </aside>
 

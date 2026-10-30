@@ -86,7 +86,7 @@ export const form = {
   sketch: 'form',
   fields: [
     { key: 'title', label: 'Title (empty: none)' },
-    { key: 'body', label: 'Intro (empty: none)', type: 'block' },
+    { key: 'body', label: 'Intro (empty: none)', type: 'multiline' },
     {
       key: 'fields',
       label: 'Form fields',
@@ -102,8 +102,8 @@ export const form = {
     },
     { key: 'submit', label: 'Send button', width: 'half' },
     { key: 'sending', label: 'While sending', width: 'half' },
-    { key: 'success', label: 'Message: sent', type: 'block' },
-    { key: 'error', label: 'Message: not sent', type: 'block' },
+    { key: 'success', label: 'Message: sent', type: 'multiline' },
+    { key: 'error', label: 'Message: not sent', type: 'multiline' },
     { key: 'required', label: 'Message: a required field is empty' },
     { key: 'invalid', label: 'Message: an email address is not valid' },
   ],
@@ -164,20 +164,20 @@ export const form = {
       out.push('needs a field named "email" of type email: replies go there');
     return out;
   },
-  render: (s, ctx, b) => {
+  render: (s, ctx, widget) => {
     const { mode, action } = formTarget(ctx.site, s);
-    const id = `contact-${b.id}`;
+    const id = `contact-${widget.id}`;
     const fields = (Array.isArray(s.fields) ? s.fields : []).filter((f) => f?.name);
     const email = ctx.site?.email;
     const turnstile = mode === 'function' && ctx.site?.forms?.turnstileSiteKey;
     const msg = (key) => ` data-${key}="${esc(s[key] ?? '')}"`;
     return html` <div class="formwidget">
-      ${s.title ? html`<h2 class="section__title" ${b.ed('title')}>${esc(s.title)}</h2>` : ''}
-      ${s.body ? html`<p class="formwidget__intro" ${b.ed('body', 'block')}>${esc(s.body)}</p>` : ''}
+      ${s.title ? html`<h2 class="section__title" ${widget.ed('title')}>${esc(s.title)}</h2>` : ''}
+      ${s.body ? html`<p class="formwidget__intro" ${widget.ed('body', 'multiline')}>${esc(s.body)}</p>` : ''}
       <form class="cform" id="${id}" method="post" action="${esc(action)}"${mode === 'email' ? ' enctype="text/plain"' : ''} data-contact="${mode}"${msg('success')}${msg('error')}${msg('required')}${msg('invalid')}${msg('sending')}>
         ${fields.map(
           (f, i) => html`<div class="cform__field">
-          <label class="cform__label" for="${id}-${esc(f.name)}"><span ${b.ed(['fields', i, 'label'])}>${esc(f.label || f.name)}</span>${f.required ? html`<span class="cform__req" aria-hidden="true"> *</span>` : ''}</label>
+          <label class="cform__label" for="${id}-${esc(f.name)}"><span ${widget.ed(['fields', i, 'label'])}>${esc(f.label || f.name)}</span>${f.required ? html`<span class="cform__req" aria-hidden="true"> *</span>` : ''}</label>
           ${input(f, `${id}-${esc(f.name)}`)}
           <p class="cform__error" id="${id}-${esc(f.name)}-error" hidden></p>
         </div>`,
@@ -199,7 +199,7 @@ export const form = {
         }
         ${turnstile ? html`<div class="cf-turnstile" data-sitekey="${esc(turnstile)}"></div>` : ''}
         <div class="cform__actions">
-          <button class="btn glass cform__submit" type="submit"><span class="cform__text" ${b.ed('submit')}>${esc(s.submit || t(ctx, 'form.submit'))}</span><span class="cform__spinner" aria-hidden="true"></span></button>
+          <button class="btn glass cform__submit" type="submit"><span class="cform__text" ${widget.ed('submit')}>${esc(s.submit || t(ctx, 'form.submit'))}</span><span class="cform__spinner" aria-hidden="true"></span></button>
           ${email && mode !== 'email' ? html`<a class="cform__alt muted" href="mailto:${esc(email)}">${esc(email)}</a>` : ''}
         </div>
         <p class="cform__status" role="status" aria-live="polite" tabindex="-1"></p>

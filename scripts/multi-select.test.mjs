@@ -75,7 +75,7 @@ test('group move: one undo step, every member by the same cells', () => {
   store.load({ 'pages/x.json': page() });
   moveWidgets(store, 'pages/x.json', 0, ['a1', 'a2'], 3, 2);
   const w = store.current['pages/x.json'].sections[0].widgets;
-  const p = (b) => placeOf(baseOf(b));
+  const p = (widget) => placeOf(baseOf(widget));
   assert.deepEqual([p(w[0]).col, p(w[0]).row], [4, 3]);
   assert.deepEqual([p(w[1]).col, p(w[1]).row], [23, 6]);
   assert.equal(store.dirtyFiles().length, 1);
@@ -89,7 +89,7 @@ test('group delete: all gone in one undo step, their followers free', () => {
   removeWidgets(store, 'pages/x.json', 0, ['a1', 'a2']);
   const w = store.current['pages/x.json'].sections[0].widgets;
   assert.deepEqual(
-    w.map((b) => b.id),
+    w.map((widget) => widget.id),
     ['a3'],
   );
   assert.equal(baseOf(w[0]).link, undefined, 'a3 followed a2: free now');

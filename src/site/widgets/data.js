@@ -35,8 +35,8 @@ export function sourcePage(ctx, source) {
     (id) =>
       id !== 'home' &&
       !paramsOf(id).length &&
-      widgetsOf(page(id)).some((b) => {
-        const s = sourceOf(b);
+      widgetsOf(page(id)).some((widget) => {
+        const s = sourceOf(widget);
         return s?.mode === 'all' && s.from === source;
       }),
   );

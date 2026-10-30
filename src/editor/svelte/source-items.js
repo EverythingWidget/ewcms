@@ -10,7 +10,7 @@ import { itemTitle, newItemOf, schemaOf } from '../../site/schemas.js';
 /** The editor's field widget (Field.svelte type) for a schema field type. */
 const WIDGETS = {
   text: 'text',
-  longtext: 'block',
+  longtext: 'multiline',
   number: 'number',
   photo: 'image',
   link: 'text',

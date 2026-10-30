@@ -9,8 +9,8 @@ import { html, esc, img, sizes } from '../../helpers.js';
  * it fills the area: the widget's box (Fill: cover, cropped | Fit: contain, whole) at its
  * place (../../layout/place.js, media), through --fit / --pos on the widget
  * (src/client/styles/_layout.scss, the fill mixin). Its caption is edited in its settings popup
- * only (no b.ed on it: only a Text widget's content is edited in the preview); the photo itself
- * keeps b.ed('src', 'image') for picking.
+ * only (no widget.ed on it: only a Text widget's content is edited in the preview); the photo itself
+ * keeps widget.ed('src', 'image') for picking.
  */
 export const photo = {
   type: 'photo',
@@ -24,10 +24,10 @@ export const photo = {
     { key: 'caption', label: 'Caption (empty: none)' },
   ],
   defaults: { src: '', caption: '', motion: { anim: 'image-reveal' } },
-  render: (s, ctx, b) =>
+  render: (s, ctx, widget) =>
     html` <div class="photowidget">
       <figure class="photowidget__figure">
-        ${s.src ? img(ctx, s.src, { sizes: sizes('100vw', '60vw'), attrs: b.ed('src', 'image') }) : ''}
+        ${s.src ? img(ctx, s.src, { sizes: sizes('100vw', '60vw'), attrs: widget.ed('src', 'image') }) : ''}
         ${s.caption ? html`<figcaption class="label muted">${esc(s.caption)}</figcaption>` : ''}
       </figure>
     </div>`,

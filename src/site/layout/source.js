@@ -63,7 +63,8 @@ export const refsOf = (route) =>
 
 /** The main widget of a page (its "main" widget id), null when there is none. */
 export const mainOf = (page) =>
-  (typeof page?.main === 'string' && widgetsOf(page).find((b) => b?.id === page.main)) || null;
+  (typeof page?.main === 'string' && widgetsOf(page).find((widget) => widget?.id === page.main)) ||
+  null;
 
 /** Where the main widget sits: { widget, at, j } (null without one). */
 export function mainAt(page) {

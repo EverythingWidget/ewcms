@@ -24,31 +24,35 @@
  */
 export function resolveRows(items, sectionRows = 1) {
   const byId = new Map();
-  for (const b of items)
-    byId.set(b.id, { ...b, now: Number.isInteger(b.need) && b.need > 0 ? b.need : b.rows });
+  for (const widget of items)
+    byId.set(widget.id, {
+      ...widget,
+      now: Number.isInteger(widget.need) && widget.need > 0 ? widget.need : widget.rows,
+    });
   const at = {};
   const busy = new Set();
-  const place = (b) => {
-    if (at[b.id]) return at[b.id];
-    let row = b.row;
-    const lead = b.link && b.link.to !== b.id ? byId.get(b.link.to) : null;
+  const place = (widget) => {
+    if (at[widget.id]) return at[widget.id];
+    let row = widget.row;
+    const lead = widget.link && widget.link.to !== widget.id ? byId.get(widget.link.to) : null;
     if (lead && !busy.has(lead.id)) {
-      busy.add(b.id);
+      busy.add(widget.id);
       const l = place(lead);
-      busy.delete(b.id);
+      busy.delete(widget.id);
       // a loop through b: placed while b was busy, so b counts as free
-      if (!at[b.id]) row = l.row + l.rows + (Number.isInteger(b.link.gap) ? b.link.gap : 0);
+      if (!at[widget.id])
+        row = l.row + l.rows + (Number.isInteger(widget.link.gap) ? widget.link.gap : 0);
     }
-    if (at[b.id]) return at[b.id];
-    at[b.id] = { row: Math.max(1, row), rows: b.now };
-    return at[b.id];
+    if (at[widget.id]) return at[widget.id];
+    at[widget.id] = { row: Math.max(1, row), rows: widget.now };
+    return at[widget.id];
   };
-  for (const b of byId.values()) place(b);
+  for (const widget of byId.values()) place(widget);
   let end = 0;
   let stored = 0;
-  for (const b of byId.values()) {
-    end = Math.max(end, at[b.id].row + b.now - 1);
-    stored = Math.max(stored, b.row + b.rows - 1);
+  for (const widget of byId.values()) {
+    end = Math.max(end, at[widget.id].row + widget.now - 1);
+    stored = Math.max(stored, widget.row + widget.rows - 1);
   }
   const rows = byId.size ? end + Math.max(0, sectionRows - stored) : sectionRows;
   return { rows: Math.max(1, rows), at };

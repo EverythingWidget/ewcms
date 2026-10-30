@@ -244,8 +244,8 @@ function checkDoc(file, d) {
   if (d.template !== undefined)
     out.push('"template" is gone: a [param] page\'s main widget decides its pages ("main")');
   if (d.main !== undefined && !template) out.push('"main" is only for [param] pages');
-  else if (d.main !== undefined && !isId(d.main, 'b'))
-    out.push('"main" must be the id of one of its widgets ("b-7qpa")');
+  else if (d.main !== undefined && !isId(d.main, 'w'))
+    out.push('"main" must be the id of one of its widgets ("w-7qpa")');
   // its folder's URL opens its first sub page instead (routes.js)
   if (d.ownPage !== undefined && d.ownPage !== false)
     out.push('"ownPage" must be false (the folder opens its first sub page) or left out');
@@ -263,14 +263,19 @@ function checkSections(sections) {
   nameProblems(sections).forEach((p, at) => p && out.push(`section ${at + 1}: "name" ${p}`));
   // links: within their section, to a widget that is there, no loops (layout/links.js)
   const all = new Set(
-    sections.flatMap((s) => (Array.isArray(s?.widgets) ? s.widgets.map((b) => b?.id) : [])),
+    sections.flatMap((s) =>
+      Array.isArray(s?.widgets) ? s.widgets.map((widget) => widget?.id) : [],
+    ),
   );
   sections.forEach((s, at) => {
     if (!Array.isArray(s?.widgets)) return;
     out.push(...linkProblems(s.widgets, all).map((p) => `section ${at + 1}: ${p}`));
   });
   const seen = new Set();
-  for (const id of sections.flatMap((s) => [s?.id, ...(s?.widgets || []).map((b) => b?.id)]))
+  for (const id of sections.flatMap((s) => [
+    s?.id,
+    ...(s?.widgets || []).map((widget) => widget?.id),
+  ]))
     if (typeof id === 'string' && seen.has(id)) out.push(`the id "${id}" is used twice`);
     else seen.add(id);
   return out;
@@ -302,16 +307,16 @@ function checkArea(p, key, cols = COLS, rows = true, defaults = false) {
  * A widget's "layout": { base: { col, span, row, rows?, link? }, phone?: the same keys
  * on the phone grid, or null (hidden on phones) }. Links are checked with their section.
  */
-function checkWidgetLayout(b) {
+function checkWidgetLayout(widget) {
   const out = [];
   for (const k of ['pos', 'phone', 'link', 'mobile'])
-    if (b[k] !== undefined)
+    if (widget[k] !== undefined)
       out.push(`"${k}" must be left out: it is in "layout" ({ base, phone })`);
-  const l = b.layout;
+  const l = widget.layout;
   if (l === undefined) return out; // full width at row 1
   if (!isObject(l) || Object.keys(l).some((k) => k !== 'base' && k !== 'phone'))
     return [...out, '"layout" must be an object { base, phone? }'];
-  const rows = storesRows(b);
+  const rows = storesRows(widget);
   const part = (o, key, cols, whole) => {
     if (!isObject(o)) return [`"${key}" must be an object { col, span, row, rows?, link? }`];
     const res = [];
@@ -371,7 +376,10 @@ function checkSection(s, at) {
   if (s.width !== undefined && !WIDTHS.includes(s.width)) bad('width', WIDTHS.join(' or '));
   if (s.enabled !== undefined && typeof s.enabled !== 'boolean') bad('enabled', 'true or false');
   if (!Array.isArray(s.widgets)) return [...out, `${where}: "widgets" must be a list`];
-  return [...out, ...s.widgets.flatMap((b, j) => checkWidget(b, `${where}, widget ${j + 1}`))];
+  return [
+    ...out,
+    ...s.widgets.flatMap((widget, j) => checkWidget(widget, `${where}, widget ${j + 1}`)),
+  ];
 }
 
 /** A widget's "source" (layout/source.js) against its type: list widgets All, others Item. */
@@ -403,18 +411,18 @@ function sourceProblems(src, t) {
 }
 
 /** One widget: its place, then its content against its type in the registry. */
-function checkWidget(b, where) {
-  if (!isObject(b)) return [`${where} must be an object`];
-  if (typeof b.type !== 'string') return [`${where} needs a "type"`];
-  const t = WIDGET_TYPES[b.type];
+function checkWidget(widget, where) {
+  if (!isObject(widget)) return [`${where} must be an object`];
+  if (typeof widget.type !== 'string') return [`${where} needs a "type"`];
+  const t = WIDGET_TYPES[widget.type];
   const name = t ? `${where} (${t.label})` : where;
   const out = [];
   const bad = (key, want) => out.push(`${name}: "${key}" must be ${want}`);
-  if (!isId(b.id, 'b')) bad('id', 'a widget id like "b-7qpa"');
-  out.push(...checkWidgetLayout(b).map((p) => `${name}: ${p}`));
-  if (b.size !== undefined && !SIZES.includes(b.size)) bad('size', SIZES.join(', '));
-  if (b.type === 'hero' && Array.isArray(b.photos))
-    b.photos.forEach((p, i) => {
+  if (!isId(widget.id, 'w')) bad('id', 'a widget id like "w-7qpa"');
+  out.push(...checkWidgetLayout(widget).map((p) => `${name}: ${p}`));
+  if (widget.size !== undefined && !SIZES.includes(widget.size)) bad('size', SIZES.join(', '));
+  if (widget.type === 'hero' && Array.isArray(widget.photos))
+    widget.photos.forEach((p, i) => {
       const ph = p?.phone;
       if (ph === undefined || ph === null) return;
       if (!isObject(ph) || Object.keys(ph).some((k) => !['x', 'y', 'w'].includes(k)))
@@ -423,15 +431,17 @@ function checkWidget(b, where) {
         for (const [k, v] of Object.entries(ph))
           if (typeof v !== 'number') bad(`photos.${i}.phone.${k}`, 'a number');
     });
-  if ((b.size === 'aspect' || b.aspect !== undefined) && !isRatio(b.aspect))
+  if ((widget.size === 'aspect' || widget.aspect !== undefined) && !isRatio(widget.aspect))
     bad('aspect', 'a ratio like "4:5"');
-  if (b.z !== undefined && !Number.isInteger(b.z)) bad('z', 'a whole number');
-  out.push(...checkFit(b).map((p) => `${name}: ${p}`));
-  out.push(...checkPlacement(b).map((p) => `${name}: ${p}`));
-  if (b.motion !== undefined) out.push(...checkMotion(b.motion).map((p) => `${name}: ${p}`));
+  if (widget.z !== undefined && !Number.isInteger(widget.z)) bad('z', 'a whole number');
+  out.push(...checkFit(widget).map((p) => `${name}: ${p}`));
+  out.push(...checkPlacement(widget).map((p) => `${name}: ${p}`));
+  if (widget.motion !== undefined)
+    out.push(...checkMotion(widget.motion).map((p) => `${name}: ${p}`));
   if (!t) return out; // an unknown type only warns (render)
-  if (b.item !== undefined) bad('item', 'left out: its "source" says which item');
-  if (b.source !== undefined) out.push(...sourceProblems(b.source, t).map((p) => `${name}: ${p}`));
+  if (widget.item !== undefined) bad('item', 'left out: its "source" says which item');
+  if (widget.source !== undefined)
+    out.push(...sourceProblems(widget.source, t).map((p) => `${name}: ${p}`));
   // a value can be bound to the item (../layout/bindings.js): { "bind": "<field>", "format"? }
   const bindShape = (key, v, type) => {
     const extra = Object.keys(v).filter((k) => k !== 'bind' && k !== 'format');
@@ -447,11 +457,11 @@ function checkWidget(b, where) {
       bad(`${key}.format`, 'a text with {value} in it');
   };
   for (const c of t.config || []) {
-    const v = b.config?.[c.key];
+    const v = widget.config?.[c.key];
     if (isBinding(v)) bindShape(`config.${c.key}`, v, bindTypeOf(c, { config: true }));
   }
   for (const f of t.fields || []) {
-    const v = b[f.key];
+    const v = widget[f.key];
     if (v === undefined) continue;
     if (isBinding(v)) {
       bindShape(f.key, v, bindTypeOf(f));
@@ -478,13 +488,13 @@ function checkWidget(b, where) {
     )
       bad(f.key, typeof f.list === 'string' ? 'a list of strings' : 'a list of objects');
   }
-  if (t.check) out.push(...t.check(b).map((p) => `${name}: ${p}`));
-  if (b.config === undefined) return out;
-  if (!isObject(b.config)) return [...out, `${name}: "config" must be an object`];
-  const { enabled } = b.config;
+  if (t.check) out.push(...t.check(widget).map((p) => `${name}: ${p}`));
+  if (widget.config === undefined) return out;
+  if (!isObject(widget.config)) return [...out, `${name}: "config" must be an object`];
+  const { enabled } = widget.config;
   if (enabled !== undefined && typeof enabled !== 'boolean') bad('config.enabled', 'true or false');
   for (const c of t.config || []) {
-    const v = b.config[c.key];
+    const v = widget.config[c.key];
     if (v === undefined || (c.empty && v === '') || isBinding(v)) continue;
     if (c.type === 'link') {
       const p = linkProblem(v);

@@ -13,15 +13,15 @@ export function motionSections(list, doc, items) {
     id: s.id,
     at,
     name: (s.widgets || []).map(nameOf).find(Boolean) || '',
-    widgets: (s.widgets || []).map((b, j) => {
-      const el = doc.querySelector(`[data-widget="${CSS.escape(b.id)}"]`);
+    widgets: (s.widgets || []).map((widget, j) => {
+      const el = doc.querySelector(`[data-widget="${CSS.escape(widget.id)}"]`);
       return {
-        id: b.id,
+        id: widget.id,
         j,
         el,
-        label: WIDGET_TYPES[b.type]?.label || b.type,
-        name: nameOf(b),
-        anim: b.motion?.anim || '',
+        label: WIDGET_TYPES[widget.type]?.label || widget.type,
+        name: nameOf(widget),
+        anim: widget.motion?.anim || '',
         parts: el ? items.filter((it) => it.el.closest('[data-widget]') === el) : [],
       };
     }),

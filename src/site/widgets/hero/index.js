@@ -6,7 +6,7 @@ import { html, esc, img, lines, words, firstPhotos, sizes } from '../../helpers.
 import { t } from '../../strings.js';
 import { hrefOf } from '../../hrefs.js';
 
-const heroPhoto = (ctx, b, p, i) => {
+const heroPhoto = (ctx, widget, p, i) => {
   // phone: its own x / y / w over the desktop's (partly or all); null: hidden on phones
   const mobile = p.phone !== null;
   const ph = { x: p.x, y: p.y, w: p.w, ...(p.phone || {}) };
@@ -21,7 +21,7 @@ const heroPhoto = (ctx, b, p, i) => {
   >
     <span class="scatter__drift"
       ><span class="scatter__frame">
-        ${img(ctx, p.src, { decorative: true, sizes: sizes(`${mobile ? ph.w : 30}vw`, `${p.w}vw`), ...firstPhotos(i), attrs: b.ed(['photos', i, 'src'], 'image') })}
+        ${img(ctx, p.src, { decorative: true, sizes: sizes(`${mobile ? ph.w : 30}vw`, `${p.w}vw`), ...firstPhotos(i), attrs: widget.ed(['photos', i, 'src'], 'image') })}
       </span></span
     >
   </a>`;
@@ -50,11 +50,11 @@ export const HERO_STYLES = [
 const styleOf = (s) => (HERO_STYLES.some(([v]) => v === s.style) ? s.style : 'scattered');
 
 // beside / behind: the first photo with a file, one big photo (no scatter, no drift)
-const leadPhoto = (ctx, b, photos, look) => {
+const leadPhoto = (ctx, widget, photos, look) => {
   const i = photos.findIndex((p) => p?.src);
   if (i < 0) return '';
   return html`<div class="hero__photo">
-    ${img(ctx, photos[i].src, { decorative: true, sizes: look === 'beside' ? '50vw' : '100vw', ...firstPhotos(0), attrs: b.ed(['photos', i, 'src'], 'image') })}
+    ${img(ctx, photos[i].src, { decorative: true, sizes: look === 'beside' ? '50vw' : '100vw', ...firstPhotos(0), attrs: widget.ed(['photos', i, 'src'], 'image') })}
   </div>`;
 };
 
@@ -71,7 +71,7 @@ export const hero = {
     { key: 'style', label: 'Style', type: 'seg', options: HERO_STYLES, unset: 'scattered' },
     { key: 'title', label: 'Name', type: 'words', width: 'half' },
     { key: 'eyebrow', label: 'Eyebrow', width: 'half' },
-    { key: 'body', label: 'Subline', type: 'block' },
+    { key: 'body', label: 'Subline', type: 'multiline' },
     {
       key: 'photos',
       label: 'Photos',
@@ -84,29 +84,29 @@ export const hero = {
   // of 12px at 1440px wide, the viewport's 900px less the header), not the usual 40 × 6
   added: { span: 'all', rows: 68 },
   defaults: { style: 'scattered', title: 'Your name', eyebrow: '', body: '', photos: [] },
-  render: (s, ctx, b) => {
+  render: (s, ctx, widget) => {
     const look = styleOf(s);
     return html` <div class="hero hero--${look}" data-hero>
       ${
         look === 'scattered'
           ? html`<div class="hero__photos" data-anim="hero.photos">
-            ${(s.photos || []).map((p, i) => heroPhoto(ctx, b, p, i))}
+            ${(s.photos || []).map((p, i) => heroPhoto(ctx, widget, p, i))}
           </div>`
-          : leadPhoto(ctx, b, s.photos || [], look)
+          : leadPhoto(ctx, widget, s.photos || [], look)
       }
       <h1
         class="hero__title"
         data-anim="hero.title"
         style="--hero-word: ${longestWord(s.title ?? ctx.site.name)}"
       >
-        <span class="hero__name" ${b.ed('title', 'words')}
+        <span class="hero__name" ${widget.ed('title', 'words')}
           >${words(s.title ?? ctx.site.name)}</span
         >
       </h1>
       <div class="hero__meta" data-anim="hero.meta">
-        <span class="label" ${b.ed('eyebrow')}>${esc(s.eyebrow)}</span>
+        <span class="label" ${widget.ed('eyebrow')}>${esc(s.eyebrow)}</span>
         <span class="hero__scroll label" aria-hidden="true"><i></i>${esc(t(ctx, 'hero.scroll'))}</span>
-        <p class="hero__subline" ${b.ed('body', 'block')}>${lines(s.body)}</p>
+        <p class="hero__subline" ${widget.ed('body', 'multiline')}>${lines(s.body)}</p>
       </div>
     </div>`;
   },

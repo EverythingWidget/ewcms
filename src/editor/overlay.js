@@ -495,16 +495,16 @@ export function createOverlay({
     els.sel.hidden = !sel;
     if (sel) {
       place(els.sel, boxOf(sel, win));
-      const b = widgetOf(ui.widget);
-      els.sel.classList.toggle('is-free', sizeOf(b) !== 'rows');
+      const widget = widgetOf(ui.widget);
+      els.sel.classList.toggle('is-free', sizeOf(widget) !== 'rows');
       els.sel.classList.toggle('is-phone', mobile());
       // its size and place, the snapped ones while dragged or resized (widget-tag.js)
       const dragging = drag?.id === ui.widget && drag.pos;
       // Auto: off once its top or bottom edge is dragged (it gets rows on release)
       const auto =
-        sizeOf(b) === 'auto' &&
+        sizeOf(widget) === 'auto' &&
         !(dragging && /[ns]/.test(drag.h) && drag.pos.rows !== drag.from.rows);
-      els.sel.classList.toggle('is-auto', sizeOf(b) === 'auto' && !dragging);
+      els.sel.classList.toggle('is-auto', sizeOf(widget) === 'auto' && !dragging);
       const label = tagHtml(
         dragging ? drag.pos : shownPlace(sel, win),
         dragging ? drag.from : null,

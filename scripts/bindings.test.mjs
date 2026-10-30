@@ -82,7 +82,7 @@ test('resolve: unknown fields and missing items are empty, with a warning ({{tit
 test('resolveWidget: bound fields and config links resolved; an unbound widget is the same object', () => {
   // a type with a text, a multi-line text and a link (the registry's have one or two of them)
   const t = {
-    fields: [{ key: 'title' }, { key: 'body', type: 'block' }],
+    fields: [{ key: 'title' }, { key: 'body', type: 'multiline' }],
     config: [{ key: 'link', type: 'link' }],
   };
   const plain = { ...newWidget('button', new Set()), title: 'Hi' };

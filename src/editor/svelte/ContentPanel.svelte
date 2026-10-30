@@ -182,7 +182,9 @@
     const out = {};
     const win = bridge?.doc?.defaultView;
     if (!win || win.matchMedia(PHONE_MQ).matches) return out; // the phone grid's rows: not these
-    const ids = (live.store.current[file]?.sections?.[at]?.widgets || []).map((b) => b.id);
+    const ids = (live.store.current[file]?.sections?.[at]?.widgets || []).map(
+      (widget) => widget.id,
+    );
     for (const id of ids) {
       const el = bridge?.doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`);
       if (!el || el.hidden) continue;

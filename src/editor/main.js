@@ -121,21 +121,21 @@ const overlay = createOverlay({
   },
   // the selected widgets dragged (or nudged) by whole cells: one undo step
   ongroupmove(ids, dc, dr, { mobile = false, flow = {}, rows = 0 } = {}) {
-    const b = widgetAt(ids[0]);
-    if (b) moveWidgets(store, b.file, b.at, ids, dc, dr, { phone: mobile, flow, rows });
+    const found = widgetAt(ids[0]);
+    if (found) moveWidgets(store, found.file, found.at, ids, dc, dr, { phone: mobile, flow, rows });
   },
   onplace(id, pos, { mobile = false, flow = {}, rows = 0, size } = {}) {
-    const b = widgetAt(id);
-    if (!b) return;
-    if (mobile) placeMobile(store, b.file, b.at, b.j, pos, { flow, rows });
-    else placeWidget(store, b.file, b.at, b.j, pos, undefined, { flow, rows, size });
+    const found = widgetAt(id);
+    if (!found) return;
+    if (mobile) placeMobile(store, found.file, found.at, found.j, pos, { flow, rows });
+    else placeWidget(store, found.file, found.at, found.j, pos, undefined, { flow, rows, size });
   },
   // the preview tag's Auto toggle: Size Auto ↔ Rows (keeping the rows it shows), one undo step
   onsize(id, size, rows) {
-    const b = widgetAt(id);
-    if (!b) return;
+    const found = widgetAt(id);
+    if (!found) return;
     const auto = size === 'auto';
-    setWidget(store, b.file, b.at, b.j, {
+    setWidget(store, found.file, found.at, found.j, {
       size: auto ? undefined : 'rows',
       aspect: undefined,
       rows: auto ? undefined : rows,
@@ -143,9 +143,9 @@ const overlay = createOverlay({
   },
   // a widget linked to another (its top circle dropped on that one's bottom circle) or freed
   onlink(id, to, gap, { mobile = false, row } = {}) {
-    const b = widgetAt(id);
-    if (!b) return;
-    if (linkWidget(store, b.file, b.at, b.j, to, gap, { phone: mobile, row }) === null)
+    const found = widgetAt(id);
+    if (!found) return;
+    if (linkWidget(store, found.file, found.at, found.j, to, gap, { phone: mobile, row }) === null)
       toast("Can't link those widgets (another section's, or a loop)", { kind: 'error' });
   },
   // a Custom section's bottom edge dragged: its rows (one undo step)
@@ -155,8 +155,8 @@ const overlay = createOverlay({
     if (at >= 0) setSectionRows(store, file, at, rows, { phone: mobile });
   },
   widgetOf(id) {
-    const b = widgetAt(id);
-    return b && store.current[b.file].sections[b.at].widgets[b.j];
+    const found = widgetAt(id);
+    return found && store.current[found.file].sections[found.at].widgets[found.j];
   },
   // a section's name for its tag in the preview: as its card's title (SectionsList.svelte)
   secNameOf(id) {
@@ -465,7 +465,7 @@ function widgetAt(id) {
   const file = targetFile(ui.target, bridge.doc);
   const list = store.current[file]?.sections || [];
   for (const [at, s] of list.entries()) {
-    const j = (s.widgets || []).findIndex((b) => b.id === id);
+    const j = (s.widgets || []).findIndex((widget) => widget.id === id);
     if (j >= 0) return { file, at, j };
   }
   return null;
@@ -666,10 +666,10 @@ function selectionKey(e) {
     const n = nudgeStep(e.shiftKey);
     if (overlay.nudge(x * n, y * n)) e.preventDefault();
   } else if (['Delete', 'Backspace'].includes(e.key) && ui.multi.length > 1 && !ui.link) {
-    const b = widgetAt(ui.multi[0]);
-    if (!b) return;
+    const found = widgetAt(ui.multi[0]);
+    if (!found) return;
     e.preventDefault();
-    removeWidgets(store, b.file, b.at, ui.multi);
+    removeWidgets(store, found.file, found.at, ui.multi);
     selectWidgets([]);
   }
 }

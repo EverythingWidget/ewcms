@@ -65,7 +65,7 @@
   <Field
     edit="{file}#/meta/description"
     label={template ? 'Description (items without a summary)' : 'Description'}
-    type="block"
+    type="multiline"
     placeholder="The site's description"
     value={get('description')}
     changed={changed('description')}

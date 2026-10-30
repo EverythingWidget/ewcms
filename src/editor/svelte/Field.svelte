@@ -26,7 +26,7 @@
     }
     if (type === 'words') return raw.replace(/\s+/g, ' ').trim() || undefined;
     if (type === 'text') return raw.replace(/\s*\n\s*/g, ' ');
-    return raw; // 'block': line breaks are kept
+    return raw; // 'multiline': line breaks are kept
   }
 </script>
 
@@ -40,7 +40,7 @@
   import { fallback, openMedia, photoInfo, photoLine, thumbUrl } from './media.svelte.js';
 
   // edit: the field's data-edit ("file#/pointer"), also on the label so others can find it.
-  // type: 'text' | 'words' | 'number' | 'date' | 'block' | 'image' | 'boolean' | 'select' |
+  // type: 'text' | 'words' | 'number' | 'date' | 'multiline' | 'image' | 'boolean' | 'select' |
   // 'seg' (options as a button group, like Source; unset: the option shown when unset) |
   // 'spot' (nine options, row by row: a Position.svelte, its 3 x 3 grid in a popover; a photo's position).
   // onvalue(value) gets every valid input.
@@ -265,7 +265,7 @@
     />
   {:else if type === 'boolean'}
     <!-- the switch is in the label row -->
-  {:else if type === 'block'}
+  {:else if type === 'multiline'}
     <textarea
       id={uid}
       class={['tf__input', invalid && 'is-invalid']}

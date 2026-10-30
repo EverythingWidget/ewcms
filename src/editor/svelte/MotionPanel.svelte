@@ -53,7 +53,8 @@
   // the widget picked, where it is
   const picks = $derived.by(() => {
     const id = ui.anim?.widget;
-    for (const s of sections) for (const b of s.widgets) if (b.id === id) return { s, b };
+    for (const s of sections)
+      for (const widget of s.widgets) if (widget.id === id) return { s, widget };
     return null;
   });
 
@@ -93,9 +94,9 @@
           <Button size="small" icon="arrow-left" onclick={() => bridge.select(null)}
             >Elements</Button
           >
-          <h3 class="msel__title">{picks.b.label}</h3>
+          <h3 class="msel__title">{picks.widget.label}</h3>
           <span class="muted"
-            >Section {picks.s.at + 1}{picks.b.name ? ` · ${picks.b.name}` : ''}</span
+            >Section {picks.s.at + 1}{picks.widget.name ? ` · ${picks.widget.name}` : ''}</span
           >
         </div>
         <WidgetMotion
@@ -105,8 +106,8 @@
           {cfg}
           {file}
           at={picks.s.at}
-          j={picks.b.j}
-          el={picks.b.el}
+          j={picks.widget.j}
+          el={picks.widget.el}
           onlibrary={openLibrary}
           onpart={pick}
         />
@@ -132,23 +133,25 @@
       {#each sections as s (s.id)}
         <Section key="motion:{s.id}" title="Section {s.at + 1}" name={s.name}>
           <ol class="list">
-            {#each s.widgets as b (b.id)}
+            {#each s.widgets as widget (widget.id)}
               <li>
                 <button
                   type="button"
                   class="mlist__item"
-                  data-widget-item={b.id}
-                  disabled={!b.el}
-                  onclick={() => pick(b.el)}
-                  onpointerenter={() => bridge.setHover(b.el)}
+                  data-widget-item={widget.id}
+                  disabled={!widget.el}
+                  onclick={() => pick(widget.el)}
+                  onpointerenter={() => bridge.setHover(widget.el)}
                   onpointerleave={() => bridge.setHover(null)}
                 >
-                  <span class="mlist__id">{b.label}{b.name ? ` · ${b.name}` : ''}</span>
-                  <span class="muted">{b.anim || 'none'}</span>
+                  <span class="mlist__id"
+                    >{widget.label}{widget.name ? ` · ${widget.name}` : ''}</span
+                  >
+                  <span class="muted">{widget.anim || 'none'}</span>
                 </button>
-                {#if b.parts.length}
+                {#if widget.parts.length}
                   <ol class="list mlist__parts">
-                    {#each b.parts as p (p.el)}{@render part(p)}{/each}
+                    {#each widget.parts as p (p.el)}{@render part(p)}{/each}
                   </ol>
                 {/if}
               </li>

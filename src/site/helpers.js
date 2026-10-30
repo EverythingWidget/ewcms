@@ -70,7 +70,7 @@ export const setEditable = (on) => (editable = !!on);
 /**
  * Visual-editor marker: maps an element's text to a value in a content file (content/<folder>/<name>.json).
  *   ed('pages/index.json', ['hero', 'title'])  ->  data-edit="pages/index.json#/hero/title"
- * type: 'text' (single line, default), 'block' (multi-line, \n <-> <br>), 'number', or
+ * type: 'text' (single line, default), 'multiline' (multi-line, \n <-> <br>), 'number', or
  * 'words' (single line rendered with words(), e.g. the hero name).
  * The editor (src/editor) finds these in its preview; '' when not editable (the build).
  */

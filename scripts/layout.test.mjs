@@ -47,7 +47,7 @@ const F = 'pages/test/index.json';
 /** A section of widgets (given as [type, fields] or widgets), with fixed ids. */
 let n = 0;
 const id = (kind) => `${kind}-t${String(++n).padStart(3, '0')}`;
-const widget = (type, more = {}) => lay({ id: id('b'), type, ...more });
+const widget = (type, more = {}) => lay({ id: id('w'), type, ...more });
 // a Text widget's body: one paragraph line
 const lines = (t) => [{ style: 'paragraph', text: [{ t }] }];
 const section = (widgets, more = {}) => ({ id: id('s'), widgets, ...more });
@@ -56,11 +56,11 @@ const section = (widgets, more = {}) => ({ id: id('s'), widgets, ...more });
 
 test('ids: s-/b- with 4+ letters or digits, new ones never taken', () => {
   assert.ok(isId('s-k3x9', 's'));
-  assert.ok(isId('b-7qpa', 'b'));
-  assert.ok(!isId('s-k3x9', 'b'));
+  assert.ok(isId('w-7qpa', 'w'));
+  assert.ok(!isId('s-k3x9', 'w'));
   assert.ok(!isId('s-K3', 's'));
   const taken = new Set();
-  for (let i = 0; i < 300; i++) assert.ok(isId(newId('b', taken), 'b'));
+  for (let i = 0; i < 300; i++) assert.ok(isId(newId('w', taken), 'w'));
   assert.equal(taken.size, 300);
   const list = [section([widget('text'), widget('photo')])];
   assert.equal(idsOf(list).size, 3);
@@ -87,11 +87,11 @@ test("a widget whose source or item is cleared (the editor's ✕) still renders,
   for (const [type, t] of Object.entries(WIDGET_TYPES)) {
     const route = t.item ? item : page;
     const ids = new Set();
-    const b = newWidget(type, ids);
-    for (const c of t.config || []) if (c.type === 'source') delete b.config?.[c.key];
-    for (const f of t.fields || []) if (f.type === 'source') delete b[f.key];
-    delete b.item;
-    const list = [newSection(ids, [b])];
+    const widget = newWidget(type, ids);
+    for (const c of t.config || []) if (c.type === 'source') delete widget.config?.[c.key];
+    for (const f of t.fields || []) if (f.type === 'source') delete widget[f.key];
+    delete widget.item;
+    const list = [newSection(ids, [widget])];
     assert.doesNotThrow(() => renderSections(ctxOf(route), route, F, list), type);
     assert.deepEqual(
       checkContent(F, { version: 1, kind: 'page', id: 'pg-t007', sections: list }),
@@ -104,9 +104,9 @@ test("a widget whose source or item is cleared (the editor's ✕) still renders,
 test('a list widget without a source: its head without a link, no items (not a default list)', () => {
   for (const type of ['grid', 'projects', 'albums']) {
     const ids = new Set();
-    const b = newWidget(type, ids);
-    delete b.source; // None
-    const out = renderSections(ctxOf(page), page, F, [newSection(ids, [b])]);
+    const widget = newWidget(type, ids);
+    delete widget.source; // None
+    const out = renderSections(ctxOf(page), page, F, [newSection(ids, [widget])]);
     assert.doesNotMatch(out, /section__cta|<img/, type);
   }
 });
@@ -154,10 +154,10 @@ test('render: sections are grids, widgets carry their area; off is hidden', () =
   // links and fit text on the element
   const linked = [
     section([
-      widget('text', { id: 'b-lead' }),
+      widget('text', { id: 'w-lead' }),
       widget('text', {
-        id: 'b-foll',
-        link: { to: 'b-lead', gap: -3 },
+        id: 'w-foll',
+        link: { to: 'w-lead', gap: -3 },
         fit: true,
       }),
     ]),
@@ -165,7 +165,7 @@ test('render: sections are grids, widgets carry their area; off is hidden', () =
   const lo = renderSections(ctxOf(page), page, F, linked);
   assert.match(
     lo,
-    /class="wgt wgt--text wgt--auto wgt--fit"[^>]*" data-link="b-lead -3" data-mlink="b-lead -2"/,
+    /class="wgt wgt--text wgt--auto wgt--fit"[^>]*" data-link="w-lead -3" data-mlink="w-lead -2"/,
   );
   // a widget can't run past column 120
   const wide = [
@@ -228,7 +228,7 @@ test('validation: the layout, then each widget against its type', () => {
     'section 1: "height" must be one of custom, fit, third, half, full',
     'section 1: "enabled" must be true or false',
   ]);
-  const one = (b) => problems([section([{ id: 'b-aaaa', ...b }])]);
+  const one = (widget) => problems([section([{ id: 'w-aaaa', ...widget }])]);
   assert.deepEqual(one({ title: 'x' }), ['section 1, widget 1 needs a "type"']);
   assert.deepEqual(one({ type: 'unknown-type', anything: 1 }), []);
   assert.deepEqual(one({ type: 'text', layout: { base: { col: 116, span: 10, row: 1 } } }), [
@@ -272,12 +272,14 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   const store = createStore();
   store.load({ [F]: { version: 1, kind: 'page', id: 'pg-t008', sections: [] } });
   const sections = () => store.current[F].sections;
-  const types = () => sections().map((s) => s.widgets.map((b) => b.type).join('+'));
+  const types = () => sections().map((s) => s.widgets.map((widget) => widget.type).join('+'));
   addSection(store, F, 'photo');
   addSection(store, F, 'text', 0);
   addSection(store, F); // empty
   assert.deepEqual(types(), ['text', 'photo', '']);
-  assert.ok(sections().every((s) => isId(s.id, 's') && s.widgets.every((b) => isId(b.id, 'b'))));
+  assert.ok(
+    sections().every((s) => isId(s.id, 's') && s.widgets.every((widget) => isId(widget.id, 'w'))),
+  );
   duplicateSection(store, F, 0);
   assert.deepEqual(types(), ['text', 'text', 'photo', '']);
   assert.notEqual(sections()[0].id, sections()[1].id);
@@ -288,7 +290,7 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   removeSection(store, F, 3);
   assert.deepEqual(types(), ['photo', 'text', 'text']);
 
-  const b = addWidget(store, F, 0, 'button');
+  const w = addWidget(store, F, 0, 'button');
   // an added widget: Rows, 6 rows by 40 columns (a new section's too), below the others
   assert.deepEqual(sections()[0].widgets[0].layout.base, { col: 1, span: 40, row: 1, rows: 6 });
   assert.equal(sections()[0].widgets[0].size, 'rows'); // a photo: Rows; text, button: Auto (v0.1.47)
@@ -296,7 +298,7 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   assert.equal(sections()[0].widgets[1].size, undefined); // Auto: the default
   assert.equal(rowsOf(sections()[0]), 7); // an Auto widget: its row (its rows measured on the page)
   assert.equal(sections()[0].rows, undefined); // its rows: down to its lowest widget, not stored
-  assert.ok(isId(b.id, 'b'));
+  assert.ok(isId(w.id, 'w'));
   duplicateWidget(store, F, 0, 1);
   assert.deepEqual(types()[0], 'photo+button+button');
   assert.equal(flat(sections()[0].widgets[2]).pos.row, 15); // below the Auto one's guessed 8 rows

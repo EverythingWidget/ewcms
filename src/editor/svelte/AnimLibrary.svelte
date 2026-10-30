@@ -29,7 +29,7 @@
   // Who uses an animation: elements on this page, and data-anim names anywhere on the site
   // (targets in animations.json; how many elements each has on other pages isn't known here).
   const onPage = (n) => [
-    ...sections.flatMap((s) => s.widgets).filter((b) => b.anim === n && b.el),
+    ...sections.flatMap((s) => s.widgets).filter((widget) => widget.anim === n && widget.el),
     ...items.filter((it) => animationOf(cfg, it) === n),
   ];
   const targets = (n) => Object.keys(cfg.targets).filter((t) => cfg.targets[t].preset === n);

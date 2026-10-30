@@ -75,7 +75,7 @@ function page(id, widget) {
     kind: 'page',
     id,
 
-    sections: [{ id: 's-aaaa', widgets: [{ id: 'b-aaaa', layout, ...widget }] }],
+    sections: [{ id: 's-aaaa', widgets: [{ id: 'w-aaaa', layout, ...widget }] }],
   };
 }
 

@@ -33,7 +33,7 @@ import {
 
 const F = 'pages/test/index.json';
 const pos = { col: 3, span: 10, row: 5, rows: 20 };
-const wgt = (more = {}) => lay({ id: 'b-aaaa', type: 'text', pos, ...more });
+const wgt = (more = {}) => lay({ id: 'w-aaaa', type: 'text', pos, ...more });
 const sec = (widgets, more = {}) => ({ id: 's-aaaa', widgets, ...more });
 
 test('ratios: "w:h" with positive numbers', () => {
@@ -62,8 +62,8 @@ test('sizes: auto by default; every widget spans its stored rows (rows.js works 
 test('phone grid: 60 columns; a widget without a phone area stacks full width', () => {
   const placed = wgt({ size: 'rows', phone: { col: 55, span: 9, row: 3, rows: 4 } }); // span cut at column 60
   assert.equal(widgetVars(placed), '--c:3;--s:10;--r:5;--rs:20;--mc:55;--ms:6;--mr:3;--mrs:4');
-  const s = sec([placed, { ...wgt({ size: 'rows' }), id: 'b-bbbb' }]);
-  // b-bbbb stacked: full width, its desktop shape kept (20 rows over 10 columns: 120 over 60),
+  const s = sec([placed, { ...wgt({ size: 'rows' }), id: 'w-bbbb' }]);
+  // w-bbbb stacked: full width, its desktop shape kept (20 rows over 10 columns: 120 over 60),
   // from its desktop top halved (row 3): rows 3-122
   assert.equal(mobileRowsOf(s), 122);
   assert.match(sectionVars(s), /;--mrows:122$/);
@@ -164,8 +164,8 @@ test('section names: an anchor (id) from the name, unique on the page, a letter 
 });
 
 test('validation: size, aspect, mobile', () => {
-  const one = (b) =>
-    checkContent(F, { version: 1, kind: 'page', id: 'pg-t021', sections: [sec([wgt(b)])] });
+  const one = (widget) =>
+    checkContent(F, { version: 1, kind: 'page', id: 'pg-t021', sections: [sec([wgt(widget)])] });
   const of = (s) =>
     checkContent(F, { version: 1, kind: 'page', id: 'pg-t022', sections: [sec([], s)] });
   assert.deepEqual(
@@ -196,9 +196,9 @@ test('validation: size, aspect, mobile', () => {
 
 test('ops: widget settings, a phone area of its own, reset; one undo each', () => {
   const store = createStore();
-  const a = { id: 'b-aaaa', type: 'text', layout: { base: { col: 1, span: 24, row: 1 } } };
-  const b = { id: 'b-bbbb', type: 'text', layout: { base: { col: 1, span: 24, row: 11 } } };
-  store.load({ [F]: { version: 1, kind: 'page', id: 'pg-t023', sections: [sec([a, b])] } });
+  const a = { id: 'w-aaaa', type: 'text', layout: { base: { col: 1, span: 24, row: 1 } } };
+  const widget = { id: 'w-bbbb', type: 'text', layout: { base: { col: 1, span: 24, row: 11 } } };
+  store.load({ [F]: { version: 1, kind: 'page', id: 'pg-t023', sections: [sec([a, widget])] } });
   const widgets = () => store.current[F].sections[0].widgets;
 
   setWidget(store, F, 0, 0, { size: 'aspect', aspect: '3:2' });
@@ -213,7 +213,7 @@ test('ops: widget settings, a phone area of its own, reset; one undo each', () =
     col: 49,
     span: 12,
     row: 1,
-    link: { to: 'b-aaaa', gap: -1 },
+    link: { to: 'w-aaaa', gap: -1 },
   });
   assert.deepEqual(widgets()[0].layout.phone, { col: 1, span: 60, row: 1 });
   placeMobile(store, F, 0, 0, { col: 1, span: 30, row: 2, rows: 5 });
@@ -240,7 +240,7 @@ test('ops: widget settings, a phone area of its own, reset; one undo each', () =
 test('custom rows: widget moves only grow them; the bottom edge sets them; phone rows own', () => {
   const store = createStore();
   const a = {
-    id: 'b-aaaa',
+    id: 'w-aaaa',
     type: 'text',
     size: 'rows',
     layout: { base: { col: 1, span: 24, row: 1, rows: 10 } },
@@ -258,7 +258,7 @@ test('custom rows: widget moves only grow them; the bottom edge sets them; phone
   const vars = /^--rows:50;--mrows:\d+;--minrows:50;--mminrows:25$/;
   // moved inside its rows (desktop, phone): still 50 rows, not its content's
   placeWidget(store, F, 0, 0, { col: 5, span: 24, row: 3, rows: 10 }, undefined, {
-    flow: { 'b-aaaa': a.layout.base },
+    flow: { 'w-aaaa': a.layout.base },
     rows: 12,
   });
   assert.match(sectionVars(s()), vars);
@@ -340,7 +340,7 @@ test('phone height: validation', () => {
 test('phone height: its own, the desktop untouched; reset; rows, line and growth follow it', () => {
   const store = createStore();
   const a = {
-    id: 'b-aaaa',
+    id: 'w-aaaa',
     type: 'text',
     size: 'rows',
     layout: { base: { col: 1, span: 24, row: 1, rows: 10 } },

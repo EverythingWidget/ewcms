@@ -33,13 +33,13 @@ function* places(data) {
   for (const [at, s] of (Array.isArray(data?.sections) ? data.sections : []).entries()) {
     if (!isObject(s)) continue;
     yield [s, DEFAULTS.section, `section ${at + 1}`];
-    for (const [j, b] of (Array.isArray(s.widgets) ? s.widgets : []).entries()) {
-      if (!isObject(b)) continue;
+    for (const [j, widget] of (Array.isArray(s.widgets) ? s.widgets : []).entries()) {
+      if (!isObject(widget)) continue;
       const where = `section ${at + 1}, widget ${j + 1}`;
-      yield [b, DEFAULTS.widget, where];
-      if (isObject(b.config)) yield [b.config, DEFAULTS.config, `${where} config`];
-      if (b.type === 'hero' && Array.isArray(b.photos))
-        for (const [i, p] of b.photos.entries())
+      yield [widget, DEFAULTS.widget, where];
+      if (isObject(widget.config)) yield [widget.config, DEFAULTS.config, `${where} config`];
+      if (widget.type === 'hero' && Array.isArray(widget.photos))
+        for (const [i, p] of widget.photos.entries())
           if (isObject(p)) yield [p, DEFAULTS.heroPhoto, `${where} photo ${i + 1}`];
     }
   }
@@ -66,16 +66,16 @@ function strip(data, found) {
  */
 function tidy(data) {
   if (isEmpty(data.meta)) delete data.meta;
-  for (const [b] of eachWidget(data.sections)) {
-    if (!isObject(b)) continue;
-    if (isEmpty(b.config)) delete b.config;
-    const base = b.layout?.base;
+  for (const [widget] of eachWidget(data.sections)) {
+    if (!isObject(widget)) continue;
+    if (isEmpty(widget.config)) delete widget.config;
+    const base = widget.layout?.base;
     if (!isObject(base)) continue;
     const col = Number.isInteger(base.col) ? base.col : 1;
     if (base.col === 1) delete base.col;
     if (base.row === 1) delete base.row;
     if (Number.isInteger(base.span) && col + base.span - 1 === COLS) delete base.span;
-    if (isEmpty(base) && Object.keys(b.layout).length === 1) delete b.layout;
+    if (isEmpty(base) && Object.keys(widget.layout).length === 1) delete widget.layout;
   }
 }
 

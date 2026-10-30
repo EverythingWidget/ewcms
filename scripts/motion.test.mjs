@@ -25,7 +25,7 @@ const pageWith = (motion) => ({
   kind: 'page',
   id: 'pg-t011',
 
-  sections: [{ id: 's-aaaa', widgets: [{ id: 'b-aaaa', type: 'text', text: 'x', motion }] }],
+  sections: [{ id: 's-aaaa', widgets: [{ id: 'w-aaaa', type: 'text', text: 'x', motion }] }],
 });
 const problems = (motion) =>
   motionProblems({ animations: content.animations, pages: { t: pageWith(motion) } });
@@ -103,7 +103,7 @@ test('save refuses a widget with an unknown animation', () => {
   fs.cpSync(path.join(SITE_A, 'content/en'), path.join(root, 'content/en'), { recursive: true });
   const F = 'pages/index.json';
   const page = JSON.parse(fs.readFileSync(path.join(SITE_A, 'content/en', F), 'utf8'));
-  const wgt = page.sections.flatMap((s) => s.widgets).find((b) => b.motion);
+  const wgt = page.sections.flatMap((s) => s.widgets).find((widget) => widget.motion);
   const before = fs.readFileSync(path.join(root, 'content/en', F), 'utf8');
   wgt.motion = { anim: 'no-such-animation' };
   const res = save(root, { [F]: page });
@@ -112,7 +112,9 @@ test('save refuses a widget with an unknown animation', () => {
   assert.equal(fs.readFileSync(path.join(root, 'content/en', F), 'utf8'), before);
   // removing the animation from the library breaks the pages that use it
   const cfg = structuredClone(content.animations);
-  const used = page.sections.flatMap((s) => s.widgets).find((b) => b.motion && b !== wgt);
+  const used = page.sections
+    .flatMap((s) => s.widgets)
+    .find((widget) => widget.motion && widget !== wgt);
   delete cfg.presets[used.motion.anim];
   assert.equal(save(root, { 'settings/animations.json': cfg }).status, 400);
   wgt.motion = { anim: 'fade-scrub', start: 'top 70%' };

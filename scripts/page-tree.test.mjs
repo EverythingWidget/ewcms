@@ -31,7 +31,7 @@ const page = (id, title, more = {}) => ({
   sections: [
     {
       id: 's-aaaa',
-      widgets: [{ id: 'b-aaaa', type: 'text', body: [{ style: 'title', text: [{ t: title }] }] }],
+      widgets: [{ id: 'w-aaaa', type: 'text', body: [{ style: 'title', text: [{ t: title }] }] }],
     },
   ],
   ...more,

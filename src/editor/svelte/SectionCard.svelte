@@ -48,7 +48,7 @@
   let listEl = $state();
   const ld = listDrag({
     lists: () => (listEl ? [rowsOf(listEl, '[data-row]', 0)] : []),
-    shape: () => widgets.map((b) => b.id).join(','),
+    shape: () => widgets.map((widget) => widget.id).join(','),
     ondrop: (d) => {
       if (widgets[d.j]?.id !== d.id) return;
       moveWidget(live.store, file, at, d.j, d.over.to);
@@ -62,7 +62,7 @@
   // ---- multi-select (multi-select.js): Ctrl/Cmd+click toggles a row, Shift+click selects from
   // the row clicked last; only within one section: while Ctrl/Cmd is held with a selection in
   // another section, these rows are not clickable (dimmed, the not-allowed cursor)
-  const ids = $derived(widgets.map((b) => b.id));
+  const ids = $derived(widgets.map((widget) => widget.id));
   const sel = $derived(selectedIds(ui));
   const elsewhere = $derived(sel.length > 0 && !sel.some((id) => ids.includes(id)));
   const blocked = $derived(ui.mod && elsewhere);
@@ -98,20 +98,20 @@
 
 {#snippet list()}
   <ul class="widgets" aria-label="Widgets of {title}" bind:this={listEl}>
-    {#each widgets as b, j (b.id)}
+    {#each widgets as widget, j (widget.id)}
       <WidgetRow
-        widget={b}
-        onopen={() => onopen(b.id)}
-        onselect={(e) => pick(e, b.id)}
-        open={ui.widget === b.id || ui.multi.includes(b.id)}
+        {widget}
+        onopen={() => onopen(widget.id)}
+        onselect={(e) => pick(e, widget.id)}
+        open={ui.widget === widget.id || ui.multi.includes(widget.id)}
         {blocked}
-        hot={ui.hot?.from === 'preview' && ui.hot.id === b.id}
+        hot={ui.hot?.from === 'preview' && ui.hot.id === widget.id}
         onhover={(on) =>
           on
-            ? (ui.hot = { id: b.id, from: 'panel' })
-            : ui.hot?.from === 'panel' && ui.hot.id === b.id && (ui.hot = null)}
-        ongrab={(e) => ld.grab(e, { id: b.id, j })}
-        lifted={drag?.id === b.id && drag.moving}
+            ? (ui.hot = { id: widget.id, from: 'panel' })
+            : ui.hot?.from === 'panel' && ui.hot.id === widget.id && (ui.hot = null)}
+        ongrab={(e) => ld.grab(e, { id: widget.id, j })}
+        lifted={drag?.id === widget.id && drag.moving}
         dy={drag?.dy ?? 0}
         drop={ld.dropAt(j)}
       />

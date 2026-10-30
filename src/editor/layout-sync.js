@@ -25,8 +25,8 @@ import { kindOf } from '../site/widgets/index.js';
  * A widget's motion attributes as the site renders them:
  * [data-motion, data-motion-options, data-anim-parts].
  */
-function motionOf(b) {
-  const m = b?.motion;
+function motionOf(widget) {
+  const m = widget?.motion;
   if (!m || typeof m !== 'object') return [null, null, null];
   const { anim, parts, ...timing } = m;
   const own = parts && typeof parts === 'object' ? JSON.stringify(parts) : null;
@@ -75,7 +75,8 @@ export const syncRoots = (doc) => [pageView(doc), footerOf(doc)].filter(Boolean)
 
 // What each section element was rendered from: its index and its widgets' content (kindOf).
 const rendered = new WeakMap();
-const keyOf = (s, at) => JSON.stringify([at, (s?.widgets || []).map((b) => [b?.id, kindOf(b)])]);
+const keyOf = (s, at) =>
+  JSON.stringify([at, (s?.widgets || []).map((widget) => [widget?.id, kindOf(widget)])]);
 
 /** The view's section elements by id. */
 const sectionsIn = (view) =>
@@ -115,11 +116,11 @@ function applyLayout(el, s, moved = [], touched = { layout: false }) {
   el.hidden = s.enabled === false;
   if (el.className + '|' + el.style.cssText + el.hidden !== was) touched.layout = true;
   let remount = false;
-  for (const b of s.widgets || []) {
+  for (const widget of s.widgets || []) {
     // (its own widget, not one of a nested section's)
-    const node = el.querySelector(`[data-widget="${b?.id}"]`);
+    const node = el.querySelector(`[data-widget="${widget?.id}"]`);
     if (!node || node.closest('[data-sec]') !== el) continue;
-    const cls = widgetClass(b);
+    const cls = widgetClass(widget);
     const wasNode = node.className + '|' + node.style.cssText + node.hidden;
     node.className = cls;
     const kept = ['--fr', '--frs', '--tkf']
@@ -127,12 +128,12 @@ function applyLayout(el, s, moved = [], touched = { layout: false }) {
       .filter(([, x]) => x)
       .map(([v, x]) => `;${v}:${x}`)
       .join('');
-    node.style.cssText = widgetVars(b, s.widgets) + kept;
-    node.hidden = b.config?.enabled === false;
+    node.style.cssText = widgetVars(widget, s.widgets) + kept;
+    node.hidden = widget.config?.enabled === false;
     if (node.className + '|' + node.style.cssText + node.hidden !== wasNode) touched.layout = true;
-    for (const [name, value] of Object.entries(widgetLinks(b, s.widgets)))
+    for (const [name, value] of Object.entries(widgetLinks(widget, s.widgets)))
       if (setAttr(node, name, value)) touched.layout = true;
-    const [anim, options, parts] = motionOf(b);
+    const [anim, options, parts] = motionOf(widget);
     // its parts' animations are mounted with the view's: mount again
     if (setAttr(node, 'data-anim-parts', parts)) remount = true;
     const a = setAttr(node, 'data-motion', anim);

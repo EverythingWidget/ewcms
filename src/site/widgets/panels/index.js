@@ -28,7 +28,7 @@ export const panels = {
     panels: [{ source: 'people', title: 'People', unit: 'models' }],
     motion: { anim: 'grid-reveal' },
   },
-  render: (s, ctx, b) => {
+  render: (s, ctx, widget) => {
     const panel = ({ source, title, unit }, i) => {
       const list = Array.isArray(ctx.sources[source]) ? ctx.sources[source] : [];
       const cover = list.map(coverOf).find(Boolean);
@@ -37,8 +37,8 @@ export const panels = {
         >${cover ? img(ctx, cover, { sizes: sizes('100vw', '50vw'), ...firstPhotos(i), attrs: 'data-anim="place.card.image"' }) : ''}</span
       >
       <span class="ppanel__info"
-        ><span class="ppanel__title"${b.ed(['panels', i, 'title'])}>${esc(title)}</span
-        ><span class="label">${pad(list.length)} <span${b.ed(['panels', i, 'unit'])}>${esc(unit)}</span></span></span
+        ><span class="ppanel__title"${widget.ed(['panels', i, 'title'])}>${esc(title)}</span
+        ><span class="label">${pad(list.length)} <span${widget.ed(['panels', i, 'unit'])}>${esc(unit)}</span></span></span
       >
     </a>`;
     };

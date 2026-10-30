@@ -7,8 +7,8 @@ import { photo } from '../src/site/widgets/photo/index.js';
 const src = readFileSync(new URL('../src/site/widgets/photo/index.js', import.meta.url), 'utf8');
 
 test('photo caption has no inline-edit marker, the photo keeps its picker', () => {
-  assert.doesNotMatch(src, /b\.ed\('caption'\)/);
-  assert.match(src, /b\.ed\('src', 'image'\)/);
+  assert.doesNotMatch(src, /widget\.ed\('caption'\)/);
+  assert.match(src, /widget\.ed\('src', 'image'\)/);
 });
 
 test('photo popup has a Caption text field', () => {
@@ -19,7 +19,7 @@ test('photo popup has a Caption text field', () => {
 });
 
 test('rendered caption carries no edit attribute', () => {
-  const b = { ed: (k) => ` data-ed="${k}"` };
-  const out = String(photo.render({ src: '', caption: 'Hi' }, {}, b));
+  const widget = { ed: (k) => ` data-ed="${k}"` };
+  const out = String(photo.render({ src: '', caption: 'Hi' }, {}, widget));
   assert.match(out, /<figcaption class="label muted">Hi<\/figcaption>/);
 });

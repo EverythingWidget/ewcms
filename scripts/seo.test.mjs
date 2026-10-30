@@ -38,7 +38,7 @@ test('titles: the site template around the page title; home in full', () => {
           id: 's-aaaa',
           widgets: [
             {
-              id: 'b-aaaa',
+              id: 'w-aaaa',
               type: 'text',
               body: [{ style: 'title', text: [{ t: 'About me' }] }],
             },

@@ -284,7 +284,7 @@ export function createBridge({ store, labelFor }) {
               else el.removeAttribute('srcset');
               el.src = url;
             }
-          } else if (el.dataset.editType === 'block') {
+          } else if (el.dataset.editType === 'multiline') {
             const html = escText(value).replace(/\r?\n/g, '<br>');
             if (el.innerHTML !== html) el.innerHTML = html;
           } else if (el.dataset.editType === 'words') {
@@ -620,7 +620,7 @@ export function createBridge({ store, labelFor }) {
 
   function readValue(el) {
     const type = el.dataset.editType || 'text';
-    if (type === 'block') return el.innerText.replace(/\u00a0/g, ' ').replace(/\n+$/, '');
+    if (type === 'multiline') return el.innerText.replace(/\u00a0/g, ' ').replace(/\n+$/, '');
     if (type === 'words') {
       const text = el.textContent.replace(/\s+/g, ' ').trim();
       return text || undefined; // the name can't be empty
@@ -879,7 +879,7 @@ export function createBridge({ store, labelFor }) {
         }
         const el = e.target.closest?.('[contenteditable][data-edit]');
         if (el) {
-          if (e.key === 'Enter' && el.dataset.editType !== 'block') {
+          if (e.key === 'Enter' && el.dataset.editType !== 'multiline') {
             e.preventDefault();
             el.blur();
             return;

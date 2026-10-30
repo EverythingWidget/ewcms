@@ -91,9 +91,13 @@ export const pathOfId = (id) =>
  * else undefined. A title with a field in it names the item, not the page: none.
  */
 export const pageTitle = (page) => {
-  for (const b of widgetsOf(page))
-    if (b?.type === 'text' && Array.isArray(b.body) && b.body.some((l) => l?.style === 'title'))
-      return lineText(b.body, 'title');
+  for (const widget of widgetsOf(page))
+    if (
+      widget?.type === 'text' &&
+      Array.isArray(widget.body) &&
+      widget.body.some((l) => l?.style === 'title')
+    )
+      return lineText(widget.body, 'title');
   return undefined;
 };
 

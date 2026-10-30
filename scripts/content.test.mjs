@@ -97,7 +97,7 @@ test('checkContent per kind', () => {
       version: 1,
       kind: 'page',
       id: 'pg-t044',
-      main: 'b-main',
+      main: 'w-main',
     }),
     [],
   );
@@ -106,7 +106,7 @@ test('checkContent per kind', () => {
       version: 1,
       kind: 'page',
       id: 'pg-t045',
-      main: 'b-main',
+      main: 'w-main',
     }).length,
     1,
   );
@@ -236,7 +236,7 @@ test('editor markers: only when rendering for the editor (dev), never in the bui
   const dev = renderRoute(home, content, { editable: true });
   assert.match(dev.body, /data-edit="pages\/index\.json#\/sections\/0\/widgets\/0\/title"/);
   assert.match(dev.body, /data-sec="s-[a-z0-9]+"/);
-  assert.match(dev.body, /data-widget="b-[a-z0-9]+"/);
+  assert.match(dev.body, /data-widget="w-[a-z0-9]+"/);
   assert.match(dev.body, /data-curtain-edit="/);
 });
 
@@ -328,7 +328,7 @@ test('draft: pages render the unsaved edits; only existing, valid files; {} clea
             id: 's-aaaa',
             widgets: [
               {
-                id: 'b-aaaa',
+                id: 'w-aaaa',
                 type: 'text',
                 text: 'Draft',
                 layout: { base: { col: 1, span: 24, row: 1 } },

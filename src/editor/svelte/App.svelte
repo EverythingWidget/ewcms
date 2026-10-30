@@ -117,7 +117,7 @@
       const file = targetFile(ui.target, bridge.doc);
       const list = live.get(file, '/sections') || [];
       for (const [at, s] of list.entries()) {
-        const j = (s?.widgets || []).findIndex((b) => b?.id === ui.widget);
+        const j = (s?.widgets || []).findIndex((widget) => widget?.id === ui.widget);
         if (j < 0) continue;
         e.preventDefault();
         layerWidget(live.store, file, at, j, e.key === ']' ? 1 : -1);

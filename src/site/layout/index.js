@@ -4,7 +4,7 @@
  * ("sections" in its file, content/en/pages/<page>/index.json or a template's [param]/index.json):
  *
  *   { "id": "s-k3x9", "name": "Our people",
- *     "widgets": [{ "id": "b-7qpa", "type": "heading", "title": "People",
+ *     "widgets": [{ "id": "w-7qpa", "type": "heading", "title": "People",
  *                  "layout": { "base": { "col": 13, "row": 4 } } }] }
  *
  * Every page is on the one grid of COLS (120) columns (not stored). An area's defaults are left
@@ -128,7 +128,7 @@ export function ratioOf(text) {
 }
 
 /** A widget's size mode ('auto' when unset or unknown). */
-export const sizeOf = (b) => (SIZES.includes(b?.size) ? b.size : 'auto');
+export const sizeOf = (widget) => (SIZES.includes(widget?.size) ? widget.size : 'auto');
 
 /**
  * A new widget of `type`: its defaults, on, full width at `pos` (8 rows, ~90px at 1440px, from
@@ -137,9 +137,9 @@ export const sizeOf = (b) => (SIZES.includes(b?.size) ? b.size : 'auto');
  */
 export function newWidget(type, taken, pos = {}) {
   const { config = {}, ...rest } = structuredClone(WIDGET_TYPES[type].defaults || {});
-  const b = { id: newId('b', taken), type, ...rest, config };
-  setBase(b, { col: 1, span: COLS, row: 1, rows: 8, ...pos });
-  return b;
+  const widget = { id: newId('w', taken), type, ...rest, config };
+  setBase(widget, { col: 1, span: COLS, row: 1, rows: 8, ...pos });
+  return widget;
 }
 
 /** A new section holding `widgets`: its content's height (fit), contained, no name. */
@@ -152,8 +152,8 @@ export function rowsOf(section) {
   const widgets = Array.isArray(section?.widgets) ? section.widgets : [];
   return Math.max(
     1,
-    ...widgets.map((b) => {
-      const p = placeOf(baseOf(b));
+    ...widgets.map((widget) => {
+      const p = placeOf(baseOf(widget));
       return p.row + p.rows - 1;
     }),
   );
@@ -167,8 +167,8 @@ export function mobileRowsOf(section) {
   const widgets = Array.isArray(section?.widgets) ? section.widgets : [];
   return Math.max(
     Math.ceil(rowsOf(section) / 2),
-    ...widgets.map((b) => {
-      const m = phoneAreaOf(b, widgets);
+    ...widgets.map((widget) => {
+      const m = phoneAreaOf(widget, widgets);
       return m.row + m.rows - 1;
     }),
   );
@@ -235,15 +235,15 @@ export function sectionAnchor(s) {
  * The classes of a widget's element: its type, size mode (wgt--aspect, wgt--auto; fixed rows:
  * neither), fitted text, hidden on phones.
  */
-export function widgetClass(b) {
-  const size = sizeOf(b);
-  const aspect = size === 'aspect' && ratioOf(b?.aspect);
+export function widgetClass(widget) {
+  const size = sizeOf(widget);
+  const aspect = size === 'aspect' && ratioOf(widget?.aspect);
   return (
-    `wgt wgt--${b?.type}` +
+    `wgt wgt--${widget?.type}` +
     (aspect ? ' wgt--aspect' : size === 'auto' || size === 'aspect' ? ' wgt--auto' : '') +
-    (fitted(b) ? ' wgt--fit' : '') +
-    placeClass(b) +
-    (b?.layout?.phone === null ? ' wgt--m-hidden' : '')
+    (fitted(widget) ? ' wgt--fit' : '') +
+    placeClass(widget) +
+    (widget?.layout?.phone === null ? ' wgt--m-hidden' : '')
   );
 }
 
@@ -251,15 +251,15 @@ export function widgetClass(b) {
  * The CSS variables of a widget's element: its grid area, layer, phone area (its own, or its
  * place in its section's default phone stack: `widgets`, the section's).
  */
-export function widgetVars(b, widgets) {
-  const p = placeOf(baseOf(b));
-  const m = phoneAreaOf(b, widgets);
-  const ratio = sizeOf(b) === 'aspect' ? ratioOf(b?.aspect) : null;
+export function widgetVars(widget, widgets) {
+  const p = placeOf(baseOf(widget));
+  const m = phoneAreaOf(widget, widgets);
+  const ratio = sizeOf(widget) === 'aspect' ? ratioOf(widget?.aspect) : null;
   return (
     `--c:${p.col};--s:${p.span};--r:${p.row};--rs:${p.rows}` +
-    (Number.isInteger(b?.z) && b.z !== 0 ? `;--z:${b.z}` : '') +
+    (Number.isInteger(widget?.z) && widget.z !== 0 ? `;--z:${widget.z}` : '') +
     (ratio ? `;--ar:${ratio[0]} / ${ratio[1]}` : '') +
-    placeVars(b) +
+    placeVars(widget) +
     `;--mc:${m.col};--ms:${m.span};--mr:${m.row};--mrs:${m.rows}`
   );
 }
@@ -268,17 +268,17 @@ export function widgetVars(b, widgets) {
  * A widget's links as attributes of its element (src/client/modules/rows.js reads them):
  * data-link="<id> <gap>" (desktop), data-mlink (the phone grid's; ./links.js linkOf).
  */
-export function widgetLinks(b, widgets) {
-  const d = linkOf(b);
-  const m = linkOf(b, true, widgets);
+export function widgetLinks(widget, widgets) {
+  const d = linkOf(widget);
+  const m = linkOf(widget, true, widgets);
   return {
     'data-link': d ? `${d.to} ${d.gap}` : null,
     'data-mlink': m ? `${m.to} ${m.gap}` : null,
   };
 }
 
-const linkAttrs = (b, widgets) =>
-  Object.entries(widgetLinks(b, widgets))
+const linkAttrs = (widget, widgets) =>
+  Object.entries(widgetLinks(widget, widgets))
     .filter(([, v]) => v !== null)
     .map(([k, v]) => ` ${k}="${esc(v)}"`)
     .join('');
@@ -308,7 +308,8 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
     const attr = ` data-bound="${esc(editRef(file, parts(path)))}"`;
     return missing ? `${attr} data-bound-missing` : attr;
   };
-  const b = {
+  // the render's `widget` (src/site/widgets/index.js): its id, file, ed() and what it shows
+  const api = {
     id: widget.id,
     file,
     ...shown,
@@ -322,14 +323,16 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
   const data = resolveWidget(widget, t, { item, source, ctx, at: where, placeholders: editable });
   const marker = editable ? ` data-widget="${esc(widget.id)}"` : '';
   const hidden = widget.config?.enabled === false ? ' hidden' : '';
-  return `<div class="${widgetClass(widget)}"${marker} style="${widgetVars(widget, siblings)}"${linkAttrs(widget, siblings)}${motionAttrs(widget)}${hidden}>${t.render(data, ctx, b)}</div>`;
+  return `<div class="${widgetClass(widget)}"${marker} style="${widgetVars(widget, siblings)}"${linkAttrs(widget, siblings)}${motionAttrs(widget)}${hidden}>${t.render(data, ctx, api)}</div>`;
 }
 
 /** Section `at` of a page file, rendered. */
 export function renderSection(ctx, route, file, section, at) {
   if (section?.enabled === false && !editable) return ''; // off: not on the public page
   const list = Array.isArray(section?.widgets) ? section.widgets : [];
-  const widgets = list.map((b, j) => renderWidget(ctx, route, file, at, j, b, list)).join('');
+  const widgets = list
+    .map((widget, j) => renderWidget(ctx, route, file, at, j, widget, list))
+    .join('');
   const marker = editable ? ` data-sec="${esc(section?.id ?? '')}"` : '';
   const anchor = sectionAnchor(section);
   const hidden = section?.enabled === false ? ' hidden' : '';

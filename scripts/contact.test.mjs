@@ -208,7 +208,7 @@ test('the widget: where it sends, its form, its validation', () => {
     kind: 'page',
     id: 'pg-t034',
 
-    sections: [{ id: 's-aaaa', widgets: [{ id: 'b-aaaa', type: 'form', fields, layout }] }],
+    sections: [{ id: 's-aaaa', widgets: [{ id: 'w-aaaa', type: 'form', fields, layout }] }],
   });
   assert.deepEqual(checkContent('pages/contact/index.json', page(s.fields)), []);
   assert.deepEqual(

@@ -31,14 +31,14 @@ export const isBinding = (v) => isObject(v) && typeof v.bind === 'string';
 export const BIND_TYPES = {
   text: ['text', 'choice', 'number', 'date', 'link'],
   words: ['text', 'choice'],
-  block: ['longtext', 'text', 'choice', 'number', 'date'],
+  multiline: ['longtext', 'text', 'choice', 'number', 'date'],
   number: ['number'],
   image: ['photo'],
   link: ['link'],
   photos: ['photos'],
 };
 /** Widget field types whose binding can have a format. */
-export const FORMAT_TYPES = ['text', 'words', 'block', 'link'];
+export const FORMAT_TYPES = ['text', 'words', 'multiline', 'link'];
 
 /** The bound value in its format ("{value} photos"); empty stays empty. */
 const formatted = (v, format) =>
@@ -77,7 +77,7 @@ export function resolve(
 ) {
   const warn = (msg) => onwarn(at ? `${at}: ${msg}` : msg);
   // what can't be filled: '' on the site, {{name}} in the editor's preview (dimmed there)
-  const text = ['text', 'words', 'block'].includes(def?.type || 'text') && !def?.list;
+  const text = ['text', 'words', 'multiline'].includes(def?.type || 'text') && !def?.list;
   const missing = (name) => (placeholders && text ? `{{${name}}}` : empty(def));
   if (isBinding(value)) {
     if (!item)
@@ -183,13 +183,13 @@ export function bindingProblems(content, { types, files = null }) {
   for (const [id, page] of Object.entries(content?.pages || {})) {
     const file = pageFile(id);
     if (files && !files.has(file)) continue;
-    for (const [b, , at, j] of eachWidget(page?.sections)) {
-      const t = types[b?.type];
-      if (!t || !isObject(b)) continue;
+    for (const [widget, , at, j] of eachWidget(page?.sections)) {
+      const t = types[widget?.type];
+      if (!t || !isObject(widget)) continue;
       const where = `${contentPath(file)} (sections/${at}/widgets/${j})`;
       const problem = (level, msg) => out.push({ level, message: `${where}: ${msg}` });
-      const s = sourceOf(b);
-      if (b.source !== undefined && !s) {
+      const s = sourceOf(widget);
+      if (widget.source !== undefined && !s) {
         problem(
           'error',
           `source: { "mode": ${MODES.map((m) => `"${m}"`).join(' | ')}, "from": "<source>" }`,
@@ -205,7 +205,7 @@ export function bindingProblems(content, { types, files = null }) {
         if (s.mode === 'item' && !list.some((it) => it?.id === s.id))
           problem('warn', `source: "${s.id}" is not in ${s.from}: its bound fields are empty`);
       }
-      const uses = bindingsOf(b, t);
+      const uses = bindingsOf(widget, t);
       if (!uses.length) continue;
       if (!s) {
         problem(

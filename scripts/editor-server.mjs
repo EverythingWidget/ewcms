@@ -407,8 +407,8 @@ export function pagesOp(
     for (const f of inside) {
       const data = structuredClone(before[f]);
       let changed = false;
-      for (const [b] of eachWidget(data?.sections))
-        for (const rule of sourceOf(b)?.mode === 'url' ? rulesOf(b.source.where) : [])
+      for (const [widget] of eachWidget(data?.sections))
+        for (const rule of sourceOf(widget)?.mode === 'url' ? rulesOf(widget.source.where) : [])
           if (rule?.param === old) ((rule.param = name), (changed = true));
       if (changed) writeData(moved(f), data);
     }

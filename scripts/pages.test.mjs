@@ -46,7 +46,7 @@ test('add: a folder with its index.json, valid slugs only, no overwrites', () =>
   assert.deepEqual(r.body.created, ['pages/people/new-one/index.json']);
   const [heading] = read(root, 'pages/people/new-one/index.json').sections;
   assert.deepEqual(
-    heading.widgets.map(({ id: _id, ...b }) => b),
+    heading.widgets.map(({ id: _id, ...widget }) => widget),
     [
       {
         type: 'text',
@@ -97,7 +97,7 @@ test('template: [param]/index.json in a page folder, one per folder, not at the 
   );
   const [album] = read(root, 'pages/about/[slug]/index.json').sections;
   assert.deepEqual(
-    album.widgets.map((b) => b.type),
+    album.widgets.map((widget) => widget.type),
     ['album'],
   );
   assert.deepEqual([album.height, album.width, album.align], ['full', 'full', undefined]);
@@ -203,7 +203,7 @@ test('move: a page into another folder, its name kept; links follow, no redirect
         id: 's-aaaa',
         widgets: [
           {
-            id: 'b-aaaa',
+            id: 'w-aaaa',
             type: 'text',
             body: [{ style: 'paragraph', text: [{ t: 'x', link: { href: '/people/team/#top' } }] }],
           },

@@ -12,7 +12,7 @@
       "id": "s-st15",
       "widgets": [
         {
-          "id": "b-st16",
+          "id": "w-st16",
           "type": "text",
           "body": [
             {
@@ -59,7 +59,7 @@
       "id": "s-st17",
       "widgets": [
         {
-          "id": "b-st18",
+          "id": "w-st18",
           "type": "text",
           "body": [
             {
@@ -98,7 +98,7 @@
       "id": "s-st19",
       "widgets": [
         {
-          "id": "b-st20",
+          "id": "w-st20",
           "type": "text",
           "body": [
             {
@@ -183,7 +183,7 @@
       "id": "s-st21",
       "widgets": [
         {
-          "id": "b-st22",
+          "id": "w-st22",
           "type": "text",
           "body": [
             {

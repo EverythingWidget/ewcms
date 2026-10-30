@@ -34,11 +34,11 @@ export const albums = {
     config: { layout: 'portrait' },
     motion: { anim: 'grid-reveal' },
   },
-  render: (s, ctx, b) => {
-    const source = b.source || ''; // None: no cards
+  render: (s, ctx, widget) => {
+    const source = widget.source || ''; // None: no cards
     const landscape = s.config?.layout === 'landscape';
     return html` <div class="agrid${landscape ? ' agrid--landscape' : ''}">
-      ${b.items.map((p) => albumCard(ctx, source, p, { landscape, index: b.indexOf(p) }))}
+      ${widget.items.map((p) => albumCard(ctx, source, p, { landscape, index: widget.indexOf(p) }))}
     </div>`;
   },
 };

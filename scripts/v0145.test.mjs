@@ -36,8 +36,8 @@ test('v0.1.45: added widgets: col 1, below the lowest one as shown, never on top
     shown: { [sec().widgets[0].id]: { row: 12, rows: 28 } },
   });
   assert.deepEqual([baseOf(a).col, baseOf(a).row], [1, 40]);
-  const b = addWidget(store, F, 0, 'photo');
-  assert.equal(baseOf(b).row, 46); // below a (6 rows); no preview: as stored
+  const widget = addWidget(store, F, 0, 'photo');
+  assert.equal(baseOf(widget).row, 46); // below a (6 rows); no preview: as stored
   const c = addWidget(store, F, 0, 'photo', { shown: { bogus: { row: 1, rows: 'x' } } });
   assert.equal(baseOf(c).row, 52);
   assert.deepEqual(checkContent(F, store.current[F]), []);

@@ -10,9 +10,9 @@ import { storesRows } from '../src/site/layout/grid.js';
 
 const clean = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined));
 
-export function lay(b) {
-  const { pos, link, phone, ...rest } = b;
-  if (rest.layout) return b;
+export function lay(widget) {
+  const { pos, link, phone, ...rest } = widget;
+  if (rest.layout) return widget;
   const keep = storesRows(rest);
   const base = clean({ ...(pos || { col: 1, span: 120, row: 1 }), link });
   if (!keep) delete base.rows;
@@ -26,8 +26,8 @@ export function lay(b) {
   return out;
 }
 
-export function flat(b) {
-  const { layout, ...rest } = b || {};
+export function flat(widget) {
+  const { layout, ...rest } = widget || {};
   const { link, ...pos } = layout?.base || {};
   return clean({ ...rest, pos, link, phone: layout?.phone });
 }
@@ -88,13 +88,13 @@ export function paramPage(id, from, fields = {}, extra = {}) {
     .filter(Boolean);
   const rules = params.map((param) => ({ param, field: fields[param] ?? 'slug' }));
   return {
-    main: 'b-main',
+    main: 'w-main',
     sections: [
       {
         id: 's-main',
         widgets: [
           {
-            id: 'b-main',
+            id: 'w-main',
             type: 'album',
             source: { mode: 'url', from, where: { op: 'and', rules } },
           },

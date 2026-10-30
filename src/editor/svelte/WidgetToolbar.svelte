@@ -56,7 +56,7 @@
     const file = targetFile(ui.target, bridge.doc);
     const list = live.get(file, '/sections') || [];
     for (const [at, s] of list.entries()) {
-      const j = (s?.widgets || []).findIndex((b) => b?.id === id);
+      const j = (s?.widgets || []).findIndex((widget) => widget?.id === id);
       if (j >= 0) return { id, file, at, j, base: `/sections/${at}/widgets/${j}` };
     }
     return null;

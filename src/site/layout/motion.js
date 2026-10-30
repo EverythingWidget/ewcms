@@ -124,14 +124,14 @@ export function motionProblems(content, { files = null } = {}) {
   for (const [id, page] of Object.entries(content.pages || {})) {
     const file = pageFile(id);
     if (files && !files.has(file)) continue;
-    for (const [b, , at, j] of eachWidget(page?.sections)) {
-      const where = `${contentPath(file)}: section ${at + 1}, widget ${j + 1} (${b.type})`;
-      const parts = b?.motion?.parts;
+    for (const [widget, , at, j] of eachWidget(page?.sections)) {
+      const where = `${contentPath(file)}: section ${at + 1}, widget ${j + 1} (${widget.type})`;
+      const parts = widget?.motion?.parts;
       if (isObject(parts))
         for (const [name, p] of Object.entries(parts))
           if (typeof p?.preset === 'string' && !presets[p.preset])
             out.push(`${where}: part "${name}" uses unknown animation "${p.preset}"`);
-      const anim = b?.motion?.anim;
+      const anim = widget?.motion?.anim;
       if (typeof anim !== 'string') continue;
       const p = presets[anim];
       if (!p) out.push(`${where}: unknown animation "${anim}"`);
@@ -145,8 +145,8 @@ export function motionProblems(content, { files = null } = {}) {
 }
 
 /** The motion attributes of a widget's element ('' without motion). */
-export function motionAttrs(b) {
-  const m = b?.motion;
+export function motionAttrs(widget) {
+  const m = widget?.motion;
   if (!isObject(m)) return '';
   const { anim, parts, ...timing } = m;
   const own = isObject(parts) ? ` data-anim-parts="${esc(JSON.stringify(parts))}"` : '';

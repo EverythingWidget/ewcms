@@ -364,7 +364,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   "height": "half",
   "widgets": [
     {
-      "id": "b-7qpa",
+      "id": "w-7qpa",
       "type": "text",
       "body": [
         { "style": "label", "text": [{ "t": "Photography / People" }] },
@@ -373,7 +373,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
       "layout": { "base": { "col": 1, "span": 120, "row": 1 } }
     },
     {
-      "id": "b-2fq0",
+      "id": "w-2fq0",
       "type": "photo",
       "src": "people/noor/01.jpg",
       "size": "aspect",
@@ -382,11 +382,11 @@ every section is a grid of **widgets** (`src/site/layout/`):
       "z": 1
     },
     {
-      "id": "b-c4pt",
+      "id": "w-c4pt",
       "type": "text",
       "text": "Noor, Amsterdam 2026",
       "layout": {
-        "base": { "col": 61, "span": 40, "row": 26, "link": { "to": "b-2fq0", "gap": 1 } },
+        "base": { "col": 61, "span": 40, "row": 26, "link": { "to": "w-2fq0", "gap": 1 } },
         "phone": null
       },
       "fit": true
@@ -482,7 +482,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
 - **Free widgets and links** (`src/site/layout/links.js`): widgets are **free**: each stays at
   the row it was placed on whatever the widgets above it do, and widgets may overlap (`z` orders
   them). A widget can **follow** another widget of its section instead,
-  `layout.base.link`, `{ "to": "b-2fq0", "gap": 1 }`: its top is that widget's bottom plus `gap` cells
+  `layout.base.link`, `{ "to": "w-2fq0", "gap": 1 }`: its top is that widget's bottom plus `gap` cells
   (negative: they overlap, e.g. a caption over a photo's bottom edge), so when the leader grows
   or shrinks (text wrapping at another width, an aspect photo) its followers move with it, and
   theirs with them. One leader per widget, any number of followers per leader, chains; no loops
@@ -543,8 +543,8 @@ every section is a grid of **widgets** (`src/site/layout/`):
 
 **Widgets.** The widget types live in **one registry**, `src/site/widgets/` (`index.js` explains the
 shape): the build renders with it, and the editor reads it for each widget's fields and settings
-and for **Add widget**. A type is `{ type, label, icon, fields, config, defaults, render(widget,
-ctx, b) }`; `list` makes it show a list of items (grid, albums, projects), `item` one item it
+and for **Add widget**. A type is `{ type, label, icon, fields, config, defaults, render(data,
+ctx, widget) }`; `list` makes it show a list of items (grid, albums, projects), `item` one item it
 needs (album). Which items a widget shows is its `source` (see "Widget sources"). A widget's content
 sits next to its type, how it works under `config` (`enabled`: on/off; look, …):
 
@@ -612,7 +612,7 @@ export default {
   icon: 'quote-left', // Font Awesome name (Add widget modal, outline)
   line: 'A pull quote and who said it', // the modal's description
   fields: [
-    { key: 'quote', label: 'Quote', type: 'block' },
+    { key: 'quote', label: 'Quote', type: 'multiline' },
     { key: 'author', label: 'Author', width: 'half' },
   ],
   config: [
@@ -628,10 +628,10 @@ export default {
   ],
   defaults: { quote: 'Something worth repeating.', author: 'Someone', config: {} },
   check: (w) => [], // optional: extra content problems
-  render: (w, ctx, b) =>
+  render: (data, ctx, widget) =>
     html`<figure class="quote">
-      <blockquote ${b.ed('quote', 'block')}>${lines(w.quote)}</blockquote>
-      <figcaption ${b.ed('author')}>${esc(w.author)}</figcaption>
+      <blockquote ${widget.ed('quote', 'multiline')}>${lines(data.quote)}</blockquote>
+      <figcaption ${widget.ed('author')}>${esc(data.author)}</figcaption>
     </figure>`,
 };
 ```
@@ -639,7 +639,7 @@ export default {
 That's all: the registry (`registerWidgets` in `src/site/widgets/index.js`) adds it next to the
 built-ins for the prerender, content validation (its `fields` types and `check`), and, through
 `virtual:site-widgets`, the editor: the Add widget modal, the inspector (from `fields`/`config`),
-Motion and the widget/layout toolbars need no code of their own. `b.ed(key)` makes a field
+Motion and the widget/layout toolbars need no code of their own. `widget.ed(key)` makes a field
 editable in place on the preview. A bad definition or a built-in's type stops the build/dev
 server with a message. Example and tests: `test/fixtures/site-b`, `scripts/site-widgets.test.mjs`.
 After editing a widget's `index.js`, restart `npm run dev` (the editor's server endpoints load it once).
@@ -1131,7 +1131,7 @@ while it crosses the screen), `fade-scrub` (fades in from `top 95%` to `top 55%`
 **Widget motion.** A widget (Layout, above) picks its animation in its own content:
 
 ```json
-{ "id": "b-2fq0", "type": "photo", "motion": { "anim": "parallax-y", "end": "bottom 20%" } }
+{ "id": "w-2fq0", "type": "photo", "motion": { "anim": "parallax-y", "end": "bottom 20%" } }
 ```
 
 `anim` is a preset id; every other key is a timing override (`TIMING_KEYS` in
@@ -1425,8 +1425,8 @@ undo/redo, **Esc** deselects (a dialog first, then the selected link, then the w
 
 **How text maps to JSON.** Templates mark text with the `ed()` helper, e.g.
 `<h2${ed('pages/about/index.json', ['sections', 0, 'widgets', 0, 'headline'])}>` (in a widget type:
-`b.ed('headline')`), which renders `data-edit="pages/about/index.json#/sections/0/widgets/0/headline"` (a
-JSON Pointer). Use `ed(file, path, 'block')`
+`widget.ed('headline')`), which renders `data-edit="pages/about/index.json#/sections/0/widgets/0/headline"` (a
+JSON Pointer). Use `ed(file, path, 'multiline')`
 for multi-line text (`\n` ⇄ `<br>`), `'number'` for numbers and `'words'` for text rendered one
 `<span>` per word (the hero name: edited as plain text, re-split into words and re-animated after the edit). Page copy (titles, intros) lives
 in each page's `pages/<page>/index.json`, shared copy (nav) in `settings/site.json`, for this reason. The editor only ever writes

@@ -25,7 +25,8 @@
   // its widget in the page file: /sections/<i>/widgets/<j> (null: outside the widgets)
   const base = $derived.by(() => {
     for (const s of sections)
-      for (const b of s.widgets) if (b.id === sel.owner) return `/sections/${s.at}/widgets/${b.j}`;
+      for (const widget of s.widgets)
+        if (widget.id === sel.owner) return `/sections/${s.at}/widgets/${widget.j}`;
     return null;
   });
   const part = $derived.by(() => {

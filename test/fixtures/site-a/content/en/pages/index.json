@@ -10,7 +10,7 @@
       "width": "full",
       "widgets": [
         {
-          "id": "b-plp2",
+          "id": "w-plp2",
           "type": "hero",
           "title": "Eeliya Rasta",
           "eyebrow": "Portrait & editorial photography",
@@ -139,7 +139,7 @@
       "id": "s-rzxb",
       "widgets": [
         {
-          "id": "b-9phu",
+          "id": "w-9phu",
           "type": "text",
           "body": [
             {
@@ -160,7 +160,7 @@
       "id": "s-rpvk",
       "widgets": [
         {
-          "id": "b-xh7b",
+          "id": "w-xh7b",
           "type": "grid",
           "source": { "mode": "all", "from": "people" },
           "eyebrow": "People",
@@ -175,7 +175,7 @@
       "id": "s-fww5",
       "widgets": [
         {
-          "id": "b-vnrc",
+          "id": "w-vnrc",
           "type": "grid",
           "source": { "mode": "all", "from": "places" },
           "eyebrow": "Places",
@@ -190,7 +190,7 @@
       "id": "s-y7qx",
       "widgets": [
         {
-          "id": "b-57ry",
+          "id": "w-57ry",
           "type": "projects",
           "source": { "mode": "all", "from": "projects" },
           "eyebrow": "Projects",

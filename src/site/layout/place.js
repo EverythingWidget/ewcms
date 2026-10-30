@@ -66,17 +66,17 @@ export function placementOf(type) {
 export const placesOf = (p) => (p?.axes === 'v' ? V_PLACES : p?.axes === 'h' ? H_PLACES : PLACES);
 
 /** Is widget `b` Fill? (a type without the switch: no) */
-export function fillOf(b) {
-  const p = placementOf(b?.type);
+export function fillOf(widget) {
+  const p = placementOf(widget?.type);
   if (!p || !p.box) return false;
-  return BOXES.includes(b?.box) ? b.box === 'fill' : p.fill;
+  return BOXES.includes(widget?.box) ? widget.box === 'fill' : p.fill;
 }
 
 /** Widget `b`'s place (one of its type's places; else the type's default). */
-export function placeOfBox(b) {
-  const p = placementOf(b?.type);
+export function placeOfBox(widget) {
+  const p = placementOf(widget?.type);
   if (!p) return null;
-  return placesOf(p).some(([v]) => v === b?.place) ? b.place : p.place;
+  return placesOf(p).some(([v]) => v === widget?.place) ? widget.place : p.place;
 }
 
 const H = { left: 'start', right: 'end' };
@@ -92,32 +92,34 @@ export function alignOf(place) {
 
 // set: a box or place stored (a widget at its type's defaults renders as it always has: its
 // content at the top left, a photo cover and centred: the stylesheet's defaults)
-const isSet = (b) => b?.box !== undefined || b?.place !== undefined;
+const isSet = (widget) => widget?.box !== undefined || widget?.place !== undefined;
 
 /** The classes of its placement: wgt--placed (its content box placed), wgt--fill. */
-export function placeClass(b) {
-  const p = placementOf(b?.type);
-  if (!p || p.media || !isSet(b)) return '';
-  return ' wgt--placed' + (p.axes === 'v' ? ' wgt--place-v' : '') + (fillOf(b) ? ' wgt--fill' : '');
+export function placeClass(widget) {
+  const p = placementOf(widget?.type);
+  if (!p || p.media || !isSet(widget)) return '';
+  return (
+    ' wgt--placed' + (p.axes === 'v' ? ' wgt--place-v' : '') + (fillOf(widget) ? ' wgt--fill' : '')
+  );
 }
 
 /** Its variables: --ph / --pv (grid alignment), a photo's --fit / --pos. */
-export function placeVars(b) {
-  const p = placementOf(b?.type);
-  if (!p || !isSet(b)) return '';
-  const place = placeOfBox(b);
-  if (p.media) return `;--fit:${fillOf(b) ? 'cover' : 'contain'};--pos:${place}`;
+export function placeVars(widget) {
+  const p = placementOf(widget?.type);
+  if (!p || !isSet(widget)) return '';
+  const place = placeOfBox(widget);
+  if (p.media) return `;--fit:${fillOf(widget) ? 'cover' : 'contain'};--pos:${place}`;
   const a = alignOf(place);
   return (p.axes === 'v' ? '' : `;--ph:${a.h}`) + (p.axes === 'h' ? '' : `;--pv:${a.v}`);
 }
 
 /** Problems with a widget's box / place (src/site/validate.js). */
-export function checkPlacement(b) {
+export function checkPlacement(widget) {
   const out = [];
-  const p = placementOf(b?.type);
-  if (b?.box !== undefined && (!p?.box || !BOXES.includes(b.box)))
+  const p = placementOf(widget?.type);
+  if (widget?.box !== undefined && (!p?.box || !BOXES.includes(widget.box)))
     out.push(p?.box ? '"box" must be fit or fill' : '"box": this widget has no Fit / Fill');
-  if (b?.place !== undefined && !(p && placesOf(p).some(([v]) => v === b.place)))
+  if (widget?.place !== undefined && !(p && placesOf(p).some(([v]) => v === widget.place)))
     out.push(
       p
         ? `"place" must be one of ${placesOf(p)

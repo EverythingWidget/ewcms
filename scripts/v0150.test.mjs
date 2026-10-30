@@ -23,9 +23,9 @@ const page = () => ({
     {
       id: 's-aaaa',
       widgets: [
-        w('b-aaaa', { col: 1, span: 24, row: 1 }),
-        w('b-bbbb', { col: 1, span: 24, row: 8 }),
-        w('b-cccc', { col: 30, span: 24, row: 1, rows: 6 }, { size: 'rows' }),
+        w('w-aaaa', { col: 1, span: 24, row: 1 }),
+        w('w-bbbb', { col: 1, span: 24, row: 8 }),
+        w('w-cccc', { col: 30, span: 24, row: 1, rows: 6 }, { size: 'rows' }),
       ],
     },
     { id: 's-bbbb', widgets: [] },
@@ -59,7 +59,7 @@ test('a drag (column, row, width and height at once) is 1; the rows the editor s
   assert.equal(
     edit((p) => {
       W(p, 0).layout.phone = { col: 1, span: 60, row: 1 };
-      W(p, 1).layout.phone = { col: 1, span: 60, row: 7, link: { to: 'b-aaaa', gap: 4 } };
+      W(p, 1).layout.phone = { col: 1, span: 60, row: 7, link: { to: 'w-aaaa', gap: 4 } };
       W(p, 2).layout.phone = { col: 1, span: 60, row: 20 };
     }),
     1,
@@ -76,7 +76,7 @@ test('a drag (column, row, width and height at once) is 1; the rows the editor s
 
 test('widgets and sections added, removed, restyled; page settings; settings files', () => {
   assert.equal(
-    edit((p) => p.sections[0].widgets.push(w('b-dddd', { col: 1, span: 9, row: 30 }))),
+    edit((p) => p.sections[0].widgets.push(w('w-dddd', { col: 1, span: 9, row: 30 }))),
     1,
   );
   assert.equal(

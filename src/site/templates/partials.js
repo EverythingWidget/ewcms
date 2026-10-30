@@ -81,7 +81,7 @@ export const projectList = (
         <div class="prow__inner">
           <div class="prow__media">${p.image ? img(ctx, p.image, { sizes: sizes('100vw', '30vw'), attrs: ed(PROJECTS, ['items', at, 'image'], 'image') }) : ''}</div>
           <div class="prow__text">
-            <p${ed(PROJECTS, ['items', at, 'body'], 'block')}>${lines(p.body)}</p>
+            <p${ed(PROJECTS, ['items', at, 'body'], 'multiline')}>${lines(p.body)}</p>
             ${p.placeholder ? html`<span class="tag">${esc(t(ctx, 'tag.placeholder'))}</span>` : ''}
             ${p.url ? html`<a class="btn glass" href="${esc(p.url)}"${extAttrs(p.url)}><span${ed(PROJECTS, ['items', at, 'linkLabel'])}>${esc(p.linkLabel || t(ctx, 'projects.visit'))}</span> <span class="arrow-ne" aria-hidden="true">↗</span></a>` : ''}
           </div>

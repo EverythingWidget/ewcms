@@ -35,7 +35,7 @@ const STYLE_KEYS = ['size', 'line', 'tracking', 'min'];
 export const FIT_TYPES = ['text', 'button'];
 
 /** Is a widget's text fitted to its width? */
-export const fitted = (b) => FIT_TYPES.includes(b?.type) && b?.fit === true;
+export const fitted = (widget) => FIT_TYPES.includes(widget?.type) && widget?.fit === true;
 
 /** site.json typography merged over the defaults: { style: { size, line, tracking, min } }. */
 export function typographyOf(site) {
@@ -92,11 +92,13 @@ export function checkTypography(t) {
 }
 
 /** Problems of a widget's "fit" (and the "scale" it replaced). */
-export function checkFit(b) {
+export function checkFit(widget) {
   const out = [];
-  if (b?.scale !== undefined) out.push('"scale" is gone: use "fit": true (fit text to the width)');
-  if (b?.fit === undefined) return out;
-  if (!FIT_TYPES.includes(b.type)) out.push(`"fit" is for text widgets (${FIT_TYPES.join(', ')})`);
-  else if (typeof b.fit !== 'boolean') out.push('"fit" must be true or false');
+  if (widget?.scale !== undefined)
+    out.push('"scale" is gone: use "fit": true (fit text to the width)');
+  if (widget?.fit === undefined) return out;
+  if (!FIT_TYPES.includes(widget.type))
+    out.push(`"fit" is for text widgets (${FIT_TYPES.join(', ')})`);
+  else if (typeof widget.fit !== 'boolean') out.push('"fit" must be true or false');
   return out;
 }

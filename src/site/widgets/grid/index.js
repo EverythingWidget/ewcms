@@ -95,14 +95,14 @@ export const grid = {
     config: { layout: 'staggered' },
     motion: { anim: 'grid-reveal' },
   },
-  render: (s, ctx, b) => {
+  render: (s, ctx, widget) => {
     // no source (None): its head without a link, and no tiles
-    const source = b.source || '';
+    const source = widget.source || '';
     const look = GRID_LOOKS[source] || photoTiles;
     const layout = s.config?.layout === 'even' ? 'even' : 'staggered';
     return html` <div class="gridwidget gridwidget--${esc(source)}">
-      ${sectionHead({ at: b.ed, ...s, href: source && sourcePage(ctx, source) })}
-      ${look(ctx, source, b.items, layout, b.indexOf)}
+      ${sectionHead({ at: widget.ed, ...s, href: source && sourcePage(ctx, source) })}
+      ${look(ctx, source, widget.items, layout, widget.indexOf)}
     </div>`;
   },
 };

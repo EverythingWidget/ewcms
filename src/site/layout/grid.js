@@ -53,8 +53,8 @@ export function halfArea(pos) {
 export const STACK_GAP = 4;
 
 /** Is a widget's phone layout its own (an area or a link set in the phone view)? */
-const ownPhone = (b) => {
-  const m = phoneOf(b);
+const ownPhone = (widget) => {
+  const m = phoneOf(widget);
   return hasMobileArea(m) || isObject(m?.link);
 };
 
@@ -69,44 +69,50 @@ const ownPhone = (b) => {
  */
 export function phoneStack(widgets) {
   const list = (Array.isArray(widgets) ? widgets : []).filter(
-    (b) => b?.id && b.layout?.phone !== null && b.config?.enabled !== false && !ownPhone(b),
+    (widget) =>
+      widget?.id &&
+      widget.layout?.phone !== null &&
+      widget.config?.enabled !== false &&
+      !ownPhone(widget),
   );
   // the desktop top: a linked widget's from its leader's (stored rows), the stored row else
-  const byId = new Map(list.map((b) => [b.id, b]));
+  const byId = new Map(list.map((widget) => [widget.id, widget]));
   const tops = new Map();
-  const topOf = (b, seen = new Set()) => {
-    if (tops.has(b.id)) return tops.get(b.id);
-    const p = placeOf(baseOf(b));
-    const l = baseOf(b).link;
+  const topOf = (widget, seen = new Set()) => {
+    if (tops.has(widget.id)) return tops.get(widget.id);
+    const p = placeOf(baseOf(widget));
+    const l = baseOf(widget).link;
     const lead = isObject(l) && byId.get(l.to);
     let top = p.row;
-    if (lead && !seen.has(b.id)) {
-      seen.add(b.id);
+    if (lead && !seen.has(widget.id)) {
+      seen.add(widget.id);
       const at = topOf(lead, seen);
       // after its leader in reading order, even overlapping it (a negative gap)
       top = Math.max(at + placeOf(baseOf(lead)).rows + (Number(l.gap) || 0), at + 0.5);
     }
-    tops.set(b.id, top);
+    tops.set(widget.id, top);
     return top;
   };
   const order = list
-    .map((b, i) => ({ b, i, top: topOf(b), col: placeOf(baseOf(b)).col }))
+    .map((widget, i) => ({ widget, i, top: topOf(widget), col: placeOf(baseOf(widget)).col }))
     .sort((x, y) => x.top - y.top || x.col - y.col || x.i - y.i);
   const out = new Map();
   let prev = null;
-  for (const { b } of order) {
-    const p = placeOf(baseOf(b));
+  for (const { widget } of order) {
+    const p = placeOf(baseOf(widget));
     const rows =
-      b.size === 'rows' ? Math.max(1, Math.round((p.rows * MCOLS) / p.span)) : halfArea(p).rows;
+      widget.size === 'rows'
+        ? Math.max(1, Math.round((p.rows * MCOLS) / p.span))
+        : halfArea(p).rows;
     // following the one before on the desktop too: its gap there, halved
-    const l = baseOf(b).link;
+    const l = baseOf(widget).link;
     const gap =
       prev && isObject(l) && l.to === prev.id && Number.isInteger(l.gap ?? 0)
         ? Math.sign(l.gap || 0) * Math.round(Math.abs(l.gap || 0) / 2)
         : STACK_GAP;
     const row = prev ? Math.max(1, prev.area.row + prev.area.rows + gap) : halfArea(p).row;
     const area = { col: 1, span: MCOLS, row, rows };
-    out.set(b.id, (prev = { area, link: prev ? { to: prev.id, gap } : null, id: b.id }));
+    out.set(widget.id, (prev = { area, link: prev ? { to: prev.id, gap } : null, id: widget.id }));
   }
   return out;
 }
@@ -115,10 +121,10 @@ export function phoneStack(widgets) {
  * A widget's area on the phone grid: its own phone area; else, given its section's widgets, its
  * place in their default stack (phoneStack); else its desktop area halved.
  */
-export function phoneAreaOf(b, widgets) {
-  if (hasMobileArea(phoneOf(b))) return placeOf(phoneOf(b), MCOLS);
-  const s = widgets && phoneStack(widgets).get(b?.id);
-  return s ? s.area : halfArea(baseOf(b));
+export function phoneAreaOf(widget, widgets) {
+  if (hasMobileArea(phoneOf(widget))) return placeOf(phoneOf(widget), MCOLS);
+  const s = widgets && phoneStack(widgets).get(widget?.id);
+  return s ? s.area : halfArea(baseOf(widget));
 }
 
 /*
@@ -131,27 +137,31 @@ export function phoneAreaOf(b, widgets) {
 /** The keys of an area. */
 export const AREA_KEYS = ['col', 'span', 'row', 'rows'];
 /** A widget's base layout ({} without one). */
-export const baseOf = (b) => (isObject(b?.layout?.base) ? b.layout.base : {});
+export const baseOf = (widget) => (isObject(widget?.layout?.base) ? widget.layout.base : {});
 /** A widget's phone layout (undefined without one). */
-export const phoneOf = (b) => (isObject(b?.layout?.phone) ? b.layout.phone : undefined);
+export const phoneOf = (widget) =>
+  isObject(widget?.layout?.phone) ? widget.layout.phone : undefined;
 /** Does a widget store its rows (its height isn't its content's)? */
-export const storesRows = (b) => b?.size === 'aspect' || b?.size === 'rows';
+export const storesRows = (widget) => widget?.size === 'aspect' || widget?.size === 'rows';
 
-function tidy(b, o) {
+function tidy(widget, o) {
   const next = { ...o };
   for (const k of Object.keys(next)) if (next[k] === undefined) delete next[k];
-  if (!storesRows(b)) delete next.rows;
+  if (!storesRows(widget)) delete next.rows;
   return next;
 }
 /** Merge `patch` into a widget's base (a key set to undefined is removed). */
-export function setBase(b, patch) {
-  b.layout = { ...(isObject(b.layout) ? b.layout : {}), base: tidy(b, { ...baseOf(b), ...patch }) };
+export function setBase(widget, patch) {
+  widget.layout = {
+    ...(isObject(widget.layout) ? widget.layout : {}),
+    base: tidy(widget, { ...baseOf(widget), ...patch }),
+  };
 }
 /** Merge `patch` into a widget's phone layout; removed when nothing is left (null: removed). */
-export function setPhone(b, patch) {
-  const next = patch === null ? {} : tidy(b, { ...phoneOf(b), ...patch });
-  const layout = { ...(isObject(b.layout) ? b.layout : {}) };
+export function setPhone(widget, patch) {
+  const next = patch === null ? {} : tidy(widget, { ...phoneOf(widget), ...patch });
+  const layout = { ...(isObject(widget.layout) ? widget.layout : {}) };
   if (Object.keys(next).length) layout.phone = next;
   else delete layout.phone;
-  b.layout = layout;
+  widget.layout = layout;
 }

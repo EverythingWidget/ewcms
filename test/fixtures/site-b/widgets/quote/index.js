@@ -10,7 +10,7 @@ export default {
   icon: 'quote-left',
   line: 'A pull quote and who said it',
   fields: [
-    { key: 'quote', label: 'Quote', type: 'block' },
+    { key: 'quote', label: 'Quote', type: 'multiline' },
     { key: 'author', label: 'Author', width: 'half' },
     { key: 'role', label: 'Role', width: 'half' },
   ],
@@ -28,12 +28,14 @@ export default {
   defaults: { quote: 'Something worth repeating.', author: 'Someone', role: '', config: {} },
   check: (w) =>
     String(w.quote || '').length > 400 ? ['"quote" is longer than 400 characters'] : [],
-  render: (w, ctx, b) =>
-    html`<figure class="quote${w.config?.size === 'large' ? ' quote--large' : ''}">
-      <blockquote class="quote__text" ${b.ed('quote', 'block')}>${lines(w.quote)}</blockquote>
+  render: (data, ctx, widget) =>
+    html`<figure class="quote${data.config?.size === 'large' ? ' quote--large' : ''}">
+      <blockquote class="quote__text" ${widget.ed('quote', 'multiline')}>
+        ${lines(data.quote)}
+      </blockquote>
       <figcaption class="quote__by">
-        <span ${b.ed('author')}>${esc(w.author)}</span
-        >${w.role ? html`, <span ${b.ed('role')}>${esc(w.role)}</span>` : ''}
+        <span ${widget.ed('author')}>${esc(data.author)}</span
+        >${data.role ? html`, <span ${widget.ed('role')}>${esc(data.role)}</span>` : ''}
       </figcaption>
     </figure>`,
 };

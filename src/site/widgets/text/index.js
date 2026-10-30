@@ -26,13 +26,15 @@ export const text = {
   fields: [{ key: 'body', label: 'Text', type: 'rich' }],
   config: [],
   defaults: { body: [{ style: 'paragraph', text: [{ t: 'Some text.' }] }], config: {} },
-  check: (b) => (b.body === undefined ? [] : checkBody(b.body)),
-  render: (s, ctx, b) => {
+  check: (widget) => (widget.body === undefined ? [] : checkBody(widget.body)),
+  render: (s, ctx, widget) => {
     const body = Array.isArray(s.body) ? s.body : [];
     const missing = (name) => (editable ? `{{${name}}}` : '');
     const value = (r) => {
-      if (r.field !== undefined) return fieldText(r, b.item) || missing(r.field);
-      const n = r.count.source ? sourceList(ctx, r.count.source).length : (b.items || []).length;
+      if (r.field !== undefined) return fieldText(r, widget.item) || missing(r.field);
+      const n = r.count.source
+        ? sourceList(ctx, r.count.source).length
+        : (widget.items || []).length;
       return countText(n);
     };
     const firstTitle = body.findIndex((l) => l?.style === 'title');
@@ -44,7 +46,7 @@ export const text = {
           ? ' data-anim="page.intro"'
           : '';
     return html`<div class="text">
-      <div class="text__body" ${b.ed('body', 'rich')}>${renderBody(body, {
+      <div class="text__body" ${widget.ed('body', 'rich')}>${renderBody(body, {
         value,
         href: (link) => hrefOf(ctx, link, 'a text link') || '#',
         attrs,

@@ -54,10 +54,10 @@ export function flowAreas(sec, phone, widgetOf) {
   const out = {};
   for (const el of sec.querySelectorAll('[data-widget]')) {
     if (el.closest('[data-sec]') !== sec) continue;
-    const b = widgetOf(el.dataset.widget);
-    if (!b) continue;
+    const widget = widgetOf(el.dataset.widget);
+    if (!widget) continue;
     // the phone's: as rendered (its own area, or its place in the default stack)
-    const stored = phone ? areaOfEl(el, true) : placeOf(baseOf(b));
+    const stored = phone ? areaOfEl(el, true) : placeOf(baseOf(widget));
     const row = parseInt(el.style.getPropertyValue('--fr'), 10);
     const rows = parseInt(el.style.getPropertyValue('--frs'), 10);
     out[el.dataset.widget] = { ...stored, ...(row > 0 && rows > 0 ? { row, rows } : {}) };

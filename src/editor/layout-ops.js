@@ -55,26 +55,30 @@ const write = (store, file, list, structure = true) =>
  */
 function ownPhoneLayout(section) {
   const stack = phoneStack(section.widgets);
-  for (const b of section.widgets || []) {
-    const s = stack.get(b.id);
-    if (s) setPhone(b, { ...s.area, ...(s.link && { link: s.link }) });
+  for (const widget of section.widgets || []) {
+    const s = stack.get(widget.id);
+    if (s) setPhone(widget, { ...s.area, ...(s.link && { link: s.link }) });
   }
 }
 
 function settleLinks(section) {
   const widgets = section.widgets || [];
   const desk = resolveRows(
-    widgets.map((b) => ({ id: b.id, ...placeOf(baseOf(b)), link: linkOf(b) })),
+    widgets.map((widget) => ({ id: widget.id, ...placeOf(baseOf(widget)), link: linkOf(widget) })),
     1,
   ).at;
-  const own = widgets.filter((b) => hasMobileArea(phoneOf(b)));
+  const own = widgets.filter((widget) => hasMobileArea(phoneOf(widget)));
   const phone = resolveRows(
-    own.map((b) => ({ id: b.id, ...placeOf(phoneOf(b), MCOLS), link: linkOf(b, true) })),
+    own.map((widget) => ({
+      id: widget.id,
+      ...placeOf(phoneOf(widget), MCOLS),
+      link: linkOf(widget, true),
+    })),
     1,
   ).at;
-  for (const b of widgets) {
-    if (linkOf(b) && desk[b.id]) setBase(b, { row: desk[b.id].row });
-    if (linkOf(b, true) && phone[b.id]) setPhone(b, { row: phone[b.id].row });
+  for (const widget of widgets) {
+    if (linkOf(widget) && desk[widget.id]) setBase(widget, { row: desk[widget.id].row });
+    if (linkOf(widget, true) && phone[widget.id]) setPhone(widget, { row: phone[widget.id].row });
   }
   return section;
 }
@@ -88,17 +92,17 @@ const writeSection = (store, file, at, section, key) => {
   return store.set(file, `/sections/${at}`, section, { source: 'panel', key });
 };
 
-/** A copy of a section ('s') or widget ('b') with new ids (taken: the page's ids, the new ones added). */
+/** A copy of a section ('s') or widget ('w') with new ids (taken: the page's ids, the new ones added). */
 function copyOf(item, kind, taken) {
   const copy = structuredClone(item);
   copy.id = newId(kind, taken);
   // a section's widgets get new ids, and their links follow the copies (a link to the original
   // widget would follow another section's: the page fails its check and the preview keeps the old)
   const ids = {};
-  for (const b of copy.widgets || []) b.id = ids[b.id] = newId('b', taken);
-  for (const b of copy.widgets || [])
+  for (const widget of copy.widgets || []) widget.id = ids[widget.id] = newId('w', taken);
+  for (const widget of copy.widgets || [])
     for (const k of ['base', 'phone']) {
-      const link = b.layout?.[k]?.link;
+      const link = widget.layout?.[k]?.link;
       if (link?.to) link.to = ids[link.to] ?? link.to;
     }
   return copy;
@@ -112,19 +116,19 @@ function copyOf(item, kind, taken) {
 export const NEW_ROWS = 6;
 export const NEW_SPAN = 40;
 function addedWidget(type, taken, pos = {}) {
-  const b = newWidget(type, taken, pos);
+  const widget = newWidget(type, taken, pos);
   const own = WIDGET_TYPES[type]?.added || {};
   const span = own.span === 'all' ? COLS : Math.min(own.span || NEW_SPAN, COLS);
   // content-sized types (text, button, form, lists): Auto (the default, left out), their rows
   // measured on the page; the others Rows (first: an area keeps its rows only on Rows / Aspect)
   if (own.size === 'auto') {
-    delete b.size;
-    setBase(b, { span, ...pos });
+    delete widget.size;
+    setBase(widget, { span, ...pos });
   } else {
-    b.size = 'rows';
-    setBase(b, { span, rows: own.rows || NEW_ROWS, ...pos });
+    widget.size = 'rows';
+    setBase(widget, { span, rows: own.rows || NEW_ROWS, ...pos });
   }
-  return b;
+  return widget;
 }
 
 /** A new section at index `at` (default: the end), holding a new widget of `type` when given. */
@@ -161,7 +165,7 @@ export function removeSections(store, file, ids) {
     store,
     file,
     list.filter((s) => !ids.includes(s?.id)),
-    gone.flatMap((s) => (s?.widgets || []).map((b) => b?.id)),
+    gone.flatMap((s) => (s?.widgets || []).map((widget) => widget?.id)),
   );
 }
 
@@ -172,7 +176,7 @@ export function removeSection(store, file, at) {
     store,
     file,
     list,
-    (gone?.widgets || []).map((b) => b?.id),
+    (gone?.widgets || []).map((widget) => widget?.id),
   );
 }
 
@@ -266,11 +270,11 @@ const GUESS = 8;
 const below = (section, shown = {}) =>
   Math.max(
     0,
-    ...(section.widgets || []).map((b) => {
-      const s = shown[b.id];
+    ...(section.widgets || []).map((widget) => {
+      const s = shown[widget.id];
       if (Number.isInteger(s?.row) && Number.isInteger(s?.rows) && s.rows > 0)
         return s.row + s.rows - 1;
-      return placeOf(baseOf(b)).row + (baseOf(b).rows ?? GUESS) - 1;
+      return placeOf(baseOf(widget)).row + (baseOf(widget).rows ?? GUESS) - 1;
     }),
   ) + 1;
 
@@ -300,7 +304,7 @@ export function addWidget(store, file, at, type, { shown } = {}) {
 export function duplicateWidget(store, file, at, j) {
   const list = listOf(store, file);
   const section = list[at];
-  const copy = copyOf(section.widgets[j], 'b', idsOf(list));
+  const copy = copyOf(section.widgets[j], 'w', idsOf(list));
   // a copy is free (its links were the original's place)
   setBase(copy, { row: below(section), link: undefined });
   if (phoneOf(copy)) setPhone(copy, { link: undefined });
@@ -336,15 +340,15 @@ export function moveWidgetTo(store, file, at, from, toAt, to) {
   const source = list[at];
   const target = list[toAt];
   if (!source?.widgets?.[from] || !target) return false;
-  const [b] = source.widgets.splice(from, 1);
+  const [widget] = source.widgets.splice(from, 1);
   for (const o of source.widgets) {
-    if (baseOf(o).link?.to === b.id) setBase(o, { link: undefined });
-    if (phoneOf(o)?.link?.to === b.id) setPhone(o, { link: undefined });
+    if (baseOf(o).link?.to === widget.id) setBase(o, { link: undefined });
+    if (phoneOf(o)?.link?.to === widget.id) setPhone(o, { link: undefined });
   }
-  setBase(b, { row: below(target), link: undefined });
-  if (phoneOf(b)) setPhone(b, { link: undefined });
+  setBase(widget, { row: below(target), link: undefined });
+  if (phoneOf(widget)) setPhone(widget, { link: undefined });
   target.widgets = target.widgets || [];
-  target.widgets.splice(Math.max(0, Math.min(to, target.widgets.length)), 0, b);
+  target.widgets.splice(Math.max(0, Math.min(to, target.widgets.length)), 0, widget);
   return write(store, file, list);
 }
 
@@ -352,9 +356,9 @@ export function moveWidgetTo(store, file, at, from, toAt, to) {
 export function removeWidget(store, file, at, j) {
   const list = listOf(store, file);
   const [gone] = list[at].widgets.splice(j, 1);
-  for (const b of list[at].widgets) {
-    if (baseOf(b).link?.to === gone?.id) setBase(b, { link: undefined });
-    if (phoneOf(b)?.link?.to === gone?.id) setPhone(b, { link: undefined });
+  for (const widget of list[at].widgets) {
+    if (baseOf(widget).link?.to === gone?.id) setBase(widget, { link: undefined });
+    if (phoneOf(widget)?.link?.to === gone?.id) setPhone(widget, { link: undefined });
   }
   return writeDropMain(store, file, list, [gone?.id]);
 }
@@ -383,13 +387,13 @@ function writeDropMain(store, file, list, gone) {
  * widgets they pushed are stored as they are seen.
  */
 function storeFlow(section, j, flow = {}, phone = false) {
-  section.widgets.forEach((b, k) => {
-    const a = k !== j && flow[b.id];
+  section.widgets.forEach((widget, k) => {
+    const a = k !== j && flow[widget.id];
     if (!a) return;
     // on the phone only a widget's own phone area (one without shows its desktop area halved)
     if (phone) {
-      if (hasMobileArea(phoneOf(b))) setPhone(b, { row: a.row, rows: a.rows });
-    } else setBase(b, { row: a.row, rows: a.rows });
+      if (hasMobileArea(phoneOf(widget))) setPhone(widget, { row: a.row, rows: a.rows });
+    } else setBase(widget, { row: a.row, rows: a.rows });
   });
 }
 
@@ -398,7 +402,7 @@ function storeFlow(section, j, flow = {}, phone = false) {
  * now (or its stored area): rows between the leader's bottom and it (negative: overlapping).
  */
 function gapAt(section, link, row, flow = {}, phone = false) {
-  const lead = section.widgets.find((b) => b.id === link.to);
+  const lead = section.widgets.find((widget) => widget.id === link.to);
   if (!lead) return link.gap;
   const a = flow[lead.id] || (phone ? phoneAreaOf(lead, section.widgets) : placeOf(baseOf(lead)));
   return row - (a.row + a.rows);
@@ -412,14 +416,14 @@ function gapAt(section, link, row, flow = {}, phone = false) {
 export function placeWidget(store, file, at, j, pos, key, { flow, rows = 0, size } = {}) {
   const section = listOf(store, file)[at];
   storeFlow(section, j, flow);
-  const b = section.widgets[j];
+  const widget = section.widgets[j];
   // its height dragged: a Rows widget (first: an area keeps its rows only on Rows / Aspect)
-  if (size === 'rows') b.size = 'rows';
+  if (size === 'rows') widget.size = 'rows';
   const p = placeOf(pos);
-  setBase(b, p);
+  setBase(widget, p);
   // a linked widget moved: its gap changes, it keeps following its leader
-  const l = linkOf(b);
-  if (l) setBase(b, { link: { to: l.to, gap: gapAt(section, l, p.row, flow) } });
+  const l = linkOf(widget);
+  if (l) setBase(widget, { link: { to: l.to, gap: gapAt(section, l, p.row, flow) } });
   grow(section, Math.max(rows, rowsOf(section)));
   return writeSection(store, file, at, section, key);
 }
@@ -434,10 +438,10 @@ export function placeWidget(store, file, at, j, pos, key, { flow, rows = 0, size
  */
 export function linkWidget(store, file, at, j, to, gap = 0, { phone = false, row } = {}) {
   const section = listOf(store, file)[at];
-  const b = section.widgets[j];
-  if (!b) return null;
+  const widget = section.widgets[j];
+  if (!widget) return null;
   if (to !== null) {
-    if (to === b.id || !section.widgets.some((x) => x.id === to)) return null;
+    if (to === widget.id || !section.widgets.some((x) => x.id === to)) return null;
     if (!Number.isInteger(gap)) return null;
   }
   const next = to === null ? undefined : { to, gap };
@@ -446,10 +450,10 @@ export function linkWidget(store, file, at, j, to, gap = 0, { phone = false, row
   const stay = !next && Number.isInteger(row) && row > 0 ? { row } : {};
   if (phone) {
     ownPhoneLayout(section);
-    if (!hasMobileArea(phoneOf(b))) setPhone(b, phoneAreaOf(b, section.widgets));
-    setPhone(b, { link: next, ...stay });
-  } else setBase(b, { link: next, ...stay });
-  if (next && makesLoop(section.widgets, b.id, to, phone)) return null;
+    if (!hasMobileArea(phoneOf(widget))) setPhone(widget, phoneAreaOf(widget, section.widgets));
+    setPhone(widget, { link: next, ...stay });
+  } else setBase(widget, { link: next, ...stay });
+  if (next && makesLoop(section.widgets, widget.id, to, phone)) return null;
   return writeSection(store, file, at, section);
 }
 
@@ -457,9 +461,9 @@ export function linkWidget(store, file, at, j, to, gap = 0, { phone = false, row
 export function layerWidget(store, file, at, j, dir) {
   const section = listOf(store, file)[at];
   const widget = section.widgets[j];
-  const zOf = (b) => (Number.isInteger(b?.z) ? b.z : 0);
+  const zOf = (widget) => (Number.isInteger(widget?.z) ? widget.z : 0);
   // 'front' / 'back': over / under every other widget of its section; a number: a step
-  const others = section.widgets.filter((b) => b !== widget).map(zOf);
+  const others = section.widgets.filter((w) => w !== widget).map(zOf);
   const z =
     dir === 'front'
       ? Math.max(zOf(widget), others.length ? Math.max(...others) + 1 : 0)
@@ -502,10 +506,13 @@ export function placeMobile(store, file, at, j, area, { key, flow, rows = 0 } = 
   const section = listOf(store, file)[at];
   ownPhoneLayout(section);
   storeFlow(section, j, flow, true);
-  const b = section.widgets[j];
-  setPhone(b, placeOf(area, MCOLS));
-  const l = linkOf(b, true);
-  if (l) setPhone(b, { link: { to: l.to, gap: gapAt(section, l, phoneOf(b).row, flow, true) } });
+  const widget = section.widgets[j];
+  setPhone(widget, placeOf(area, MCOLS));
+  const l = linkOf(widget, true);
+  if (l)
+    setPhone(widget, {
+      link: { to: l.to, gap: gapAt(section, l, phoneOf(widget).row, flow, true) },
+    });
   grow(section, Math.max(rows, mobileRowsOf(section)), true);
   return writeSection(store, file, at, section, key);
 }
@@ -516,8 +523,8 @@ export function placeMobile(store, file, at, j, area, { key, flow, rows = 0 } = 
  */
 export function resetMobile(store, file, at) {
   const section = listOf(store, file)[at];
-  if (!section.widgets.some((b) => b.layout?.phone !== undefined)) return false;
-  for (const b of section.widgets) setPhone(b, null);
+  if (!section.widgets.some((widget) => widget.layout?.phone !== undefined)) return false;
+  for (const widget of section.widgets) setPhone(widget, null);
   return writeSection(store, file, at, section);
 }
 
@@ -526,7 +533,7 @@ export function resetMobile(store, file, at) {
 
 /** The indexes of `ids` in section `at`'s widgets (their order), [] when it has none of them. */
 const indexesOf = (section, ids) =>
-  (section?.widgets || []).flatMap((b, j) => (ids.includes(b.id) ? [j] : []));
+  (section?.widgets || []).flatMap((widget, j) => (ids.includes(widget.id) ? [j] : []));
 
 /**
  * Widgets `ids` of section `at` moved by `dc` columns and `dr` rows (already clamped:
@@ -548,24 +555,24 @@ export function moveWidgets(
   if (!js.length || (!dc && !dr)) return false;
   if (phone) ownPhoneLayout(section);
   // the others where they show now (not the moved ones: they get their new areas)
-  section.widgets.forEach((b) => {
-    const a = !ids.includes(b.id) && flow[b.id];
+  section.widgets.forEach((widget) => {
+    const a = !ids.includes(widget.id) && flow[widget.id];
     if (!a) return;
     if (phone) {
-      if (hasMobileArea(phoneOf(b))) setPhone(b, { row: a.row, rows: a.rows });
-    } else setBase(b, { row: a.row, rows: a.rows });
+      if (hasMobileArea(phoneOf(widget))) setPhone(widget, { row: a.row, rows: a.rows });
+    } else setBase(widget, { row: a.row, rows: a.rows });
   });
   for (const j of js) {
-    const b = section.widgets[j];
-    const from = flow[b.id] || (phone ? phoneAreaOf(b) : placeOf(baseOf(b)));
+    const widget = section.widgets[j];
+    const from = flow[widget.id] || (phone ? phoneAreaOf(widget) : placeOf(baseOf(widget)));
     const p = { col: from.col + dc, span: from.span, row: from.row + dr, rows: from.rows };
-    if (phone) setPhone(b, placeOf(p, MCOLS));
-    else setBase(b, placeOf(p));
-    const l = linkOf(b, phone);
+    if (phone) setPhone(widget, placeOf(p, MCOLS));
+    else setBase(widget, placeOf(p));
+    const l = linkOf(widget, phone);
     if (l && !ids.includes(l.to)) {
       const gap = gapAt(section, l, p.row, flow, phone);
-      if (phone) setPhone(b, { link: { to: l.to, gap } });
-      else setBase(b, { link: { to: l.to, gap } });
+      if (phone) setPhone(widget, { link: { to: l.to, gap } });
+      else setBase(widget, { link: { to: l.to, gap } });
     }
   }
   if (phone) grow(section, Math.max(rows, mobileRowsOf(section)), true);
@@ -578,10 +585,10 @@ export function removeWidgets(store, file, at, ids) {
   const list = listOf(store, file);
   const section = list[at];
   if (!indexesOf(section, ids).length) return false;
-  section.widgets = section.widgets.filter((b) => !ids.includes(b.id));
-  for (const b of section.widgets) {
-    if (ids.includes(baseOf(b).link?.to)) setBase(b, { link: undefined });
-    if (ids.includes(phoneOf(b)?.link?.to)) setPhone(b, { link: undefined });
+  section.widgets = section.widgets.filter((widget) => !ids.includes(widget.id));
+  for (const widget of section.widgets) {
+    if (ids.includes(baseOf(widget).link?.to)) setBase(widget, { link: undefined });
+    if (ids.includes(phoneOf(widget)?.link?.to)) setPhone(widget, { link: undefined });
   }
   return writeDropMain(store, file, list, ids);
 }
@@ -597,7 +604,7 @@ export function duplicateWidgets(store, file, at, ids) {
   const top = Math.min(...js.map((j) => placeOf(baseOf(section.widgets[j])).row));
   const copies = [];
   for (const j of js.reverse()) {
-    const copy = copyOf(section.widgets[j], 'b', taken);
+    const copy = copyOf(section.widgets[j], 'w', taken);
     // the group keeps its shape, below the section's widgets
     setBase(copy, { row: row + placeOf(baseOf(section.widgets[j])).row - top, link: undefined });
     if (phoneOf(copy)) setPhone(copy, { link: undefined });
@@ -614,11 +621,11 @@ export function showWidgets(store, file, at, ids, show) {
   const js = indexesOf(section, ids);
   if (!js.length) return false;
   for (const j of js) {
-    const b = section.widgets[j];
-    const config = { ...b.config, enabled: show ? undefined : false };
+    const widget = section.widgets[j];
+    const config = { ...widget.config, enabled: show ? undefined : false };
     if (config.enabled === undefined) delete config.enabled;
-    if (Object.keys(config).length) b.config = config;
-    else delete b.config;
+    if (Object.keys(config).length) widget.config = config;
+    else delete widget.config;
   }
   return writeSection(store, file, at, section);
 }
@@ -629,10 +636,10 @@ export function layerWidgets(store, file, at, ids, dir) {
   const js = indexesOf(section, ids);
   if (!js.length) return false;
   for (const j of js) {
-    const b = section.widgets[j];
-    const z = (Number.isInteger(b.z) ? b.z : 0) + dir;
-    if (z) b.z = z;
-    else delete b.z;
+    const widget = section.widgets[j];
+    const z = (Number.isInteger(widget.z) ? widget.z : 0) + dir;
+    if (z) widget.z = z;
+    else delete widget.z;
   }
   return writeSection(store, file, at, section);
 }
