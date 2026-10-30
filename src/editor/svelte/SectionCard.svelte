@@ -12,7 +12,7 @@
     changed    overrides the changed dot (the mock kit)
 -->
 <script>
-  import { ui, selectWidgets, reveal } from './ui.svelte.js';
+  import { ui, selectWidgets, reveal, setAnchor, hotWidget } from './ui.svelte.js';
   import { range, selectedIds, toggle } from '../multi-select.js';
   import Section from './Section.svelte';
   import WidgetRow from './WidgetRow.svelte';
@@ -71,12 +71,12 @@
       if (elsewhere) return;
       const next = toggle(sel, id, (x) => (ids.includes(x) ? s.id : null));
       if (!next) return;
-      ui.anchor = id;
+      setAnchor(id);
       return selectWidgets(next);
     }
     if (e.shiftKey && ui.anchor && ids.includes(ui.anchor))
       return selectWidgets(range(ids, ui.anchor, id));
-    ui.anchor = id;
+    setAnchor(id);
     // a click selects it (in the preview too, scrolled to when out of view); the pop-up swaps
     // to it when open (a double click opens it)
     selectWidgets([id]);
@@ -107,9 +107,7 @@
         {blocked}
         hot={ui.hot?.from === 'preview' && ui.hot.id === widget.id}
         onhover={(on) =>
-          on
-            ? (ui.hot = { id: widget.id, from: 'panel' })
-            : ui.hot?.from === 'panel' && ui.hot.id === widget.id && (ui.hot = null)}
+          on ? hotWidget(widget.id, 'panel') : ui.hot?.id === widget.id && hotWidget(null, 'panel')}
         ongrab={(e) => ld.grab(e, { id: widget.id, j })}
         lifted={drag?.id === widget.id && drag.moving}
         dy={drag?.dy ?? 0}

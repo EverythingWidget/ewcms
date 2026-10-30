@@ -12,7 +12,7 @@
 <script>
   import { tick } from 'svelte';
   import SectionCard from './SectionCard.svelte';
-  import { ui, selectSection, selectSections } from './ui.svelte.js';
+  import { ui, selectSection, selectSections, peekSection } from './ui.svelte.js';
   import { addSection } from '../layout-ops.js';
   import { locate } from '../locate.js';
 
@@ -62,11 +62,9 @@
     const over = (e) => {
       const n = e.target.closest?.('[data-section^="s-"], [data-peek-section]');
       const id = n?.dataset.section || n?.dataset.peekSection || '';
-      if (id) {
-        if (ui.peek?.id !== id || ui.peek.from !== 'panel') ui.peek = { id, from: 'panel' };
-      } else if (ui.peek?.from === 'panel') ui.peek = null;
+      peekSection(id, 'panel');
     };
-    const out = () => ui.peek?.from === 'panel' && (ui.peek = null);
+    const out = () => peekSection(null, 'panel');
     document.addEventListener('pointerover', over);
     document.documentElement.addEventListener('pointerleave', out);
     return () => {

@@ -157,8 +157,7 @@ export async function restorePlace() {
     : edit && `[data-edit="${CSS.escape(edit)}"]`;
   const el = sel && bridge.doc.querySelector(sel);
   if (el && clicks !== 'visitor') pickElement(el, motion ? 'anim' : 'text', { quiet: true });
-  // quiet: the Nav panel doesn't scroll to the field, the panel scroll is put back below
-  if (el && !motion) ui.selection = { edit, quiet: true };
+  // (pickElement: quiet, the Nav panel doesn't scroll to the field; the panel scroll is put back below)
   await tick();
   requestAnimationFrame(() => {
     const panel = document.querySelector('.ed-body');

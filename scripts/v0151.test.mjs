@@ -59,3 +59,19 @@ test('the preview pick and hover live in ui only: the bridge reports them, keeps
   for (const fn of ['pickElement', 'hoverElement', 'clearPick', 'clearSelection', 'pickAnim'])
     assert.match(u, new RegExp(`export function ${fn}\\(`));
 });
+
+test('Esc and the panels select through the ui helpers', () => {
+  const app = src('svelte/App.svelte');
+  assert.match(app, /\|\| ui\.selSection\) deselect\(\);/);
+  assert.doesNotMatch(app, /ui\.(selection|widget|section|selSection) = null/);
+  const u = src('svelte/ui.svelte.js');
+  assert.match(
+    u,
+    /export function deselect\(\) \{[^}]*ui\.selSections = \[\];[^}]*ui\.link = null;/,
+  );
+  assert.match(src('svelte/SectionsList.svelte'), /peekSection\(id, 'panel'\)/);
+  const card = src('svelte/SectionCard.svelte');
+  assert.doesNotMatch(card, /ui\.(anchor|hot) =/);
+  assert.match(card, /setAnchor\(id\)/);
+  assert.doesNotMatch(src('svelte/persist.js'), /ui\.selection =/);
+});

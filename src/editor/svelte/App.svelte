@@ -23,7 +23,7 @@
   import WidgetToolbar from './WidgetToolbar.svelte';
   import { layerWidget } from '../layout-ops.js';
   import { targetFile } from '../layout-sync.js';
-  import { ui, previewClicks, pickElement, selectLink } from './ui.svelte.js';
+  import { ui, previewClicks, pickElement, selectLink, deselect } from './ui.svelte.js';
   import { writeUrl } from './persist.js';
   import { MOD, plural } from '../lib/format.js';
 
@@ -136,15 +136,8 @@
         if (picked) pickElement(null);
         if (previewClicks() === 'arrange' && !inField) {
           if (ui.link) selectLink(null);
-          else if (ui.widget || ui.section || ui.multi.length) {
-            ui.selection = null;
-            ui.widget = null;
-            ui.multi = [];
-            ui.section = null;
-          } else if (ui.selSection) {
-            ui.selSection = null;
-            ui.selSections = [];
-          } else if (!picked) actions.lockPart(); // nothing picked, a site part open: locked
+          else if (ui.widget || ui.section || ui.multi.length || ui.selSection) deselect();
+          else if (!picked) actions.lockPart(); // nothing picked, a site part open: locked
         } else if (previewClicks() === 'animate' && !inField && !picked) actions.lockPart();
       }
     }

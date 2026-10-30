@@ -249,6 +249,20 @@ export function clearSelection() {
   if (ui.picked) pickElement(null);
 }
 
+/**
+ * Nothing selected in the panel (Esc): no widget or widgets, section, link or text field. The
+ * preview's pick is the caller's (Esc drops it first); the Shift-click anchor stays.
+ */
+export function deselect() {
+  ui.selection = null;
+  ui.widget = null;
+  ui.multi = [];
+  ui.section = null;
+  ui.selSection = null;
+  ui.selSections = [];
+  ui.link = null;
+}
+
 /** Section `id` under the pointer on one side (`from`: 'panel' | 'preview'); null: none there. */
 export function peekSection(id, from) {
   if (id) {
