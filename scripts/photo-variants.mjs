@@ -1,5 +1,5 @@
 /**
- * The responsive sizes of one photo, shared by the local pipeline (scripts/images.mjs: media/
+ * The responsive sizes of one photo, shared by the local pipeline (scripts/photos.mjs: media/
  * -> public/media/) and uploads to Cloudflare R2 (scripts/r2.mjs), so both get the same
  * treatment: auto-rotated from EXIF, metadata stripped (sharp writes none unless asked: no
  * GPS, no camera data), WebP at WIDTHS (never wider than the original), the size, a tiny
@@ -18,7 +18,7 @@ export async function loadSharp() {
   }
 }
 
-/** The widths to make for an image `width` px wide: WIDTHS up to it, at least one. */
+/** The widths to make for a photo `width` px wide: WIDTHS up to it, at least one. */
 export function widthsFor(width) {
   const out = [];
   for (const w of WIDTHS) {
@@ -28,7 +28,7 @@ export function widthsFor(width) {
   return out;
 }
 
-/** Upright size of an image (EXIF orientation 5-8 swaps width and height). */
+/** Upright size of a photo (EXIF orientation 5-8 swaps width and height). */
 export async function uprightSize(sharp, input) {
   const meta = await sharp(input).metadata();
   const portrait = (meta.orientation || 1) >= 5;
@@ -42,9 +42,9 @@ const hex = ({ r, g, b }) =>
   '#' + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
 
 /**
- * Most "vivid" colour of an image: bucket pixels by hue, weight by saturation ×
+ * Most "vivid" colour of a photo: bucket pixels by hue, weight by saturation ×
  * mid-lightness, return the average colour of the strongest bucket. Greyscale
- * images return a grey (templates then fall back to the site accent).
+ * photos return a grey (templates then fall back to the site accent).
  */
 async function vividColor(sharp, input) {
   const { data, info } = await sharp(input)

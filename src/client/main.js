@@ -19,7 +19,7 @@ import { initClock, updateClocks } from './ui/clock.js';
 import { applyAccent } from './theme.js';
 import { album } from './modules/album.js';
 import { projects } from './modules/projects.js';
-import { cards, imageFade } from './modules/misc.js';
+import { cards, photoFade } from './modules/misc.js';
 import { contactForms } from './modules/form.js';
 import { watchRows } from './modules/rows.js';
 import { anchors } from './modules/anchors.js';
@@ -39,7 +39,7 @@ const widgetModule =
 const siteModules = siteWidgets.map(widgetModule);
 
 const pageModules = [
-  imageFade,
+  photoFade,
   album,
   projects,
   cards,
@@ -50,7 +50,7 @@ const pageModules = [
 ];
 // the footer's widgets: the modules of widgets it can have (no album, project list or anchors:
 // those are the page's, once)
-const footerModules = [imageFade, cards, contactForms, fitText, ...siteModules];
+const footerModules = [photoFade, cards, contactForms, fitText, ...siteModules];
 // Editor hooks (see connectEditor below); always empty on the public site.
 const hooks = { beforeMount: new Set(), afterMount: new Set() };
 let current = null;

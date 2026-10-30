@@ -59,7 +59,7 @@ test('field types: stored value, editor input, blank, parse', () => {
   assert.equal(storedAs('seg'), 'string');
   assert.equal(controlOf('choice'), 'select');
   assert.equal(controlOf('link'), 'text');
-  assert.equal(controlOf('photos'), 'image');
+  assert.equal(controlOf('photos'), 'photo');
   assert.deepEqual(['text', 'number', 'boolean', 'photos', 'x'].map(blankOf), [
     '',
     0,

@@ -11,7 +11,7 @@
  *   POST /__editor/render   → sections of a page rendered from those edits (renderOp)
  *   GET  /__editor/status   → saved-but-unpublished content files (git status vs HEAD) and
  *                             commits not pushed yet
- *   POST /__editor/upload   → one image (the raw bytes, its Content-Type, X-Filename): resized,
+ *   POST /__editor/upload   → one photo (the raw bytes, its Content-Type, X-Filename): resized,
  *                             stored in Cloudflare R2 and added to settings/photos.json
  *                             (scripts/r2.mjs), answers { key, photo }; without the R2 keys
  *                             it is saved in media/ and resized there (scripts/local-upload.mjs),
@@ -625,7 +625,7 @@ const readMediaManifest = (root) =>
   fs.existsSync(mediaFile(root)) ? JSON.parse(fs.readFileSync(mediaFile(root), 'utf8')) : {};
 
 /**
- * Local photos (.generated/media.json, scripts/images.mjs): { src, thumb, width, height,
+ * Local photos (.generated/media.json, scripts/photos.mjs): { src, thumb, width, height,
  * sizes } per media/ file.
  */
 function readMedia(root) {

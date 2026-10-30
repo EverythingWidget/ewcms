@@ -9,7 +9,7 @@ export const COLS = 120;
  * A widget without a phone layout of its own stacks there full width (phoneStack).
  */
 export const MCOLS = 60;
-/** The widest phone (px): at or below it the phone grid and image sizes. */
+/** The widest phone (px): at or below it the phone grid and photo sizes. */
 export const PHONE_MAX = 760;
 /** PHONE_MAX as a media query, for matchMedia and an <img> sizes. */
 export const PHONE_MQ = `(max-width: ${PHONE_MAX}px)`;

@@ -21,7 +21,7 @@
   import {
     media,
     fallback,
-    imageUrl,
+    photoUrl,
     isR2,
     photoInfo,
     photoLine,
@@ -140,15 +140,15 @@
 
   let nextId = 0;
   function add(files) {
-    const images = files.filter((f) => ACCEPT.split(',').includes(f.type));
-    if (images.length < files.length)
+    const photoFiles = files.filter((f) => ACCEPT.split(',').includes(f.type));
+    if (photoFiles.length < files.length)
       toast(
-        `Skipped ${files.length - images.length} file(s): not a JPEG, PNG, WebP, AVIF, GIF or TIFF`,
+        `Skipped ${files.length - photoFiles.length} file(s): not a JPEG, PNG, WebP, AVIF, GIF or TIFF`,
         {
           kind: 'error',
         },
       );
-    const jobs = images.map((file) => ({
+    const jobs = photoFiles.map((file) => ({
       id: ++nextId,
       file,
       name: file.name,
@@ -433,7 +433,7 @@
           </Button>
         {/if}
       </header>
-      <img class="md-preview" src={imageUrl(key)} alt="" {@attach fallback(key)} />
+      <img class="md-preview" src={photoUrl(key)} alt="" {@attach fallback(key)} />
       <p class="hint small">{photoLine(key)} · {key}</p>
 
       <label class="tf" for="{uid}-alt">

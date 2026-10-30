@@ -66,7 +66,7 @@
 
   /** A list whose items have a photo (the Hero's): PhotoList.svelte, the photo first. */
   const photoList = (f) => f.photo !== null && f.items.every((fs) => fs.some(isPhoto));
-  const isPhoto = (sub) => sub.type === 'image';
+  const isPhoto = (sub) => sub.type === 'photo';
 
   /** A list item's name in its bar: its label or title, else "<list> <n>". */
   function itemName(f, fields, i) {

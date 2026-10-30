@@ -16,7 +16,7 @@
  * the widget: "<leader id> <gap>") are resolved in their order: a follower's first row is its
  * leader's last row now + 1 + its gap; a free widget stays at its stored row. Run again when
  * the window resizes (on the next frame, at most once a frame while dragging), when a widget's
- * content changes size (images, fonts, the editor's edits; on the next frame) and on reflow()
+ * content changes size (photos, fonts, the editor's edits; on the next frame) and on reflow()
  * (the editor after it changed a layout).
  *
  * A section with a minimum height (a third, half or all of the screen: sec--h-*) is at least so

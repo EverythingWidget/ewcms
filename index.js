@@ -12,7 +12,7 @@ export {
   publishMedia,
   newSite,
 } from './scripts/cli.mjs';
-export { buildImages } from './scripts/images.mjs';
+export { buildPhotos } from './scripts/photos.mjs';
 export { checkLinks } from './scripts/check-links.mjs';
 export { loadSiteConfig } from './scripts/site-config.mjs';
 export { siteConfig, staticSite, mocksPlugin } from './vite.js';

@@ -2,8 +2,8 @@
  * The ewcms command (bin/ewcms.mjs), one function per command; each takes the site's root.
  * Plain Node and Vite's JavaScript API: no shell, the same in PowerShell, cmd, WSL and macOS.
  *
- *   dev            images, then the dev server (pages, the editor at ?edit, /sandbox/)
- *   build          images, then the static build (outDir, dist/)
+ *   dev            photo sizes, then the dev server (pages, the editor at ?edit, /sandbox/)
+ *   build          photo sizes, then the static build (outDir, dist/)
  *   preview        serve the build
  *   check          content (every file, sources, bindings, motion), then lint (the theme's SCSS,
  *                  the site's own JS) when ESLint / Stylelint are installed; --links: the build's links
@@ -17,7 +17,7 @@ import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { ENGINE, enginePath, posixPath, ENGINE_VERSION } from './engine.mjs';
 import { loadSiteConfig, CONFIG_FILE, DEFAULT_THEME } from './site-config.mjs';
-import { buildImages } from './images.mjs';
+import { buildPhotos } from './photos.mjs';
 import { checkLinks } from './check-links.mjs';
 import { registerSiteWidgets } from './site-widgets.mjs';
 import { walkJson, loadContent } from './content.mjs';
@@ -32,13 +32,13 @@ async function viteConfig(root, extra = {}) {
   return { configFile: false, ...siteConfig({ root }), ...extra };
 }
 
-const images = async (root, opts) => {
-  if (opts.images === false) return;
-  await buildImages(root);
+const photos = async (root, opts) => {
+  if (opts.photos === false) return;
+  await buildPhotos(root);
 };
 
 export async function dev(root, opts = {}) {
-  await images(root, opts);
+  await photos(root, opts);
   const { createServer } = await import('vite');
   const server = await createServer(
     await viteConfig(root, {
@@ -55,7 +55,7 @@ export async function dev(root, opts = {}) {
 }
 
 export async function build(root, opts = {}) {
-  await images(root, opts);
+  await photos(root, opts);
   const { build: viteBuild } = await import('vite');
   await viteBuild(await viteConfig(root));
 }

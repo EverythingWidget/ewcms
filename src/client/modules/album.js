@@ -1,5 +1,5 @@
 /**
- * Album slider (Faint Film style): big current image, numbered thumbs, counter,
+ * Album slider (Faint Film style): big current photo, numbered thumbs, counter,
  * keyboard ← →, mouse wheel, drag / swipe, and a Slider ⇄ Grid toggle.
  * Timings come from settings/animations.json → transitions.album / interactions.album.
  */

@@ -21,7 +21,7 @@ const heroPhoto = (ctx, widget, p, i) => {
   >
     <span class="scatter__drift"
       ><span class="scatter__frame">
-        ${img(ctx, p.src, { decorative: true, sizes: sizes(`${mobile ? ph.w : 30}vw`, `${p.w}vw`), ...firstPhotos(i), attrs: widget.ed(['photos', i, 'src'], 'image') })}
+        ${img(ctx, p.src, { decorative: true, sizes: sizes(`${mobile ? ph.w : 30}vw`, `${p.w}vw`), ...firstPhotos(i), attrs: widget.ed(['photos', i, 'src'], 'photo') })}
       </span></span
     >
   </a>`;
@@ -54,7 +54,7 @@ const leadPhoto = (ctx, widget, photos, look) => {
   const i = photos.findIndex((p) => p?.src);
   if (i < 0) return '';
   return html`<div class="hero__photo">
-    ${img(ctx, photos[i].src, { decorative: true, sizes: look === 'beside' ? '50vw' : '100vw', ...firstPhotos(0), attrs: widget.ed(['photos', i, 'src'], 'image') })}
+    ${img(ctx, photos[i].src, { decorative: true, sizes: look === 'beside' ? '50vw' : '100vw', ...firstPhotos(0), attrs: widget.ed(['photos', i, 'src'], 'photo') })}
   </div>`;
 };
 

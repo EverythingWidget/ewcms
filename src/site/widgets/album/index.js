@@ -1,6 +1,6 @@
 /**
  * The album widget: one item (a person or a place), Faint Film "slider view": a big current
- * image, numbered thumbnail strip, 01/08 counter, keyboard / drag / wheel navigation and a
+ * photo, numbered thumbnail strip, 01/08 counter, keyboard / drag / wheel navigation and a
  * Slider ⇄ Grid toggle. Its photos are its source's item (../../layout/source.js: on a [param]
  * page usually From URL, the page's own; item: true, without one it is skipped). A widget module (../index.js has the format).
  * Its texts are fields bound to the item (../../layout/bindings.js): the title { "bind": "title" },
@@ -63,7 +63,7 @@ function albumOf(s, ctx, route, widget) {
   const file = sourceFile(widget.source);
   const at = (field, type) => ed(file, ['items', widget.index, field], type);
   // a photo's path, edited (and uploaded) in the editor
-  const photo = (i) => ed(file, ['items', widget.index, 'images', i], 'image');
+  const photo = (i) => ed(file, ['items', widget.index, 'images', i], 'photo');
   // back: the page around it (a [param] page's), else the page of all of its source
   const back = route.parent ?? sourcePage(ctx, widget.source);
   const section = route.section ?? titleCase(widget.source);

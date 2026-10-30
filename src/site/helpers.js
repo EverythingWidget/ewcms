@@ -126,7 +126,7 @@ export const extAttrs = (url) => (isExternal(url) ? ' target="_blank" rel="noope
 
 /**
  * URL of a photo in the content. `src` is one of:
- *   "people/x/01.jpg"               a file in media/, resized by scripts/images.mjs: /media/...
+ *   "people/x/01.jpg"               a file in media/, resized by scripts/photos.mjs: /media/...
  *   "photos/x-3f9a0c1b2d-1600.webp" an object in Cloudflare R2 (uploaded and resized in the
  *                                   editor, scripts/r2.mjs): site.mediaUrl (settings/site.json)
  *                                   + "/" + key; its other sizes are in ctx.photos
@@ -154,7 +154,7 @@ export function warnOnce(msg, tag = 'photos') {
 /**
  * Sizes of a photo, the same shape for both kinds: { src, srcset: [{ url, w }], width, height,
  * color, lqip }, or null when there are none (a full URL, or a key missing from photos.json).
- *   media/ photos: the generated manifest (.generated/media.json, scripts/images.mjs)
+ *   media/ photos: the generated manifest (.generated/media.json, scripts/photos.mjs)
  *   R2 photos:     content/en/settings/photos.json (written by the upload), keys made URLs here
  */
 export function photoOf(ctx, src) {
@@ -294,7 +294,7 @@ const hsl = (h, s, l) => {
 
 /**
  * Accent colour for an album: explicit `accent` wins, otherwise the dominant
- * colour of the cover image (from the image pipeline), normalised so it works
+ * colour of the cover photo (from the photo pipeline), normalised so it works
  * as a soft tint on black. Greyscale covers fall back to the site accent.
  */
 export function accentOf(ctx, album) {
@@ -321,6 +321,6 @@ export const coverOf = (album) =>
 /** A photo's credit ({ name, url, source, license }), from photos.json; undefined: none. */
 export const creditOf = (ctx, src) => ctx.photos?.[src]?.credit;
 
-/** "Photo: Name / Unsplash" credit line (placeholder images). */
+/** "Photo: Name / Unsplash" credit line (placeholder photos). */
 export const creditText = (credit) =>
   credit ? `Photo: ${credit.name}${credit.license ? ' / Unsplash' : ''}` : '';

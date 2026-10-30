@@ -1,21 +1,21 @@
 /**
- * Image pipeline (optional, but on by default in `npm run dev` / `npm run build`).
+ * Photo pipeline (optional, but on by default in `npm run dev` / `npm run build`).
  *
  *   media/<any>/<file>.jpg  ──►  public/media/<any>/<file>-<width>.webp   (responsive sizes)
  *                           ──►  .generated/media.json                    (manifest)
  *
- * The manifest stores, per source image: intrinsic width/height, the generated
+ * The manifest stores, per source photo: intrinsic width/height, the generated
  * srcset, a tiny blurred placeholder (LQIP) and the dominant colour, which the
  * templates use for album accents when an album has no explicit `accent`.
  *
  * If `sharp` isn't installed, originals are copied as-is and the site still works
- * (no srcset / placeholders). Outputs are cached: unchanged images are skipped.
- * Sizes, format and quality: scripts/image-variants.mjs (shared with uploads to R2).
+ * (no srcset / placeholders). Outputs are cached: unchanged photos are skipped.
+ * Sizes, format and quality: scripts/photo-variants.mjs (shared with uploads to R2).
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { FORMAT, loadSharp, makeVariants } from './image-variants.mjs';
+import { FORMAT, loadSharp, makeVariants } from './photo-variants.mjs';
 import { loadSiteConfig } from './site-config.mjs';
 
 const EXT = /\.(jpe?g|png|webp|avif|tiff?)$/i;
@@ -37,14 +37,14 @@ const walk = (dir) =>
  * The site at `root` (default: the working folder): its media/ photos → public/media sizes and
  * the manifest (.generated/media.json). Returns { files, built }.
  */
-export async function buildImages(root = process.cwd()) {
+export async function buildPhotos(root = process.cwd()) {
   const SITE = loadSiteConfig(root);
   const SRC = SITE.mediaDir;
   const OUT = SITE.publicMediaDir;
   const PUBLIC = SITE.publicDir;
   const MANIFEST = SITE.manifest;
   const sharp = await loadSharp();
-  if (!sharp) console.warn('[images] sharp not available: copying originals without resizing.');
+  if (!sharp) console.warn('[photos] sharp not available: copying originals without resizing.');
 
   const prev = fs.existsSync(MANIFEST) ? JSON.parse(fs.readFileSync(MANIFEST, 'utf8')) : {};
   const manifest = {};
@@ -113,6 +113,6 @@ export async function buildImages(root = process.cwd()) {
   return { files: files.length, built };
 }
 
-// run directly: node scripts/images.mjs (the site: the working folder)
+// run directly: node scripts/photos.mjs (the site: the working folder)
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url))
-  await buildImages();
+  await buildPhotos();

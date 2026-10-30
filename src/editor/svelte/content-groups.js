@@ -11,7 +11,7 @@ import { WIDGET_TYPES } from '../../site/widgets/index.js';
 import { bindTypeOf } from '../../site/layout/bindings.js';
 import { targetFile } from '../layout-sync.js';
 import { itemName, schemaFor } from './source-items.js';
-import { TEXT_TYPES, controlOf } from '../../site/field-types.js';
+import { TEXT_TYPES } from '../../site/field-types.js';
 
 /** site.json values edited in the Settings tab: [key, label, field type]. */
 export const SITE_SETTINGS = [
@@ -27,7 +27,7 @@ export const SEO_SETTINGS = [
   ['title', 'Home page title (in full)', 'text'],
   ['titleTemplate', 'Title of other pages: {page} is the page, {site} the site name', 'text'],
   ['description', 'Description (pages without their own)', 'multiline'],
-  ['ogImage', 'Share image (pages without their own)', 'image'],
+  ['ogImage', 'Share image (pages without their own)', 'photo'],
   ['url', 'Site URL (canonical links, og:url, sitemap.xml)', 'text'],
   ['lang', 'Language (<html lang>, e.g. en)', 'text'],
 ];
@@ -60,9 +60,9 @@ export function labelFor(store, { file, ptr }) {
  */
 function fieldLabel(f) {
   const parts = parse(f.ptr);
-  if (f.type === 'image' && parts.at(-1) === 'src' && /^\d+$/.test(parts.at(-2)))
+  if (f.type === 'photo' && parts.at(-1) === 'src' && /^\d+$/.test(parts.at(-2)))
     return `Photo ${Number(parts.at(-2)) + 1}`;
-  if (f.type === 'image' && parts.at(-2) === 'images' && /^\d+$/.test(parts.at(-1)))
+  if (f.type === 'photo' && parts.at(-2) === 'images' && /^\d+$/.test(parts.at(-1)))
     return `Photo ${Number(parts.at(-1)) + 1}`;
   if (parts.at(-3) === 'columns') return `${labelOf(parts.at(-2))} column title`;
   return labelOf(parts.at(-1));
@@ -107,8 +107,7 @@ function registryFields(file, base, s, t) {
       edit: `${file}#${ptr}`,
       file,
       ptr,
-      // a photo field's input is the photo card (Field.svelte 'image')
-      type: def.type === 'photo' ? controlOf('photo') : def.type || 'text',
+      type: def.type || 'text',
       label: def.label || label,
       half: def.width === 'half',
       ...(def.options ? { options: def.options } : {}),

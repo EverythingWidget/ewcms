@@ -1,6 +1,6 @@
 /**
  * Upload without R2 (POST /__editor/upload when the R2_* keys are missing): the photo is saved in
- * the site's media/ folder, then the local image step runs at once (scripts/images.mjs: rotated
+ * the site's media/ folder, then the local photo step runs at once (scripts/photos.mjs: rotated
  * upright, metadata stripped, WebP 480/960/1600, blurred placeholder, accent colour), so the
  * photo shows right away. With the R2 keys set, uploads go to R2 as before (scripts/r2.mjs).
  * Answers { status, body } like uploadPhoto: body.key is the photo's media/ path (the value to
@@ -10,7 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { IMAGE_TYPES } from './r2.mjs';
-import { buildImages } from './images.mjs';
+import { buildPhotos } from './photos.mjs';
 import { loadSiteConfig } from './site-config.mjs';
 import { slugify } from '../src/site/helpers.js';
 
@@ -33,12 +33,12 @@ export function localName(dir, name, type, body) {
   return `${base}-${createHash('sha256').update(body).digest('hex').slice(0, 10)}.${ext}`;
 }
 
-// one image step at a time: two uploads at once must not write the manifest together
+// one photo step at a time: two uploads at once must not write the manifest together
 let queue = Promise.resolve();
 const serial = (fn) => (queue = queue.then(fn, fn));
 
-/** Save one uploaded image in media/ and build its sizes. build: the image step (tests swap it). */
-export async function uploadLocal(root, { name, type, body }, { build = buildImages } = {}) {
+/** Save one uploaded photo in media/ and build its sizes. build: the photo step (tests swap it). */
+export async function uploadLocal(root, { name, type, body }, { build = buildPhotos } = {}) {
   if (!IMAGE_TYPES.has(type))
     return {
       status: 415,

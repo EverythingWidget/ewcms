@@ -166,7 +166,7 @@ function scrubWords(el, spec, ctx) {
   }
 }
 
-/** Scroll-scrubbed vertical parallax of an image inside an overflow:hidden box. */
+/** Scroll-scrubbed vertical parallax of a photo inside an overflow:hidden box. */
 function parallax(el, spec, ctx) {
   if (ctx.reduce) return;
   const speed = Number(spec.speedPct) || 10;
@@ -267,7 +267,7 @@ function heroTitle(el, spec, { reduce, onCleanup }) {
 }
 
 /**
- * Image preview for a project list. It does not follow the pointer: it sits at a
+ * Photo preview for a project list. It does not follow the pointer: it sits at a
  * fixed horizontal position over the list (`xPct`, % of the list width) and glides
  * vertically to the row being hovered (`glideSec` seconds).
  */

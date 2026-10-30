@@ -3,7 +3,7 @@
   its file, e.g. people.json, that opens it in the Source Explorer) with an input, or a
   textarea for longer text, a switch (boolean) or a Select (select, options [[value, label]]).
   bare: no label row (label is the input's aria-label; say it in the placeholder); help: a hint under it; half: it shares a row with the next field (the parent's grid).
-  type 'image': a photo (its media/ path or R2 key) as a 64px card: the photo, its label
+  type 'photo': a photo (its media/ path or R2 key) as a 64px card: the photo, its label
   (inside), file name and sizes, Media and ✕ (clears it; remove: the parent's, a list item's);
   grab: a pointerdown on the photo (a list's drag handle, PhotoList.svelte); the thumbnail or Change opens the Media window on it (MediaModal.svelte), which
   stores the photo picked there in this field: one undo step. No text input.
@@ -28,7 +28,7 @@
   import { fallback, openMedia, photoInfo, photoLine, thumbUrl } from './media.svelte.js';
 
   // edit: the field's data-edit ("file#/pointer"), also on the label so others can find it.
-  // type: 'text' | 'words' | 'number' | 'date' | 'multiline' | 'image' | 'boolean' | 'select' |
+  // type: 'text' | 'words' | 'number' | 'date' | 'multiline' | 'photo' | 'boolean' | 'select' |
   // 'seg' (options as a button group, like Source; unset: the option shown when unset) |
   // 'spot' (nine options, row by row: a Position.svelte, its 3 x 3 grid in a popover; a photo's position).
   // onvalue(value) gets every valid input.
@@ -61,7 +61,7 @@
 
   const uid = $props.id();
   let invalid = $state(false);
-  const photo = $derived(type === 'image');
+  const photo = $derived(type === 'photo');
   // a label element around an input, a switch; photos and Selects label their own buttons
   const tag = $derived(
     photo || type === 'select' || type === 'seg' || type === 'spot' || bound ? 'div' : 'label',

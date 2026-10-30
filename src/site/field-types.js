@@ -56,11 +56,11 @@ export const FIELD_TYPES = Object.freeze({
     source: true,
     widget: true,
     value: 'string',
-    control: 'image',
+    control: 'photo',
     binds: ['photo'],
     blank: '',
   },
-  photos: { source: true, value: 'list', control: 'image', binds: ['photos'], blank: [] },
+  photos: { source: true, value: 'list', control: 'photo', binds: ['photos'], blank: [] },
   link: {
     source: true,
     value: 'string',

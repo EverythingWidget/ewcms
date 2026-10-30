@@ -48,14 +48,14 @@ async function main() {
   const { ENGINE_VERSION } = await import('../scripts/engine.mjs');
 
   const [command, ...rest] = process.argv.slice(2);
-  const opts = { images: true, lint: true, links: false };
+  const opts = { photos: true, lint: true, links: false };
   const args = [];
   for (let i = 0; i < rest.length; i++) {
     const a = rest[i];
     if (a === '--port') opts.port = Number(rest[++i]);
     else if (a === '--root') opts.root = rest[++i];
     else if (a === '--host') opts.host = true;
-    else if (a === '--no-images') opts.images = false;
+    else if (a === '--no-images') opts.photos = false;
     else if (a === '--no-lint') opts.lint = false;
     else if (a === '--links') opts.links = true;
     else args.push(a);
@@ -80,8 +80,8 @@ usage: ewcms <dev | build | preview | check | images | publish-media | new-site 
         if (!(await cli.check(root, opts))) process.exitCode = 1;
         break;
       case 'images': {
-        const { buildImages } = await import('../scripts/images.mjs');
-        await buildImages(root);
+        const { buildPhotos } = await import('../scripts/photos.mjs');
+        await buildPhotos(root);
         break;
       }
       case 'publish-media':

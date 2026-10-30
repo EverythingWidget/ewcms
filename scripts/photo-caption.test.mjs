@@ -8,7 +8,7 @@ const src = readFileSync(new URL('../src/site/widgets/photo/index.js', import.me
 
 test('photo caption has no inline-edit marker, the photo keeps its picker', () => {
   assert.doesNotMatch(src, /widget\.ed\('caption'\)/);
-  assert.match(src, /widget\.ed\('src', 'image'\)/);
+  assert.match(src, /widget\.ed\('src', 'photo'\)/);
 });
 
 test('photo popup has a Caption text field', () => {

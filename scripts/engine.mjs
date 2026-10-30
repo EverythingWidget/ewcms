@@ -54,7 +54,7 @@ export const ENGINE_VERSION = JSON.parse(
 
 /**
  * The site the mock sandbox's dev server runs (npm run mock, mock:serve): MOCK_SITE, else the
- * working folder when it is a site, else the engine's test fixture (never written: no images).
+ * working folder when it is a site, else the engine's test fixture (never written: no photo sizes).
  */
 export function mockSite(cwd = process.cwd()) {
   if (process.env.MOCK_SITE) return path.resolve(process.env.MOCK_SITE);

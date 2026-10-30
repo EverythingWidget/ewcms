@@ -36,10 +36,10 @@ test('resolve: custom values stay, { bind } takes the whole value, a format wrap
   const o = { item: noor, keys, onwarn: w.onwarn };
   assert.equal(resolve('Plain text', { ...o, def: { type: 'text' } }), 'Plain text');
   assert.equal(resolve({ bind: 'title' }, { ...o, def: { type: 'text' } }), 'Noor Vermeer');
-  assert.equal(resolve({ bind: 'images' }, { ...o, def: { list: 'image' } }), noor.images);
+  assert.equal(resolve({ bind: 'images' }, { ...o, def: { list: 'photo' } }), noor.images);
   // a list of { src } (the hero's placed photos) gets the paths as { src }
   assert.deepEqual(
-    resolve({ bind: 'images' }, { ...o, def: { list: { src: 'image' } } }),
+    resolve({ bind: 'images' }, { ...o, def: { list: { src: 'photo' } } }),
     noor.images.map((src) => ({ src })),
   );
   assert.equal(
@@ -72,7 +72,7 @@ test('resolve: unknown fields and missing items are empty, with a warning ({{tit
   // the editor's preview shows what can't be filled
   const p = { ...o, placeholders: true, def: { type: 'text' } };
   assert.equal(resolve({ bind: 'title' }, { ...p, item: null }), '{{title}}');
-  assert.equal(resolve({ bind: 'x' }, { ...p, item: null, def: { type: 'image' } }), '');
+  assert.equal(resolve({ bind: 'x' }, { ...p, item: null, def: { type: 'photo' } }), '');
   // an empty value of a known field: empty, no warning
   const w2 = warnings();
   assert.equal(resolve({ bind: 'role' }, { item: {}, keys, def: {}, onwarn: w2.onwarn }), '');

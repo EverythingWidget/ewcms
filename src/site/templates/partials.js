@@ -28,7 +28,7 @@ export const sectionHead = ({ at, eyebrow, title, href, cta }) => {
   </header>`;
 };
 
-/** Album card (People / Places index). Hovering cycles through the first images. */
+/** Album card (People / Places index). Hovering cycles through the first photos. */
 export const albumCard = (ctx, kind, album, { landscape = false, index = 0 } = {}) => {
   const at = (field, type) => ed(sourceFile(kind), ['items', index, field], type);
   const meta = [['role'], ['location'], ['year', 'number']].filter(([f]) => album[f]);
@@ -57,7 +57,7 @@ export const albumCard = (ctx, kind, album, { landscape = false, index = 0 } = {
   </a>`;
 };
 
-/** Editorial index list of projects with a hover image preview (anchored to the row) + click-to-expand details. */
+/** Editorial index list of projects with a hover photo preview (anchored to the row) + click-to-expand details. */
 export const projectList = (
   ctx,
   projects,
@@ -79,7 +79,7 @@ export const projectList = (
       </button>
       <div class="prow__body" id="prow-${esc(p.slug)}" hidden>
         <div class="prow__inner">
-          <div class="prow__media">${p.image ? img(ctx, p.image, { sizes: sizes('100vw', '30vw'), attrs: ed(PROJECTS, ['items', at, 'image'], 'image') }) : ''}</div>
+          <div class="prow__media">${p.image ? img(ctx, p.image, { sizes: sizes('100vw', '30vw'), attrs: ed(PROJECTS, ['items', at, 'image'], 'photo') }) : ''}</div>
           <div class="prow__text">
             <p${ed(PROJECTS, ['items', at, 'body'], 'multiline')}>${lines(p.body)}</p>
             ${p.placeholder ? html`<span class="tag">${esc(t(ctx, 'tag.placeholder'))}</span>` : ''}
@@ -98,7 +98,7 @@ export const projectList = (
       aria-hidden="true"
     >
       <div class="preview__frame">
-        ${projects.map((p, i) => (p.image ? img(ctx, p.image, { decorative: true, sizes: '360px', attrs: ed(PROJECTS, ['items', indexOf(p, i), 'image'], 'image') }) : '<img alt="" />'))}
+        ${projects.map((p, i) => (p.image ? img(ctx, p.image, { decorative: true, sizes: '360px', attrs: ed(PROJECTS, ['items', indexOf(p, i), 'image'], 'photo') }) : '<img alt="" />'))}
       </div>
     </div>`;
 };

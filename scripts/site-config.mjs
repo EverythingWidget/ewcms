@@ -3,7 +3,7 @@
  *
  *   export default {
  *     contentDir: 'content/en',        // pages/, sources/, settings/, strings.json
- *     mediaDir: 'media',               // original photos (scripts/images.mjs reads them)
+ *     mediaDir: 'media',               // original photos (scripts/photos.mjs reads them)
  *     publicDir: 'public',             // Vite's public folder
  *     publicMediaDir: 'public/media',  // the photos' generated sizes (served as /media/...)
  *     generatedDir: '.generated',      // the media manifest (media.json)

@@ -304,8 +304,8 @@ test('editor: half fields pair with the next half; a lone half takes the row', a
       ['kind', 'Kind', 'select', false],
       ['url', 'Link', 'text', false],
       ['shot', 'Shot on', 'date', false],
-      ['image', 'Photo', 'image', false],
-      ['images.0', 'Photo 1', 'image', false],
+      ['image', 'Photo', 'photo', false],
+      ['images.0', 'Photo 1', 'photo', false],
       ['placeholder', 'Placeholder', 'boolean', false],
     ],
   );

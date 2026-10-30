@@ -12,7 +12,7 @@ import { sourcePage } from '../data.js';
 const imagesOf = (item) =>
   Array.isArray(item?.images) ? item.images : item?.image ? [item.image] : [];
 
-/** Interleave the first N images of each item (e.g. 4 per person) for a photo-tile grid. */
+/** Interleave the first N photos of each item (e.g. 4 per person) for a photo-tile grid. */
 const interleave = (items, indexOf, perItem = 4) => {
   const tiles = [];
   for (let i = 0; i < perItem; i++)
@@ -24,7 +24,7 @@ const interleave = (items, indexOf, perItem = 4) => {
   return tiles;
 };
 
-/** Photo tiles (people look): the first 4 images of every item, interleaved. */
+/** Photo tiles (people look): the first 4 photos of every item, interleaved. */
 const photoTiles = (ctx, source, items, layout, indexOf) => {
   const { title } = schemaOf(ctx, source); // the field that names an item
   return html` <div class="tiles${layout === 'even' ? ' tiles--even' : ''}">
@@ -38,7 +38,7 @@ const photoTiles = (ctx, source, items, layout, indexOf) => {
   </div>`;
 };
 
-/** Landscape cards (places look): cover image, name, location · year · photo count. */
+/** Landscape cards (places look): cover photo, name, location · year · photo count. */
 const placeCards = (ctx, source, items, layout, indexOf) =>
   html` <div
     class="placecards${layout === 'even' ? ' placecards--even' : ''}"

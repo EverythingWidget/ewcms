@@ -55,7 +55,7 @@
         edit: `${file}#/backdrop/photos/${i}`,
         file,
         ptr: `/backdrop/photos/${i}`,
-        type: 'image',
+        type: 'photo',
         label: `Photo ${i + 1}`,
       },
     ]),

@@ -4,7 +4,7 @@
  * _layout.scss).
  *
  * - Opened with the hash (a load, or a link from another page): the browser's own jump comes
- *   before modules/rows.js has laid the page out (and before fonts and images settle), so the
+ *   before modules/rows.js has laid the page out (and before fonts and photos settle), so the
  *   section is kept at the top for a moment while the layout above it settles, until the
  *   reader scrolls themselves.
  * - A link to it on the same page (the router's router:hash, which stops the native jump) or

@@ -13,7 +13,7 @@
   import Field from './Field.svelte';
   import PageAddress from './PageAddress.svelte';
   import { ui } from './ui.svelte.js';
-  import { imageSrcset, imageUrl, media } from './media.svelte.js';
+  import { photoSrcset, photoUrl, media } from './media.svelte.js';
   import { DESCRIPTION_MAX, TITLE_MAX, seoOf } from '../../site/seo.js';
   import { contentFromFiles, isTemplate, pageIdOf } from '../../site/files.js';
 
@@ -74,7 +74,7 @@
   <Field
     edit="{file}#/meta/image"
     label={template ? 'Share image (items without a cover)' : 'Share image'}
-    type="image"
+    type="photo"
     value={get('image')}
     changed={changed('image')}
     onvalue={(v) => set('image', v)}
@@ -132,8 +132,8 @@
       {#if seo.src}
         <img
           class="seo__img"
-          src={imageUrl(seo.src)}
-          srcset={imageSrcset(seo.src) || undefined}
+          src={photoUrl(seo.src)}
+          srcset={photoSrcset(seo.src) || undefined}
           sizes="368px"
           alt=""
         />

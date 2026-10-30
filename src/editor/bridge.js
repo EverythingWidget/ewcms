@@ -7,7 +7,7 @@
  *  - re-applies edited text to every [data-edit] element whenever a page mounts,
  *  - Arrange clicks ('arrange'; ui.svelte.js previewClicks): a double click turns a [data-edit] element into an inline editor
  *    until it loses focus (a single click picks its widget: overlay.js); a double-clicked
- *    photo (data-edit-type="image") or bound value opens its field in the panel. Links,
+ *    photo (data-edit-type="photo") or bound value opens its field in the panel. Links,
  *    buttons and forms don't act on clicks (Alt+click does),
  *  - lets you hover/click widgets ([data-widget]) and [data-anim] elements to select them (animate
  *    clicks, 'animate': the innermost one under the pointer); visitor clicks ('visitor'):
@@ -19,7 +19,7 @@ import { withDraft } from './source.js';
 import { EDIT_PARAM } from './lib/editor-url.js';
 import { splitEdit, words } from '../site/helpers.js';
 import { ANIMATIONS } from '../site/files.js';
-import { imageSrcset, imageUrl } from './svelte/media.svelte.js';
+import { photoSrcset, photoUrl } from './svelte/media.svelte.js';
 import { T } from './ui-tokens.js';
 import {
   isCaret,
@@ -275,11 +275,11 @@ export function createBridge({ store, labelFor }) {
       const run = () => {
         for (const [el, value] of pending) {
           applied.set(el, value);
-          if (el.dataset.editType === 'image') {
+          if (el.dataset.editType === 'photo') {
             // a new photo: its URL and, for an R2 photo, its sizes (the sizes attribute stays)
-            const url = imageUrl(value);
+            const url = photoUrl(value);
             if (el.getAttribute('src') !== url) {
-              const srcset = imageSrcset(value);
+              const srcset = photoSrcset(value);
               if (srcset) el.srcset = srcset;
               else el.removeAttribute('srcset');
               el.src = url;
@@ -801,7 +801,7 @@ export function createBridge({ store, labelFor }) {
         if (!hit || hit.isContentEditable) return;
         e.preventDefault();
         e.stopPropagation();
-        if (hit.dataset.bound !== undefined || hit.dataset.editType === 'image') pickField(hit);
+        if (hit.dataset.bound !== undefined || hit.dataset.editType === 'photo') pickField(hit);
         else if (hit.dataset.editType === 'rich') startRich(hit, e.clientX, e.clientY);
         else startEdit(hit, e.clientX, e.clientY);
       },

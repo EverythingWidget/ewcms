@@ -9,6 +9,6 @@ import { dev } from './cli.mjs';
 import { mockSite } from './engine.mjs';
 
 const port = Number(process.env.MOCK_PORT || 5199);
-const server = await dev(mockSite(), { port, images: false });
+const server = await dev(mockSite(), { port, photos: false });
 const local = server.resolvedUrls?.local?.[0] || `http://localhost:${port}/`;
 console.log(`\n  Mock sandbox: ${new URL('sandbox/', local)}\n`);

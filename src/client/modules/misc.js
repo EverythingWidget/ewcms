@@ -1,4 +1,4 @@
-/** Small page behaviours: album-card hover cycling, image fade-in. */
+/** Small page behaviours: album-card hover cycling, photo fade-in. */
 import { finePointer } from '../lib/env.js';
 import { interactions } from '../anim/engine.js';
 
@@ -31,7 +31,7 @@ export function cards(view) {
   return () => off.forEach((f) => f());
 }
 
-export function imageFade(view) {
+export function photoFade(view) {
   view.querySelectorAll('img').forEach((img) => {
     const done = () => img.classList.add('is-loaded');
     if (img.complete && img.naturalWidth) done();

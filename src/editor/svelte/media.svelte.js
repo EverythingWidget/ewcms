@@ -20,19 +20,19 @@ let live = null;
 export const connectMedia = (l) => (live = l);
 
 /** Full-size URL of a photo (`src` as stored in the content). */
-export const imageUrl = (src) =>
+export const photoUrl = (src) =>
   src
     ? mediaUrl({ media: media.manifest, site: { mediaUrl: live?.get(SITE, '/mediaUrl') } }, src)
     : '';
 
 /** srcset of an R2 photo ('' for others: media/ photos keep the one they were rendered with). */
-export const imageSrcset = (src) =>
-  media.photos[src]?.srcset?.map((s) => `${imageUrl(s.key)} ${s.w}w`).join(', ') || '';
+export const photoSrcset = (src) =>
+  media.photos[src]?.srcset?.map((s) => `${photoUrl(s.key)} ${s.w}w`).join(', ') || '';
 
 /** A small version for a field's thumbnail: the smallest size, else the photo itself. */
 export const thumbUrl = (src) =>
   media.manifest[src]?.thumb ||
-  (media.photos[src]?.srcset ? imageUrl(media.photos[src].srcset[0].key) : imageUrl(src));
+  (media.photos[src]?.srcset ? photoUrl(media.photos[src].srcset[0].key) : photoUrl(src));
 
 /** Is `key` an R2 photo (in photos.json with its sizes)? */
 export const isR2 = (key) => Array.isArray(media.photos[key]?.srcset);

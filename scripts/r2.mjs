@@ -9,7 +9,7 @@
  *   R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET   required
  *   R2_ENDPOINT   optional: another S3 endpoint (tests use a local mock)
  *
- * An upload is resized like the photos in media/ (scripts/image-variants.mjs: auto-rotated,
+ * An upload is resized like the photos in media/ (scripts/photo-variants.mjs: auto-rotated,
  * metadata stripped, WebP at 480/960/1600 px, never wider than the original) and each size is
  * stored as photos/<name>-<hash>-<width>.webp. The hash is of the original bytes: the same
  * photo always gets the same keys, and the objects can be cached forever. The original itself
@@ -25,7 +25,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { AwsClient } from 'aws4fetch';
-import { FORMAT, loadSharp, makeVariants, uprightSize, widthsFor } from './image-variants.mjs';
+import { FORMAT, loadSharp, makeVariants, uprightSize, widthsFor } from './photo-variants.mjs';
 import { formatJSON } from '../src/editor/lib/json-format.js';
 import { writeFileAtomic } from './content.mjs';
 import { VERSION } from '../src/site/files.js';
@@ -137,7 +137,7 @@ export function writePhotos(photosFile, photos, onWrite = () => {}) {
 }
 
 /**
- * Check, resize and store one uploaded image: { status, body } for the endpoint; body.key is
+ * Check, resize and store one uploaded photo: { status, body } for the endpoint; body.key is
  * the value for the content, body.photo its photos.json entry.
  *   env           the R2_* variables
  *   name, type    the original file name and Content-Type; body: its bytes

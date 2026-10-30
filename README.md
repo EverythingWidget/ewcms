@@ -17,8 +17,8 @@ A **site** is only its own things; ewcms is everything else:
 ## A site's commands
 
 ```bash
-ewcms dev [--port N] [--host] [--no-images]   # images, then http://localhost:5173 (pages on the fly, hot reload; editor: ?edit)
-ewcms build [--no-images]                     # images, then dist/ (one index.html per route + 404.html, sitemap.xml, _redirects)
+ewcms dev [--port N] [--host] [--no-images]   # photo sizes, then http://localhost:5173 (pages on the fly, hot reload; editor: ?edit)
+ewcms build [--no-images]                     # photo sizes, then dist/ (one index.html per route + 404.html, sitemap.xml, _redirects)
 ewcms preview [--port N]                      # serve dist/ on http://localhost:4173
 ewcms check [--links] [--no-lint]             # content (every file, sources, bindings, motion) + the site's JS/SCSS; --links: dist/'s links
 ewcms images                                  # media/ → public/media/*.webp sizes + .generated/media.json
@@ -137,7 +137,7 @@ that change files copy it to a temp folder first.
 `mediaDir` (`media`), `publicDir` and `publicMediaDir` (`public/media`), `generatedDir`
 (`.generated`, the media manifest), `outDir` (`dist`), and `repo` (GitHub links when the git
 remote is not on GitHub). Every key is optional. `scripts/site-config.mjs` (`loadSiteConfig`)
-resolves them; the build, the dev server, the editor endpoints, `scripts/images.mjs` and
+resolves them; the build, the dev server, the editor endpoints, `scripts/photos.mjs` and
 `check:links` all read their paths from it. Client code imports content through the
 `@site-content` alias; the editor's browser code gets its settings from `virtual:editor-config`.
 
@@ -181,9 +181,9 @@ templates/content/  ← the starter site's content: Home (a short guide), About,
 scripts/
   engine.mjs        ← where the engine is; %EWCMS% / /@fs/ paths to its files
   cli.mjs           ← the commands
-  images.mjs        ← media/ → public/media/*.webp sizes + .generated/media.json
+  photos.mjs        ← media/ → public/media/*.webp sizes + .generated/media.json
   content.mjs       ← loads content/en/<folder>/*.json and strings.json + media manifest (Node)
-  image-variants.mjs ← the webp sizes (sharp), for images.mjs and r2.mjs
+  photo-variants.mjs ← the webp sizes (sharp), for photos.mjs and r2.mjs
   r2.mjs            ← editor uploads: resized, stored in Cloudflare R2, listed in photos.json
   vite-plugin-static-site.mjs  ← the "static site builder" (dev render + build prerender)
   editor-server.mjs ← dev-only editor endpoints: content / save / draft / render / status /
@@ -347,7 +347,7 @@ Source Explorer don't list them. A new source is a new `<id>.json` (with its sch
 
 > ⚠️ **Placeholder content.** The two people (_Noor Vermeer_, _Daan Okafor_), the two places and
 > the two DIY projects are placeholders (`"placeholder": true`, shown with a "Placeholder" tag).
-> Their photos are free Unsplash images (Unsplash License); photographer and source URL are
+> Their photos are free Unsplash photos (Unsplash License); photographer and source URL are
 > each photo's `credit` in `content/en/settings/photos.json` and shown as a credit in the album view. Replace them with
 > real shoots. The email `hello@eeliyarasta.com` is a placeholder too.
 > Pages of items with `"placeholder": true` get `noindex` and are left out of `sitemap.xml`;
@@ -449,7 +449,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   the fixed header (`scroll-margin-top: var(--header-h)`), with native scrolling, on a link on
   the same page (the router's `router:hash`: a smooth scroll, a jump with reduced motion) and
   when the page opens with the hash: `src/client/modules/anchors.js` keeps the section in place
-  for a moment while `rows.js`, fonts and images settle the layout above it (until you scroll).
+  for a moment while `rows.js`, fonts and photos settle the layout above it (until you scroll).
   Validation: the name's slug must start with a letter (a number is an album photo's hash), not
   be one of the page's own ids (`main`, `portal`, `page-curtains`, `accent-init`,
   `mobile-menu`), and be unique on the page; a clash with another id on the rendered page (a
@@ -496,7 +496,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   - its gap (at least row 1); free widgets stay at their stored row. The section has the rows its
     lowest widget reaches now. This runs in the
     same measure pass as `--cell`: when the page mounts, at once on a window resize (and again on
-    the next frame), when a widget's content changes size (ResizeObserver: images, fonts) and when
+    the next frame), when a widget's content changes size (ResizeObserver: photos, fonts) and when
     the editor changes a layout; it sets `--fr` / `--frs` on the widgets and `--frows` on the
     section, over the stored `--r` / `--rs` / `--rows` (the phone grid's likewise). Links reach the
     page as `data-link="<id> <gap>"` and `data-mlink` (the phone's) on the widget. In a section
@@ -980,18 +980,18 @@ descriptions over ~160. `checkContent` validates `meta` and the defaults.
 Pages are never placeholders: About is a normal page, indexed unless its `meta.noindex` is set.
 Only source items can be placeholders.
 
-### Images
+### Photos
 
-`scripts/images.mjs` (runs before `dev` and `build`) converts every file in `media/` into
+`scripts/photos.mjs` (runs before `dev` and `build`) converts every file in `media/` into
 480/960/1600 px WebP files in `public/media/` and writes `.generated/media.json` with sizes,
-a tiny blurred placeholder (LQIP) and the image's most vivid colour. Templates use it for
-`srcset`, `width/height` (no layout shift) and lazy loading. Unchanged images are skipped.
+a tiny blurred placeholder (LQIP) and the photo's most vivid colour. Templates use it for
+`srcset`, `width/height` (no layout shift) and lazy loading. Unchanged photos are skipped.
 Photos load lazily, except the first ones at the top of a page (`firstPhotos(i)` in
 `src/site/helpers.js`, by template position): the first hero photo, people/places card and
 photography panel gets `loading="eager" fetchpriority="high"`, the next two `loading="eager"`.
 Album pages load their first two slides eagerly, and About its photo.
 If `sharp` is missing, originals are copied and the site still works. Both output folders are
-generated, so they're git-ignored. Sizes, format and quality are in `scripts/image-variants.mjs`,
+generated, so they're git-ignored. Sizes, format and quality are in `scripts/photo-variants.mjs`,
 shared with photos uploaded to R2 (below).
 
 **Alt text and credits belong to the photo**, not to the page using it: one entry per photo in
@@ -1360,7 +1360,7 @@ details (files, commits not pushed, the last save).
 
 **Photo fields** show the photo (64 px), its file name and sizes (`1600×2000 · 3 sizes · R2`,
 `1280×1600 · local`); no text input. The thumbnail or **Change** opens the **Media window**
-(also the images button in the toolbar): every photo, R2 and local, filtered All / R2 / Local,
+(also the photos button in the toolbar): every photo, R2 and local, filtered All / R2 / Local,
 with Upload (see [Photos on Cloudflare R2](#photos-on-cloudflare-r2)). The selected photo shows
 its sizes, where the content uses it (click to go there) and its alt text. Opened from a field,
 **Use this photo** puts it in the field (one undo step). **Delete** is offered only for photos
@@ -1518,7 +1518,7 @@ It writes the files as the editor's Save does; running it again changes nothing.
 A theme's own widget code (not content) needs, by hand: field type `'block'` is
 `'multiline'` (also in `ed(…, 'multiline')`); the third argument of `render(data, ctx, widget)`
 is called `widget` in the docs (only the name); a widget field's `type: 'image'` is `'photo'`
-(also a list's `src: 'image'`), the edit type in `ed(…, 'image')` stays. The editor's URL
+(also a list's `src: 'image'`); the edit type `ed(…, 'image')` is `ed(…, 'photo')` too. The editor's URL
 `&anim=` is `&animation=`.
 
 Photos keep their names: the Photo widget (`"type": "photo"`), a hero's and a backdrop's
