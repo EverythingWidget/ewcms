@@ -52,7 +52,6 @@
       <span class="tf__label"
         >{route.template ? 'Curtain for every item page' : 'Curtain for this page'}<InfoHelp
           label="About Curtain"
-          bg="var(--c-surface)"
           ><b>Curtain</b>: a panel that covers the screen while a visitor goes from one page to the
           next. <b>Global</b> uses the site's curtain, <b>Off</b> skips it on this page.</InfoHelp
         ></span

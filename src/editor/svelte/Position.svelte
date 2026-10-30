@@ -120,7 +120,7 @@
     padding: 0 var(--space-3);
     border: 0;
     border-radius: var(--radius-md);
-    background: var(--field-bg, var(--c-shadow));
+    background: var(--field-bg);
     color: var(--c-text);
     font: inherit;
     font-size: var(--fs-xs);
@@ -129,7 +129,7 @@
     cursor: pointer;
 
     &:hover:not(:disabled) {
-      background: var(--field-hover, var(--white-a17));
+      background: var(--field-hover);
     }
 
     // dimmed where it is (a Fill content box has no place)
@@ -158,7 +158,7 @@
     width: 4px;
     height: 4px;
     border-radius: 1px;
-    background: color-mix(in srgb, var(--white) 38%, var(--field-bg, var(--c-shadow)));
+    background: color-mix(in srgb, var(--white) 38%, var(--field-bg));
 
     &.is-on {
       background: var(--c-text);

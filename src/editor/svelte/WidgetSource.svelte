@@ -464,7 +464,7 @@
   .bs__shows {
     @include row(var(--space-2));
     @include muted;
-    color: var(--text-quiet, var(--c-text-muted));
+    color: var(--text-quiet);
     margin: 0;
     font-size: var(--fs-sm);
 

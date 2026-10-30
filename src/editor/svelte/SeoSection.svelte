@@ -172,6 +172,7 @@
     margin-bottom: var(--space-2);
     padding: var(--space-3);
     border-radius: var(--radius-md);
+    @include surface(var(--c-surface-2), $quiet: 45%);
     background: var(--c-surface-2);
   }
 

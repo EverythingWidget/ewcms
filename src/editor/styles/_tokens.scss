@@ -37,9 +37,7 @@
   // ---- primitives: hues
   --blue-300: #9fd3ff;
   --cyan-400: #3cf;
-  --cyan-950: #0d222e;
   --slate-800: #283540;
-  --slate-900: #141a22;
   --red-50: #fff4f2;
   --red-200: #ffb4a8;
   --red-300: #ff8a7a;
@@ -64,7 +62,6 @@
   --white-a10: rgb(255 255 255 / 0.1);
   --white-a12: rgb(255 255 255 / 0.12);
   --white-a14: rgb(255 255 255 / 0.14);
-  --white-a17: rgb(255 255 255 / 0.17);
   --white-a18: rgb(255 255 255 / 0.18);
   --white-a20: rgb(255 255 255 / 0.2);
   --white-a40: rgb(255 255 255 / 0.4);
@@ -82,7 +79,6 @@
   --black-a90: rgb(0 0 0 / 0.9);
   --blue-300-a06: rgb(159 211 255 / 0.06);
   --blue-300-a40: rgb(159 211 255 / 0.4);
-  --blue-300-a45: rgb(159 211 255 / 0.45);
   --blue-300-a50: rgb(159 211 255 / 0.5);
   --amber-300-a08: rgb(255 207 122 / 0.08);
   --amber-300-a15: rgb(255 207 122 / 0.15);
@@ -102,7 +98,6 @@
   --c-popover-shadow: var(--black-a60);
   --c-surface-2: var(--gray-14); // a nested panel
   --c-surface-3: var(--gray-1c);
-  --c-settings: var(--slate-900); // settings surfaces' one background (the section view's settings)
   --c-card: var(--gray-21); // toasts, menus
   // a card type: its fill and its accent text (paths, badges), the type told by its colour
   --c-page-card: var(--sand-900); // the pages list's (navigation) rows: 1.2:1 on the panel
@@ -142,7 +137,6 @@
   --c-accent: var(--cyan-400); // focus and selection, everywhere (and the preview's outlines)
   --c-on-accent: var(--black);
   --c-link: var(--blue-300); // highlight: links, badges, ease curves
-  --c-focus-ring: var(--blue-300-a45);
   --c-danger: var(--red-700); // Delete, Discard: a solid red pill with light text
   --c-danger-hover: var(--red-600);
   --c-on-danger: var(--red-50);
@@ -158,9 +152,6 @@
   --c-on-bar-active: var(--slate-800);
   --c-fill-hover: var(--white-a03);
   --c-fill-active: var(--white-a08);
-  --c-shadow: var(--black-a35);
-  // the inputs' look (--c-shadow on a card) as a solid color: the source card (ItemPicker)
-  --c-input: color-mix(in srgb, #000 35%, var(--c-card));
   --c-scrim: var(--black-a90);
 
   // ---- semantic: type and motion

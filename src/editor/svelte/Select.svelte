@@ -391,15 +391,10 @@
     line-height: 16px;
     text-align: left;
     cursor: pointer;
-    background: var(--field-bg, var(--c-shadow));
+    background: var(--field-bg);
     box-shadow: inset 0 0 0 1px var(--c-line);
     outline: none;
     transition: box-shadow 0.2s;
-
-    // hovered: a soft line (a surface sets none: surface())
-    &:hover {
-      box-shadow: inset 0 0 0 1px var(--field-hover-line, var(--c-focus-ring));
-    }
 
     &:focus-visible {
       box-shadow: var(--focus-ring);
@@ -466,7 +461,7 @@
     overscroll-behavior: contain;
     color: var(--c-text);
     background: var(--c-surface);
-    box-shadow: inset 0 0 0 1px var(--c-focus-ring);
+    box-shadow: var(--focus-ring);
     border-radius: 0 0 var(--radius-md) var(--radius-md);
     font-family: var(--f-mono);
     font-size: var(--fs-base);

@@ -15,8 +15,8 @@ test("a widget's own fields: one a row (only list items pair halves)", () => {
 test('the photo field in the pop-up: its fill, a 12% thumb, 35% text and icons, a hover wash', () => {
   // the photo reads the role colours; the pop-up (a surface) sets them
   const f = read('Field.svelte');
-  assert.match(f, /\.photo \{[^}]*background: var\(--field-bg, var\(--c-input\)\);/);
-  assert.match(f, /background: var\(--field-tile, var\(--c-switch\)\);/);
+  assert.match(f, /\.photo \{[^}]*background: var\(--field-bg\);/);
+  assert.match(f, /background: var\(--field-tile\);/);
   const p = read('WidgetPopup.svelte');
   assert.match(p, /@include surface\(/);
   assert.match(
@@ -35,6 +35,6 @@ test('Height / Width: joined, no padding or gaps, 40px buttons, a hover wash', (
   assert.match(btn, /border-radius: 0/);
   assert.match(
     btn,
-    /&:hover \{\s*color: var\(--text-strong, var\(--c-text-strong\)\);\s*background: var\(--field-hover, var\(--white-a17\)\);/,
+    /&:hover \{\s*color: var\(--text-strong\);\s*background: var\(--field-hover\);/,
   );
 });

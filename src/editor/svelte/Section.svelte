@@ -176,6 +176,7 @@
     padding: var(--space-3) 0; // the sides: the bar's and the inner's (a foot's line is edge to edge)
     position: relative;
     border: 1px solid transparent;
+    @include surface(var(--c-card), $quiet: 45%);
     background: var(--c-card);
     border-radius: var(--radius-lg);
 

@@ -61,6 +61,7 @@
     border-radius: var(--radius-lg);
     animation: fade 0.3s;
     // solid like the dialogs: no see-through, no blur
+    @include surface(var(--c-card));
     background: var(--c-card);
     box-shadow:
       inset 0 0 0 1px var(--c-fill-active),

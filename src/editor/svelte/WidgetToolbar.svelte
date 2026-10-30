@@ -573,6 +573,7 @@
     gap: var(--space-1);
     padding: var(--space-1);
     border-radius: var(--radius-md);
+    @include surface(var(--c-card));
     background: var(--c-card);
     color: var(--c-text);
     box-shadow:

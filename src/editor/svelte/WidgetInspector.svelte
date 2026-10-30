@@ -191,6 +191,11 @@
     background: var(--c-card);
   }
 
+  // in the panel a surface of its own (_mixins.scss surface()); bare, in the pop-up, on the pop-up's
+  .card:not(.card--bare) {
+    @include surface(var(--c-card), $quiet: 45%);
+  }
+
   .card--bare {
     padding: 0;
     border-radius: 0;

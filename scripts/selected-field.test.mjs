@@ -17,7 +17,7 @@ const block = (sel) => {
 test('selected field has no background or accent', () => {
   const b = block('.tf.is-selected');
   assert.doesNotMatch(b, /background|c-accent/);
-  assert.match(b, /\.tf__label \{\s*color: var\(--text-strong, var\(--c-text\)\);/);
+  assert.match(b, /\.tf__label \{\s*color: var\(--text-strong\);/);
   assert.match(b, /\.tf__input \{\s*box-shadow: var\(--focus-ring\);/);
 });
 

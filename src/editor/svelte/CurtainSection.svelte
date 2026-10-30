@@ -193,6 +193,7 @@
     margin: 0 0 var(--space-4);
     padding: var(--space-2) 0 0;
     border-radius: var(--radius-lg);
+    @include surface(var(--c-card), $quiet: 45%);
     background: var(--c-card);
     @include stack(var(--space-3));
 

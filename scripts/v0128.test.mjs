@@ -5,12 +5,17 @@ import { readFileSync } from 'node:fs';
 
 const src = (f) => readFileSync(new URL(`../src/editor/svelte/${f}`, import.meta.url), 'utf8');
 
-test('InfoHelp: 16px circle, 11px icon, solid rest colour, 17% hover, a 232px note', () => {
+test('InfoHelp: 16px circle, 11px icon, the surface roles, a 232px note of its own surface', () => {
   const s = src('InfoHelp.svelte');
   assert.match(s, /width: 16px;\s*height: 16px;/);
   assert.match(s, /font-size: var\(--fs-sm\)/); // 11px
-  assert.match(s, /color-mix\(in srgb, var\(--white\) 35%, var\(--ih-bg\)\)/);
-  assert.match(s, /background: var\(--white-a17\)/);
+  assert.match(s, /color: var\(--text-quiet\);/);
+  assert.match(s, /color: var\(--text-strong\);\s*background: var\(--field-hover\);/);
+  assert.match(
+    s,
+    /@include surface\(color-mix\(in srgb, var\(--white\) 12%, var\(--c-widget-card\)\)\);/,
+  );
+  assert.doesNotMatch(s, /ih-bg|\bbg\b =/, 'no bg prop');
   assert.match(s, /width: 232px/);
   assert.match(s, /font: 400 var\(--fs-base\) \/ 18px var\(--f-mono\)/);
   assert.match(s, /border-radius: 8px/);

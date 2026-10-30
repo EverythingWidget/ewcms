@@ -266,12 +266,12 @@
     @include row(var(--space-3));
     padding: var(--space-2);
     border-radius: var(--radius-md);
-    background: var(--field-bg, var(--c-input));
+    background: var(--field-bg);
     box-shadow: inset 0 0 0 1px var(--c-line);
     cursor: pointer;
 
     &:hover {
-      background: var(--field-tile, var(--c-card-peek));
+      background: var(--field-tile);
     }
   }
 
@@ -301,7 +301,7 @@
     width: 48px;
     height: 48px;
     border-radius: var(--radius-md);
-    background: var(--field-tile, var(--c-switch));
+    background: var(--field-tile);
     color: var(--c-accent);
     font-size: var(--fs-lg);
     object-fit: cover;
@@ -321,7 +321,7 @@
   .sc__label {
     @include row(var(--space-2));
     @include muted;
-    color: var(--text-quiet, var(--c-text-muted));
+    color: var(--text-quiet);
   }
 
   .sc__label,
@@ -343,7 +343,7 @@
 
   .sc__meta {
     @include muted;
-    color: var(--text-quiet, var(--c-text-muted));
+    color: var(--text-quiet);
 
     .is-empty & {
       white-space: normal;

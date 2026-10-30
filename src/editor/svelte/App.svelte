@@ -330,6 +330,7 @@
     flex-direction: column;
     border-radius: var(--radius-2xl);
     overflow: hidden;
+    @include surface(var(--c-surface), $quiet: 50%);
     background: var(--c-surface);
     box-shadow: var(--shadow-panel); // borderless: no ring, no top highlight
   }

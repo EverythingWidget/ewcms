@@ -1003,6 +1003,7 @@
     @include stack(var(--space-3));
     bottom: auto;
     padding: var(--space-2);
+    @include surface(var(--c-card), $quiet: 45%);
     background: var(--c-card);
     box-shadow:
       inset 0 0 0 1px var(--c-danger),

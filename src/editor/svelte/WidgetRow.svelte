@@ -91,6 +91,7 @@
     position: relative;
     min-height: 48px;
     border-radius: var(--radius-md);
+    @include surface(var(--c-widget-card), $quiet: 45%);
     background: var(--c-widget-card);
 
     // hovered: a 1px inset ring in the widgets' accent (nothing moves; focus keeps the cyan ring)

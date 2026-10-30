@@ -1,16 +1,16 @@
 <!--
   InfoHelp: a small (i) in a label row that explains its setting. An 11px icon in a 16px circle
-  (top-aligned in the 16px label line: the row keeps its height, nothing shifts); at rest 35% white mixed into the
-  surface it sits on (`bg`, solid), hovered or open white on a 17% white wash. A click opens a
-  floating note (232px, DM Mono 12/18) in the top layer, under the icon, flipped to stay in view
+  (top-aligned in the 16px label line: the row keeps its height, nothing shifts); at rest the
+  quiet text of the surface it sits on (--text-quiet, _mixins.scss surface()), hovered or open
+  its strong text on its hover wash (--text-strong, --field-hover). A click opens a
+  floating note (232px, DM Mono 12/18; a surface of its own, the widget card's tile) in the top layer, under the icon, flipped to stay in view
   (left when it would leave the right edge or sits in a dialog's right half, above when it would leave the bottom). Esc or a click
   outside closes it.
     label:    what it explains (its button's name: "About Source")
-    bg:       the surface's colour (CSS), for the rest colour and the note's fill
     children: the note's text (<b> for the terms)
 -->
 <script>
-  let { label = 'Help', bg = 'var(--c-widget-card)', children } = $props();
+  let { label = 'Help', children } = $props();
 
   let open = $state(false);
   let btn = $state();
@@ -71,7 +71,6 @@
   bind:this={btn}
   type="button"
   class={['ih', open && 'is-open']}
-  style:--ih-bg={bg}
   aria-label={label}
   aria-expanded={open}
   aria-controls={open ? id : undefined}
@@ -81,20 +80,14 @@
   }}><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button
 >
 {#if open}
-  <div
-    bind:this={note}
-    class="ih__note"
-    {id}
-    role="note"
-    popover="manual"
-    style:--ih-bg={bg}
-    {@attach show}
-  >
+  <div bind:this={note} class="ih__note" {id} role="note" popover="manual" {@attach show}>
     {@render children?.()}
   </div>
 {/if}
 
 <style lang="scss">
+  @use '../styles/mixins' as *;
+
   .ih {
     all: unset;
     box-sizing: border-box;
@@ -107,14 +100,14 @@
     margin: 0 0 0 4px;
     vertical-align: top;
     border-radius: 50%;
-    color: color-mix(in srgb, var(--white) 35%, var(--ih-bg));
+    color: var(--text-quiet);
     font-size: var(--fs-sm);
     line-height: 1;
     cursor: pointer;
     &:hover,
     &.is-open {
-      color: var(--white);
-      background: var(--white-a17);
+      color: var(--text-strong);
+      background: var(--field-hover);
     }
     &:focus-visible {
       outline: 1px solid var(--focus-line);
@@ -132,8 +125,11 @@
     border: 0;
     border-radius: 8px;
     overflow: visible;
+    // its own surface (in the top layer, over any surface): what it looked like on the widget
+    // card, that card's tile (12% white)
+    @include surface(color-mix(in srgb, var(--white) 12%, var(--c-widget-card)));
     color: var(--c-text);
-    background: color-mix(in srgb, var(--white) 12%, var(--ih-bg));
+    background: var(--surface);
     box-shadow: var(--shadow-pop);
     font: 400 var(--fs-base) / 18px var(--f-mono);
     letter-spacing: 0;
@@ -141,7 +137,7 @@
     text-align: left;
     white-space: normal;
     :global(b) {
-      color: var(--white);
+      color: var(--text-strong);
       font-weight: 500;
     }
     // the arrow at the icon

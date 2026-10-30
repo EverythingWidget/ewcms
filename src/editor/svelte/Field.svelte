@@ -306,8 +306,8 @@
     max-width: 70%;
     margin-left: auto;
     border-radius: var(--radius-md);
-    background: var(--field-bg, none);
-    color: var(--text-quiet, var(--c-text-muted));
+    background: var(--field-bg);
+    color: var(--text-quiet);
 
     &.is-bound {
       color: var(--c-widget-accent);
@@ -326,7 +326,7 @@
     height: var(--size-control);
     padding: 0 var(--space-2);
     border-radius: var(--radius-md);
-    background: var(--c-shadow);
+    background: var(--field-bg);
     box-shadow: inset 0 0 0 1px var(--c-line);
     cursor: default;
 
@@ -364,7 +364,7 @@
     padding-right: var(--space-2);
     border-radius: var(--radius-md);
     overflow: hidden;
-    background: var(--field-bg, var(--c-input));
+    background: var(--field-bg);
     box-shadow: inset 0 0 0 1px var(--c-line);
   }
 
@@ -379,8 +379,8 @@
     border-radius: var(--radius-md) 0 0 var(--radius-md);
     overflow: hidden;
     cursor: pointer;
-    color: var(--text-quiet, var(--c-text-faint));
-    background: var(--field-tile, var(--c-switch));
+    color: var(--text-quiet);
+    background: var(--field-tile);
     font-size: var(--fs-lg);
     transition: background 0.2s;
 
@@ -422,7 +422,7 @@
   .photo__label {
     @include row(var(--space-2));
     @include muted;
-    color: var(--text-quiet, var(--c-text-muted));
+    color: var(--text-quiet);
   }
 
   .photo__label,
@@ -443,6 +443,6 @@
 
   .photo__meta {
     @include muted;
-    color: var(--text-quiet, var(--c-text-muted));
+    color: var(--text-quiet);
   }
 </style>

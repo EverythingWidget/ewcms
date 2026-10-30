@@ -87,9 +87,6 @@ test('focus: one whitish 1px inset ring, no accent glow; the label whitish while
   const mix = read('src/editor/styles/_mixins.scss');
   assert.match(mix, /@mixin focus-ring \{\s*outline: none;\s*box-shadow: var\(--focus-ring\);/);
   const ed = read('src/editor/styles/editor.scss');
-  assert.match(
-    ed,
-    /\.tf:focus-within > \.tf__label \{\s*color: var\(--text-strong, var\(--c-text\)\);/,
-  );
+  assert.match(ed, /\.tf:focus-within > \.tf__label \{\s*color: var\(--text-strong\);/);
   assert.doesNotMatch(ed, /0 0 0 4px color-mix\(in srgb, var\(--c-accent\)/);
 });

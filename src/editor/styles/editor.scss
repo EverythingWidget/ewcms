@@ -78,6 +78,8 @@ kbd {
 }
 
 .ed {
+  // the page: the root surface (_mixins.scss surface()), what no card or pop-up covers
+  @include surface(var(--c-bg), $quiet: 52%);
   position: fixed;
   inset: 0;
   background:
@@ -120,7 +122,7 @@ kbd {
 .seg {
   display: flex;
   border-radius: var(--radius-md);
-  background: var(--field-bg, var(--c-shadow));
+  background: var(--field-bg);
   box-shadow: inset 0 0 0 1px var(--c-line);
   overflow: hidden;
 
@@ -133,7 +135,7 @@ kbd {
     padding: var(--space-2);
     border-radius: 0;
     @include muted;
-    color: var(--text-quiet, var(--c-text-muted));
+    color: var(--text-quiet);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     @include ellipsis;
@@ -143,13 +145,13 @@ kbd {
     line-height: 16px;
 
     &:not(.is-active):hover {
-      background: var(--field-hover, none);
-      color: var(--text-strong, var(--c-text));
+      background: var(--field-hover);
+      color: var(--text-strong);
     }
 
     &.is-active {
-      background: var(--selected-bg, var(--c-text));
-      color: var(--selected-fg, var(--c-on-light));
+      background: var(--selected-bg);
+      color: var(--selected-fg);
     }
   }
 }
@@ -157,7 +159,7 @@ kbd {
 .f__text,
 .tf__input,
 .f__num {
-  background: var(--field-bg, var(--c-shadow));
+  background: var(--field-bg);
   border: 0;
   border-radius: var(--radius-md);
   box-shadow: inset 0 0 0 1px var(--c-line);
@@ -434,7 +436,7 @@ kbd {
   border-radius: var(--radius-lg);
   cursor: pointer;
   text-align: left;
-  background: var(--c-shadow);
+  background: var(--field-bg);
   box-shadow: inset 0 0 0 1px var(--c-line);
 
   &:hover,
@@ -483,7 +485,7 @@ kbd {
   margin-top: var(--space-2);
   padding: var(--space-2);
   border-radius: var(--radius-lg);
-  background: var(--c-shadow);
+  background: var(--field-bg);
   box-shadow: inset 0 0 0 1px var(--c-line);
 }
 
@@ -527,7 +529,7 @@ kbd {
 .ease__custom {
   grid-column: 1 / -1;
   margin-top: var(--space-1);
-  background: var(--c-shadow);
+  background: var(--field-bg);
   border: 0;
   border-radius: var(--radius-md);
   box-shadow: inset 0 0 0 1px var(--c-line);
@@ -581,7 +583,7 @@ kbd {
 
 .tf.is-selected {
   .tf__label {
-    color: var(--text-strong, var(--c-text));
+    color: var(--text-strong);
   }
 
   .tf__input {
@@ -594,14 +596,14 @@ kbd {
   margin-bottom: var(--space-2);
   min-height: 24px;
   @include muted;
-  color: var(--text-quiet, var(--c-text-muted));
+  color: var(--text-quiet);
   line-height: 16px;
   transition: color 0.2s;
 }
 
 // a field being typed in: its label whitish (the input has the focus ring)
 .tf:focus-within > .tf__label {
-  color: var(--text-strong, var(--c-text));
+  color: var(--text-strong);
 }
 
 // a section's or widget's eye (SectionsList.svelte): a toggle (aria-pressed while shown), but
@@ -668,7 +670,7 @@ kbd {
   display: block;
   margin-top: var(--space-1);
   @include muted;
-  color: var(--text-quiet, var(--c-text-muted));
+  color: var(--text-quiet);
   line-height: 16px;
 }
 
@@ -726,7 +728,8 @@ dialog.modal__box {
   width: min(520px, calc(100vw - 32px));
   padding: var(--space-5);
   border-radius: var(--radius-2xl);
-  // solid panel: no see-through, no blur
+  // solid panel: no see-through, no blur; a surface (_mixins.scss surface())
+  @include surface(var(--c-card), $quiet: 45%);
   background: var(--c-card);
   box-shadow:
     inset 0 0 0 1px var(--c-fill-active),

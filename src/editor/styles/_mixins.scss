@@ -51,13 +51,12 @@
 //   --field-bg     inputs, selects, segmented controls, button groups, cards as inputs: 7% white
 //   --field-tile   a tile on a field (a photo's, a source card's): 12%
 //   --field-hover  a hovered button's wash: 23% (a 17% white wash over a field)
-//   --field-hover-line  a hovered select's line: none (the side panel's: a soft blue)
 //   --text-quiet   labels, placeholders, icons at rest: 35%
 //   --text-strong  hovered text and icons, names
 //   --selected-bg / --selected-fg  the picked option: light, black text
 //   --focus-line / --focus-ring  the focus line (60% white), as a 1px inset ring
 // $head: its header's colour (--surface-head), when it has one; $quiet: its quiet text's share.
-// Controls fall back to the panel's own look where no surface sets these (the side panel).
+// Every control is on one: the page (.ed), the panel, a card, a dialog, a pop-up, a popover.
 @mixin surface($bg, $head: null, $quiet: 35%) {
   --surface: #{$bg};
   @if $head {
@@ -67,7 +66,6 @@
   --field-bg: color-mix(in srgb, var(--white) 7%, var(--surface));
   --field-tile: color-mix(in srgb, var(--white) 12%, var(--surface));
   --field-hover: color-mix(in srgb, var(--white) 23%, var(--surface));
-  --field-hover-line: transparent;
   --text-quiet: color-mix(in srgb, var(--white) #{$quiet}, var(--surface));
   --text-strong: var(--white);
   --selected-bg: var(--c-text);
