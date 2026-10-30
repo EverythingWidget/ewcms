@@ -1490,6 +1490,32 @@ Change in its field, see the Media window above). Edit
 - Inspiration: Gregor Collienne and Hannah Miles (home hero), Faint Film (album slider/grid),
   House of Yellow (a proper website with sections and a big footer).
 
+## Breaking content changes 0.2.0
+
+0.2.0 renames things in a site's content. Nothing reads the old names, so convert a site's
+content once, on a clean checkout:
+
+```sh
+node node_modules/ewcms/scripts/rename-0-2-0.mjs content            # what it would change
+node node_modules/ewcms/scripts/rename-0-2-0.mjs content --write    # change the files
+```
+
+It writes the files as the editor's Save does; running it again changes nothing.
+
+| Where                               | Old                                | New                                   |
+| ----------------------------------- | ---------------------------------- | ------------------------------------- |
+| widget ids (and every link to them) | `"b-xxxx"`                         | `"w-xxxx"`                            |
+| `settings/animations.json`          | `"presets": { … }`                 | `"animations": { … }`                 |
+| `settings/animations.json`          | `targets["…"].preset`              | `targets["…"].animation`              |
+| a widget's `motion`                 | `"anim": "fade-up"`                | `"animation": "fade-up"`              |
+| a widget's `motion`                 | `"parts": { "hero.title": { … } }` | `"elements": { "hero.title": { … } }` |
+| an element in `motion.elements`     | `"preset": "stagger-up"`           | `"animation": "stagger-up"`           |
+| a page's `transition`               | `{ "preset": "none" }`             | `{ "curtain": "off" }`                |
+
+A theme's own widget code (not content) needs, by hand: field type `'block'` is
+`'multiline'` (also in `ed(…, 'multiline')`); the third argument of `render(data, ctx, widget)`
+is called `widget` in the docs (only the name). The editor's URL `&anim=` is `&animation=`.
+
 ## Deploy
 
 A site deploys like any static site: build command `npm run build`, output `dist/`.
