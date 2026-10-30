@@ -1504,19 +1504,31 @@ node node_modules/ewcms/scripts/rename-0-2-0.mjs content --write    # change the
 
 It writes the files as the editor's Save does; running it again changes nothing.
 
-| Where                               | Old                                | New                                   |
-| ----------------------------------- | ---------------------------------- | ------------------------------------- |
-| widget ids (and every link to them) | `"b-xxxx"`                         | `"w-xxxx"`                            |
-| `settings/animations.json`          | `"presets": { … }`                 | `"animations": { … }`                 |
-| `settings/animations.json`          | `targets["…"].preset`              | `targets["…"].animation`              |
-| a widget's `motion`                 | `"anim": "fade-up"`                | `"animation": "fade-up"`              |
-| a widget's `motion`                 | `"parts": { "hero.title": { … } }` | `"elements": { "hero.title": { … } }` |
-| an element in `motion.elements`     | `"preset": "stagger-up"`           | `"animation": "stagger-up"`           |
-| a page's `transition`               | `{ "preset": "none" }`             | `{ "curtain": "off" }`                |
+| Where                                        | Old                                | New                                   |
+| -------------------------------------------- | ---------------------------------- | ------------------------------------- |
+| widget ids (and every link to them)          | `"b-xxxx"`                         | `"w-xxxx"`                            |
+| `settings/animations.json`                   | `"presets": { … }`                 | `"animations": { … }`                 |
+| `settings/animations.json`                   | `targets["…"].preset`              | `targets["…"].animation`              |
+| a widget's `motion`                          | `"anim": "fade-up"`                | `"animation": "fade-up"`              |
+| a widget's `motion`                          | `"parts": { "hero.title": { … } }` | `"elements": { "hero.title": { … } }` |
+| an element in `motion.elements`              | `"preset": "stagger-up"`           | `"animation": "stagger-up"`           |
+| a page's `transition`                        | `{ "preset": "none" }`             | `{ "curtain": "off" }`                |
+| a source's `*.schema.json` field             | `"type": "longtext"`               | `"type": "multiline"`                 |
+| a source's `*.schema.json` field             | `"type": "photo"` / `"photos"`     | `"type": "image"` / `"images"`        |
+| a widget                                     | `"type": "photo"`                  | `"type": "image"`                     |
+| a hero widget                                | `"photos": [ … ]`                  | `"images": [ … ]`                     |
+| a page's `backdrop`                          | `"photos": [ … ]`                  | `"images": [ … ]`                     |
+| `animations.json` targets, `motion.elements` | `"hero.photos"`                    | `"hero.images"`                       |
 
 A theme's own widget code (not content) needs, by hand: field type `'block'` is
 `'multiline'` (also in `ed(…, 'multiline')`); the third argument of `render(data, ctx, widget)`
 is called `widget` in the docs (only the name). The editor's URL `&anim=` is `&animation=`.
+
+Not renamed: `settings/photos.json` (and its `"photos"` key) and the R2 `photos/` keys are
+file locations; they stay. A site's own CSS: the Image widget's classes are `wgt--image`,
+`imagewidget`, `imagewidget__figure` (were `wgt--photo`, `photowidget…`); the hero's
+`hero__images` / `hero__image` (were `hero__photos` / `hero__photo`); the backdrop's
+`backdrop__image` (was `backdrop__photo`).
 
 ## Deploy
 

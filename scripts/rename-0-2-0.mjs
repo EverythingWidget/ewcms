@@ -130,6 +130,56 @@ const steps = [
       return notes;
     },
   },
+  {
+    name: 'source schema field types: "longtext" -> "multiline", "photo" -> "image", "photos" -> "images"',
+    run(files) {
+      const TYPES = { longtext: 'multiline', photo: 'image', photos: 'images' };
+      const notes = [];
+      for (const f of files) {
+        if (!f.rel.endsWith('.schema.json') || !Array.isArray(f.data?.fields)) continue;
+        const changed = [];
+        for (const field of f.data.fields)
+          if (isObject(field) && TYPES[field.type]) {
+            changed.push(`${field.type} -> ${TYPES[field.type]}`);
+            field.type = TYPES[field.type];
+          }
+        if (changed.length)
+          notes.push(`${f.rel}: ${plural(changed.length, 'field')} (${changed.join(', ')})`);
+      }
+      return notes;
+    },
+  },
+  {
+    name: 'images: Photo widget -> Image widget, "photos" lists -> "images", "hero.photos" -> "hero.images"',
+    run(files) {
+      const notes = [];
+      // the hero's images as a motion element (data-anim="hero.images")
+      const target = (o) => renameKey(o, 'hero.photos', 'hero.images');
+      for (const f of files) {
+        if (isAnimations(f)) {
+          if (target(f.data.targets)) notes.push(`${f.rel}: target "hero.photos" -> "hero.images"`);
+          continue;
+        }
+        let types = 0;
+        let lists = 0;
+        let elements = 0;
+        for (const w of widgetsIn(f.data)) {
+          if (w.type === 'photo') ((w.type = 'image'), types++);
+          if (w.type === 'hero' && renameKey(w, 'photos', 'images')) lists++;
+          if (target(w.motion?.elements)) elements++;
+        }
+        const backdrop = renameKey(f.data?.backdrop, 'photos', 'images');
+        if (types) notes.push(`${f.rel}: ${plural(types, 'widget')} "type": "photo" -> "image"`);
+        if (lists) notes.push(`${f.rel}: ${plural(lists, 'hero')} "photos" -> "images"`);
+        if (elements)
+          notes.push(
+            `${f.rel}: ${plural(elements, 'motion element')} "hero.photos" -> "hero.images"`,
+          );
+        if (backdrop) notes.push(`${f.rel}: "backdrop" "photos" -> "images"`);
+      }
+      return notes;
+    },
+  },
 ];
 
 /** Convert loaded files ({ rel, data }) in place; returns [{ name, notes }] per step. */
