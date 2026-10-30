@@ -11,6 +11,7 @@ import { WIDGET_TYPES } from '../../site/widgets/index.js';
 import { bindTypeOf } from '../../site/layout/bindings.js';
 import { targetFile } from '../layout-sync.js';
 import { itemName, schemaFor } from './source-items.js';
+import { TEXT_TYPES } from '../../site/field-types.js';
 
 /** site.json values edited in the Settings tab: [key, label, field type]. */
 export const SITE_SETTINGS = [
@@ -163,8 +164,6 @@ export function runsOf(fields) {
 
 /** Every field of a group, list items included. */
 export const allFields = (g) => g.fields.flatMap((f) => (f.list ? f.items.flat() : [f]));
-
-const TEXT_TYPES = ['text', 'words', 'multiline'];
 
 /**
  * Group for widget `j` of section `at` of page file `file`: id the widget's, titled by its

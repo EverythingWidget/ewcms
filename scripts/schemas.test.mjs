@@ -29,8 +29,8 @@ const PEOPLE = {
     { key: 'kind', label: 'Kind', type: 'choice', options: ['model', 'band'] },
     { key: 'url', label: 'Link', type: 'link' },
     { key: 'shot', label: 'Shot on', type: 'date' },
-    { key: 'image', label: 'Photo', type: 'photo' },
-    { key: 'images', label: 'Photos', type: 'photos' },
+    { key: 'image', label: 'Photo', type: 'image' },
+    { key: 'images', label: 'Photos', type: 'images' },
     { key: 'placeholder', label: 'Placeholder', type: 'boolean' },
   ],
 };
@@ -51,7 +51,7 @@ test('schema files: their own name, not a source; checked as a schema', () => {
     checkContent('sources/people.schema.json', { version: 1, title: 'x', fields: [{}] }),
     [
       'field 1: needs a "key"',
-      'field 1: "type" must be one of text, longtext, number, photo, photos, link, choice, boolean, date',
+      'field 1: "type" must be one of text, multiline, number, image, images, link, choice, boolean, date',
       '"title" must be the key of one of its fields',
     ],
   );
@@ -95,10 +95,10 @@ test('inferSchema: one type per field from all items, title and slug', () => {
     slug: ['text', 'half'],
     name: ['text', undefined], // one of them is longer than 24 characters
     year: ['number', 'half'],
-    bio: ['longtext', undefined], // a line break somewhere
-    cover: ['photo', undefined],
+    bio: ['multiline', undefined], // a line break somewhere
+    cover: ['image', undefined],
     on: ['boolean', undefined],
-    images: ['photos', undefined],
+    images: ['images', undefined],
   }); // credit (an object) and mixed (number and text) are left out
   assert.equal(inferSchema('projects', [{ title: 'T' }]).title, 'title');
   assert.equal(inferSchema('x', [{ label: 'L' }]).title, 'label');
@@ -135,8 +135,8 @@ test('checkItems: required, types, choices, links, dates, photos, slugs', () => 
     'item 1 (Ann): "Kind" must be one of model, band',
     'item 1 (Ann): "Link" must be a link (https://…, /path/ or mailto:…)',
     'item 1 (Ann): "Shot on" must be a date (YYYY-MM-DD)',
-    'item 1 (Ann): "Photo" "missing.jpg" is not a photo in media/ or content/en/settings/photos.json',
-    'item 1 (Ann): "Photos" photo 2 "gone.jpg" is not a photo in media/ or content/en/settings/photos.json',
+    'item 1 (Ann): "Photo" "missing.jpg" is not an image in media/ or content/en/settings/photos.json',
+    'item 1 (Ann): "Photos" image 2 "gone.jpg" is not an image in media/ or content/en/settings/photos.json',
     'item 1 (Ann): "Placeholder" must be true or false',
     'item 2: "Name" is required',
     'item 2: another item has the slug "ann"',
@@ -147,7 +147,7 @@ test('checkItems: required, types, choices, links, dates, photos, slugs', () => 
   assert.deepEqual(
     checkItems([a, { ...a, slug: 'b', cover: 'a.jpg' }, { slug: 'c', name: 'C' }], PEOPLE),
     [
-      'item 1 (A): "cover" must be one of its photos ("b.jpg" isn\'t)',
+      'item 1 (A): "cover" must be one of its images ("b.jpg" isn\'t)',
       'item 2 (A): another item has the id "p-aaaa"',
       'item 3 (C): "id" must be an item id ("p-k3x9")',
     ],
@@ -176,7 +176,7 @@ test('checkSources: every source, with its schema or inferred; photos from media
     media: {},
   };
   assert.deepEqual(checkSources(content), [
-    'content/en/sources/people.json: item 1 (A): "Photo" "people/a.jpg" is not a photo in media/ or content/en/settings/photos.json',
+    'content/en/sources/people.json: item 1 (A): "Photo" "people/a.jpg" is not an image in media/ or content/en/settings/photos.json',
   ]);
   content.media = { 'people/a.jpg': {} };
   assert.deepEqual(checkSources(content), []);
@@ -262,7 +262,7 @@ test('save: a source that breaks its schema is not written', () => {
       items: [{ id: 'p-t009', slug: 'a', name: 'A', image: 'nope.jpg' }],
     },
   });
-  assert.match(r.body.error, /"nope\.jpg" is not a photo/);
+  assert.match(r.body.error, /"nope\.jpg" is not an image/);
   // a new schema is checked against the saved items too
   const strict = {
     ...PEOPLE,
@@ -305,7 +305,7 @@ test('editor: half fields pair with the next half; a lone half takes the row', a
       ['url', 'Link', 'text', false],
       ['shot', 'Shot on', 'date', false],
       ['image', 'Photo', 'image', false],
-      ['images.0', 'Photo 1', 'image', false],
+      ['images.0', 'Image 1', 'image', false],
       ['placeholder', 'Placeholder', 'boolean', false],
     ],
   );

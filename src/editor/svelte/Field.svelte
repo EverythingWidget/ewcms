@@ -17,20 +17,8 @@
     formats   a text field: when bound, a Format input under it ("{value} photos"); empty or
               just {value} stores { "bind" } alone
 -->
-<script module>
-  /** Input text -> stored value. undefined means invalid: the value is not stored. */
-  function parseValue(type, raw) {
-    if (type === 'number') {
-      const n = Number(raw);
-      return raw.trim() !== '' && Number.isFinite(n) ? n : undefined;
-    }
-    if (type === 'words') return raw.replace(/\s+/g, ' ').trim() || undefined;
-    if (type === 'text') return raw.replace(/\s*\n\s*/g, ' ');
-    return raw; // 'multiline': line breaks are kept
-  }
-</script>
-
 <script>
+  import { parseInput as parseValue } from '../../site/field-types.js';
   import { isBinding } from '../../site/layout/bindings.js';
   import { showValue } from '../lib/show-value.js';
   import Button from './Button.svelte';

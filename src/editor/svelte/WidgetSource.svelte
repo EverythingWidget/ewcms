@@ -27,6 +27,7 @@
   import { mainProblem, sourceOf, urlSource } from '../../site/layout/source.js';
   import { isBinding, resolve } from '../../site/layout/bindings.js';
   import { defaultField, hasField, ruleOf, SLUG } from '../../site/query.js';
+  import { MATCH_TYPES } from '../../site/field-types.js';
 
   // g: the widget's group; base: its pointer; list: a list widget (All instead of Item); shown:
   // what it shows on the page in the preview (widgetItems)
@@ -36,7 +37,7 @@
   const ANY_WHY =
     'Not on the main widget: it decides which pages exist, so each address must match real items (no match shows the 404 page). A param it ignores would make the same page under many addresses.';
   // what a URL part can be compared with: one value, not photos, long texts or lists
-  const MATCHABLE = ['text', 'number', 'date', 'choice', 'select'];
+  const MATCHABLE = [...MATCH_TYPES, 'select']; // and a widget's select field
   const ANY = ''; // the Select's value for Any (no rule)
 
   const pageId = $derived(pageIdOf(g.file) || '');

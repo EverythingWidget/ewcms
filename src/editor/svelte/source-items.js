@@ -6,18 +6,7 @@
 import { pointer } from '../../site/helpers.js';
 import { itemsOf, schemaFile, sourceIdOf } from '../../site/files.js';
 import { itemTitle, newItemOf, schemaOf } from '../../site/schemas.js';
-
-/** The editor's field widget (Field.svelte type) for a schema field type. */
-const WIDGETS = {
-  text: 'text',
-  longtext: 'multiline',
-  number: 'number',
-  photo: 'image',
-  link: 'text',
-  date: 'date',
-  choice: 'select',
-  boolean: 'boolean',
-};
+import { controlOf } from '../../site/field-types.js';
 
 /** The schema of a source file ("sources/people.json") in the store: its schema file, else inferred. */
 export function schemaFor(store, file) {
@@ -56,7 +45,7 @@ function fieldOf(file, i, path, f, label = f.label) {
     path,
     edit: `${file}#${ptr}`,
     ptr,
-    type: WIDGETS[f.type] || 'text',
+    type: controlOf(f.type),
     half: f.width === 'half',
     help: f.help || '',
     placeholder: f.type === 'link' ? 'https://…' : '',
@@ -66,15 +55,15 @@ function fieldOf(file, i, path, f, label = f.label) {
 
 /**
  * The editable fields of one item, from the schema, except the slug (its own input): every
- * photo of a photos field is one field ("Photo 2").
+ * image of an images field is one field ("Image 2").
  */
 export function itemFields(file, item, i, schema) {
   return (schema.fields || []).flatMap((f) => {
     if (f.key === schema.slug) return [];
-    if (f.type !== 'photos') return [fieldOf(file, i, [f.key], f)];
+    if (f.type !== 'images') return [fieldOf(file, i, [f.key], f)];
     const list = Array.isArray(item?.[f.key]) ? item[f.key] : [];
     return list.map((_, j) =>
-      fieldOf(file, i, [f.key, j], { ...f, type: 'photo' }, `Photo ${j + 1}`),
+      fieldOf(file, i, [f.key, j], { ...f, type: 'image' }, `Image ${j + 1}`),
     );
   });
 }

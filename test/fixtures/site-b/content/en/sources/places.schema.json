@@ -33,18 +33,18 @@
     {
       "key": "body",
       "label": "Summary",
-      "type": "longtext",
+      "type": "multiline",
       "help": "Under the name on the album page; also its search description"
     },
     {
       "key": "images",
       "label": "Photos",
-      "type": "photos"
+      "type": "images"
     },
     {
       "key": "cover",
       "label": "Cover photo",
-      "type": "photo",
+      "type": "image",
       "width": "half",
       "help": "One of its photos; empty: the first"
     },
@@ -70,7 +70,7 @@
     {
       "key": "note",
       "label": "Placeholder note",
-      "type": "longtext"
+      "type": "multiline"
     }
   ]
 }

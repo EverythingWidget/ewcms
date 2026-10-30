@@ -313,29 +313,30 @@ shaped like the widget registry's fields (`src/site/schemas.js`):
     { "key": "name", "label": "Name", "type": "text", "required": true },
     { "key": "role", "label": "Role", "type": "text", "width": "half", "list": true },
     { "key": "year", "label": "Year", "type": "number", "width": "half" },
-    { "key": "images", "label": "Photos", "type": "photos" }
+    { "key": "images", "label": "Photos", "type": "images" }
   ]
 }
 ```
 
 - `title`: the field that names an item (the editor's lists, page titles, `<name> | People`);
   `slug`: the field with its URL slug (`/photography/people/<slug>/`; empty: the title, slugified).
-- `type`: `text`, `longtext` (lines), `number`, `photo` (a `media/` path or R2 key), `photos`
-  (a list of photo paths), `link` (`https://…`, `/path/` or `mailto:`), `choice`
-  (one of `options: ["a", "b"]`), `boolean`, `date` (`YYYY-MM-DD`).
+- `type`: `text`, `multiline` (lines), `number`, `image` (a `media/` path or R2 key), `images`
+  (a list of image paths), `link` (`https://…`, `/path/` or `mailto:`), `choice`
+  (one of `options: ["a", "b"]`), `boolean`, `date` (`YYYY-MM-DD`). The same names as a
+  widget's field types: one list, `src/site/field-types.js`.
 - `width: "half"`: two half fields next to each other share a row in the editor (one column
   when the panel is narrow); `required`, `help` (a hint under the field), `list` (shown under
   the name in the Source Explorer's item list).
 - Keys a schema doesn't name are kept as they are, not edited or checked (`transition`).
 
 **Checks.** Save and `npm run build` check every source against its schema: required values,
-types, choice options, links, dates, valid unique slugs, and photos that exist (in `media/` or
+types, choice options, links, dates, valid unique slugs, and images that exist (in `media/` or
 `content/en/settings/photos.json`). Save writes nothing and shows the problems
 (`content/en/sources/people.json: item 1: "Name" is required`); the build stops with the list.
 
 **No schema?** A source without one still works: its schema is inferred from its items, one
-type per field across all of them (numbers, true/false, lists of photos, media paths, text with
-line breaks or over ~80 characters as `longtext`, text under ~24 characters as half width;
+type per field across all of them (numbers, true/false, lists of images, media paths, text with
+line breaks or over ~80 characters as `multiline`, text under ~24 characters as half width;
 objects and mixed values are left out). The title is `name`, else `title`, else the first text
 field; the slug is `slug`. Write a schema file to give fields labels, order, help and checks.
 
@@ -696,8 +697,9 @@ value of a **source item** instead of its own (`src/site/layout/bindings.js`):
 - **A Text widget** binds per run: its `{ field, format? }` runs are its bindings.
 - **Custom:** a plain value, as before.
 - **`{ "bind": "<field>" }`:** the item's whole value. Its type must fit the field's (a text field
-  takes `text`, `choice`, `number`, `date`, `link`; a long text also `longtext`; a photo
-  `photo`; a link `link`; a list of photos (`[{ src }]`) `photos`; see `BIND_TYPES`).
+  takes `text`, `choice`, `number`, `date`, `link`; a multi-line text also `multiline`; an
+  image `image`; a link `link`; a list of images (`[{ src }]`) `images`; see `BIND_TYPES` in
+  `src/site/field-types.js`).
 - **`"format"`** (text fields only, also a list's texts like the album's facts): text around
   the value, `{value}` marks where it goes, e.g. `"{value} photos"`. An empty value leaves the
   whole field empty. There is no `{{field}}` syntax: one field, one binding.

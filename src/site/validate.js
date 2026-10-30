@@ -50,7 +50,8 @@ import { isId } from './layout/ids.js';
 import { linkProblem } from './hrefs.js';
 import { checkMotion, defaultsProblems } from './layout/motion.js';
 import { checkBackdrop } from './backdrop.js';
-import { bindTypeOf, FORMAT_TYPES, isBinding } from './layout/bindings.js';
+import { bindTypeOf, isBinding } from './layout/bindings.js';
+import { FORMAT_TYPES, storedAs } from './field-types.js';
 import { isObject } from './is.js';
 
 const typeOf = (v) =>
@@ -283,7 +284,6 @@ function checkSections(sections) {
   return out;
 }
 
-const FIELD_TYPES = { number: 'number' }; // the other field types are strings
 const CONFIG_TYPES = { boolean: 'boolean' }; // the other config types are strings
 const whole = (v, min) => Number.isInteger(v) && v >= min;
 
@@ -482,8 +482,7 @@ function checkWidget(widget, where) {
       );
     if (f.type === 'rich') continue; // a Text widget's body: its type's check (../text.js)
     if (!f.list) {
-      if (typeof v !== (FIELD_TYPES[f.type] || 'string'))
-        bad(f.key, `a ${FIELD_TYPES[f.type] || 'string'}`);
+      if (typeof v !== storedAs(f.type)) bad(f.key, `a ${storedAs(f.type)}`);
     } else if (!Array.isArray(v)) bad(f.key, 'a list');
     else if (
       typeof f.list === 'string' ? !v.every((x) => typeof x === 'string') : !v.every(isObject)

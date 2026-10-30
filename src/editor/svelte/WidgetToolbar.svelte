@@ -21,6 +21,7 @@
   (rich.js).
 -->
 <script>
+  import { BIND_TYPES } from '../../site/field-types.js';
   import { ui, previewClicks } from './ui.svelte.js';
   import { targetFile } from '../layout-sync.js';
   import { schemaFor } from './source-items.js';
@@ -315,7 +316,7 @@
     live.version;
     return from
       ? (schemaFor(live.store, sourceFile(from))?.fields || []).filter((f) =>
-          ['text', 'choice', 'number', 'date', 'longtext'].includes(f.type),
+          BIND_TYPES.multiline.includes(f.type),
         )
       : [];
   });

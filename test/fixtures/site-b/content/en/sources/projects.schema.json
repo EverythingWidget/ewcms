@@ -33,12 +33,12 @@
     {
       "key": "body",
       "label": "Description",
-      "type": "longtext"
+      "type": "multiline"
     },
     {
       "key": "image",
       "label": "Photo",
-      "type": "photo"
+      "type": "image"
     },
     {
       "key": "url",

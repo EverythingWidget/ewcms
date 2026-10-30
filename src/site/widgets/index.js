@@ -23,6 +23,7 @@
  *             place in the widget (../layout/place.js)
  *   fields    its content fields for the editor: [{ key, label, type?, width?, list?, item? }]
  *               type: 'text' (default) | 'multiline' (multi-line) | 'words' | 'number' | 'image'
+ *                     (the field types: ../field-types.js)
  *               width: 'half' shares a row with a half field next to it (short texts)
  *               list: the field is a list: a type for a list of values ('multiline'), or
  *                     { subkey: type } for a list of objects ({ title: 'text' }; a subkey

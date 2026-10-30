@@ -17,7 +17,8 @@
   import Tabs from './Tabs.svelte';
   import { schemaFor } from './source-items.js';
   import { isTemplate, pageIdOf, sourceFile } from '../../site/files.js';
-  import { BIND_TYPES, resolve } from '../../site/layout/bindings.js';
+  import { resolve } from '../../site/layout/bindings.js';
+  import { BIND_TYPES } from '../../site/field-types.js';
   import { widgetItems, sourceOf } from '../../site/layout/source.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import { ui } from './ui.svelte.js';

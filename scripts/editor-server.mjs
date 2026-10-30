@@ -521,7 +521,7 @@ function albumWidget(root, source, ids, params, key) {
     : undefined;
   const schema = schemaOf({ sources: { [source]: list }, schemas: { [source]: own } }, source);
   const fields = schema.fields || [];
-  const long = fields.find((f) => f.type === 'longtext');
+  const long = fields.find((f) => f.type === 'multiline');
   const where = defaultWhere(params, schema);
   if (key) where.rules.at(-1).field = key;
   return {

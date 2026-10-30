@@ -99,7 +99,7 @@ test('resolveWidget: bound fields and config links resolved; an unbound widget i
   assert.equal(out.config.link, noor.slug);
   assert.deepEqual(bound.title, { bind: 'title' }); // not changed in place
   assert.equal(bindTypeOf(t.fields[0]), 'text');
-  assert.equal(bindTypeOf(WIDGET_TYPES.hero.fields.find((f) => f.key === 'photos')), 'photos');
+  assert.equal(bindTypeOf(WIDGET_TYPES.hero.fields.find((f) => f.key === 'photos')), 'images');
   assert.equal(bindTypeOf(WIDGET_TYPES.form.fields.find((f) => f.key === 'fields')), null);
   assert.equal(bindTypeOf({ key: 'link', type: 'link' }, { config: true }), 'link');
   assert.ok(isBinding({ bind: 'a' }) && !isBinding('{{a}}') && !isBinding(''));
@@ -243,7 +243,7 @@ test('bindingProblems: schema-aware errors and warnings', () => {
   assert.deepEqual(at(6), ['warn']);
   assert.match(
     out.find((p) => p.message.includes('widgets/2)')).message,
-    /people\.images \(photos\) doesn't fit a text field/,
+    /people\.images \(images\) doesn't fit a text field/,
   );
   // the site's own pages: nothing wrong
   assert.deepEqual(render.bindingChecks(content), []);

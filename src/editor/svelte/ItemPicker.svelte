@@ -56,9 +56,9 @@
   );
   const photo = $derived.by(() => {
     const fs = schema?.fields || [];
-    for (const f of fs.filter((f) => f.type === 'photo'))
+    for (const f of fs.filter((f) => f.type === 'image'))
       if (typeof picked?.[f.key] === 'string' && picked[f.key]) return picked[f.key];
-    for (const f of fs.filter((f) => f.type === 'photos'))
+    for (const f of fs.filter((f) => f.type === 'images'))
       if (Array.isArray(picked?.[f.key]) && picked[f.key][0]) return picked[f.key][0];
     return '';
   });
