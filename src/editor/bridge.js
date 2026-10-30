@@ -92,11 +92,17 @@ const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 /**
  * The preview iframe is attached later: App.svelte calls bridge.attach(iframe) when it renders.
  */
-export function createBridge({ store, labelFor }) {
+/**
+ * picked(): the element picked ({ el, kind }, or null) and hovered(): the one under the pointer
+ * (ui.svelte.js: ui.picked, ui.hoverEl). The bridge draws their outlines; it keeps no selection
+ * of its own: a pick is reported ('pick': el, kind, { quiet }), as is a hover ('hover': el).
+ */
+export function createBridge({ store, labelFor, picked = () => null, hovered = () => null }) {
   const handlers = {
     connect: [],
     navigate: [],
-    select: [],
+    pick: [], // an element picked in the preview (el, kind, { quiet }), or null: none
+    hover: [], // the element under the pointer (animate clicks), or null
     key: [],
     textFocus: [],
     part: [],
@@ -110,8 +116,6 @@ export function createBridge({ store, labelFor }) {
   let win = null;
   let doc = null;
   let clicks = 'visitor'; // what a click in the preview does (ui.svelte.js: previewClicks)
-  let hoverEl = null;
-  let selected = null; // { el, kind }
   let boxes = null;
   let raf = 0;
   let plaintext = true;
@@ -128,9 +132,6 @@ export function createBridge({ store, labelFor }) {
     },
     get doc() {
       return doc;
-    },
-    get selected() {
-      return selected;
     },
     on(name, fn) {
       handlers[name].push(fn);
@@ -165,11 +166,12 @@ export function createBridge({ store, labelFor }) {
       }
       const y = api.scrollTop();
       const view = doc.querySelector('[data-router-view]');
-      const sel = selected && {
-        kind: selected.kind,
-        edit: selected.el.dataset.edit ?? selected.el.dataset.bound,
-        anim: [...view.querySelectorAll('[data-anim]')].indexOf(selected.el),
-        widget: selected.el.dataset.widget,
+      const cur = picked();
+      const sel = cur && {
+        kind: cur.kind,
+        edit: cur.el.dataset.edit ?? cur.el.dataset.bound,
+        anim: [...view.querySelectorAll('[data-anim]')].indexOf(cur.el),
+        widget: cur.el.dataset.widget,
       };
       restore = () => {
         api.scrollTop(y);
@@ -181,7 +183,7 @@ export function createBridge({ store, labelFor }) {
           : sel.widget
             ? doc.querySelector(`[data-widget="${CSS.escape(sel.widget)}"]`)
             : doc.querySelectorAll('[data-router-view] [data-anim]')[sel.anim];
-        if (el) bridge.select(el, sel.kind, { quiet: true }); // never opens a pop-up
+        if (el) emit('pick', el, sel.kind, { quiet: true }); // never opens a pop-up
       };
       win.location.reload();
       // The old page is going away: no calls into it until the new one connects. Its document
@@ -205,8 +207,6 @@ export function createBridge({ store, labelFor }) {
         else api.unfreeze();
       }
       if (clicks !== 'arrange') endEdits();
-      hoverEl = null;
-      bridge.select(null);
       loop();
     },
 
@@ -305,7 +305,7 @@ export function createBridge({ store, labelFor }) {
       if (!api) return;
       api.setAnimations(cfg);
       if (replay && clicks !== 'arrange')
-        bridge.replay(selected?.kind === 'anim' ? selected.el : null, { scroll: false });
+        bridge.replay(picked()?.kind === 'anim' ? picked().el : null, { scroll: false });
     },
 
     /**
@@ -347,16 +347,6 @@ export function createBridge({ store, labelFor }) {
       return end > start ? Math.max(0, Math.min(1, (api.scrollTop() - start) / (end - start))) : 0;
     },
 
-    // quiet: put back (a reload, a refresh), not picked: the panel opens nothing for it
-    select(el, kind = clicks === 'arrange' ? 'text' : 'anim', { quiet = false } = {}) {
-      selected = el ? { el, kind } : null;
-      emit('select', selected, { quiet });
-      loop();
-    },
-    setHover(el) {
-      hoverEl = el;
-      loop();
-    },
     reveal(el) {
       if (!el || !api) return;
       const r = el.getBoundingClientRect();
@@ -438,7 +428,7 @@ export function createBridge({ store, labelFor }) {
       );
       if (!el) return;
       bridge.reveal(el);
-      bridge.select(el, 'text');
+      emit('pick', el, 'text');
     },
   };
 
@@ -546,7 +536,7 @@ export function createBridge({ store, labelFor }) {
     const end = { line: body.length - 1, at: lineLength(body.at(-1)) };
     richSel = at ? { from: at, to: at } : { from: end, to: end };
     selectAt(el, win, richSel);
-    bridge.select(el, 'text');
+    emit('pick', el, 'text');
     emit('rich', richState());
   }
 
@@ -665,6 +655,8 @@ export function createBridge({ store, labelFor }) {
     const tick = () => {
       raf = 0;
       if (!boxes?.hover.isConnected) return;
+      const selected = picked();
+      const hoverEl = hovered();
       const sameAsSel = selected && hoverEl === selected.el;
       // a text in a widget (arrange clicks): the overlay's frame on the widget is its one border
       const own = (el) => (clicks === 'arrange' && el?.closest?.('[data-widget]') ? null : el);
@@ -717,15 +709,16 @@ export function createBridge({ store, labelFor }) {
         // (arrange clicks: the overlay shows the widget under the pointer, CSS the text)
         if (clicks !== 'animate') return;
         const t = e.target instanceof win.Element ? e.target : null;
-        hoverEl = t?.closest(MOTION_PICK) || null;
+        const el = t?.closest(MOTION_PICK) || null;
+        if (el !== hovered()) emit('hover', el);
       },
       { passive: true },
     );
-    doc.documentElement.addEventListener('pointerleave', () => (hoverEl = null));
+    doc.documentElement.addEventListener('pointerleave', () => emit('hover', null));
 
     /** A text's (or photo's, bound value's) field opens in the panel. */
     const pickField = (hit) => {
-      bridge.select(hit, 'text');
+      emit('pick', hit, 'text');
       emit('textFocus', hit.dataset.edit ?? hit.dataset.bound);
     };
 
@@ -770,7 +763,7 @@ export function createBridge({ store, labelFor }) {
         if (!hit) return;
         e.preventDefault();
         e.stopPropagation();
-        bridge.select(hit, 'anim');
+        emit('pick', hit, 'anim');
       },
       true,
     );
@@ -819,7 +812,7 @@ export function createBridge({ store, labelFor }) {
         sel.selectAllChildren(el);
         sel.collapseToEnd();
       }
-      bridge.select(el, 'text');
+      emit('pick', el, 'text');
       emit('textFocus', el.dataset.edit);
       // Focus (e.g. Tab to an off-screen field) may leave the field under the header or at
       // an edge: center it.
@@ -955,15 +948,13 @@ export function createBridge({ store, labelFor }) {
       doc = siteWin.document;
       boxes = null;
       raf = 0;
-      selected = null;
-      hoverEl = null;
       api.setAnimations(store.current[ANIMATIONS]);
       if (clicks === 'arrange') api.freeze();
       api.hooks.beforeMount.add(() => bridge.applyTexts({ force: true, plain: true }));
       api.hooks.afterMount.add(() => {
         doc.documentElement.classList.toggle('__ed-arrange', clicks === 'arrange');
         doc.documentElement.classList.toggle('__ed-animate', clicks === 'animate');
-        bridge.select(null);
+        emit('pick', null);
         emit('navigate', win.location.pathname);
         restore?.();
         restore = null;

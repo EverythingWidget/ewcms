@@ -23,7 +23,7 @@
   import WidgetToolbar from './WidgetToolbar.svelte';
   import { layerWidget } from '../layout-ops.js';
   import { targetFile } from '../layout-sync.js';
-  import { ui, previewClicks } from './ui.svelte.js';
+  import { ui, previewClicks, pickElement, selectLink } from './ui.svelte.js';
   import { writeUrl } from './persist.js';
   import { MOD, plural } from '../lib/format.js';
 
@@ -132,10 +132,10 @@
       const open = document.querySelector('dialog[open]');
       if (open) open.close();
       else {
-        const picked = !!bridge.selected;
-        if (picked) bridge.select(null);
+        const picked = !!ui.picked;
+        if (picked) pickElement(null);
         if (previewClicks() === 'arrange' && !inField) {
-          if (ui.link) ui.link = null;
+          if (ui.link) selectLink(null);
           else if (ui.widget || ui.section || ui.multi.length) {
             ui.selection = null;
             ui.widget = null;

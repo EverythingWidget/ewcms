@@ -29,7 +29,7 @@
  */
 import { tick } from 'svelte';
 import { editorHref } from '../lib/editor-url.js';
-import { ui, previewClicks } from './ui.svelte.js';
+import { ui, previewClicks, pickElement } from './ui.svelte.js';
 import { sourceIdOf } from '../../site/files.js';
 
 const KEY = 'editor:ui';
@@ -156,7 +156,7 @@ export async function restorePlace() {
         : `[data-anim-key="${CSS.escape(anim)}"]`)
     : edit && `[data-edit="${CSS.escape(edit)}"]`;
   const el = sel && bridge.doc.querySelector(sel);
-  if (el && clicks !== 'visitor') bridge.select(el, motion ? 'anim' : 'text', { quiet: true });
+  if (el && clicks !== 'visitor') pickElement(el, motion ? 'anim' : 'text', { quiet: true });
   // quiet: the Nav panel doesn't scroll to the field, the panel scroll is put back below
   if (el && !motion) ui.selection = { edit, quiet: true };
   await tick();

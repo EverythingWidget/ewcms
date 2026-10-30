@@ -9,7 +9,7 @@ const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 test('v0.1.46: the selected widget is dragged where widgets overlap; a click picks the top one', () => {
   const o = read('src/editor/overlay.js');
   assert.match(o, /const el = selectedUnder\(e, mod\) \|\| top;/);
-  assert.match(o, /else if \(click\) \(\(ui\.anchor = click\), onpick\(click\)\);/);
+  assert.match(o, /else if \(click\) \(setAnchor\(click\), onpick\(click\)\);/);
   // Size -> Rows from the shown rows (the phone's: doubled)
   assert.match(read('src/editor/svelte/WidgetLayout.svelte'), /phoneView \? n \* 2 : n/);
 });

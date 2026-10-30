@@ -28,7 +28,19 @@ import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/solid.css';
 import { mount } from 'svelte';
 import App from './svelte/App.svelte';
-import { ui, selectWidgets, selectSection, hooks, previewClicks } from './svelte/ui.svelte.js';
+import {
+  ui,
+  selectWidgets,
+  selectSection,
+  hooks,
+  previewClicks,
+  pickAnim,
+  pickElement,
+  selectText,
+  hoverElement,
+  clearPick,
+  clearSelection,
+} from './svelte/ui.svelte.js';
 import { toast } from './svelte/toasts.svelte.js';
 import { createLive } from './svelte/live.svelte.js';
 import { connectMedia } from './svelte/media.svelte.js';
@@ -94,7 +106,13 @@ const startPath = () => location.pathname;
 const store = createStore();
 const live = createLive(store);
 connectMedia(live); // photo URLs read site.json's mediaUrl from it
-const bridge = createBridge({ store, labelFor: (p) => labelFor(store, p) });
+// the bridge reports picks and hovers ('pick', 'hover' below); ui holds them, the bridge draws them
+const bridge = createBridge({
+  store,
+  labelFor: (p) => labelFor(store, p),
+  picked: () => ui.picked,
+  hovered: () => ui.hoverEl,
+});
 // the preview's layout overlay (arranging in the Sections tab, Grid; overlay.js): widgetAt and
 // placeWidget below
 const overlay = createOverlay({
@@ -282,13 +300,7 @@ function applyPart() {
   setPartOpen(bridge.doc, open);
   if (open === partShown) return;
   partShown = open;
-  ui.widget = null;
-  ui.section = null;
-  ui.selSection = null;
-  ui.selSections = [];
-  ui.selection = null;
-  ui.link = null;
-  if (bridge.selected) bridge.select(null);
+  clearSelection();
   overlay.refresh();
 }
 
@@ -415,32 +427,17 @@ async function refreshStatus() {
   }
 }
 
-/**
- * A pick in the preview (bridge 'select') -> ui.anim for a page's Motion tab: a widget
- * ({ el, widget }) or a data-anim element ({ el, id, key, scope }). The widget (or the element's) is
- * also the Sections tab's widget (ui.widget), so both tabs show the same one.
- */
-function pickAnim(sel) {
-  if (sel?.kind !== 'anim') return null;
-  const { el } = sel;
-  const owner = el.closest('[data-widget]')?.dataset.widget;
-  if (owner) ui.widget = owner;
-  if (el.dataset.anim === undefined)
-    return el.dataset.widget ? { el, widget: el.dataset.widget } : null;
-  // scope: where edits go, set by AnimEditor (its widget's elements if they have values, else All)
-  return { el, id: el.dataset.anim, key: el.dataset.animKey, owner, scope: null };
-}
-
 /** Tell the preview what a click does now (previewClicks); entering animate picks the widget. */
 function applyClicks(before) {
   const clicks = previewClicks();
   bridge.setClickMode(clicks);
+  clearPick();
   overlay.refresh();
   if (clicks === 'animate' && before !== 'animate') {
     ui.anim = null;
     // the widget open in the Sections tab is the one picked here
     const el = ui.widget && bridge.doc?.querySelector(`[data-widget="${CSS.escape(ui.widget)}"]`);
-    if (el) bridge.select(el, 'anim');
+    if (el) pickElement(el, 'anim');
   }
 }
 
@@ -478,12 +475,13 @@ function editMotion(el) {
   setPanel('nav');
   setPageTab('motion');
   ui.anim = pickAnim({ kind: 'anim', el });
-  bridge.select(el, 'anim');
+  pickElement(el, 'anim');
 }
 
 // ---------------------------------------------------------------- preview events
 bridge.on('connect', () => {
   bridge.setClickMode(previewClicks());
+  clearPick();
   overlay.attach(bridge.doc.defaultView);
   applyPart();
   pushCurtains();
@@ -603,16 +601,11 @@ bridge.on('navigate', (path) => {
   ui.previewVersion++;
   ui.anim = null;
 });
-// (quiet: the selection put back after a save's reload: kept, but nothing opens for it)
-bridge.on('select', (sel, { quiet = false } = {}) => {
-  if (previewClicks() === 'animate') ui.anim = pickAnim(sel);
-  else
-    ui.selection =
-      sel?.kind === 'text'
-        ? { edit: sel.el.dataset.edit ?? sel.el.dataset.bound, ...(quiet && { quiet }) }
-        : null;
-});
-bridge.on('textFocus', (edit) => (ui.selection = { edit }));
+// one way: what was clicked or hovered in the preview goes to ui (quiet: the selection put back
+// after a save's reload: kept, but nothing opens for it)
+bridge.on('pick', pickElement);
+bridge.on('hover', hoverElement);
+bridge.on('textFocus', selectText);
 // the Text widget editor (bridge.js, rich.js): its state for the toolbar; an edit ended: its
 // section rendered again (the fields' values, the counts, the animations' markup)
 bridge.on('rich', (state) => (ui.rich = state));

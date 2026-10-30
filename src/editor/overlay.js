@@ -62,6 +62,14 @@ import {
 import { PHONE_MAX } from '../site/layout/grid.js';
 import { clampDelta, hits, offscreen, selectedIds, toggle } from './multi-select.js';
 import { T } from './ui-tokens.js';
+import {
+  hotWidget,
+  peekSection,
+  selectLink,
+  setAnchor,
+  setMod,
+  setSecRows,
+} from './svelte/ui.svelte.js';
 import { shownPlace, tagHtml } from './widget-tag.js';
 
 const MOBILE = PHONE_MAX;
@@ -203,19 +211,10 @@ export function createOverlay({
     !!sec.closest('[data-footer]') === !!doc.querySelector('[data-footer][data-ed-open]');
   const secById = (id) => doc.querySelector(`[data-sec="${CSS.escape(id)}"]:not([hidden])`);
   /** The section under the pointer in the preview: its row in the Sections tab shows it. */
-  const peekAt = (sec) => {
-    const id = sec?.dataset.sec;
-    if (id) {
-      if (ui.peek?.id !== id || ui.peek.from !== 'preview') ui.peek = { id, from: 'preview' };
-    } else if (ui.peek?.from === 'preview') ui.peek = null;
-  };
+  const peekAt = (sec) => peekSection(sec?.dataset.sec, 'preview');
   const unpeek = () => peekAt(null);
   /** The widget under the pointer in the preview: its row in the Sections tab lights. */
-  const hotAt = (id) => {
-    if (id) {
-      if (ui.hot?.id !== id || ui.hot.from !== 'preview') ui.hot = { id, from: 'preview' };
-    } else if (ui.hot?.from === 'preview') ui.hot = null;
-  };
+  const hotAt = (id) => hotWidget(id, 'preview');
   /** The widget elements of a section (not a nested section's). */
   const widgetsIn = (sec) =>
     [...sec.querySelectorAll('[data-widget]')].filter((n) => secOf(n) === sec);
@@ -274,7 +273,7 @@ export function createOverlay({
       if (link) {
         e.preventDefault();
         e.stopPropagation();
-        ui.link = link;
+        selectLink(link);
         kick();
       }
     });
@@ -700,7 +699,7 @@ export function createOverlay({
     if (!moved) {
       for (const [n, css] of g.saved) n.style.cssText = css;
       // a click (no move) on one of them: that one only
-      ui.anchor = g.el.dataset.widget;
+      setAnchor(g.el.dataset.widget);
       onpick(g.el.dataset.widget);
       return;
     }
@@ -820,7 +819,7 @@ export function createOverlay({
     if (!stored) return;
     e.preventDefault();
     e.stopPropagation();
-    ui.link = null;
+    selectLink(null);
     const sec = secOf(el);
     const phone = mobile();
     const saved = new Map([sec, ...widgetsIn(sec)].map((n) => [n, n.style.cssText]));
@@ -955,7 +954,7 @@ export function createOverlay({
     stop();
     drag = null;
     if (moved) onplace(id, pos, { mobile: phone, flow, rows, size });
-    else if (click) ((ui.anchor = click), onpick(click));
+    else if (click) (setAnchor(click), onpick(click));
   }
 
   function cancel(e) {
@@ -999,7 +998,7 @@ export function createOverlay({
       saved: [sec.style.cssText, phone ? '--mminrows' : '--minrows'],
       max: phone ? Math.ceil(MAX_MIN_ROWS / 2) : MAX_MIN_ROWS,
     };
-    ui.secRows = { id: sec.dataset.sec, rows, phone };
+    setSecRows({ id: sec.dataset.sec, rows, phone });
     win.addEventListener('pointermove', moveRows, true);
     win.addEventListener('pointerup', endRows, true);
     win.addEventListener('keydown', cancelRows, true);
@@ -1013,7 +1012,7 @@ export function createOverlay({
     s.rows = n;
     s.sec.style.setProperty('--frows', n);
     s.sec.style.setProperty(s.saved[1], n);
-    ui.secRows = { id: s.sec.dataset.sec, rows: n, phone: s.phone };
+    setSecRows({ id: s.sec.dataset.sec, rows: n, phone: s.phone });
   }
 
   function stopRows() {
@@ -1022,7 +1021,7 @@ export function createOverlay({
     win.removeEventListener('pointerup', endRows, true);
     win.removeEventListener('keydown', cancelRows, true);
     sizing = null;
-    ui.secRows = null;
+    setSecRows(null);
   }
 
   function endRows() {
@@ -1046,7 +1045,7 @@ export function createOverlay({
   function startLink(e, el) {
     e.preventDefault();
     e.stopPropagation();
-    ui.link = null;
+    selectLink(null);
     const id = el.dataset.widget;
     const sec = secOf(el);
     const phone = mobile();
@@ -1165,7 +1164,7 @@ export function createOverlay({
   function deleteLink() {
     const id = ui.link;
     if (!id) return false;
-    ui.link = null;
+    selectLink(null);
     const el = widgetEl(id);
     if (el && linkOfEl(el)) onlink(id, null, 0, { mobile: mobile(), row: shownRow(el) });
     return true;
@@ -1173,7 +1172,7 @@ export function createOverlay({
   // Ctrl/Cmd held: the other sections show blocked (drawBlocks)
   const trackMod = (e) => {
     const on = e.ctrlKey || e.metaKey;
-    if (ui.mod !== on) ui.mod = on;
+    setMod(on);
     if (on && win) kick();
   };
   function onkeydown(e) {
@@ -1203,7 +1202,7 @@ export function createOverlay({
   function onpointerdown(e) {
     if (e.target.id === '__ed-layout') return; // the overlay's own (its shadow root handles it)
     if (!arranging() || e.button !== 0 || e.altKey || editing(e.target)) return;
-    ui.link = null;
+    selectLink(null);
     const mod = e.ctrlKey || e.metaKey;
     const ids = selectedIds(ui);
     const top = e.target.closest?.('[data-widget]');
@@ -1228,14 +1227,14 @@ export function createOverlay({
       const next = toggle(ids, id, secIdOf);
       if (!next) return;
       if (doc.activeElement?.isContentEditable) doc.activeElement.blur();
-      ui.anchor = id;
+      setAnchor(id);
       onselect(next);
       return;
     }
     if (doc.activeElement?.isContentEditable) doc.activeElement.blur(); // ends an edit
     // one of several selected: they all move
     if (ui.multi.length > 1 && ui.multi.includes(id)) return startGroup(e, ui.multi, el);
-    ui.anchor = id;
+    setAnchor(id);
     onpick(id);
     start(e, el);
     // inside the selected widget, over another one: a click (no drag) selects that other one
@@ -1283,7 +1282,7 @@ export function createOverlay({
       });
       doc.addEventListener('keydown', onkeydown, true);
       doc.addEventListener('keyup', trackMod, true);
-      win.addEventListener('blur', () => (ui.mod = false));
+      win.addEventListener('blur', () => setMod(false));
       // what moves the page: the loop runs for it, then idles
       anims = 0;
       const opts = { capture: true, passive: true };

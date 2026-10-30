@@ -16,7 +16,7 @@
   import Button from './Button.svelte';
   import TransitionCard from './TransitionCard.svelte';
   import Section from './Section.svelte';
-  import { ui } from './ui.svelte.js';
+  import { ui, pickElement, hoverElement } from './ui.svelte.js';
   import { motionSections } from './page-motion.js';
   import { ANIMATIONS } from '../../site/files.js';
   import { animationOf, elementOf } from './motion.js';
@@ -62,7 +62,7 @@
   function pick(el) {
     if (!el) return;
     bridge.reveal(el);
-    bridge.select(el, 'anim');
+    pickElement(el, 'anim');
   }
 </script>
 
@@ -73,8 +73,8 @@
       class={['mlist__item', 'mlist__element', elementOf(el, id) && 'is-changed']}
       title={elementOf(el, id) ? 'Has its own values in this widget' : undefined}
       onclick={() => pick(el)}
-      onpointerenter={() => bridge.setHover(el)}
-      onpointerleave={() => bridge.setHover(null)}
+      onpointerenter={() => hoverElement(el)}
+      onpointerleave={() => hoverElement(null)}
     >
       <span class="mlist__id">
         {id}
@@ -91,9 +91,7 @@
     {#if picks}
       {#key ui.anim}
         <div class="msel__head">
-          <Button size="small" icon="arrow-left" onclick={() => bridge.select(null)}
-            >Elements</Button
-          >
+          <Button size="small" icon="arrow-left" onclick={() => pickElement(null)}>Elements</Button>
           <h3 class="msel__title">{picks.widget.label}</h3>
           <span class="muted"
             >Section {picks.s.at + 1}{picks.widget.name ? ` · ${picks.widget.name}` : ''}</span
@@ -141,8 +139,8 @@
                   data-widget-item={widget.id}
                   disabled={!widget.el}
                   onclick={() => pick(widget.el)}
-                  onpointerenter={() => bridge.setHover(widget.el)}
-                  onpointerleave={() => bridge.setHover(null)}
+                  onpointerenter={() => hoverElement(widget.el)}
+                  onpointerleave={() => hoverElement(null)}
                 >
                   <span class="mlist__id"
                     >{widget.label}{widget.name ? ` · ${widget.name}` : ''}</span

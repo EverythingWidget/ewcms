@@ -12,7 +12,7 @@
   import Button from './Button.svelte';
   import MotionGroups from './MotionGroups.svelte';
   import Select from './Select.svelte';
-  import { ui } from './ui.svelte.js';
+  import { ui, pickElement } from './ui.svelte.js';
   import { GENERIC_TYPES, animModel, keepFor, layerPtr } from './motion.js';
   import { ANIMATIONS } from '../../site/files.js';
 
@@ -81,7 +81,7 @@
 </script>
 
 <div class="msel__head">
-  <Button size="small" icon="arrow-left" onclick={() => bridge.select(null)}>Elements</Button>
+  <Button size="small" icon="arrow-left" onclick={() => pickElement(null)}>Elements</Button>
   <h3 class="msel__title">{sel.id}</h3>
 </div>
 

@@ -33,7 +33,8 @@ test('list click selects in the preview, scrolled to only when out of view', () 
 test('row hover outlines the widget in the preview, and the preview lights the row', () => {
   const ov = src('overlay.js');
   assert.match(ov, /ui\.hot\?\.from === 'panel' \? widgetEl\(ui\.hot\.id\)/);
-  assert.match(ov, /ui\.hot = \{ id, from: 'preview' \}/);
+  assert.match(ov, /hotWidget\(id, 'preview'\)/);
+  assert.match(src('svelte/ui.svelte.js'), /ui\.hot = \{ id, from \}/);
   const card = src('svelte/SectionCard.svelte');
   assert.match(card, /ui\.hot = \{ id: widget\.id, from: 'panel' \}/);
   assert.match(src('svelte/WidgetRow.svelte'), /hot && 'is-hot'/);

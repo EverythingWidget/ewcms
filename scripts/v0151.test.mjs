@@ -40,8 +40,22 @@ test('Custom starts from the rows the preview shows (--frows), not the stored gu
 
 test("a save's reload restores the selection quietly: no pop-up opens", () => {
   const b = src('bridge.js');
-  assert.match(b, /bridge\.select\(el, sel\.kind, \{ quiet: true \}\)/);
-  assert.match(b, /emit\('select', selected, \{ quiet \}\)/);
-  assert.match(src('main.js'), /\.\.\.\(quiet && \{ quiet \}\)/);
+  assert.match(b, /emit\('pick', el, sel\.kind, \{ quiet: true \}\)/);
+  assert.match(src('main.js'), /bridge\.on\('pick', pickElement\)/);
+  assert.match(src('svelte/ui.svelte.js'), /\.\.\.\(quiet && \{ quiet \}\)/);
   assert.match(src('svelte/ContentPanel.svelte'), /if \(!edit \|\| quiet\) return;/);
+});
+
+test('the preview pick and hover live in ui only: the bridge reports them, keeps none', () => {
+  const b = src('bridge.js');
+  assert.doesNotMatch(b, /let (selected|hoverEl)\b/);
+  assert.doesNotMatch(b, /\bselect\(el, kind|setHover\(/);
+  assert.match(b, /emit\('hover', el\)/);
+  const m = src('main.js');
+  assert.doesNotMatch(m, /bridge\.(select|selected)\b|on\('select'/);
+  assert.match(m, /bridge\.on\('hover', hoverElement\)/);
+  assert.match(m, /bridge\.setClickMode\(clicks\);\s*clearPick\(\);/);
+  const u = src('svelte/ui.svelte.js');
+  for (const fn of ['pickElement', 'hoverElement', 'clearPick', 'clearSelection', 'pickAnim'])
+    assert.match(u, new RegExp(`export function ${fn}\\(`));
 });

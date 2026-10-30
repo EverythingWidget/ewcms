@@ -112,6 +112,13 @@ export const ui = $state({
   rich: null,
   /** Sections tab: the link selected in the preview (its follower's widget id), or null. */
   link: null,
+  /**
+   * The element picked in the preview (its outline there): { el, kind: 'text' | 'anim' }, or
+   * null. bridge.js reports clicks and draws the outline; pickElement() sets it.
+   */
+  picked: null,
+  /** The element under the pointer in the preview (animate clicks) or a Motion row's, or null. */
+  hoverEl: null,
   /** Open/closed per Section key ("text:hero", "settings:site", ...), once toggled. */
   sections: {},
   /**
@@ -175,6 +182,105 @@ export function selectSections(ids, last = ids.at(-1) ?? null) {
   if (list.length < 2) return selectSection(list[0] ?? null);
   selectSection(list.includes(last) ? last : list.at(-1));
   ui.selSections = list;
+}
+
+/**
+ * A pick in the preview's Motion tab: a widget ({ el, widget }) or a data-anim element
+ * ({ el, id, key, owner, scope }). The widget (or the element's) is also the Sections tab's widget
+ * (ui.widget), so both tabs show the same one.
+ */
+export function pickAnim(sel) {
+  if (sel?.kind !== 'anim') return null;
+  const { el } = sel;
+  const owner = el.closest('[data-widget]')?.dataset.widget;
+  if (owner) ui.widget = owner;
+  if (el.dataset.anim === undefined)
+    return el.dataset.widget ? { el, widget: el.dataset.widget } : null;
+  // scope: where edits go, set by AnimEditor (its widget's elements if they have values, else All)
+  return { el, id: el.dataset.anim, key: el.dataset.animKey, owner, scope: null };
+}
+
+/**
+ * Element `el` of the preview picked (null: none): with animate clicks it is ui.anim, else a
+ * text's ui.selection ({ edit }). quiet: put back (a reload, a refresh), not picked: the panel
+ * opens nothing for it.
+ */
+export function pickElement(
+  el,
+  kind = previewClicks() === 'arrange' ? 'text' : 'anim',
+  { quiet = false } = {},
+) {
+  ui.picked = el ? { el, kind } : null;
+  if (previewClicks() === 'animate') ui.anim = pickAnim(ui.picked);
+  else
+    ui.selection =
+      el && kind === 'text'
+        ? { edit: el.dataset.edit ?? el.dataset.bound, ...(quiet && { quiet }) }
+        : null;
+}
+
+/** A text's field focused (its `data-edit` path): the panel shows that field. */
+export function selectText(edit) {
+  ui.selection = { edit };
+}
+
+/** The element under the pointer in the preview (or a Motion row's), or null. */
+export function hoverElement(el) {
+  if (ui.hoverEl !== el) ui.hoverEl = el || null;
+}
+
+/** Nothing picked or hovered in the preview (what a click does changed). */
+export function clearPick() {
+  pickElement(null);
+  hoverElement(null);
+}
+
+/**
+ * Nothing selected: no widget, section or link, no text or element picked (the site part
+ * shown changed).
+ */
+export function clearSelection() {
+  ui.widget = null;
+  ui.section = null;
+  ui.selSection = null;
+  ui.selSections = [];
+  ui.selection = null;
+  ui.link = null;
+  if (ui.picked) pickElement(null);
+}
+
+/** Section `id` under the pointer on one side (`from`: 'panel' | 'preview'); null: none there. */
+export function peekSection(id, from) {
+  if (id) {
+    if (ui.peek?.id !== id || ui.peek.from !== from) ui.peek = { id, from };
+  } else if (ui.peek?.from === from) ui.peek = null;
+}
+
+/** Widget `id` hovered on one side (`from`: 'panel' | 'preview'); null: none there. */
+export function hotWidget(id, from) {
+  if (id) {
+    if (ui.hot?.id !== id || ui.hot.from !== from) ui.hot = { id, from };
+  } else if (ui.hot?.from === from) ui.hot = null;
+}
+
+/** The link selected in the preview (its follower's widget id), or null. */
+export function selectLink(id) {
+  ui.link = id;
+}
+
+/** The widget clicked last (a Shift click selects from it). */
+export function setAnchor(id) {
+  ui.anchor = id;
+}
+
+/** A custom section's rows while its bottom edge is dragged ({ id, rows, phone }), or null. */
+export function setSecRows(rows) {
+  ui.secRows = rows;
+}
+
+/** Ctrl (Cmd) held or not. */
+export function setMod(on) {
+  if (ui.mod !== on) ui.mod = on;
 }
 
 /** Set by main.js: the preview's (overlay.js reveal). */
