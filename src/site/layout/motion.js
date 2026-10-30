@@ -41,6 +41,29 @@ export const TIMING_KEYS = [
   'scrub',
 ];
 
+/**
+ * The site's default timing (animations.json `defaults`, Settings > Motion): what an animation
+ * plays with when neither it nor its widget or element sets the value (src/client/anim/engine.js
+ * merges it first). Left out: GSAP's own (0.5s, no delay, power1.out).
+ */
+export const DEFAULT_TIMING = { duration: 'seconds', delay: 'seconds', ease: 'ease' };
+
+/** Shape problems of animations.json `defaults` (undefined: none). */
+export function defaultsProblems(d) {
+  if (d === undefined) return [];
+  if (!isObject(d)) return ['"defaults" must be an object { duration, delay, ease }, or left out'];
+  const out = [];
+  for (const [k, v] of Object.entries(d)) {
+    const want = DEFAULT_TIMING[k];
+    if (!want) out.push(`"defaults.${k}" must be left out: only duration, delay and ease`);
+    else if (want === 'seconds' && !num(v))
+      out.push(`"defaults.${k}" must be a number (0 or more)`);
+    else if (want === 'ease' && (typeof v !== 'string' || !v.trim()))
+      out.push(`"defaults.${k}" must be an ease name, e.g. "power2.out"`);
+  }
+  return out;
+}
+
 /** Animation types that work on any widget. */
 export const WIDGET_ANIM_TYPES = ['reveal', 'split', 'scroll', 'scrub-words', 'parallax'];
 

@@ -48,7 +48,7 @@ import { checkPlacement } from './layout/place.js';
 import { checkLayout } from './layout/contain.js';
 import { isId } from './layout/ids.js';
 import { linkProblem } from './hrefs.js';
-import { checkMotion } from './layout/motion.js';
+import { checkMotion, defaultsProblems } from './layout/motion.js';
 import { checkBackdrop } from './backdrop.js';
 import { bindTypeOf, FORMAT_TYPES, isBinding } from './layout/bindings.js';
 import { isObject } from './is.js';
@@ -206,6 +206,7 @@ function checkAnimations(d) {
     ...required(d, ['presets', 'targets', 'transitions'], 'object'),
     ...optional(d, { interactions: 'object' }),
   ];
+  out.push(...defaultsProblems(d.defaults));
   if (d.elements !== undefined)
     out.push('"elements" is gone: a widget\'s own part animations are its "motion.parts"');
   for (const group of ['presets', 'targets'])

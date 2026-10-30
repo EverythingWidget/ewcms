@@ -3,7 +3,11 @@
  * and wires every widget with motion ([data-motion], src/site/layout/motion.js) and every
  * [data-anim="<target id>"] element in a view.
  *
- * A widget: spec = presets[data-motion] ⟵ data-motion-options (the widget's own timing). It
+ * Every spec starts from the site's default timing (animations.json `defaults`: duration, delay,
+ * ease; Settings > Motion), so an animation without its own value plays with it; left out,
+ * GSAP's own. The scroll-linked types keep their linear ease (no default ease).
+ *
+ * A widget: spec = defaults ⟵ presets[data-motion] ⟵ data-motion-options (the widget's own timing). It
  * plays on the widget's content: its children, or the animation's `children` inside it, never
  * on the widget's element itself. Scroll positions are measured on what moves (a reveal: its
  * first target; a split: each target; scroll: the widget).
@@ -11,7 +15,7 @@
  * An element (parts of a widget type with their own markup: the hero's photos and title,
  * album parts, the project preview):
  *
- *   spec = presets[preset] ⟵ targets[id] ⟵ its widget's parts[id] ⟵ data-anim-options (JSON)
+ *   spec = defaults ⟵ presets[preset] ⟵ targets[id] ⟵ its widget's parts[id] ⟵ data-anim-options (JSON)
  *
  * A widget's `motion.parts` (data-anim-parts on its element, src/site/layout/motion.js) may
  * pick another animation (`preset`) or timing for the elements with that name inside it.
@@ -56,6 +60,16 @@ const parse = (json) => {
   }
 };
 
+// types tied to the scroll: their ease is linear unless they set one
+const SCROLLED = new Set(['scroll', 'scrub-words', 'parallax']);
+/** The site's default timing for an animation of `preset`'s type (none: {}). */
+const defaultsFor = (preset) => {
+  const d = isObject(config.defaults) ? config.defaults : {};
+  if (!SCROLLED.has(preset.type) || d.ease === undefined) return d;
+  const { ease: _e, ...rest } = d; // eslint-disable-line no-unused-vars
+  return rest;
+};
+
 /** An element's own values from its widget's motion.parts ({} when none). */
 const partOf = (el, id) => parse(el?.closest?.('[data-anim-parts]')?.dataset.animParts)?.[id] || {};
 
@@ -75,7 +89,7 @@ export function resolve(id, el) {
   }
   const inline = parse(el?.dataset.animOptions);
   // target and own may name a preset: that was resolved above, the rest overrides it
-  return merge(preset, target, own, inline, {
+  return merge(defaultsFor(preset), preset, target, own, inline, {
     id,
     key,
     preset: presetName,
@@ -90,7 +104,11 @@ export function resolveWidget(el) {
     console.warn(`[anim] a widget uses unknown animation "${name}"`);
     return null;
   }
-  return merge(preset, parse(el.dataset.motionOptions), { id: name, preset: name, widget: true });
+  return merge(defaultsFor(preset), preset, parse(el.dataset.motionOptions), {
+    id: name,
+    preset: name,
+    widget: true,
+  });
 }
 
 /** What a widget's animation moves (each type measures its scroll positions on them, or the widget). */
