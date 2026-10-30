@@ -45,7 +45,7 @@
           "type": "albums",
           "source": { "mode": "all", "from": "people" },
           "config": { "layout": "portrait" },
-          "motion": { "anim": "grid-reveal", "trigger": "load", "delay": 0.3 }
+          "motion": { "animation": "grid-reveal", "trigger": "load", "delay": 0.3 }
         }
       ]
     }

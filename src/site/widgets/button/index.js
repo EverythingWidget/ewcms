@@ -25,7 +25,7 @@ export const button = {
   defaults: {
     label: 'Get in touch',
     config: { link: { href: '/about/' } },
-    motion: { anim: 'fade-in' },
+    motion: { animation: 'fade-in' },
   },
   render: (s, ctx) => {
     const href = hrefOf(ctx, s.config?.link, 'a button') || '/';

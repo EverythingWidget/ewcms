@@ -32,8 +32,11 @@ test('animations.json: with or without defaults it is valid', () => {
 
 test("the engine starts every spec from the defaults (not the scroll types' ease)", () => {
   const e = read('client/anim/engine.js');
-  assert.match(e, /merge\(defaultsFor\(preset\), preset, target, own, inline,/);
-  assert.match(e, /merge\(defaultsFor\(preset\), preset, parse\(el\.dataset\.motionOptions\),/);
+  assert.match(e, /merge\(defaultsFor\(animation\), animation, target, own, inline,/);
+  assert.match(
+    e,
+    /merge\(defaultsFor\(animation\), animation, parse\(el\.dataset\.motionOptions\),/,
+  );
   assert.match(e, /SCROLLED = new Set\(\['scroll', 'scrub-words', 'parallax'\]\)/);
 });
 

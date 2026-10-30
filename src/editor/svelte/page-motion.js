@@ -21,7 +21,7 @@ export function motionSections(list, doc, items) {
         el,
         label: WIDGET_TYPES[widget.type]?.label || widget.type,
         name: nameOf(widget),
-        anim: widget.motion?.anim || '',
+        animation: widget.motion?.animation || '',
         parts: el ? items.filter((it) => it.el.closest('[data-widget]') === el) : [],
       };
     }),

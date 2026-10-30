@@ -26,7 +26,7 @@ export const panels = {
   ],
   defaults: {
     panels: [{ source: 'people', title: 'People', unit: 'models' }],
-    motion: { anim: 'grid-reveal' },
+    motion: { animation: 'grid-reveal' },
   },
   render: (s, ctx, widget) => {
     const panel = ({ source, title, unit }, i) => {

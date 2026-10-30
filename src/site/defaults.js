@@ -12,7 +12,7 @@
  * omitDefaults also tidies (not a validation error): no empty "config" or "meta", and a widget's
  * area without col 1, row 1 or a span to the last column (no "layout": full width at row 1).
  *
- * The animation library (animations.json presets) is not covered: each animation carries every
+ * The animation library (animations.json animations) is not covered: each animation carries every
  * value it uses (there is no global layer to fall back on).
  */
 import { docKindOf } from './files.js';

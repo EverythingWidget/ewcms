@@ -93,7 +93,7 @@ export const grid = {
     cta: 'See all',
     source: { mode: 'all', from: 'people' },
     config: { layout: 'staggered' },
-    motion: { anim: 'grid-reveal' },
+    motion: { animation: 'grid-reveal' },
   },
   render: (s, ctx, widget) => {
     // no source (None): its head without a link, and no tiles

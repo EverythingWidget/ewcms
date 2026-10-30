@@ -10,6 +10,7 @@
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { formatJSON } from '../src/editor/lib/json-format.js';
 
 const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -38,6 +39,18 @@ function walk(v, fn) {
 }
 const walkInto = (v, fn) => (Array.isArray(v) || isObject(v)) && walk(v, fn);
 
+/** Rename `obj[from]` to `obj[to]` in place, keeping the key's position; true when renamed. */
+function renameKey(obj, from, to) {
+  if (!isObject(obj) || !(from in obj) || to in obj) return false;
+  const entries = Object.entries(obj).map(([k, v]) => [k === from ? to : k, v]);
+  for (const k of Object.keys(obj)) delete obj[k];
+  Object.assign(obj, Object.fromEntries(entries));
+  return true;
+}
+
+const isAnimations = (f) => f.rel.replaceAll('\\', '/').endsWith('settings/animations.json');
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
 /**
  * The steps, in order. Each gets every file ({ path, data }) and returns notes of what it
  * changed ("file: old -> new").
@@ -57,40 +70,80 @@ const steps = [
         walk(f.data, (v) => {
           if (typeof v === 'string' && ids.has(v)) return (n++, ids.get(v));
         });
-        if (n) notes.push(`${f.rel}: ${n} widget id${n === 1 ? '' : 's'} (and links to them)`);
+        if (n) notes.push(`${f.rel}: ${plural(n, 'widget id')} (and links to them)`);
+      }
+      return notes;
+    },
+  },
+  {
+    name: 'animation names: "presets" -> "animations", "preset" and "anim" -> "animation"',
+    run(files) {
+      const notes = [];
+      for (const f of files) {
+        if (isAnimations(f)) {
+          const lib = renameKey(f.data, 'presets', 'animations');
+          let n = 0;
+          for (const t of Object.values(isObject(f.data.targets) ? f.data.targets : {}))
+            if (renameKey(t, 'preset', 'animation')) n++;
+          if (lib) notes.push(`${f.rel}: "presets" -> "animations"`);
+          if (n) notes.push(`${f.rel}: ${plural(n, 'target')} "preset" -> "animation"`);
+          continue;
+        }
+        let widgets = 0;
+        let parts = 0;
+        for (const w of widgetsIn(f.data)) {
+          if (renameKey(w.motion, 'anim', 'animation')) widgets++;
+          // motion.parts (motion.elements from the next step on)
+          for (const key of ['parts', 'elements'])
+            for (const p of Object.values(isObject(w.motion?.[key]) ? w.motion[key] : {}))
+              if (renameKey(p, 'preset', 'animation')) parts++;
+        }
+        if (widgets)
+          notes.push(`${f.rel}: ${plural(widgets, 'widget')} motion "anim" -> "animation"`);
+        if (parts) notes.push(`${f.rel}: ${plural(parts, 'element')} "preset" -> "animation"`);
       }
       return notes;
     },
   },
 ];
 
-const args = process.argv.slice(2);
-const write = args.includes('--write');
-const dir = args.find((a) => !a.startsWith('--'));
-if (!dir) {
-  console.error('Usage: node scripts/rename-0-2-0.mjs <site>/content [--write]');
-  process.exit(1);
+/** Convert loaded files ({ rel, data }) in place; returns [{ name, notes }] per step. */
+export function convert(files) {
+  return steps.map((step) => ({ name: step.name, notes: step.run(files) }));
 }
-const files = [...jsonFiles(dir)].map((path) => {
-  const text = readFileSync(path, 'utf8');
-  return { path, rel: relative(dir, path), text, data: JSON.parse(text) };
-});
-let total = 0;
-for (const step of steps) {
-  const notes = step.run(files);
-  console.log(`${step.name}: ${notes.length ? '' : 'nothing to change'}`);
-  for (const n of notes) console.log(`  ${n}`);
-  total += notes.length;
+
+// the command (not when a test imports convert)
+if (import.meta.url === pathToFileURL(process.argv[1] || '').href) main();
+
+function main() {
+  const args = process.argv.slice(2);
+  const write = args.includes('--write');
+  const dir = args.find((a) => !a.startsWith('--'));
+  if (!dir) {
+    console.error('Usage: node scripts/rename-0-2-0.mjs <site>/content [--write]');
+    process.exitCode = 1;
+    return;
+  }
+  const files = [...jsonFiles(dir)].map((path) => {
+    const text = readFileSync(path, 'utf8');
+    return { path, rel: relative(dir, path), text, data: JSON.parse(text) };
+  });
+  let total = 0;
+  for (const { name, notes } of convert(files)) {
+    console.log(`${name}: ${notes.length ? '' : 'nothing to change'}`);
+    for (const n of notes) console.log(`  ${n}`);
+    total += notes.length;
+  }
+  // written as the editor's Save writes them (src/editor/lib/json-format.js)
+  let changed = 0;
+  for (const f of files) {
+    if (JSON.stringify(JSON.parse(f.text)) === JSON.stringify(f.data)) continue;
+    changed++;
+    if (write) writeFileSync(f.path, formatJSON(f.data));
+  }
+  console.log(
+    total
+      ? `${changed} file${changed === 1 ? '' : 's'} ${write ? 'changed' : 'would change (dry run: add --write to change them)'}`
+      : 'Nothing to change: the content already has the 0.2.0 names.',
+  );
 }
-// written as the editor's Save writes them (src/editor/lib/json-format.js)
-let changed = 0;
-for (const f of files) {
-  if (JSON.stringify(JSON.parse(f.text)) === JSON.stringify(f.data)) continue;
-  changed++;
-  if (write) writeFileSync(f.path, formatJSON(f.data));
-}
-console.log(
-  total
-    ? `${changed} file${changed === 1 ? '' : 's'} ${write ? 'changed' : 'would change (dry run: add --write to change them)'}`
-    : 'Nothing to change: the content already has the 0.2.0 names.',
-);

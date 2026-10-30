@@ -457,7 +457,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   refused).
 - **A widget:** its `type` and content (below), `layout` (below), `z` (its layer when widgets
   overlap), `size`, `scale` (text widgets, below) and an optional `motion`
-  (`{ "anim": "fade-scrub", "start": "top 70%" }`: an animation from the library plus its own
+  (`{ "animation": "fade-scrub", "start": "top 70%" }`: an animation from the library plus its own
   timing, see Animations).
 - **Size** (`size`): `auto` (**default**: as tall as its content), `aspect` (its width, from its
   columns, × `aspect`: `1:1 4:5 3:4 2:3 3:2 16:9 21:9` or any `"w:h"`; photos fill it, cropped
@@ -1063,7 +1063,7 @@ Markup only says **what** an element is: `data-anim="hero.title"`. All the **how
 
 ```jsonc
 {
-  "presets": {
+  "animations": {
     "fade-up": {
       "type": "reveal",
       "from": { "autoAlpha": 0, "y": 40 },
@@ -1088,8 +1088,8 @@ Markup only says **what** an element is: `data-anim="hero.title"`. All the **how
     },
   },
   "targets": {
-    "hero.title": { "preset": "hero-title" },
-    "page.title": { "preset": "split-chars", "trigger": "load", "delay": 0.1 },
+    "hero.title": { "animation": "hero-title" },
+    "page.title": { "animation": "split-chars", "trigger": "load", "delay": 0.1 },
   },
   "interactions": { "...": "card cycle, album wheel/drag thresholds" },
   "transitions": { "...": "page curtain, accent tween, album slide, menu" },
@@ -1114,16 +1114,16 @@ The page scrolls natively (`src/client/scroll.js`); every ScrollTrigger reads th
 scroll position.
 
 The final spec for an element is
-`preset ← target overrides ← its widget's part overrides ← data-anim-options`. Part overrides
+`animation ← target overrides ← its widget's part overrides ← data-anim-options`. Part overrides
 are a widget's `motion.parts` (`{ "<target>": { … } }`), written by the visual editor. With
 `"trigger": "scroll"`, reveals play once at `start`, or follow the scrollbar between `start` and
 `end` when `"scrub"` is `true` or a number (seconds of smoothing).
 Types (`src/client/anim/types.js`): `reveal`, `split` (SplitText chars/words/lines, masked),
 `scroll` (from → to tied to the scrollbar between `start` and `end`, always scrubbed, linear by
 default), `scrub-words`, `parallax`, `scatter` (hero photo burst + endless drift + scroll depth),
-`hero-title`, `hover-preview`. New effect = new type function + preset. Entrance animations
+`hero-title`, `hover-preview`. New effect = new type function + animation. Entrance animations
 (reveal/split, played once on load or when scrolled to) and scroll-linked ones (scroll,
-scrub-words, parallax, or any reveal with `scrub`) are all just presets: the library has e.g.
+scrub-words, parallax, or any reveal with `scrub`) are all just animations: the library has e.g.
 `fade-up`, `lines-up`, `grid-reveal`, `list-up`, and for scroll motion `parallax-y` (y 80 → -80
 while it crosses the screen), `fade-scrub` (fades in from `top 95%` to `top 55%`) and
 `scale-scrub` (0.85 → 1).
@@ -1131,15 +1131,15 @@ while it crosses the screen), `fade-scrub` (fades in from `top 95%` to `top 55%`
 **Widget motion.** A widget (Layout, above) picks its animation in its own content:
 
 ```json
-{ "id": "w-2fq0", "type": "photo", "motion": { "anim": "parallax-y", "end": "bottom 20%" } }
+{ "id": "w-2fq0", "type": "photo", "motion": { "animation": "parallax-y", "end": "bottom 20%" } }
 ```
 
-`anim` is a preset id; every other key is a timing override (`TIMING_KEYS` in
+`animation` is an animation id; every other key is a timing override (`TIMING_KEYS` in
 `src/site/layout/motion.js`: duration, ease, delay, stagger, trigger, start, end, scrub). What
 the animation does (type, from/to, split, …) only comes from the library. The widget renders
 `data-motion="parallax-y"` and `data-motion-options` (its timing), and the engine
-(`src/client/anim/engine.js`) builds it as `preset ← motion`. It animates the widget's
-**content** (its children, or the preset's `children` selector, e.g. `[data-prow]` for
+(`src/client/anim/engine.js`) builds it as `animation ← motion`. It animates the widget's
+**content** (its children, or the animation's `children` selector, e.g. `[data-prow]` for
 `list-up`), never the widget element itself; scroll positions are measured on that content.
 Only the types that work on any markup can go on a widget (`WIDGET_ANIM_TYPES`: reveal, split,
 scroll, scrub-words, parallax); `scatter`, `hero-title` and `hover-preview` stay on their
@@ -1369,7 +1369,7 @@ in the URL reopens it.
 **Refresh** keeps your place. The URL holds the page (its path), the tab, Menu/Footer and the open Source
 Explorer item, so a shared link opens the same view:
 `/photography/people/?edit&tab=content&source=people&item=noor-vermeer` (`tab`: content,
-motion, settings, preview (the old `browse` opens Preview too); `view`: menu, footer; `motion=animations`: the Motion tab's Animations sub-tab; `anim`: the animation open there). Open/closed sections, the selected field or Motion
+motion, settings, preview (the old `browse` opens Preview too); `view`: menu, footer; `motion=animations`: the Motion tab's Animations sub-tab; `animation`: the animation open there). Open/closed sections, the selected field or Motion
 element and the scroll positions are kept per browser tab in sessionStorage. See
 `src/editor/svelte/persist.js`.
 
@@ -1382,7 +1382,7 @@ element and the scroll positions are kept per browser tab in sessionStorage. See
 In the edit modes, clicks select instead of following links (in Content no link, button or
 form acts). Hold **Alt** to click through.
 
-In the editor a preset is called an **animation** (`presets` in `animations.json`). The
+In the editor and in `animations.json` (`animations`) it is an **animation**. The
 Motion tab's **Elements** list is the page's **widgets**, grouped by section (each with its
 animation or "none", and the `data-anim` parts inside it nested below), then **Outside the
 widgets** (curtain, header…). Selecting a widget in the preview selects it in the list
@@ -1393,10 +1393,10 @@ animation's timing** (drops all its overrides); **Replay** plays just that widge
 or global element is edited as before; choose where its edits go:
 
 - **This widget**: the widget's `motion.parts["<target>"]` in the page file, e.g.
-  `"motion": { "parts": { "hero.title": { "preset": "stagger-up" } } }`. Only the parts with
+  `"motion": { "parts": { "hero.title": { "animation": "stagger-up" } } }`. Only the parts with
   that `data-anim` name inside this widget. This is how you give a widget's part a different
-  animation without touching templates (`preset`, plus timing only). A widget with only parts
-  has no `anim`. Parts outside the widgets (header) only have **All**.
+  animation without touching templates (`animation`, plus timing only). A widget with only parts
+  has no `animation`. Parts outside the widgets (header) only have **All**.
 - **All "target"**: `targets["hero.title"]`. Every element with that `data-anim`.
 
 Timing fields (`TIMING_KEYS` in `src/editor/svelte/motion.js`) each have a **Custom**
@@ -1409,7 +1409,7 @@ The Motion tab has two sub-tabs: **Elements** (the curtain, the page's animated 
 the picked element) and **Animations**, the library, inline in the panel so the preview stays
 in view while you edit (the edit button next to an element's Animation opens it there; picking
 an element in the preview goes back to Elements). It is the only place that defines what an animation
-does: pick an animation to edit `presets["fade-up"]`, every value including timing, and add
+does: pick an animation to edit `animations["fade-up"]`, every value including timing, and add
 or remove from/to properties. There is no global default layer: each animation carries every
 value it uses, so what you see in the library is what it does. Edits play in the preview at
 once; **Replay** runs them again. Seconds are in the labels: `Duration (s) / ease`,
@@ -1441,7 +1441,7 @@ These editor markers (`data-edit`, `data-edit-type`, `data-sec`, `data-widget`,
 - **Content checks** (`src/site/validate.js`): broken JSON in a content file stops the build and
   the dev server with the file, line and column (the editor shows the same error). Save checks
   the shape of every file first (pages are objects, a `[param]` page names its source, sources
-  are lists of objects, `site.json` has `name` and `url`, `animations.json` has `presets`,
+  are lists of objects, `site.json` has `name` and `url`, `animations.json` has `animations`,
   `targets` and `transitions`) and writes nothing when one is wrong; files are written to a
   temporary file and renamed, so a crash never leaves half a file.
 - **Save** (**Ctrl/⌘+S**) writes the changed files to `content/en/` on disk. That's a **draft**:

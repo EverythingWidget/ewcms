@@ -1,5 +1,5 @@
 <!--
-  Settings > Motion, the Animations library: the animations in content/en/settings/animations.json ("presets"
+  Settings > Motion, the Animations library: the animations in content/en/settings/animations.json ("animations"
   there), inline in the panel so the preview stays in view while editing. It starts on the
   list of animations, each with its type and how many widgets and elements use it; click one to
   edit its own values, Back returns to the list. The only place that defines what an animation
@@ -13,7 +13,7 @@
   import { tick } from 'svelte';
   import MotionGroups from './MotionGroups.svelte';
   import { ui } from './ui.svelte.js';
-  import { animationOf, layerPtr, presetModel } from './motion.js';
+  import { animationOf, layerPtr, animationModel } from './motion.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
   // cfg: animations.json as edited; items: the page's animated elements; sections: the page's
@@ -21,18 +21,18 @@
   let { live, bridge, cfg, items, sections = [], gsap } = $props();
 
   let root = $state();
-  const names = $derived(Object.keys(cfg.presets));
+  const names = $derived(Object.keys(cfg.animations));
   // an unknown name (renamed, or from an old URL): the list
   const name = $derived(names.includes(ui.library.name) ? ui.library.name : '');
-  const m = $derived(name && presetModel(cfg, name));
+  const m = $derived(name && animationModel(cfg, name));
 
   // Who uses an animation: elements on this page, and data-anim names anywhere on the site
   // (targets in animations.json; how many elements each has on other pages isn't known here).
   const onPage = (n) => [
-    ...sections.flatMap((s) => s.widgets).filter((widget) => widget.anim === n && widget.el),
+    ...sections.flatMap((s) => s.widgets).filter((widget) => widget.animation === n && widget.el),
     ...items.filter((it) => animationOf(cfg, it) === n),
   ];
-  const targets = (n) => Object.keys(cfg.targets).filter((t) => cfg.targets[t].preset === n);
+  const targets = (n) => Object.keys(cfg.targets).filter((t) => cfg.targets[t].animation === n);
   const count = (n, what, many = `${what}s`) => `${n} ${n === 1 ? what : many}`;
   const uses = $derived(name ? onPage(name) : []);
 
@@ -72,7 +72,7 @@
             <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
             <span>{n}</span>
             <span class="lib__meta">
-              {cfg.presets[n].type} &middot; {count(onPage(n).length, 'use')} on this page &middot;
+              {cfg.animations[n].type} &middot; {count(onPage(n).length, 'use')} on this page &middot;
               {count(targets(n).length, 'data-anim name')}
             </span>
           </button>
@@ -101,8 +101,8 @@
         {live}
         {gsap}
         {m}
-        scope="preset"
-        ptr={layerPtr(m, null, 'preset')}
+        scope="animation"
+        ptr={layerPtr(m, null, 'animation')}
         key="library"
       />
     {/key}

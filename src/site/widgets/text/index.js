@@ -38,7 +38,7 @@ export const text = {
       return countText(n);
     };
     const firstTitle = body.findIndex((l) => l?.style === 'title');
-    const own = typeof s.motion?.anim === 'string';
+    const own = typeof s.motion?.animation === 'string';
     const attrs = (i, style) =>
       style === 'title' && i === firstTitle
         ? ' data-anim="page.title"'

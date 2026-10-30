@@ -7,7 +7,7 @@
  * ease; Settings > Motion), so an animation without its own value plays with it; left out,
  * GSAP's own. The scroll-linked types keep their linear ease (no default ease).
  *
- * A widget: spec = defaults ⟵ presets[data-motion] ⟵ data-motion-options (the widget's own timing). It
+ * A widget: spec = defaults ⟵ animations[data-motion] ⟵ data-motion-options (the widget's own timing). It
  * plays on the widget's content: its children, or the animation's `children` inside it, never
  * on the widget's element itself. Scroll positions are measured on what moves (a reveal: its
  * first target; a split: each target; scroll: the widget).
@@ -15,14 +15,14 @@
  * An element (parts of a widget type with their own markup: the hero's photos and title,
  * album parts, the project preview):
  *
- *   spec = defaults ⟵ presets[preset] ⟵ targets[id] ⟵ its widget's parts[id] ⟵ data-anim-options (JSON)
+ *   spec = defaults ⟵ animations[animation] ⟵ targets[id] ⟵ its widget's parts[id] ⟵ data-anim-options (JSON)
  *
  * A widget's `motion.parts` (data-anim-parts on its element, src/site/layout/motion.js) may
- * pick another animation (`preset`) or timing for the elements with that name inside it.
+ * pick another animation (`animation`) or timing for the elements with that name inside it.
  * `key` is a per-element id assigned at mount time, "<path>|<target id>|<n>" (n = index among
  * elements with that target on the page): the editor uses it to find an element again.
  *
- * Each preset has a `type` handled by ./types.js. Everything is created inside a
+ * Each animation has a `type` handled by ./types.js. Everything is created inside a
  * gsap.context so a page's tweens, ScrollTriggers, SplitTexts and listeners are
  * reverted in one call when the router leaves the page.
  *
@@ -62,10 +62,10 @@ const parse = (json) => {
 
 // types tied to the scroll: their ease is linear unless they set one
 const SCROLLED = new Set(['scroll', 'scrub-words', 'parallax']);
-/** The site's default timing for an animation of `preset`'s type (none: {}). */
-const defaultsFor = (preset) => {
+/** The site's default timing for an animation of `animation`'s type (none: {}). */
+const defaultsFor = (animation) => {
   const d = isObject(config.defaults) ? config.defaults : {};
-  if (!SCROLLED.has(preset.type) || d.ease === undefined) return d;
+  if (!SCROLLED.has(animation.type) || d.ease === undefined) return d;
   const { ease: _e, ...rest } = d; // eslint-disable-line no-unused-vars
   return rest;
 };
@@ -81,32 +81,32 @@ export function resolve(id, el) {
   }
   const key = el?.dataset.animKey;
   const own = partOf(el, id);
-  const presetName = own.preset || target.preset;
-  const preset = config.presets[presetName];
-  if (!preset) {
-    console.warn(`[anim] "${key || id}" uses unknown preset "${presetName}"`);
+  const animationName = own.animation || target.animation;
+  const animation = config.animations[animationName];
+  if (!animation) {
+    console.warn(`[anim] "${key || id}" uses unknown animation "${animationName}"`);
     return null;
   }
   const inline = parse(el?.dataset.animOptions);
-  // target and own may name a preset: that was resolved above, the rest overrides it
-  return merge(defaultsFor(preset), preset, target, own, inline, {
+  // target and own may name an animation: that was resolved above, the rest overrides it
+  return merge(defaultsFor(animation), animation, target, own, inline, {
     id,
     key,
-    preset: presetName,
+    animation: animationName,
   });
 }
 
 /** A widget's animation spec: its animation, then its own timing; null when unknown. */
 export function resolveWidget(el) {
   const name = el.dataset.motion;
-  const preset = config.presets[name];
-  if (!preset) {
+  const animation = config.animations[name];
+  if (!animation) {
     console.warn(`[anim] a widget uses unknown animation "${name}"`);
     return null;
   }
-  return merge(defaultsFor(preset), preset, parse(el.dataset.motionOptions), {
+  return merge(defaultsFor(animation), animation, parse(el.dataset.motionOptions), {
     id: name,
-    preset: name,
+    animation: name,
     widget: true,
   });
 }

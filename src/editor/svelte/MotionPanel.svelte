@@ -147,7 +147,7 @@
                   <span class="mlist__id"
                     >{widget.label}{widget.name ? ` · ${widget.name}` : ''}</span
                   >
-                  <span class="muted">{widget.anim || 'none'}</span>
+                  <span class="muted">{widget.animation || 'none'}</span>
                 </button>
                 {#if widget.parts.length}
                   <ol class="list mlist__parts">

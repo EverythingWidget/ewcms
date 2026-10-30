@@ -1,15 +1,15 @@
 <!--
   The field groups of one animation (Timing, Trigger, From / To, ...: GROUPS in motion.js),
   each a Section of MotionFields, written to one layer of animations.json.
-  Animations sub-tab (AnimLibrary.svelte, scope 'preset'): every value of the animation is
+  Animations sub-tab (AnimLibrary.svelte, scope 'animation'): every value of the animation is
   editable; From / To can add and remove properties.
   Element view (AnimEditor.svelte, scope 'element' or 'target'): what the animation does is
   read-only; timing fields (TIMING_KEYS in motion.js) each have a Custom switch. Off ("inherit"
   before it): the field's control shows the inherited value, dimmed and inert, and nothing is
   stored. On: the value is stored at the scope (switching on copies the inherited value there,
   off removes it again).
-    m      the model: animModel(), widgetModel() or presetModel() (motion.js)
-    scope  the layer edits go to: 'element' | 'target' | 'preset' | 'widget' (a widget's motion)
+    m      the model: animModel(), widgetModel() or animationModel() (motion.js)
+    scope  the layer edits go to: 'element' | 'target' | 'animation' | 'widget' (a widget's motion)
     file   the file of that layer: animations.json, or the widget's page file
     ptr    that layer's pointer in the file (layerPtr; a widget's: …/widgets/<j>/motion)
     key    prefix of the sections' open/closed keys, e.g. 'motion' or 'library'
@@ -36,7 +36,7 @@
   // live: reactive store (live.svelte.js); gsap: the preview's (for the ease curves)
   let { live, gsap, m, scope, ptr, file = ANIMATIONS, key = 'motion' } = $props();
 
-  const library = $derived(scope === 'preset');
+  const library = $derived(scope === 'animation');
 
   // [title, fields, 'from' | 'to' | null]; from/to groups can also add properties (library).
   const groups = $derived(

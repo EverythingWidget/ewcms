@@ -644,7 +644,7 @@ export function createBridge({ store, labelFor }) {
       const type = [...el.classList].find((c) => c.startsWith('wgt--'))?.slice(5) || 'widget';
       return `${type} · ${el.dataset.motion || 'no motion'}`;
     }
-    return `${el.dataset.anim} · ${api?.resolve(el.dataset.anim, el)?.preset || '?'}`;
+    return `${el.dataset.anim} · ${api?.resolve(el.dataset.anim, el)?.animation || '?'}`;
   }
 
   function placeBox(box, el, kind) {

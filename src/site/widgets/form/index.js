@@ -116,7 +116,7 @@ export const form = {
     },
   ],
   defaults: {
-    motion: { anim: 'fade-in' },
+    motion: { animation: 'fade-in' },
     title: 'Get in touch',
     body: 'Shoots, collaborations or just hello: I read everything.',
     fields: [

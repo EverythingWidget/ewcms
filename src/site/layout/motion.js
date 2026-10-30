@@ -1,8 +1,8 @@
 /**
  * Widget motion: a widget's `motion` picks an animation of the library
- * (content/en/settings/animations.json, `presets`) and may set its own timing:
+ * (content/en/settings/animations.json, `animations`) and may set its own timing:
  *
- *   "motion": { "anim": "grid-reveal", "delay": 0.3, "trigger": "load" }
+ *   "motion": { "animation": "grid-reveal", "delay": 0.3, "trigger": "load" }
  *
  * The library alone says what an animation does (its type, from / to, split, children, ...);
  * a widget only picks one and may override TIMING (duration, ease, delay, stagger, trigger,
@@ -19,10 +19,10 @@
  * this widget only, under `parts`, keyed by their data-anim name (every element with that name
  * in the widget):
  *
- *   "motion": { "parts": { "hero.title": { "preset": "stagger-up", "delay": 0.2 } } }
+ *   "motion": { "parts": { "hero.title": { "animation": "stagger-up", "delay": 0.2 } } }
  *
  * A part's values go over the name's own (animations.json `targets`). Rendered as
- * data-anim-parts (JSON) on the widget's element. `anim` is left out when only parts are set.
+ * data-anim-parts (JSON) on the widget's element. `animation` is left out when only parts are set.
  */
 import { esc } from '../helpers.js';
 import { contentPath, pageFile } from '../files.js';
@@ -71,31 +71,31 @@ const num = (v) => typeof v === 'number' && Number.isFinite(v) && v >= 0;
 
 /** Shape problems of a widget's `motion` (not whether its animation exists: motionProblems). */
 export function checkMotion(m) {
-  if (!isObject(m)) return ['"motion" must be an object { anim, ...timing, parts }'];
+  if (!isObject(m)) return ['"motion" must be an object { animation, ...timing, parts }'];
   const out = [];
   const bad = (k, want) => out.push(`"motion.${k}" must be ${want}`);
   const { parts, ...rest } = m;
   if (parts !== undefined) {
     if (!isObject(parts) || !Object.keys(parts).length)
-      bad('parts', 'an object { "<data-anim name>": { preset, ...timing } }, or left out');
+      bad('parts', 'an object { "<data-anim name>": { animation, ...timing } }, or left out');
     else
       for (const [name, p] of Object.entries(parts)) {
         if (!isObject(p) || !Object.keys(p).length) {
-          bad(`parts.${name}`, 'an object { preset, ...timing }');
+          bad(`parts.${name}`, 'an object { animation, ...timing }');
           continue;
         }
-        const { preset, ...timing } = p;
-        if (preset !== undefined && (typeof preset !== 'string' || !preset))
-          bad(`parts.${name}.preset`, 'the id of an animation');
+        const { animation, ...timing } = p;
+        if (animation !== undefined && (typeof animation !== 'string' || !animation))
+          bad(`parts.${name}.animation`, 'the id of an animation');
         out.push(...timingProblems(timing, `parts.${name}.`));
       }
   }
-  if (m.anim === undefined && parts !== undefined) {
-    if (Object.keys(rest).length) bad('anim', 'set when the widget sets its own timing');
+  if (m.animation === undefined && parts !== undefined) {
+    if (Object.keys(rest).length) bad('animation', 'set when the widget sets its own timing');
     return out;
   }
-  if (typeof m.anim !== 'string' || !m.anim) bad('anim', 'the id of an animation');
-  const { anim: _a, ...timing } = rest; // eslint-disable-line no-unused-vars
+  if (typeof m.animation !== 'string' || !m.animation) bad('animation', 'the id of an animation');
+  const { animation: _a, ...timing } = rest; // eslint-disable-line no-unused-vars
   return [...out, ...timingProblems(timing, '')];
 }
 
@@ -119,7 +119,7 @@ function timingProblems(t, pre) {
  * messages. content: loadContent()'s; files: only these page files (null: all).
  */
 export function motionProblems(content, { files = null } = {}) {
-  const presets = content.animations?.presets || {};
+  const animations = content.animations?.animations || {};
   const out = [];
   for (const [id, page] of Object.entries(content.pages || {})) {
     const file = pageFile(id);
@@ -129,15 +129,15 @@ export function motionProblems(content, { files = null } = {}) {
       const parts = widget?.motion?.parts;
       if (isObject(parts))
         for (const [name, p] of Object.entries(parts))
-          if (typeof p?.preset === 'string' && !presets[p.preset])
-            out.push(`${where}: part "${name}" uses unknown animation "${p.preset}"`);
-      const anim = widget?.motion?.anim;
-      if (typeof anim !== 'string') continue;
-      const p = presets[anim];
-      if (!p) out.push(`${where}: unknown animation "${anim}"`);
+          if (typeof p?.animation === 'string' && !animations[p.animation])
+            out.push(`${where}: part "${name}" uses unknown animation "${p.animation}"`);
+      const animation = widget?.motion?.animation;
+      if (typeof animation !== 'string') continue;
+      const p = animations[animation];
+      if (!p) out.push(`${where}: unknown animation "${animation}"`);
       else if (!WIDGET_ANIM_TYPES.includes(p.type))
         out.push(
-          `${where}: the animation "${anim}" (${p.type}) needs its own markup, not a widget`,
+          `${where}: the animation "${animation}" (${p.type}) needs its own markup, not a widget`,
         );
     }
   }
@@ -148,11 +148,11 @@ export function motionProblems(content, { files = null } = {}) {
 export function motionAttrs(widget) {
   const m = widget?.motion;
   if (!isObject(m)) return '';
-  const { anim, parts, ...timing } = m;
+  const { animation, parts, ...timing } = m;
   const own = isObject(parts) ? ` data-anim-parts="${esc(JSON.stringify(parts))}"` : '';
-  if (typeof anim !== 'string') return own;
+  if (typeof animation !== 'string') return own;
   const opts = Object.keys(timing).length
     ? ` data-motion-options="${esc(JSON.stringify(timing))}"`
     : '';
-  return ` data-motion="${esc(anim)}"${opts}${own}`;
+  return ` data-motion="${esc(animation)}"${opts}${own}`;
 }

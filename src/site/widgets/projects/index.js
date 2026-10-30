@@ -29,7 +29,7 @@ export const projects = {
     title: 'Things I build',
     cta: 'All projects',
     source: { mode: 'all', from: 'projects' },
-    motion: { anim: 'list-up' },
+    motion: { animation: 'list-up' },
   },
   render: (s, ctx, widget) => {
     const source = widget.source || ''; // None: an empty list

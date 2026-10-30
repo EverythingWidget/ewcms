@@ -23,7 +23,7 @@ export const photo = {
     { key: 'src', label: 'Photo', type: 'image' },
     { key: 'caption', label: 'Caption (empty: none)' },
   ],
-  defaults: { src: '', caption: '', motion: { anim: 'image-reveal' } },
+  defaults: { src: '', caption: '', motion: { animation: 'image-reveal' } },
   render: (s, ctx, widget) =>
     html` <div class="photowidget">
       <figure class="photowidget__figure">

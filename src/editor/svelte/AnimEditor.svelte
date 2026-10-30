@@ -5,7 +5,7 @@
   What the animation does is shown read-only: it is edited in the Animations sub-tab
   (AnimLibrary.svelte). Older overrides of those values get a notice: move them into the
   animation, or drop them.
-  (In code and animations.json an animation is a "preset".)
+  (In code and animations.json an animation is a "animation".)
   MotionPanel creates a new one for every pick.
 -->
 <script>
@@ -52,9 +52,9 @@
       `Every data-anim="${sel.id}" element on the site (${sameTarget} on this page)`,
     ],
   ]);
-  const presets = $derived(
-    Object.entries(cfg.presets).filter(
-      ([name, p]) => GENERIC_TYPES.has(p.type) || name === m.presetName,
+  const animations = $derived(
+    Object.entries(cfg.animations).filter(
+      ([name, p]) => GENERIC_TYPES.has(p.type) || name === m.animationName,
     ),
   );
   const hasOverrides = $derived(Object.keys(m.own).length > 0);
@@ -65,15 +65,15 @@
 
   const ptr = () => layerPtr(m, sel, scope, base);
   const fileOf = () => (scope === 'element' ? file : ANIMATIONS);
-  const removePreset = () =>
-    live.store.remove(fileOf(), `${ptr()}/preset`, {
+  const removeAnimation = () =>
+    live.store.remove(fileOf(), `${ptr()}/animation`, {
       keep: keepFor(scope),
       source: 'motion-structure',
     });
-  function setPreset(name) {
-    if (scope === 'element' && name === m.target.preset) removePreset();
+  function setAnimation(name) {
+    if (scope === 'element' && name === m.target.animation) removeAnimation();
     else
-      live.store.set(fileOf(), `${ptr()}/preset`, name, {
+      live.store.set(fileOf(), `${ptr()}/animation`, name, {
         keep: keepFor(scope),
         source: 'motion-structure',
       });
@@ -124,16 +124,16 @@
 <div class="f">
   <div class="f__top">
     <span class="f__label">Animation</span>
-    <span class="f__src" data-src={m.own.preset ? 'element' : 'target'}
-      >{m.own.preset ? 'widget' : 'all'}</span
+    <span class="f__src" data-src={m.own.animation ? 'element' : 'target'}
+      >{m.own.animation ? 'widget' : 'all'}</span
     >
-    {#if scope === 'element' && m.own.preset}
+    {#if scope === 'element' && m.own.animation}
       <Button
         size="small"
         icon="rotate-left"
         iconOnly
         label="Use the animation of all &quot;{sel.id}&quot;"
-        onclick={removePreset}
+        onclick={removeAnimation}
       />
     {/if}
     <!-- like a grid's Source edit button: the animation's own values, in the library -->
@@ -141,15 +141,15 @@
       size="small"
       icon="pen-to-square"
       iconOnly
-      label="Edit {m.presetName} in Animations"
-      onclick={() => onlibrary(m.presetName)}
+      label="Edit {m.animationName} in Animations"
+      onclick={() => onlibrary(m.animationName)}
     />
   </div>
   <Select
     aria-label="Animation"
-    value={m.presetName}
-    options={presets.map(([name, p]) => ({ value: name, label: name, hint: p.type }))}
-    onchange={setPreset}
+    value={m.animationName}
+    options={animations.map(([name, p]) => ({ value: name, label: name, hint: p.type }))}
+    onchange={setAnimation}
   />
 </div>
 <MotionGroups {live} {gsap} {m} {scope} file={fileOf()} ptr={ptr()} />

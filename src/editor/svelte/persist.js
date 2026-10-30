@@ -9,7 +9,7 @@
  *     source  + item (+ field): the Source Explorer, open on that file and item, with that field
  *             highlighted (&source=people&item=noor-vermeer&field=summary; item is the
  *             slug, or the number without one)
- *     anim    Settings > Motion's Animations library, open on that animation (&anim=fade-up)
+ *     animation    Settings > Motion's Animations library, open on that animation (&animation=fade-up)
  *     pages   the pages list (Nav), open on that folder (&pages=/people/; / is the root)
  *     media   + pick: the Media window, on that photo (&media=photos/x-1600.webp; / for none),
  *             picking for that field (&pick=sources/people.json#/0/images/0/src)
@@ -82,9 +82,9 @@ function readState() {
     if (!q.has('tab')) state.panel = 'nav'; // the pages list is in the Nav tab
     state.pagesWin = { open: true, folder: q.get('pages').replace(/^\/+|\/+$/g, '') };
   }
-  if (q.has('anim')) {
+  if (q.has('animation')) {
     if (!q.has('tab')) state.panel = 'settings'; // the library is in Settings > Motion
-    state.library = { name: q.get('anim') }; // an unknown name: the list
+    state.library = { name: q.get('animation') }; // an unknown name: the list
   } else if (q.get('tab') === 'settings') state.library = { name: '' };
   return state;
 }
@@ -181,7 +181,7 @@ export function writeUrl() {
   set('source', list && sourceIdOf(file));
   set('item', Array.isArray(list) && list[index] && itemId(list[index], index));
   set('field', Array.isArray(list) && list[index] && ui.explorer.field);
-  set('anim', ui.panel === 'settings' && ui.library.name);
+  set('animation', ui.panel === 'settings' && ui.library.name);
   set(
     'pages',
     ui.panel === 'nav' && ui.pagesWin.open && `/${ui.pagesWin.folder}/`.replace('//', '/'),

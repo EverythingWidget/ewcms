@@ -203,13 +203,13 @@ function checkMeta(meta) {
 
 function checkAnimations(d) {
   const out = [
-    ...required(d, ['presets', 'targets', 'transitions'], 'object'),
+    ...required(d, ['animations', 'targets', 'transitions'], 'object'),
     ...optional(d, { interactions: 'object' }),
   ];
   out.push(...defaultsProblems(d.defaults));
   if (d.elements !== undefined)
     out.push('"elements" is gone: a widget\'s own part animations are its "motion.parts"');
-  for (const group of ['presets', 'targets'])
+  for (const group of ['animations', 'targets'])
     for (const [k, v] of Object.entries(isObject(d[group]) ? d[group] : {}))
       if (!isObject(v)) out.push(`${group}["${k}"] must be an object`);
   return out;

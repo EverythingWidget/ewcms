@@ -48,7 +48,7 @@
  *            is free, at its row whatever the widgets above do (./links.js)
  *   scale    optional { on, adjust }: a text widget's text in cells (./type.js)
  *   z        its layer when widgets overlap (higher is in front)
- *   motion   optional { anim, ...timing }: its animation from the library and its own timing
+ *   motion   optional { animation, ...timing }: its animation from the library and its own timing
  *            (./motion.js)
  *   item     optional { source, slug }: the source item its bound fields show (./bindings.js;
  *            on a [param] page they show the page's item without one)

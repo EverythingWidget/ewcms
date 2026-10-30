@@ -28,10 +28,10 @@ import { kindOf } from '../site/widgets/index.js';
 function motionOf(widget) {
   const m = widget?.motion;
   if (!m || typeof m !== 'object') return [null, null, null];
-  const { anim, parts, ...timing } = m;
+  const { animation, parts, ...timing } = m;
   const own = parts && typeof parts === 'object' ? JSON.stringify(parts) : null;
-  if (typeof anim !== 'string') return [null, null, own];
-  return [anim, Object.keys(timing).length ? JSON.stringify(timing) : null, own];
+  if (typeof animation !== 'string') return [null, null, own];
+  return [animation, Object.keys(timing).length ? JSON.stringify(timing) : null, own];
 }
 
 /** Set (or remove) an attribute; true when it changed. */
@@ -133,10 +133,10 @@ function applyLayout(el, s, moved = [], touched = { layout: false }) {
     if (node.className + '|' + node.style.cssText + node.hidden !== wasNode) touched.layout = true;
     for (const [name, value] of Object.entries(widgetLinks(widget, s.widgets)))
       if (setAttr(node, name, value)) touched.layout = true;
-    const [anim, options, parts] = motionOf(widget);
+    const [animation, options, parts] = motionOf(widget);
     // its parts' animations are mounted with the view's: mount again
     if (setAttr(node, 'data-anim-parts', parts)) remount = true;
-    const a = setAttr(node, 'data-motion', anim);
+    const a = setAttr(node, 'data-motion', animation);
     if (setAttr(node, 'data-motion-options', options) || a) moved.push(node);
   }
   return remount;

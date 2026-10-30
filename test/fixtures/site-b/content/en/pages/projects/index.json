@@ -45,7 +45,7 @@
           "type": "projects",
           "source": { "mode": "all", "from": "projects" },
           "config": {},
-          "motion": { "anim": "list-up", "trigger": "load" }
+          "motion": { "animation": "list-up", "trigger": "load" }
         }
       ]
     }

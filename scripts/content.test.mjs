@@ -9,7 +9,7 @@ import { checkContent, parseContent } from '../src/site/validate.js';
 import { SITE_A } from '../test/fixtures/index.mjs';
 
 const site = { version: 1, name: 'Site', url: 'https://example.com' };
-const animations = { version: 1, presets: {}, targets: {}, transitions: {} };
+const animations = { version: 1, animations: {}, targets: {}, transitions: {} };
 
 /** content/ in a temp dir; files as { "settings/site.json": data or raw text }. */
 function tree(files = {}) {
@@ -60,8 +60,8 @@ test('checkContent per kind', () => {
     '"name" must be a string',
   ]);
   assert.deepEqual(
-    checkContent('settings/animations.json', { version: 1, ...animations, presets: [] }),
-    ['"presets" must be an object'],
+    checkContent('settings/animations.json', { version: 1, ...animations, animations: [] }),
+    ['"animations" must be an object'],
   );
   assert.deepEqual(checkContent('settings/photos.json', { version: 1, photos: { a: 1 } }), [
     'photo "a" must be an object',

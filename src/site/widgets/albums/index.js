@@ -32,7 +32,7 @@ export const albums = {
   defaults: {
     source: { mode: 'all', from: 'people' },
     config: { layout: 'portrait' },
-    motion: { anim: 'grid-reveal' },
+    motion: { animation: 'grid-reveal' },
   },
   render: (s, ctx, widget) => {
     const source = widget.source || ''; // None: no cards

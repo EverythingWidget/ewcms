@@ -129,7 +129,7 @@
           ],
           "motion": {
             "parts": {
-              "hero.title": { "preset": "stagger-up" }
+              "hero.title": { "animation": "stagger-up" }
             }
           }
         }
@@ -151,7 +151,7 @@
               ]
             }
           ],
-          "motion": { "anim": "scrub-words" }
+          "motion": { "animation": "scrub-words" }
         }
       ],
       "height": "half"
@@ -167,7 +167,7 @@
           "title": "Models I've worked with",
           "cta": "All people",
           "config": { "layout": "even" },
-          "motion": { "anim": "grid-reveal" }
+          "motion": { "animation": "grid-reveal" }
         }
       ]
     },
@@ -182,7 +182,7 @@
           "title": "Buildings, streets & castles",
           "cta": "All places",
           "config": { "layout": "staggered" },
-          "motion": { "anim": "grid-reveal", "stagger": 0.15 }
+          "motion": { "animation": "grid-reveal", "stagger": 0.15 }
         }
       ]
     },
@@ -196,7 +196,7 @@
           "eyebrow": "Projects",
           "title": "Things I build",
           "cta": "All projects",
-          "motion": { "anim": "list-up", "trigger": "load" },
+          "motion": { "animation": "list-up", "trigger": "load" },
           "config": {}
         }
       ]

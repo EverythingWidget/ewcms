@@ -42,7 +42,7 @@
             { "source": "people", "title": "People", "unit": "models" },
             { "source": "places", "title": "Places", "unit": "places" }
           ],
-          "motion": { "anim": "grid-reveal", "trigger": "load", "delay": 0.3 }
+          "motion": { "animation": "grid-reveal", "trigger": "load", "delay": 0.3 }
         }
       ]
     }

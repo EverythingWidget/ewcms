@@ -27,12 +27,12 @@
     return m && typeof m === 'object' ? { ...m } : null;
   });
   const m = $derived(widgetModel(cfg, motion));
-  const known = $derived(!!cfg.presets[m.presetName]);
+  const known = $derived(!!cfg.animations[m.animationName]);
   const own = $derived(Object.keys(m.own).length > 0);
   const options = $derived([
     { value: '', label: 'none', hint: 'no motion' },
-    ...Object.entries(cfg.presets)
-      .filter(([name, p]) => GENERIC_TYPES.has(p.type) || name === m.presetName)
+    ...Object.entries(cfg.animations)
+      .filter(([name, p]) => GENERIC_TYPES.has(p.type) || name === m.animationName)
       .map(([name, p]) => ({ value: name, label: name, hint: p.type })),
   ]);
   // the parts of the widget with their own animation (data-anim inside it)
@@ -42,14 +42,25 @@
   });
 
   /** Pick the animation (its own timing stays); '' removes the widget's motion. */
-  function setAnim(anim) {
-    if (!anim) live.store.remove(file, `${base}/motion`, { keep: 4, source: 'motion-structure' });
+  function setAnimation(animation) {
+    if (!animation)
+      live.store.remove(file, `${base}/motion`, { keep: 4, source: 'motion-structure' });
     else
-      live.store.set(file, `${base}/motion`, { ...motion, anim }, { source: 'motion-structure' });
+      live.store.set(
+        file,
+        `${base}/motion`,
+        { ...motion, animation },
+        { source: 'motion-structure' },
+      );
   }
   /** Back to the animation's timing: one undo step. */
   const inheritAll = () =>
-    live.store.set(file, `${base}/motion`, { anim: m.presetName }, { source: 'motion-structure' });
+    live.store.set(
+      file,
+      `${base}/motion`,
+      { animation: m.animationName },
+      { source: 'motion-structure' },
+    );
 
   // Scroll position of the widget in the preview, 0-100 (read when it is shown).
   const scrolled = () => (el ? Math.round(bridge.scrubProgress(el) * 100) : 0);
@@ -88,22 +99,28 @@
         size="small"
         icon="pen-to-square"
         iconOnly
-        label="Edit {m.presetName} in Animations"
-        onclick={() => onlibrary(m.presetName)}
+        label="Edit {m.animationName} in Animations"
+        onclick={() => onlibrary(m.animationName)}
       />
     {/if}
   </div>
-  <Select aria-label="Animation" value={motion?.anim ?? ''} {options} onchange={setAnim} />
+  <Select
+    aria-label="Animation"
+    value={motion?.animation ?? ''}
+    {options}
+    onchange={setAnimation}
+  />
 </div>
 
 {#if motion && !known}
   <p class="hint small">
-    There is no animation “{motion.anim}” in the library: pick another one, or Save will refuse it.
+    There is no animation “{motion.animation}” in the library: pick another one, or Save will refuse
+    it.
   </p>
 {:else if motion}
   <p class="hint small">
-    What {m.presetName} does is set in Animations. Turn on a field's switch to give this widget its own
-    timing.
+    What {m.animationName} does is set in Animations. Turn on a field's switch to give this widget its
+    own timing.
   </p>
   {#key `${file}#${base}`}
     <MotionGroups {live} {gsap} {m} scope="widget" {file} ptr="{base}/motion" key="widget" />
@@ -122,7 +139,8 @@
       <li>
         <button type="button" class="bm__part" onclick={() => onpart(part)}>
           <span>{part.dataset.anim}</span>
-          <span class="muted">{bridge.api?.resolve(part.dataset.anim, part)?.preset || '?'}</span>
+          <span class="muted">{bridge.api?.resolve(part.dataset.anim, part)?.animation || '?'}</span
+          >
         </button>
       </li>
     {/each}

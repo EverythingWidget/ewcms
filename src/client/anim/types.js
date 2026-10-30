@@ -3,7 +3,7 @@
  * `spec` is the fully merged config for that element or widget (see engine.js). For a widget,
  * `targets` are what it moves and `trigger` what scroll positions are measured on; for a
  * data-anim element they are the element (or its `children`) and the element itself.
- * Add a new effect by adding a function here and a preset in settings/animations.json.
+ * Add a new effect by adding a function here and an animation in settings/animations.json.
  */
 import { gsap, ScrollTrigger, SplitText, finePointer } from '../lib/env.js';
 import { flags } from './flags.js';
