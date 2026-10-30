@@ -1,6 +1,7 @@
 <!--
-  Ease picker: the current curve and its name. A click opens a grid of every ease plus a
-  free-text input for anything GSAP parses (e.g. "back.out(2.5)", "steps(6)").
+  Ease picker: the current curve and its name. A click opens, in the shared popover
+  (Popover.svelte: a select's, its trigger's width), a grid of every ease plus a free-text input
+  for anything GSAP parses (e.g. "back.out(2.5)", "steps(6)"). Esc or a click outside closes it.
   The curves are sampled with the preview's GSAP (gsap.parseEase).
 -->
 <script module>
@@ -35,11 +36,18 @@
 </script>
 
 <script>
+  import Popover from './Popover.svelte';
+
   // value: the ease name; onpick(name) on a pick. compact: the smaller version for a row.
   // empty: a label shown instead of the value (e.g. "Individual") until the user picks.
   let { gsap, value, onpick, compact = false, empty = null, title = '' } = $props();
 
+  // the grid's least width: 4 options 62px wide (their longest label, "elastic.out"), 4px
+  // gaps, the popover's 8px insets
+  const GRID_W = 4 * 62 + 3 * 4 + 2 * 8;
+
   let open = $state(false);
+  let btn = $state();
   const current = $derived(value || 'none');
 </script>
 
@@ -53,13 +61,27 @@
 {/snippet}
 
 <div class={['ease', compact && 'ease--compact', empty && 'is-empty']} {title}>
-  <button type="button" class="ease__toggle" aria-expanded={open} onclick={() => (open = !open)}>
+  <button
+    bind:this={btn}
+    type="button"
+    class="ease__toggle"
+    aria-haspopup="dialog"
+    aria-expanded={open}
+    onclick={() => (open = !open)}
+  >
     <span class="ease__big"
       >{@render svg(empty ? 'none' : current, 220, 72, 'curve curve--big')}</span
     >
     <span class="ease__name">{empty || current}</span>
   </button>
-  {#if open}
+  <Popover
+    {open}
+    anchor={btn}
+    width="anchor"
+    min={GRID_W}
+    label="Ease"
+    onclose={() => (open = false)}
+  >
     <div class="ease__grid">
       {#each EASES as e (e)}
         <button
@@ -81,5 +103,5 @@
         onchange={(e) => e.currentTarget.value.trim() && onpick(e.currentTarget.value.trim())}
       />
     </div>
-  {/if}
+  </Popover>
 </div>

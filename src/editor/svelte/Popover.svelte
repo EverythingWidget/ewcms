@@ -5,13 +5,15 @@
   [role="dialog"]; the window without one) left and right; it may hang below the popup. Above
   the trigger only when it would leave the window. Closes (onclose) on a click outside it and its
   trigger, and on Esc; follows its trigger on scroll and resize.
-  width: px (190 by default) or 'anchor' (its trigger's width).
+  width: px (190 by default) or 'anchor' (a select's: its trigger's width, at least
+  min: 190 by default, more when its content needs it).
 -->
 <script>
   let {
     open = false,
     anchor,
     width = 190,
+    min = 190,
     onclose,
     label = '',
     class: cls = '',
@@ -32,7 +34,7 @@
   function place() {
     if (!anchor || !el) return;
     const a = anchor.getBoundingClientRect();
-    const w = width === 'anchor' ? a.width : width;
+    const w = width === 'anchor' ? Math.max(a.width, min) : width;
     const box = anchor.closest('[role="dialog"]')?.getBoundingClientRect() || {
       left: 0,
       right: innerWidth,

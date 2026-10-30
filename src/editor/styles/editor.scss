@@ -478,15 +478,11 @@ kbd {
   stroke-width: 2;
 }
 
+// the grid, in the shared popover (Popover.svelte: its surface, its 8px inset)
 .ease__grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--space-1);
-  margin-top: var(--space-2);
-  padding: var(--space-2);
-  border-radius: var(--radius-lg);
-  background: var(--field-bg);
-  box-shadow: inset 0 0 0 1px var(--c-line);
 }
 
 .ease__opt {
@@ -501,7 +497,7 @@ kbd {
   span {
     font-size: var(--fs-2xs);
     line-height: 12px; // the option 64px tall
-    color: var(--c-text-muted);
+    color: var(--text-quiet);
   }
 
   svg {
@@ -509,25 +505,35 @@ kbd {
     height: 36px;
   }
 
+  // the popover's roles: a hover wash; the picked one light, black text and curve
   &:hover {
-    background: var(--white-a06);
+    background: var(--field-hover);
+
+    span {
+      color: var(--text-strong);
+    }
   }
 
   &.is-active {
-    background: color-mix(in srgb, var(--c-accent) 14%, transparent);
+    background: var(--selected-bg);
 
     .curve__line {
-      stroke: var(--c-accent);
+      stroke: var(--selected-fg);
+    }
+
+    .curve__guide {
+      stroke: color-mix(in srgb, var(--selected-fg) 25%, var(--selected-bg));
     }
 
     span {
-      color: var(--c-text);
+      color: var(--selected-fg);
     }
   }
 }
 
 .ease__custom {
   grid-column: 1 / -1;
+  min-width: 0; // the grid's width, not the input's default size
   margin-top: var(--space-1);
   background: var(--field-bg);
   border: 0;
@@ -536,6 +542,10 @@ kbd {
   padding: var(--space-2) var(--space-3);
   line-height: 16px; // 32px tall
   outline: none;
+
+  &:focus-visible {
+    box-shadow: var(--focus-ring);
+  }
 }
 
 // inline "Sure?" for Delete (Sources modal) and Discard (Preview)
