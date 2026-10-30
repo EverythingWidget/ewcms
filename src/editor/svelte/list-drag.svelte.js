@@ -36,7 +36,7 @@ export function rowsOf(el, sel, at = 0) {
 }
 
 /** The panel that scrolls `el` (its nearest scrolling ancestor). */
-export function scrollerOf(el) {
+function scrollerOf(el) {
   for (let n = el.parentElement; n; n = n.parentElement)
     if (/(auto|scroll)/.test(getComputedStyle(n).overflowY) && n.scrollHeight > n.clientHeight)
       return n;

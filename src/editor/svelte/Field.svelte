@@ -19,7 +19,7 @@
 -->
 <script module>
   /** Input text -> stored value. undefined means invalid: the value is not stored. */
-  export function parseValue(type, raw) {
+  function parseValue(type, raw) {
     if (type === 'number') {
       const n = Number(raw);
       return raw.trim() !== '' && Number.isFinite(n) ? n : undefined;

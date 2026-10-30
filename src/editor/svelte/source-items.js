@@ -8,7 +8,7 @@ import { itemsOf, schemaFile, sourceIdOf } from '../../site/files.js';
 import { itemTitle, newItemOf, schemaOf } from '../../site/schemas.js';
 
 /** The editor's field widget (Field.svelte type) for a schema field type. */
-export const WIDGETS = {
+const WIDGETS = {
   text: 'text',
   longtext: 'block',
   number: 'number',

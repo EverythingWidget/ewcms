@@ -2,7 +2,7 @@
  * Keeps the editor where it was across a refresh, in two places:
  *
  *   The URL (shareable): /photography/people/?edit&tab=motion (src/editor/lib/editor-url.js)
- *     tab     content | motion | settings | preview (the old browse opens Preview too)
+ *     tab     content | motion | settings | preview
  *     (path)  the URL's own path is the page in the preview (main.js keeps it up to date)
  *     view    header | footer, when a site part (Header, Footer) is edited instead of a page
  *     source  + item (+ field): the Source Explorer, open on that file and item, with that field
@@ -40,7 +40,6 @@ const TABS = {
   motion: 'motion',
   settings: 'settings',
   preview: 'preview',
-  browse: 'preview',
 };
 const VIEWS = { header: 'Header', footer: 'Footer' };
 
