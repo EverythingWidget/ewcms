@@ -13,12 +13,12 @@ const at = { panel: { left: 1028, top: 12 }, row: { top: 340 }, vw: 1440, vh: 90
 test('open, swap, close: one pop-up, its id', () => {
   const p = createPopup(mem());
   assert.equal(p.id, null);
-  assert.deepEqual(p.open('b-1'), { swapped: false });
-  assert.equal(p.id, 'b-1');
-  assert.deepEqual(p.open('b-2'), { swapped: true }, 'another widget swaps the content');
-  assert.equal(p.id, 'b-2');
-  assert.deepEqual(p.open('b-2'), { swapped: false });
-  assert.equal(p.close(), 'b-2', 'close gives the row to focus');
+  assert.deepEqual(p.open('w-1'), { swapped: false });
+  assert.equal(p.id, 'w-1');
+  assert.deepEqual(p.open('w-2'), { swapped: true }, 'another widget swaps the content');
+  assert.equal(p.id, 'w-2');
+  assert.deepEqual(p.open('w-2'), { swapped: false });
+  assert.equal(p.close(), 'w-2', 'close gives the row to focus');
   assert.equal(p.id, null);
   assert.equal(p.close(), null);
 });
@@ -39,9 +39,9 @@ test('placed 12px left of the panel, level with the row, inside the window', () 
 test('a dragged place is kept for the session and used for the next widget', () => {
   const store = mem();
   const p = createPopup(store);
-  p.open('b-1');
+  p.open('w-1');
   p.drag({ left: 240.4, top: 96.6 });
-  p.open('b-2');
+  p.open('w-2');
   assert.deepEqual(p.place(at), { left: 240, top: 97 });
   const again = createPopup(store); // the same tab, the editor reloaded
   assert.deepEqual(again.place(at), { left: 240, top: 97 });

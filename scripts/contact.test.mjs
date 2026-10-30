@@ -181,16 +181,16 @@ test('the widget: where it sends, its form, its validation', () => {
   assert.equal(formTarget({ ...site, forms: { target: 'endpoint' } }, s).mode, 'email');
   assert.equal(formTarget(site, { config: { target: 'email' } }).action, 'mailto:hi@example.com');
 
-  const sec = { id: 'b-2', ed: () => '' };
-  const html = form.render(s, { site, route: { path: '/about/' } }, sec);
-  assert.match(html, /<form class="cform" id="contact-b-2" method="post" action="\/api\/contact"/);
+  const widget = { id: 'w-2', ed: () => '' };
+  const html = form.render(s, { site, route: { path: '/about/' } }, widget);
+  assert.match(html, /<form class="cform" id="contact-w-2" method="post" action="\/api\/contact"/);
   assert.match(
     html,
-    /<input type="email" id="contact-b-2-email" name="email" class="cform__input" required/,
+    /<input type="email" id="contact-w-2-email" name="email" class="cform__input" required/,
   );
   assert.match(html, /autocomplete="email"/);
-  assert.match(html, /<textarea id="contact-b-2-message"[^>]*required/);
-  assert.match(html, /<label class="cform__label" for="contact-b-2-name">/);
+  assert.match(html, /<textarea id="contact-w-2-message"[^>]*required/);
+  assert.match(html, /<label class="cform__label" for="contact-w-2-name">/);
   assert.match(html, /name="website" tabindex="-1"/);
   assert.match(html, /name="_page" value="\/about\/"/);
   assert.match(html, /role="status" aria-live="polite"/);
@@ -198,7 +198,7 @@ test('the widget: where it sends, its form, its validation', () => {
   const withKey = form.render(
     s,
     { site: { ...site, forms: { turnstileSiteKey: 'k' } }, route: {} },
-    sec,
+    widget,
   );
   assert.match(withKey, /<div class="cf-turnstile" data-sitekey="k">/);
 

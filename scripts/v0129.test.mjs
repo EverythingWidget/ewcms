@@ -30,19 +30,19 @@ async function loadUi() {
 
 test('selecting a section clears any widget selection and closes the pop-up; and back', async () => {
   const { ui, selectWidgets, selectSection } = await loadUi();
-  selectWidgets(['b-1']);
+  selectWidgets(['w-1']);
   ui.popup = true;
   selectSection('s-2');
   assert.equal(ui.selSection, 's-2');
   assert.equal(ui.widget, null);
   assert.deepEqual([...ui.multi], []);
   assert.equal(ui.popup, false);
-  selectWidgets(['b-1', 'b-2']);
+  selectWidgets(['w-1', 'w-2']);
   selectSection('s-1');
   assert.deepEqual([...ui.multi], []);
-  selectWidgets(['b-3']);
+  selectWidgets(['w-3']);
   assert.equal(ui.selSection, null);
-  assert.equal(ui.widget, 'b-3');
+  assert.equal(ui.widget, 'w-3');
 });
 
 test('the panel card and the preview both select a section through selectSection', () => {

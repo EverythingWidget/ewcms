@@ -1,8 +1,7 @@
 <!--
   A page's Motion tab, last: the Transition card, a section card (Section.svelte) whose
-  second line sums it up ("Curtain: global · Backdrop: off"). The page's backdrop
-  (TransitionBackdrop.svelte) and its curtain (TransitionPageCurtain.svelte), as they were in the old
-  Transitions tab.
+  second line sums it up ("Curtain: global · Backdrop: off"). Inside it, the page's backdrop
+  (TransitionBackdrop.svelte) and its curtain (TransitionPageCurtain.svelte).
     live  reactive store; file  the page file; onsettings  open Settings (the curtain's timing)
 -->
 <script>

@@ -256,9 +256,9 @@ test('overlay: where widgets are now, the real rows over the stored area (own se
 });
 
 test('geometry: one link parse; grid helpers re-exported as they are', () => {
-  assert.deepEqual(parseLink('b-1 -3'), { to: 'b-1', gap: -3 });
-  assert.deepEqual(parseLink('b-1   4'), { to: 'b-1', gap: 4 });
-  for (const v of ['', undefined, 'b-1', 'b-1 x', 'b-1 1.5', ' b-1 2'])
+  assert.deepEqual(parseLink('w-1 -3'), { to: 'w-1', gap: -3 });
+  assert.deepEqual(parseLink('w-1   4'), { to: 'w-1', gap: 4 });
+  for (const v of ['', undefined, 'w-1', 'w-1 x', 'w-1 1.5', ' w-1 2'])
     assert.equal(parseLink(v), null);
   assert.equal(halfAreaG, halfArea);
   assert.equal(phoneAreaOfG, phoneAreaOf);

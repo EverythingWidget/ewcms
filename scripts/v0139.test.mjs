@@ -8,7 +8,7 @@ import { widgetVars } from '../src/site/layout/index.js';
 import { PLACES } from '../src/site/layout/place.js';
 
 const vars = (w) =>
-  widgetVars({ id: 'b-1', type: 'photo', layout: { base: { col: 1, span: 10, row: 1 } }, ...w });
+  widgetVars({ id: 'w-1', type: 'photo', layout: { base: { col: 1, span: 10, row: 1 } }, ...w });
 
 test('photo: no Fit / Position fields of its own; nine places row by row', () => {
   assert.ok(!photo.fields.some((f) => ['photoFit', 'photoPos'].includes(f.key)));

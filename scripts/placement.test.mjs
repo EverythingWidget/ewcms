@@ -14,7 +14,7 @@ import {
 } from '../src/site/layout/place.js';
 
 const w = (type, extra = {}) => ({
-  id: 'b-1',
+  id: 'w-1',
   type,
   layout: { base: { col: 1, span: 10, row: 1 } },
   ...extra,

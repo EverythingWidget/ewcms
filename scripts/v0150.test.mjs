@@ -150,14 +150,14 @@ async function loadUi() {
 
 test('sections or widgets: selecting one kind clears the other', async () => {
   const { ui, selectSections, selectWidgets } = await loadUi();
-  selectWidgets(['b-1', 'b-2']);
+  selectWidgets(['w-1', 'w-2']);
   selectSections(['s-1', 's-2'], 's-1');
   assert.deepEqual(
     [ui.multi, ui.widget, ui.selSections, ui.selSection],
     [[], null, ['s-1', 's-2'], 's-1'],
   );
-  selectWidgets(['b-1']);
-  assert.deepEqual([ui.selSections, ui.selSection, ui.widget], [[], null, 'b-1']);
+  selectWidgets(['w-1']);
+  assert.deepEqual([ui.selSections, ui.selSection, ui.widget], [[], null, 'w-1']);
   selectSections(['s-3']);
   assert.deepEqual([ui.selSections, ui.selSection, ui.widget], [[], 's-3', null]);
 });

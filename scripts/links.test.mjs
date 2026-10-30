@@ -91,7 +91,7 @@ test('links on the phone: its own phone link, else the desktop link with the gap
     to('w-cccc', -1),
   );
   assert.deepEqual(widgetLinks(widget), { 'data-link': 'w-aaaa 5', 'data-mlink': 'w-aaaa 3' });
-  assert.deepEqual(widgetLinks({ id: 'b-x' }), { 'data-link': null, 'data-mlink': null });
+  assert.deepEqual(widgetLinks({ id: 'w-x' }), { 'data-link': null, 'data-mlink': null });
 });
 
 test('links: loops are found; validation rejects unknown, other sections, self, loops', () => {
@@ -141,7 +141,7 @@ test('links: loops are found; validation rejects unknown, other sections, self, 
     ['section 1: widget "w-aaaa" layout.base.link can\'t follow the widget itself'],
   );
   assert.match(
-    checkContent(F, page([lay({ id: 'w-aaaa', type: 'text', link: { to: 'b-x', gap: 1.5 } })]))[0],
+    checkContent(F, page([lay({ id: 'w-aaaa', type: 'text', link: { to: 'w-x', gap: 1.5 } })]))[0],
     /must be \{ "to"/,
   );
 });

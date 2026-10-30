@@ -19,7 +19,7 @@ const page = () => ({
       id: 's-a',
       height: 'custom',
       rows: { min: 57 },
-      widgets: [{ id: 'b-a', type: 'text', layout: { base: { col: 1, span: 60 } } }],
+      widgets: [{ id: 'w-a', type: 'text', layout: { base: { col: 1, span: 60 } } }],
     },
   ],
 });
