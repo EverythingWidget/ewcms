@@ -1,6 +1,6 @@
 <!--
-  A page's Motion tab, last: the Transition card, a section card (Section.svelte) whose
-  second line sums it up ("Curtain: site default · Backdrop: off"). Inside it, the page's backdrop
+  A page's Motion tab, last: the Page transition & backdrop card, a section card (Section.svelte) whose
+  second line sums it up ("Curtain: site default · Backdrop: off", or "Curtain: off (page fade) · ..."). Inside it, the page's backdrop
   (TransitionBackdrop.svelte) and its curtain (TransitionPageCurtain.svelte).
     live  reactive store; file  the page file; onsettings  open Settings at its Page transition section
 -->
@@ -33,8 +33,8 @@
 
 <Section
   key="motion:transition"
-  title="Transition"
-  name="Curtain: {curtain === 'off' ? 'off' : 'site default'} · Backdrop: {backdrop}"
+  title="Page transition & backdrop"
+  name="Curtain: {curtain === 'off' ? 'off (page fade)' : 'site default'} · Backdrop: {backdrop}"
 >
   <TransitionBackdrop {live} {file} />
   <TransitionPageCurtain {live} {onsettings} />

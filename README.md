@@ -1236,7 +1236,7 @@ Rows show only their own segment under the folder (`people/`; elsewhere the full
 titles and paths as written. A click selects a row and shows it in the preview; a double click
 (or Enter) goes into the page's level (any page: a plain one shows its root row and "No sub
 pages yet"), and on a level's root row, Home, 404, Header or Footer opens it (its Sections & Widgets,
-Transitions, SEO). Every row also has a quiet **edit** button (a pen, 30% until hovered or
+Motion, SEO). Every row also has a quiet **edit** button (a pen, 30% until hovered or
 focused, like the trash) that opens that page's Sections the same way in one click (no select,
 no drag; Header and Footer open theirs; a `[param]` page that builds no pages too, to fix its main widget). A row's end is fixed 24px slots, `edit | trash | ›`
 (an empty slot where a row has no trash, as Home, 404 and Site), so the buttons line up; the
@@ -1408,10 +1408,12 @@ dimmed and inert (no clicks, no focus); nothing is stored. On: the inherited val
 to the chosen scope as a start and can be edited; switching off removes it (one undo step). Everything else
 the animation does is read-only here.
 
-The Motion tab has two sub-tabs: **Elements** (the curtain, the page's animated elements and
-the picked element) and **Animations**, the library, inline in the panel so the preview stays
-in view while you edit (the edit button next to an element's Animation opens it there; picking
-an element in the preview goes back to Elements). It is the only place that defines what an animation
+A page's Motion tab is always the whole page: its widgets, grouped by section (a picked widget
+or element opens in place, under its row), and at the bottom the **Page transition & backdrop**
+card (the page's curtain, Site default or Off, with a link to Settings > Page transition, and
+its backdrop). The Animations library and the default timing are in Settings > Motion (an
+element's Animation edit button opens the library there), next to the one **Page transition**
+section (the site's curtain and page fade). The library is the only place that defines what an animation
 does: pick an animation to edit `animations["fade-up"]`, every value including timing, and add
 or remove from/to properties. There is no global default layer: each animation carries every
 value it uses, so what you see in the library is what it does. Edits play in the preview at
