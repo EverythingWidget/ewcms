@@ -6,7 +6,7 @@
   it is edited in the Animations sub-tab (Edit). Below, the widget's elements with their own
   animation (data-anim inside it: the hero's photos, a heading's title, ...), each opening in
   the Motion tab.
-  Used by the Motion tab (MotionPanel) and the widget inspector's Motion tab (WidgetInspector).
+  Used by the Motion tab (MotionPanel).
     file, at, j   where the widget is: sections[at].widgets[j] of the page file
     el            its element in the preview (null when not shown)
     onlibrary     (name) open the animation in the Animations sub-tab

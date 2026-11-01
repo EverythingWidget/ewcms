@@ -220,7 +220,8 @@
         return sourcesModal.open(file, itemOf({ ptr }), edit);
     } else {
       if (isPage && tab !== 'sections') pickTab('sections');
-      if (ui.widget !== group.id || ui.widgetTab !== 'content') openWidget(group.id);
+      // open unless it's the widget whose pop-up is already open (no reopen)
+      if (!(ui.popup && ui.widget === group.id)) openWidget(group.id);
     }
     await tick();
     document

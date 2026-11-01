@@ -91,6 +91,10 @@ test('Motion shows the whole page; the widget pop-up has no Motion tab and stays
   assert.match(wi, /const TABS = \[\['content', 'Content'\]\];/);
   assert.doesNotMatch(wi, /WidgetMotion|widgetTab/);
   assert.doesNotMatch(src('svelte/ui.svelte.js'), /widgetTab/);
+  const cp = src('svelte/ContentPanel.svelte');
+  assert.doesNotMatch(cp, /widgetTab/);
+  assert.match(cp, /if \(!\(ui\.popup && ui\.widget === group\.id\)\) openWidget\(group\.id\);/);
+  assert.doesNotMatch(src('svelte/WidgetMotion.svelte'), /inspector's Motion tab/);
   assert.match(src('svelte/ContentPanel.svelte'), /\{#if popG && !ui\.pagesWin\.open\}/);
   assert.doesNotMatch(src('main.js'), /editMotion/);
 });
