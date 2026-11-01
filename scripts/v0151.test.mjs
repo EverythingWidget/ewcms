@@ -99,11 +99,11 @@ test('Motion shows the whole page; the widget pop-up has no Motion tab and stays
   assert.doesNotMatch(src('main.js'), /editMotion/);
 });
 
-test('Page transition: one Settings section (curtain, page fade); the page card links to it', () => {
+test('Page entrance: one Settings section (curtain, page fade); the page card links to it', () => {
   const sp = src('svelte/SettingsPanel.svelte');
   assert.match(
     sp,
-    /key="settings:transition"[\s\S]*?id="page-transition"[\s\S]*?title="Page transition"/,
+    /key="settings:entrance"[\s\S]*?id="page-entrance"[\s\S]*?title="Page entrance"/,
   );
   assert.match(sp, /<TransitionCurtain[^>]*\/>\s*<TransitionFade[^>]*\/>\s*<\/Section>/);
   for (const [f, head] of [
@@ -116,12 +116,21 @@ test('Page transition: one Settings section (curtain, page fade); the page card 
   }
   const pc = src('svelte/TransitionPageCurtain.svelte');
   assert.match(pc, /global: 'Site default', off: 'Off'/);
-  assert.match(pc, /onclick=\{onsettings\}>Page transition settings<\/button>/);
+  assert.match(pc, /onclick=\{onsettings\}>Page entrance settings<\/button>/);
   assert.match(
     src('svelte/TransitionCard.svelte'),
-    /Curtain: \{curtain === 'off' \? 'off' : 'site default'\}/,
+    /title="Page entrance"\s*name="Curtain: \{curtain === 'off' \? 'off \(page fade\)' : 'site default'\}"/,
+  );
+  assert.doesNotMatch(src('svelte/TransitionCard.svelte'), /TransitionBackdrop|Backdrop:/);
+  assert.match(
+    src('svelte/ScrollBackdropCard.svelte'),
+    /title="Scroll backdrop"\s*name="Backdrop: \{backdrop\}"/,
+  );
+  assert.match(
+    src('svelte/ContentPanel.svelte'),
+    /\{#if isPage\}<ScrollBackdropCard \{live\} \{file\} \/>\{\/if\}/,
   );
   const mp = src('svelte/MotionPanel.svelte');
-  assert.match(mp, /ui\.sections\['settings:transition'\] = true;/);
-  assert.match(mp, /\[data-section="page-transition"\]/);
+  assert.match(mp, /ui\.sections\['settings:entrance'\] = true;/);
+  assert.match(mp, /\[data-section="page-entrance"\]/);
 });

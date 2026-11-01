@@ -2,8 +2,8 @@
   A page's Motion tab (ContentPanel.svelte), always the whole page: its widgets, a card per
   section, each with its animation and its elements that have their own (data-anim inside it:
   the hero's photos, a heading's title, ...), then the animated elements outside the widgets
-  (fixed elements), then the Transition card (TransitionCard.svelte: the backdrop and the
-  curtain). The widget or element picked (ui.anim, from the preview or the list; a second click
+  (fixed elements), then the Page entrance card (TransitionCard.svelte: the page's
+  curtain; its backdrop is the Sections tab's Scroll backdrop card). The widget or element picked (ui.anim, from the preview or the list; a second click
   on its row drops it) opens in place, under its row: a widget's motion (WidgetMotion), an
   element's animation (AnimEditor).
   The animations themselves (the library) and the default timing are in Settings
@@ -30,13 +30,13 @@
     actions.setPanel('settings');
   }
 
-  /** Settings, its Page transition section opened and scrolled to (the site's curtain and page fade). */
-  async function openTransitionSettings() {
-    ui.sections['settings:transition'] = true;
+  /** Settings, its Page entrance section opened and scrolled to (the site's curtain and page fade). */
+  async function openEntranceSettings() {
+    ui.sections['settings:entrance'] = true;
     actions.setPanel('settings');
     await tick();
     document
-      .querySelector('[data-section="page-transition"]')
+      .querySelector('[data-section="page-entrance"]')
       ?.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 
@@ -161,7 +161,7 @@
         </ol>
       </Section>
     {/if}
-    <TransitionCard {live} {file} onsettings={openTransitionSettings} />
+    <TransitionCard {live} onsettings={openEntranceSettings} />
   </div>
 {/if}
 

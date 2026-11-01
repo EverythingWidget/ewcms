@@ -760,12 +760,12 @@ dialog.modal__box {
   margin-top: var(--space-4);
 }
 
-// ------------------------------------------------------------ page transition fields
+// ------------------------------------------------------------ page entrance fields
 // TransitionCurtain restyles the fields of MotionField and EasePicker. These rules stay here
 // (not in a component's <style>) because they reach into other components and their order
 // against the ease picker rules above matters.
 
-/* Page-transition ease toggles match the duration number input height (32px). */
+/* Page entrance ease toggles match the duration number input height (32px). */
 .transition {
   .tf__input,
   .f__num {

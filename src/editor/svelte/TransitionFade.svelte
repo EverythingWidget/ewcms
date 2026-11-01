@@ -1,5 +1,5 @@
 <!--
-  Settings tab, the Page transition section under a "Page fade" heading: the page fade (settings/animations.json transitions.page leave / enter).
+  Settings tab, the Page entrance section under a "Page fade" heading: the page fade (settings/animations.json transitions.page leave / enter).
   The old page fades out, the new one fades in. That is the whole page change when a
   page's curtain is Off; with a curtain it plays behind it (the old page leaves under the
   panel, the new one comes in as the panel lifts). Same fields as the curtain's Advanced.

@@ -1,11 +1,11 @@
 <!--
-  Nav > a page > Motion > Transition: the page's curtain, plain fields under a "Curtain" heading. Site default
-  (the site's curtain, its timing in Settings > Page transition) or Off (no curtain when you
+  Nav > a page > Motion > Page entrance: the page's curtain, plain fields under a "Curtain" heading. Site default
+  (the site's curtain, its timing in Settings > Page entrance) or Off (no curtain when you
   navigate here: a page fade),
   and the curtain's text: unset, the page's title (the placeholder); ✕ stores "" (No label:
   none). A [param] page: the choice is for every item page (its template), the
   text is the item's in the preview. One undo step each.
-    live  reactive store; onsettings  open Settings at its Page transition section
+    live  reactive store; onsettings  open Settings at its Page entrance section
 -->
 <script>
   import InfoHelp from './InfoHelp.svelte';
@@ -54,7 +54,7 @@
         >{route.template ? 'Curtain for every item page' : 'Curtain for this page'}<InfoHelp
           label="About Curtain"
           ><b>Curtain</b>: a panel that covers the screen while a visitor goes from one page to the
-          next. <b>Site default</b> uses the site's curtain (Settings > Page transition), <b>Off</b> skips
+          next. <b>Site default</b> uses the site's curtain (Settings > Page entrance), <b>Off</b> skips
           it on this page: a page fade instead.</InfoHelp
         ></span
       >
@@ -77,7 +77,7 @@
       {:else}
         The site's curtain; its timing is one setting for every page.
       {/if}
-      <button type="button" class="link" onclick={onsettings}>Page transition settings</button>
+      <button type="button" class="link" onclick={onsettings}>Page entrance settings</button>
     </p>
     <!-- unset: the page's title (the placeholder); "" (No label): none. One row for both. -->
     {#if stored === ''}

@@ -265,8 +265,8 @@ tags, and works with JavaScript disabled.
 name; its text, `curtainText`, lives in the page's file `pages/<page>/index.json` or in the
 item in `sources/`: missing, the page's title; `""`, no label. The curtain's timing is the
 site's alone (settings/animations.json, with the page fade: the editor's Settings > Page
-transition); a page's `transition` is only `{ "curtain": "off" }` (no curtain: a page fade; the
-page's Motion > Transition card: Curtain site default / off), on its `[param]/index.json` for every item page; missing: the site's curtain),
+entrance); a page's `transition` is only `{ "curtain": "off" }` (no curtain: a page fade; the
+page's Motion > Page entrance card: Curtain site default / off), on its `[param]/index.json` for every item page; missing: the site's curtain),
 swaps `<main data-router-view>`, updates
 title/meta/history, scrolls to top and re-mounts animations and page modules. Each page's tweens, ScrollTriggers, SplitTexts and listeners live
 in one `gsap.context` and are reverted on leave. If anything fails it falls back to a normal
@@ -1235,8 +1235,8 @@ show a folder's "All …" link first, as its root row is first here.
 Rows show only their own segment under the folder (`people/`; elsewhere the full path) and
 titles and paths as written. A click selects a row and shows it in the preview; a double click
 (or Enter) goes into the page's level (any page: a plain one shows its root row and "No sub
-pages yet"), and on a level's root row, Home, 404, Header or Footer opens it (its Sections & Widgets,
-Motion, SEO). Every row also has a quiet **edit** button (a pen, 30% until hovered or
+pages yet"), and on a level's root row, Home, 404, Header or Footer opens it (its Sections, Motion,
+SEO tabs). Every row also has a quiet **edit** button (a pen, 30% until hovered or
 focused, like the trash) that opens that page's Sections the same way in one click (no select,
 no drag; Header and Footer open theirs; a `[param]` page that builds no pages too, to fix its main widget). A row's end is fixed 24px slots, `edit | trash | ›`
 (an empty slot where a row has no trash, as Home, 404 and Site), so the buttons line up; the
@@ -1371,16 +1371,17 @@ in the URL reopens it.
 
 **Refresh** keeps your place. The URL holds the page (its path), the tab, Menu/Footer and the open Source
 Explorer item, so a shared link opens the same view:
-`/photography/people/?edit&tab=content&source=people&item=noor-vermeer` (`tab`: content,
-motion, settings, preview (the old `browse` opens Preview too); `view`: menu, footer; `motion=animations`: the Motion tab's Animations sub-tab; `animation`: the animation open there). Open/closed sections, the selected field or Motion
+`/photography/people/?edit&source=people&item=noor-vermeer` (`tab`: nav, settings, preview;
+the page's own tab, Sections | Motion | SEO, is kept per page in sessionStorage; `view`: header,
+footer; `animation`: Settings > Motion's Animations library, open on that animation). Open/closed sections, the selected field or Motion
 element and the scroll positions are kept per browser tab in sessionStorage. See
 `src/editor/svelte/persist.js`.
 
-| mode        | what it does                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Preview** | The ▶ toggle in the toolbar (or Ctrl/⌘+E), not a tab: use the site normally. The mode tabs hide (the toolbar stays put); the panel shows unsaved changes per file with _Discard_, and what is saved but not published. Off again: back to the tab you were in.                                                                                                                                                                                  |
-| **Content** | Animations pause. The preview is a layout canvas: click a widget to open it, drag it and its handles to move and resize it, double-click a text to type in it (Enter ends a single-line field; multi-line fields take Enter as a line break). The panel lists the same fields as inputs, and both stay in sync.                                                                                                                                 |
-| **Motion**  | Click a widget or an animated element (or pick one from the Elements list). Pick its animation and set its own timing (duration, ease, delay, stagger, trigger, scroll start/end/scrub); what the animation does (from/to properties, type-specific values) is shown read-only and edited in the Animations sub-tab. Changes replay live. **Replay** runs that widget (or the page) again, and the **Scroll** slider moves the page through it. |
+| mode        | what it does                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Preview** | The ▶ toggle in the toolbar (or Ctrl/⌘+E), not a tab: use the site normally. The mode tabs hide (the toolbar stays put); the panel shows unsaved changes per file with _Discard_, and what is saved but not published. Off again: back to the tab you were in.                                                                                                                                                                                                          |
+| **Content** | Animations pause. The preview is a layout canvas: click a widget to open it, drag it and its handles to move and resize it, double-click a text to type in it (Enter ends a single-line field; multi-line fields take Enter as a line break). The panel lists the same fields as inputs, and both stay in sync.                                                                                                                                                         |
+| **Motion**  | Click a widget or an animated element (or pick its row in the page's widgets list). Pick its animation and set its own timing (duration, ease, delay, stagger, trigger, scroll start/end/scrub); what the animation does (from/to properties, type-specific values) is shown read-only and edited in Settings > Motion's Animations library. Changes replay live. **Replay** runs that widget (or the page) again, and the **Scroll** slider moves the page through it. |
 
 In the edit modes, clicks select instead of following links (in Content no link, button or
 form acts). Hold **Alt** to click through.
@@ -1409,10 +1410,11 @@ to the chosen scope as a start and can be edited; switching off removes it (one 
 the animation does is read-only here.
 
 A page's Motion tab is always the whole page: its widgets, grouped by section (a picked widget
-or element opens in place, under its row), and at the bottom the **Transition**
-card (the page's curtain, Site default or Off, with a link to Settings > Page transition, and
-its backdrop). The Animations library and the default timing are in Settings > Motion (an
-element's Animation edit button opens the library there), next to the one **Page transition**
+or element opens in place, under its row), and at the bottom the **Page entrance**
+card (how visitors arrive at this page: the page's curtain, Site default or Off (page fade), with
+a link to Settings > Page entrance). The page's backdrop is the **Scroll backdrop** card, last in
+its Sections tab. The Animations library and the default timing are in Settings > Motion (an
+element's Animation edit button opens the library there), next to the one **Page entrance**
 section (the site's curtain and page fade). The library is the only place that defines what an animation
 does: pick an animation to edit `animations["fade-up"]`, every value including timing, and add
 or remove from/to properties. There is no global default layer: each animation carries every

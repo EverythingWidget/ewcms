@@ -38,12 +38,13 @@ A page is a stack of **sections**; each holds **widgets** (text, photo, button, 
 ## Menu and footer
 They belong to every page: open them under **Site** at the top of the pages list.
 
-## Page transition, SEO, motion
-The **page transition** is what happens when a visitor goes to another page: the **curtain** (a
-panel covering the screen, showing the page's name) or, without one, the **page fade**. Both are
-set once for the site in **Settings > Page transition**. A page's **Motion** tab sets its
-animations; its **Transition** card says whether it uses the curtain (**Site default**) or not
-(**Off**: a page fade), with a link to those settings. Each page also has **SEO** (title,
+## Page entrance, scroll backdrop, SEO, motion
+The **page entrance** is how visitors arrive at a page: the **curtain** (a panel covering the
+screen, showing the page's name) or, without one, the **page fade**. Both are set once for the
+site in **Settings > Page entrance**. A page's **Motion** tab sets its animations; its **Page
+entrance** card says whether it uses the curtain (**Site default**) or not (**Off**: a page
+fade), with a link to those settings. The **Scroll backdrop** card, last in a page's
+**Sections** tab, holds the images behind its sections that change as the visitor scrolls. Each page also has **SEO** (title,
 description, address, hidden from search).
 
 ## Saving

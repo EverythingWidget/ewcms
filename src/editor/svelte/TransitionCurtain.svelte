@@ -1,9 +1,9 @@
 <!--
   A page-transition curtain: a fixed total duration, the timeline (TransitionCurtainTimeline), one ease
   for every step or per-step eases (Advanced), and every value as a number under Advanced.
-  All edits go through transition-curtain.js. The Settings tab's Page transition section, under a
+  All edits go through transition-curtain.js. The Settings tab's Page entrance section, under a
   "Curtain" heading: the one curtain every page uses
-  (settings/animations.json); a page only turns it off (Nav > a page > Motion > Transition, TransitionPageCurtain.svelte).
+  (settings/animations.json); a page only turns it off (Nav > a page > Motion > Page entrance, TransitionPageCurtain.svelte).
 -->
 <script>
   import { showValue } from '../lib/show-value.js';
@@ -88,7 +88,7 @@
 
 <h3 class="pane__head">Curtain</h3>
 <p class="hint">
-  The curtain every page uses, unless a page turns it off (a page's Motion tab: Transition). Drag
+  The curtain every page uses, unless a page turns it off (a page's Motion tab: Page entrance). Drag
   the bar ends or type the values. Changes apply to the next page change in the preview.
 </p>
 

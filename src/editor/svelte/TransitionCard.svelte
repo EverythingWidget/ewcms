@@ -1,19 +1,18 @@
 <!--
-  A page's Motion tab, last: the Transition card, a section card (Section.svelte) whose
-  second line sums it up ("Curtain: site default · Backdrop: off"). Inside it, the page's backdrop
-  (TransitionBackdrop.svelte) and its curtain (TransitionPageCurtain.svelte).
-    live  reactive store; file  the page file; onsettings  open Settings at its Page transition section
+  A page's Motion tab, last: the Page entrance card (how visitors arrive at this page), a
+  section card (Section.svelte) whose second line sums it up ("Curtain: site default" or
+  "Curtain: off (page fade)"). Inside it, the page's curtain (TransitionPageCurtain.svelte).
+  The page's backdrop is its own card in the Sections tab (ScrollBackdropCard.svelte).
+    live  reactive store; onsettings  open Settings at its Page entrance section
 -->
 <script>
-  import TransitionBackdrop from './TransitionBackdrop.svelte';
   import TransitionPageCurtain from './TransitionPageCurtain.svelte';
   import Section from './Section.svelte';
   import { ui } from './ui.svelte.js';
-  import { isObject } from '../../site/is.js';
   import { splitEdit } from '../../site/helpers.js';
   import { curtainMode } from '../../client/anim/curtain.js';
 
-  let { live, file, onsettings } = $props();
+  let { live, onsettings } = $props();
 
   const route = $derived(live.routeOf(ui.path));
   const curtain = $derived.by(() => {
@@ -21,21 +20,13 @@
     const at = route && splitEdit(route.transitionEdit);
     return at ? curtainMode(live.get(at.file, at.ptr)) : 'global';
   });
-  // on: shown (a photo, not switched off), as the backdrop's switch
-  const backdrop = $derived.by(() => {
-    live.version;
-    const b = live.get(file, '/backdrop');
-    if (!isObject(b)) return 'off';
-    const has = Array.isArray(b.photos) && b.photos.some(Boolean);
-    return has && b.enabled !== false ? 'on' : 'off';
-  });
 </script>
 
 <Section
-  key="motion:transition"
-  title="Transition"
-  name="Curtain: {curtain === 'off' ? 'off' : 'site default'} · Backdrop: {backdrop}"
+  key="motion:entrance"
+  title="Page entrance"
+  name="Curtain: {curtain === 'off' ? 'off (page fade)' : 'site default'}"
 >
-  <TransitionBackdrop {live} {file} />
+  <p class="hint">How visitors arrive at this page.</p>
   <TransitionPageCurtain {live} {onsettings} />
 </Section>

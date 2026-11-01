@@ -3,12 +3,12 @@
   default timing and the Animations library), then where contact forms send (Forms), the site's
   name and details
   (settings/site.json), its search and share defaults (SEO: titles, description, share photo,
-  address, robots, language; a page's own are in Nav > SEO), the Page transition section (the site's curtain
+  address, robots, language; a page's own are in Nav > SEO), the Page entrance section (the site's curtain
   and the page fade, settings/animations.json), where uploaded photos are served from (site.json mediaUrl)
   and the text styles scaled text uses (Typography: site.json typography, in cells,
   src/site/layout/type.js; the preview follows them as they are typed).
-  Per-page things stay in Nav, on the page (sections; Motion: its animations, backdrop and
-  curtain; SEO); the header's menu and labels are the Header site part in Content
+  Per-page things stay in Nav, on the page (sections; Motion: its animations and
+  curtain; Sections: its scroll backdrop; SEO); the header's menu and labels are the Header site part in Content
   (HeaderPart.svelte). redirects.json is in Redirects (RedirectSettings.svelte).
 -->
 <script>
@@ -243,13 +243,8 @@
   </Section>
 
   {#if gsap}
-    <!-- one Page transition section: the curtain, then the page fade (no curtain, or behind it) -->
-    <Section
-      class="transition"
-      key="settings:transition"
-      id="page-transition"
-      title="Page transition"
-    >
+    <!-- one Page entrance section: the curtain, then the page fade (no curtain, or behind it) -->
+    <Section class="transition" key="settings:entrance" id="page-entrance" title="Page entrance">
       <TransitionCurtain {live} {bridge} {gsap} />
       <TransitionFade {live} {gsap} />
     </Section>
