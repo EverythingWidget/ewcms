@@ -38,9 +38,13 @@ A page is a stack of **sections**; each holds **widgets** (text, photo, button, 
 ## Menu and footer
 They belong to every page: open them under **Site** at the top of the pages list.
 
-## Transitions, SEO, motion
-Each page has **Transitions** (how it enters) and **SEO** (title, description, address, hidden
-from search). The **Motion** tab sets animations.
+## Page transition, SEO, motion
+The **page transition** is what happens when a visitor goes to another page: the **curtain** (a
+panel covering the screen, showing the page's name) or, without one, the **page fade**. Both are
+set once for the site in **Settings > Page transition**. A page's **Motion** tab sets its
+animations; its **Transition** card says whether it uses the curtain (**Site default**) or not
+(**Off**: a page fade), with a link to those settings. Each page also has **SEO** (title,
+description, address, hidden from search).
 
 ## Saving
 **Save** (Ctrl/⌘+S) writes your changes as a draft. **Publish** commits and pushes everything

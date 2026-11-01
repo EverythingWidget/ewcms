@@ -10,6 +10,7 @@
   (MotionSettings.svelte). The widget picked is the Sections tab's widget too.
 -->
 <script>
+  import { tick } from 'svelte';
   import AnimEditor from './AnimEditor.svelte';
   import WidgetMotion from './WidgetMotion.svelte';
   import TransitionCard from './TransitionCard.svelte';
@@ -27,6 +28,16 @@
   function openLibrary(name = '') {
     ui.library = { name };
     actions.setPanel('settings');
+  }
+
+  /** Settings, its Page transition section opened and scrolled to (the site's curtain and page fade). */
+  async function openTransitionSettings() {
+    ui.sections['settings:transition'] = true;
+    actions.setPanel('settings');
+    await tick();
+    document
+      .querySelector('[data-section="page-transition"]')
+      ?.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 
   const cfg = $derived(live.current(ANIMATIONS));
@@ -150,7 +161,7 @@
         </ol>
       </Section>
     {/if}
-    <TransitionCard {live} {file} onsettings={() => actions.setPanel('settings')} />
+    <TransitionCard {live} {file} onsettings={openTransitionSettings} />
   </div>
 {/if}
 

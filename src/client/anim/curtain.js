@@ -17,7 +17,7 @@
  * Per page, a "transition" next to the page's curtain text (see src/site/routes.js); the
  * timing is the site's alone:
  *   missing                                   the site-wide curtain above
- *   { curtain: 'off' }                        no curtain when navigating to this page (a fade)
+ *   { curtain: 'off' }                        no curtain when navigating to this page (a page fade)
  * The page you go to decides: leaving a page with its own curtain (or none) changes nothing.
  */
 const CURTAIN_DEFAULTS = {

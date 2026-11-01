@@ -264,8 +264,9 @@ tags, and works with JavaScript disabled.
 (prefetched on hover), runs the page-leave transition (a curtain showing the destination's
 name; its text, `curtainText`, lives in the page's file `pages/<page>/index.json` or in the
 item in `sources/`: missing, the page's title; `""`, no label. The curtain's timing is the
-site's alone (settings/animations.json); a page's `transition` is only `{ "curtain": "off" }`
-(no curtain: a fade), on its `[param]/index.json` for every item page; missing: the site's curtain),
+site's alone (settings/animations.json, with the page fade: the editor's Settings > Page
+transition); a page's `transition` is only `{ "curtain": "off" }` (no curtain: a page fade; the
+page's Motion > Transition card: Curtain site default / off), on its `[param]/index.json` for every item page; missing: the site's curtain),
 swaps `<main data-router-view>`, updates
 title/meta/history, scrolls to top and re-mounts animations and page modules. Each page's tweens, ScrollTriggers, SplitTexts and listeners live
 in one `gsap.context` and are reverted on leave. If anything fails it falls back to a normal

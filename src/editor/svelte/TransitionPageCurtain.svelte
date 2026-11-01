@@ -1,10 +1,11 @@
 <!--
-  Nav > a page > Motion > Transition: the page's curtain, plain fields under a "Curtain" heading. Global (the
-  site's curtain, its timing in Settings) or Off (no curtain when you navigate here: a fade),
+  Nav > a page > Motion > Transition: the page's curtain, plain fields under a "Curtain" heading. Site default
+  (the site's curtain, its timing in Settings > Page transition) or Off (no curtain when you
+  navigate here: a page fade),
   and the curtain's text: unset, the page's title (the placeholder); ✕ stores "" (No label:
   none). A [param] page: the choice is for every item page (its template), the
   text is the item's in the preview. One undo step each.
-    live  reactive store; onsettings  open Settings (the curtain's timing)
+    live  reactive store; onsettings  open Settings at its Page transition section
 -->
 <script>
   import InfoHelp from './InfoHelp.svelte';
@@ -17,7 +18,7 @@
 
   let { live, onsettings } = $props();
 
-  const LABELS = { global: 'Global', off: 'Off' };
+  const LABELS = { global: 'Site default', off: 'Off' };
   const route = $derived(live.routeOf(ui.path));
   const page = $derived(route ? splitEdit(route.transitionEdit) : null);
   const text = $derived(route ? splitEdit(route.curtainEdit) : null);
@@ -53,7 +54,8 @@
         >{route.template ? 'Curtain for every item page' : 'Curtain for this page'}<InfoHelp
           label="About Curtain"
           ><b>Curtain</b>: a panel that covers the screen while a visitor goes from one page to the
-          next. <b>Global</b> uses the site's curtain, <b>Off</b> skips it on this page.</InfoHelp
+          next. <b>Site default</b> uses the site's curtain (Settings > Page transition), <b>Off</b> skips
+          it on this page: a page fade instead.</InfoHelp
         ></span
       >
       <div class="seg" role="radiogroup" aria-label="Curtain for this page">
@@ -71,11 +73,11 @@
     <!-- one line for both choices, so switching moves nothing -->
     <p class="hint small page-curtain__note">
       {#if mode === 'off'}
-        No curtain when you navigate here: the page fades in.
+        No curtain when you navigate here: a page fade.
       {:else}
         The site's curtain; its timing is one setting for every page.
       {/if}
-      <button type="button" class="link" onclick={onsettings}>Settings</button>
+      <button type="button" class="link" onclick={onsettings}>Page transition settings</button>
     </p>
     <!-- unset: the page's title (the placeholder); "" (No label): none. One row for both. -->
     {#if stored === ''}

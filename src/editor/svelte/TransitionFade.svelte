@@ -1,5 +1,5 @@
 <!--
-  Settings tab: the page fade (settings/animations.json transitions.page leave / enter).
+  Settings tab, the Page transition section under a "Page fade" heading: the page fade (settings/animations.json transitions.page leave / enter).
   The old page fades out, the new one fades in. That is the whole page change when a
   page's curtain is Off; with a curtain it plays behind it (the old page leaves under the
   panel, the new one comes in as the panel lifts). Same fields as the curtain's Advanced.
@@ -7,7 +7,6 @@
 <script>
   import { showValue } from '../lib/show-value.js';
   import EasePicker from './EasePicker.svelte';
-  import Section from './Section.svelte';
   import { fmtS } from './transition-curtain.js';
   import { ANIMATIONS } from '../../site/files.js';
 
@@ -53,29 +52,28 @@
   }
 </script>
 
-<Section class="transition" key="settings:fade" title="Transition: page fade">
-  <p class="hint">
-    The old page fades out, the new one fades in: the whole page change when a page's curtain is
-    Off, behind the curtain otherwise. Duration and ease.
-  </p>
-  {#each ROWS as [step, label] (step)}
-    <div class={['tf', changed(step) && 'is-changed']}>
-      <span class="tf__label">{label}</span>
-      <div class="f__pair">
-        <input
-          class={['f__num', invalid[step] && 'is-invalid']}
-          type="text"
-          inputmode="decimal"
-          autocomplete="off"
-          spellcheck="false"
-          aria-label="{label}: duration"
-          data-ptr={ptr(step, 'duration')}
-          {@attach show(get(step, 'duration'))}
-          oninput={(e) => oninput(step, e)}
-          onblur={(e) => onblur(step, e)}
-        />
-        <EasePicker {gsap} value={get(step, 'ease')} compact onpick={(v) => set(step, 'ease', v)} />
-      </div>
+<h3 class="pane__head">Page fade</h3>
+<p class="hint">
+  The old page fades out, the new one fades in: the whole page change when a page's curtain is Off,
+  behind the curtain otherwise. Duration and ease.
+</p>
+{#each ROWS as [step, label] (step)}
+  <div class={['tf', changed(step) && 'is-changed']}>
+    <span class="tf__label">{label}</span>
+    <div class="f__pair">
+      <input
+        class={['f__num', invalid[step] && 'is-invalid']}
+        type="text"
+        inputmode="decimal"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="{label}: duration"
+        data-ptr={ptr(step, 'duration')}
+        {@attach show(get(step, 'duration'))}
+        oninput={(e) => oninput(step, e)}
+        onblur={(e) => onblur(step, e)}
+      />
+      <EasePicker {gsap} value={get(step, 'ease')} compact onpick={(v) => set(step, 'ease', v)} />
     </div>
-  {/each}
-</Section>
+  </div>
+{/each}

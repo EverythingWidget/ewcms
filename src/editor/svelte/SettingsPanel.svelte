@@ -3,8 +3,8 @@
   default timing and the Animations library), then where contact forms send (Forms), the site's
   name and details
   (settings/site.json), its search and share defaults (SEO: titles, description, share photo,
-  address, robots, language; a page's own are in Nav > SEO), the global page-transition curtain and the page
-  fade (settings/animations.json), where uploaded photos are served from (site.json mediaUrl)
+  address, robots, language; a page's own are in Nav > SEO), the Page transition section (the site's curtain
+  and the page fade, settings/animations.json), where uploaded photos are served from (site.json mediaUrl)
   and the text styles scaled text uses (Typography: site.json typography, in cells,
   src/site/layout/type.js; the preview follows them as they are typed).
   Per-page things stay in Nav, on the page (sections; Motion: its animations, backdrop and
@@ -243,8 +243,16 @@
   </Section>
 
   {#if gsap}
-    <TransitionCurtain {live} {bridge} {gsap} />
-    <TransitionFade {live} {gsap} />
+    <!-- one Page transition section: the curtain, then the page fade (no curtain, or behind it) -->
+    <Section
+      class="transition"
+      key="settings:transition"
+      id="page-transition"
+      title="Page transition"
+    >
+      <TransitionCurtain {live} {bridge} {gsap} />
+      <TransitionFade {live} {gsap} />
+    </Section>
   {:else}
     <p class="hint">Waiting for the preview…</p>
   {/if}

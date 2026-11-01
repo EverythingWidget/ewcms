@@ -98,3 +98,30 @@ test('Motion shows the whole page; the widget pop-up has no Motion tab and stays
   assert.match(src('svelte/ContentPanel.svelte'), /\{#if popG && !ui\.pagesWin\.open\}/);
   assert.doesNotMatch(src('main.js'), /editMotion/);
 });
+
+test('Page transition: one Settings section (curtain, page fade); the page card links to it', () => {
+  const sp = src('svelte/SettingsPanel.svelte');
+  assert.match(
+    sp,
+    /key="settings:transition"[\s\S]*?id="page-transition"[\s\S]*?title="Page transition"/,
+  );
+  assert.match(sp, /<TransitionCurtain[^>]*\/>\s*<TransitionFade[^>]*\/>\s*<\/Section>/);
+  for (const [f, head] of [
+    ['TransitionCurtain', 'Curtain'],
+    ['TransitionFade', 'Page fade'],
+  ]) {
+    const s = src(`svelte/${f}.svelte`);
+    assert.doesNotMatch(s, /<Section|title="Transition: /);
+    assert.match(s, new RegExp(`<h3 class="pane__head">${head}</h3>`));
+  }
+  const pc = src('svelte/TransitionPageCurtain.svelte');
+  assert.match(pc, /global: 'Site default', off: 'Off'/);
+  assert.match(pc, /onclick=\{onsettings\}>Page transition settings<\/button>/);
+  assert.match(
+    src('svelte/TransitionCard.svelte'),
+    /Curtain: \{curtain === 'off' \? 'off' : 'site default'\}/,
+  );
+  const mp = src('svelte/MotionPanel.svelte');
+  assert.match(mp, /ui\.sections\['settings:transition'\] = true;/);
+  assert.match(mp, /\[data-section="page-transition"\]/);
+});

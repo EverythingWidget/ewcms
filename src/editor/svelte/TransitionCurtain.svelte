@@ -1,7 +1,8 @@
 <!--
   A page-transition curtain: a fixed total duration, the timeline (TransitionCurtainTimeline), one ease
   for every step or per-step eases (Advanced), and every value as a number under Advanced.
-  All edits go through transition-curtain.js. The Settings tab's: the one curtain every page uses
+  All edits go through transition-curtain.js. The Settings tab's Page transition section, under a
+  "Curtain" heading: the one curtain every page uses
   (settings/animations.json); a page only turns it off (Nav > a page > Motion > Transition, TransitionPageCurtain.svelte).
 -->
 <script>
@@ -9,7 +10,6 @@
   import Button from './Button.svelte';
   import TransitionCurtainTimeline from './TransitionCurtainTimeline.svelte';
   import EasePicker from './EasePicker.svelte';
-  import Section from './Section.svelte';
   import { ui } from './ui.svelte.js';
   import { CURTAIN, CURTAIN_ROWS, TOTAL_MAX, curtainEdits, fmtS } from './transition-curtain.js';
   import { ANIMATIONS } from '../../site/files.js';
@@ -86,96 +86,95 @@
   />
 {/snippet}
 
-<Section class="transition" key="settings:curtain" title="Transition: curtain">
-  <p class="hint">
-    The curtain every page uses, unless a page turns it off (a page's Motion tab: Transition). Drag
-    the bar ends or type the values. Changes apply to the next page change in the preview.
-  </p>
+<h3 class="pane__head">Curtain</h3>
+<p class="hint">
+  The curtain every page uses, unless a page turns it off (a page's Motion tab: Transition). Drag
+  the bar ends or type the values. Changes apply to the next page change in the preview.
+</p>
 
-  <div class="transition__box">
-    <!-- drawn at the right of the row after it, like a grid's Source edit button -->
-    <Button
-      size="small"
-      icon="rotate-right"
-      iconOnly
-      label="Replay"
-      title="Replay: play the transition over this page with these values (no navigation)"
-      onclick={() => bridge.api?.replayCurtain?.(undefined, edit.get(edit.base) ?? true)}
+<div class="transition__box">
+  <!-- drawn at the right of the row after it, like a grid's Source edit button -->
+  <Button
+    size="small"
+    icon="rotate-right"
+    iconOnly
+    label="Replay"
+    title="Replay: play the transition over this page with these values (no navigation)"
+    onclick={() => bridge.api?.replayCurtain?.(undefined, edit.get(edit.base) ?? true)}
+  />
+  <label class={['tf', changed('/total') && 'is-changed']}>
+    <span class="tf__label">Total duration (s)</span>
+    {@render number('/total', 'tf__input')}
+    <span class="hint small tf__hint">
+      Fixed length of the timeline. The curtain-out bar is pinned to the end. Dragging bars will not
+      grow this.
+    </span>
+  </label>
+
+  <TransitionCurtainTimeline {plan} {edit} />
+
+  <div class={['tf transition__ease', individual && 'is-individual']}>
+    <EasePicker
+      {gsap}
+      value={shared}
+      compact
+      empty={individual ? 'Individual' : null}
+      onpick={edit.setSharedEase}
     />
-    <label class={['tf', changed('/total') && 'is-changed']}>
-      <span class="tf__label">Total duration (s)</span>
-      {@render number('/total', 'tf__input')}
-      <span class="hint small tf__hint">
-        Fixed length of the timeline. The curtain-out bar is pinned to the end. Dragging bars will
-        not grow this.
-      </span>
-    </label>
+    <p class="hint small tf__hint">
+      {individual
+        ? 'Per-step eases in Advanced. Pick an ease here to use one for all.'
+        : 'One ease for every step. Set a step ease in Advanced to use separate eases.'}
+    </p>
+  </div>
 
-    <TransitionCurtainTimeline {plan} {edit} />
-
-    <div class={['tf transition__ease', individual && 'is-individual']}>
-      <EasePicker
-        {gsap}
-        value={shared}
-        compact
-        empty={individual ? 'Individual' : null}
-        onpick={edit.setSharedEase}
-      />
-      <p class="hint small tf__hint">
-        {individual
-          ? 'Per-step eases in Advanced. Pick an ease here to use one for all.'
-          : 'One ease for every step. Set a step ease in Advanced to use separate eases.'}
-      </p>
-    </div>
-
-    <div class="transition__advanced">
-      <button
-        type="button"
-        class="transition__toggle"
-        aria-expanded={advanced}
-        aria-controls="{advancedId}-advanced"
-        onclick={() => (ui.sections['curtain:advanced'] = !advanced)}
-      >
-        <i class="fa-solid fa-chevron-right transition__caret" aria-hidden="true"></i>
-        Advanced
-      </button>
-      <div class="transition__advanced-body" id="{advancedId}-advanced" hidden={!advanced}>
-        {#each CURTAIN_ROWS as row (row.label)}
-          {#if row.pair}
-            {@const ease = row.pair + '/ease'}
-            <div
-              class={[
-                'tf',
-                (changed(row.pair + '/duration') || changed(ease)) && 'is-changed',
-                !individual && 'is-ease-inactive',
-              ]}
-            >
-              <span class="tf__label">{row.label}</span>
-              <div class="f__pair">
-                {@render number(row.pair + '/duration', 'f__num', row.label)}
-                <EasePicker
-                  {gsap}
-                  value={individual ? edit.get(edit.base + ease) || shared : shared}
-                  compact
-                  title={individual
-                    ? ''
-                    : 'Not in effect — shared ease is active. Pick an ease to switch to per-step.'}
-                  onpick={(v) => edit.setStepEase(ease, v)}
-                />
-              </div>
+  <div class="transition__advanced">
+    <button
+      type="button"
+      class="transition__toggle"
+      aria-expanded={advanced}
+      aria-controls="{advancedId}-advanced"
+      onclick={() => (ui.sections['curtain:advanced'] = !advanced)}
+    >
+      <i class="fa-solid fa-chevron-right transition__caret" aria-hidden="true"></i>
+      Advanced
+    </button>
+    <div class="transition__advanced-body" id="{advancedId}-advanced" hidden={!advanced}>
+      {#each CURTAIN_ROWS as row (row.label)}
+        {#if row.pair}
+          {@const ease = row.pair + '/ease'}
+          <div
+            class={[
+              'tf',
+              (changed(row.pair + '/duration') || changed(ease)) && 'is-changed',
+              !individual && 'is-ease-inactive',
+            ]}
+          >
+            <span class="tf__label">{row.label}</span>
+            <div class="f__pair">
+              {@render number(row.pair + '/duration', 'f__num', row.label)}
+              <EasePicker
+                {gsap}
+                value={individual ? edit.get(edit.base + ease) || shared : shared}
+                compact
+                title={individual
+                  ? ''
+                  : 'Not in effect — shared ease is active. Pick an ease to switch to per-step.'}
+                onpick={(v) => edit.setStepEase(ease, v)}
+              />
             </div>
-          {:else}
-            <label class={['tf', changed(row.rel) && 'is-changed']}>
-              <span class="tf__label">{row.label}</span>
-              {@render number(row.rel, 'tf__input')}
-              {#if row.hint}<span class="hint small tf__hint">{row.hint}</span>{/if}
-            </label>
-          {/if}
-        {/each}
-      </div>
+          </div>
+        {:else}
+          <label class={['tf', changed(row.rel) && 'is-changed']}>
+            <span class="tf__label">{row.label}</span>
+            {@render number(row.rel, 'tf__input')}
+            {#if row.hint}<span class="hint small tf__hint">{row.hint}</span>{/if}
+          </label>
+        {/if}
+      {/each}
     </div>
   </div>
-</Section>
+</div>
 
 <style lang="scss">
   @use '../styles/mixins' as *;
