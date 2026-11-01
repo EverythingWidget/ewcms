@@ -1409,7 +1409,7 @@ to the chosen scope as a start and can be edited; switching off removes it (one 
 the animation does is read-only here.
 
 A page's Motion tab is always the whole page: its widgets, grouped by section (a picked widget
-or element opens in place, under its row), and at the bottom the **Page transition & backdrop**
+or element opens in place, under its row), and at the bottom the **Transition**
 card (the page's curtain, Site default or Off, with a link to Settings > Page transition, and
 its backdrop). The Animations library and the default timing are in Settings > Motion (an
 element's Animation edit button opens the library there), next to the one **Page transition**

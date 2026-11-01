@@ -42,7 +42,7 @@ They belong to every page: open them under **Site** at the top of the pages list
 The **page transition** is what happens when a visitor goes to another page: the **curtain** (a
 panel covering the screen, showing the page's name) or, without one, the **page fade**. Both are
 set once for the site in **Settings > Page transition**. A page's **Motion** tab sets its
-animations; its **Page transition & backdrop** card says whether it uses the curtain (**Site default**) or not
+animations; its **Transition** card says whether it uses the curtain (**Site default**) or not
 (**Off**: a page fade), with a link to those settings. Each page also has **SEO** (title,
 description, address, hidden from search).
 
