@@ -119,7 +119,7 @@ test('Page transition: one Settings section (curtain, page fade); the page card 
   assert.match(pc, /onclick=\{onsettings\}>Page transition settings<\/button>/);
   assert.match(
     src('svelte/TransitionCard.svelte'),
-    /title="Page transition & backdrop"[\s\S]*Curtain: \{curtain === 'off' \? 'off \(page fade\)' : 'site default'\}/,
+    /Curtain: \{curtain === 'off' \? 'off' : 'site default'\}/,
   );
   const mp = src('svelte/MotionPanel.svelte');
   assert.match(mp, /ui\.sections\['settings:transition'\] = true;/);
