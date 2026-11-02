@@ -483,6 +483,7 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
       edit: rich.edit,
       style: body[caret.line]?.style || 'paragraph',
       list: body[caret.line]?.list || '',
+      fit: body[caret.line]?.fit === true,
       line: caret.line,
       selected: !!range,
       bold: range ? hasMark(body, sel.from, sel.to, 'b') : false,

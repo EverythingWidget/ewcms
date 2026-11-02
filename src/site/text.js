@@ -22,6 +22,9 @@
  * of one run of the same list are one <ul> / <ol> of <li>s (each with its style's class); while
  * edited every line stays one element (rich.js maps the caret by them), [data-list] on it, its
  * marker drawn by the CSS (src/client/styles/_text.scss) either way.
+ * A line can fill the widget's width: "fit": true (the toolbar's Fit width), with any style; on
+ * the page [data-fit], sized by src/client/modules/fit.js (its own --tkf). The other lines keep
+ * their style's size.
  * One line is one element (h1 / h2 / h3 / p) with its style's class (.ts--<style>). Every
  * value is escaped; fields and counts are chips (data-field / data-count) the editor's inline
  * editor (src/editor/rich.js) keeps whole.
@@ -51,10 +54,13 @@ export const MARKS = ['b', 'i'];
 /** A line's list kinds: a bulleted or a numbered list item. */
 export const LISTS = ['bullet', 'number'];
 const listOf = (line) => (LISTS.includes(line?.list) ? line.list : undefined);
-/** A line's own keys (style, list) with new text. */
+/** Is a line fitted to the widget's width ("fit": true, the toolbar's Fit width)? */
+export const fitOf = (line) => line?.fit === true;
+/** A line's own keys (style, list, fit) with new text. */
 const withText = (line, text) => ({
   style: line.style,
   ...(listOf(line) ? { list: line.list } : {}),
+  ...(fitOf(line) ? { fit: true } : {}),
   text,
 });
 
@@ -78,6 +84,8 @@ export function checkBody(body, key = 'body') {
       out.push(`"${at}.style" must be one of ${STYLE_IDS.join(', ')}`);
     if (line.list !== undefined && !LISTS.includes(line.list))
       out.push(`"${at}.list" must be one of ${LISTS.join(', ')}`);
+    if (line.fit !== undefined && line.fit !== true)
+      out.push(`"${at}.fit" must be true (or left out: the style's size)`);
     if (!Array.isArray(line.text)) return void out.push(`"${at}.text" must be a list of runs`);
     line.text.forEach((r, j) => {
       const rat = `${at}.text.${j}`;
@@ -161,7 +169,7 @@ export function renderBody(
     const style = STYLE_IDS.includes(line?.style) ? line.style : 'paragraph';
     const list = listOf(line);
     const runs = (line?.text || []).map((r) => renderRun(r, { value, href, editing })).join('');
-    const data = list ? ` data-list="${list}"` : '';
+    const data = (list ? ` data-list="${list}"` : '') + (fitOf(line) ? ' data-fit' : '');
     // an empty line keeps its height (and a caret) with a <br>
     const inner = `class="ts ts--${style}" data-line="${style}"${data}${attrs(i, style)}>${runs || '<br>'}`;
     if (editing || !list) {
@@ -327,6 +335,15 @@ export function setStyle(body, i, style) {
   return out;
 }
 
+/** Line `i` fitted to the widget's width, or its style's size again (a toggle: Fit width). */
+export function toggleFit(body, i) {
+  const out = clone(body.length ? body : [{ style: 'paragraph', text: [] }]);
+  if (!out[i]) return out;
+  if (fitOf(out[i])) delete out[i].fit;
+  else out[i].fit = true;
+  return out;
+}
+
 /** Lines `from`…`to` (positions) as `list` items; all of them that already: no list (a toggle). */
 export function toggleList(body, from, to, list) {
   const [s, e] = ordered(from, to);
@@ -395,10 +412,11 @@ export function splitLine(body, pos) {
   line.text = tidyRuns(a);
   const atEnd = !tidyRuns(b).length && tidyRuns(a).length > 0;
   const style = atEnd && LEAD_STYLES.has(line.style) ? 'paragraph' : line.style;
-  // a list item's next line: the next item
+  // a list item's next line: the next item; a fitted line split mid-line: both halves fitted
   out.splice(pos.line + 1, 0, {
     style,
     ...(listOf(line) ? { list: line.list } : {}),
+    ...(fitOf(line) && style === line.style ? { fit: true } : {}),
     text: tidyRuns(b),
   });
   return out;
@@ -409,6 +427,7 @@ export const tidyBody = (body) =>
   (Array.isArray(body) ? body : []).map((l) => ({
     style: STYLE_IDS.includes(l?.style) ? l.style : 'paragraph',
     ...(listOf(l) ? { list: l.list } : {}),
+    ...(fitOf(l) ? { fit: true } : {}),
     text: tidyRuns(Array.isArray(l?.text) ? l.text : []),
   }));
 

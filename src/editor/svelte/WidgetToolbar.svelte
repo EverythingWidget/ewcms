@@ -3,8 +3,8 @@
   the stage (App.svelte) at the widget's top left edge, above it (below it when there is no
   room, inside it when it is taller than the frame), never moving the page. Two parts:
 
-    text      (a Text widget) style ▾ (the line the caret is in: the whole line), Fit (the
-              text's longest line fills the widget's width, type.js "fit"), B, I, link
+    text      (a Text widget) style ▾ (the line the caret is in: the whole line), Fit width
+              (that line fills the widget's width, a line's "fit": text.js), B, I, link
               (the selected text only: greyed with nothing selected or when not editing),
               + Field (a field of the item the widget shows, or a count, at the caret)
 
@@ -30,7 +30,6 @@
   import { sourceOf } from '../../site/layout/source.js';
   import { untrack } from 'svelte';
   import { setWidget } from '../layout-ops.js';
-  import { FIT_TYPES, fitted } from '../../site/layout/type.js';
   import { isSafeHref, UNSAFE_HREF } from '../../site/hrefs.js';
   import {
     LINE_STYLES,
@@ -38,6 +37,7 @@
     lineLength,
     setLink,
     setStyle,
+    toggleFit,
     toggleList,
     styleLabel,
     toggleMark,
@@ -71,11 +71,10 @@
   const rich = $derived(ui.rich && ui.rich.widget === where?.id ? ui.rich : null);
   const editing = $derived(!!rich);
   const style = $derived(rich ? rich.style : widget?.body?.[0]?.style || 'paragraph');
-  // Fit: its longest line fills its width (type.js "fit"), or its styles' sizes
-  const canFit = $derived(FIT_TYPES.includes(widget?.type));
-  const isFit = $derived(fitted(widget));
-  const toggleFit = () =>
-    setWidget(live.store, where.file, where.at, where.j, { fit: isFit ? undefined : true });
+  // Fit width: the caret's line fills the widget's width (a line's "fit", text.js), or its
+  // style's size; a Text widget's
+  const canFit = $derived(widget?.type === 'text');
+  const isFit = $derived(!!rich?.fit);
   const bodyRef = $derived(where ? { file: where.file, ptr: `${where.base}/body` } : null);
 
   // ---- where it is drawn: the widget's box in the frame, on the stage, every frame
@@ -283,6 +282,10 @@
       };
       return { body: toggleList(body, at.from, at.to, kind), sel: sel || undefined };
     });
+  const fitLine = () => {
+    const line = rich ? rich.line : 0;
+    apply((body) => ({ body: toggleFit(body, line) }));
+  };
   const mark = (m) =>
     apply((body, sel) => (sel ? { body: toggleMark(body, sel.from, sel.to, m) } : null));
 
@@ -444,13 +447,13 @@
         {#if canFit}
           <button
             type="button"
-            class={['btb__btn btb__icon', isFit && 'is-on']}
-            aria-label="Fit"
+            class={['btb__btn btb__icon btb__fit', isFit && 'is-on']}
+            aria-label="Fit width"
             aria-pressed={isFit}
             title={isFit
-              ? "Fit on: its longest line fills the widget's width. Click: its styles' sizes"
-              : "Fit: its longest line fills the widget's width (off: its styles' sizes)"}
-            onclick={toggleFit}
+              ? "Fit width on: this line fills the widget's width. Click: its style's size"
+              : "Fit width: this line fills the widget's width (off: its style's size)"}
+            onclick={fitLine}
             ><i class="fa-solid fa-arrows-left-right-to-line" aria-hidden="true"></i></button
           >
         {/if}
@@ -625,6 +628,12 @@
       color: var(--c-text-strong);
       box-shadow: inset 0 0 0 1px var(--c-line);
     }
+  }
+
+  // Fit width on: a light fill, dark icon (the line it is on fills the widget)
+  .btb__btn.btb__fit.is-on {
+    background: var(--c-text);
+    color: var(--c-on-light);
   }
 
   .btb__icon {

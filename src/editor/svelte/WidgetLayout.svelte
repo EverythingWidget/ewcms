@@ -1,8 +1,9 @@
 <!--
   A widget's layout on its card (WidgetInspector.svelte), one row: its size (Auto | Rows |
   Aspect, Aspect showing its ratio and opening the ratios under the group; it stays open after a
-  pick) and its layer (forward / backward) at the end. (A text widget's Fit: the toolbar,
-  WidgetToolbar.svelte.)
+  pick) and its layer (forward / backward) at the end; its placement; a Text widget's Scale to
+  fit switch (type.js "scale": its whole text scales down to fit, like a photo; a line's Fit
+  width: the toolbar, WidgetToolbar.svelte).
 -->
 <script>
   import { NEW_ROWS, layerWidget, setWidget } from '../layout-ops.js';
@@ -13,6 +14,7 @@
   import Popover from './Popover.svelte';
   import Position from './Position.svelte';
   import { fillOf, placeOfBox, placementOf, placesOf } from '../../site/layout/place.js';
+  import { SCALE_TYPES, scaled } from '../../site/layout/type.js';
 
   let { live, bridge, file, at, j, id, widget } = $props();
 
@@ -60,6 +62,10 @@
   const placement = $derived(placementOf(widget.type));
   const fill = $derived(fillOf(widget));
   const setBox = (box) => box !== (fill ? 'fill' : 'fit') && set({ box });
+
+  // Scale to fit (off by default): its hint has two lines' room, so nothing moves when it changes
+  const canScale = $derived(SCALE_TYPES.includes(widget.type));
+  const isScaled = $derived(scaled(widget));
 
   let ratioText = $state('');
   const customRatio = $derived(!!widget.aspect && !ASPECTS.includes(widget.aspect));
@@ -224,6 +230,26 @@
       />
     </div>
   {/if}
+  {#if canScale}
+    <label class="tf wl__scale">
+      <span class="tf__label">
+        <span class="wl__scale-label">Scale to fit</span>
+        <input
+          type="checkbox"
+          class="switch"
+          role="switch"
+          title="Scale the whole text down to fit the widget"
+          checked={isScaled}
+          onchange={(e) => set({ scale: e.currentTarget.checked ? true : undefined })}
+        />
+      </span>
+      <span class="hint small wl__scale-hint"
+        >{isScaled
+          ? 'On: the whole text scales down to fit the widget, like a photo.'
+          : 'Off: each style keeps its own size at any width.'}</span
+      >
+    </label>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -276,6 +302,24 @@
 
   .wl__line {
     @include row(var(--space-2));
+  }
+
+  // Scale to fit: the whole row, its name as a field's value (as Main widget), the switch at the end
+  .wl__scale {
+    grid-column: 1 / -1;
+  }
+
+  .wl__scale-label {
+    flex: 1;
+    color: var(--c-text);
+  }
+
+  // two lines' room (the longer hint), so the switch never moves what is under it
+  .wl__scale-hint {
+    display: block;
+    min-height: 32px;
+    margin: 0;
+    line-height: 16px;
   }
 
   .wl__hint {

@@ -43,7 +43,7 @@ import {
   ratioOf,
 } from './layout/index.js';
 import { linkProblems } from './layout/links.js';
-import { checkFit, checkTypography } from './layout/type.js';
+import { checkScale, checkTypography } from './layout/type.js';
 import { checkPlacement } from './layout/place.js';
 import { checkLayout } from './layout/contain.js';
 import { isId } from './layout/ids.js';
@@ -436,7 +436,7 @@ function checkWidget(widget, where) {
   if ((widget.size === 'aspect' || widget.aspect !== undefined) && !isRatio(widget.aspect))
     bad('aspect', 'a ratio like "4:5"');
   if (widget.z !== undefined && !Number.isInteger(widget.z)) bad('z', 'a whole number');
-  out.push(...checkFit(widget).map((p) => `${name}: ${p}`));
+  out.push(...checkScale(widget).map((p) => `${name}: ${p}`));
   out.push(...checkPlacement(widget).map((p) => `${name}: ${p}`));
   if (widget.motion !== undefined)
     out.push(...checkMotion(widget.motion).map((p) => `${name}: ${p}`));

@@ -1,8 +1,14 @@
 /**
- * Fit text: a text widget (FIT_TYPES) with "fit": true has its text as large as fills the
- * widget's WIDTH, its longest line edge to edge (each line on one line, never by its height),
- * worked out live in the page (src/client/modules/fit.js: --tkf). Off (the default), a text has
- * its style's size (the site's stylesheets).
+ * A Text widget's sizes. By default each line has its style's size (the site's stylesheets,
+ * src/client/styles/_text.scss). Two things change that, both worked out live in the page
+ * (src/client/modules/fit.js):
+ *
+ *   a line's "fit": true    Fit width (src/site/text.js): that line alone fills the widget's
+ *                           WIDTH, on one line (its own --tkf); the other lines keep theirs
+ *   the widget's "scale"    Scale to fit (the popup's switch, off by default): the whole text
+ *                           at its styles' normal sizes, scaled down as one, like a photo,
+ *                           until it fits the widget's width and (a fixed height) its height
+ *                           (the widget's --tks, never above 1); a fit line still fills the width
  *
  * Each text style is defined once, in cells of the 120-column grid (site.json "typography";
  * TEXT_STYLES are the defaults):
@@ -12,10 +18,9 @@
  *   size      font size in cells (on the phone grid half a cell each)
  *   line      line height, × the font size (so it scales with it)
  *   tracking  letter spacing, em (likewise)
- *   min       the smallest font size, px (fitted text has none)
+ *   min       the smallest font size, px (a fit line has none)
  *
- * A fitted widget's texts keep their styles' proportions (_layout.scss .wgt--fit): one factor
- * over them all.
+ * A fit line's size is in cells × its own factor (_layout.scss .ts[data-fit]).
  */
 import { isObject } from '../is.js';
 
@@ -31,11 +36,11 @@ export const TEXT_STYLES = {
 };
 const STYLE_KEYS = ['size', 'line', 'tracking', 'min'];
 
-/** Widget types whose text can fit (the toolbar's Fit). */
-export const FIT_TYPES = ['text', 'button'];
+/** Widget types whose text can scale to fit (the popup's Scale to fit). */
+export const SCALE_TYPES = ['text'];
 
-/** Is a widget's text fitted to its width? */
-export const fitted = (widget) => FIT_TYPES.includes(widget?.type) && widget?.fit === true;
+/** Does a widget's text scale down to fit it (Scale to fit)? */
+export const scaled = (widget) => SCALE_TYPES.includes(widget?.type) && widget?.scale === true;
 
 /** site.json typography merged over the defaults: { style: { size, line, tracking, min } }. */
 export function typographyOf(site) {
@@ -91,14 +96,16 @@ export function checkTypography(t) {
   return out;
 }
 
-/** Problems of a widget's "fit" (and the "scale" it replaced). */
-export function checkFit(widget) {
+/** Problems of a widget's "scale" (and the whole-widget "fit" a line's "fit" replaced). */
+export function checkScale(widget) {
   const out = [];
-  if (widget?.scale !== undefined)
-    out.push('"scale" is gone: use "fit": true (fit text to the width)');
-  if (widget?.fit === undefined) return out;
-  if (!FIT_TYPES.includes(widget.type))
-    out.push(`"fit" is for text widgets (${FIT_TYPES.join(', ')})`);
-  else if (typeof widget.fit !== 'boolean') out.push('"fit" must be true or false');
+  if (widget?.fit !== undefined)
+    out.push(
+      '"fit" is a line\'s now (a line\'s "fit": true): node scripts/rename-0-2-0.mjs converts it',
+    );
+  if (widget?.scale === undefined) return out;
+  if (!SCALE_TYPES.includes(widget.type))
+    out.push(`"scale" is for text widgets (${SCALE_TYPES.join(', ')})`);
+  else if (widget.scale !== true) out.push('"scale" must be true (or left out: off)');
   return out;
 }

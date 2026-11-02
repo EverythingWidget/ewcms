@@ -158,14 +158,14 @@ test('render: sections are grids, widgets carry their area; off is hidden', () =
       widget('text', {
         id: 'w-foll',
         link: { to: 'w-lead', gap: -3 },
-        fit: true,
+        scale: true,
       }),
     ]),
   ];
   const lo = renderSections(ctxOf(page), page, F, linked);
   assert.match(
     lo,
-    /class="wgt wgt--text wgt--auto wgt--fit"[^>]*" data-link="w-lead -3" data-mlink="w-lead -2"/,
+    /class="wgt wgt--text wgt--auto wgt--scale"[^>]*" data-link="w-lead -3" data-mlink="w-lead -2"/,
   );
   // a widget can't run past column 120
   const wide = [

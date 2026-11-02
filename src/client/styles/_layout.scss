@@ -35,9 +35,9 @@
  * desktop layout scaled down until its widgets are placed for it. Why 60 and not 120: a phone
  * is ~390px wide, and 120 columns would be ~3px cells; 60 give ~6px.
  *
- * Fit text (.wgt--fit, src/site/layout/type.js): sizes in --tcell, the 120-column grid's
- * cell (on the phone grid half a cell), × the style's size (--ts-<style>) × the widget's fit
- * factor (--tkf, src/client/modules/fit.js: its longest line fills its width).
+ * Fit width lines ([data-fit], src/site/layout/type.js): sizes in --tcell, the 120-column
+ * grid's cell (on the phone grid half a cell), × the style's size (--ts-<style>) × the line's
+ * fit factor (--tkf, src/client/modules/fit.js: it fills the widget's width).
  */
 
 // off (the editor's preview: the switch; the public page leaves them out): their display
@@ -219,43 +219,46 @@
 }
 
 /*
- * Fit text (.wgt--fit): its texts by style, in cells, × the widget's --tkf (fit.js), so its
- * styles keep their proportions. A style's size, line height (× the size) and tracking (em) are
- * --ts-<style>, -lh, -tr (defaults in _tokens.scss, site.json typography in the page's head).
- * Every line on one line (a soft break still breaks): the longest one fills the width.
+ * A Text widget's live sizes (src/client/modules/fit.js, src/site/layout/type.js).
+ * Fit width: a fit line ([data-fit]) in its style's size in cells × its own --tkf, on one line,
+ * filling the widget's width; ÷ --tks so it still fills it under Scale to fit. A style's size,
+ * line height (× the size) and tracking (em) are --ts-<style>, -lh, -tr (defaults in
+ * _tokens.scss, site.json typography in the page's head).
+ * Scale to fit (.wgt--scale): the text body at its normal sizes, kept at the width it was laid
+ * out at (--tkw), zoomed down as one (--tks); a word wider than the widget doesn't break.
  */
 @mixin fitted($style) {
-  font-size: calc(var(--tcell) * var(--ts-#{$style}) * var(--tkf, 1));
+  font-size: calc(var(--tcell) * var(--ts-#{$style}) * var(--tkf, 1) / var(--tks, 1));
   line-height: var(--ts-#{$style}-lh);
   letter-spacing: var(--ts-#{$style}-tr);
 }
-.wgt--fit {
-  .ts--title {
+.ts[data-fit] {
+  max-width: none;
+  white-space: nowrap;
+  &.ts--title {
     @include fitted('title');
   }
-  .ts--heading,
-  .section__title {
+  &.ts--heading {
     @include fitted('heading');
   }
-  .ts--subheading {
+  &.ts--subheading {
     @include fitted('subheading');
   }
-  .ts--statement {
+  &.ts--statement {
     @include fitted('statement');
   }
-  .ts--paragraph {
+  &.ts--paragraph {
     @include fitted('paragraph');
   }
-  .ts--small {
+  &.ts--small {
     @include fitted('small');
   }
-  .ts--label,
-  .page-head__crumb,
-  .btn {
+  &.ts--label {
     @include fitted('label');
   }
-  .ts {
-    max-width: none;
-    white-space: nowrap;
-  }
+}
+.wgt--scale .text__body {
+  width: var(--tkw, auto);
+  zoom: var(--tks, 1);
+  overflow-wrap: normal;
 }

@@ -30,7 +30,8 @@ export function readBody(root) {
     if (n.nodeType === 1 && n.matches(LINE)) {
       loose = null;
       const list = n.dataset.list ? { list: n.dataset.list } : {};
-      lines.push({ style: n.dataset.line, ...list, text: readRuns(n) });
+      const fit = n.dataset.fit !== undefined ? { fit: true } : {};
+      lines.push({ style: n.dataset.line, ...list, ...fit, text: readRuns(n) });
     } else if (n !== root && (n.nodeType === 3 ? n.textContent : true)) {
       if (n.nodeType === 1 && n.tagName === 'BR') continue;
       if (!loose) lines.push((loose = { style: 'paragraph', text: [] }));

@@ -62,7 +62,7 @@ import { isBinding, keysOf, resolve, resolveWidget } from './bindings.js';
 import { widgetItems } from './source.js';
 import { COLS, baseOf, phoneAreaOf, placeOf, setBase } from './grid.js';
 import { linkOf } from './links.js';
-import { fitted } from './type.js';
+import { scaled } from './type.js';
 import { placeClass, placeVars } from './place.js';
 import { contentPath } from '../files.js';
 
@@ -233,7 +233,7 @@ export function sectionAnchor(s) {
 
 /**
  * The classes of a widget's element: its type, size mode (wgt--aspect, wgt--auto; fixed rows:
- * neither), fitted text, hidden on phones.
+ * neither), Scale to fit (wgt--scale), hidden on phones.
  */
 export function widgetClass(widget) {
   const size = sizeOf(widget);
@@ -241,7 +241,7 @@ export function widgetClass(widget) {
   return (
     `wgt wgt--${widget?.type}` +
     (aspect ? ' wgt--aspect' : size === 'auto' || size === 'aspect' ? ' wgt--auto' : '') +
-    (fitted(widget) ? ' wgt--fit' : '') +
+    (scaled(widget) ? ' wgt--scale' : '') +
     placeClass(widget) +
     (widget?.layout?.phone === null ? ' wgt--m-hidden' : '')
   );

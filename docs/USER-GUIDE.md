@@ -25,7 +25,11 @@ A page is a stack of **sections**; each holds **widgets** (text, photo, button, 
 - **Double-click** a widget (or its row) opens its settings pop-up; the **gear** in its toolbar
   does too. Double-click text to edit it in place.
 - Drag a widget's top circle onto another's bottom circle to make it follow that widget.
-- **Lists** in text: the two list buttons in the text toolbar (after Fit), or type `- ` or `1. `
+- **Text sizes**: each line has its style's size. **Fit width** in the text toolbar (after
+  the style) makes the line the caret is in fill the widget's width; click it again for the
+  style's size. **Scale to fit** in a Text widget's pop-up (after Placement) scales the whole
+  text down, like a photo, when the widget is too narrow or too short for it.
+- **Lists** in text: the two list buttons in the text toolbar (after Fit width), or type `- ` or `1. `
   at the start of a line. Enter adds the next item; Enter on an empty item ends the list;
   Backspace at the start of an item makes it a normal line again.
 - **Ctrl/⌘+Z** undoes, Shift+Ctrl/⌘+Z redoes.

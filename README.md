@@ -386,12 +386,12 @@ every section is a grid of **widgets** (`src/site/layout/`):
     {
       "id": "w-c4pt",
       "type": "text",
-      "text": "Noor, Amsterdam 2026",
+      "body": [{ "style": "title", "fit": true, "text": [{ "t": "Noor, Amsterdam 2026" }] }],
       "layout": {
         "base": { "col": 61, "span": 40, "row": 26, "link": { "to": "w-2fq0", "gap": 1 } },
         "phone": null
       },
-      "fit": true
+      "scale": true
     }
   ]
 }
@@ -458,7 +458,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
 - **A page** has no grid setting: the page grid is always 120 columns (a `grid` key is
   refused).
 - **A widget:** its `type` and content (below), `layout` (below), `z` (its layer when widgets
-  overlap), `size`, `scale` (text widgets, below) and an optional `motion`
+  overlap), `size`, `scale` (Text widgets: Scale to fit, below) and an optional `motion`
   (`{ "animation": "fade-scrub", "start": "top 70%" }`: an animation from the library plus its own
   timing, see Animations).
 - **Size** (`size`): `auto` (**default**: as tall as its content), `aspect` (its width, from its
@@ -504,18 +504,30 @@ every section is a grid of **widgets** (`src/site/layout/`):
     with a minimum height a widget that fits in it gets the whole rows that fit (rows stay square, so up to a cell
     short; its content is still screen-high), centred. Without JavaScript the stored areas apply
     as they are (the editor keeps a follower's stored row at its leader's stored bottom + gap).
-- **Fit text** (`src/site/layout/type.js`): a text widget (`text`, `button`) with `"fit": true`
-  has its text as large as fills the widget's **width**: each line on one line, the longest one
-  edge to edge (never by its height; the widget's height follows, or is its Rows / Aspect).
-  `src/client/modules/fit.js` sets `--tkf` (one factor over its styles' sizes, so they keep
-  their proportions), on load, when the widget's width changes and on every edit; its own
-  height changing is not a change (no loop). Off (default): the style's normal fixed size from
-  the stylesheets. The styles are set once in `site.json` `typography` (Settings ›
+- **Text sizes** (`src/site/layout/type.js`): by default each line of a Text widget has its
+  style's normal size from the stylesheets (`_text.scss`, the same at any widget width; no cap
+  by the widget's width any more). Two things change that, both worked out live by
+  `src/client/modules/fit.js` (on load, when the widget's width changes, a fixed-height
+  widget's height too, and on every edit, at most once a frame; the height it gives an Auto
+  widget is not a change, so no loop):
+  - **Fit width**, a line's `"fit": true` (any style; `[data-fit]` on the page): that line
+    alone fills the widget's **width**, on one line (its own `--tkf` over its style's size in
+    cells; never by its height). The other lines keep their style's size.
+  - **Scale to fit**, the widget's `"scale": true` (off by default; `.wgt--scale`): the whole
+    text is laid out at its normal sizes at the widget's width, then scaled down as one, like a
+    photo (`--tks`, the text body's zoom, at its laid-out width `--tkw`), until it fits the
+    widget's width (a word wider than it no longer breaks) and, with a fixed height (Rows,
+    Aspect), its height. Same line breaks and proportions; shrink only. A Fit width line still
+    fills the width.
+
+  The styles are set once in `site.json` `typography` (Settings ›
   Typography), each in cells of the 120-column grid:
   `{ "paragraph": { "size": 1.4, "line": 1.75, "tracking": 0, "min": 14 } }`: font size (cells),
   line height (× the size), letter spacing (em) and a minimum font size (px). Defaults: title
   19, heading 3, subheading 2, statement 5, paragraph 1.4, label 1 (also a button), small 1.05.
-  In the editor: the toolbar's **Fit** icon (edit mode, after Style).
+  In the editor: the toolbar's **Fit width** icon (edit mode, after Style: the caret's line)
+  and the **Scale to fit** switch in the widget's pop-up (Content, after Placement).
+
 - **Phones** (below 760px): every section is a **60-column** square grid (`--cell` = width /
   60, ~6px at 390px; its rows `--mrows`). Nothing stacks: a widget without a phone area of its
   own shows its **desktop area halved** (columns and rows, rounded to the cells it covers:
@@ -537,7 +549,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   sections (above and below): empty rows are the space.
 - **Validation:** Save and the build check the layout (ids, enums, whole numbers, a widget
   ending by column 120 (60 on the phone), links within their section to a widget that is
-  there and without loops, `scale` on text widgets only, `typography` styles, no id twice on a page,
+  there and without loops, `scale` on Text widgets only (a widget's `fit` is refused: a line's now), `typography` styles, no id twice on a page,
   section names unique on their page and valid anchors (above), no section `aspect` /
   `spacing` / `mobile` / `rows` / `align`, which are gone) and each widget against its type (strings, lists,
   config values). An unknown widget type isn't an error: it logs a build warning and is skipped.
@@ -1531,6 +1543,8 @@ changing only those lines; a script it can't match exactly it names, to change b
 | `settings/site.json`                          | `"ogImage"`                                    | `"ogPhoto"`                                    |
 | a page's `meta`                               | `"image"` (its share photo)                    | `"photo"`                                      |
 | the site's `package.json` scripts             | `"images": "ewcms images"`, `--no-images`      | `"photos": "ewcms photos"`, `--no-photos`      |
+| a Text widget                                 | `"fit": true` (the whole widget)               | `"fit": true` on each of its lines             |
+| a Button widget                               | `"fit": true`                                  | (dropped: its label's style size)              |
 
 A theme's own widget code (not content) needs, by hand: field type `'block'` is
 `'multiline'` (also in `ed(…, 'multiline')`); the third argument of `render(data, ctx, widget)`

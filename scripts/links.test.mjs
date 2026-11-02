@@ -12,7 +12,7 @@ import {
   newWidget,
 } from '../src/site/layout/index.js';
 import {
-  checkFit,
+  checkScale,
   checkTypography,
   typographyOf,
   typographyVars,
@@ -258,20 +258,22 @@ test('fit text: per widget, one boolean; site typography over the defaults', () 
     layout: { base: { col: 1, span: 120, row: 1, rows: 1 } },
     ...more,
   });
-  assert.doesNotMatch(widgetClass(t()), /fit/);
-  assert.match(widgetClass(t({ fit: true })), / wgt--fit$/);
-  assert.doesNotMatch(widgetClass(t({ fit: false })), /fit/);
-  assert.doesNotMatch(widgetVars(t({ fit: true })), /--tk/);
-  // only text widgets fit
-  assert.doesNotMatch(widgetClass({ ...t({ fit: true }), type: 'photo' }), /fit/);
-  assert.deepEqual(checkFit({ type: 'photo', fit: true }), [
-    '"fit" is for text widgets (text, button)',
+  assert.doesNotMatch(widgetClass(t()), /scale/);
+  assert.match(widgetClass(t({ scale: true })), / wgt--scale$/);
+  assert.doesNotMatch(widgetClass(t({ scale: false })), /scale/);
+  assert.doesNotMatch(widgetVars(t({ scale: true })), /--tk/);
+  // only text widgets scale
+  assert.doesNotMatch(widgetClass({ ...t({ scale: true }), type: 'photo' }), /scale/);
+  assert.deepEqual(checkScale({ type: 'photo', scale: true }), [
+    '"scale" is for text widgets (text)',
   ]);
-  assert.deepEqual(checkFit({ type: 'text', fit: 'yes' }), ['"fit" must be true or false']);
-  assert.deepEqual(checkFit({ type: 'text', fit: true }), []);
-  assert.deepEqual(checkFit({ type: 'text', scale: { on: true } }), [
-    '"scale" is gone: use "fit": true (fit text to the width)',
+  assert.deepEqual(checkScale({ type: 'text', scale: 'yes' }), [
+    '"scale" must be true (or left out: off)',
   ]);
+  assert.deepEqual(checkScale({ type: 'text', scale: true }), []);
+  assert.deepEqual(checkScale({ type: 'text' }), []);
+  assert.equal(checkScale({ type: 'text', fit: true }).length, 1);
+  assert.match(checkScale({ type: 'text', fit: true })[0], /a line's now/);
   assert.equal(typographyOf({}).paragraph.size, 1.4);
   const site = { typography: { paragraph: { size: 1.6, min: 15 }, title: { tracking: -0.03 } } };
   assert.deepEqual(typographyOf(site).paragraph, { size: 1.6, line: 1.75, tracking: 0, min: 15 });

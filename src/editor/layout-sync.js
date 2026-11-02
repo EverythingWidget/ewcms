@@ -123,7 +123,7 @@ function applyLayout(el, s, moved = [], touched = { layout: false }) {
     const cls = widgetClass(widget);
     const wasNode = node.className + '|' + node.style.cssText + node.hidden;
     node.className = cls;
-    const kept = ['--fr', '--frs', '--tkf']
+    const kept = ['--fr', '--frs', '--tks', '--tkw']
       .map((v) => [v, node.style.getPropertyValue(v)])
       .filter(([, x]) => x)
       .map(([v, x]) => `;${v}:${x}`)
