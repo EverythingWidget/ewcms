@@ -1410,10 +1410,9 @@ to the chosen scope as a start and can be edited; switching off removes it (one 
 the animation does is read-only here.
 
 A page's Motion tab is always the whole page: its widgets, grouped by section (a picked widget
-or element opens in place, under its row), and at the bottom the **Page entrance**
-card (how visitors arrive at this page: the page's curtain, Site default or Off (page fade), with
-a link to Settings > Page entrance). The page's backdrop is the **Scroll backdrop** card, last in
-its Sections tab. The Animations library and the default timing are in Settings > Motion (an
+or element opens in place, under its row), and at the bottom the page's own cards: **Scroll backdrop** (its backdrop), then **Page entrance**
+(how visitors arrive at this page: the page's curtain, Site default or Off (page fade), with
+a link to Settings > Page entrance). The Animations library and the default timing are in Settings > Motion (an
 element's Animation edit button opens the library there), next to the one **Page entrance**
 section (the site's curtain and page fade). The library is the only place that defines what an animation
 does: pick an animation to edit `animations["fade-up"]`, every value including timing, and add

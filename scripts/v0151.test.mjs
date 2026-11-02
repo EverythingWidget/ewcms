@@ -124,11 +124,11 @@ test('Page entrance: one Settings section (curtain, page fade); the page card li
   assert.doesNotMatch(src('svelte/TransitionCard.svelte'), /TransitionBackdrop|Backdrop:/);
   assert.match(
     src('svelte/ScrollBackdropCard.svelte'),
-    /title="Scroll backdrop"\s*name="Backdrop: \{backdrop\}"/,
+    /title="Scroll backdrop"\s*name="Scroll backdrop: \{backdrop\}"/,
   );
   assert.match(
-    src('svelte/ContentPanel.svelte'),
-    /\{#if isPage\}<ScrollBackdropCard \{live\} \{file\} \/>\{\/if\}/,
+    src('svelte/MotionPanel.svelte'),
+    /<ScrollBackdropCard \{live\} \{file\} \/>\s*<TransitionCard /,
   );
   const mp = src('svelte/MotionPanel.svelte');
   assert.match(mp, /ui\.sections\['settings:entrance'\] = true;/);

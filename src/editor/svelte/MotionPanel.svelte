@@ -2,8 +2,8 @@
   A page's Motion tab (ContentPanel.svelte), always the whole page: its widgets, a card per
   section, each with its animation and its elements that have their own (data-anim inside it:
   the hero's photos, a heading's title, ...), then the animated elements outside the widgets
-  (fixed elements), then the Page entrance card (TransitionCard.svelte: the page's
-  curtain; its backdrop is the Sections tab's Scroll backdrop card). The widget or element picked (ui.anim, from the preview or the list; a second click
+  (fixed elements), then the page's own cards: Scroll backdrop (ScrollBackdropCard.svelte:
+  its backdrop) and Page entrance (TransitionCard.svelte: its curtain). The widget or element picked (ui.anim, from the preview or the list; a second click
   on its row drops it) opens in place, under its row: a widget's motion (WidgetMotion), an
   element's animation (AnimEditor).
   The animations themselves (the library) and the default timing are in Settings
@@ -13,6 +13,7 @@
   import { tick } from 'svelte';
   import AnimEditor from './AnimEditor.svelte';
   import WidgetMotion from './WidgetMotion.svelte';
+  import ScrollBackdropCard from './ScrollBackdropCard.svelte';
   import TransitionCard from './TransitionCard.svelte';
   import Section from './Section.svelte';
   import { ui, pickElement, hoverElement } from './ui.svelte.js';
@@ -161,6 +162,7 @@
         </ol>
       </Section>
     {/if}
+    <ScrollBackdropCard {live} {file} />
     <TransitionCard {live} onsettings={openEntranceSettings} />
   </div>
 {/if}

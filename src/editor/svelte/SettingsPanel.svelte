@@ -7,8 +7,8 @@
   and the page fade, settings/animations.json), where uploaded photos are served from (site.json mediaUrl)
   and the text styles scaled text uses (Typography: site.json typography, in cells,
   src/site/layout/type.js; the preview follows them as they are typed).
-  Per-page things stay in Nav, on the page (sections; Motion: its animations and
-  curtain; Sections: its scroll backdrop; SEO); the header's menu and labels are the Header site part in Content
+  Per-page things stay in Nav, on the page (sections; Motion: its animations, scroll
+  backdrop and curtain; SEO); the header's menu and labels are the Header site part in Content
   (HeaderPart.svelte). redirects.json is in Redirects (RedirectSettings.svelte).
 -->
 <script>

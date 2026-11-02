@@ -11,9 +11,8 @@
                  gear), a widget's in another (WidgetPopup.svelte, ui.widget; a widget row's
                  double click or Enter, or the widget clicked in the preview); one at a time. The Add widget modal (WidgetsModal.svelte): the
                  widget added opens
-                 Last, the page's Scroll backdrop card (ScrollBackdropCard.svelte).
-    Motion       MotionPanel.svelte: the widgets' animations, then the Page entrance card
-                 (the page's curtain). While it is open (ui.pageTab 'motion') the
+    Motion       MotionPanel.svelte: the widgets' animations, then the page's cards:
+                 Scroll backdrop (its backdrop) and Page entrance (its curtain). While it is open (ui.pageTab 'motion') the
                  preview's clicks animate (previewClicks, ui.svelte.js): they pick a widget or
                  an animated part. The top tab stays Nav.
     SEO          SeoSection.svelte
@@ -41,7 +40,6 @@
   import { createPopup } from '../widget-popup.js';
   import WidgetsModal from './WidgetsModal.svelte';
   import SectionPopup from './SectionPopup.svelte';
-  import ScrollBackdropCard from './ScrollBackdropCard.svelte';
   import SectionsList from './SectionsList.svelte';
   import SectionToolbar from './SectionToolbar.svelte';
   import { locate } from '../locate.js';
@@ -303,7 +301,6 @@
     {:else if file && shownTab === 'sections'}
       <div class="list">
         <SectionsList {live} {bridge} {file} onopen={openWidget} onsection={openSection} />
-        {#if isPage}<ScrollBackdropCard {live} {file} />{/if}
       </div>
     {:else}
       {#if isPage && shownTab === 'motion'}

@@ -1,6 +1,7 @@
 <!--
-  A page's Sections tab, last (after the section cards and Add section): the Scroll backdrop
-  card, a section card (Section.svelte) whose second line sums it up ("Backdrop: on"). Inside
+  A page's Motion tab, after the widgets and before the Page entrance card: the Scroll
+  backdrop card, a section card (Section.svelte) whose second line sums it up ("Scroll
+  backdrop: on"). Inside
   it, the page's backdrop (TransitionBackdrop.svelte: page.backdrop, its photos and how they
   change as the visitor scrolls).
     live  reactive store; file  the page file
@@ -26,7 +27,7 @@
   key="page:backdrop"
   id="scroll-backdrop"
   title="Scroll backdrop"
-  name="Backdrop: {backdrop}"
+  name="Scroll backdrop: {backdrop}"
 >
   <p class="hint">The images behind the page's sections that change as the visitor scrolls.</p>
   <TransitionBackdrop {live} {file} />
