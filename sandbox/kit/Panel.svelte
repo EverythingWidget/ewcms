@@ -30,7 +30,7 @@
   ];
   const PAGE_TABS = [
     ['sections', 'Sections'],
-    ['transitions', 'Transitions'],
+    ['motion', 'Motion'],
     ['seo', 'SEO'],
   ];
 </script>

@@ -99,7 +99,7 @@
     icon="rotate-right"
     iconOnly
     label="Replay"
-    title="Replay: play the transition over this page with these values (no navigation)"
+    title="Replay: play the curtain over this page with these values (no navigation)"
     onclick={() => bridge.api?.replayCurtain?.(undefined, edit.get(edit.base) ?? true)}
   />
   <label class={['tf', changed('/total') && 'is-changed']}>

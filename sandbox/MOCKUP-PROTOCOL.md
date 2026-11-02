@@ -139,7 +139,7 @@ link colour, eye, Duplicate, Delete; no grip, no order). Put it in a `<ul>`.
 | prop       | type                                            | default                     | meaning                                                             |
 | ---------- | ----------------------------------------------- | --------------------------- | ------------------------------------------------------------------- |
 | `mode`     | `'text'`\|`'motion'`\|`'settings'`\|`'preview'` | `'text'`                    | active mode tab (`text` = "Content"; `preview`: ▶ on, no mode tabs) |
-| `tab`      | `'sections'`\|`'transitions'`\|`'seo'`          | `'sections'`                | page tab (only in `text`)                                           |
+| `tab`      | `'sections'`\|`'motion'`\|`'seo'`               | `'sections'`                | page tab (only in `text`; Motion holds the Page entrance card)      |
 | `tabs`     | bool                                            | `true`                      | `false` hides the page tabs                                         |
 | `height`   | CSS length                                      | `'844px'`                   | panel height (body scrolls)                                         |
 | `changes`  | number                                          | `0`                         | unsaved count: "Unsaved changes", Save · N, Undo on                 |
