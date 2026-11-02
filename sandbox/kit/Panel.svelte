@@ -3,7 +3,7 @@
   (Sources, Media … Preview | phone, undo, redo), the mode tabs, the page head (PageHead.svelte's
   look: ← title / path; page: { title, path }, false hides it), the page tabs (the real Tabs),
   the scroll body (.ed-body) and the Save / Publish footer.
-    mode     'text' | 'motion' | 'settings' | 'preview' (default 'text'; preview: ▶ on, no mode tabs)
+    mode     'text' | 'settings' | 'preview' (default 'text' = Pages; preview: ▶ on, no mode tabs)
     tab      the page tab shown (default 'sections'); tabs: false hides them
     height   the panel's height (default 844px)       pending  the footer's line
     changes  unsaved changes (Save · N)               children the body
@@ -25,7 +25,6 @@
   } = $props();
   const MODES = [
     ['text', 'Pages'],
-    ['motion', 'Motion'],
     ['settings', 'Settings'],
   ];
   const PAGE_TABS = [
@@ -53,7 +52,7 @@
         <Tabs class="ed-modes" role="navigation" fill label="Mode" tabs={MODES} value={mode} onpick={() => {}} />
       {/if}
     </header>
-    {#if page && (mode === 'text' || mode === 'motion')}
+    {#if page && mode === 'text'}
       <div class="kit-ph">
         <Button size="small" icon="arrow-left" iconOnly label="Back to pages" />
         <div>

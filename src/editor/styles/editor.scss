@@ -255,8 +255,8 @@ kbd {
   }
 }
 
-// a tab pane's heading (Pages > a page > Page motion > Transition: Backdrop, Curtain): 32px, uppercase, a switch
-// at its end; plain fields under it (no card)
+// a tab pane's heading (Pages > a page > Page motion > Scroll backdrop / Page entrance): 32px,
+// uppercase, a switch at its end; plain fields under it (no card)
 .pane__head {
   @include row(var(--space-2));
   height: 32px;

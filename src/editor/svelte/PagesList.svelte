@@ -514,7 +514,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="pl" bind:this={root} {onkeydown}>
-  <!-- in a folder: ← RETURN TO /parent/ (the whole row one button, as Return to navigation);
+  <!-- in a folder: ← RETURN TO /parent/ (the whole row one button, as Back to pages);
        then / photography/                    [ + ]   (the top: just / and +) -->
   {#if level}
     <button
@@ -608,7 +608,7 @@
     margin-bottom: var(--space-1);
   }
 
-  // ← RETURN TO /parent/: the whole row one button, 32px, as PageHead's Return to navigation
+  // ← RETURN TO /parent/: the whole row one button, 32px, as PageHead's Back to pages
   // (muted, 11px, uppercase; the path as it is); hovered: a --c-control-hover fill 8px past
   // its content each side (drawn outside it: nothing moves), the text --c-text
   .pl-return {
