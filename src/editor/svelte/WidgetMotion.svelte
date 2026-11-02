@@ -5,12 +5,12 @@
   'widget': off shows the animation's value, dimmed). What the animation does is read-only here:
   it is edited in the Animations library (Settings > Motion) (Edit). Below, the widget's elements with their own
   animation (data-anim inside it: the hero's photos, a heading's title, ...), each opening in
-  the Motion tab.
-  Used by the Motion tab (MotionPanel).
+  the Element motion tab.
+  Used by the Element motion tab (MotionPanel).
     file, at, j   where the widget is: sections[at].widgets[j] of the page file
     el            its element in the preview (null when not shown)
     onlibrary     (name) open the animation in the Animations library (Settings > Motion)
-    onelement        (el) open an element in the Motion tab
+    onelement        (el) open an element in the Element motion tab
 -->
 <script>
   import Button from './Button.svelte';

@@ -1,5 +1,5 @@
 <!--
-  A page's Motion tab, last: the Page entrance card (how visitors arrive at this page), a
+  A page's Page motion tab (PageMotionPanel.svelte), after Scroll backdrop: the Page entrance card (how visitors arrive at this page), a
   section card (Section.svelte) whose second line sums it up ("Curtain: site default" or
   "Curtain: off (page fade)"). Inside it, the page's curtain (TransitionPageCurtain.svelte).
   The page's backdrop is its own card just above (ScrollBackdropCard.svelte).

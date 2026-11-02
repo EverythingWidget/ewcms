@@ -1,5 +1,5 @@
 <!--
-  Nav > a page > Motion > Page entrance: the page's curtain, plain fields under a "Curtain" heading. Site default
+  Pages > a page > Page motion > Page entrance: the page's curtain, plain fields under a "Curtain" heading. Site default
   (the site's curtain, its timing in Settings > Page entrance) or Off (no curtain when you
   navigate here: a page fade),
   and the curtain's text: unset, the page's title (the placeholder); ✕ stores "" (No label:

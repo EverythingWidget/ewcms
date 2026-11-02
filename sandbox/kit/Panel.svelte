@@ -24,13 +24,14 @@
     children,
   } = $props();
   const MODES = [
-    ['text', 'Content'],
+    ['text', 'Pages'],
     ['motion', 'Motion'],
     ['settings', 'Settings'],
   ];
   const PAGE_TABS = [
     ['sections', 'Sections'],
-    ['motion', 'Motion'],
+    ['element-motion', 'Element motion'],
+    ['page-motion', 'Page motion'],
     ['seo', 'SEO'],
   ];
 </script>
@@ -54,7 +55,7 @@
     </header>
     {#if page && (mode === 'text' || mode === 'motion')}
       <div class="kit-ph">
-        <Button size="small" icon="arrow-left" iconOnly label="Pages" />
+        <Button size="small" icon="arrow-left" iconOnly label="Back to pages" />
         <div>
           <b>{page.title}</b>
           <span>{page.path}</span>

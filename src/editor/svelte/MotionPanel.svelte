@@ -1,20 +1,18 @@
 <!--
-  A page's Motion tab (ContentPanel.svelte), always the whole page: its widgets, a card per
+  A page's Element motion tab (ContentPanel.svelte, ui.pageTab 'element-motion'), always the
+  whole page: its widgets, a card per
   section, each with its animation and its elements that have their own (data-anim inside it:
   the hero's photos, a heading's title, ...), then the animated elements outside the widgets
-  (fixed elements), then the page's own cards: Scroll backdrop (ScrollBackdropCard.svelte:
-  its backdrop) and Page entrance (TransitionCard.svelte: its curtain). The widget or element picked (ui.anim, from the preview or the list; a second click
+  (fixed elements). The page's own cards (Scroll backdrop, Page entrance) are the Page motion
+  tab's (PageMotionPanel.svelte). The widget or element picked (ui.anim, from the preview or the list; a second click
   on its row drops it) opens in place, under its row: a widget's motion (WidgetMotion), an
   element's animation (AnimEditor).
   The animations themselves (the library) and the default timing are in Settings
   (MotionSettings.svelte). The widget picked is the Sections tab's widget too.
 -->
 <script>
-  import { tick } from 'svelte';
   import AnimEditor from './AnimEditor.svelte';
   import WidgetMotion from './WidgetMotion.svelte';
-  import ScrollBackdropCard from './ScrollBackdropCard.svelte';
-  import TransitionCard from './TransitionCard.svelte';
   import Section from './Section.svelte';
   import { ui, pickElement, hoverElement } from './ui.svelte.js';
   import { motionSections } from './page-motion.js';
@@ -29,16 +27,6 @@
   function openLibrary(name = '') {
     ui.library = { name };
     actions.setPanel('settings');
-  }
-
-  /** Settings, its Page entrance section opened and scrolled to (the site's curtain and page fade). */
-  async function openEntranceSettings() {
-    ui.sections['settings:entrance'] = true;
-    actions.setPanel('settings');
-    await tick();
-    document
-      .querySelector('[data-section="page-entrance"]')
-      ?.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 
   const cfg = $derived(live.current(ANIMATIONS));
@@ -162,8 +150,6 @@
         </ol>
       </Section>
     {/if}
-    <ScrollBackdropCard {live} {file} />
-    <TransitionCard {live} onsettings={openEntranceSettings} />
   </div>
 {/if}
 

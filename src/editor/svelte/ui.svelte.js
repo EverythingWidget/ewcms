@@ -3,15 +3,17 @@ import { popupStays } from '../multi-select.js';
  * Where the editor is, in three names (no others):
  *
  *   ui.panel      what the side panel shows, its top tab:
- *                   'nav'       the pages list, or the page open with its page tabs
+ *                   'nav'       the Pages tab: the pages list, or the page open with its page tabs
  *                   'settings'  what is the same on every page
  *                   'preview'   the toolbar's Preview toggle: the unsaved and unpublished changes
- *   ui.pageTab    the open page's tab, under Nav: 'sections' | 'motion' | 'seo'; null when no
+ *   ui.pageTab    the open page's tab, under Pages: 'sections' | 'element-motion' (Element
+ *                 motion) | 'page-motion' (Page motion) | 'seo'; null when no
  *                 page is open (the pages list, the Header or Footer). Kept per page in
  *                 ui.sections["pagetab:<file>"] (ContentPanel.svelte).
  *   previewClicks()  what a click in the preview does, from the two above:
- *                   'arrange'   pick and move widgets, double click to type (Nav, not on Motion)
- *                   'animate'   pick a widget or an animated element (a page's Motion tab)
+ *                   'arrange'   pick and move widgets, double click to type (Pages, not on
+ *                               Element motion)
+ *                   'animate'   pick a widget or an animated element (a page's Element motion tab)
  *                   'visitor'   links work, nothing is picked (Settings, Preview)
  *
  * Editor UI state. main.js changes it, the Svelte shell (App.svelte) shows it: it is a
@@ -52,9 +54,9 @@ export const ui = $state({
   focusParam: null,
   /** The path shown in the preview ("/people/noor-vermeer/"). */
   path: '/',
-  /** What the Nav tab edits: a page { kind: 'page', path, title } or a site part { kind: 'part', id: 'header' | 'footer', title }. */
+  /** What the Pages tab edits: a page { kind: 'page', path, title } or a site part { kind: 'part', id: 'header' | 'footer', title }. */
   target: { kind: 'page', path: '/', title: 'Home' },
-  /** Bumped when the preview shows a (new) page: the Nav tab re-reads its texts. */
+  /** Bumped when the preview shows a (new) page: the Pages tab re-reads its texts. */
   previewVersion: 0,
   /**
    * The text picked in the preview or in a field: { edit } (its data-edit), or null.
@@ -69,7 +71,7 @@ export const ui = $state({
   /** A custom section's rows while its bottom edge is dragged in the preview: { id, rows } (overlay.js). */
   secRows: null,
   /**
-   * The animated element picked in the Motion tab: { el, id, key, scope }, or null.
+   * The animated element picked in the Element motion tab: { el, id, key, scope }, or null.
    * scope: where its edits go: 'element' | 'target' (see motion.js).
    */
   anim: null,
@@ -129,7 +131,7 @@ export const ui = $state({
    * ('all' | 'r2' | 'local') and the field it picks for (its data-edit, '' = just managing).
    */
   media: { open: false, key: '', filter: 'all', pick: '' },
-  /** The pages list (Nav tab): open or not, and the folder it shows ('' = content/en/pages/ itself). */
+  /** The pages list (Pages tab): open or not, and the folder it shows ('' = content/en/pages/ itself). */
   pagesWin: { open: false, folder: '' },
   /** Settings > Motion, the Animations library: the animation open ('' = the list). */
   library: { name: '' },
@@ -138,7 +140,7 @@ export const ui = $state({
 /** What a click in the preview does now: 'arrange' | 'animate' | 'visitor' (see above). */
 export function previewClicks() {
   if (ui.panel !== 'nav') return 'visitor';
-  return ui.pageTab === 'motion' ? 'animate' : 'arrange';
+  return ui.pageTab === 'element-motion' ? 'animate' : 'arrange';
 }
 
 /**
@@ -183,7 +185,7 @@ export function selectSections(ids, last = ids.at(-1) ?? null) {
 }
 
 /**
- * A pick in the preview's Motion tab: a widget ({ el, widget }) or a data-anim element
+ * A pick in the preview's Element motion tab: a widget ({ el, widget }) or a data-anim element
  * ({ el, id, key, owner, scope }). The widget (or the element's) is also the Sections tab's widget
  * (ui.widget), so both tabs show the same one.
  */

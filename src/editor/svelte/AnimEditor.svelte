@@ -1,5 +1,5 @@
 <!--
-  Motion tab, one animated element (ui.anim, picked in the preview or in the page's widgets list):
+  Element motion tab, one animated element (ui.anim, picked in the preview or in the page's widgets list):
   replay and scroll it, pick where edits go (this widget's elements with its data-anim name, the
   widget's motion.elements in the page file; or every element with that name), its animation, and its timing (a Custom switch per field, MotionGroups).
   What the animation does is shown read-only: it is edited in the Animations library (Settings > Motion)

@@ -1182,8 +1182,8 @@ loads pages with `?draft=…`) always gets the site, so the editor never opens i
 `/about/?edit` in dev.
 
 Layout: the real site in a same-origin iframe, with a glass side panel. The page (or site part)
-being edited is named at the top of the Content and Motion tabs (`PageHead.svelte`), a column on
-the panel's 12px edges: **Return to navigation** (back to the pages list; its arrow where the
+being edited is named over its page tabs (`PageHead.svelte`), a column on
+the panel's 12px edges: **Back to pages** (back to the pages list in the **Pages** tab; its arrow where the
 list's ← is), its title, its path (a path part: that folder; a site part: its title only; a
 `[param]/` part, its slash too, in the widget accent). A `[param]` page has a **Preview** line
 under it, its values in the widget accent (`Preview noor-vermeer / 2018 ▾`): the page of it the
@@ -1235,8 +1235,8 @@ show a folder's "All …" link first, as its root row is first here.
 Rows show only their own segment under the folder (`people/`; elsewhere the full path) and
 titles and paths as written. A click selects a row and shows it in the preview; a double click
 (or Enter) goes into the page's level (any page: a plain one shows its root row and "No sub
-pages yet"), and on a level's root row, Home, 404, Header or Footer opens it (its Sections, Motion,
-SEO tabs). Every row also has a quiet **edit** button (a pen, 30% until hovered or
+pages yet"), and on a level's root row, Home, 404, Header or Footer opens it (its Sections, Element motion,
+Page motion, SEO tabs; Header and Footer have their own). Every row also has a quiet **edit** button (a pen, 30% until hovered or
 focused, like the trash) that opens that page's Sections the same way in one click (no select,
 no drag; Header and Footer open theirs; a `[param]` page that builds no pages too, to fix its main widget). A row's end is fixed 24px slots, `edit | trash | ›`
 (an empty slot where a row has no trash, as Home, 404 and Site), so the buttons line up; the
@@ -1310,7 +1310,7 @@ is for the selection, the circles and the link lines). Nothing selected: no grid
 a Shadow DOM). In the **phone preview** a drag edits the widget's phone area on the 60-column
 grid, snapping to its cells, and links are the phone's: a widget without a phone area starts
 from its desktop area halved, and its first phone drag or link gives it its own (its desktop
-link comes along, the gap halved). The Motion tab picks animated elements instead (no
+link comes along, the gap halved). The Element motion tab picks animated elements instead (no
 dragging); Preview uses the site normally.
 
 The **Layout** tab (`LayoutTab.svelte`) holds only what can't be dragged, for the layout the
@@ -1371,8 +1371,8 @@ in the URL reopens it.
 
 **Refresh** keeps your place. The URL holds the page (its path), the tab, Menu/Footer and the open Source
 Explorer item, so a shared link opens the same view:
-`/photography/people/?edit&source=people&item=noor-vermeer` (`tab`: nav, settings, preview;
-the page's own tab, Sections | Motion | SEO, is kept per page in sessionStorage; `view`: header,
+`/photography/people/?edit&source=people&item=noor-vermeer` (`tab`: nav (the **Pages** tab), settings, preview;
+the page's own tab, Sections | Element motion | Page motion | SEO, is kept per page in sessionStorage; `view`: header,
 footer; `animation`: Settings > Motion's Animations library, open on that animation). Open/closed sections, the selected field or Motion
 element and the scroll positions are kept per browser tab in sessionStorage. See
 `src/editor/svelte/persist.js`.
@@ -1387,11 +1387,11 @@ In the edit modes, clicks select instead of following links (in Content no link,
 form acts). Hold **Alt** to click through.
 
 In the editor and in `animations.json` (`animations`) it is an **animation**. The
-Motion tab's **Elements** list is the page's **widgets**, grouped by section (each with its
+Element motion tab's list is the page's **widgets**, grouped by section (each with its
 animation or "none", and the `data-anim` elements inside it nested below), then **Outside the
 widgets** (curtain, header…). Selecting a widget in the preview selects it in the list
 and the other way round; a widget selected in the Content tab is the one shown when you switch
-to Motion. A **widget** shows its Animation (none or any widget animation; the edit button opens
+to Element motion. A **widget** shows its Animation (none or any widget animation; the edit button opens
 it in the library), its timing (Custom switches, stored in the widget's `motion`) and **Use the
 animation's timing** (drops all its overrides); **Replay** plays just that widget. An **element**
 or global element is edited as before; choose where its edits go:
@@ -1409,8 +1409,10 @@ dimmed and inert (no clicks, no focus); nothing is stored. On: the inherited val
 to the chosen scope as a start and can be edited; switching off removes it (one undo step). Everything else
 the animation does is read-only here.
 
-A page's Motion tab is always the whole page: its widgets, grouped by section (a picked widget
-or element opens in place, under its row), and at the bottom the page's own cards: **Scroll backdrop** (its backdrop), then **Page entrance**
+A page's Element motion tab is always the whole page: its widgets, grouped by section (a picked widget
+or element opens in place, under its row), then Outside the widgets; the preview's clicks pick
+what to animate. Its Page motion tab holds the page's own cards (the preview's clicks arrange
+there, as on Sections): **Scroll backdrop** (its backdrop), then **Page entrance**
 (how visitors arrive at this page: the page's curtain, Site default or Off (page fade), with
 a link to Settings > Page entrance). The Animations library and the default timing are in Settings > Motion (an
 element's Animation edit button opens the library there), next to the one **Page entrance**

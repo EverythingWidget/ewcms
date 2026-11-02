@@ -1,5 +1,5 @@
 <!--
-  A page's Motion tab, after the widgets and before the Page entrance card: the Scroll
+  A page's Page motion tab (PageMotionPanel.svelte), first, before the Page entrance card: the Scroll
   backdrop card, a section card (Section.svelte) whose second line sums it up ("Scroll
   backdrop: on"). Inside
   it, the page's backdrop (TransitionBackdrop.svelte: page.backdrop, its photos and how they

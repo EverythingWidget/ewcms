@@ -33,7 +33,7 @@
 
   let publishDialog = $state();
   const publish = () => publishDialog.open();
-  // The Source Explorer lives in the Nav tab (ContentPanel.svelte); it opens itself when
+  // The Source Explorer lives in the Pages tab (ContentPanel.svelte); it opens itself when
   // ui.explorer.open is set (SourcesModal.svelte), on the list of files.
   function openSources() {
     ui.explorer = { open: true, file: '', index: 0, field: '' };
@@ -42,7 +42,7 @@
 
   // [panel, label, icon]: a tab with an icon shows only the icon (ui.panel, ui.svelte.js)
   const TABS = [
-    ['nav', 'Nav'],
+    ['nav', 'Pages'],
     ['settings', 'Settings'],
   ];
   const nav = $derived(ui.panel === 'nav');

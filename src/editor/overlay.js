@@ -7,7 +7,7 @@
  *             widget is selected (and so while it is dragged or resized) or an empty
  *             section's settings pop-up is open (ui.section), from the section's own computed grid: faint white lines, every 5th a little stronger. Nothing
  *             selected: no grid
- *   Arrange   arrange clicks (ui.svelte.js previewClicks: Nav, not a page's Motion tab): a click picks a widget (the widget inspector opens),
+ *   Arrange   arrange clicks (ui.svelte.js previewClicks: Pages, not a page's Element motion tab): a click picks a widget (the widget inspector opens),
  *             a click on empty space (no widget, handle, circle or link line) or Esc (main /
  *             App.svelte) drops the selection (the panel shows the sections again),
  *             a drag moves it and the handles on its edges and corners resize it; a double

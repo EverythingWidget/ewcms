@@ -1,9 +1,9 @@
 <!--
-  Nav tab: the pages list (PagesList.svelte, while ui.pagesWin.open), or the page in the
+  Pages tab (ui.panel 'nav'): the pages list (PagesList.svelte, while ui.pagesWin.open), or the page in the
   preview or a site part (the Header: HeaderPart.svelte; the Footer) under PageHead.svelte
-  (Return to navigation: back to the pages list). The two swap with a slide (lib/slide.js):
+  (Back to pages: back to the pages list). The two swap with a slide (lib/slide.js):
   a page opened comes in from the right, the list comes back from the left. A page is a list of sections
-  holding widgets (src/site/layout/), and nothing else. A page's panel has three tabs (Tabs.svelte,
+  holding widgets (src/site/layout/), and nothing else. A page's panel has four tabs (Tabs.svelte,
   the open one kept per page in ui.sections["pagetab:<file>"]; unknown: Sections):
     Sections     SectionsList.svelte: the section cards and the dashed Add section card. One
                  Settings are not in the panel: a section's open in a floating pop-up
@@ -11,10 +11,12 @@
                  gear), a widget's in another (WidgetPopup.svelte, ui.widget; a widget row's
                  double click or Enter, or the widget clicked in the preview); one at a time. The Add widget modal (WidgetsModal.svelte): the
                  widget added opens
-    Motion       MotionPanel.svelte: the widgets' animations, then the page's cards:
-                 Scroll backdrop (its backdrop) and Page entrance (its curtain). While it is open (ui.pageTab 'motion') the
-                 preview's clicks animate (previewClicks, ui.svelte.js): they pick a widget or
-                 an animated part. The top tab stays Nav.
+    Element motion  MotionPanel.svelte: the widgets' animations and the fixed elements.
+                 While it is open (ui.pageTab 'element-motion') the preview's clicks animate
+                 (previewClicks, ui.svelte.js): they pick a widget or an animated part.
+    Page motion  PageMotionPanel.svelte: the page's cards, Scroll backdrop (its backdrop)
+                 then Page entrance (its curtain). The preview's clicks arrange, as on
+                 Sections (no widget list here). The top tab stays Pages.
     SEO          SeoSection.svelte
   The footer is sections only (no tabs). While this tab is open the preview is a
   layout canvas (overlay.js): a click picks a widget, a drag moves it, its handles resize it and
@@ -35,6 +37,7 @@
   import PageHead from './PageHead.svelte';
   import PagesList from './PagesList.svelte';
   import MotionPanel from './MotionPanel.svelte';
+  import PageMotionPanel from './PageMotionPanel.svelte';
   import Tabs from './Tabs.svelte';
   import WidgetPopup from './WidgetPopup.svelte';
   import { createPopup } from '../widget-popup.js';
@@ -105,7 +108,8 @@
   // a page's tabs, the open one per page file
   const TABS = [
     ['sections', 'Sections'],
-    ['motion', 'Motion'],
+    ['element-motion', 'Element motion'],
+    ['page-motion', 'Page motion'],
     ['seo', 'SEO'],
   ];
   const isPage = $derived(!!file && ui.target.kind === 'page');
@@ -120,8 +124,10 @@
     actions.setPageTab(v);
   }
   // ui.pageTab is the open page's tab (kept per page), null for the pages list or a site part;
-  // on Motion the preview's clicks animate (main.js setPageTab). Motion stays open from page to
-  // page (and after a refresh); the pages list or a site part ends it.
+  // on Element motion the preview's clicks animate (main.js setPageTab). A motion tab (Element
+  // or Page motion) stays open from page to page (and after a refresh); the pages list or a
+  // site part ends it.
+  const MOTION_TABS = ['element-motion', 'page-motion'];
   $effect(() => {
     const listing = ui.pagesWin.open || ui.target.kind !== 'page';
     const f = file;
@@ -129,8 +135,8 @@
     untrack(() => {
       if (listing) {
         if (ui.pageTab !== null) actions.setPageTab(null);
-      } else if (f && ui.pageTab === 'motion' && kept !== 'motion') {
-        ui.sections[`pagetab:${f}`] = 'motion';
+      } else if (f && MOTION_TABS.includes(ui.pageTab) && !MOTION_TABS.includes(kept)) {
+        ui.sections[`pagetab:${f}`] = ui.pageTab;
       } else if (f && ui.pageTab !== kept) actions.setPageTab(kept); // f: the page is known
     });
   });
@@ -230,7 +236,7 @@
   }
 
   // the pages list and a page's view (its head, tabs and body) swap with the same slide: a
-  // page opened comes in from the right, Return to navigation brings the list from the left
+  // page opened comes in from the right, Back to pages brings the list from the left
   // (lib/slide.js: a still copy of the one going slides out)
   const viewEls = () => {
     const els = [];
@@ -303,8 +309,10 @@
         <SectionsList {live} {bridge} {file} onopen={openWidget} onsection={openSection} />
       </div>
     {:else}
-      {#if isPage && shownTab === 'motion'}
+      {#if isPage && shownTab === 'element-motion'}
         <MotionPanel {live} {bridge} {actions} {file} />
+      {:else if isPage && shownTab === 'page-motion'}
+        <PageMotionPanel {live} {actions} {file} />
       {:else if isPage && shownTab === 'seo'}
         <SeoSection {live} {file} {actions} />
       {:else if ui.target.id === 'header'}

@@ -446,7 +446,7 @@ function setPanel(panel) {
   applyClicks(before);
 }
 
-/** The open page's tab: 'sections' | 'motion' | 'seo', or null (no page open). */
+/** The open page's tab: 'sections' | 'element-motion' | 'page-motion' | 'seo', or null (no page open). */
 function setPageTab(tab) {
   const before = previewClicks();
   ui.pageTab = tab;

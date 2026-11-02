@@ -1,12 +1,12 @@
 <!--
-  The page or site part being edited, over the Content and Motion tabs (the pages list takes
+  The page or site part being edited, over its page tabs (the pages list takes
   its place while it is open: PagesList.svelte; its ← on the same spot):
-    ← Return to navigation
+    ← Back to pages
     Title
     / photography/ people/          (a site part: its title only)
     Preview noor-vermeer / 2018 ▾   (a [param] page: the page of it the preview shows)
     ⚠ No pages are built: …        (only when its main widget can't decide its pages)
-  Return to navigation opens the pages list (in the Nav tab) where the page was opened (its
+  Back to pages opens the pages list (in the Pages tab) where the page was opened (its
   own folder, or the one it is in), a path part at that folder. The path's [param]/ parts and
   the Preview line's values are in the widget accent (a param and its value read as a pair).
   A [param] page previews the page of it shown last (ui.previewAt, main.js pickTarget), else its
@@ -76,7 +76,7 @@
 
 <div class="ph">
   <button type="button" class="ph__back" onclick={() => list()}
-    ><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Return to navigation</button
+    ><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Back to pages</button
   >
   <h2 class="ph__title">{title}</h2>
   {#if crumbs.length}

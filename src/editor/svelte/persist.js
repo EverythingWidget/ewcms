@@ -35,7 +35,7 @@ import { sourceIdOf } from '../../site/files.js';
 const KEY = 'editor:ui';
 // the URL's tab is ui.panel (ui.svelte.js)
 const PANELS = ['nav', 'settings', 'preview'];
-const PAGE_TABS = ['sections', 'motion', 'seo'];
+const PAGE_TABS = ['sections', 'element-motion', 'page-motion', 'seo'];
 const VIEWS = { header: 'Header', footer: 'Footer' };
 
 let bridge, live; // the preview (../bridge.js) and the content (live.svelte.js)
@@ -62,7 +62,7 @@ function readState() {
       title: VIEWS[q.get('view')],
     };
   if (q.has('source')) {
-    if (!q.has('tab')) state.panel = 'nav'; // the explorer is in the Nav tab
+    if (!q.has('tab')) state.panel = 'nav'; // the explorer is in the Pages tab
     state.explorer = {
       open: true,
       file: `sources/${q.get('source')}.json`,
@@ -79,7 +79,7 @@ function readState() {
       pick: q.get('pick') || '',
     };
   if (q.has('pages')) {
-    if (!q.has('tab')) state.panel = 'nav'; // the pages list is in the Nav tab
+    if (!q.has('tab')) state.panel = 'nav'; // the pages list is in the Pages tab
     state.pagesWin = { open: true, folder: q.get('pages').replace(/^\/+|\/+$/g, '') };
   }
   if (q.has('animation')) {
@@ -102,7 +102,7 @@ export function restoreUi(preview, content) {
   ui.sections = saved.sections || {};
   // Settings > Motion's library, on an animation
   if (typeof saved.library?.name === 'string') ui.library = { name: saved.library.name };
-  if (saved.pagesWin) ui.pagesWin = saved.pagesWin; // the Nav tab shows the pages list (PagesList)
+  if (saved.pagesWin) ui.pagesWin = saved.pagesWin; // the Pages tab shows the pages list (PagesList)
   if (saved.media) ui.media = saved.media; // and MediaModal
 
   addEventListener('pagehide', () => {
@@ -137,7 +137,7 @@ export async function restorePlace() {
   const { explorer, item, path, edit, anim, panelY, previewY } = saved;
   saved = null; // only after the refresh, not on later page changes
 
-  // The explorer lives in the Nav tab; SourcesModal opens itself when ui.explorer.open is set.
+  // The explorer lives in the Pages tab; SourcesModal opens itself when ui.explorer.open is set.
   if (explorer?.open && ui.panel === 'nav') {
     const list = live.current(explorer.file)?.items;
     const at = Array.isArray(list) ? list.findIndex((it, i) => itemId(it, i) === item) : -1;
@@ -146,7 +146,7 @@ export async function restorePlace() {
 
   if (path !== bridge.path()) return;
   bridge.api.scrollTop(previewY);
-  // a page's Motion tab: the picked element; Nav (and the others, for later): the selected field
+  // a page's Element motion tab: the picked element; Pages (and the others, for later): the selected field
   const clicks = previewClicks();
   const motion = clicks === 'animate';
   const sel = motion

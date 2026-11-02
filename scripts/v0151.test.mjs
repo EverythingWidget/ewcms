@@ -127,10 +127,10 @@ test('Page entrance: one Settings section (curtain, page fade); the page card li
     /title="Scroll backdrop"\s*name="Scroll backdrop: \{backdrop\}"/,
   );
   assert.match(
-    src('svelte/MotionPanel.svelte'),
+    src('svelte/PageMotionPanel.svelte'),
     /<ScrollBackdropCard \{live\} \{file\} \/>\s*<TransitionCard /,
   );
-  const mp = src('svelte/MotionPanel.svelte');
+  const mp = src('svelte/PageMotionPanel.svelte');
   assert.match(mp, /ui\.sections\['settings:entrance'\] = true;/);
   assert.match(mp, /\[data-section="page-entrance"\]/);
 });

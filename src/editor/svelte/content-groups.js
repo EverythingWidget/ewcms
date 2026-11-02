@@ -1,5 +1,5 @@
 /**
- * What the Nav tab shows: the editable texts of the page in the preview (or of the
+ * What the Pages tab shows: the editable texts of the page in the preview (or of the
  * footer's widgets), grouped by widget (a page's sections hold widgets, src/site/layout/). Plain
  * functions over the store and the preview; ContentPanel.svelte renders the result.
  */

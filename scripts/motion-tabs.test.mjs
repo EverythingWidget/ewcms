@@ -40,16 +40,25 @@ test("the engine starts every spec from the defaults (not the scroll types' ease
   assert.match(e, /SCROLLED = new Set\(\['scroll', 'scrub-words', 'parallax'\]\)/);
 });
 
-test('top tabs Nav | Settings; page tabs Sections | Motion | SEO', () => {
+test('top tabs Pages | Settings; page tabs Sections | Element motion | Page motion | SEO', () => {
   const app = read('editor/svelte/App.svelte');
-  assert.match(app, /\['nav', 'Nav'\],\s*\['settings', 'Settings'\],\s*\];/);
+  assert.match(app, /\['nav', 'Pages'\],\s*\['settings', 'Settings'\],\s*\];/);
   assert.doesNotMatch(app, /MotionPanel/);
   const c = read('editor/svelte/ContentPanel.svelte');
-  assert.match(c, /\['sections', 'Sections'\],\s*\['motion', 'Motion'\],\s*\['seo', 'SEO'\],/);
+  assert.match(
+    c,
+    /\['sections', 'Sections'\],\s*\['element-motion', 'Element motion'\],\s*\['page-motion', 'Page motion'\],\s*\['seo', 'SEO'\],/,
+  );
+  assert.match(c, /shownTab === 'element-motion'\}\s*<MotionPanel /);
+  assert.match(c, /shownTab === 'page-motion'\}\s*<PageMotionPanel /);
+  assert.match(read('editor/svelte/PageHead.svelte'), /><\/i>Back to pages<\/button/);
+  assert.doesNotMatch(read('editor/svelte/PageHead.svelte'), /Return to navigation/);
   assert.doesNotMatch(c, /transitions/);
   const m = read('editor/svelte/MotionPanel.svelte');
   assert.doesNotMatch(m, /AnimLibrary|Tabs/);
-  assert.match(m, /<TransitionCard /);
+  assert.doesNotMatch(m, /<TransitionCard |<ScrollBackdropCard /);
+  const pm = read('editor/svelte/PageMotionPanel.svelte');
+  assert.match(pm, /<ScrollBackdropCard \{live\} \{file\} \/>\s*<TransitionCard /);
   assert.match(read('editor/svelte/SettingsPanel.svelte'), /<MotionSettings /);
   assert.match(read('editor/svelte/MotionSettings.svelte'), /<AnimLibrary /);
 });
@@ -60,7 +69,15 @@ test('URL tabs are ui.panel: nav, settings, preview; clicks: arrange, animate, v
   assert.match(p, /set\('tab', ui\.panel\)/);
   const u = read('editor/svelte/ui.svelte.js');
   assert.match(u, /if \(ui\.panel !== 'nav'\) return 'visitor';/);
-  assert.match(u, /ui\.pageTab === 'motion' \? 'animate' : 'arrange'/);
+  // Element motion animates; Page motion arranges (as Sections and SEO)
+  assert.match(u, /ui\.pageTab === 'element-motion' \? 'animate' : 'arrange'/);
+  assert.match(p, /PAGE_TABS = \['sections', 'element-motion', 'page-motion', 'seo'\]/);
+  // the page tab is editor state (sessionStorage), never content
+  assert.match(p, /sessionStorage\.setItem\(/);
+  assert.match(
+    read('editor/svelte/ContentPanel.svelte'),
+    /ui\.sections\[`pagetab:\$\{file\}`\] = v;/,
+  );
   for (const f of [
     'editor/main.js',
     'editor/bridge.js',

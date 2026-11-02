@@ -3,7 +3,7 @@
   for every step or per-step eases (Advanced), and every value as a number under Advanced.
   All edits go through transition-curtain.js. The Settings tab's Page entrance section, under a
   "Curtain" heading: the one curtain every page uses
-  (settings/animations.json); a page only turns it off (Nav > a page > Motion > Page entrance, TransitionPageCurtain.svelte).
+  (settings/animations.json); a page only turns it off (Pages > a page > Page motion > Page entrance, TransitionPageCurtain.svelte).
 -->
 <script>
   import { showValue } from '../lib/show-value.js';
@@ -88,8 +88,8 @@
 
 <h3 class="pane__head">Curtain</h3>
 <p class="hint">
-  The curtain every page uses, unless a page turns it off (a page's Motion tab: Page entrance). Drag
-  the bar ends or type the values. Changes apply to the next page change in the preview.
+  The curtain every page uses, unless a page turns it off (a page's Page motion tab: Page entrance).
+  Drag the bar ends or type the values. Changes apply to the next page change in the preview.
 </p>
 
 <div class="transition__box">
@@ -179,7 +179,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  /* Transition: timeline (Motion tab, TransitionCurtain.svelte) */
+  /* Transition: timeline (TransitionCurtain.svelte) */
   .tf__hint {
     display: block;
     margin: var(--space-2) 0 0;
