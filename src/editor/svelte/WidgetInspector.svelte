@@ -1,14 +1,18 @@
 <!--
-  One widget of the page (ui.widget), its Content tab (its size, text size and layer: at the top of
-  Content, WidgetLayout.svelte; where it sits is dragged in the preview, overlay.js):
+  One widget of the page (ui.widget), its two tabs (every widget has both; the last one picked
+  is kept for every widget, browser-side: ui.sections["widgettab"], ../widget-layout.js):
+    Layout   what its type supports: size, layer, what it follows, its content box,
+             placement, Scale to fit (WidgetLayout.svelte; where it sits is dragged in the
+             preview, overlay.js)
     Content  its source (WidgetSource.svelte: Item / All, From URL or None, and on a [param] page
              whether it is the main widget), then its settings and texts (GroupFields.svelte),
              each bindable field with its picker: Custom or a field of the item it shows
   (its motion is in the page's Motion tab, MotionPanel.svelte)
   One level under the list of sections (a widget's row on its section's card, or the widget
   clicked in the preview): its top (ViewTop.svelte: ← Back to the list, Locate), then the widget
-  in a card: its type and title (Main: the page's main widget), the tabs and their fields. Under it,
-  on every tab.
+  in a card: its type and title (Main: the page's main widget), the tabs and their fields. Both
+  tabs are laid out in one place, the one not shown hidden: its height is the taller one's, so
+  switching moves nothing.
 -->
 <script>
   import GroupFields from './GroupFields.svelte';
@@ -23,13 +27,15 @@
   import { ui } from './ui.svelte.js';
   import ViewTop from './ViewTop.svelte';
   import WidgetLayout from './WidgetLayout.svelte';
+  import { WIDGET_TABS, WIDGET_TAB_KEY, widgetTabOf } from '../widget-layout.js';
 
   // bare: in the pop-up (WidgetPopup.svelte, its header has the type and name): no Back row,
   // no card, no title line
   let { g, live, bridge, sourceIds, onsource, onback, bare = false } = $props();
 
-  // (its layout: on the card, WidgetLayout.svelte; where it sits is dragged in the preview)
-  const TABS = [['content', 'Content']];
+  // Content | Layout: the last one picked, for every widget
+  const tab = $derived(widgetTabOf(ui.sections));
+  const pickTab = (v) => (ui.sections[WIDGET_TAB_KEY] = v);
   const { at, j } = $derived(g.widget);
   const base = $derived(`/sections/${at}/widgets/${j}`);
   const widget = $derived.by(() => {
@@ -109,29 +115,33 @@
     </div>
   {/if}
 
-  <Tabs class="card__tabs" label="Widget" tabs={TABS} value="content" onpick={() => {}} />
+  <Tabs class="card__tabs" label="Widget" tabs={WIDGET_TABS} value={tab} onpick={pickTab} />
 
   <div class="card__body">
-    <!-- its layout (size, layer; a Text widget's text size), then a line -->
-    <WidgetLayout {live} {bridge} file={g.file} {at} {j} id={g.id} {widget} />
-    <!-- its source first (a widget whose type shows items), then its settings and fields -->
-    {#snippet lead()}
-      <WidgetSource {g} {live} {base} list={!!type.list} {shown} {sourceIds} {onsource} />
-    {/snippet}
-    <GroupFields
-      {g}
-      {live}
-      {bridge}
-      {sourceIds}
-      {onsource}
-      {bindings}
-      lead={type.list || type.item || g.fields.some((f) => f.bindType) || widget.source
-        ? lead
-        : undefined}
-    />
-    {#if !g.fields.length && !g.config?.length}
-      <p class="hint small">No texts or settings in this widget.</p>
-    {/if}
+    <!-- its layout: what its type supports -->
+    <div class={['card__pane', tab !== 'layout' && 'is-hidden']} inert={tab !== 'layout'}>
+      <WidgetLayout {live} {bridge} file={g.file} {at} {j} id={g.id} {widget} />
+    </div>
+    <div class={['card__pane', tab !== 'content' && 'is-hidden']} inert={tab !== 'content'}>
+      <!-- its source first (a widget whose type shows items), then its settings and fields -->
+      {#snippet lead()}
+        <WidgetSource {g} {live} {base} list={!!type.list} {shown} {sourceIds} {onsource} />
+      {/snippet}
+      <GroupFields
+        {g}
+        {live}
+        {bridge}
+        {sourceIds}
+        {onsource}
+        {bindings}
+        lead={type.list || type.item || g.fields.some((f) => f.bindType) || widget.source
+          ? lead
+          : undefined}
+      />
+      {#if !g.fields.length && !g.config?.length}
+        <p class="hint small">No texts or settings in this widget.</p>
+      {/if}
+    </div>
   </div>
 </div>
 
@@ -190,7 +200,18 @@
     margin-bottom: var(--space-4);
   }
 
+  // both tabs in one cell: the taller one sets the height, the other hidden (no shift on a switch)
   .card__body {
+    display: grid;
     padding-inline: var(--space-3);
+  }
+
+  .card__pane {
+    grid-area: 1 / 1;
+    min-width: 0;
+  }
+
+  .card__pane.is-hidden {
+    visibility: hidden;
   }
 </style>

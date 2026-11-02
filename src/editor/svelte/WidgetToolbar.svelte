@@ -13,10 +13,11 @@
   or a double click on the widget; Esc or a click outside ends it, no Done). A single click
   only selects. Menus open under their own button and stay open after a pick.
 
-  Its layout (size, layer) is on the widget's card only (WidgetLayout.svelte); the
+  Its layout (size, layer) is in the pop-up's Layout tab (WidgetLayout.svelte); the
   keys [ and ] still move it down / up a layer (App.svelte). A widget without text has none
   (nothing shows). A preview too narrow for the whole bar puts the text marks into a "…" menu (the widget's
-  own width doesn't matter). Its end: the layout part, the Auto toggle and its size and place
+  own width doesn't matter). Its end: the layout part, the Auto height toggle (and Scale to fit, a type with
+  `scaleToFit`: shortcuts to the pop-up's Layout tab, ../widget-layout.js) and its size and place
   (`64×22 · 4:1`, `64×auto`), on every widget (one without text: that part alone). The edit itself is bridge.js's
   (rich.js).
 -->
@@ -29,7 +30,7 @@
   import { sourceFile, sourceIds as sourceIdsOf } from '../../site/files.js';
   import { sourceOf } from '../../site/layout/source.js';
   import { untrack } from 'svelte';
-  import { setWidget } from '../layout-ops.js';
+  import { NEW_ROWS, setWidget } from '../layout-ops.js';
   import { isSafeHref, UNSAFE_HREF } from '../../site/hrefs.js';
   import {
     LINE_STYLES,
@@ -44,6 +45,8 @@
   } from '../../site/text.js';
   import { MOD } from '../lib/format.js';
   import { sizeOf } from '../../site/layout/index.js';
+  import { canFitWidth, canScale, scaled } from '../../site/layout/type.js';
+  import { autoPatch, scaleHint, scalePatch, shownRows } from '../widget-layout.js';
   import { shownPlace, tagParts } from '../widget-tag.js';
 
   let { live, bridge } = $props();
@@ -72,9 +75,15 @@
   const editing = $derived(!!rich);
   const style = $derived(rich ? rich.style : widget?.body?.[0]?.style || 'paragraph');
   // Fit width: the caret's line fills the widget's width (a line's "fit", text.js), or its
-  // style's size; a Text widget's
-  const canFit = $derived(widget?.type === 'text');
-  const isFit = $derived(!!rich?.fit);
+  // style's size; a type whose definition has `fitWidth`. Shown while its text is edited (a
+  // caret line); its state is that line's in the content, as the click changes it
+  const canFit = $derived(canFitWidth(widget?.type));
+  const isFit = $derived(!!rich && widget?.body?.[rich.line]?.fit === true);
+  // Scale to fit's shortcut (its home: the pop-up's Layout tab), a type with `scaleToFit`
+  const canScaleFit = $derived(canScale(widget?.type));
+  const isScaled = $derived(scaled(widget));
+  const toggleScale = () =>
+    where && setWidget(live.store, where.file, where.at, where.j, scalePatch(!isScaled));
   const bodyRef = $derived(where ? { file: where.file, ptr: `${where.base}/body` } : null);
 
   // ---- where it is drawn: the widget's box in the frame, on the stage, every frame
@@ -127,7 +136,8 @@
   let barW = $state(0);
   // the whole bar, about: style + Fit + lists + B I link + Field, then the layout part
   const TEXT_W = 440;
-  const LAYOUT_W = 13 + 32 + 4 + 136;
+  // (Scale to fit's shortcut: one more icon)
+  const LAYOUT_W = $derived(13 + 32 + 4 + 136 + (canScaleFit ? 36 : 0));
   // the marks go into "…" only when the preview (the frame, 8px each side) can't hold the bar
   const level = $derived.by(() => {
     if (!box) return 0;
@@ -142,14 +152,11 @@
     const t = tagParts(place, null, auto);
     return `${t.size} · ${t.pos}`;
   });
+  // Auto height: the Layout tab's Size Auto ↔ Rows at the rows it shows now (one code path)
   const toggleAuto = () => {
-    if (!where || !place) return;
-    const rows = ui.viewport === 'mobile' ? place.rows * 2 : place.rows;
-    setWidget(live.store, where.file, where.at, where.j, {
-      size: auto ? 'rows' : undefined,
-      aspect: undefined,
-      rows: auto ? rows : undefined,
-    });
+    if (!where) return;
+    const rows = shownRows(bridge.doc, where.id, widget, ui.viewport === 'mobile', NEW_ROWS);
+    setWidget(live.store, where.file, where.at, where.j, autoPatch(!auto, rows));
   };
   const BAR_H = 40;
   const CIRCLE_CLEAR = 24;
@@ -282,10 +289,7 @@
       };
       return { body: toggleList(body, at.from, at.to, kind), sel: sel || undefined };
     });
-  const fitLine = () => {
-    const line = rich ? rich.line : 0;
-    apply((body) => ({ body: toggleFit(body, line) }));
-  };
+  const fitLine = () => rich && apply((body) => ({ body: toggleFit(body, rich.line) }));
   const mark = (m) =>
     apply((body, sel) => (sel ? { body: toggleMark(body, sel.from, sel.to, m) } : null));
 
@@ -480,6 +484,16 @@
           : 'Auto: off (click: as tall as its content)'}
         onclick={toggleAuto}><i class="fa-solid fa-up-down" aria-hidden="true"></i></button
       >
+      {#if canScaleFit}
+        <button
+          type="button"
+          class={['btb__btn btb__icon btb__scale', isScaled && 'is-on']}
+          aria-label="Scale to fit"
+          aria-pressed={isScaled}
+          title={`Scale to fit. ${scaleHint(isScaled)} (Click: ${isScaled ? 'off' : 'on'})`}
+          onclick={toggleScale}><i class="fa-solid fa-compress" aria-hidden="true"></i></button
+        >
+      {/if}
       <span class="btb__size">{sizeText}</span>
     </div>
 

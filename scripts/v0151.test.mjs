@@ -88,8 +88,8 @@ test('Motion shows the whole page; the widget pop-up has no Motion tab and stays
   assert.doesNotMatch(mp, /picks/);
   assert.match(mp, /\{#if ui\.anim\?\.widget === widget\.id\}/);
   const wi = src('svelte/WidgetInspector.svelte');
-  assert.match(wi, /const TABS = \[\['content', 'Content'\]\];/);
-  assert.doesNotMatch(wi, /WidgetMotion|widgetTab/);
+  assert.match(wi, /tabs=\{WIDGET_TABS\}/);
+  assert.doesNotMatch(wi, /WidgetMotion/);
   assert.doesNotMatch(src('svelte/ui.svelte.js'), /widgetTab/);
   const cp = src('svelte/ContentPanel.svelte');
   assert.doesNotMatch(cp, /widgetTab/);

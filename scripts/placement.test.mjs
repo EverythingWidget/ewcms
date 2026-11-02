@@ -93,9 +93,9 @@ test('stylesheet and the editor form', () => {
   assert.match(scss, /\.wgt--placed\.wgt--fill \{[^}]*place-items: stretch/);
   assert.match(scss, /\.wgt--place-v \{[^}]*justify-items: stretch/);
   const form = readFileSync('src/editor/svelte/WidgetLayout.svelte', 'utf8');
-  assert.match(form, /\{#if placement\.box\}/);
+  assert.match(form, /\{:else if part === 'box'\}/);
   assert.match(form, /<Position/);
   assert.match(form, /axes=\{placement\.axes\}/);
   assert.match(form, /disabled=\{fill && !placement\.media\}/);
-  assert.match(form, /\['fill', 'Fill'\]/);
+  assert.match(form, /boxLabels\(placement\)/);
 });

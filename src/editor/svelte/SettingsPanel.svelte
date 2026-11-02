@@ -202,9 +202,9 @@
 
   <Section key="settings:type" title="Typography">
     <p class="hint">
-      The text styles of scaled text (a text widget's Layout › Scale text), in cells of the
+      The text styles of a Fit width line (a text widget's toolbar › Fit width), in cells of the
       {COLS}-column grid (~11px at 1440px wide; on phones half a {MCOLS}-column cell), so the text
-      grows and shrinks with the page. Text that doesn't scale keeps its normal size.
+      grows and shrinks with the page. Other lines keep their normal size.
     </p>
     {#each Object.entries(TEXT_STYLES) as [k, style] (k)}
       <p class="tf__label">{style.label}</p>

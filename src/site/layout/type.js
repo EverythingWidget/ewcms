@@ -6,7 +6,7 @@
  *   a line's "fit": true    Fit width (src/site/text.js): that line alone fills the widget's
  *                           WIDTH, on one line (its own --tkf); the other lines keep theirs
  *   the widget's "scale"    Scale to fit (the popup's switch, off by default): the whole text
- *                           at its styles' normal sizes, scaled down as one, like a photo,
+ *                           at its styles' normal sizes, scaled down as one,
  *                           until it fits the widget's width and (a fixed height) its height
  *                           (the widget's --tks, never above 1); a fit line still fills the width
  *
@@ -23,6 +23,7 @@
  * A fit line's size is in cells × its own factor (_layout.scss .ts[data-fit]).
  */
 import { isObject } from '../is.js';
+import { WIDGET_TYPES } from '../widgets/index.js';
 
 /** The text styles and their defaults (sizes in cells; at 1440px a cell is ~11.3px). */
 export const TEXT_STYLES = {
@@ -36,11 +37,16 @@ export const TEXT_STYLES = {
 };
 const STYLE_KEYS = ['size', 'line', 'tracking', 'min'];
 
-/** Widget types whose text can scale to fit (the popup's Scale to fit). */
-export const SCALE_TYPES = ['text'];
+/** Can a type's text scale to fit (its definition's `scaleToFit`: Scale to fit)? */
+export const canScale = (type) =>
+  (typeof type === 'string' ? WIDGET_TYPES[type] : type)?.scaleToFit === true;
+
+/** Can a type's lines each fill its width (its definition's `fitWidth`: Fit width)? */
+export const canFitWidth = (type) =>
+  (typeof type === 'string' ? WIDGET_TYPES[type] : type)?.fitWidth === true;
 
 /** Does a widget's text scale down to fit it (Scale to fit)? */
-export const scaled = (widget) => SCALE_TYPES.includes(widget?.type) && widget?.scale === true;
+export const scaled = (widget) => canScale(widget?.type) && widget?.scale === true;
 
 /** site.json typography merged over the defaults: { style: { size, line, tracking, min } }. */
 export function typographyOf(site) {
@@ -104,8 +110,9 @@ export function checkScale(widget) {
       '"fit" is a line\'s now (a line\'s "fit": true): node scripts/rename-0-2-0.mjs converts it',
     );
   if (widget?.scale === undefined) return out;
-  if (!SCALE_TYPES.includes(widget.type))
-    out.push(`"scale" is for text widgets (${SCALE_TYPES.join(', ')})`);
-  else if (widget.scale !== true) out.push('"scale" must be true (or left out: off)');
+  if (!canScale(widget.type)) {
+    const types = Object.values(WIDGET_TYPES).filter(canScale);
+    out.push(`"scale" is for text widgets (${types.map((t) => t.type).join(', ')})`);
+  } else if (widget.scale !== true) out.push('"scale" must be true (or left out: off)');
   return out;
 }

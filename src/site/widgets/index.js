@@ -21,6 +21,11 @@
  *   sketch    the modal's drawing of it: a type's name (album draws as 'photo')
  *   placement optional { axes, box, fill, place, media }: its content box's Fit / Fill and
  *             place in the widget (../layout/place.js)
+ *   fitWidth  optional true: its text lines can each fill its width (a line's "fit", the
+ *             toolbar's Fit width; ../text.js)
+ *   scaleToFit  optional true: its whole text can scale down to fit it (the widget's "scale",
+ *             Scale to fit; ../layout/type.js)
+ *   size      optional false: no Size (Auto / Rows / Aspect); every built-in has it
  *   fields    its content fields for the editor: [{ key, label, type?, width?, list?, item? }]
  *               type: 'text' (default) | 'multiline' (multi-line) | 'words' | 'number' | 'photo'
  *                     (the field types: ../field-types.js)

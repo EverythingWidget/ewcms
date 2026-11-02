@@ -514,8 +514,8 @@ every section is a grid of **widgets** (`src/site/layout/`):
     alone fills the widget's **width**, on one line (its own `--tkf` over its style's size in
     cells; never by its height). The other lines keep their style's size.
   - **Scale to fit**, the widget's `"scale": true` (off by default; `.wgt--scale`): the whole
-    text is laid out at its normal sizes at the widget's width, then scaled down as one, like a
-    photo (`--tks`, the text body's zoom, at its laid-out width `--tkw`), until it fits the
+    text is laid out at its normal sizes at the widget's width, then scaled down as one
+    (`--tks`, the text body's zoom, at its laid-out width `--tkw`), until it fits the
     widget's width (a word wider than it no longer breaks) and, with a fixed height (Rows,
     Aspect), its height. Same line breaks and proportions; shrink only. A Fit width line still
     fills the width.
@@ -526,7 +526,17 @@ every section is a grid of **widgets** (`src/site/layout/`):
   line height (× the size), letter spacing (em) and a minimum font size (px). Defaults: title
   19, heading 3, subheading 2, statement 5, paragraph 1.4, label 1 (also a button), small 1.05.
   In the editor: the toolbar's **Fit width** icon (edit mode, after Style: the caret's line)
-  and the **Scale to fit** switch in the widget's pop-up (Content, after Placement).
+  and the **Scale to fit** switch in the widget's pop-up (Layout tab, after Placement; also a
+  toolbar shortcut after Auto height). A type opts in through its definition: `fitWidth: true`,
+  `scaleToFit: true` (the Text widget; `src/site/widgets/index.js`).
+
+- **The widget pop-up** has two tabs, the same for every widget: **Content** (source,
+  settings, texts) and **Layout** (what its type's definition supports, in order: Size Auto /
+  Rows / Aspect, Layer, what it follows, the **Content box**, Placement, Scale to fit;
+  `src/editor/widget-layout.js` `layoutParts`). The last tab picked is kept for every widget
+  (browser-side, with the page tabs). The Content box is **Contain / Cover** on a photo and
+  **Fit / Fill** on a button (saved as `box`: `fit` / `fill` either way). Auto height and Scale
+  to fit have a toolbar shortcut that writes the same key through the same code.
 
 - **Phones** (below 760px): every section is a **60-column** square grid (`--cell` = width /
   60, ~6px at 390px; its rows `--mrows`). Nothing stacks: a widget without a phone area of its

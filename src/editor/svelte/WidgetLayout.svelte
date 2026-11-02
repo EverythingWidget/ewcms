@@ -1,20 +1,31 @@
 <!--
-  A widget's layout on its card (WidgetInspector.svelte), one row: its size (Auto | Rows |
-  Aspect, Aspect showing its ratio and opening the ratios under the group; it stays open after a
-  pick) and its layer (forward / backward) at the end; its placement; a Text widget's Scale to
-  fit switch (type.js "scale": its whole text scales down to fit, like a photo; a line's Fit
-  width: the toolbar, WidgetToolbar.svelte).
+  A widget's Layout tab (WidgetInspector.svelte): what its type's definition supports
+  (layoutParts, ../widget-layout.js), in order: one row of its size (Auto | Rows | Aspect,
+  Aspect showing its ratio and opening the ratios under the group; it stays open after a pick)
+  and its layer (forward / backward) at the end; what it follows; its content box (a photo's
+  Contain | Cover, else Fit | Fill); its placement; Scale to fit (type.js "scale": its whole
+  text scales down to fit). Auto height and Scale to fit have a toolbar shortcut too
+  (WidgetToolbar.svelte): both write through ../widget-layout.js. A line's Fit width: the
+  toolbar.
 -->
 <script>
   import { NEW_ROWS, layerWidget, setWidget } from '../layout-ops.js';
-  import { ASPECTS, baseOf, linkOf, ratioOf, sizeOf } from '../../site/layout/index.js';
+  import { ASPECTS, linkOf, ratioOf, sizeOf } from '../../site/layout/index.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import { nameOf } from './content-groups.js';
   import { ui } from './ui.svelte.js';
   import Popover from './Popover.svelte';
   import Position from './Position.svelte';
   import { fillOf, placeOfBox, placementOf, placesOf } from '../../site/layout/place.js';
-  import { SCALE_TYPES, scaled } from '../../site/layout/type.js';
+  import { scaled } from '../../site/layout/type.js';
+  import {
+    boxLabels,
+    layoutParts,
+    scaleHint,
+    scalePatch,
+    shownRows as rowsShown,
+    sizePatch,
+  } from '../widget-layout.js';
 
   let { live, bridge, file, at, j, id, widget } = $props();
 
@@ -35,23 +46,12 @@
   const phoneView = $derived(ui.viewport === 'mobile');
 
   // the rows it shows now (the preview's), so a size it is given keeps its height
-  function shownRows() {
-    const el = bridge.doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`);
-    const n = parseInt(el?.style.getPropertyValue('--frs') ?? '', 10);
-    // the phone's rows are half the desktop's (its grid's cells are twice as big): Size writes
-    // the desktop rows
-    if (Number.isInteger(n) && n > 0) return phoneView ? n * 2 : n;
-    return baseOf(widget).rows || NEW_ROWS;
-  }
+  const shownRows = () => rowsShown(bridge.doc, id, widget, phoneView, NEW_ROWS);
   function setSize(next) {
     if (next === 'aspect') open = !open || size !== 'aspect';
     else open = false;
     if (next === size) return;
-    set({
-      size: next === 'auto' ? undefined : next,
-      aspect: next === 'aspect' ? ratio : undefined,
-      rows: next === 'auto' ? undefined : shownRows(),
-    });
+    set(sizePatch(next, { rows: shownRows(), ratio }));
   }
 
   // the ratios: a Popover under Aspect, open until a click outside or Esc
@@ -63,8 +63,9 @@
   const fill = $derived(fillOf(widget));
   const setBox = (box) => box !== (fill ? 'fill' : 'fit') && set({ box });
 
+  // what its type supports (its definition), in the tab's order
+  const parts = $derived(layoutParts(widget.type));
   // Scale to fit (off by default): its hint has two lines' room, so nothing moves when it changes
-  const canScale = $derived(SCALE_TYPES.includes(widget.type));
   const isScaled = $derived(scaled(widget));
 
   let ratioText = $state('');
@@ -108,148 +109,153 @@
   </svg>
 {/snippet}
 
+{#snippet layerSet()}
+  <div class="hset" role="group" aria-label="Layer" title="Layer">
+    <button
+      type="button"
+      class="hset__btn"
+      title="Bring forward (])"
+      aria-label="Bring forward"
+      onclick={() => layer(1)}>{@render layerIcon(true)}</button
+    >
+    <button
+      type="button"
+      class="hset__btn"
+      title="Send backward ([)"
+      aria-label="Send backward"
+      onclick={() => layer(-1)}>{@render layerIcon(false)}</button
+    >
+  </div>
+{/snippet}
+
 <div class="fields wl">
-  <div class="wl__row">
-    <div class="wl__size">
-      <div class="seg" role="radiogroup" aria-label="Size">
-        <button
-          type="button"
-          role="radio"
-          aria-checked={size === 'auto'}
-          title="Size: as tall as its content"
-          class={['seg__btn', size === 'auto' && 'is-active']}
-          onclick={() => setSize('auto')}
-        >
-          <i class="fa-solid fa-up-down wl__ic" aria-hidden="true"></i>
-          Auto
-        </button>
-        <button
-          type="button"
-          role="radio"
-          aria-checked={size === 'rows'}
-          title="Size: a fixed number of rows"
-          class={['seg__btn', size === 'rows' && 'is-active']}
-          onclick={() => setSize('rows')}
-        >
-          <i class="fa-solid fa-grip-lines wl__ic" aria-hidden="true"></i>
-          Rows
-        </button>
-        <button
-          type="button"
-          role="radio"
-          aria-checked={size === 'aspect'}
-          title="Size: its width × a ratio"
-          bind:this={aspectBtn}
-          class={['seg__btn wl__aspect', size === 'aspect' && 'is-active']}
-          onclick={() => setSize('aspect')}
-        >
-          <i class="fa-solid fa-crop-simple wl__ic" aria-hidden="true"></i>
-          {size === 'aspect' ? `Aspect ${ratio}` : 'Aspect none'}
-        </button>
-      </div>
-      <Popover
-        open={open && size === 'aspect'}
-        anchor={aspectBtn}
-        label="Aspect ratio"
-        class="wl__pop"
-        onclose={() => (open = false)}
-      >
-        <span class="pov__head">Ratio (width:height)</span>
-        <div class="seg wl__ratios" role="radiogroup" aria-label="Aspect ratio">
-          {#each ASPECTS as r (r)}
+  {#each parts as part (part)}
+    {#if part === 'size'}
+      <div class="wl__row">
+        <div class="wl__size">
+          <div class="seg" role="radiogroup" aria-label="Size">
             <button
               type="button"
               role="radio"
-              aria-checked={ratio === r}
-              class={['seg__btn', ratio === r && 'is-active']}
-              onclick={() => set({ aspect: r })}>{r}</button
+              aria-checked={size === 'auto'}
+              title="Size: as tall as its content"
+              class={['seg__btn', size === 'auto' && 'is-active']}
+              onclick={() => setSize('auto')}
             >
-          {/each}
+              <i class="fa-solid fa-up-down wl__ic" aria-hidden="true"></i>
+              Auto
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={size === 'rows'}
+              title="Size: a fixed number of rows"
+              class={['seg__btn', size === 'rows' && 'is-active']}
+              onclick={() => setSize('rows')}
+            >
+              <i class="fa-solid fa-grip-lines wl__ic" aria-hidden="true"></i>
+              Rows
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={size === 'aspect'}
+              title="Size: its width × a ratio"
+              bind:this={aspectBtn}
+              class={['seg__btn wl__aspect', size === 'aspect' && 'is-active']}
+              onclick={() => setSize('aspect')}
+            >
+              <i class="fa-solid fa-crop-simple wl__ic" aria-hidden="true"></i>
+              {size === 'aspect' ? `Aspect ${ratio}` : 'Aspect none'}
+            </button>
+          </div>
+          <Popover
+            open={open && size === 'aspect'}
+            anchor={aspectBtn}
+            label="Aspect ratio"
+            class="wl__pop"
+            onclose={() => (open = false)}
+          >
+            <span class="pov__head">Ratio (width:height)</span>
+            <div class="seg wl__ratios" role="radiogroup" aria-label="Aspect ratio">
+              {#each ASPECTS as r (r)}
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={ratio === r}
+                  class={['seg__btn', ratio === r && 'is-active']}
+                  onclick={() => set({ aspect: r })}>{r}</button
+                >
+              {/each}
+            </div>
+            <label class="wl__line">
+              <span class="wl__hint">Custom</span>
+              <input
+                class="tf__input wl__input"
+                placeholder="5:7"
+                value={customRatio ? widget.aspect : ratioText}
+                aria-label="Custom ratio (width:height)"
+                aria-invalid={ratioText !== '' && !ratioOf(ratioText)}
+                oninput={(e) => typeRatio(e.currentTarget.value)}
+              />
+            </label>
+          </Popover>
         </div>
-        <label class="wl__line">
-          <span class="wl__hint">Custom</span>
-          <input
-            class="tf__input wl__input"
-            placeholder="5:7"
-            value={customRatio ? widget.aspect : ratioText}
-            aria-label="Custom ratio (width:height)"
-            aria-invalid={ratioText !== '' && !ratioOf(ratioText)}
-            oninput={(e) => typeRatio(e.currentTarget.value)}
-          />
-        </label>
-      </Popover>
-    </div>
-    <div class="hset" role="group" aria-label="Layer" title="Layer">
-      <button
-        type="button"
-        class="hset__btn"
-        title="Bring forward (])"
-        aria-label="Bring forward"
-        onclick={() => layer(1)}>{@render layerIcon(true)}</button
-      >
-      <button
-        type="button"
-        class="hset__btn"
-        title="Send backward ([)"
-        aria-label="Send backward"
-        onclick={() => layer(-1)}>{@render layerIcon(false)}</button
-      >
-    </div>
-  </div>
-  <p class="hint small wl__link">
-    {#if link}Follows {leader}, gap {link.gap}{:else}Free (not linked){/if}
-  </p>
-  {#if placement}
-    {#if placement.box}
+        <!-- its layer at the row's end -->
+        {#if parts.includes('layer')}{@render layerSet()}{/if}
+      </div>
+    {:else if part === 'layer'}
+      {#if !parts.includes('size')}<div class="wl__row">{@render layerSet()}</div>{/if}
+    {:else if part === 'link'}
+      <p class="hint small wl__link">
+        {#if link}Follows {leader}, gap {link.gap}{:else}Free (not linked){/if}
+      </p>
+    {:else if part === 'box'}
       <div class="tf is-half">
-        <span class="tf__label">Size</span>
-        <div class="seg" role="radiogroup" aria-label="Size of its content">
-          {#each [['fit', 'Fit'], ['fill', 'Fill']] as [v, text] (v)}
+        <span class="tf__label">Content box</span>
+        <div class="seg" role="radiogroup" aria-label="Content box">
+          {#each boxLabels(placement) as [v, text, title] (v)}
             {@const on = (fill ? 'fill' : 'fit') === v}
             <button
               type="button"
               role="radio"
               aria-checked={on}
-              title={v === 'fit' ? 'Fit: as big as its content' : 'Fill: over the whole widget'}
+              {title}
               class={['seg__btn', on && 'is-active']}
               onclick={() => setBox(v)}>{text}</button
             >
           {/each}
         </div>
       </div>
-    {/if}
-    <div class={['tf', placement.box && 'is-half']}>
-      <span class="tf__label">Placement</span>
-      <Position
-        label="Placement"
-        options={placesOf(placement)}
-        value={placeOfBox(widget)}
-        axes={placement.axes}
-        disabled={fill && !placement.media}
-        onchange={(place) => set({ place })}
-      />
-    </div>
-  {/if}
-  {#if canScale}
-    <label class="tf wl__scale">
-      <span class="tf__label">
-        <span class="wl__scale-label">Scale to fit</span>
-        <input
-          type="checkbox"
-          class="switch"
-          role="switch"
-          title="Scale the whole text down to fit the widget"
-          checked={isScaled}
-          onchange={(e) => set({ scale: e.currentTarget.checked ? true : undefined })}
+    {:else if part === 'placement'}
+      <div class={['tf', placement.box && 'is-half']}>
+        <span class="tf__label">Placement</span>
+        <Position
+          label="Placement"
+          options={placesOf(placement)}
+          value={placeOfBox(widget)}
+          axes={placement.axes}
+          disabled={fill && !placement.media}
+          onchange={(place) => set({ place })}
         />
-      </span>
-      <span class="hint small wl__scale-hint"
-        >{isScaled
-          ? 'On: the whole text scales down to fit the widget, like a photo.'
-          : 'Off: each style keeps its own size at any width.'}</span
-      >
-    </label>
-  {/if}
+      </div>
+    {:else if part === 'scale'}
+      <label class="tf wl__scale">
+        <span class="tf__label">
+          <span class="wl__scale-label">Scale to fit</span>
+          <input
+            type="checkbox"
+            class="switch"
+            role="switch"
+            title="Scale the whole text down to fit the widget"
+            checked={isScaled}
+            onchange={(e) => set(scalePatch(e.currentTarget.checked))}
+          />
+        </span>
+        <span class="hint small wl__scale-hint">{scaleHint(isScaled)}</span>
+      </label>
+    {/if}
+  {/each}
 </div>
 
 <style lang="scss">

@@ -11,7 +11,7 @@ test('v0.1.46: the selected widget is dragged where widgets overlap; a click pic
   assert.match(o, /const el = selectedUnder\(e, mod\) \|\| top;/);
   assert.match(o, /else if \(click\) \(setAnchor\(click\), onpick\(click\)\);/);
   // Size -> Rows from the shown rows (the phone's: doubled)
-  assert.match(read('src/editor/svelte/WidgetLayout.svelte'), /phoneView \? n \* 2 : n/);
+  assert.match(read('src/editor/widget-layout.js'), /phone \? n \* 2 : n/);
 });
 
 test('v0.1.48: a link drag keeps the widget where it is (the gap: the rows between them)', () => {

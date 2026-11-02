@@ -23,12 +23,16 @@ A page is a stack of **sections**; each holds **widgets** (text, photo, button, 
   (it snaps to the grid). Ctrl/⌘+click or drag a box over empty space to select several.
   Esc or a click on empty space deselects.
 - **Double-click** a widget (or its row) opens its settings pop-up; the **gear** in its toolbar
-  does too. Double-click text to edit it in place.
+  does too. Double-click text to edit it in place. The pop-up has two tabs: **Content** (its
+  source, settings and texts) and **Layout** (size, layer, what it follows, the **Content box**:
+  Contain / Cover on a photo, Fit / Fill on a button, placement, Scale to fit). It opens on the
+  tab you used last.
 - Drag a widget's top circle onto another's bottom circle to make it follow that widget.
 - **Text sizes**: each line has its style's size. **Fit width** in the text toolbar (after
   the style) makes the line the caret is in fill the widget's width; click it again for the
-  style's size. **Scale to fit** in a Text widget's pop-up (after Placement) scales the whole
-  text down, like a photo, when the widget is too narrow or too short for it.
+  style's size. **Scale to fit** in a Text widget's Layout tab (after Placement; also in its
+  toolbar, after Auto height) scales the whole text down when the widget is too narrow or too
+  short for it.
 - **Lists** in text: the two list buttons in the text toolbar (after Fit width), or type `- ` or `1. `
   at the start of a line. Enter adds the next item; Enter on an empty item ends the list;
   Backspace at the start of an item makes it a normal line again.
