@@ -45,7 +45,7 @@
   } from '../../site/text.js';
   import { MOD } from '../lib/format.js';
   import { sizeOf } from '../../site/layout/index.js';
-  import { canFitWidth, canScale, scaled } from '../../site/layout/type.js';
+  import { hasFitWidth, hasScaleToFit, scaledToFit } from '../../site/layout/type.js';
   import { autoPatch, scaleHint, scalePatch, shownRows } from '../widget-layout.js';
   import { shownPlace, tagParts } from '../widget-tag.js';
 
@@ -77,11 +77,11 @@
   // Fit width: the caret's line fills the widget's width (a line's "fit", text.js), or its
   // style's size; a type whose definition has `fitWidth`. Shown while its text is edited (a
   // caret line); its state is that line's in the content, as the click changes it
-  const canFit = $derived(canFitWidth(widget?.type));
+  const canFit = $derived(hasFitWidth(widget?.type));
   const isFit = $derived(!!rich && widget?.body?.[rich.line]?.fit === true);
   // Scale to fit's shortcut (its home: the pop-up's Layout tab), a type with `scaleToFit`
-  const canScaleFit = $derived(canScale(widget?.type));
-  const isScaled = $derived(scaled(widget));
+  const canScaleFit = $derived(hasScaleToFit(widget?.type));
+  const isScaled = $derived(scaledToFit(widget));
   const toggleScale = () =>
     where && setWidget(live.store, where.file, where.at, where.j, scalePatch(!isScaled));
   const bodyRef = $derived(where ? { file: where.file, ptr: `${where.base}/body` } : null);
@@ -480,8 +480,8 @@
         aria-label="Auto height"
         aria-pressed={auto}
         title={auto
-          ? 'Auto: as tall as its content (click: fixed rows)'
-          : 'Auto: off (click: as tall as its content)'}
+          ? 'Auto height: as tall as its content (click: fixed rows)'
+          : 'Auto height: off (click: as tall as its content)'}
         onclick={toggleAuto}><i class="fa-solid fa-up-down" aria-hidden="true"></i></button
       >
       {#if canScaleFit}

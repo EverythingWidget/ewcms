@@ -1,5 +1,5 @@
 /**
- * Page-transition curtain timing. Pure (no DOM), shared by the router and the editor.
+ * Page entrance curtain timing. Pure (no DOM), shared by the router and the editor.
  *
  * content/en/settings/animations.json -> transitions.page.curtain
  *   easeMode      shared | individual  (missing = shared)

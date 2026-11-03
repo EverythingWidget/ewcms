@@ -38,15 +38,15 @@ export const TEXT_STYLES = {
 const STYLE_KEYS = ['size', 'line', 'tracking', 'min'];
 
 /** Can a type's text scale to fit (its definition's `scaleToFit`: Scale to fit)? */
-export const canScale = (type) =>
+export const hasScaleToFit = (type) =>
   (typeof type === 'string' ? WIDGET_TYPES[type] : type)?.scaleToFit === true;
 
 /** Can a type's lines each fill its width (its definition's `fitWidth`: Fit width)? */
-export const canFitWidth = (type) =>
+export const hasFitWidth = (type) =>
   (typeof type === 'string' ? WIDGET_TYPES[type] : type)?.fitWidth === true;
 
 /** Does a widget's text scale down to fit it (Scale to fit)? */
-export const scaled = (widget) => canScale(widget?.type) && widget?.scale === true;
+export const scaledToFit = (widget) => hasScaleToFit(widget?.type) && widget?.scale === true;
 
 /** site.json typography merged over the defaults: { style: { size, line, tracking, min } }. */
 export function typographyOf(site) {
@@ -110,8 +110,8 @@ export function checkScale(widget) {
       '"fit" is a line\'s now (a line\'s "fit": true): node scripts/rename-0-2-0.mjs converts it',
     );
   if (widget?.scale === undefined) return out;
-  if (!canScale(widget.type)) {
-    const types = Object.values(WIDGET_TYPES).filter(canScale);
+  if (!hasScaleToFit(widget.type)) {
+    const types = Object.values(WIDGET_TYPES).filter(hasScaleToFit);
     out.push(`"scale" is for text widgets (${types.map((t) => t.type).join(', ')})`);
   } else if (widget.scale !== true) out.push('"scale" must be true (or left out: off)');
   return out;

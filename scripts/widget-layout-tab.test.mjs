@@ -14,7 +14,7 @@ import {
 } from '../src/editor/widget-layout.js';
 import { WIDGET_TYPES } from '../src/site/widgets/index.js';
 import { placementOf } from '../src/site/layout/place.js';
-import { canFitWidth, canScale } from '../src/site/layout/type.js';
+import { hasFitWidth, hasScaleToFit } from '../src/site/layout/type.js';
 
 test('the widget pop-up: Content | Layout, the last tab kept once for every widget', () => {
   assert.deepEqual(
@@ -55,10 +55,10 @@ test('each type: what its Layout tab shows (its definition)', () => {
     'link',
     'scale',
   ]);
-  assert.equal(canFitWidth({ fitWidth: true }), true);
-  assert.equal(canFitWidth('text'), true);
-  assert.equal(canFitWidth('button'), false);
-  assert.equal(canScale('photo'), false);
+  assert.equal(hasFitWidth({ fitWidth: true }), true);
+  assert.equal(hasFitWidth('text'), true);
+  assert.equal(hasFitWidth('button'), false);
+  assert.equal(hasScaleToFit('photo'), false);
 });
 
 test('Content box labels; one patch for each home of a setting', () => {

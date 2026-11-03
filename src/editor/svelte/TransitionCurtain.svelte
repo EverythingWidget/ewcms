@@ -1,5 +1,5 @@
 <!--
-  A page-transition curtain: a fixed total duration, the timeline (TransitionCurtainTimeline), one ease
+  A page entrance curtain: a fixed total duration, the timeline (TransitionCurtainTimeline), one ease
   for every step or per-step eases (Advanced), and every value as a number under Advanced.
   All edits go through transition-curtain.js. The Settings tab's Page entrance section, under a
   "Curtain" heading: the one curtain every page uses

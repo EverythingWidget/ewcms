@@ -62,7 +62,7 @@ import { isBinding, keysOf, resolve, resolveWidget } from './bindings.js';
 import { widgetItems } from './source.js';
 import { COLS, baseOf, phoneAreaOf, placeOf, setBase } from './grid.js';
 import { linkOf } from './links.js';
-import { scaled } from './type.js';
+import { scaledToFit } from './type.js';
 import { placeClass, placeVars } from './place.js';
 import { contentPath } from '../files.js';
 
@@ -241,7 +241,7 @@ export function widgetClass(widget) {
   return (
     `wgt wgt--${widget?.type}` +
     (aspect ? ' wgt--aspect' : size === 'auto' || size === 'aspect' ? ' wgt--auto' : '') +
-    (scaled(widget) ? ' wgt--scale' : '') +
+    (scaledToFit(widget) ? ' wgt--scale' : '') +
     placeClass(widget) +
     (widget?.layout?.phone === null ? ' wgt--m-hidden' : '')
   );

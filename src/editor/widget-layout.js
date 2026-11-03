@@ -7,7 +7,7 @@
  */
 import { WIDGET_TYPES } from '../site/widgets/index.js';
 import { placementOf } from '../site/layout/place.js';
-import { canScale } from '../site/layout/type.js';
+import { hasScaleToFit } from '../site/layout/type.js';
 import { baseOf } from '../site/layout/index.js';
 
 /** The pop-up's tabs: every widget has both. */
@@ -39,7 +39,7 @@ export function layoutParts(type) {
     'link',
     ...(p?.box ? ['box'] : []),
     ...(p ? ['placement'] : []),
-    ...(canScale(def) ? ['scale'] : []),
+    ...(hasScaleToFit(def) ? ['scale'] : []),
   ];
 }
 

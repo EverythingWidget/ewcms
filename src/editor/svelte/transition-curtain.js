@@ -1,5 +1,5 @@
 /**
- * Page-transition curtain: the edit rules behind the curtain section (TransitionCurtain.svelte,
+ * Page entrance curtain: the edit rules behind the curtain section (TransitionCurtain.svelte,
  * TransitionCurtainTimeline.svelte): the global curtain in Settings, a page's own one in Motion.
  * No DOM here. Times come only from normalizeCurtain + curtainPlan (src/client/anim/curtain.js).
  */

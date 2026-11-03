@@ -17,7 +17,7 @@
   import Popover from './Popover.svelte';
   import Position from './Position.svelte';
   import { fillOf, placeOfBox, placementOf, placesOf } from '../../site/layout/place.js';
-  import { scaled } from '../../site/layout/type.js';
+  import { scaledToFit } from '../../site/layout/type.js';
   import {
     boxLabels,
     layoutParts,
@@ -66,7 +66,7 @@
   // what its type supports (its definition), in the tab's order
   const parts = $derived(layoutParts(widget.type));
   // Scale to fit (off by default): its hint has two lines' room, so nothing moves when it changes
-  const isScaled = $derived(scaled(widget));
+  const isScaled = $derived(scaledToFit(widget));
 
   let ratioText = $state('');
   const customRatio = $derived(!!widget.aspect && !ASPECTS.includes(widget.aspect));

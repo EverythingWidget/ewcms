@@ -7,7 +7,7 @@
     Content  its source (WidgetSource.svelte: Item / All, From URL or None, and on a [param] page
              whether it is the main widget), then its settings and texts (GroupFields.svelte),
              each bindable field with its picker: Custom or a field of the item it shows
-  (its motion is in the page's Motion tab, MotionPanel.svelte)
+  (its motion is in the page's Element motion tab, MotionPanel.svelte)
   One level under the list of sections (a widget's row on its section's card, or the widget
   clicked in the preview): its top (ViewTop.svelte: ← Back to the list, Locate), then the widget
   in a card: its type and title (Main: the page's main widget), the tabs and their fields. Both
