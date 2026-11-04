@@ -32,7 +32,17 @@
 -->
 <script>
   import { tick, untrack } from 'svelte';
-  import { ui, selectWidgets, selectSection, hooks, previewClicks } from './ui.svelte.js';
+  import {
+    ui,
+    selectWidgets,
+    openPopup,
+    closeWidgetPopup,
+    openSectionPopup,
+    closeSectionPopup,
+    deselectSections,
+    hooks,
+    previewClicks,
+  } from './ui.svelte.js';
   import HeaderPart from './HeaderPart.svelte';
   import PageHead from './PageHead.svelte';
   import PagesList from './PagesList.svelte';
@@ -97,7 +107,7 @@
   );
   $effect(() => {
     // its section deleted: the pop-up closes for good (not back when undone)
-    if (ui.section && !popSection && !ui.widget && file) untrack(() => (ui.section = null));
+    if (ui.section && !popSection && !ui.widget && file) untrack(closeSectionPopup);
   });
   // the files in content/en/sources/, for a list item's source
   const sourceIds = $derived.by(() => {
@@ -119,7 +129,7 @@
   });
   const shownTab = $derived(tab);
   function pickTab(v) {
-    if (ui.section && v !== 'sections') ui.section = null;
+    if (ui.section && v !== 'sections') closeSectionPopup();
     ui.sections[`pagetab:${file}`] = v;
     actions.setPageTab(v);
   }
@@ -146,28 +156,20 @@
   const itemOf = (f) => Number(parse(f.ptr)[0]) || 0; // a source field's item
 
   function openWidget(id) {
-    ui.section = null;
     selectWidgets([id]);
-    ui.popup = true;
-  }
-  // a section card's double click or the toolbar's gear: its settings pop-up (selected; a
-  // widget's pop-up closes)
-  function openSection(id) {
-    selectSection(id);
-    ui.section = id;
+    openPopup();
   }
   // the toolbar's gear: scrolled to in the preview, opened (as a card's double click); again: closed
   function enterSection(id) {
-    if (ui.section === id) return void (ui.section = null);
+    if (ui.section === id) return void closeSectionPopup();
     locate(bridge, id);
-    openSection(id);
+    openSectionPopup(id);
   }
   // a click on the list's empty space (no card, no control): no section selected
   const CONTROLS = 'a, button, input, select, textarea, label, [contenteditable], [role="menu"]';
   function deselect(e) {
     if (!ui.selSection || e.target.closest?.(`.sec, ${CONTROLS}`)) return;
-    ui.selSection = null;
-    ui.selSections = [];
+    deselectSections();
   }
 
   // Add widget (a section card's): every type on offer; the widget added opens
@@ -306,7 +308,7 @@
       <p class="hint">Waiting for the preview…</p>
     {:else if file && shownTab === 'sections'}
       <div class="list">
-        <SectionsList {live} {bridge} {file} onopen={openWidget} onsection={openSection} />
+        <SectionsList {live} {bridge} {file} onopen={openWidget} onsection={openSectionPopup} />
       </div>
     {:else}
       {#if isPage && shownTab === 'element-motion'}
@@ -325,30 +327,11 @@
 {/if}
 
 {#if popSection && file && !ui.pagesWin.open && previewClicks() === 'arrange'}
-  <SectionPopup
-    {live}
-    {bridge}
-    {file}
-    id={popSection}
-    {popup}
-    onclose={() => (ui.section = null)}
-  />
+  <SectionPopup {live} {bridge} {file} id={popSection} {popup} onclose={closeSectionPopup} />
 {/if}
 
 {#if popG && !ui.pagesWin.open}
-  <WidgetPopup
-    g={popG}
-    {live}
-    {bridge}
-    {sourceIds}
-    {onsource}
-    {popup}
-    onclose={() => {
-      // closed: the widget stays selected
-      ui.selection = null;
-      ui.popup = false;
-    }}
-  />
+  <WidgetPopup g={popG} {live} {bridge} {sourceIds} {onsource} {popup} onclose={closeWidgetPopup} />
 {/if}
 
 <SourcesModal bind:this={sourcesModal} {live} {bridge} />

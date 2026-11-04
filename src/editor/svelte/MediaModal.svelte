@@ -17,7 +17,7 @@
   import ExplorerHead from './ExplorerHead.svelte';
   import ExplorerRow from './ExplorerRow.svelte';
   import Tabs from './Tabs.svelte';
-  import { ui } from './ui.svelte.js';
+  import { ui, selectText } from './ui.svelte.js';
   import {
     media,
     fallback,
@@ -299,7 +299,7 @@
       const el = bridge.doc?.querySelector(`[data-edit="${CSS.escape(edit)}"]`);
       if (!el) return toast(`${where(u).name} is not shown on ${path}`, { kind: 'error' });
       bridge.focusEdit(edit);
-      ui.selection = { edit }; // the Sections tab opens its group and scrolls to it
+      selectText(edit); // the Sections tab opens its group and scrolls to it
     };
     if (bridge.path() === path) return pickField();
     // another page: pick the field once the preview has loaded it (and set itself up)

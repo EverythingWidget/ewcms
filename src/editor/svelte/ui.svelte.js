@@ -18,6 +18,14 @@ import { popupStays } from '../multi-select.js';
  *
  * Editor UI state. main.js changes it, the Svelte shell (App.svelte) shows it: it is a
  * $state object, so a change re-renders whatever uses that field.
+ *
+ * The selection and hover fields (picked, hoverEl, anim, selection, widget, multi, popup,
+ * section, selSection, selSections, peek, hot, link, anchor, mod, secRows) are written only by
+ * the helpers below, never directly from other files. Their names follow one vocabulary:
+ *   pick    a click in the preview (pickElement, pickAnim, clearPick)
+ *   select  a choice in a panel (selectWidgets, selectSection(s), selectText, selectLink,
+ *           deselect, clearSelection); open / close: a pop-up shown or not
+ *   hover   the pointer (hoverElement, peekSection, hotWidget)
  */
 export const ui = $state({
   /** Why the content could not be loaded; App shows it instead of the editor. */
@@ -217,6 +225,53 @@ export function pickElement(
       el && kind === 'text'
         ? { edit: el.dataset.edit ?? el.dataset.bound, ...(quiet && { quiet }) }
         : null;
+}
+
+/** The selected widget's pop-up shown (a double click, the toolbar's gear). */
+export function openPopup() {
+  ui.popup = true;
+}
+
+/** The widget pop-up hidden; the widget stays selected. */
+export function closePopup() {
+  ui.popup = false;
+}
+
+/** The widget pop-up closed by its ×: the widget stays selected, its text field does not. */
+export function closeWidgetPopup() {
+  ui.selection = null;
+  ui.popup = false;
+}
+
+/**
+ * Widget `id` shown on its own (null: none) and its pop-up open or not, nothing else changed
+ * (the page head's warning: the main widget).
+ */
+export function showWidget(id, popup = !!id) {
+  ui.widget = id;
+  ui.popup = popup;
+}
+
+/** Section `id`'s settings pop-up opened: the section selected alone (a card's double click). */
+export function openSectionPopup(id) {
+  selectSection(id);
+  ui.section = id;
+}
+
+/** The section settings pop-up closed; the section stays selected. */
+export function closeSectionPopup() {
+  ui.section = null;
+}
+
+/** No section card selected (a click on the list's empty space); widgets as they are. */
+export function deselectSections() {
+  ui.selSection = null;
+  ui.selSections = [];
+}
+
+/** No animated element picked (the Element motion tab starts over). */
+export function clearAnim() {
+  ui.anim = null;
 }
 
 /** A text's field focused (its `data-edit` path): the panel shows that field. */

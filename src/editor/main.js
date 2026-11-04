@@ -39,6 +39,10 @@ import {
   hoverElement,
   clearPick,
   clearSelection,
+  openPopup,
+  closePopup,
+  clearAnim,
+  setMod,
 } from './svelte/ui.svelte.js';
 import { toast } from './svelte/toasts.svelte.js';
 import { createLive } from './svelte/live.svelte.js';
@@ -127,12 +131,12 @@ const overlay = createOverlay({
   },
   onopen(id) {
     selectWidgets([id]);
-    ui.popup = true;
+    openPopup();
   },
   // several widgets (Ctrl/Cmd+click, a selection box): selectWidgets; never the pop-up (a box
   // touching its first widget selects it, nothing opens)
   onselect(ids) {
-    ui.popup = false;
+    closePopup();
     selectWidgets(ids);
   },
   // the selected widgets dragged (or nudged) by whole cells: one undo step
@@ -431,7 +435,7 @@ function applyClicks(before) {
   clearPick();
   overlay.refresh();
   if (clicks === 'animate' && before !== 'animate') {
-    ui.anim = null;
+    clearAnim();
     // the widget open in the Sections tab is the one picked here
     const el = ui.widget && bridge.doc?.querySelector(`[data-widget="${CSS.escape(ui.widget)}"]`);
     if (el) pickElement(el, 'anim');
@@ -586,7 +590,7 @@ bridge.on('navigate', (path) => {
   updatePages();
   applyPart();
   ui.previewVersion++;
-  ui.anim = null;
+  clearAnim();
 });
 // one way: what was clicked or hovered in the preview goes to ui (quiet: the selection put back
 // after a save's reload: kept, but nothing opens for it)
@@ -627,12 +631,11 @@ document.addEventListener('keydown', (e) => {
 // keys move the selection by a cell (Shift: NUDGE_BIG), Delete removes several selected (one
 // undo step); here and in the preview (the bridge's 'key')
 const trackMod = (e) => {
-  const on = e.ctrlKey || e.metaKey;
-  if (ui.mod !== on) ui.mod = on;
+  setMod(e.ctrlKey || e.metaKey);
 };
 document.addEventListener('keydown', trackMod, true);
 document.addEventListener('keyup', trackMod, true);
-window.addEventListener('blur', () => (ui.mod = false));
+window.addEventListener('blur', () => setMod(false));
 const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
 function selectionKey(e) {
   if (e.defaultPrevented || previewClicks() !== 'arrange' || e.altKey || e.ctrlKey || e.metaKey)

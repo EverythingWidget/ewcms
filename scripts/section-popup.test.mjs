@@ -27,8 +27,8 @@ test('the pop-up: rows icon, name, Locate, ×; the section settings; 380px, grey
 });
 
 test('one settings pop-up at a time; it goes with its section', () => {
-  assert.match(panel, /function openSection\(id\) \{\s*selectSection\(id\);\s*ui\.section = id;/);
-  assert.match(panel, /function openWidget\(id\) \{\s*ui\.section = null;/);
+  assert.match(panel, /onsection=\{openSectionPopup\}/);
+  assert.match(panel, /function openWidget\(id\) \{\s*selectWidgets\(\[id\]\);\s*openPopup\(\);/);
   assert.match(panel, /sections\.some\(\(s\) => s\?\.id === ui\.section\)/);
 });
 

@@ -27,7 +27,7 @@ test('pop-up: a single click only selects; one selected swaps it, none or severa
   assert.match(ov, /onopen\?\.\(id\)/);
   const main = src('main.js');
   // a selection box (or Ctrl+click) never opens the pop-up
-  assert.match(main, /onselect\(ids\) \{\s*ui\.popup = false;/);
+  assert.match(main, /onselect\(ids\) \{\s*closePopup\(\);/);
   assert.match(src('svelte/ContentPanel.svelte'), /ui\.popup && groups\.find/);
 });
 
@@ -133,4 +133,87 @@ test('Esc and the panels select through the ui helpers', async () => {
   assert.match(persist, /if \(el && !motion\) selectText\(edit, \{ quiet: true \}\);/);
   selectText('pages/index.json#/title', { quiet: true });
   assert.deepEqual(ui.selection, { edit: 'pages/index.json#/title', quiet: true });
+});
+
+test('the pop-up and section helpers: open, close, show, deselect sections, clear anim', async () => {
+  const u = await loadUi();
+  const { ui } = u;
+  u.selectWidgets(['w-1']);
+  u.openPopup();
+  assert.equal(ui.popup, true);
+  u.selectText('pages/index.json#/title');
+  u.closeWidgetPopup();
+  assert.deepEqual([ui.popup, ui.selection, ui.widget], [false, null, 'w-1'], 'the widget stays');
+  u.openPopup();
+  u.closePopup();
+  assert.deepEqual([ui.popup, ui.widget], [false, 'w-1']);
+  u.openSectionPopup('s-2');
+  assert.deepEqual([ui.section, ui.selSection, ui.widget, ui.popup], ['s-2', 's-2', null, false]);
+  u.closeSectionPopup();
+  assert.deepEqual([ui.section, ui.selSection], [null, 's-2'], 'the section stays selected');
+  u.selectSections(['s-1', 's-2']);
+  u.deselectSections();
+  assert.deepEqual([ui.selSection, ui.selSections], [null, []]);
+  u.selectWidgets(['w-1', 'w-2']);
+  u.showWidget('w-3', true);
+  assert.deepEqual(
+    [ui.widget, ui.popup, ui.multi],
+    ['w-3', true, ['w-1', 'w-2']],
+    'only those two',
+  );
+  u.showWidget(null, false);
+  assert.deepEqual([ui.widget, ui.popup], [null, false]);
+  ui.anim = { id: 'a' };
+  u.clearAnim();
+  assert.equal(ui.anim, null);
+  u.setMod(true);
+  assert.equal(ui.mod, true);
+  u.setMod(false);
+  assert.equal(ui.mod, false);
+});
+
+test('pick, hover and peek: the preview and panel sides kept apart', async () => {
+  const u = await loadUi();
+  const { ui } = u;
+  const el = { dataset: { edit: 'f#/a' } };
+  u.hoverElement(el);
+  assert.deepEqual(ui.hoverEl, el);
+  u.pickElement(el, 'text');
+  u.clearPick();
+  assert.deepEqual([ui.picked, ui.hoverEl, ui.selection], [null, null, null]);
+  u.peekSection('s-1', 'panel');
+  u.peekSection(null, 'preview');
+  assert.deepEqual(ui.peek, { id: 's-1', from: 'panel' }, "the other side's leave keeps it");
+  u.peekSection(null, 'panel');
+  assert.equal(ui.peek, null);
+  u.hotWidget('w-1', 'preview');
+  u.hotWidget(null, 'panel');
+  assert.deepEqual(ui.hot, { id: 'w-1', from: 'preview' });
+  u.hotWidget(null, 'preview');
+  assert.equal(ui.hot, null);
+  u.selectWidgets(['w-1']);
+  u.selectLink('w-1');
+  u.pickElement(el, 'text');
+  u.clearSelection();
+  assert.deepEqual([ui.widget, ui.link, ui.selection, ui.picked], [null, null, null, null]);
+});
+
+test('no selection or hover field is written outside ui.svelte.js', () => {
+  const fields =
+    'picked|hoverEl|anim|selection|widget|multi|popup|section|selSections?|peek|hot|link|anchor|mod|secRows';
+  const write = new RegExp(`\\bui\\.(${fields})\\s*=[^=]`);
+  const files = ['main.js', 'overlay.js', 'bridge.js', 'svelte/persist.js'];
+  for (const f of [
+    'App',
+    'ContentPanel',
+    'SectionToolbar',
+    'PageHead',
+    'MediaModal',
+    'SectionsList',
+    'SectionCard',
+  ])
+    files.push(`svelte/${f}.svelte`);
+  // App.svelte keeps one on purpose: a widget opened anywhere drops the several selected
+  const kept = /if \(ui\.widget && untrack\(\(\) => ui\.multi\.length\)\) ui\.multi = \[\];/;
+  for (const f of files) assert.doesNotMatch(src(f).replace(kept, ''), write, f);
 });

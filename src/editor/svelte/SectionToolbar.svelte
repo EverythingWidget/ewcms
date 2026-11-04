@@ -23,7 +23,7 @@
 -->
 <script>
   import Button from './Button.svelte';
-  import { ui, selectWidgets, selectSection } from './ui.svelte.js';
+  import { ui, selectWidgets, selectSection, openPopup } from './ui.svelte.js';
   import { locate } from '../locate.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import {
@@ -125,9 +125,7 @@
         iconOnly
         label="Settings of {oneLabel}"
         title="Settings (or double-click it)"
-        onclick={() => {
-          ui.popup = true;
-        }}
+        onclick={openPopup}
       />
       <Button
         size="small"

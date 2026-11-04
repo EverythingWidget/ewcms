@@ -14,7 +14,7 @@
   tab shows it. The warning line jumps to the main widget, on the param row that is wrong.
 -->
 <script>
-  import { ui } from './ui.svelte.js';
+  import { ui, closeSectionPopup, showWidget } from './ui.svelte.js';
   import PreviewPicker from './PreviewPicker.svelte';
   import { parentId, pathOfId } from '../../site/routes.js';
   import { crumbsOf, pageIds, titleOf } from '../lib/page-tree.js';
@@ -66,10 +66,9 @@
     const main = live.get(pageFile(id), '/main');
     if (ui.panel !== 'nav') actions.setPanel('nav');
     ui.pagesWin = { ...ui.pagesWin, open: false };
-    ui.section = null;
+    closeSectionPopup();
     const has = problem?.kind !== 'none';
-    ui.widget = has ? main : null;
-    ui.popup = has;
+    showWidget(has ? main : null, has);
     ui.focusParam = has ? { widget: main, param: problem?.param ?? '' } : null;
   }
 </script>

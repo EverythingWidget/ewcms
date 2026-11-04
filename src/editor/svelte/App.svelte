@@ -23,7 +23,7 @@
   import WidgetToolbar from './WidgetToolbar.svelte';
   import { layerWidget } from '../layout-ops.js';
   import { targetFile } from '../layout-sync.js';
-  import { ui, previewClicks, pickElement, selectLink, deselect } from './ui.svelte.js';
+  import { ui, previewClicks, pickElement, selectLink, deselect, closePopup } from './ui.svelte.js';
   import { writeUrl } from './persist.js';
   import { MOD, plural } from '../lib/format.js';
 
@@ -149,7 +149,7 @@
   });
   // nothing selected: no pop-up either (a later single click only selects)
   $effect(() => {
-    if (!ui.widget) ui.popup = false;
+    if (!ui.widget) closePopup();
   });
 
   /** Leaving the page with unsaved edits: the browser asks first. */

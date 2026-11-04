@@ -18,7 +18,7 @@ test('one widget selected: the section toolbar has its actions and a gear; rows 
     'angles-down',
     'angles-up',
     'trash',
-    'ui.popup = true',
+    'onclick={openPopup}',
   ])
     assert.ok(st.includes(s), s);
   const row = src('svelte/WidgetRow.svelte');
