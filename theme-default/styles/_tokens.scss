@@ -50,6 +50,23 @@
   --radius: 6px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
+  // items: one entry of a source as a list shows it (a card, a tile, a row). Defaults are
+  // today's cards (Album cards, the places' cards): no box, a 4px photo radius, 16px between
+  // the photo and the text. A site's theme overrides them in theme/tokens.scss.
+  --item-radius: 4px;
+  --item-border: none;
+  --item-shadow: none;
+  --item-shadow-s: 0 1px 2px var(--shade-15), 0 4px 12px var(--shade-35);
+  --item-shadow-m: 0 2px 4px var(--shade-35), 0 12px 32px var(--shade-45);
+  --item-shadow-l: 0 4px 8px var(--shade-40), 0 24px 64px var(--shade-65);
+  --item-pad: 0;
+  --item-pad-s: 8px;
+  --item-pad-m: 16px;
+  --item-pad-l: 24px;
+  --item-gap: 16px;
+  --item-bg: transparent;
+  --item-bg-hover: var(--item-bg);
+
   @media (width <= $bp-sm) {
     --header-h: 64px;
   }
