@@ -24,7 +24,7 @@ import { popupStays } from '../multi-select.js';
  * the helpers below, never directly from other files. Their names follow one vocabulary:
  *   pick    a click in the preview (pickElement, pickAnim, clearPick)
  *   select  a choice in a panel (selectWidgets, selectSection(s), selectText, selectLink,
- *           deselect, clearSelection); open / close: a pop-up shown or not
+ *           selectAnim, deselect, clearSelection); open / close: a pop-up shown or not
  *   hover   the pointer (hoverElement, peekSection, hotWidget)
  */
 export const ui = $state({
@@ -218,6 +218,17 @@ export function pickElement(
   kind = previewClicks() === 'arrange' ? 'text' : 'anim',
   { quiet = false } = {},
 ) {
+  choose(el, kind, quiet);
+}
+
+/** A panel's choice of an animated element (Element motion's list): the same as a preview
+ *  click picking it, so it also sets ui.widget to the widget that owns it (pickAnim). */
+export function selectAnim(el) {
+  choose(el, 'anim', false);
+}
+
+/** The one path pickElement and selectAnim share. */
+function choose(el, kind, quiet) {
   ui.picked = el ? { el, kind } : null;
   if (previewClicks() === 'animate') ui.anim = pickAnim(ui.picked);
   else

@@ -198,6 +198,21 @@ test('pick, hover and peek: the preview and panel sides kept apart', async () =>
   assert.deepEqual([ui.widget, ui.link, ui.selection, ui.picked], [null, null, null, null]);
 });
 
+test('selectAnim (a panel choice) and pickElement anim (a preview click) set the same state', async () => {
+  const a = await loadUi();
+  const b = await loadUi();
+  a.ui.panel = b.ui.panel = 'nav';
+  a.ui.pageTab = b.ui.pageTab = 'element-motion';
+  const el = { dataset: { anim: 'a1' }, closest: () => ({ dataset: { widget: 'w-1' } }) };
+  a.selectAnim(el);
+  b.pickElement(el, 'anim');
+  for (const k of ['picked', 'anim', 'widget', 'selection']) assert.deepEqual(a.ui[k], b.ui[k], k);
+  assert.equal(a.ui.picked.kind, 'anim');
+  assert.equal(a.ui.widget, 'w-1');
+  assert.equal(a.ui.anim.id, 'a1');
+  assert.match(src('svelte/MotionPanel.svelte'), /selectAnim\(el\)/);
+});
+
 test('no selection or hover field is written outside ui.svelte.js', () => {
   const fields =
     'picked|hoverEl|anim|selection|widget|multi|popup|section|selSections?|peek|hot|link|anchor|mod|secRows';

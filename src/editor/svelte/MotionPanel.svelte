@@ -14,7 +14,7 @@
   import AnimEditor from './AnimEditor.svelte';
   import WidgetMotion from './WidgetMotion.svelte';
   import Section from './Section.svelte';
-  import { ui, pickElement, hoverElement } from './ui.svelte.js';
+  import { ui, pickElement, selectAnim, hoverElement } from './ui.svelte.js';
   import { motionSections } from './page-motion.js';
   import { ANIMATIONS } from '../../site/files.js';
   import { animationOf, elementOf } from './motion.js';
@@ -49,12 +49,12 @@
   });
   const outside = $derived(items.filter((it) => !it.el.closest('[data-widget]')));
 
-  /** Pick an element or widget (as a click in the preview does). */
+  /** Select an element or widget (the same as a click in the preview picking it). */
   function pick(el) {
     if (!el) return;
     if (ui.anim?.el === el) return pickElement(null);
     bridge.reveal(el);
-    pickElement(el, 'anim');
+    selectAnim(el);
   }
 </script>
 
