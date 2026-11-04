@@ -136,15 +136,15 @@ link colour, eye, Duplicate, Delete; no grip, no order). Put it in a `<ul>`.
 
 **Panel** — the editor's side panel around your cards.
 
-| prop       | type                                                       | default                     | meaning                                                                                  |
-| ---------- | ---------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------- |
-| `mode`     | `'text'`\|`'settings'`\|`'preview'`                        | `'text'`                    | active mode tab, Pages \| Settings (`text` = "Pages"; `preview`: ▶ on, no mode tabs)     |
-| `tab`      | `'sections'`\|`'element-motion'`\|`'page-motion'`\|`'seo'` | `'sections'`                | page tab (only in `text`; Page motion holds the Scroll backdrop and Page entrance cards) |
-| `tabs`     | bool                                                       | `true`                      | `false` hides the page tabs                                                              |
-| `height`   | CSS length                                                 | `'844px'`                   | panel height (body scrolls)                                                              |
-| `changes`  | number                                                     | `0`                         | unsaved count: "Unsaved changes", Save · N, Undo on                                      |
-| `pending`  | string                                                     | `'Everything is published'` | footer line when no changes                                                              |
-| `children` | snippet                                                    | —                           | the scroll body                                                                          |
+| prop       | type                                                       | default                     | meaning                                                                                   |
+| ---------- | ---------------------------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------- |
+| `mode`     | `'pages'`\|`'settings'`\|`'preview'`                       | `'pages'`                   | active mode tab, Pages \| Settings (`preview`: ▶ on, no mode tabs)                        |
+| `tab`      | `'sections'`\|`'element-motion'`\|`'page-motion'`\|`'seo'` | `'sections'`                | page tab (only in `pages`; Page motion holds the Scroll backdrop and Page entrance cards) |
+| `tabs`     | bool                                                       | `true`                      | `false` hides the page tabs                                                               |
+| `height`   | CSS length                                                 | `'844px'`                   | panel height (body scrolls)                                                               |
+| `changes`  | number                                                     | `0`                         | unsaved count: "Unsaved changes", Save · N, Undo on                                       |
+| `pending`  | string                                                     | `'Everything is published'` | footer line when no changes                                                               |
+| `children` | snippet                                                    | —                           | the scroll body                                                                           |
 
 **Modal** — a modal shell drawn in place (`.modal__box` + real ExplorerHead).
 

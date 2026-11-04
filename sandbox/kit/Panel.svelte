@@ -3,7 +3,7 @@
   (Sources, Media … Preview | phone, undo, redo), the mode tabs, the page head (PageHead.svelte's
   look: ← title / path; page: { title, path }, false hides it), the page tabs (the real Tabs),
   the scroll body (.ed-body) and the Save / Publish footer.
-    mode     'text' | 'settings' | 'preview' (default 'text' = Pages; preview: ▶ on, no mode tabs)
+    mode     'pages' | 'settings' | 'preview' (default 'pages'; preview: ▶ on, no mode tabs)
     tab      the page tab shown (default 'sections'); tabs: false hides them
     height   the panel's height (default 844px)       pending  the footer's line
     changes  unsaved changes (Save · N)               children the body
@@ -14,7 +14,7 @@
   import { APP } from './styles.js';
 
   let {
-    mode = 'text',
+    mode = 'pages',
     tab = 'sections',
     tabs = true,
     page = { title: 'Home', path: '/' },
@@ -24,7 +24,7 @@
     children,
   } = $props();
   const MODES = [
-    ['text', 'Pages'],
+    ['pages', 'Pages'],
     ['settings', 'Settings'],
   ];
   const PAGE_TABS = [
@@ -49,10 +49,18 @@
         <Button icon="rotate-right" iconOnly label="Redo" disabled />
       </div>
       {#if mode !== 'preview'}
-        <Tabs class="ed-modes" role="navigation" fill label="Mode" tabs={MODES} value={mode} onpick={() => {}} />
+        <Tabs
+          class="ed-modes"
+          role="navigation"
+          fill
+          label="Mode"
+          tabs={MODES}
+          value={mode}
+          onpick={() => {}}
+        />
       {/if}
     </header>
-    {#if page && mode === 'text'}
+    {#if page && mode === 'pages'}
       <div class="kit-ph">
         <Button size="small" icon="arrow-left" iconOnly label="Back to pages" />
         <div>
@@ -61,7 +69,7 @@
         </div>
       </div>
     {/if}
-    {#if tabs && mode === 'text'}
+    {#if tabs && mode === 'pages'}
       <Tabs
         tabs={PAGE_TABS}
         value={tab}
