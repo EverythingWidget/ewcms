@@ -56,9 +56,9 @@ test('top tabs Pages | Settings; page tabs Sections | Element motion | Page moti
   assert.doesNotMatch(c, /transitions/);
   const m = read('editor/svelte/MotionPanel.svelte');
   assert.doesNotMatch(m, /AnimLibrary|Tabs/);
-  assert.doesNotMatch(m, /<TransitionCard |<ScrollBackdropCard /);
+  assert.doesNotMatch(m, /<EntranceCard |<ScrollBackdropCard /);
   const pm = read('editor/svelte/PageMotionPanel.svelte');
-  assert.match(pm, /<ScrollBackdropCard \{live\} \{file\} \/>\s*<TransitionCard /);
+  assert.match(pm, /<ScrollBackdropCard \{live\} \{file\} \/>\s*<EntranceCard /);
   assert.match(read('editor/svelte/SettingsPanel.svelte'), /<MotionSettings /);
   assert.match(read('editor/svelte/MotionSettings.svelte'), /<AnimLibrary /);
 });

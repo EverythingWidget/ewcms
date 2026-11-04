@@ -12,7 +12,7 @@
   import Button from './Button.svelte';
   import Field from './Field.svelte';
   import { ui } from './ui.svelte.js';
-  import { setCurtainMode } from './transition-curtain.js';
+  import { setCurtainMode } from './entrance-curtain.js';
   import { splitEdit } from '../../site/helpers.js';
   import { CURTAIN_MODES, curtainMode } from '../../client/anim/curtain.js';
 

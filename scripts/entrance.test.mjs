@@ -3,18 +3,18 @@ import assert from 'node:assert/strict';
 import { curtainFor, curtainMode } from '../src/client/anim/curtain.js';
 import { checkContent } from '../src/site/validate.js';
 import { createStore } from '../src/editor/store.js';
-import { setCurtainMode } from '../src/editor/svelte/transition-curtain.js';
+import { setCurtainMode } from '../src/editor/svelte/entrance-curtain.js';
 
 const site = { label: true, in: { duration: 0.3, ease: 'power4.out' }, total: 1.1 };
 
-test('page transition: the site curtain or none; its timing is the site curtain alone', () => {
+test('page entrance: the site curtain or none; its timing is the site curtain alone', () => {
   assert.equal(curtainMode(undefined), 'global');
   assert.equal(curtainMode({ curtain: 'off' }), 'off');
   assert.equal(curtainFor(undefined, site), site);
   assert.equal(curtainFor({ curtain: 'off' }, site), null);
 });
 
-test('page transition: validation and the editor modes', () => {
+test('page entrance: validation and the editor modes', () => {
   const F = 'pages/x/index.json';
   const of = (transition) =>
     checkContent(F, { version: 1, kind: 'page', id: 'pg-xxxx', transition });

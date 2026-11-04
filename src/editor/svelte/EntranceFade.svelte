@@ -7,7 +7,7 @@
 <script>
   import { showValue } from '../lib/show-value.js';
   import EasePicker from './EasePicker.svelte';
-  import { fmtS } from './transition-curtain.js';
+  import { fmtS } from './entrance-curtain.js';
   import { ANIMATIONS } from '../../site/files.js';
 
   // live: reactive store (live.svelte.js); gsap: the preview's, for the ease curves.

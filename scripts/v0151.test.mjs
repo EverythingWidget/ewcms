@@ -105,30 +105,30 @@ test('Page entrance: one Settings section (curtain, page fade); the page card li
     sp,
     /key="settings:entrance"[\s\S]*?id="page-entrance"[\s\S]*?title="Page entrance"/,
   );
-  assert.match(sp, /<TransitionCurtain[^>]*\/>\s*<TransitionFade[^>]*\/>\s*<\/Section>/);
+  assert.match(sp, /<EntranceCurtain[^>]*\/>\s*<EntranceFade[^>]*\/>\s*<\/Section>/);
   for (const [f, head] of [
-    ['TransitionCurtain', 'Curtain'],
-    ['TransitionFade', 'Page fade'],
+    ['EntranceCurtain', 'Curtain'],
+    ['EntranceFade', 'Page fade'],
   ]) {
     const s = src(`svelte/${f}.svelte`);
     assert.doesNotMatch(s, /<Section|title="Transition: /);
     assert.match(s, new RegExp(`<h3 class="pane__head">${head}</h3>`));
   }
-  const pc = src('svelte/TransitionPageCurtain.svelte');
+  const pc = src('svelte/EntrancePageCurtain.svelte');
   assert.match(pc, /global: 'Site default', off: 'Off'/);
   assert.match(pc, /onclick=\{onsettings\}>Page entrance settings<\/button>/);
   assert.match(
-    src('svelte/TransitionCard.svelte'),
+    src('svelte/EntranceCard.svelte'),
     /title="Page entrance"\s*name="Curtain: \{curtain === 'off' \? 'off \(page fade\)' : 'site default'\}"/,
   );
-  assert.doesNotMatch(src('svelte/TransitionCard.svelte'), /TransitionBackdrop|Backdrop:/);
+  assert.doesNotMatch(src('svelte/EntranceCard.svelte'), /<ScrollBackdrop|Backdrop:/);
   assert.match(
     src('svelte/ScrollBackdropCard.svelte'),
     /title="Scroll backdrop"\s*name="Scroll backdrop: \{backdrop\}"/,
   );
   assert.match(
     src('svelte/PageMotionPanel.svelte'),
-    /<ScrollBackdropCard \{live\} \{file\} \/>\s*<TransitionCard /,
+    /<ScrollBackdropCard \{live\} \{file\} \/>\s*<EntranceCard /,
   );
   const mp = src('svelte/PageMotionPanel.svelte');
   assert.match(mp, /ui\.sections\['settings:entrance'\] = true;/);

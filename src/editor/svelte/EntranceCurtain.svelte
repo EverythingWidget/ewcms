@@ -1,17 +1,17 @@
 <!--
-  A page entrance curtain: a fixed total duration, the timeline (TransitionCurtainTimeline), one ease
+  A page entrance curtain: a fixed total duration, the timeline (EntranceCurtainTimeline), one ease
   for every step or per-step eases (Advanced), and every value as a number under Advanced.
-  All edits go through transition-curtain.js. The Settings tab's Page entrance section, under a
+  All edits go through entrance-curtain.js. The Settings tab's Page entrance section, under a
   "Curtain" heading: the one curtain every page uses
-  (settings/animations.json); a page only turns it off (Pages > a page > Page motion > Page entrance, TransitionPageCurtain.svelte).
+  (settings/animations.json); a page only turns it off (Pages > a page > Page motion > Page entrance, EntrancePageCurtain.svelte).
 -->
 <script>
   import { showValue } from '../lib/show-value.js';
   import Button from './Button.svelte';
-  import TransitionCurtainTimeline from './TransitionCurtainTimeline.svelte';
+  import EntranceCurtainTimeline from './EntranceCurtainTimeline.svelte';
   import EasePicker from './EasePicker.svelte';
   import { ui } from './ui.svelte.js';
-  import { CURTAIN, CURTAIN_ROWS, TOTAL_MAX, curtainEdits, fmtS } from './transition-curtain.js';
+  import { CURTAIN, CURTAIN_ROWS, TOTAL_MAX, curtainEdits, fmtS } from './entrance-curtain.js';
   import { ANIMATIONS } from '../../site/files.js';
 
   // gsap: the preview's, for the ease curves
@@ -92,7 +92,7 @@
   Drag the bar ends or type the values. Changes apply to the next page change in the preview.
 </p>
 
-<div class="transition__box">
+<div class="entrance__box">
   <!-- drawn at the right of the row after it, like a grid's Source edit button -->
   <Button
     size="small"
@@ -111,9 +111,9 @@
     </span>
   </label>
 
-  <TransitionCurtainTimeline {plan} {edit} />
+  <EntranceCurtainTimeline {plan} {edit} />
 
-  <div class={['tf transition__ease', individual && 'is-individual']}>
+  <div class={['tf entrance__ease', individual && 'is-individual']}>
     <EasePicker
       {gsap}
       value={shared}
@@ -128,18 +128,18 @@
     </p>
   </div>
 
-  <div class="transition__advanced">
+  <div class="entrance__advanced">
     <button
       type="button"
-      class="transition__toggle"
+      class="entrance__toggle"
       aria-expanded={advanced}
       aria-controls="{advancedId}-advanced"
       onclick={() => (ui.sections['curtain:advanced'] = !advanced)}
     >
-      <i class="fa-solid fa-chevron-right transition__caret" aria-hidden="true"></i>
+      <i class="fa-solid fa-chevron-right entrance__caret" aria-hidden="true"></i>
       Advanced
     </button>
-    <div class="transition__advanced-body" id="{advancedId}-advanced" hidden={!advanced}>
+    <div class="entrance__advanced-body" id="{advancedId}-advanced" hidden={!advanced}>
       {#each CURTAIN_ROWS as row (row.label)}
         {#if row.pair}
           {@const ease = row.pair + '/ease'}
@@ -179,7 +179,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  /* Transition: timeline (TransitionCurtain.svelte) */
+  /* Transition: timeline (EntranceCurtain.svelte) */
   .tf__hint {
     display: block;
     margin: var(--space-2) 0 0;
@@ -187,7 +187,7 @@
 
   /* One bordered curtain group: total, timeline, ease, Advanced (edge to edge: the box has no
      side padding, its other parts 8px each). */
-  .transition__box {
+  .entrance__box {
     position: relative;
     margin: 0 0 var(--space-4);
     padding: var(--space-2) 0 0;
@@ -196,7 +196,7 @@
     background: var(--c-card);
     @include stack(var(--space-3));
 
-    > :global(:not(.transition__advanced, .btn)) {
+    > :global(:not(.entrance__advanced, .btn)) {
       padding-inline: var(--space-2);
     }
 
@@ -207,18 +207,18 @@
     }
   }
 
-  .transition__box > :global(.btn) {
+  .entrance__box > :global(.btn) {
     position: absolute;
     top: 12px;
     right: 8px;
   }
 
-  .transition__ease {
+  .entrance__ease {
     margin: 0;
   }
 
   /* Advanced sits on the bottom edge of the curtain box (same border). */
-  .transition__advanced {
+  .entrance__advanced {
     margin: 0;
     padding: 0;
     border-radius: 0 0 var(--radius-lg) var(--radius-lg);
@@ -227,7 +227,7 @@
   }
 
   // caret + "Advanced", 40px tall; the caret turns down when open
-  .transition__toggle {
+  .entrance__toggle {
     display: block;
     width: 100%;
     padding: var(--space-3);
@@ -252,7 +252,7 @@
     }
   }
 
-  .transition__caret {
+  .entrance__caret {
     width: 1em;
     margin-right: var(--space-1);
     color: var(--c-text-faint);
@@ -264,7 +264,7 @@
     }
   }
 
-  .transition__advanced-body {
+  .entrance__advanced-body {
     @include stack(var(--space-2));
     // Same 6px rhythm as .tf__label → control and .tf__hint (title / field / help).
     padding: 0 var(--space-3) var(--space-3);

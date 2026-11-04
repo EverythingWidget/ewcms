@@ -30,7 +30,7 @@ test('placed on Source, Height / Width and the Curtain', () => {
   assert.match(ss, /<InfoHelp label="About \{title\}"/);
   assert.match(ss, /<b>Width<\/b>/);
   assert.match(
-    src('TransitionPageCurtain.svelte'),
+    src('EntrancePageCurtain.svelte'),
     /<b>Curtain<\/b>: a panel that covers the screen/,
   );
 });

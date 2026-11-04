@@ -1,6 +1,6 @@
 /**
- * Page entrance curtain: the edit rules behind the curtain section (TransitionCurtain.svelte,
- * TransitionCurtainTimeline.svelte): the global curtain in Settings, a page's own one in Motion.
+ * Page entrance curtain: the edit rules behind the curtain section (EntranceCurtain.svelte,
+ * EntranceCurtainTimeline.svelte): the global curtain in Settings, a page's own one in Motion.
  * No DOM here. Times come only from normalizeCurtain + curtainPlan (src/client/anim/curtain.js).
  */
 import { ANIMATIONS } from '../../site/files.js';

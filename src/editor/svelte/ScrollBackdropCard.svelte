@@ -2,12 +2,12 @@
   A page's Page motion tab (PageMotionPanel.svelte), first, before the Page entrance card: the Scroll
   backdrop card, a section card (Section.svelte) whose second line sums it up ("Scroll
   backdrop: on"). Inside
-  it, the page's backdrop (TransitionBackdrop.svelte: page.backdrop, its photos and how they
+  it, the page's backdrop (ScrollBackdrop.svelte: page.backdrop, its photos and how they
   change as the visitor scrolls).
     live  reactive store; file  the page file
 -->
 <script>
-  import TransitionBackdrop from './TransitionBackdrop.svelte';
+  import ScrollBackdrop from './ScrollBackdrop.svelte';
   import Section from './Section.svelte';
   import { isObject } from '../../site/is.js';
 
@@ -30,5 +30,5 @@
   name="Scroll backdrop: {backdrop}"
 >
   <p class="hint">The images behind the page's sections that change as the visitor scrolls.</p>
-  <TransitionBackdrop {live} {file} />
+  <ScrollBackdrop {live} {file} />
 </Section>

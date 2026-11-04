@@ -1,15 +1,15 @@
 <!--
-  The curtain timeline: two rows over the fixed total.
+  The Page entrance curtain timeline: two rows over the fixed total.
     Curtain  enter bar pinned at 0, leave bar pinned to total; drag their inner ends.
              The gap between them is how long the curtain stays shut.
     Text     enter and leave bars: drag a bar to move it, an end to resize it (the left
              end pins the right one and the other way round). The gap is how long the
              text stays.
   Arrow keys nudge a focused bar or end by 0.01s; hold Shift for 0.1s (drags snap the same).
-  plan: curtainPlan(); edit: curtainEdits() (transition-curtain.js), which also clamps every value.
+  plan: curtainPlan(); edit: curtainEdits() (entrance-curtain.js), which also clamps every value.
 -->
 <script module>
-  import { clampTo, fmtS } from './transition-curtain.js';
+  import { clampTo, fmtS } from './entrance-curtain.js';
 
   /** Bar ends you can drag, in time order per row. at(plan) = where the end sits. */
   const ENDS = [
