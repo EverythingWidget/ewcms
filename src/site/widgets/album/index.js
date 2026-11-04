@@ -3,9 +3,9 @@
  * photo, numbered thumbnail strip, 01/08 counter, keyboard / drag / wheel navigation and a
  * Slider ⇄ Grid toggle. Its photos are its source's item (../../layout/source.js: on a [param]
  * page usually From URL, the page's own; item: true, without one it is skipped). A widget module (../index.js has the format).
- * Its texts are fields bound to the item (../../layout/bindings.js): the title { "bind": "title" },
- * the facts ("Role" / { "bind": "role" }; a fact whose value is empty is left out, "Photos" and the
- * count always come last) and the body { "bind": "body" }.
+ * Its texts show the item's fields (parts, ../../layout/parts.js): the title [{ "field": "title" }],
+ * the facts ("Role" / [{ "field": "role" }]; a fact whose value is empty is left out, "Photos" and
+ * the count always come last) and the body [{ "field": "body" }].
  */
 import {
   html,
@@ -46,12 +46,12 @@ export const album = {
   ],
   defaults: {
     source: { mode: 'url', from: 'people', where: { op: 'and', rules: [] } },
-    title: { bind: 'title' },
+    title: [{ field: 'title' }],
     meta: [
-      { label: 'Location', value: { bind: 'location' } },
-      { label: 'Year', value: { bind: 'year' } },
+      { label: 'Location', value: [{ field: 'location' }] },
+      { label: 'Year', value: [{ field: 'year' }] },
     ],
-    body: { bind: 'body' },
+    body: [{ field: 'body' }],
   },
   render: (s, ctx, widget) => albumOf(s, ctx, ctx.route, widget),
 };

@@ -40,6 +40,7 @@ import {
   toggleMark,
   unlist,
   autoList,
+  typedField,
 } from '../site/text.js';
 import { isSafeHref } from '../site/hrefs.js';
 
@@ -77,8 +78,12 @@ html:is(.__ed-arrange, .__ed-animate):not(.__ed-alt) [data-widget] :is(a, button
 .__ed-box--sel span { background: ${T.accent}; color: ${T.onAccent}; }
 .__ed-box.is-low span { bottom: auto; top: 100%; margin: 4px 0 0; }
 html.__ed-tb-above .__ed-box--sel:not(.is-low) span, html.__ed-tb-below .__ed-box--sel.is-low span { visibility: hidden; }
-html.__ed-arrange :is(.ts__chip, .ts__count) { border-radius: ${T.radiusXs}; background: rgb(${T.chipRgb} / .16); box-shadow: inset 0 0 0 1px rgb(${T.chipRgb} / .45); color: inherit; }
-html.__ed-arrange [contenteditable] :is(.ts__chip, .ts__count) { color: rgb(${T.chipRgb}); user-select: all; cursor: default; }
+html.__ed-arrange .ts__chip { border-radius: ${T.radiusXs}; background: rgb(${T.chipRgb} / .16); box-shadow: inset 0 0 0 1px rgb(${T.chipRgb} / .45); color: inherit; }
+html.__ed-arrange [contenteditable] .ts__chip { color: rgb(${T.chipRgb}); user-select: all; cursor: default; }
+html.__ed-arrange .ts__chip[data-unknown] { background: rgb(${T.warningRgb} / .16); box-shadow: inset 0 0 0 1px rgb(${T.warningRgb} / .6); }
+html.__ed-arrange [contenteditable] .ts__chip[data-unknown] { color: rgb(${T.warningRgb}); }
+[data-no-value] > * { opacity: .4; }
+[data-no-value]::after { content: attr(data-no-value); position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; color: ${T.white}; font: ${T.fsXs} ${T.font}; text-align: center; pointer-events: none; }
 html.__ed-arrange [data-edit-type="rich"][contenteditable] { outline-offset: 6px; }
 html.__ed-arrange [data-edit-type="rich"][contenteditable] a { cursor: text !important; }
 html.__ed-arrange [data-widget] :is([data-edit], [data-bound]):not(.__ed-invalid) { outline: none !important; }
@@ -255,7 +260,7 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
         const { file, ptr } = splitEdit(el.dataset.edit);
         const value = store.get(file, ptr);
         if (value === undefined || value === null) continue;
-        // a Text widget's body: the dev server renders it (its fields' values, counts)
+        // a Text widget's body: the dev server renders it (its fields' values)
         if (el.dataset.editType === 'rich') continue;
         if (el === skip) {
           applied.set(el, value);
@@ -848,8 +853,11 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
       if (rich && rich.el.contains(e.target)) {
         const body = readBody(rich.el);
         const sel = selectionOf(rich.el, win);
-        // "- " or "1. " typed at a line's start: a list item
-        const auto = sel && isCaret(sel) ? autoList(body, sel.to) : null;
+        // "- " or "1. " typed at a line's start: a list item; {name} typed: a field chip
+        const auto =
+          sel && isCaret(sel)
+            ? autoList(body, sel.to) || (e.data === '}' && typedField(body, sel.to)) || null
+            : null;
         writeRich(body);
         if (auto) {
           bridge.richApply(() => ({ body: auto.body, sel: { from: auto.at, to: auto.at } }));

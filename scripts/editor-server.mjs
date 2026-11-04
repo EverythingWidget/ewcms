@@ -512,7 +512,7 @@ function sourceProblems(root, files) {
 
 /**
  * A new [param] page's album widget, its texts bound to the source's fields (its schema): the
- * title field, the fields shown in item lists as facts ({ "bind": "role" }), the first long text.
+ * title field, the fields shown in item lists as facts ([{ "field": "role" }]), the first long text.
  */
 function albumWidget(root, source, ids, params, key) {
   const list = itemsOf(readContentFile(root, sourceFile(source), { check: false }));
@@ -527,11 +527,11 @@ function albumWidget(root, source, ids, params, key) {
   return {
     ...newWidget('album', ids, { rows: 1 }),
     source: { mode: 'url', from: source, where },
-    title: schema.title ? { bind: schema.title } : '',
+    title: schema.title ? [{ field: schema.title }] : '',
     meta: fields
       .filter((f) => f.list && ['text', 'choice', 'number', 'date'].includes(f.type))
-      .map((f) => ({ label: f.label, value: { bind: f.key } })),
-    body: long ? { bind: long.key } : '',
+      .map((f) => ({ label: f.label, value: [{ field: f.key }] })),
+    body: long ? [{ field: long.key }] : '',
   };
 }
 

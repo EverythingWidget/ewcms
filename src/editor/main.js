@@ -540,7 +540,7 @@ function rebind() {
   for (const root of syncRoots(bridge.doc))
     renderSections(
       [...root.querySelectorAll('[data-sec]')]
-        .filter((s) => s.querySelector('[data-bound], [data-field], [data-count]'))
+        .filter((s) => s.querySelector('[data-bound], [data-field]'))
         .map((s) => s.dataset.sec),
       root,
     );
@@ -598,7 +598,7 @@ bridge.on('pick', pickElement);
 bridge.on('hover', hoverElement);
 bridge.on('textPick', selectText);
 // the Text widget editor (bridge.js, rich.js): its state for the toolbar; an edit ended: its
-// section rendered again (the fields' values, the counts, the animations' markup)
+// section rendered again (the fields' values, the animations' markup)
 bridge.on('rich', (state) => (ui.rich = state));
 bridge.on('richDone', () => {
   for (const root of syncRoots(bridge.doc)) syncSections({ structure: true }, root);

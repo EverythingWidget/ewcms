@@ -3,13 +3,15 @@
  * the format), its default export the definition.
  */
 import { html, editable } from '../../helpers.js';
-import { checkBody, countText, fieldText, renderBody } from '../../text.js';
-import { sourceList } from '../data.js';
+import { checkBody, renderBody } from '../../text.js';
+import { knownName, partText } from '../../layout/parts.js';
+import { keysOf } from '../../layout/bindings.js';
 import { hrefOf } from '../../hrefs.js';
 
 /**
  * Text: lines in the site's text styles (a label, a title, paragraphs, ...), with bold,
- * italic, links, an item's fields and counts in them (../text.js has the body's shape).
+ * italic, links and an item's fields in them (field parts: ../../layout/parts.js; a source's
+ * name shows how many items it has) (../text.js has the body's shape).
  * Edited in the preview only (src/editor/rich.js). A title line animates as page.title, the lines after it (when the
  * widget has no motion of its own) as page.intro.
  */
@@ -32,14 +34,15 @@ export const text = {
   check: (widget) => (widget.body === undefined ? [] : checkBody(widget.body)),
   render: (s, ctx, widget) => {
     const body = Array.isArray(s.body) ? s.body : [];
-    const missing = (name) => (editable ? `{{${name}}}` : '');
-    const value = (r) => {
-      if (r.field !== undefined) return fieldText(r, widget.item) || missing(r.field);
-      const n = r.count.source
-        ? sourceList(ctx, r.count.source).length
-        : (widget.items || []).length;
-      return countText(n);
-    };
+    // the names its field runs can have (the editor marks the others: data-names for its
+    // inline editor, src/editor/rich.js)
+    const scope = { item: widget.item, sources: ctx.sources, keys: keysOf(ctx, widget.source) };
+    const known = editable ? (name) => knownName(name, scope) : null;
+    const names = editable
+      ? ` data-names="${[...new Set([...(scope.keys || []), ...Object.keys(widget.item || {}), ...Object.keys(ctx.sources || {})])].join(' ')}"`
+      : '';
+    // a missing field: nothing on the site, its {name} (dimmed) in the editor
+    const value = (r) => partText(r, scope) || (editable ? `{${r.field}}` : '');
     const firstTitle = body.findIndex((l) => l?.style === 'title');
     const own = typeof s.motion?.animation === 'string';
     const attrs = (i, style) =>
@@ -49,8 +52,9 @@ export const text = {
           ? ' data-anim="page.intro"'
           : '';
     return html`<div class="text">
-      <div class="text__body" ${widget.ed('body', 'rich')}>${renderBody(body, {
+      <div class="text__body" ${widget.ed('body', 'rich')}${names}>${renderBody(body, {
         value,
+        known,
         href: (link) => hrefOf(ctx, link, 'a text link') || '#',
         attrs,
       })}</div>

@@ -7,8 +7,7 @@ import {
   lineText,
   bodyOf,
   renderBody,
-  fieldText,
-  countText,
+  typedField,
   tidyRuns,
   hasMark,
   toggleMark,
@@ -19,6 +18,7 @@ import {
   splitLine,
   tidyBody,
 } from '../src/site/text.js';
+import { partText } from '../src/site/layout/parts.js';
 
 const at = (line, a) => ({ line, at: a });
 const body = [
@@ -31,14 +31,17 @@ test('text: a body is checked line by line, run by run', () => {
   assert.match(checkBody('x')[0], /"body" must be a list of lines/);
   assert.deepEqual(
     checkBody([
-      { style: 'huge', text: [{ t: 'a', marks: ['u'] }, { field: 'a b' }, { count: {} }, {}] },
+      {
+        style: 'huge',
+        text: [{ t: 'a', marks: ['u'] }, { field: 'a b' }, { count: { source: 'x' } }, {}],
+      },
     ]),
     [
       '"body.0.style" must be one of title, heading, subheading, statement, paragraph, label, small',
       '"body.0.text.0.marks" must be a list of b, i',
       '"body.0.text.1.field" must be a field name',
-      '"body.0.text.2.count" must be { "source": "<source>" } or { "of": "items" }',
-      '"body.0.text.3" must be { t }, { field } or { count }',
+      '"body.0.text.2": a count is a field now: { "field": "<source>" } shows its length',
+      '"body.0.text.3" must be { t } or { field }',
     ],
   );
   assert.match(checkBody([{ style: 'title', text: [{ field: 'a', format: 'x' }] }])[0], /{value}/);
@@ -59,7 +62,7 @@ test('text: plain text, a page title, a body from text', () => {
 });
 
 test('text: rendered safe; chips show values, or their names while editing', () => {
-  const value = (r) => fieldText(r, { name: 'Ann<' });
+  const value = (r) => partText(r, { item: { name: 'Ann<' } });
   const out = renderBody(body, { value });
   assert.match(
     out,
@@ -70,7 +73,13 @@ test('text: rendered safe; chips show values, or their names while editing', () 
     /<span class="ts__chip" data-field="name" data-format="\{value\}!">Ann&lt;!<\/span>/,
   );
   const ed = renderBody(body, { value, editing: true });
-  assert.match(ed, /data-field="name" data-format="\{value\}!" contenteditable="false">name</);
+  assert.match(ed, /data-field="name" data-format="\{value\}!" contenteditable="false">\{name\}</);
+  // an unknown name's chip is marked while editing
+  const known = (n) => n !== 'name';
+  assert.match(
+    renderBody(body, { value, editing: true, known }),
+    /data-field="name"[^>]* data-unknown/,
+  );
   // escaped text; a link; an empty line keeps a <br>
   const more = renderBody(
     [
@@ -84,13 +93,14 @@ test('text: rendered safe; chips show values, or their names while editing', () 
   // an unknown style renders as a paragraph; no body: one empty paragraph
   assert.match(renderBody([{ style: 'x', text: [] }]), /ts--paragraph/);
   assert.match(renderBody(undefined), /^<p class="ts ts--paragraph"/);
-  assert.equal(fieldText({ field: 'n' }, {}), '');
-  assert.equal(countText(4), '04');
+  // a missing field: nothing on the site; a source's list: its length, in the plain look
+  assert.doesNotMatch(renderBody([{ style: 'title', text: [{ field: 'n' }] }], { value }), /chip/);
+  const sources = { projects: Array(7).fill({}) };
   assert.match(
-    renderBody([{ style: 'title', text: [{ count: { source: 'projects' } }] }], {
-      value: () => '07',
+    renderBody([{ style: 'title', text: [{ t: 'Projects ' }, { field: 'projects' }] }], {
+      value: (r) => partText(r, { sources }),
     }),
-    /<sup class="ts__count" data-count="\{&quot;source&quot;:&quot;projects&quot;\}">07<\/sup>/,
+    /Projects <span class="ts__chip" data-field="projects">7<\/span>/,
   );
 });
 
@@ -151,4 +161,15 @@ test('text: Enter at the end of a title-like line starts a Paragraph; mid-line k
     assert.equal(splitLine([{ style, text: [{ t: 'x' }] }], { line: 0, at: 1 })[1].style, style);
   // an empty title: Enter pushes it down, both titles
   assert.equal(splitLine([{ style: 'title', text: [] }], { line: 0, at: 0 })[1].style, 'title');
+});
+
+test('text: a typed {name} becomes the chip + Field puts in; {{name} stays text', () => {
+  const line = (t) => [{ style: 'paragraph', text: [{ t }] }];
+  const typed = typedField(line('By {name}'), at(0, 9));
+  assert.deepEqual(typed.body[0].text, [{ t: 'By ' }, { field: 'name' }]);
+  assert.deepEqual(typed.at, at(0, 4));
+  assert.deepEqual(insertRun(line('By '), at(0, 3), { field: 'name' })[0].text, typed.body[0].text);
+  assert.deepEqual(typedField(line('{{name}'), at(0, 7)).body[0].text, [{ t: '{name}' }]);
+  assert.equal(typedField(line('no field'), at(0, 8)), null);
+  assert.equal(typedField(line('{a b}'), at(0, 5)), null);
 });

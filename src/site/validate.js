@@ -50,7 +50,8 @@ import { isId } from './layout/ids.js';
 import { linkProblem } from './hrefs.js';
 import { checkMotion, defaultsProblems } from './layout/motion.js';
 import { checkBackdrop } from './backdrop.js';
-import { bindTypeOf, isBinding } from './layout/bindings.js';
+import { bindTypeOf } from './layout/bindings.js';
+import { isFieldPart, isParts, isWhole, NAME } from './layout/parts.js';
 import { FORMAT_TYPES, storedAs } from './field-types.js';
 import { isObject } from './is.js';
 
@@ -444,29 +445,55 @@ function checkWidget(widget, where) {
   if (widget.item !== undefined) bad('item', 'left out: its "source" says which item');
   if (widget.source !== undefined)
     out.push(...sourceProblems(widget.source, t).map((p) => `${name}: ${p}`));
-  // a value can be bound to the item (../layout/bindings.js): { "bind": "<field>", "format"? }
-  const bindShape = (key, v, type) => {
-    const extra = Object.keys(v).filter((k) => k !== 'bind' && k !== 'format');
-    if (extra.length || !/^[\w-]+$/.test(v.bind))
-      bad(key, '{ "bind": "<field>", "format": "… {value} …" } (one field name)');
-    else if (!type) bad(key, "a list of its own (it can't be bound)");
-    else if (v.format !== undefined && !FORMAT_TYPES.includes(type))
-      bad(`${key}.format`, 'left out (only a text can have a format)');
-    else if (
-      v.format !== undefined &&
-      !(typeof v.format === 'string' && v.format.includes('{value}'))
-    )
-      bad(`${key}.format`, 'a text with {value} in it');
+  // a value can show the item's fields, as parts (../layout/parts.js): [{ t } | { field, format? }]
+  const partsShape = (key, v, type) => {
+    v.forEach((p, k) => {
+      const extra = Object.keys(p).filter((x) =>
+        isFieldPart(p) ? x !== 'field' && x !== 'format' : x !== 't',
+      );
+      if (extra.length || (isFieldPart(p) && !NAME.test(p.field)))
+        bad(`${key}.${k}`, '{ "t": "<text>" } or { "field": "<name>", "format"?: "… {value} …" }');
+      else if (
+        p.format !== undefined &&
+        !(typeof p.format === 'string' && p.format.includes('{value}'))
+      )
+        bad(`${key}.${k}.format`, 'a text with {value} in it');
+    });
+    if (!type) bad(key, "a list of its own (it can't show an item's fields)");
+    else if (!isWhole(v) && !FORMAT_TYPES.includes(type))
+      bad(key, 'one field ([{ "field": "<name>" }]): only a text can mix text and fields');
   };
+  // the old { "bind": "<field>", "format" } (before parts): its parts instead
+  const oldBind = (v, key) => {
+    if (isObject(v) && typeof v.bind === 'string') {
+      bad(
+        key,
+        `parts now: [{ "field": "${v.bind}"${v.format ? `, "format": ${JSON.stringify(v.format)}` : ''} }] (not { "bind" })`,
+      );
+      return true;
+    }
+    if (Array.isArray(v))
+      v.forEach(
+        (e, i) =>
+          isObject(e) && Object.entries(e).forEach(([k, x]) => oldBind(x, `${key}.${i}.${k}`)),
+      );
+    return false;
+  };
+  const old = new Set([
+    ...(t.fields || []).filter((f) => oldBind(widget[f.key], f.key)).map((f) => f.key),
+    ...(t.config || [])
+      .filter((c) => oldBind(widget.config?.[c.key], `config.${c.key}`))
+      .map((c) => `config.${c.key}`),
+  ]);
   for (const c of t.config || []) {
     const v = widget.config?.[c.key];
-    if (isBinding(v)) bindShape(`config.${c.key}`, v, bindTypeOf(c, { config: true }));
+    if (isParts(v)) partsShape(`config.${c.key}`, v, bindTypeOf(c, { config: true }));
   }
   for (const f of t.fields || []) {
     const v = widget[f.key];
-    if (v === undefined) continue;
-    if (isBinding(v)) {
-      bindShape(f.key, v, bindTypeOf(f));
+    if (v === undefined || old.has(f.key)) continue;
+    if (isParts(v)) {
+      partsShape(f.key, v, bindTypeOf(f));
       continue;
     }
     if (Array.isArray(v) && isObject(f.list))
@@ -474,8 +501,8 @@ function checkWidget(widget, where) {
         Object.entries(isObject(e) ? e : {}).forEach(([k, sv]) => {
           const sub = f.list[k];
           const type = (isObject(sub) ? sub.type : sub) || 'text';
-          if (isBinding(sv))
-            bindShape(`${f.key}.${i}.${k}`, sv, FORMAT_TYPES.includes(type) ? type : null);
+          if (isParts(sv))
+            partsShape(`${f.key}.${i}.${k}`, sv, FORMAT_TYPES.includes(type) ? type : null);
           else if (type === 'link' && sv !== undefined && linkProblem(sv))
             bad(`${f.key}.${i}.${k}`, linkProblem(sv));
         }),
@@ -496,7 +523,8 @@ function checkWidget(widget, where) {
   if (enabled !== undefined && typeof enabled !== 'boolean') bad('config.enabled', 'true or false');
   for (const c of t.config || []) {
     const v = widget.config[c.key];
-    if (v === undefined || (c.empty && v === '') || isBinding(v)) continue;
+    if (v === undefined || (c.empty && v === '') || isParts(v) || old.has(`config.${c.key}`))
+      continue;
     if (c.type === 'link') {
       const p = linkProblem(v);
       if (p) bad(`config.${c.key}`, p);

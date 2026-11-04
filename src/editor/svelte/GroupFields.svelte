@@ -27,7 +27,7 @@
   import { pairedHalves } from './source-items.js';
   import ItemPicker from './ItemPicker.svelte';
   import { sourceFile } from '../../site/files.js';
-  import { isBinding } from '../../site/layout/bindings.js';
+  import { isParts } from '../../site/layout/parts.js';
 
   let { g, live, bridge, sourceIds, onsource, bindings = null, lead } = $props();
 
@@ -76,15 +76,15 @@
   }
 
   // a switch or a choice can change what the widget shows: rendered again
-  // a bound value ({ bind }) shows the item's: rendered again too
+  // a value with fields (parts) shows the item's: rendered again too
   function setValue(f, value) {
     const structure =
       f.type === 'boolean' ||
       f.type === 'select' ||
       f.type === 'seg' ||
       f.type === 'spot' ||
-      isBinding(value) ||
-      isBinding(live.get(f.file, f.ptr));
+      isParts(value) ||
+      isParts(live.get(f.file, f.ptr));
     const typed =
       !['boolean', 'select', 'seg', 'spot'].includes(f.type) && typeof value !== 'object';
     live.store.set(f.file, f.ptr, value, {
@@ -156,6 +156,8 @@
       from={bindings?.from ?? ''}
       formats={!!bindings && f.textual}
       resolved={bindings?.resolved(f) ?? ''}
+      lists={bindings?.lists ?? []}
+      names={bindings?.names ?? null}
       {...extra}
     />
   {/if}

@@ -89,9 +89,21 @@
           hint: (item && line(item[f.key])) || f.label || f.type,
         })),
     resolved: (f) => {
-      const v = resolve(live.get(f.file, f.ptr), { item, def: { type: f.type } });
+      const v = resolve(live.get(f.file, f.ptr), {
+        item,
+        sources: live.content?.sources,
+        def: { type: f.type },
+      });
       return typeof v === 'string' || typeof v === 'number' ? String(v) : '';
     },
+    // the sources: {people} shows how many there are (no item needed)
+    lists: Object.keys(live.content?.sources || {}),
+    // the names a field part can have (any other is a warning chip)
+    names: new Set([
+      ...(schema?.fields || []).map((f) => f.key),
+      ...Object.keys(item || {}),
+      ...Object.keys(live.content?.sources || {}),
+    ]),
     from: item && schema ? (schema.title && line(item[schema.title])) || from : from,
     // a Text widget's summary: its fields' values, its own count
     item,

@@ -25,7 +25,7 @@
   import { plural } from '../lib/format.js';
   import { isTemplate, pageIdOf, paramsOf, sourceFile } from '../../site/files.js';
   import { mainProblem, sourceOf, urlSource } from '../../site/layout/source.js';
-  import { isBinding, resolve } from '../../site/layout/bindings.js';
+  import { isFieldPart, isParts, partText } from '../../site/layout/parts.js';
   import { defaultField, hasField, ruleOf, SLUG } from '../../site/query.js';
   import { MATCH_TYPES } from '../../site/field-types.js';
 
@@ -110,14 +110,22 @@
    * (a text: what it showed; anything else: its default), one undo step.
    */
   function toNone() {
-    const own = (v) => {
-      if (isBinding(v)) {
-        const shownValue = resolve(v, { item: shown?.item, def: { type: 'text' } });
-        return typeof shownValue === 'string' ? shownValue : undefined;
+    const sources = live.content?.sources || {};
+    const scope = { item: shown?.item, sources };
+    // a field part: what it showed, as text; a source's name ({people}) needs no item: kept
+    const own = (v, key) => {
+      if (isParts(v)) {
+        const parts = v.map((p) =>
+          isFieldPart(p) && !Array.isArray(sources[p.field])
+            ? { ...(p.marks ? { marks: p.marks } : {}), t: partText(p, scope) }
+            : p,
+        );
+        if (key === 'text') return parts.filter((p) => !('t' in p) || p.t);
+        return parts.some(isFieldPart) ? parts : parts.map((p) => p.t).join('');
       }
-      if (Array.isArray(v)) return v.map(own);
+      if (Array.isArray(v)) return v.map((x) => own(x));
       if (v && typeof v === 'object')
-        return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, own(x)]));
+        return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, own(x, k)]));
       return v;
     };
     const widget = live.get(g.file, base) || {};
@@ -125,7 +133,7 @@
       () => {
         set(undefined);
         for (const [k, v] of Object.entries(widget))
-          if (k !== 'source' && JSON.stringify(v).includes('"bind"'))
+          if (k !== 'source' && JSON.stringify(v).includes('"field"'))
             live.store.set(g.file, `${base}/${k}`, own(structuredClone(v)), {
               source: 'panel',
               structure: true,

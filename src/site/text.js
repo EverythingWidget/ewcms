@@ -4,7 +4,7 @@
  *
  *   "body": [
  *     { "style": "label", "text": [{ "t": "Photography" }] },
- *     { "style": "title", "text": [{ "t": "People" }, { "count": { "source": "people" } }] },
+ *     { "style": "title", "text": [{ "t": "People " }, { "field": "people" }] },
  *     { "style": "paragraph", "text": [
  *       { "t": "Portraits, " }, { "t": "mostly", "marks": ["i"] },
  *       { "t": " natural light. " }, { "t": "Contact", "link": { "page": "pg-k2x9" } },
@@ -14,10 +14,10 @@
  * A run is one of:
  *   { t, marks?, link? }   text ("\n" a line break), marks: 'b' bold, 'i' italic, a link (a
  *                          page, an item or a URL: ./hrefs.js)
- *   { field, format? }     a field of the item the widget shows (its source: ./layout/source.js),
- *                          filled in when the page is built; format "{value} photos"
- *   { count: { source } }  how many items a source has; { count: { of: 'items' } }: how many
- *                          the widget's own source shows
+ *   { field, format? }     a field part (./layout/parts.js): a field of the item the widget
+ *                          shows (its source: ./layout/source.js) or a source's list (its
+ *                          length: "people"), filled in when the page is built; format
+ *                          "{value} photos"
  * A line can be a list item: "list": "bullet" | "number" (its style stays). On the site the lines
  * of one run of the same list are one <ul> / <ol> of <li>s (each with its style's class); while
  * edited every line stays one element (rich.js maps the caret by them), [data-list] on it, its
@@ -26,14 +26,14 @@
  * the page [data-fit], sized by src/client/modules/fit.js (its own --tkf). The other lines keep
  * their style's size.
  * One line is one element (h1 / h2 / h3 / p) with its style's class (.ts--<style>). Every
- * value is escaped; fields and counts are chips (data-field / data-count) the editor's inline
+ * value is escaped; fields are chips (data-field, labelled {name}) the editor's inline
  * editor (src/editor/rich.js) keeps whole.
  *
  * Plain functions on the model (positions: { line, at }, `at` counting a chip as one
  * character and "\n" as one) are shared with the editor: they keep a body normalised (runs
  * that look the same merged, empty text runs dropped, at least one line).
  */
-import { esc, pad } from './helpers.js';
+import { esc } from './helpers.js';
 import { isObject } from './is.js';
 import { linkProblem } from './hrefs.js';
 
@@ -66,7 +66,6 @@ const withText = (line, text) => ({
 
 const isText = (r) => isObject(r) && typeof r.t === 'string';
 const isField = (r) => isObject(r) && typeof r.field === 'string';
-const isCount = (r) => isObject(r) && isObject(r.count);
 /** A run's length in positions: its text's, a chip's 1. */
 export const runLength = (r) => (isText(r) ? r.t.length : 1);
 export const lineLength = (line) => (line?.text || []).reduce((n, r) => n + runLength(r), 0);
@@ -106,11 +105,9 @@ export function checkBody(body, key = 'body') {
           !(typeof r.format === 'string' && r.format.includes('{value}'))
         )
           out.push(`"${rat}.format" must be a text with {value} in it`);
-      } else if (isCount(r)) {
-        const c = r.count;
-        if (!(typeof c.source === 'string' || c.of === 'items'))
-          out.push(`"${rat}.count" must be { "source": "<source>" } or { "of": "items" }`);
-      } else out.push(`"${rat}" must be { t }, { field } or { count }`);
+      } else if (isObject(r) && isObject(r.count))
+        out.push(`"${rat}": a count is a field now: { "field": "<source>" } shows its length`);
+      else out.push(`"${rat}" must be { t } or { field }`);
     });
   });
   return out;
@@ -153,14 +150,16 @@ const sameLook = (a, b) =>
 
 /**
  * Render a body. opts:
- *   value(run)  a field or count run's value (text, '' when it has none)
+ *   value(run)  a field run's value (text, '' when it has none)
  *   href(link)  a link's URL
- *   editing     chips show what they are (the field's name) and can't be typed into
+ *   editing     chips show what they are ({name}) and can't be typed into
  *   attrs(i)    extra attributes of line i's element (data-anim)
+ *   known(name) is a field run's name a field or a source (the editor: an unknown one's chip
+ *               is marked, data-unknown)
  */
 export function renderBody(
   body,
-  { value = () => '', href = () => '#', editing = false, attrs = () => '' } = {},
+  { value = () => '', href = () => '#', editing = false, attrs = () => '', known = null } = {},
 ) {
   const lines = Array.isArray(body) && body.length ? body : [{ style: 'paragraph', text: [] }];
   let out = '';
@@ -168,7 +167,9 @@ export function renderBody(
   lines.forEach((line, i) => {
     const style = STYLE_IDS.includes(line?.style) ? line.style : 'paragraph';
     const list = listOf(line);
-    const runs = (line?.text || []).map((r) => renderRun(r, { value, href, editing })).join('');
+    const runs = (line?.text || [])
+      .map((r) => renderRun(r, { value, href, editing, known }))
+      .join('');
     const data = (list ? ` data-list="${list}"` : '') + (fitOf(line) ? ' data-fit' : '');
     // an empty line keeps its height (and a caret) with a <br>
     const inner = `class="ts ts--${style}" data-line="${style}"${data}${attrs(i, style)}>${runs || '<br>'}`;
@@ -190,7 +191,7 @@ export function renderBody(
   return open ? `${out}</${open}>` : out;
 }
 
-function renderRun(r, { value, href, editing }) {
+function renderRun(r, { value, href, editing, known }) {
   if (isText(r)) {
     let out = esc(r.t).replace(/\n/g, '<br>');
     const marks = r.marks || [];
@@ -206,25 +207,13 @@ function renderRun(r, { value, href, editing }) {
   }
   const ce = editing ? ' contenteditable="false"' : '';
   if (isField(r)) {
-    const v = editing ? r.field : value(r);
+    const v = editing ? `{${r.field}}` : value(r);
+    if (!editing && v === '') return ''; // missing: nothing on the site
     const fmt = r.format ? ` data-format="${esc(r.format)}"` : '';
-    return `<span class="ts__chip" data-field="${esc(r.field)}"${fmt}${ce}>${esc(v)}</span>`;
-  }
-  if (isCount(r)) {
-    const v = editing ? `#${r.count.source || 'items'}` : value(r);
-    return `<sup class="ts__count" data-count="${esc(JSON.stringify(r.count))}"${ce}>${esc(v)}</sup>`;
+    const unknown = known && !known(r.field) ? ' data-unknown' : '';
+    return `<span class="ts__chip" data-field="${esc(r.field)}"${fmt}${unknown}${ce}>${esc(v)}</span>`;
   }
   return '';
-}
-
-/** A count's value as the site shows it: "04". */
-export const countText = (n) => (Number.isInteger(n) ? pad(n) : '');
-
-/** A field run's value: the item's value in its format; '' without one. */
-export function fieldText(run, item) {
-  const v = item?.[run.field];
-  if (v === undefined || v === null || v === '' || typeof v === 'object') return '';
-  return typeof run.format === 'string' ? run.format.replaceAll('{value}', String(v)) : String(v);
 }
 
 // ---------------------------------------------------------------- model edits
@@ -382,7 +371,46 @@ export function autoList(body, pos) {
   return { body: out, at: { line: pos.line, at: 0 } };
 }
 
-/** A chip run (a field or a count) put in at a position. */
+/**
+ * A `}` just typed at `pos` closing `{name}` in a text run: that text a field chip (the same run
+ * the + Field menu puts in). `{{` is a literal `{`: `{{name}` stays the text "{name}".
+ * { body, at } (at: the caret after it), or null when it closes nothing.
+ */
+export function typedField(body, pos) {
+  const line = body[pos.line];
+  if (!line) return null;
+  let n = 0;
+  for (let k = 0; k < line.text.length; k++) {
+    const r = line.text[k];
+    const len = runLength(r);
+    if (pos.at > n && pos.at <= n + len) {
+      if (!isText(r)) return null;
+      const before = r.t.slice(0, pos.at - n);
+      const m = before.match(/(\{+)([\w-]+)\}$/);
+      if (!m) return null;
+      const braces = m[1].length;
+      const lit = '{'.repeat(Math.floor(braces / 2));
+      const keep = before.slice(0, before.length - m[0].length);
+      const look = { ...(r.marks ? { marks: r.marks } : {}), ...(r.link ? { link: r.link } : {}) };
+      const after = { ...look, t: r.t.slice(pos.at - n) };
+      const mid =
+        braces % 2
+          ? [{ ...look, t: keep + lit }, { field: m[2] }]
+          : [{ ...look, t: `${keep}${lit}${m[2]}}` }];
+      const out = clone(body);
+      out[pos.line] = withText(
+        line,
+        tidyRuns([...line.text.slice(0, k), ...mid, after, ...line.text.slice(k + 1)]),
+      );
+      const at = n + mid.reduce((x, q) => x + runLength(q), 0);
+      return { body: out, at: { line: pos.line, at } };
+    }
+    n += len;
+  }
+  return null;
+}
+
+/** A chip run (a field) put in at a position. */
 export function insertRun(body, pos, run) {
   const out = clone(body.length ? body : [{ style: 'paragraph', text: [] }]);
   const line = out[Math.min(pos.line, out.length - 1)];

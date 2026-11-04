@@ -8,18 +8,21 @@
   grab: a pointerdown on the photo (a list's drag handle, PhotoList.svelte); the thumbnail or Change opens the Media window on it (MediaModal.svelte), which
   stores the photo picked there in this field: one undo step. No text input.
   Used by the Nav panel, the Sources modal and Settings.
-  Bindings (a widget's field, src/site/layout/bindings.js):
+  Bindings (a widget's field: parts, src/site/layout/parts.js):
     binds     the item's fields this one can show, [{ value, label, hint }] (null: it can't
               bind). A picker at the end of the label row: Custom (its own text: what it showed
-              becomes it) or one of them (stores { "bind": "<field>" }); no source: only Custom.
-              Bound, its value is the item's, dimmed and read only (a lock); `from` names the
-              item in the picker's group
-    formats   a text field: when bound, a Format input under it ("{value} photos"); empty or
-              just {value} stores { "bind" } alone
+              becomes it), one of them (stores [{ "field": "<name>" }]) or, a text field, Text
+              with fields (typed words and chips, a + Field menu); `from` names the item in the
+              picker's group
+    formats   a text field: its input holds chips (PartsInput.svelte): typing {name} is the
+              same as picking it; `lists` (the sources: {people} shows how many) are offered
+              too, `names` (fields and sources) are the names that aren't a warning chip
+    A whole value of another type (a photo, a number) is the item's, dimmed and read only.
 -->
 <script>
   import { parseInput as parseValue } from '../../site/field-types.js';
-  import { isBinding } from '../../site/layout/bindings.js';
+  import { isParts, isWhole } from '../../site/layout/parts.js';
+  import PartsInput from './PartsInput.svelte';
   import { showValue } from '../lib/show-value.js';
   import Button from './Button.svelte';
   import Select from './Select.svelte';
@@ -53,6 +56,8 @@
     binds = null,
     from = '',
     formats = false,
+    lists = [],
+    names = null,
     resolved = '',
     bare = false,
     grab = null,
@@ -64,7 +69,9 @@
   const photo = $derived(type === 'photo');
   // a label element around an input, a switch; photos and Selects label their own buttons
   const tag = $derived(
-    photo || type === 'select' || type === 'seg' || type === 'spot' || bound ? 'div' : 'label',
+    photo || type === 'select' || type === 'seg' || type === 'spot' || bound || chips
+      ? 'div'
+      : 'label',
   );
   // a photo's label goes inside its card, unless the label row has more (a picker, a file)
   const inner = $derived(photo && !bound && !binds && !source);
@@ -78,37 +85,77 @@
     if (!invalid) onvalue(next);
   }
 
-  // ---- bindings
-  const bound = $derived(isBinding(value));
+  // ---- bindings: a value with fields (parts)
+  const parts = $derived(isParts(value));
+  const whole = $derived(isWhole(value) ? value[0].field : null);
+  // a text field holds chips (PartsInput); any other type's field shows the item's, read only
+  const chips = $derived(!!binds && formats);
+  const bound = $derived(parts && !chips);
   const bindOptions = $derived.by(() => {
     const list = binds || [];
-    return bound && !list.some((o) => o.value === value.bind)
-      ? [...list, { value: value.bind, label: `${value.bind} (missing)` }]
+    return whole && !list.some((o) => o.value === whole) && !lists.includes(whole)
+      ? [...list, { value: whole, label: `{${whole}} (missing)` }]
       : list;
   });
   const CUSTOM = ''; // the picker's value for the field's own text
+  const MIXED = '\u0000mixed'; // Text with fields
+  let mixed = $state(false); // Text with fields picked, no field in it yet
+  const pickValue = $derived(
+    parts && !whole ? MIXED : whole ? `f:${whole}` : mixed && chips ? MIXED : CUSTOM,
+  );
   const pickOptions = $derived([
     { group: '', options: [{ value: CUSTOM, label: 'Custom', hint: 'your own text' }] },
     ...(bindOptions.length
-      ? [{ group: from ? `From the item · ${from}` : 'From the item', options: bindOptions }]
+      ? [
+          {
+            group: from ? `From the item · ${from}` : 'From the item',
+            options: bindOptions.map((o) => ({
+              ...o,
+              value: `f:${o.value}`,
+              label: `{${o.label}}`,
+            })),
+          },
+        ]
+      : []),
+    ...(chips && lists.length
+      ? [
+          {
+            group: 'How many',
+            options: lists.map((id) => ({
+              value: `f:${id}`,
+              label: `{${id}}`,
+              hint: `${id}: its length`,
+            })),
+          },
+        ]
+      : []),
+    ...(chips
+      ? [{ group: '', options: [{ value: MIXED, label: 'Text with fields', hint: 'type {name}' }] }]
       : []),
   ]);
-  // Custom: what it showed becomes its own text; a field: bound (a format kept)
+  // Custom: what it showed becomes its own text; a field: [{ field }]; Text with fields: the
+  // text kept, a + Field menu
   function pick(v) {
-    if (v === CUSTOM) return onvalue(typeof resolved === 'string' ? resolved : '');
-    onvalue(bound && value.format ? { bind: v, format: value.format } : { bind: v });
+    mixed = v === MIXED;
+    if (v === MIXED) return;
+    if (v === CUSTOM)
+      return onvalue(typeof resolved === 'string' && parts ? resolved : parts ? '' : (value ?? ''));
+    onvalue([{ field: v.slice(2) }]);
   }
-
-  // ---- a bound text's format: {value} is the item's value
-  const fmtShow = $derived(bound && typeof value.format === 'string' ? value.format : '');
-  function setFormat(raw) {
-    const format = raw.replace(/\s*\n\s*/g, ' ');
-    onvalue(
-      format.trim() && format.trim() !== '{value}'
-        ? { bind: value.bind, format }
-        : { bind: value.bind },
-    );
-  }
+  const add = { insert: null }; // PartsInput's: a chip at its caret
+  const addOptions = $derived([
+    ...(bindOptions.length
+      ? [
+          {
+            group: 'From the item',
+            options: bindOptions.map((o) => ({ ...o, label: `{${o.label}}` })),
+          },
+        ]
+      : []),
+    ...(lists.length
+      ? [{ group: 'How many', options: lists.map((id) => ({ value: id, label: `{${id}}` })) }]
+      : []),
+  ]);
 
   function change() {
     onfocus?.();
@@ -135,11 +182,11 @@
         />
       {/if}
       {#if binds}
-        <span class={['tf__pick', bound && 'is-bound']}>
+        <span class={['tf__pick', parts && 'is-bound']}>
           <Select
             compact
             aria-label="{label}: its value"
-            value={bound ? value.bind : CUSTOM}
+            value={pickValue}
             options={pickOptions}
             onchange={pick}
           >
@@ -166,26 +213,39 @@
       class="tf__bound"
       id={uid}
       aria-readonly="true"
-      title="From the item’s {value.bind} (read only): Custom to write your own"
+      title="From the item’s {whole} (read only): Custom to write your own"
     >
       {#if photo && resolved}<img
           src={thumbUrl(resolved)}
           alt=""
           {@attach fallback(resolved)}
         />{/if}
-      <span>{resolved || `{{${value.bind}}}`}</span>
+      <span>{resolved || `{${whole}}`}</span>
       <i class="fa-solid fa-lock" aria-hidden="true"></i>
     </div>
-    {#if formats}
-      <input
-        class="tf__input tf__format"
-        aria-label="{label}: format"
-        title="Text around the item's value: {'{value}'} is the value"
-        placeholder={'{value}'}
-        {@attach show(fmtShow)}
-        {onfocus}
-        oninput={(e) => setFormat(e.currentTarget.value)}
-      />
+  {:else if chips}
+    <PartsInput
+      id={uid}
+      {value}
+      {names}
+      {label}
+      multiline={type === 'multiline'}
+      {placeholder}
+      {onfocus}
+      {onvalue}
+      ref={add}
+    />
+    {#if pickValue === MIXED && addOptions.length}
+      <span class="tf__add">
+        <Select
+          compact
+          aria-label="{label}: add a field"
+          value=""
+          placeholder="+ Field"
+          options={addOptions}
+          onchange={(v) => v && add.insert?.(v)}
+        />
+      </span>
     {/if}
   {:else if photo}
     <div class={['photo', !value && 'is-empty']}>
@@ -339,7 +399,9 @@
     }
   }
 
-  .tf__format {
+  // Text with fields: + Field under the input, at its start
+  .tf__add {
+    @include row(0);
     margin-top: var(--space-2);
   }
 

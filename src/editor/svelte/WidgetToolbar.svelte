@@ -6,7 +6,8 @@
     text      (a Text widget) style ▾ (the line the caret is in: the whole line), Fit width
               (that line fills the widget's width, a line's "fit": text.js), B, I, link
               (the selected text only: greyed with nothing selected or when not editing),
-              + Field (a field of the item the widget shows, or a count, at the caret)
+              + Field (a field of the item the widget shows, or a source: how many, at the caret; typing
+              {name} puts in the same chip)
 
   Selected, a widget with text shows Edit (where it is: the overlay's tag, its size and place;
   what it follows: its link line and its pop-up's Layout); its text tools only in its edit mode (Edit,
@@ -317,13 +318,14 @@
     bridge.holdRich(false);
   }
 
-  // + Field: the item's fields (the widget's source), and counts of the sources
+  // + Field: the item's fields (the widget's source; a list: its length), and the sources
+  // ({people}: how many)
   const from = $derived(sourceOf(widget)?.from ?? null);
   const fields = $derived.by(() => {
     live.version;
     return from
       ? (schemaFor(live.store, sourceFile(from))?.fields || []).filter((f) =>
-          BIND_TYPES.multiline.includes(f.type),
+          [...BIND_TYPES.multiline, 'photos'].includes(f.type),
         )
       : [];
   });
@@ -409,7 +411,7 @@
     type="button"
     class={['btb__btn btb__field', open === 'field' && 'is-open']}
     disabled={!editing}
-    title="A field of the item it shows, or a count, at the caret"
+    title="A field of the item it shows, or how many a source has, at the caret: or type {name}"
     onclick={(e) => toggle('field', e)}
     ><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Field</span></button
   >
@@ -524,24 +526,15 @@
           <span class="btb__grp">{from ? `A field of ${from}` : 'No source: no fields'}</span>
           {#each fields as f (f.key)}
             <button type="button" class="btb__opt" onclick={() => insert({ field: f.key })}
-              ><span class="btb__chip">{f.key}</span><span class="btb__hint"
+              ><span class="btb__chip">{`{${f.key}}`}</span><span class="btb__hint"
                 >{f.label || f.type}</span
               ></button
             >
           {/each}
-          <span class="btb__grp">A count</span>
-          {#if from}
-            <button
-              type="button"
-              class="btb__opt"
-              onclick={() => insert({ count: { of: 'items' } })}
-              ><span class="btb__chip">#items</span><span class="btb__hint">the ones it shows</span
-              ></button
-            >
-          {/if}
+          <span class="btb__grp">How many</span>
           {#each sources as s (s)}
-            <button type="button" class="btb__opt" onclick={() => insert({ count: { source: s } })}
-              ><span class="btb__chip">#{s}</span><span class="btb__hint">items in {s}</span
+            <button type="button" class="btb__opt" onclick={() => insert({ field: s })}
+              ><span class="btb__chip">{`{${s}}`}</span><span class="btb__hint">items in {s}</span
               ></button
             >
           {/each}

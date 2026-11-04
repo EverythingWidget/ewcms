@@ -22,7 +22,7 @@ const body = [
       { field: 'name', format: '{value}!' },
       { t: ' a\nb ' },
       { t: 'link', link: { page: 'pg-abcd' } },
-      { count: { source: 'people' } },
+      { field: 'people' },
     ],
   },
   { style: 'small', text: [] },
@@ -35,9 +35,9 @@ test('rich: rendered for editing and read back: the same body', () => {
   // chips are atomic and show their name; a link carries itself, not its URL
   assert.match(
     root.innerHTML,
-    /data-field="name" data-format="\{value\}!" contenteditable="false">name</,
+    /data-field="name" data-format="\{value\}!" contenteditable="false">\{name\}</,
   );
-  assert.match(root.innerHTML, /contenteditable="false">#people</);
+  assert.match(root.innerHTML, /contenteditable="false">\{people\}</);
   assert.match(
     root.innerHTML,
     /<a href="#" data-ts-link="\{&quot;page&quot;:&quot;pg-abcd&quot;\}">link<\/a>/,

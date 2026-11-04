@@ -1,12 +1,12 @@
 <!--
   A link (src/site/hrefs.js): one Select of where it goes, a page of the site (by its id), a
-  source item's page (by the item's id), a field of the widget's item (binds, a { bind }) or an
+  source item's page (by the item's id), a field of the widget's item (binds, [{ field }]) or an
   external link (a URL), with the URL's input under it; the dropdown searchable. value: the link ({ page } | { item } | { href }
-  | { bind }); onvalue(next) gets the next one (undefined: no link, when `empty` is set).
+  | [{ field }]); onvalue(next) gets the next one (undefined: no link, when `empty` is set).
   Used by widget settings and list fields (GroupFields.svelte) and the header's menu (HeaderPart).
 -->
 <script>
-  import { isBinding } from '../../site/layout/bindings.js';
+  import { isWhole } from '../../site/layout/parts.js';
   import Field from './Field.svelte';
   import Select from './Select.svelte';
   import { ui } from './ui.svelte.js';
@@ -29,7 +29,7 @@
   const uid = $props.id();
   const SEARCH = 'Search pages and items…';
 
-  const bound = $derived(isBinding(value));
+  const bound = $derived(isWhole(value));
   const kind = $derived(bound ? 'bind' : linkKind(value));
   const key = $derived(
     kind === 'page'
@@ -37,7 +37,7 @@
       : kind === 'item'
         ? `item:${value.item?.source}:${value.item?.id}`
         : kind === 'bind'
-          ? `bind:${value.bind}`
+          ? `bind:${value[0].field}`
           : kind === 'href'
             ? 'href'
             : '',
@@ -97,7 +97,7 @@
     const [k, a, b] = v.split(':');
     if (k === 'page') onvalue({ page: a });
     else if (k === 'item') onvalue({ item: { source: a, id: b } });
-    else if (k === 'bind') onvalue({ bind: a });
+    else if (k === 'bind') onvalue([{ field: a }]);
     else onvalue({ href: kind === 'href' ? value.href : 'https://' });
   }
 </script>

@@ -58,7 +58,8 @@ import { esc, ed, editRef, editable, slugify, warnOnce } from '../helpers.js';
 import { WIDGET_TYPES } from '../widgets/index.js';
 import { newId } from './ids.js';
 import { motionAttrs } from './motion.js';
-import { isBinding, keysOf, resolve, resolveWidget } from './bindings.js';
+import { missingOf, resolveWidget } from './bindings.js';
+import { isParts } from './parts.js';
 import { widgetItems } from './source.js';
 import { COLS, baseOf, phoneAreaOf, placeOf, setBase } from './grid.js';
 import { linkOf } from './links.js';
@@ -294,19 +295,25 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
   const parts = (path) => ['sections', at, 'widgets', j, ...[path].flat()];
   // what it shows (./source.js): its items, the first one for its bound fields
   const shown = widgetItems(ctx, route, widget);
-  const { item, source } = shown;
+  const { item } = shown;
   if (t.item && !item) {
     warnOnce(`${where}: a "${t.type}" widget shows an item: it has none: skipped`, 'layout');
     return '';
   }
-  const keys = keysOf(ctx, source);
+  const scope = { item, sources: ctx.sources };
+  // every field part missing (./parts.js): not on the site; the editor shows it dimmed, as
+  // big as it is, "No value for {name}" over it
+  const gone = missingOf(widget, t, scope);
+  if (gone.all && !editable) return '';
+  const noValue = gone.all
+    ? ` data-no-value="${esc(`No value for ${gone.missing.map((n) => `{${n}}`).join(', ')}`)}"`
+    : '';
   // a bound value isn't edited in the preview: data-bound instead (a click selects the widget),
-  // and data-bound-missing when its item or a field of it is missing (a dimmed {{name}})
+  // and data-bound-missing when a field of it is missing (a dimmed {name})
   const bound = (value, path) => {
-    let missing = false;
-    resolve(value, { item, keys, onwarn: () => (missing = true) });
     const attr = ` data-bound="${esc(editRef(file, parts(path)))}"`;
-    return missing ? `${attr} data-bound-missing` : attr;
+    const miss = missingOf({ v: value }, { fields: [{ key: 'v' }] }, scope).missing.length;
+    return miss ? `${attr} data-bound-missing` : attr;
   };
   // the render's `widget` (src/site/widgets/index.js): its id, file, ed() and what it shows
   const api = {
@@ -315,15 +322,15 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
     ...shown,
     ed: (path, type) => {
       const value = [path].flat().reduce((v, k) => v?.[k], widget);
-      if (!isBinding(value)) return ed(file, parts(path), type);
+      if (!isParts(value)) return ed(file, parts(path), type);
       return editable ? bound(value, path) : '';
     },
   };
   // the widget with the item's values in its bound fields (as it is when nothing is bound)
-  const data = resolveWidget(widget, t, { item, source, ctx, at: where, placeholders: editable });
+  const data = resolveWidget(widget, t, { ...scope, placeholders: editable });
   const marker = editable ? ` data-widget="${esc(widget.id)}"` : '';
   const hidden = widget.config?.enabled === false ? ' hidden' : '';
-  return `<div class="${widgetClass(widget)}"${marker} style="${widgetVars(widget, siblings)}"${linkAttrs(widget, siblings)}${motionAttrs(widget)}${hidden}>${t.render(data, ctx, api)}</div>`;
+  return `<div class="${widgetClass(widget)}"${marker} style="${widgetVars(widget, siblings)}"${linkAttrs(widget, siblings)}${motionAttrs(widget)}${noValue}${hidden}>${t.render(data, ctx, api)}</div>`;
 }
 
 /** Section `at` of a page file, rendered. */

@@ -82,16 +82,6 @@
   line-height: 1.5;
   color: var(--muted);
 }
-// a count after a title ("People 04")
-.ts__count {
-  font-family: var(--f-mono);
-  font-size: 13px;
-  margin-left: 0.4em;
-  color: var(--muted);
-  letter-spacing: 0.04em;
-  vertical-align: super;
-  line-height: 0;
-}
 .text__body a {
   text-decoration: underline;
   text-underline-offset: 0.15em;

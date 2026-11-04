@@ -7,8 +7,8 @@
  *   widget   a widget's field can use it (its definition's `fields`)
  *   value    what it stores: 'string' | 'number' | 'boolean' | 'list' (of photo paths)
  *   control  the editor's input for it (Field.svelte `type`)
- *   format   a bound value can have a text around it ({ "bind", "format" }, ../layout/bindings.js)
- *   binds    the source field types whose value it can show ({ "bind": "<field>" })
+ *   format   it can mix text and fields (parts, ../layout/parts.js: [{ t }, { field, format? }])
+ *   binds    the source field types whose whole value it can show ([{ "field": "<name>" }])
  *   blank    a new source item's value
  *   match    a URL param can be compared with it (a page's From URL rules)
  *
@@ -86,7 +86,7 @@ export const FORMAT_TYPES = names('format');
 export const TEXT_TYPES = ['text', 'words', 'multiline'];
 /** The source field types a URL param can be compared with. */
 export const MATCH_TYPES = names('match');
-/** Field types -> the source field types that fit a { bind }. */
+/** Field types -> the source field types whose whole value fits them ([{ field }]). */
 export const BIND_TYPES = Object.fromEntries(
   Object.entries(FIELD_TYPES)
     .filter(([, t]) => t.binds)

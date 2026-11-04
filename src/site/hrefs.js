@@ -7,7 +7,7 @@
  *
  * So renaming or moving a page, or changing an item's slug, never breaks a link (redirects, the
  * one place paths stay, are for the outside world). A link field bound to an item's link
- * field ({ "bind" }, bindings.js) resolves to that field's text, which is used as the URL.
+ * field ([{ "field" }], layout/parts.js) resolves to that field's text, which is used as the URL.
  * Menu items (nav.json) are links too: { label, page | item | href, ... }.
  */
 import { isId } from './layout/ids.js';

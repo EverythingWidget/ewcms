@@ -370,7 +370,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
       "type": "text",
       "body": [
         { "style": "label", "text": [{ "t": "Photography / People" }] },
-        { "style": "title", "text": [{ "t": "People" }, { "count": { "source": "people" } }] }
+        { "style": "title", "text": [{ "t": "People " }, { "field": "people" }] }
       ],
       "layout": { "base": { "col": 1, "span": 120, "row": 1 } }
     },
@@ -705,41 +705,47 @@ Which items a widget shows is its `source` (`src/site/layout/source.js`), one of
 
 ### Bindings
 
-Any text, long text, photo or link field of a widget (and a link in its config, `link`) can show a
-value of a **source item** instead of its own (`src/site/layout/bindings.js`):
+Any text, long text, photo or link field of a widget (and a link in its config, `link`) can show
+values of a **source item** instead of its own, as **parts** (`src/site/layout/parts.js`,
+`src/site/layout/bindings.js`):
 
 ```json
 {
   "type": "button",
-  "label": { "bind": "role", "format": "{value} in Amsterdam" },
-  "config": { "link": { "bind": "slug" } },
+  "label": [{ "field": "role" }, { "t": " in Amsterdam" }],
+  "config": { "link": [{ "field": "slug" }] },
   "source": { "mode": "item", "from": "people", "id": "p-qw7b" }
 }
 ```
 
-- **A Text widget** binds per run: its `{ field, format? }` runs are its bindings.
-- **Custom:** a plain value, as before.
-- **`{ "bind": "<field>" }`:** the item's whole value. Its type must fit the field's (a text field
-  takes `text`, `choice`, `number`, `date`, `link`; a multi-line text also `multiline`; a
-  photo `photo`; a link `link`; a list of photos (`[{ src }]`) `photos`; see `BIND_TYPES` in
-  `src/site/field-types.js`).
-- **`"format"`** (text fields only, also a list's texts like the album's facts): text around
-  the value, `{value}` marks where it goes, e.g. `"{value} photos"`. An empty value leaves the
-  whole field empty. There is no `{{field}}` syntax: one field, one binding.
+- **Custom:** a plain string, as before.
+- **Parts:** a list of `{ "t": "<text>" }` and `{ "field": "<name>", "format"?: "… {value} …" }`
+  with at least one field. A Text widget's lines hold the same `{ field }` runs.
+- **One field alone** (`[{ "field": "<name>" }]`) is the item's whole value. Its type must fit
+  the field's (a text field takes `text`, `choice`, `number`, `date`, `link`; a multi-line text
+  also `multiline`; a photo `photo`; a link `link`; a list of photos (`[{ src }]`) `photos`;
+  see `BIND_TYPES` in `src/site/field-types.js`). Only text fields mix text and fields.
+- **A name** is the item's field; a name that isn't one but is a source's id is that source's
+  list. A list shows its length (`{people}`: "12"; an empty list "0") in the text's own look.
+  A name that is neither is an error, with or without a source.
+- **Typed:** `{name}` is a field, `{{` a literal `{` (the editor's text and its inputs; the
+  `+ Field` menu and the picker save the same parts).
+- **Missing:** a field the item doesn't have or has empty leaves its part empty; the rest shows.
+  When every field part of a widget is missing, the widget isn't rendered on the site; the
+  editor shows it dimmed with "No value for {name}" (no layout change).
 - **The item:** the first item of the widget's source (see "Widget sources"): the one picked, or
-  the first matching the page's address. Without one its bound fields render empty (a build
-  warning).
+  the first matching the page's address.
 - **Rendering:** one resolver, `resolveWidget()`, swaps the values in before every widget renders
   (`src/site/layout/index.js`), so widgets don't know about bindings; values are escaped as
-  always. A widget without bindings renders exactly as before.
-- **Checks:** Save and the build check their shape (`validate.js`) and, against the sources'
-  schemas, `bindingProblems()`: a `{ bind }` to a field the source doesn't have or of a type
-  that doesn't fit, or an item from a source that isn't one, is an error (Save refuses, the
-  build stops; a changed schema that breaks a page's binding too). A binding without an item and an item that isn't in its source are build
-  warnings (`[bindings] …`) and render empty.
-- **The `[param]` pages** are built this way: the album widget's title is `{ "bind": "title" }`, its
-  facts are `{ "label": "Role", "value": { "bind": "role" } }`, … (a fact whose value is empty is left
-  out; the photo count comes last), its body `{ "bind": "body" }`. Their output is the
+  always. A widget without parts renders exactly as before.
+- **Checks:** Save and the build check their shape (`validate.js`; the old `{ "bind" }` and Text
+  `{ "count" }` shapes are errors that say what to write) and, against the sources' schemas,
+  `bindingProblems()`: an unknown name, a whole value of a type that doesn't fit, or a source
+  that isn't one is an error (Save refuses, the build stops; a changed schema that breaks a
+  page's field too). An item that isn't in its source is a build warning.
+- **The `[param]` pages** are built this way: the album widget's title is `[{ "field": "title" }]`, its
+  facts are `{ "label": "Role", "value": [{ "field": "role" }] }`, … (a fact whose value is empty is left
+  out; the photo count comes last), its body `[{ "field": "body" }]`. Their output is the
   same as before. A new `[param]` page binds the source's title field, its list fields as facts
   and its first long text.
 - **In the editor:** bound values aren't typed in the preview; a click selects them and opens
@@ -752,11 +758,12 @@ value of a **source item** instead of its own (`src/site/layout/bindings.js`):
   what it shows ("2 items match · the fields show the first"), and on a `[param]` page the
   **Main widget** switch (on makes it From URL; its hint: how many pages are built, or why
   none). Every bindable field has a picker at the end of its label row: **Custom** (its own
-  text: what it showed becomes it) or one of the item's fields that fit, with its value (no
-  source: only Custom). A bound value is dimmed and read only (a lock); a bound text has a
-  **format** input under it (`{value}` and the text around it). None turns bound fields into
-  their own texts. The preview shows the values of the item it shows; what can't be filled
-  shows dimmed as `{{title}}` there (only there). Editing a source renders the sections that
+  text: what it showed becomes it), one of the item's fields that fit, with its value, **How
+  many** (the sources) on a text, and **Text with fields** (text and chips; `{name}` typed or
+  **+ Field**). A whole bound value that isn't text is dimmed and read only (a lock). None turns
+  bound fields into their own texts. The preview shows the values of the item it shows; what
+  can't be filled shows as `{name}` there (only there), an unknown name's chip in the warning
+  colour. Editing a source renders the sections that
   show it again. Add widget fits a new widget's source to the page (From URL on a `[param]`
   page; elsewhere All for a list, the source's first item for one); removing the main widget
   leaves the page without one (the page head says so). Under the widget's card, on all its tabs, is its section's
@@ -1519,6 +1526,25 @@ Change in its field, see the Media window above). Edit
   Projects, About, Home. Small screens get a full-screen glass menu.
 - Inspiration: Gregor Collienne and Hannah Miles (home hero), Faint Film (album slider/grid),
   House of Yellow (a proper website with sections and a big footer).
+
+## Breaking content changes (next minor, unreleased)
+
+Fields in values are **parts** now (see "Bindings"). Nothing reads the old shapes: `ewcms check`,
+Save and the build report them as errors that say what to write. There is no converter; change
+them by hand (or with a one-off script):
+
+| Where                       | Old                                         | New                                             |
+| --------------------------- | ------------------------------------------- | ----------------------------------------------- |
+| a bound value               | `{ "bind": "role" }`                        | `[{ "field": "role" }]`                         |
+| a bound value with a format | `{ "bind": "year", "format": "({value})" }` | `[{ "field": "year", "format": "({value})" }]`  |
+| a Text count run            | `{ "count": { "source": "people" } }`       | `{ "field": "people" }` (and a space before it) |
+| a Text count of the items   | `{ "count": { "of": "items" } }`            | gone (no replacement)                           |
+
+Also: a count renders in the text's own look (`"4"`, not a superscript `"04"`; the `ts__count`
+class is gone); a name that is neither a field nor a source is an error with or without a
+widget source (it was a warning without one); a widget whose fields are all missing isn't
+rendered; `isBinding` / `bindingsOf` / `formatted` (bindings.js) and `countText` /
+`fieldText` (text.js) are gone (`parts.js`: `isParts`, `isWhole`, `partText`, `parseTyped`).
 
 ## Breaking content changes 0.3.0
 
