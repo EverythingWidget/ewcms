@@ -3,7 +3,7 @@
  * site's root, a folder or its index.js), after the built-ins (src/site/widgets/index.js has
  * the format). Node only. A widget module's folder:
  *
- *   index.js     default export: its definition (type, label, icon, fields, defaults, render, ...)
+ *   index.js     default export: its definition (type, label, icon, settings, defaults, render, ...)
  *   style.scss   optional: its look, bundled into the site's stylesheet (after the theme's)
  *   client.js    optional: default export (el) => cleanup?, run on every .wgt--<type> of a page
  *

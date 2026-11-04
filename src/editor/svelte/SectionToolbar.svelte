@@ -123,8 +123,8 @@
         size="small"
         icon="gear"
         iconOnly
-        label="Settings of {oneLabel}"
-        title="Settings (or double-click it)"
+        label="Section settings of {oneLabel}"
+        title="Section settings (or double-click it)"
         onclick={openPopup}
       />
       <Button
@@ -178,8 +178,8 @@
       size="small"
       icon="gear"
       iconOnly
-      label="Settings of {title}"
-      title="Settings (or double-click it)"
+      label="Section settings of {title}"
+      title="Section settings (or double-click it)"
       aria-pressed={ui.section === s.id}
       onclick={() => onsection(s.id)}
     />

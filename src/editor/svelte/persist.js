@@ -6,10 +6,10 @@
  *             page in sessionStorage; an unknown tab: nav)
  *     (path)  the URL's own path is the page in the preview (main.js keeps it up to date)
  *     view    header | footer, when a site part (Header, Footer) is edited instead of a page
- *     source  + item (+ field): the Source Explorer, open on that file and item, with that field
- *             highlighted (&source=people&item=noor-vermeer&field=summary; item is the
+ *     source  + item (+ property): the Source Explorer, open on that file and item, with that
+ *             property highlighted (&source=people&item=noor-vermeer&property=summary; item is the
  *             slug, or the number without one)
- *     animation    Settings > Motion's Animations library, open on that animation (&animation=fade-up)
+ *     animation    Site Settings > Motion's Animations library, open on that animation (&animation=fade-up)
  *     pages   the pages list (Nav), open on that folder (&pages=/people/; / is the root)
  *     media   + pick: the Media window, on that photo (&media=photos/x-1600.webp; / for none),
  *             picking for that field (&pick=sources/people.json#/0/photos/0/src)
@@ -67,7 +67,7 @@ function readState() {
       open: true,
       file: `sources/${q.get('source')}.json`,
       index: 0,
-      field: q.get('field') || '',
+      property: q.get('property') || '',
     };
     state.item = q.get('item');
   }
@@ -83,7 +83,7 @@ function readState() {
     state.pagesWin = { open: true, folder: q.get('pages').replace(/^\/+|\/+$/g, '') };
   }
   if (q.has('animation')) {
-    if (!q.has('tab')) state.panel = 'settings'; // the library is in Settings > Motion
+    if (!q.has('tab')) state.panel = 'settings'; // the library is in Site Settings > Motion
     state.library = { name: q.get('animation') }; // an unknown name: the list
   } else if (q.get('tab') === 'settings') state.library = { name: '' };
   return state;
@@ -100,7 +100,7 @@ export function restoreUi(preview, content) {
   if (PAGE_TABS.includes(saved.pageTab)) ui.pageTab = saved.pageTab;
   if (saved.part) ui.target = saved.part; // Header or Footer (pages: the URL's path)
   ui.sections = saved.sections || {};
-  // Settings > Motion's library, on an animation
+  // Site Settings > Motion's library, on an animation
   if (typeof saved.library?.name === 'string') ui.library = { name: saved.library.name };
   if (saved.pagesWin) ui.pagesWin = saved.pagesWin; // the Pages tab shows the pages list (PagesList)
   if (saved.media) ui.media = saved.media; // and MediaModal
@@ -181,7 +181,7 @@ export function writeUrl() {
   const list = open && file ? live.current(file)?.items : null;
   set('source', list && sourceIdOf(file));
   set('item', Array.isArray(list) && list[index] && itemId(list[index], index));
-  set('field', Array.isArray(list) && list[index] && ui.explorer.field);
+  set('property', Array.isArray(list) && list[index] && ui.explorer.property);
   set('animation', ui.panel === 'settings' && ui.library.name);
   set(
     'pages',

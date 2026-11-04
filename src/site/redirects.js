@@ -232,7 +232,7 @@ export function buildRedirects(list, paths) {
   const kept = list.filter((r) => {
     if (paths.has(pathKey(r.from))) {
       warnings.push(
-        `${r.from} is a page: its redirect is left out (remove it in Settings > Redirects)`,
+        `${r.from} is a page: its redirect is left out (remove it in Site Settings > Redirects)`,
       );
       return false;
     }

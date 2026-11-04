@@ -2,7 +2,7 @@
   Element motion tab, one animated element (ui.anim, picked in the preview or in the page's widgets list):
   replay and scroll it, pick where edits go (this widget's elements with its data-anim name, the
   widget's motion.elements in the page file; or every element with that name), its animation, and its timing (a Custom switch per field, MotionGroups).
-  What the animation does is shown read-only: it is edited in the Animations library (Settings > Motion)
+  What the animation does is shown read-only: it is edited in the Animations library (Site Settings > Motion)
   (AnimLibrary.svelte). Older overrides of those values get a notice: move them into the
   animation, or drop them.
   (In code and animations.json an animation is a "animation".)
@@ -17,7 +17,7 @@
   import { ANIMATIONS } from '../../site/files.js';
 
   // cfg: animations.json as edited; items: the page's animated elements; gsap: the preview's;
-  // onlibrary(name): open the Animations library (Settings > Motion) at that animation;
+  // onlibrary(name): open the Animations library (Site Settings > Motion) at that animation;
   // file, sections: the page file and its sections (MotionPanel), to find the element's widget
   let { live, bridge, cfg, items, gsap, onlibrary, file, sections } = $props();
 

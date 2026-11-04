@@ -120,11 +120,11 @@
     ...(chips && lists.length
       ? [
           {
-            group: 'How many',
+            group: 'Count of a source',
             options: lists.map((id) => ({
               value: `p:${id}`,
               label: `{${id}}`,
-              hint: `${id}: its length`,
+              hint: `items in ${id}`,
             })),
           },
         ]
@@ -158,7 +158,12 @@
         ]
       : []),
     ...(lists.length
-      ? [{ group: 'How many', options: lists.map((id) => ({ value: id, label: `{${id}}` })) }]
+      ? [
+          {
+            group: 'Count of a source',
+            options: lists.map((id) => ({ value: id, label: `{${id}}`, hint: `items in ${id}` })),
+          },
+        ]
       : []),
   ]);
 

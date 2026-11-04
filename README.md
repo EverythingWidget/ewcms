@@ -264,7 +264,7 @@ tags, and works with JavaScript disabled.
 (prefetched on hover), runs the page-leave transition (a curtain showing the destination's
 name; its text, `curtainText`, lives in the page's file `pages/<page>/index.json` or in the
 item in `sources/`: missing, the page's title; `""`, no label. The curtain's timing is the
-site's alone (settings/animations.json, with the page fade: the editor's Settings > Page
+site's alone (settings/animations.json, with the page fade: the editor's Site Settings > Page
 entrance); a page's `transition` is only `{ "curtain": "off" }` (no curtain: a page fade; the
 page's Motion > Page entrance card: Curtain site default / off), on its `[param]/index.json` for every item page; missing: the site's curtain),
 swaps `<main data-router-view>`, updates
@@ -434,14 +434,14 @@ every section is a grid of **widgets** (`src/site/layout/`):
   renders it hidden (so the switch shows it again at once). A section has **no space above or below**: the
   space between sections is empty rows (cells: a widget placed lower leaves rows above it), so
   it scales with the width like everything else (the side margins, `--pad`, stay).
-- **Contained width** (`site.json` `"layout": { "containedCols": 115 }`, Settings › Layout, 60–120):
+- **Contained width** (`site.json` `"layout": { "containedCols": 115 }`, Site Settings › Layout, 60–120):
   a contained section is that many columns of the full-width grid's cell (window width / 120)
   wide, centred, and never nearer the window's edges than the side margins (`--pad`). Its
   content is still the 120-column grid, its cells smaller, so widgets keep their columns and a
   narrower setting scales the layout down like a narrower window (rather than N columns of the
   full-width cell, which would cut off widgets placed past column N). The default, 115, is the
   look before the setting (up to 1920px the margins are the narrower; wider, 115/120 of the
-  width). Settings shows the resulting px at 1280, 1366, 1440, 1536 and 1920 wide, and the
+  width). Site Settings shows the resulting px at 1280, 1366, 1440, 1536 and 1920 wide, and the
   preview follows as you type. Phones: the full 60-column grid inside the side margins. On the
   page it is `--contain` on `:root` (only when not the default), read by `_layout.scss`
   (`--cpad`); `src/site/layout/contain.js`.
@@ -520,7 +520,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
     Aspect), its height. Same line breaks and proportions; shrink only. A Fit width line still
     fills the width.
 
-  The styles are set once in `site.json` `typography` (Settings ›
+  The styles are set once in `site.json` `typography` (Site Settings ›
   Typography), each in cells of the 120-column grid:
   `{ "paragraph": { "size": 1.4, "line": 1.75, "tracking": 0, "min": 14 } }`: font size (cells),
   line height (× the size), letter spacing (em) and a minimum font size (px). Defaults: title
@@ -729,6 +729,8 @@ values of a **source item** instead of its own, as **parts** (`src/site/layout/p
   even when the item leaves it empty); a name that isn't one but is a source's id is that source's
   list. A list shows its length (`{people}`: "12"; an empty list "0") in the text's own look.
   A name that is neither is an error, with or without a source.
+- **`{value}`** is only the placeholder of a `format` (`"format": "({value})"`); a part or a
+  typed `{value}` is a property called `value`.
 - **Typed:** `{name}` is a property, `{{` a literal `{` and `}}` a literal `}` (the editor's
   text and its inputs; the `+ Property` menu and the picker save the same parts).
 - **Empty:** a property the item doesn't have or has empty (`null`, `""`; `0` and `[]` are
@@ -760,8 +762,8 @@ values of a **source item** instead of its own, as **parts** (`src/site/layout/p
   what it shows ("2 items match · the properties show the first"), and on a `[param]` page the
   **Main widget** switch (on makes it From URL; its hint: how many pages are built, or why
   none). Every bindable setting has a picker at the end of its label row: **Custom** (its own
-  text: what it showed becomes it), one of the item's properties that fit, with its value, **How
-  many** (the sources) on a text, and **Text with properties** (text and chips; `{name}` typed or
+  text: what it showed becomes it), one of the item's properties that fit, with its value, **Count of a
+  source** (each source's number of items) on a text, and **Text with properties** (text and chips; `{name}` typed or
   **+ Property**). A whole bound value that isn't text is dimmed and read only (a lock). None turns
   bound settings into their own texts. The preview shows the values of the item it shows; what
   can't be filled shows as `{name}` there (only there), an unknown name's chip in the warning
@@ -769,7 +771,7 @@ values of a **source item** instead of its own, as **parts** (`src/site/layout/p
   show it again. Add widget fits a new widget's source to the page (From URL on a `[param]`
   page; elsewhere All for a list, the source's first item for one); removing the main widget
   leaves the page without one (the page head says so). Under the widget's card, on all its tabs, is its section's
-  settings card (the same as its card's pen opens), 12px under it.
+  section settings card (the same as its card's pen opens), 12px under it.
 
 ### Menu
 
@@ -888,7 +890,7 @@ browser's autofill), type (text, email, phone, long text, choice), required, and
 options (comma-separated). A form needs a field named `email` of type email: replies go
 there. `checkContent` checks the fields.
 
-**Where it sends** (Settings > Forms, `site.json` `forms`; a form can pick its own under
+**Where it sends** (Site Settings > Forms, `site.json` `forms`; a form can pick its own under
 "Sends to"):
 
 | target                        | how                                                                                                     |
@@ -927,10 +929,10 @@ URL to see the error message. Nothing is sent, no keys needed.
 5. Send a test message from the live site. Problems show in the project's **Functions > Logs**
    (`[contact] …`).
 6. Optional spam check: Cloudflare **Turnstile > Add widget** for the domain; its site key goes
-   in Settings > Forms (public), its secret key in the variable `TURNSTILE_SECRET_KEY`.
+   in Site Settings > Forms (public), its secret key in the variable `TURNSTILE_SECRET_KEY`.
 
 Another host: pick "External endpoint" (e.g. a Formspree form's URL) or "Email link" in
-Settings > Forms; `functions/` is then simply unused.
+Site Settings > Forms; `functions/` is then simply unused.
 
 ### Redirects
 
@@ -968,13 +970,13 @@ The editor keeps them up to date by itself (`src/site/redirects.js`):
   itself goes, and one from a path that is a page again (a new page, a rename back) is
   removed, with a note.
 
-**Settings > Redirects** lists them: from, to (a page, or External URL), status; add, move,
+**Site Settings > Redirects** lists them: from, to (a page, or External URL), status; add, move,
 remove, every change one undo step.
 
 ### SEO
 
 What `<head>` says about a page: `src/site/seo.js` (`seoOf`), from the site's defaults and the
-page's own `meta`. Edited in the editor: Settings > SEO (the defaults) and Content > SEO (the
+page's own `meta`. Edited in the editor: Site Settings > SEO (the defaults) and Content > SEO (the
 page in the preview; collapsed, below its sections, with a search-result and a share-card
 preview and the 60/160 character counts).
 
@@ -1054,7 +1056,7 @@ from R2 (`deletePhoto`, a SigV4 `DELETE` per key) and the entry.
 
 The content stores keys, not URLs: `mediaUrl()` / `photoOf()` (`src/site/helpers.js`) turn a
 value into URLs when the page is rendered. A path that is in `media/` stays local, a full
-`https://` URL is used as is, anything else is `site.json` `mediaUrl` + `/` + key (Settings >
+`https://` URL is used as is, anything else is `site.json` `mediaUrl` + `/` + key (Site Settings >
 Photos). So the photo domain can change in one place, and existing photos keep working.
 
 The keys live in `.env.local` (git-ignored; template: `.env.example`). Only the dev server reads
@@ -1076,7 +1078,7 @@ Setup, once:
 4. Copy `.env.example` to `.env.local` and fill in `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`,
    `R2_SECRET_ACCESS_KEY` and `R2_BUCKET`.
 5. Restart `npm run dev`.
-6. Editor > Settings > **Photos**: set the photo address to `https://photos.eeliyarasta.com`,
+6. Editor > Site Settings > **Photos**: set the photo address to `https://photos.eeliyarasta.com`,
    Save.
 
 No CORS rule is needed: the dev server uploads, and pages only show the photos.
@@ -1292,7 +1294,7 @@ removed files. `&pages=/people/` in the URL reopens the list on that folder. The
 
 In the Content panel every **section** of the page is a box (Section 1, 2, …, with its name
 under it when it has one): ↑ / ↓ move it, **Duplicate** copies it below (new ids), **Delete** asks first (over the card: the trash then Cancel), the switch
-turns it on/off, and the caret folds it. Under the bar are its settings (**Name**, the whole row, empty by
+turns it on/off, and the caret folds it. Under the bar are its section settings (**Name**, the whole row, empty by
 default, with the `#anchor` it makes shown under it, or what's wrong with it: taken by another
 section on the page, …; then side by side **Height**, five quiet icon buttons with tooltips: custom
 (a **Rows** number field appears below: the section's rows, the ones below its last widget
@@ -1303,7 +1305,7 @@ or full width (a band edge to edge)) and its **widgets**, in order, each with �
 Delete and on/off (the rows on the widgets' card colour, teal `--c-widget-card`, the widget's
 title in `--c-widget-accent`); **Add widget** adds one below the others, **Add section** at the end a
 section (empty, or with a widget). Clicking a widget (or a text of it in the preview) opens the
-**widget inspector**: **Content** (its settings and fields, from the registry), **Layout**
+**widget inspector**: **Content** (its widget settings, from the registry), **Layout**
 (see below) and **Motion** (the widget's animation and timing, the same view as in the Motion
 tab). Its head row is the quiet ← (back to the sections) and the widget's name. A list field (hero photos,
 photography panels) has its items in boxes with ↑ / ↓ / Remove and an
@@ -1351,7 +1353,7 @@ the rows it spans, the phone's in the phone preview) and its link (`follows <wid
 or free); links and gaps are dragged in the preview. Then **Size** as buttons (Auto | Aspect |
 Rows; with Aspect its ratio as buttons: 1:1 … 21:9 or Custom "w:h"), the layer with Down / Up (desktop) and **Reset phone** (phone), which removes every phone area
 and link of the section's widgets (they show their desktop layout halved again).
-**Settings › Typography** sets the text styles (fitted text keeps their proportions) (size and minimum, line height,
+**Site Settings › Typography** sets the text styles (fitted text keeps their proportions) (size and minimum, line height,
 tracking; the preview follows as you type).
 
 **Buttons:** action buttons (Save, Publish, Delete, Add, …) are pills. Utility toggles and tools
@@ -1381,7 +1383,7 @@ item counts): click one to edit its items, **←** goes back to the files. A gri
 button, or a click on a person/place/project in the preview, opens straight into that item. In
 the Content tab, a group whose texts come from a source (a person on their page) shows its file
 (`people.json`) as a button in its bar (beside each field only when a group mixes sources): it
-opens the explorer on that item (with a field highlighted: `&field=` in the URL). What the
+opens the explorer on that item (with a property highlighted: `&property=` in the URL). What the
 explorer shows comes from the source's schema (see "Sources & schemas").
 
 Fields come in rows: two `half` fields (a schema's or a widget type's `width: "half"`) share
@@ -1404,15 +1406,15 @@ in the URL reopens it.
 Explorer item, so a shared link opens the same view:
 `/photography/people/?edit&source=people&item=noor-vermeer` (`tab`: nav (the **Pages** tab), settings, preview;
 the page's own tab, Sections | Element motion | Page motion | SEO, is kept per page in sessionStorage; `view`: header,
-footer; `animation`: Settings > Motion's Animations library, open on that animation). Open/closed sections, the selected field or Motion
+footer; `animation`: Site Settings > Motion's Animations library, open on that animation). Open/closed sections, the selected field or Motion
 element and the scroll positions are kept per browser tab in sessionStorage. See
 `src/editor/svelte/persist.js`.
 
-| mode        | what it does                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Preview** | The ▶ toggle in the toolbar (or Ctrl/⌘+E), not a tab: use the site normally. The mode tabs hide (the toolbar stays put); the panel shows unsaved changes per file with _Discard_, and what is saved but not published. Off again: back to the tab you were in.                                                                                                                                                                                                          |
-| **Content** | Animations pause. The preview is a layout canvas: click a widget to open it, drag it and its handles to move and resize it, double-click a text to type in it (Enter ends a single-line field; multi-line fields take Enter as a line break). The panel lists the same fields as inputs, and both stay in sync.                                                                                                                                                         |
-| **Motion**  | Click a widget or an animated element (or pick its row in the page's widgets list). Pick its animation and set its own timing (duration, ease, delay, stagger, trigger, scroll start/end/scrub); what the animation does (from/to properties, type-specific values) is shown read-only and edited in Settings > Motion's Animations library. Changes replay live. **Replay** runs that widget (or the page) again, and the **Scroll** slider moves the page through it. |
+| mode        | what it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Preview** | The ▶ toggle in the toolbar (or Ctrl/⌘+E), not a tab: use the site normally. The mode tabs hide (the toolbar stays put); the panel shows unsaved changes per file with _Discard_, and what is saved but not published. Off again: back to the tab you were in.                                                                                                                                                                                                               |
+| **Content** | Animations pause. The preview is a layout canvas: click a widget to open it, drag it and its handles to move and resize it, double-click a text to type in it (Enter ends a single-line field; multi-line fields take Enter as a line break). The panel lists the same fields as inputs, and both stay in sync.                                                                                                                                                              |
+| **Motion**  | Click a widget or an animated element (or pick its row in the page's widgets list). Pick its animation and set its own timing (duration, ease, delay, stagger, trigger, scroll start/end/scrub); what the animation does (from/to properties, type-specific values) is shown read-only and edited in Site Settings > Motion's Animations library. Changes replay live. **Replay** runs that widget (or the page) again, and the **Scroll** slider moves the page through it. |
 
 In the edit modes, clicks select instead of following links (in Content no link, button or
 form acts). Hold **Alt** to click through.
@@ -1445,7 +1447,7 @@ or element opens in place, under its row), then Outside the widgets; the preview
 what to animate. Its Page motion tab holds the page's own cards (the preview's clicks arrange
 there, as on Sections): **Scroll backdrop** (its backdrop), then **Page entrance**
 (how visitors arrive at this page: the page's curtain, Site default or Off (page fade), with
-a link to Settings > Page entrance). The Animations library and the default timing are in Settings > Motion (an
+a link to Site Settings > Page entrance). The Animations library and the default timing are in Site Settings > Motion (an
 element's Animation edit button opens the library there), next to the one **Page entrance**
 section (the site's curtain and page fade). The library is the only place that defines what an animation
 does: pick an animation to edit `animations["fade-up"]`, every value including timing, and add

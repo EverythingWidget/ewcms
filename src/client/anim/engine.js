@@ -4,7 +4,7 @@
  * [data-anim="<target id>"] element in a view.
  *
  * Every spec starts from the site's default timing (animations.json `defaults`: duration, delay,
- * ease; Settings > Motion), so an animation without its own value plays with it; left out,
+ * ease; Site Settings > Motion), so an animation without its own value plays with it; left out,
  * GSAP's own. The scroll-linked types keep their linear ease (no default ease).
  *
  * A widget: spec = defaults ⟵ animations[data-motion] ⟵ data-motion-options (the widget's own timing). It

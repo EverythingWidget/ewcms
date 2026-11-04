@@ -42,7 +42,7 @@ export const TIMING_KEYS = [
 ];
 
 /**
- * The site's default timing (animations.json `defaults`, Settings > Motion): what an animation
+ * The site's default timing (animations.json `defaults`, Site Settings > Motion): what an animation
  * plays with when neither it nor its widget or element sets the value (src/client/anim/engine.js
  * merges it first). Left out: GSAP's own (0.5s, no delay, power1.out).
  */

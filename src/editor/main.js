@@ -404,7 +404,7 @@ const pagesQueued = oneAtATime(async (body) => {
 function movedToast({ links = 0, added = [], broken = 0, pruned = [] }) {
   const done = [
     links && `${plural(links, 'link')} updated`,
-    added.length && `${plural(added.length, 'redirect')} added (Settings > Redirects)`,
+    added.length && `${plural(added.length, 'redirect')} added (Site Settings > Redirects)`,
   ].filter(Boolean);
   if (done.length) toast(done.join(', '), { kind: 'ok', files: added.length ? [REDIRECTS] : [] });
   if (broken)

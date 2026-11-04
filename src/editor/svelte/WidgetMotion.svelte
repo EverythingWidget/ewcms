@@ -3,13 +3,13 @@
   scroll slider for it in the preview, its animation (none, or one of the library's that works
   on any widget) and its own timing, each field with a Custom switch (MotionGroups, scope
   'widget': off shows the animation's value, dimmed). What the animation does is read-only here:
-  it is edited in the Animations library (Settings > Motion) (Edit). Below, the widget's elements with their own
+  it is edited in the Animations library (Site Settings > Motion) (Edit). Below, the widget's elements with their own
   animation (data-anim inside it: the hero's photos, a heading's title, ...), each opening in
   the Element motion tab.
   Used by the Element motion tab (MotionPanel).
     file, at, j   where the widget is: sections[at].widgets[j] of the page file
     el            its element in the preview (null when not shown)
-    onlibrary     (name) open the animation in the Animations library (Settings > Motion)
+    onlibrary     (name) open the animation in the Animations library (Site Settings > Motion)
     onelement        (el) open an element in the Element motion tab
 -->
 <script>

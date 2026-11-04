@@ -1,5 +1,5 @@
 <!--
-  Settings tab: what is the same on every page. First Motion (MotionSettings.svelte: the
+  Site Settings tab: what is the same on every page. First Motion (MotionSettings.svelte: the
   default timing and the Animations library), then where contact forms send (Forms), the site's
   name and details
   (settings/site.json), its search and share defaults (SEO: titles, description, share photo,

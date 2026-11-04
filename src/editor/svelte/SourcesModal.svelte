@@ -72,7 +72,7 @@
   const show = (value) => showValue(String(value ?? ''));
 
   function select(i) {
-    if (i !== ui.explorer.index) ui.explorer.field = '';
+    if (i !== ui.explorer.index) ui.explorer.property = '';
     ui.explorer.index = i;
     confirming = false;
     slugBad = false;
@@ -124,7 +124,7 @@
 
   /**
    * Open on the list of files, or straight into a file at item nextIndex, optionally on one
-   * field (its data-edit): focused, scrolled to and highlighted (ui.explorer.field, its key).
+   * field (its data-edit): focused, scrolled to and highlighted (ui.explorer.property, its key).
    * then: called once when it closes.
    */
   let after = null; // called once when it closes (the item picker opens again: ItemPicker.svelte)
@@ -133,10 +133,10 @@
     ui.explorer.file = files.includes(nextFile) ? nextFile : '';
     select(nextIndex);
     flushSync(); // render now, so the field below exists
-    if (edit) ui.explorer.field = fields.find((f) => f.edit === edit)?.key || '';
+    if (edit) ui.explorer.property = fields.find((f) => f.edit === edit)?.key || '';
     if (!dialog.open) dialog.showModal();
     ui.explorer.open = true;
-    const at = fields.find((f) => f.key === ui.explorer.field);
+    const at = fields.find((f) => f.key === ui.explorer.property);
     const field = at && dialog.querySelector(`[data-edit="${CSS.escape(at.edit)}"]`);
     if (!field) return void (file || dialog.querySelector('.xrow').focus());
     field.querySelector('.tf__input, button')?.focus({ preventScroll: true });
@@ -269,9 +269,9 @@
               half={halves.has(f.edit)}
               value={valueAt(item, f.path)}
               changed={fieldChanged(f)}
-              selected={ui.explorer.field === f.key}
+              selected={ui.explorer.property === f.key}
               onfocus={() => {
-                ui.explorer.field = f.key;
+                ui.explorer.property = f.key;
                 bridge.focusEdit(f.edit);
               }}
               onvalue={(value) =>

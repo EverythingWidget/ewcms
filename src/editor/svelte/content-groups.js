@@ -22,7 +22,7 @@ export const SITE_SETTINGS = [
   ['country', 'Country code (for search engines, e.g. NL)', 'text'],
 ];
 
-/** site.json search and share defaults (src/site/seo.js), Settings > SEO. robots is a Select. */
+/** site.json search and share defaults (src/site/seo.js), Site Settings > SEO. robots is a Select. */
 export const SEO_SETTINGS = [
   ['title', 'Home page title (in full)', 'text'],
   ['titleTemplate', 'Title of other pages: {page} is the page, {site} the site name', 'text'],

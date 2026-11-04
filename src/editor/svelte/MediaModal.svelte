@@ -287,7 +287,7 @@
         open: true,
         file: u.file,
         index: Number(parts[1]) || 0,
-        field: parts.slice(2).join('.'),
+        property: parts.slice(2).join('.'),
       };
       return;
     }

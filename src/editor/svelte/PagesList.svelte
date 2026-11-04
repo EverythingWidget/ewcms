@@ -442,7 +442,7 @@
                 : 'No redirect: its address shows the 404 page; its menu item goes, links to it stay.'
               : r.nested
                 ? `Each ${r.title} page goes to its own ${r.nested} page; links follow.`
-                : `A redirect (Settings › Redirects) sends ${shownPath(r.id)} there; links to it are updated.`}
+                : `A redirect (Site Settings › Redirects) sends ${shownPath(r.id)} there; links to it are updated.`}
           </p>
           <span class="ask-btns">
             <Button

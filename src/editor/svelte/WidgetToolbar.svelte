@@ -345,7 +345,9 @@
 
 {#snippet styleMenu()}
   <div class="btb__menu" role="listbox" aria-label="Style of this line">
-    <span class="btb__grp">{editing ? 'This line' : 'Its first line'} · Settings › Typography</span>
+    <span class="btb__grp"
+      >{editing ? 'This line' : 'Its first line'} · Site Settings › Typography</span
+    >
     {#each LINE_STYLES as [s, label, tag] (s)}
       <button
         type="button"
@@ -527,7 +529,8 @@
           </form>
           {#if linkError}<p class="btb__err" role="alert">{linkError}</p>{/if}
         {:else if open === 'property'}
-          <span class="btb__grp">{from ? `A property of ${from}` : 'No source: no properties'}</span
+          <span class="btb__grp"
+            >{from ? `A property of ${from}` : 'No source, so no properties'}</span
           >
           {#each properties as f (f.key)}
             <button type="button" class="btb__opt" onclick={() => insert({ property: f.key })}
@@ -536,7 +539,7 @@
               ></button
             >
           {/each}
-          <span class="btb__grp">How many</span>
+          <span class="btb__grp">Count of a source</span>
           {#each sources as s (s)}
             <button type="button" class="btb__opt" onclick={() => insert({ property: s })}
               ><span class="btb__chip">{`{${s}}`}</span><span class="btb__hint">items in {s}</span

@@ -3,7 +3,7 @@
   section card (Section.svelte) whose second line sums it up ("Curtain: site default" or
   "Curtain: off (page fade)"). Inside it, the page's curtain (EntrancePageCurtain.svelte).
   The page's backdrop is its own card just above (ScrollBackdropCard.svelte).
-    live  reactive store; onsettings  open Settings at its Page entrance section
+    live  reactive store; onsettings  open Site Settings at its Page entrance section
 -->
 <script>
   import EntrancePageCurtain from './EntrancePageCurtain.svelte';

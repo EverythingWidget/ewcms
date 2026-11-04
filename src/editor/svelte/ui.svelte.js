@@ -131,9 +131,9 @@ export const ui = $state({
   sections: {},
   /**
    * The Source Explorer: open or not, its file ('' = the list of files), item index and the
-   * highlighted field (its key in source-items.js itemFields, e.g. "name", "photos.1").
+   * highlighted property (its key in source-items.js itemFields, e.g. "name", "photos.1").
    */
-  explorer: { open: false, file: '', index: 0, field: '' },
+  explorer: { open: false, file: '', index: 0, property: '' },
   /**
    * The Media window: open or not, the selected photo (media/ path or R2 key), the list filter
    * ('all' | 'r2' | 'local') and the field it picks for (its data-edit, '' = just managing).
@@ -141,7 +141,7 @@ export const ui = $state({
   media: { open: false, key: '', filter: 'all', pick: '' },
   /** The pages list (Pages tab): open or not, and the folder it shows ('' = content/en/pages/ itself). */
   pagesWin: { open: false, folder: '' },
-  /** Settings > Motion, the Animations library: the animation open ('' = the list). */
+  /** Site Settings > Motion, the Animations library: the animation open ('' = the list). */
   library: { name: '' },
 });
 

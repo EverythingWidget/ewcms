@@ -1,4 +1,4 @@
-// Nav | Settings, a page's Sections | Motion | SEO, and the site's default animation timing.
+// Pages | Site Settings, a page's Sections | Motion | SEO, and the site's default animation timing.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -41,9 +41,9 @@ test("the engine starts every spec from the defaults (not the scroll types' ease
   assert.match(e, /SCROLLED = new Set\(\['scroll', 'scrub-words', 'parallax'\]\)/);
 });
 
-test('top tabs Pages | Settings; page tabs Sections | Element motion | Page motion | SEO', () => {
+test('top tabs Pages | Site Settings; page tabs Sections | Element motion | Page motion | SEO', () => {
   const app = read('editor/svelte/App.svelte');
-  assert.match(app, /\['nav', 'Pages'\],\s*\['settings', 'Settings'\],\s*\];/);
+  assert.match(app, /\['nav', 'Pages'\],\s*\['settings', 'Site Settings'\],\s*\];/);
   assert.doesNotMatch(app, /MotionPanel/);
   const c = read('editor/svelte/ContentPanel.svelte');
   assert.match(
@@ -101,4 +101,23 @@ test('Motion shows the whole page; the widget pop-up has no Motion tab and stays
   assert.doesNotMatch(esrc('svelte/WidgetMotion.svelte'), /inspector's Motion tab/);
   assert.match(esrc('svelte/ContentPanel.svelte'), /\{#if popG && !ui\.pagesWin\.open\}/);
   assert.doesNotMatch(esrc('main.js'), /editMotion/);
+});
+
+test('+ Property: source counts are "Count of a source", not properties; the explorer highlights a property', () => {
+  const bar = read('editor/svelte/WidgetToolbar.svelte');
+  assert.match(bar, /'No source, so no properties'/);
+  assert.match(bar, /<span class="btb__grp">Count of a source<\/span>/);
+  assert.doesNotMatch(bar, /How many/);
+  const field = read('editor/svelte/Field.svelte');
+  assert.equal(field.match(/group: 'Count of a source'/g).length, 2);
+  assert.doesNotMatch(field, /How many/);
+  // the Source Explorer: ui.explorer.property, &property= in the URL
+  assert.match(
+    read('editor/svelte/ui.svelte.js'),
+    /explorer: \{ open: false, file: '', index: 0, property: '' \}/,
+  );
+  const persist = read('editor/svelte/persist.js');
+  assert.match(persist, /property: q\.get\('property'\)/);
+  assert.match(persist, /set\('property', /);
+  assert.doesNotMatch(read('editor/svelte/SourcesModal.svelte'), /explorer\.field/);
 });
