@@ -9,7 +9,7 @@
   widget's tabs and fields (WidgetInspector.svelte, bare: no Back, no card, no title line).
     g, live, bridge, sourceIds, onsource   as WidgetInspector's
     popup     createPopup() (its place)
-    onclose   () => close it (ui.widget = null)
+    onclose   () => close it (closeWidgetPopup)
 -->
 <script>
   import { tick } from 'svelte';

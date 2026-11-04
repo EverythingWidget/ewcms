@@ -2,7 +2,7 @@
 // list clicks, the quiet restore after a save, and the ui helpers every caller goes through.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { offscreen, popupStays } from '../src/editor/multi-select.js';
 import { loadUi } from './load-ui.mjs';
 
@@ -217,17 +217,12 @@ test('no selection or hover field is written outside ui.svelte.js', () => {
   const fields =
     'picked|hoverEl|anim|selection|widget|multi|popup|section|selSections?|peek|hot|link|anchor|mod|secRows';
   const write = new RegExp(`\\bui\\.(${fields})\\s*=[^=]`);
-  const files = ['main.js', 'overlay.js', 'bridge.js', 'svelte/persist.js'];
-  for (const f of [
-    'App',
-    'ContentPanel',
-    'SectionToolbar',
-    'PageHead',
-    'MediaModal',
-    'SectionsList',
-    'SectionCard',
-  ])
-    files.push(`svelte/${f}.svelte`);
+  // every editor source file but ui.svelte.js itself
+  const root = new URL('../src/editor/', import.meta.url);
+  const files = readdirSync(root, { recursive: true })
+    .map((f) => f.replaceAll('\\', '/'))
+    .filter((f) => /\.(js|mjs|svelte)$/.test(f) && f !== 'svelte/ui.svelte.js');
+  assert.ok(files.length > 11, 'scans the whole editor');
   // App.svelte keeps one on purpose: a widget opened anywhere drops the several selected
   const kept = /if \(ui\.widget && untrack\(\(\) => ui\.multi\.length\)\) ui\.multi = \[\];/;
   for (const f of files) assert.doesNotMatch(src(f).replace(kept, ''), write, f);
