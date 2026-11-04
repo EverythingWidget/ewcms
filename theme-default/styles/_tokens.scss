@@ -52,7 +52,9 @@
 
   // items: one entry of a source as a list shows it (a card, a tile, a row). Defaults are
   // today's cards (Album cards, the places' cards): no box, a 4px photo radius, 16px between
-  // the photo and the text. A site's theme overrides them in theme/tokens.scss.
+  // the photo and the text. A site's theme overrides them in theme/tokens.scss (the site's
+  // theme/ folder). The -s/-m/-l steps of --item-shadow and --item-pad are for the list's
+  // look settings (step 9): nothing uses them yet.
   --item-radius: 4px;
   --item-border: none;
   --item-shadow: none;
