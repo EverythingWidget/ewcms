@@ -217,7 +217,7 @@ const steps = [
     },
   },
   {
-    name: 'Text widget "fit": true (whole widget) -> "fit": true on every line (Fit width)',
+    name: 'Text widget "fit": true (whole widget) -> "scale": true (Scale to fit)',
     run(files) {
       const notes = [];
       for (const f of files) {
@@ -225,13 +225,13 @@ const steps = [
         let gone = 0;
         for (const w of widgetsIn(f.data)) {
           if (!('fit' in w)) continue;
-          if (w.fit === true && w.type === 'text' && Array.isArray(w.body))
-            for (const line of w.body) if (isObject(line) && line.fit !== true) line.fit = true;
+          // the whole widget scaled as one, as the Scale to fit switch writes it
+          if (w.fit === true && w.type === 'text') w.scale = true;
           if (w.type === 'text') n++;
           else gone++; // a button's fit: no line to keep it, its label's style size
           delete w.fit;
         }
-        if (n) notes.push(`${f.rel}: ${plural(n, 'text widget')}' "fit" -> each line's "fit"`);
+        if (n) notes.push(`${f.rel}: ${plural(n, 'text widget')}' "fit" -> "scale" (Scale to fit)`);
         if (gone)
           notes.push(`${f.rel}: ${plural(gone, 'widget')}' "fit" dropped (not a Text widget)`);
       }

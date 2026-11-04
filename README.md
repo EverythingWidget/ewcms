@@ -1553,7 +1553,7 @@ changing only those lines; a script it can't match exactly it names, to change b
 | `settings/site.json`                          | `"ogImage"`                                    | `"ogPhoto"`                                    |
 | a page's `meta`                               | `"image"` (its share photo)                    | `"photo"`                                      |
 | the site's `package.json` scripts             | `"images": "ewcms images"`, `--no-images`      | `"photos": "ewcms photos"`, `--no-photos`      |
-| a Text widget                                 | `"fit": true` (the whole widget)               | `"fit": true` on each of its lines             |
+| a Text widget                                 | `"fit": true` (the whole widget)               | `"scale": true` (Scale to fit)                 |
 | a Button widget                               | `"fit": true`                                  | (dropped: its label's style size)              |
 
 A theme's own widget code (not content) needs, by hand: field type `'block'` is

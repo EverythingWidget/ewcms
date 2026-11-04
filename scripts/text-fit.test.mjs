@@ -41,7 +41,7 @@ test('Scale to fit: shrink only, by width and (a fixed height) height', () => {
   assert.equal(scaleFactor(10, 100000, 10), 0.05); // never below
 });
 
-test('rename 0.2.0: a Text widget\'s whole-widget "fit" -> each line\'s; idempotent', () => {
+test('rename 0.2.0: a Text widget\'s whole-widget "fit" -> Scale to fit ("scale"); idempotent', () => {
   const files = () => [
     {
       rel: 'en/pages/index.json',
@@ -65,16 +65,20 @@ test('rename 0.2.0: a Text widget\'s whole-widget "fit" -> each line\'s; idempot
     .flatMap((s) => s.notes)
     .join('\n');
   const [a, b, c, d] = f[0].data.sections[0].widgets;
+  assert.equal(a.scale, true);
   assert.deepEqual(
     a.body.map((l) => l.fit),
-    [true, true],
+    [undefined, undefined],
   );
   assert.equal('fit' in a, false);
+  assert.equal('scale' in b, false);
+  assert.equal('scale' in c, false);
+  assert.equal('scale' in d, false);
   assert.equal(b.body[0].fit, undefined);
   assert.equal('fit' in c, false);
   assert.equal('fit' in d, false);
   assert.equal(d.body[0].fit, undefined);
-  assert.match(notes, /2 text widgets' "fit" -> each line's "fit"/);
+  assert.match(notes, /2 text widgets' "fit" -> "scale" \(Scale to fit\)/);
   assert.match(notes, /1 widget' "fit" dropped/);
   const again = structuredClone(f);
   convert(again);
