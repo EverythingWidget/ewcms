@@ -124,7 +124,7 @@
   @use '../styles/mixins' as *;
 
   // borderless: a surface (the widgets' card colour, its header a touch of the accent; its
-  // controls' role colours: _mixins.scss surface()), a layered shadow; over the preview
+  // controls' role colours: _mixins.scss surface()), a soft white ring and a deep shadow; over the preview
   .wpop {
     @include surface(
       var(--c-widget-card),
@@ -138,7 +138,7 @@
     max-height: min(600px, calc(100vh - 24px));
     border-radius: var(--radius-lg);
     background: var(--surface);
-    box-shadow: var(--shadow-pop);
+    box-shadow: var(--shadow-pop-widget);
     overflow: hidden;
 
     &:focus {

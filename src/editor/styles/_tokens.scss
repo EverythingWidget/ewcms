@@ -65,6 +65,7 @@
   --white-a18: rgb(255 255 255 / 0.18);
   --white-a20: rgb(255 255 255 / 0.2);
   --white-a40: rgb(255 255 255 / 0.4);
+  --white-a50: rgb(255 255 255 / 0.5);
   --white-a55: rgb(255 255 255 / 0.55);
   --white-a70: rgb(255 255 255 / 0.7);
   --black-a18: rgb(0 0 0 / 0.18);
@@ -74,7 +75,9 @@
   --black-a45: rgb(0 0 0 / 0.45);
   --black-a50: rgb(0 0 0 / 0.5);
   --black-a60: rgb(0 0 0 / 0.6);
+  --black-a65: rgb(0 0 0 / 0.65);
   --black-a70: rgb(0 0 0 / 0.7);
+  --black-a80: rgb(0 0 0 / 0.8);
   --black-a82: rgb(0 0 0 / 0.82);
   --black-a90: rgb(0 0 0 / 0.9);
   --blue-300-a06: rgb(159 211 255 / 0.06);
@@ -110,6 +113,10 @@
   --shadow-pop:
     0 1px 2px var(--black-a30), 0 4px 8px var(--black-a30), 0 12px 24px var(--black-a35),
     0 24px 48px var(--black-a45);
+  // the widget pop-up over the preview: a soft 1px white ring (any page colour), then a deeper drop
+  --shadow-pop-widget:
+    0 0 0 1px var(--white-a50), 0 2px 4px var(--black-a50), 0 16px 40px var(--black-a65),
+    0 40px 96px var(--black-a80);
   --c-card-peek: var(--gray-2f);
   // the help note (InfoHelp.svelte): a slate-blue surface, a 1px ring a step lighter
   --c-help-note: #16202e;
