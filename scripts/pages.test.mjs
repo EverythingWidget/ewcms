@@ -88,7 +88,7 @@ test('template: [param]/index.json in a page folder, one per folder, not at the 
   assert.deepEqual(main.source, {
     mode: 'url',
     from: 'people',
-    where: { op: 'and', rules: [{ param: 'slug', field: 'slug' }] },
+    where: { op: 'and', rules: [{ param: 'slug', property: 'slug' }] },
   });
   // what the editor writes passes the validator (its Save refuses anything else)
   assert.deepEqual(
@@ -171,8 +171,8 @@ test('template in a template: a named [param] folder in a [param] folder, one pe
   const data = read(root, 'pages/people/[person]/[year]/index.json');
   // each param on its default field (same name, else slug); the new one on its key
   assert.deepEqual(data.sections[0].widgets[0].source.where.rules, [
-    { param: 'person', field: 'slug' },
-    { param: 'year', field: 'year' },
+    { param: 'person', property: 'slug' },
+    { param: 'year', property: 'year' },
   ]);
   assert.equal(data.main, data.sections[0].widgets[0].id);
   assert.deepEqual(checkContent('pages/people/[person]/[year]/index.json', data), []);

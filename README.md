@@ -164,7 +164,7 @@ content/            ← all text, albums, projects, animation config (JSON)
  en/                ← one folder per language (only en so far; the site's lang is site.json "lang")
   pages/            ← one folder per page (its URL) with index.json in it (see "Pages and URLs")
   sources/          ← lists that grids pull from (people, places, projects): { version, items: [...] },
-                      plus <id>.schema.json: the fields of its items (see "Sources & schemas")
+                      plus <id>.schema.json: the properties of its items (see "Sources & schemas")
   settings/         ← site-wide settings (site.json, nav.json, animations.json, photos.json, redirects.json)
                       and footer.json: the footer's sections (see "Footer")
   strings.json      ← UI text of the templates: the menu's Menu / Close / clock label
@@ -206,7 +206,7 @@ src/
     files.js        ← the content files by kind, VERSION, contentFromFiles
     validate.js     ← checkContent: what the build and Save refuse
     defaults.js     ← default values, left out of saved files
-    schemas.js      ← sources' schemas (fields of their items)
+    schemas.js      ← sources' schemas (properties of their items)
     seo.js          ← titles, descriptions, canonical, Open Graph
     redirects.js    ← redirects.json → _redirects, moved items
     hrefs.js        ← links to pages, items and anchors
@@ -302,14 +302,14 @@ Routes, menu, dropdowns, grids and sitemap update automatically.
 
 Each list in `content/en/sources/` can have a schema next to it, `<id>.schema.json`
 (`people.schema.json`): what an item has, in a small format of its own (not JSON Schema),
-shaped like the widget registry's fields (`src/site/schemas.js`):
+shaped like the widget registry's settings (`src/site/schemas.js`):
 
 ```json
 {
   "label": "People",
   "title": "name",
   "slug": "slug",
-  "fields": [
+  "properties": [
     { "key": "slug", "label": "Slug", "type": "text", "required": true, "help": "The page URL" },
     { "key": "name", "label": "Name", "type": "text", "required": true },
     { "key": "role", "label": "Role", "type": "text", "width": "half", "list": true },
@@ -319,13 +319,13 @@ shaped like the widget registry's fields (`src/site/schemas.js`):
 }
 ```
 
-- `title`: the field that names an item (the editor's lists, page titles, `<name> | People`);
-  `slug`: the field with its URL slug (`/photography/people/<slug>/`; empty: the title, slugified).
+- `title`: the property that names an item (the editor's lists, page titles, `<name> | People`);
+  `slug`: the property with its URL slug (`/photography/people/<slug>/`; empty: the title, slugified).
 - `type`: `text`, `multiline` (lines), `number`, `photo` (a `media/` path or R2 key), `photos`
   (a list of photo paths), `link` (`https://…`, `/path/` or `mailto:`), `choice`
   (one of `options: ["a", "b"]`), `boolean`, `date` (`YYYY-MM-DD`). The same names as a
-  widget's field types: one list, `src/site/field-types.js`.
-- `width: "half"`: two half fields next to each other share a row in the editor (one column
+  widget's setting types: one list, `src/site/property-types.js`.
+- `width: "half"`: two half properties next to each other share a row in the editor (one column
   when the panel is narrow); `required`, `help` (a hint under the field), `list` (shown under
   the name in the Source Explorer's item list).
 - Keys a schema doesn't name are kept as they are, not edited or checked (`transition`).
@@ -336,14 +336,14 @@ types, choice options, links, dates, valid unique slugs, and photos that exist (
 (`content/en/sources/people.json: item 1: "Name" is required`); the build stops with the list.
 
 **No schema?** A source without one still works: its schema is inferred from its items, one
-type per field across all of them (numbers, true/false, lists of photos, media paths, text with
+type per property across all of them (numbers, true/false, lists of photos, media paths, text with
 line breaks or over ~80 characters as `multiline`, text under ~24 characters as half width;
 objects and mixed values are left out). The title is `name`, else `title`, else the first text
-field; the slug is `slug`. Write a schema file to give fields labels, order, help and checks.
+property; the slug is `slug`. Write a schema file to give properties labels, order, help and checks.
 
 The editor uses the schema everywhere: the Source Explorer's fields (labels, widgets, widths,
-help), the item names and list lines, the slug field, a new item's empty fields; the Content
-tab's labels and widgets for source fields. Schema files are not sources: pickers and the
+help), the item names and list lines, the slug field, a new item's empty properties; the Content
+tab's labels and widgets for source properties. Schema files are not sources: pickers and the
 Source Explorer don't list them. A new source is a new `<id>.json` (with its schema) by hand.
 
 > ⚠️ **Placeholder content.** The two people (_Noor Vermeer_, _Daan Okafor_), the two places and
@@ -370,7 +370,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
       "type": "text",
       "body": [
         { "style": "label", "text": [{ "t": "Photography / People" }] },
-        { "style": "title", "text": [{ "t": "People " }, { "field": "people" }] }
+        { "style": "title", "text": [{ "t": "People " }, { "property": "people" }] }
       ],
       "layout": { "base": { "col": 1, "span": 120, "row": 1 } }
     },
@@ -563,11 +563,11 @@ every section is a grid of **widgets** (`src/site/layout/`):
   section names unique on their page and valid anchors (above), no section `aspect` /
   `spacing` / `mobile` / `rows` / `align`, which are gone) and each widget against its type (strings, lists,
   config values). An unknown widget type isn't an error: it logs a build warning and is skipped.
-- **Bindings:** a widget's field can show a source item's value instead of its own (below).
+- **Bindings:** a widget's setting can show a source item's value instead of its own (below).
 
 **Widgets.** The widget types live in **one registry**, `src/site/widgets/` (`index.js` explains the
-shape): the build renders with it, and the editor reads it for each widget's fields and settings
-and for **Add widget**. A type is `{ type, label, icon, fields, config, defaults, render(data,
+shape): the build renders with it, and the editor reads it for each widget's settings and config
+and for **Add widget**. A type is `{ type, label, icon, settings, config, defaults, render(data,
 ctx, widget) }`; `list` makes it show a list of items (grid, albums, projects), `item` one item it
 needs (album). Which items a widget shows is its `source` (see "Widget sources"). A widget's content
 sits next to its type, how it works under `config` (`enabled`: on/off; look, …):
@@ -587,15 +587,15 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
 
 - **Text widget** (`src/site/text.js`): `body` is a list of lines `{ style, list?, text: [runs] }`; a
   style (title, heading, subheading, statement, paragraph, label, small: the site's typography)
-  is a whole line's. Runs: `{ t, marks?: ["b","i"], link? }` text, `{ field, format? }` an item's
-  field (from the widget's source, filled at build time), `{ count: { source } | { of: "items" } }`
-  a count chip. Rendered to escaped HTML; the page's title is its first Text widget's title line.
+  is a whole line's. Runs: `{ t, marks?: ["b","i"], link? }` text, `{ property, format? }` an
+  item's property (from the widget's source, filled at build time; a source's name that isn't a
+  property is how many items it has). Rendered to escaped HTML; the page's title is its first Text widget's title line.
   A line with `"list": "bullet" | "number"` is a list item (its style stays): on the site a run
   of items with the same list is one `<ul>` / `<ol class="ts-list">` of `<li>`s; while edited
   every line stays one element with `data-list`. The marker is CSS (`_text.scss`: a dot or a
   counter from 1 each run, currentcolor at .6, a 1.6em hanging indent, .4em between items).
   Edited only in the preview (double-click it): the widget toolbar's style, Fit (an icon), the
-  two list buttons, B, I, link and + Field act on the caret's line or the selection. Typing
+  two list buttons, B, I, link and + Property act on the caret's line or the selection. Typing
   `- ` (or `* `) or `1. ` at a line's start makes it an item; Enter continues the list, Enter on
   an empty item ends it, Backspace at an item's start takes its list off. Pasted HTML lists
   become list lines.
@@ -635,7 +635,7 @@ export default {
   label: 'Quote',
   icon: 'quote-left', // Font Awesome name (Add widget modal, outline)
   line: 'A pull quote and who said it', // the modal's description
-  fields: [
+  settings: [
     { key: 'quote', label: 'Quote', type: 'multiline' },
     { key: 'author', label: 'Author', width: 'half' },
   ],
@@ -661,8 +661,8 @@ export default {
 ```
 
 That's all: the registry (`registerWidgets` in `src/site/widgets/index.js`) adds it next to the
-built-ins for the prerender, content validation (its `fields` types and `check`), and, through
-`virtual:site-widgets`, the editor: the Add widget modal, the inspector (from `fields`/`config`),
+built-ins for the prerender, content validation (its `settings` types and `check`), and, through
+`virtual:site-widgets`, the editor: the Add widget modal, the inspector (from `settings`/`config`),
 Motion and the widget/layout toolbars need no code of their own. `widget.ed(key)` makes a field
 editable in place on the preview. A bad definition or a built-in's type stops the build/dev
 server with a message. Example and tests: `test/fixtures/site-b`, `scripts/site-widgets.test.mjs`.
@@ -676,92 +676,94 @@ Which items a widget shows is its `source` (`src/site/layout/source.js`), one of
 ```json
 { "mode": "item", "from": "people", "id": "p-qw7b" }
 { "mode": "all", "from": "people" }
-{ "mode": "url", "from": "shoots", "where": { "op": "and", "rules": [{ "param": "person", "field": "person" }] } }
+{ "mode": "url", "from": "shoots", "where": { "op": "and", "rules": [{ "param": "person", "property": "person" }] } }
 ```
 
-- **Item** (field widgets: heading, text, album, …): one item, picked. **All** (list widgets:
+- **Item** (one-item widgets: heading, text, album, …): one item, picked. **All** (list widgets:
   grid, albums, projects): every item, in order.
 - **From URL** (any widget, on a `[param]` page): the items that match the page's address. Every
-  param of the address (`/people/[person]/[year]/`) has a row: the source field it matches
-  (`where.rules`, `{ param, field }`); a param with no rule is **Any** (doesn't filter). A field
-  is compared as a URL part: `slug` is the item's slug (its `slug` field, else its name
-  slugified), any other field its value slugified (`2018`, `Noor Vermeer` -> `noor-vermeer`);
-  a field holding the id of the param's item matches too (a reference to another source's
-  item). A new row defaults to the field of the same name, else `slug`.
+  param of the address (`/people/[person]/[year]/`) has a row: the source property it matches
+  (`where.rules`, `{ param, property }`); a param with no rule is **Any** (doesn't filter). A
+  property is compared as a URL part: `slug` is the item's slug (its `slug` property, else its
+  name slugified), any other property its value slugified (`2018`, `Noor Vermeer` -> `noor-vermeer`);
+  a property holding the id of the param's item matches too (a reference to another source's
+  item). A new row defaults to the property of the same name, else `slug`.
 - **One query:** `query(list, where, params)` in `src/site/query.js` is what the build, the
   preview and the editor all use. Rules can be groups (`{ op: "and" | "or", rules }`), so more
   kinds of rules can come later without a new format.
 - **The main widget** of a `[param]` page (`"main": "<widget id>"` in its `index.json`) decides
   which pages are built (`src/site/routes.js`): for each page of the folder around it, the items
-  matching the params above, one page per value of its own param's field among them (the first
+  matching the params above, one page per value of its own param's property among them (the first
   of those its item); a page exists when at least one item matches (a list main widget shows all
-  of them). It must be From URL with a field for every param (no Any). If it can't decide (no
-  main widget, not From URL, a param on Any or matching no field) the page still saves, builds no
-  pages and the build warns (`No pages are built: [year] matches no field`); the editor shows the
+  of them). It must be From URL with a property for every param (no Any). If it can't decide (no
+  main widget, not From URL, a param on Any or matching no property) the page still saves, builds no
+  pages and the build warns (`No pages are built: [year] matches no property`); the editor shows the
   same line in the page head and still opens the page to fix it.
 - **Checks:** `validate.js` checks the shape (a mode its widget kind has, an item id, one rule per
-  param); `bindingProblems()` that the source is a list and a bound field without a source
+  param); `bindingProblems()` that the source is a list and a bound property without a source
   warns.
 
 ### Bindings
 
-Any text, long text, photo or link field of a widget (and a link in its config, `link`) can show
+Any text, long text, photo or link setting of a widget (and a link in its config, `link`) can show
 values of a **source item** instead of its own, as **parts** (`src/site/layout/parts.js`,
 `src/site/layout/bindings.js`):
 
 ```json
 {
   "type": "button",
-  "label": [{ "field": "role" }, { "t": " in Amsterdam" }],
-  "config": { "link": [{ "field": "slug" }] },
+  "label": [{ "property": "role" }, { "t": " in Amsterdam" }],
+  "config": { "link": [{ "property": "slug" }] },
   "source": { "mode": "item", "from": "people", "id": "p-qw7b" }
 }
 ```
 
 - **Custom:** a plain string, as before.
-- **Parts:** a list of `{ "t": "<text>" }` and `{ "field": "<name>", "format"?: "… {value} …" }`
-  with at least one field. A Text widget's lines hold the same `{ field }` runs.
-- **One field alone** (`[{ "field": "<name>" }]`) is the item's whole value. Its type must fit
-  the field's (a text field takes `text`, `choice`, `number`, `date`, `link`; a multi-line text
+- **Parts:** a list of `{ "t": "<text>" }` and `{ "property": "<name>", "format"?: "… {value} …" }`
+  with at least one property. A Text widget's lines hold the same `{ property }` runs.
+- **One property alone** (`[{ "property": "<name>" }]`) is the item's whole value. Its type must fit
+  the setting's (a text setting takes `text`, `choice`, `number`, `date`, `link`; a multi-line text
   also `multiline`; a photo `photo`; a link `link`; a list of photos (`[{ src }]`) `photos`;
-  see `BIND_TYPES` in `src/site/field-types.js`). Only text fields mix text and fields.
-- **A name** is the item's field; a name that isn't one but is a source's id is that source's
+  see `BIND_TYPES` in `src/site/property-types.js`). Only text settings mix text and properties.
+- **A name** is a property of the item (when the source's schema has it, it is never a source,
+  even when the item leaves it empty); a name that isn't one but is a source's id is that source's
   list. A list shows its length (`{people}`: "12"; an empty list "0") in the text's own look.
   A name that is neither is an error, with or without a source.
-- **Typed:** `{name}` is a field, `{{` a literal `{` (the editor's text and its inputs; the
-  `+ Field` menu and the picker save the same parts).
-- **Missing:** a field the item doesn't have or has empty leaves its part empty; the rest shows.
-  When every field part of a widget is missing, the widget isn't rendered on the site; the
+- **Typed:** `{name}` is a property, `{{` a literal `{` and `}}` a literal `}` (the editor's
+  text and its inputs; the `+ Property` menu and the picker save the same parts).
+- **Empty:** a property the item doesn't have or has empty (`null`, `""`; `0` and `[]` are
+  values) leaves its part empty; the rest shows. When every property part of a widget is empty,
+  the widget isn't rendered on the site; the
   editor shows it dimmed with "No value for {name}" (no layout change).
 - **The item:** the first item of the widget's source (see "Widget sources"): the one picked, or
   the first matching the page's address.
 - **Rendering:** one resolver, `resolveWidget()`, swaps the values in before every widget renders
   (`src/site/layout/index.js`), so widgets don't know about bindings; values are escaped as
   always. A widget without parts renders exactly as before.
-- **Checks:** Save and the build check their shape (`validate.js`; the old `{ "bind" }` and Text
-  `{ "count" }` shapes are errors that say what to write) and, against the sources' schemas,
+- **Checks:** Save and the build check their shape (`validate.js`; the old `{ "bind" }`, `{ "field" }` and
+  Text `{ "count" }` shapes are errors that say what to write) and, against the sources' schemas,
   `bindingProblems()`: an unknown name, a whole value of a type that doesn't fit, or a source
   that isn't one is an error (Save refuses, the build stops; a changed schema that breaks a
-  page's field too). An item that isn't in its source is a build warning.
-- **The `[param]` pages** are built this way: the album widget's title is `[{ "field": "title" }]`, its
-  facts are `{ "label": "Role", "value": [{ "field": "role" }] }`, … (a fact whose value is empty is left
-  out; the photo count comes last), its body `[{ "field": "body" }]`. Their output is the
-  same as before. A new `[param]` page binds the source's title field, its list fields as facts
+  page's property too). An item that isn't in its source is a build warning.
+- **The `[param]` pages** are built this way: the album widget's title is `[{ "property": "title" }]`, its
+  facts are `{ "label": "Role", "value": [{ "property": "role" }] }`, … (a fact whose value is empty is left
+  out; the photo count comes last), its body `[{ "property": "body" }]`. Their output is the
+  same as before. A new `[param]` page binds the source's title property, its list properties as facts
   and its first long text.
 - **In the editor:** bound values aren't typed in the preview; a click selects them and opens
-  their widget on the field. The widget's Content tab starts with its **Source**
+  their widget on the setting. The widget's Content tab starts with its **Source**
   (`WidgetSource.svelte`): From URL, Item / All, None (From URL greyed on a page without
   params, its tooltip says why), the item selector (Item: an item; All, From URL: a source),
   on From URL a row per param of the address (`where [person] = person ▾`: the source's
-  fields that can be a URL part, `same name` / `default` marked, or **Any**, off on the main
-  widget with why), a red row and a note when its field isn't in the source, one line saying
-  what it shows ("2 items match · the fields show the first"), and on a `[param]` page the
+  properties that can be a URL part, `same name` / `default` marked, or **Any**, off on the main
+  widget with why), a red row and a note when its property isn't in the source, one line saying
+  what it shows ("2 items match · the properties show the first"), and on a `[param]` page the
   **Main widget** switch (on makes it From URL; its hint: how many pages are built, or why
-  none). Every bindable field has a picker at the end of its label row: **Custom** (its own
-  text: what it showed becomes it), one of the item's fields that fit, with its value, **How
-  many** (the sources) on a text, and **Text with fields** (text and chips; `{name}` typed or
-  **+ Field**). A whole bound value that isn't text is dimmed and read only (a lock). None turns
-  bound fields into their own texts. The preview shows the values of the item it shows; what
+  none). Every bindable setting has a picker at the end of its label row: **Custom** (its own
+  text: what it showed becomes it), one of the item's properties that fit, with its value, **How
+  many** (the sources) on a text, and **Text with properties** (text and chips; `{name}` typed or
+  **+ Property**). A whole bound value that isn't text is dimmed and read only (a lock). None turns
+  bound settings into their own texts. The preview shows the values of the item it shows; what
   can't be filled shows as `{name}` there (only there), an unknown name's chip in the warning
   colour. Editing a source renders the sections that
   show it again. Add widget fits a new widget's source to the page (From URL on a `[param]`
@@ -811,7 +813,7 @@ never breaks one: `{ "page": "pg-k3x9" }` (a page by its id, the `"id"` in its f
 `{ "item": { "source": "people", "id": "p-k3x9" } }` (an item's page) or
 `{ "href": "https://…" }` (a full URL, `mailto:`, `#anchor`). Widget settings (a button's,
 a heading's `link`), hero photos and the menus use them; the editor picks them from one list
-(pages, items, the widget's item fields, External URL). Redirects stay paths: they are for
+(pages, items, the widget's item properties, External URL). Redirects stay paths: they are for
 URLs from outside.
 
 A header item with `children` (one level deep) or `items` opens a dropdown on click; `all`
@@ -847,19 +849,19 @@ move. A page's own file is
   and widgets like any page (the album's back link names the folder's page, its heading's title).
   Its id is `people/[person]`, its pattern (redirects, `pathOfId`) `/people/:person/`; each route
   has `params` (`{ person: "noor" }`) and `count` (how many items match). An item's slug is its
-  `slug` field, else its name (or title) slugified (`Noor Vermeer` -> `noor-vermeer`). Items
+  `slug` property, else its name (or title) slugified (`Noor Vermeer` -> `noor-vermeer`). Items
   without a URL part or with an invalid one get no page, a duplicate slug shows the first, each
   with a build warning (`[routes] ...`). A template page is an album (the person/place look):
   `route.album` is its item. A folder can have one `[param]` folder; there is none at the root.
 - **Nested templates:** a `[param]` folder can hold one more `[param]` folder
   (`people/[person]/[year]/`) and nothing else (a normal page in it gets no page and a
   warning). Its main widget's rules match each param, the outer ones too (`[person]` on the
-  shoots' `person` field: by slug, or the person's id), so `/people/noor/2024/` exists when a
+  shoots' `person` property: by slug, or the person's id), so `/people/noor/2024/` exists when a
   shoot of Noor's is from 2024. There is no other matching rule.
 - **Fixed beats template:** `pages/people/noor-vermeer/index.json` replaces the template's page for
   that item (it is a normal page then).
 - **Views:** a page is its sections of widgets. Its view name (`view--<name>` on `<main>`, `data-page` on
-  `<html>`, for styles and scripts) is its `view` field, else its own name for the built-in
+  `<html>`, for styles and scripts) is its `view` key, else its own name for the built-in
   pages (`home`, `photography`, `people`, `places`, `projects`, `about`, `404`), else `page`.
   A template's is `album`. New pages start with a section holding a Text widget (a label and a title line).
 - **Head:** title, description, share photo and robots come from the page's `meta` and the
@@ -951,7 +953,7 @@ The editor keeps them up to date by itself (`src/site/redirects.js`):
   nothing; an `href` that is such a path is updated; the toast says how many.
 - **Rename a param** (a `[param]` page's SEO tab, Address · param name: `[person]` -> `[model]`):
   the URLs stay, so no redirect. The folder moves with the levels in it (their widgets' rules
-  follow the new name, matching the same field), and redirects that name it in a pattern under it follow
+  follow the new name, matching the same property), and redirects that name it in a pattern under it follow
   (`/p/:person/` -> `/people/:person/` becomes `:model`). Not a name already in its URL, above
   or in it.
 - **Delete a page**: its paths redirect to its parent page (the default), another page, or
@@ -1222,7 +1224,7 @@ param, each listing only the values under the ones picked before it (`[year]` af
 and Back go back a step. The page shown is remembered per page (`ui.previewAt`, editor state
 only, never saved), else its first; links in the preview go to another. When its main widget
 can't decide its pages, a warning line follows (only then: the head grows by it), e.g.
-"No pages are built: [year] matches no field"; a click opens the main widget on that param's
+"No pages are built: [year] matches no property"; a click opens the main widget on that param's
 row. In the editor and its preview such a page still has pages to edit it on (`unbuilt`
 routes, at its pattern where a param matches nothing: `/people/noor/:year/`). The pages list and a page's view
 swap with the editor's slide (`src/editor/lib/slide.js`, as the Sections panes): a page opened
@@ -1529,22 +1531,32 @@ Change in its field, see the Media window above). Edit
 
 ## Breaking content changes (next minor, unreleased)
 
-Fields in values are **parts** now (see "Bindings"). Nothing reads the old shapes: `ewcms check`,
-Save and the build report them as errors that say what to write. There is no converter; change
-them by hand (or with a one-off script):
+Bound values are **parts** now (see "Bindings"), and what a source's item has is its
+**properties** (a widget's own inputs are its **settings**). Nothing reads the old shapes: `ewcms
+check`, Save and the build report them as errors that say what to write. There is no converter;
+change them by hand (or with a one-off script):
 
-| Where                       | Old                                         | New                                             |
-| --------------------------- | ------------------------------------------- | ----------------------------------------------- |
-| a bound value               | `{ "bind": "role" }`                        | `[{ "field": "role" }]`                         |
-| a bound value with a format | `{ "bind": "year", "format": "({value})" }` | `[{ "field": "year", "format": "({value})" }]`  |
-| a Text count run            | `{ "count": { "source": "people" } }`       | `{ "field": "people" }` (and a space before it) |
-| a Text count of the items   | `{ "count": { "of": "items" } }`            | gone (no replacement)                           |
+| Where                       | Old                                         | New                                                |
+| --------------------------- | ------------------------------------------- | -------------------------------------------------- |
+| a bound value               | `{ "bind": "role" }`                        | `[{ "property": "role" }]`                         |
+| a bound value with a format | `{ "bind": "year", "format": "({value})" }` | `[{ "property": "year", "format": "({value})" }]`  |
+| a part, a Text run          | `{ "field": "role" }`                       | `{ "property": "role" }`                           |
+| a Text count run            | `{ "count": { "source": "people" } }`       | `{ "property": "people" }` (and a space before it) |
+| a Text count of the items   | `{ "count": { "of": "items" } }`            | gone (no replacement)                              |
+| a source's `*.schema.json`  | `"fields": [ … ]`                           | `"properties": [ … ]`                              |
+| a widget's `source.where`   | `{ "param": "person", "field": "slug" }`    | `{ "param": "person", "property": "slug" }`        |
+| a custom widget definition  | `fields: [ … ]`                             | `settings: [ … ]`                                  |
 
 Also: a count renders in the text's own look (`"4"`, not a superscript `"04"`; the `ts__count`
-class is gone); a name that is neither a field nor a source is an error with or without a
-widget source (it was a warning without one); a widget whose fields are all missing isn't
-rendered; `isBinding` / `bindingsOf` / `formatted` (bindings.js) and `countText` /
-`fieldText` (text.js) are gone (`parts.js`: `isParts`, `isWhole`, `partText`, `parseTyped`).
+class is gone); a name that is neither a property nor a source is an error with or without a
+widget source (it was a warning without one); a property in the source's schema is never a
+source of the same name, even when the item leaves it empty; a widget whose bound properties
+are all empty (missing, `null` or `""`; `0` and `[]` are values) isn't rendered; typed text
+reads `}}` as a literal `}` (as `{{` is a `{`); `isBinding` / `bindingsOf` / `formatted`
+(bindings.js) and `countText` / `fieldText` (text.js) are gone (`parts.js`: `isParts`,
+`isWhole`, `partText`, `parseTyped`); `src/site/field-types.js` is `property-types.js`
+(`PROPERTY_TYPES`, `SOURCE_PROPERTY_TYPES`, `SETTING_TYPES`). In the editor: **+ Property**,
+**Text with properties**.
 
 ## Breaking content changes 0.3.0
 

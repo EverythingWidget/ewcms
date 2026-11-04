@@ -19,10 +19,10 @@ const body = [
     style: 'paragraph',
     text: [
       { t: 'By ' },
-      { field: 'name', format: '{value}!' },
+      { property: 'name', format: '{value}!' },
       { t: ' a\nb ' },
       { t: 'link', link: { page: 'pg-abcd' } },
-      { field: 'people' },
+      { property: 'people' },
     ],
   },
   { style: 'small', text: [] },
@@ -35,7 +35,7 @@ test('rich: rendered for editing and read back: the same body', () => {
   // chips are atomic and show their name; a link carries itself, not its URL
   assert.match(
     root.innerHTML,
-    /data-field="name" data-format="\{value\}!" contenteditable="false">\{name\}</,
+    /data-property="name" data-format="\{value\}!" contenteditable="false">\{name\}</,
   );
   assert.match(root.innerHTML, /contenteditable="false">\{people\}</);
   assert.match(
@@ -75,7 +75,7 @@ test('rich: DOM points and model positions (a chip counts one, a break one)', ()
   const root = dom();
   renderEditing(root, body);
   const p = root.children[1];
-  const chip = p.querySelector('[data-field]');
+  const chip = p.querySelector('[data-property]');
   const after = chip.nextSibling; // " a"
   assert.deepEqual(posOf(root, after, 1), { line: 1, at: 5 }); // "By " + chip + " "
   assert.deepEqual(posOf(root, chip.firstChild, 2), { line: 1, at: 4 }); // in a chip: its end

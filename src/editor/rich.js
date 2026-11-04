@@ -2,21 +2,21 @@
  * The Text widget's inline editor (src/site/text.js has the model): a lean contenteditable
  * over the widget's rendered lines in the preview. Typing is the browser's; after each input
  * the lines are read back into the model (readBody). Everything else (a line's style, bold,
- * italic, a link, a field chip, Enter; `{name}` typed: text.js typedField) is an edit of the model (text.js), after
+ * italic, a link, a property chip, Enter; `{name}` typed: text.js typedProperty) is an edit of the model (text.js), after
  * which the lines are rendered again and the selection put back where it was, by model
  * position ({ line, at }: a chip counts as one, a line break as one).
  *
  * The DOM it reads: one element per line ([data-line="<style>"], a list item's [data-list]:
  * flat, never a <ul>, so a position is still { line, at }) under the body; in a line
  * text, <br> (a line break), <strong>/<b>, <em>/<i>, <a data-ts-link> and the chips
- * ([data-field]: atomic, contenteditable=false). Anything else the browser
+ * ([data-property]: atomic, contenteditable=false). Anything else the browser
  * makes (a pasted <div>, a <span style>) is read as its text, so the model stays clean.
  */
 import { MARKS, renderBody, tidyBody } from '../site/text.js';
 import { isSafeHref, linkProblem } from '../site/hrefs.js';
 
 const LINE = '[data-line]';
-const isChip = (n) => n.nodeType === 1 && n.dataset.field !== undefined;
+const isChip = (n) => n.nodeType === 1 && n.dataset.property !== undefined;
 
 /** The model of a rendered (and typed into) body element. */
 export function readBody(root) {
@@ -51,7 +51,7 @@ function readRuns(node, marks = [], link = null, self = false) {
     if (n.nodeType !== 1) return;
     if (isChip(n)) {
       out.push({
-        field: n.dataset.field,
+        property: n.dataset.property,
         ...(n.dataset.format ? { format: n.dataset.format } : {}),
       });
       return;
@@ -201,7 +201,7 @@ export function select(root, win, { from, to }) {
 
 /**
  * The lines rendered again for editing (chips show {name}; a name that isn't in the body's
- * data-names, the widget's fields and the sources, is marked unknown).
+ * data-names, the widget's properties and the sources, is marked unknown).
  */
 export function renderEditing(root, body) {
   const names = root.dataset.names === undefined ? null : new Set(root.dataset.names.split(' '));

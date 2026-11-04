@@ -50,13 +50,13 @@ test('the theme wraps the name and caps its size by the longest word', () => {
 });
 
 test('the Style field: a button group, scattered when unset, nothing to bind', () => {
-  const f = hero.fields[0];
+  const f = hero.settings[0];
   assert.deepEqual([f.key, f.type, f.unset], ['style', 'seg', 'scattered']);
   assert.deepEqual(
     HERO_STYLES.map(([v]) => v),
     ['beside', 'behind', 'scattered'],
   );
-  assert.equal(hero.fields[1].key, 'title'); // its own row, above Name
+  assert.equal(hero.settings[1].key, 'title'); // its own row, above Name
   assert.equal(bindTypeOf(f), null);
   assert.equal(hero.defaults.style, 'scattered');
 });

@@ -16,8 +16,8 @@ import { sourceFile } from '../files.js';
 import { t } from '../strings.js';
 
 /**
- * A widget's head: eyebrow (label) / title / glass CTA. at(field): the widget's editor marker for one
- * of its fields (see widgets/index.js).
+ * A widget's head: eyebrow (label) / title / glass CTA. at(key): the widget's editor marker for one
+ * of its settings (see widgets/index.js).
  */
 export const sectionHead = ({ at, eyebrow, title, href, cta }) => {
   return html`
@@ -30,7 +30,7 @@ export const sectionHead = ({ at, eyebrow, title, href, cta }) => {
 
 /** Album card (People / Places index). Hovering cycles through the first photos. */
 export const albumCard = (ctx, kind, album, { landscape = false, index = 0 } = {}) => {
-  const at = (field, type) => ed(sourceFile(kind), ['items', index, field], type);
+  const at = (key, type) => ed(sourceFile(kind), ['items', index, key], type);
   const meta = [['role'], ['location'], ['year', 'number']].filter(([f]) => album[f]);
   const cover = coverOf(album);
   const first = [cover, ...photosOf(album).filter((p) => p !== cover)].filter(Boolean).slice(0, 4);

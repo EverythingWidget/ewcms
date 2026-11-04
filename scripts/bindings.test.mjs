@@ -29,92 +29,104 @@ const noor = content.sources.people.find((p) => p.slug === 'noor-vermeer');
 test('resolve: custom values stay, [{ field }] takes the whole value, a format wraps text', () => {
   const o = { item: noor };
   assert.equal(resolve('Plain text', { ...o, def: { type: 'text' } }), 'Plain text');
-  assert.equal(resolve([{ field: 'title' }], { ...o, def: { type: 'text' } }), 'Noor Vermeer');
-  assert.equal(resolve([{ field: 'photos' }], { ...o, def: { list: 'photo' } }), noor.photos);
+  assert.equal(resolve([{ property: 'title' }], { ...o, def: { type: 'text' } }), 'Noor Vermeer');
+  assert.equal(resolve([{ property: 'photos' }], { ...o, def: { list: 'photo' } }), noor.photos);
   // a list of { src } (the hero's placed photos) gets the paths as { src }
   assert.deepEqual(
-    resolve([{ field: 'photos' }], { ...o, def: { list: { src: 'photo' } } }),
+    resolve([{ property: 'photos' }], { ...o, def: { list: { src: 'photo' } } }),
     noor.photos.map((src) => ({ src })),
   );
   assert.equal(
-    resolve([{ field: 'year', format: '({value}) {value}' }], { ...o, def: { type: 'text' } }),
+    resolve([{ property: 'year', format: '({value}) {value}' }], { ...o, def: { type: 'text' } }),
     `(${noor.year}) ${noor.year}`,
   );
   // a list of objects: each subkey can be bound
   assert.deepEqual(
-    resolve([{ label: 'Role', value: [{ field: 'role' }] }], {
+    resolve([{ label: 'Role', value: [{ property: 'role' }] }], {
       ...o,
       def: { list: { label: { type: 'text' }, value: { type: 'text' } } },
     }),
     [{ label: 'Role', value: noor.role }],
   );
   // HTML stays text: the widgets escape it as before
-  assert.equal(resolve([{ field: 'title' }], { item: { title: '<b>' }, def: {} }), '<b>');
+  assert.equal(resolve([{ property: 'title' }], { item: { title: '<b>' }, def: {} }), '<b>');
 });
 
 test('resolve: a missing field is empty ({name} in the editor preview); a source name is its length', () => {
   const o = { item: noor, def: { type: 'text' } };
-  assert.equal(resolve([{ field: 'nope' }], o), '');
-  assert.equal(resolve([{ field: 'title' }], { ...o, item: null }), '');
+  assert.equal(resolve([{ property: 'nope' }], o), '');
+  assert.equal(resolve([{ property: 'title' }], { ...o, item: null }), '');
   // an empty value stays empty: no format around nothing
-  assert.equal(resolve([{ field: 'nope', format: 'x {value}' }], o), '');
-  assert.deepEqual(resolve([{ field: 'photos' }], { ...o, item: null, def: { list: {} } }), []);
-  assert.equal(resolve([{ field: 'role' }], { item: {}, def: {} }), '');
+  assert.equal(resolve([{ property: 'nope', format: 'x {value}' }], o), '');
+  assert.deepEqual(resolve([{ property: 'photos' }], { ...o, item: null, def: { list: {} } }), []);
+  assert.equal(resolve([{ property: 'role' }], { item: {}, def: {} }), '');
   // the editor's preview shows what can't be filled, only in text
   const p = { ...o, placeholders: true };
-  assert.equal(resolve([{ field: 'title' }], { ...p, item: null }), '{title}');
-  assert.equal(resolve([{ t: 'By ' }, { field: 'x' }], { ...p, item: null }), 'By {x}');
-  assert.equal(resolve([{ field: 'x' }], { ...p, item: null, def: { type: 'photo' } }), '');
+  assert.equal(resolve([{ property: 'title' }], { ...p, item: null }), '{title}');
+  assert.equal(resolve([{ t: 'By ' }, { property: 'x' }], { ...p, item: null }), 'By {x}');
+  assert.equal(resolve([{ property: 'x' }], { ...p, item: null, def: { type: 'photo' } }), '');
   // several fields in one text; a list is its length, an empty list 0
   const sources = { people: Array(12).fill({}), none: [] };
   assert.equal(
-    resolve([{ field: 'people' }, { t: ' people, ' }, { field: 'none' }, { t: ' places' }], {
+    resolve([{ property: 'people' }, { t: ' people, ' }, { property: 'none' }, { t: ' places' }], {
       ...o,
       item: null,
       sources,
     }),
     '12 people, 0 places',
   );
-  assert.equal(resolve([{ field: 'photos' }, { t: ' photos' }], o), `${noor.photos.length} photos`);
+  assert.equal(
+    resolve([{ property: 'photos' }, { t: ' photos' }], o),
+    `${noor.photos.length} photos`,
+  );
   // the item's field wins over a source of the same name
-  assert.equal(resolve([{ field: 'people' }], { ...o, item: { people: 'x' }, sources }), 'x');
+  assert.equal(resolve([{ property: 'people' }], { ...o, item: { people: 'x' }, sources }), 'x');
 });
 
-test('parts: typed {name} and a picked field are the same parts; {{ is a literal brace', () => {
-  const picked = [{ t: 'By ' }, { field: 'name' }, { t: ', ' }, { field: 'year' }];
+test('parts: typed {name} and a picked property are the same parts; {{ and }} are literal braces', () => {
+  const picked = [{ t: 'By ' }, { property: 'name' }, { t: ', ' }, { property: 'year' }];
   assert.deepEqual(parseTyped('By {name}, {year}'), picked);
   assert.equal(typedText(picked), 'By {name}, {year}');
   assert.equal(parseTyped('{{name}'), '{name}');
+  assert.equal(parseTyped('{{name}}'), '{name}');
+  assert.equal(parseTyped('a }} b'), 'a } b');
+  assert.equal(parseTyped('a } b'), 'a } b'); // a lone } is text
+  assert.deepEqual(parseTyped('{{{name}}}'), [{ t: '{' }, { property: 'name' }, { t: '}' }]);
   assert.equal(parseTyped('plain'), 'plain');
-  assert.equal(typedText('a {b}'), 'a {{b}');
-  assert.equal(parseTyped(typedText('a {b}')), 'a {b}');
+  // typed back: every brace of the text doubled, so it reads the same again
+  assert.equal(typedText('a {b}'), 'a {{b}}');
+  assert.equal(typedText([{ t: '{' }, { property: 'n' }, { t: '}' }]), '{{{n}}}');
+  for (const v of ['a {b}', 'x } y {{', [{ t: '} ' }, { property: 'n' }, { t: ' {' }]])
+    assert.deepEqual(parseTyped(typedText(v)), v);
 });
 
 test('resolveWidget: bound fields and config links resolved; an unbound widget is the same object', () => {
   // a type with a text, a multi-line text and a link (the registry's have one or two of them)
   const t = {
-    fields: [{ key: 'title' }, { key: 'body', type: 'multiline' }],
+    settings: [{ key: 'title' }, { key: 'body', type: 'multiline' }],
     config: [{ key: 'link', type: 'link' }],
   };
   const plain = { ...newWidget('button', new Set()), title: 'Hi' };
   assert.equal(resolveWidget(plain, t, { item: noor, source: 'people', ctx: content }), plain);
   const bound = {
     ...plain,
-    title: [{ field: 'title' }],
-    body: [{ field: 'role', format: '{value} in Amsterdam' }],
-    config: { link: [{ field: 'slug' }] },
+    title: [{ property: 'title' }],
+    body: [{ property: 'role', format: '{value} in Amsterdam' }],
+    config: { link: [{ property: 'slug' }] },
   };
   const out = resolveWidget(bound, t, { item: noor, source: 'people', ctx: content });
   assert.equal(out.title, 'Noor Vermeer');
   assert.equal(out.body, `${noor.role} in Amsterdam`);
   assert.equal(out.config.link, noor.slug);
-  assert.deepEqual(bound.title, [{ field: 'title' }]); // not changed in place
-  assert.equal(bindTypeOf(t.fields[0]), 'text');
-  assert.equal(bindTypeOf(WIDGET_TYPES.hero.fields.find((f) => f.key === 'photos')), 'photos');
-  assert.equal(bindTypeOf(WIDGET_TYPES.form.fields.find((f) => f.key === 'fields')), null);
+  assert.deepEqual(bound.title, [{ property: 'title' }]); // not changed in place
+  assert.equal(bindTypeOf(t.settings[0]), 'text');
+  assert.equal(bindTypeOf(WIDGET_TYPES.hero.settings.find((f) => f.key === 'photos')), 'photos');
+  assert.equal(bindTypeOf(WIDGET_TYPES.form.settings.find((f) => f.key === 'fields')), null);
   assert.equal(bindTypeOf({ key: 'link', type: 'link' }, { config: true }), 'link');
-  assert.ok(isParts([{ field: 'a' }]) && !isParts('{a}') && !isParts([{ t: 'a' }]) && !isParts([]));
-  assert.ok(isWhole([{ field: 'a' }]) && !isWhole([{ field: 'a', format: '{value}!' }]));
+  assert.ok(
+    isParts([{ property: 'a' }]) && !isParts('{a}') && !isParts([{ t: 'a' }]) && !isParts([]),
+  );
+  assert.ok(isWhole([{ property: 'a' }]) && !isWhole([{ property: 'a', format: '{value}!' }]));
 });
 
 test("item resolution: Item picks one, From URL the page's matches, None nothing", () => {
@@ -126,7 +138,7 @@ test("item resolution: Item picks one, From URL the page's matches, None nothing
     source: {
       mode: 'url',
       from: 'people',
-      where: { op: 'and', rules: [{ param: 'person', field: 'slug' }] },
+      where: { op: 'and', rules: [{ param: 'person', property: 'slug' }] },
     },
   };
   assert.equal(widgetItems(content, { params: { person: 'noor-vermeer' } }, url).item, noor);
@@ -173,8 +185,8 @@ test('a normal page: a widget with an item; without one its bound fields are emp
     ...newWidget('text', ids),
     body: [
       { style: 'label', text: [{ t: 'Featured' }] },
-      { style: 'title', text: [{ field: 'title', format: '{value}, model' }] },
-      { style: 'paragraph', text: [{ field: 'body' }] },
+      { style: 'title', text: [{ property: 'title', format: '{value}, model' }] },
+      { style: 'paragraph', text: [{ property: 'body' }] },
     ],
     source: { mode: 'item', from: 'people', id: 'p-qw7b' },
   };
@@ -189,17 +201,17 @@ test('a normal page: a widget with an item; without one its bound fields are emp
   assert.doesNotMatch(empty, /Featured|wgt--text/);
   // one of two missing: the rest shows, the missing part is empty
   heading.source = { mode: 'item', from: 'people', id: 'p-qw7b' };
-  heading.body[2].text = [{ t: 'Agent: ' }, { field: 'zz' }, { t: '.' }];
+  heading.body[2].text = [{ t: 'Agent: ' }, { property: 'zz' }, { t: '.' }];
   const some = renderSections(content, { id: 'x' }, 'pages/x/index.json', page);
   assert.match(some, /Noor Vermeer, model/);
   assert.match(some, /Agent: \./);
   assert.doesNotMatch(some, /data-no-value/);
-  heading.body[2].text = [{ field: 'body' }];
+  heading.body[2].text = [{ property: 'body' }];
   delete heading.source;
   setEditable(true);
   try {
     const ed = renderSections(content, { id: 'x' }, 'pages/x/index.json', page);
-    assert.match(ed, /data-field="title" data-format="\{value\}, model" data-unknown>\{title\}/);
+    assert.match(ed, /data-property="title" data-format="\{value\}, model" data-unknown>\{title\}/);
     // every field missing: dimmed in the editor, with the names (no layout change)
     assert.match(ed, /data-no-value="No value for \{title\}, \{body\}"/);
   } finally {
@@ -218,7 +230,10 @@ test('bindingProblems: schema-aware errors and warnings', () => {
         text: [
           typeof title === 'string'
             ? { t: title }
-            : { field: title[0].field, ...(title[0].format ? { format: title[0].format } : {}) },
+            : {
+                property: title[0].property,
+                ...(title[0].format ? { format: title[0].format } : {}),
+              },
         ],
       },
     ],
@@ -231,25 +246,25 @@ test('bindingProblems: schema-aware errors and warnings', () => {
         sections: [
           newSection(ids, [
             widget({
-              title: [{ field: 'title' }],
+              title: [{ property: 'title' }],
               source: { mode: 'item', from: 'people', id: 'p-qw7b' },
             }),
             widget({
-              title: [{ field: 'nope' }],
+              title: [{ property: 'nope' }],
               source: { mode: 'item', from: 'people', id: 'p-qw7b' },
             }),
             widget({
-              title: [{ field: 'photos' }],
+              title: [{ property: 'photos' }],
               source: { mode: 'item', from: 'people', id: 'p-qw7b' },
             }),
             widget({
-              title: [{ field: 'title', format: '{value}!' }],
+              title: [{ property: 'title', format: '{value}!' }],
               source: { mode: 'item', from: 'people', id: 'p-qw7b' },
             }),
-            widget({ title: [{ field: 'title' }] }),
+            widget({ title: [{ property: 'title' }] }),
             widget({ title: 'x', source: { mode: 'item', from: 'nope', id: 'p-aaaa' } }),
             widget({
-              title: [{ field: 'title' }],
+              title: [{ property: 'title' }],
               source: { mode: 'item', from: 'people', id: 'p-zzzz' },
             }),
           ]),
@@ -284,26 +299,32 @@ test('validation: the shape of bindings and items', () => {
     sections: [newSection(ids, [{ ...newWidget(type, ids), ...patch }])],
   });
   const F = 'pages/x/index.json';
-  assert.deepEqual(checkContent(F, page({ label: [{ field: 'role', format: 'A {value}' }] })), []);
-  assert.deepEqual(checkContent(F, page({ config: { link: [{ field: 'slug' }] } })), []);
+  assert.deepEqual(
+    checkContent(F, page({ label: [{ property: 'role', format: 'A {value}' }] })),
+    [],
+  );
+  assert.deepEqual(checkContent(F, page({ config: { link: [{ property: 'slug' }] } })), []);
   assert.deepEqual(
     checkContent(F, page({ source: { mode: 'item', from: 'people', id: 'p-aaaa' } })),
     [],
   );
   const one = (p, type) => checkContent(F, page(p, type)).join('; ');
-  assert.match(one({ label: [{ field: '' }] }), /"label.0" must be \{ "t"/);
-  assert.match(one({ label: [{ field: 'a', x: 1 }] }), /"label.0" must be \{ "t"/);
+  assert.match(one({ label: [{ property: '' }] }), /"label.0" must be \{ "t"/);
+  assert.match(one({ label: [{ property: 'a', x: 1 }] }), /"label.0" must be \{ "t"/);
   // the old shape: a clear error, no silent fallback
-  assert.match(one({ label: { bind: 'a' } }), /must be parts now: \[\{ "field"/);
+  assert.match(one({ label: { bind: 'a' } }), /must be parts now: \[\{ "property"/);
   assert.match(one({ item: 'people' }), /"item" must be/);
   assert.match(one({ item: { source: 'People!', id: 'p-aaaa' } }), /"item" must be/);
-  assert.match(one({ fields: [{ field: 'body' }] }, 'form'), /"fields" must be a list of its own/);
   assert.match(
-    one({ src: [{ field: 'cover', format: '{value}.jpg' }] }, 'photo'),
-    /"src" must be one field/,
+    one({ fields: [{ property: 'body' }] }, 'form'),
+    /"fields" must be a list of its own/,
   );
   assert.match(
-    one({ label: [{ field: 'a', format: 'no value' }] }),
+    one({ src: [{ property: 'cover', format: '{value}.jpg' }] }, 'photo'),
+    /"src" must be one property/,
+  );
+  assert.match(
+    one({ label: [{ property: 'a', format: 'no value' }] }),
     /"label.0.format" must be a text with \{value\}/,
   );
 });
@@ -341,17 +362,17 @@ test('Save refuses bindings that do not fit the schema', () => {
       ]),
     ],
   });
-  assert.equal(save(root, { [F]: page([{ field: 'title' }]) }).status, 200);
-  const bad = save(root, { [F]: page([{ field: 'nope' }]) });
+  assert.equal(save(root, { [F]: page([{ property: 'title' }]) }).status, 200);
+  const bad = save(root, { [F]: page([{ property: 'nope' }]) });
   assert.equal(bad.status, 400);
-  assert.match(bad.body.error, /people has no field "nope"/);
-  assert.equal(save(root, { [F]: page([{ field: 'photos' }]) }).status, 400);
+  assert.match(bad.body.error, /people has no property "nope"/);
+  assert.equal(save(root, { [F]: page([{ property: 'photos' }]) }).status, 400);
   // a schema change that breaks a saved page's binding is refused too
   const schema = JSON.parse(
     fs.readFileSync(path.join(root, 'content/en/sources/people.schema.json')),
   );
-  fs.writeFileSync(path.join(root, 'content/en', F), JSON.stringify(page([{ field: 'role' }])));
-  const without = { ...schema, fields: schema.fields.filter((f) => f.key !== 'role') };
+  fs.writeFileSync(path.join(root, 'content/en', F), JSON.stringify(page([{ property: 'role' }])));
+  const without = { ...schema, properties: schema.properties.filter((f) => f.key !== 'role') };
   assert.equal(save(root, { 'sources/people.schema.json': without }).status, 400);
 });
 

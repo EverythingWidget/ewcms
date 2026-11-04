@@ -7,8 +7,8 @@
     live      reactive store (live.svelte.js); bridge: the preview (../bridge.js)
     sourceIds the files in content/en/sources/, for a list item's source
     onsource  (file, item?, edit?): open the Source Explorer
-    bindings  a widget's: { binds(type), resolved(f), from } for its fields' pickers (Custom or
-              a field of its item) and a bound text's format (WidgetInspector.svelte,
+    bindings  a widget's: { binds(type), resolved(f), from } for its settings' pickers (Custom
+              or a property of its item) and a bound text's format (WidgetInspector.svelte,
               Field.svelte); null: none
     lead      snippet: first in the grid (the widget's source, WidgetSource.svelte)
   A Text widget's text (type 'rich') isn't shown: it is edited in the preview only.
@@ -76,7 +76,7 @@
   }
 
   // a switch or a choice can change what the widget shows: rendered again
-  // a value with fields (parts) shows the item's: rendered again too
+  // a value with properties (parts) shows the item's: rendered again too
   function setValue(f, value) {
     const structure =
       f.type === 'boolean' ||

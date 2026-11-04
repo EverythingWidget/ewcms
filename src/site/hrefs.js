@@ -6,8 +6,8 @@
  *   { "href": "https://…" }                            anything else: a full URL, mailto:, #anchor
  *
  * So renaming or moving a page, or changing an item's slug, never breaks a link (redirects, the
- * one place paths stay, are for the outside world). A link field bound to an item's link
- * field ([{ "field" }], layout/parts.js) resolves to that field's text, which is used as the URL.
+ * one place paths stay, are for the outside world). A link setting bound to an item's link
+ * property ([{ "property" }], layout/parts.js) resolves to that property's text, which is used as the URL.
  * Menu items (nav.json) are links too: { label, page | item | href, ... }.
  */
 import { isId } from './layout/ids.js';

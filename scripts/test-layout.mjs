@@ -78,15 +78,15 @@ export const read = (root, f) =>
 
 /**
  * A [param] page's content (src/site/layout/source.js) for page `id` ("people/[person]"): an
- * album widget as its main widget, From URL `from`, each param of the address matching the field
- * `fields` names for it, else slug. extra: more keys of the page (meta, ...).
+ * album widget as its main widget, From URL `from`, each param of the address matching the property
+ * `properties` names for it, else slug. extra: more keys of the page (meta, ...).
  */
-export function paramPage(id, from, fields = {}, extra = {}) {
+export function paramPage(id, from, properties = {}, extra = {}) {
   const params = id
     .split('/')
     .map((s) => /^\[(.+)\]$/.exec(s)?.[1])
     .filter(Boolean);
-  const rules = params.map((param) => ({ param, field: fields[param] ?? 'slug' }));
+  const rules = params.map((param) => ({ param, property: properties[param] ?? 'slug' }));
   return {
     main: 'w-main',
     sections: [

@@ -49,13 +49,13 @@
   let source = $state(''); // the source open in the list ('' = the list of sources)
   let query = $state('');
 
-  // the card: a list's name and count, or an item's name and photo (its first photo field)
+  // the card: a list's name and count, or an item's name and photo (its first photo property)
   const schema = $derived(current && store ? schemaFor(store, sourceFile(current)) : null);
   const picked = $derived(
     items_ && current ? (itemsOf(current).find((i) => i?.id === value?.id) ?? null) : null,
   );
   const photo = $derived.by(() => {
-    const fs = schema?.fields || [];
+    const fs = schema?.properties || [];
     for (const f of fs.filter((f) => f.type === 'photo'))
       if (typeof picked?.[f.key] === 'string' && picked[f.key]) return picked[f.key];
     for (const f of fs.filter((f) => f.type === 'photos'))
@@ -211,7 +211,7 @@
           <ExplorerRow
             icon="fa-ban"
             name={none}
-            meta={items_ ? 'No item: the fields show their own text' : 'No source'}
+            meta={items_ ? 'No item: the settings show their own text' : 'No source'}
             selected={!current}
             onclick={() => pick(undefined)}
           />

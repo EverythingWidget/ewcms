@@ -10,7 +10,7 @@ const vars = (w) =>
   widgetVars({ id: 'w-1', type: 'photo', layout: { base: { col: 1, span: 10, row: 1 } }, ...w });
 
 test('photo: no Fit / Position fields of its own; nine places row by row', () => {
-  assert.ok(!photo.fields.some((f) => ['photoFit', 'photoPos'].includes(f.key)));
+  assert.ok(!photo.settings.some((f) => ['photoFit', 'photoPos'].includes(f.key)));
   assert.deepEqual(photo.placement, { media: true, fill: true, place: 'center' });
   assert.equal(PLACES.length, 9);
   assert.equal(PLACES[2][0], 'right top');

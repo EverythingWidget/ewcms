@@ -10,7 +10,7 @@
  *     media  its content is a photo or video: Fit is `object-fit: contain`, Fill `cover`, the
  *            place its object-position (cropped, Fill still places it)
  *
- * Stored on the widget, layout keys beside `size` (never a field key):
+ * Stored on the widget, layout keys beside `size` (never a setting's key):
  *   box    'fit' | 'fill' (left out: the type's default)
  *            fit: the content box sizes to its content, placed in the widget
  *            fill: rows: fills the widget's width and height; auto: its full width;

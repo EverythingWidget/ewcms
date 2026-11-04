@@ -1,10 +1,11 @@
 <!--
-  A text field that can hold an item's fields (parts, src/site/layout/parts.js): typed text with
-  chips in it, one line (multiline: Enter a line break). Typing `{name}` turns it into the chip
-  {name}, the same as picking it (Field.svelte's picker, its + Field); `{{` is a literal `{`.
-  A chip whose name isn't in `names` (the item's fields and the sources) is a warning chip.
+  A text field that can hold an item's properties (parts, src/site/layout/parts.js): typed text
+  with chips in it, one line (multiline: Enter a line break). Typing `{name}` turns it into the
+  chip {name}, the same as picking it (Field.svelte's picker, its + Property); `{{` is a literal
+  `{`, `}}` a literal `}`. A chip whose name isn't in `names` (the item's properties and the
+  sources) is a warning chip.
     value    a string (only text) or parts; onvalue(next) gets the same shapes
-    ref      { insert }: ref.insert(name) puts a field's chip at the caret (else at the end)
+    ref      { insert }: ref.insert(name) puts a property's chip at the caret (else at the end)
 -->
 <script>
   import { insertChip, readParts, renderParts, typedChip } from '../lib/parts-input.js';
@@ -23,7 +24,7 @@
 
   let el = $state();
   let last = null; // the value this input sent (not rendered again: the caret stays)
-  let range = null; // the caret when it lost the focus (+ Field puts a chip there)
+  let range = null; // the caret when it lost the focus (+ Property puts a chip there)
 
   $effect(() => {
     const v = value ?? '';
@@ -57,7 +58,7 @@
     range = sel?.rangeCount && el.contains(sel.anchorNode) ? sel.getRangeAt(0).cloneRange() : null;
   }
 
-  // ref.insert(name): a field's chip at the caret (+ Field, Field.svelte)
+  // ref.insert(name): a property's chip at the caret (+ Property, Field.svelte)
   $effect(() => {
     if (!ref) return;
     ref.insert = (name) => {
@@ -107,7 +108,7 @@
     min-height: 80px;
   }
 
-  // a field's chip: a ring in the widget accent; an unknown name's in the warning colour
+  // a property's chip: a ring in the widget accent; an unknown name's in the warning colour
   .pin :global(.pin__chip) {
     padding: 0 var(--space-1);
     border-radius: var(--radius-xs);

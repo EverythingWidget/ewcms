@@ -12,7 +12,7 @@ export const panels = {
   icon: 'table-columns',
   line: 'Big panels to your lists',
   sketch: 'panels',
-  fields: [
+  settings: [
     {
       key: 'panels',
       label: 'Panels',

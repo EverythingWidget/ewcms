@@ -22,7 +22,7 @@ const PEOPLE = {
   label: 'People',
   title: 'name',
   slug: 'slug',
-  fields: [
+  properties: [
     { key: 'slug', label: 'Slug', type: 'text', required: true },
     { key: 'name', label: 'Name', type: 'text', required: true },
     { key: 'year', label: 'Year', type: 'number', width: 'half' },
@@ -48,30 +48,30 @@ test('schema files: their own name, not a source; checked as a schema', () => {
   assert.equal(c.schemas.people, PEOPLE);
   assert.deepEqual(checkContent('sources/people.schema.json', PEOPLE), []);
   assert.deepEqual(
-    checkContent('sources/people.schema.json', { version: 1, title: 'x', fields: [{}] }),
+    checkContent('sources/people.schema.json', { version: 1, title: 'x', properties: [{}] }),
     [
-      'field 1: needs a "key"',
-      'field 1: "type" must be one of text, multiline, number, photo, photos, link, choice, boolean, date',
-      '"title" must be the key of one of its fields',
+      'property 1: needs a "key"',
+      'property 1: "type" must be one of text, multiline, number, photo, photos, link, choice, boolean, date',
+      '"title" must be the key of one of its properties',
     ],
   );
   assert.deepEqual(
     checkSchema({
       title: 'a',
-      fields: [
+      properties: [
         { key: 'a', type: 'choice' },
         { key: 'a', type: 'text', width: 'wide' },
       ],
     }),
     [
-      'field 1 ("a"): a choice needs "options", a list of values',
-      'field 2 ("a"): another field has this key',
-      'field 2 ("a"): "width" can only be "half"',
+      'property 1 ("a"): a choice needs "options", a list of values',
+      'property 2 ("a"): another property has this key',
+      'property 2 ("a"): "width" can only be "half"',
     ],
   );
 });
 
-test('inferSchema: one type per field from all items, title and slug', () => {
+test('inferSchema: one type per property from all items, title and slug', () => {
   const s = inferSchema('people', [
     { slug: 'a', name: 'Ann', year: 2024, bio: 'Short', cover: 'people/a/01.jpg', on: true },
     {
@@ -90,7 +90,7 @@ test('inferSchema: one type per field from all items, title and slug', () => {
   assert.equal(s.label, 'People');
   assert.equal(s.title, 'name');
   assert.equal(s.slug, 'slug');
-  const type = Object.fromEntries(s.fields.map((f) => [f.key, [f.type, f.width]]));
+  const type = Object.fromEntries(s.properties.map((f) => [f.key, [f.type, f.width]]));
   assert.deepEqual(type, {
     slug: ['text', 'half'],
     name: ['text', undefined], // one of them is longer than 24 characters
@@ -186,7 +186,7 @@ test('routes: slug and title from the schema', () => {
   const schema = {
     title: 'label',
     slug: 'handle',
-    fields: [
+    properties: [
       { key: 'handle', type: 'text' },
       { key: 'label', type: 'text' },
     ],
@@ -222,7 +222,7 @@ test('routes: slug and title from the schema', () => {
   );
 });
 
-test('newItemOf: a new id, every field empty, a unique slug and title', () => {
+test('newItemOf: a new id, every property empty, a unique slug and title', () => {
   const item = newItemOf(PEOPLE, [{ slug: 'new-item-2' }]);
   assert.equal(item.slug, 'new-item-3');
   assert.match(item.id, /^p-[a-z0-9]{4}$/);
@@ -233,8 +233,10 @@ test('newItemOf: a new id, every field empty, a unique slug and title', () => {
   assert.equal(item.placeholder, false);
   assert.equal(item.kind, ''); // not required: no choice made
   assert.equal(
-    newItemOf({ ...PEOPLE, fields: [{ key: 'k', type: 'choice', required: true, options: ['b'] }] })
-      .k,
+    newItemOf({
+      ...PEOPLE,
+      properties: [{ key: 'k', type: 'choice', required: true, options: ['b'] }],
+    }).k,
     'b',
   );
 });
@@ -266,7 +268,7 @@ test('save: a source that breaks its schema is not written', () => {
   // a new schema is checked against the saved items too
   const strict = {
     ...PEOPLE,
-    fields: [...PEOPLE.fields, { key: 'role', type: 'text', required: true }],
+    properties: [...PEOPLE.properties, { key: 'role', type: 'text', required: true }],
   };
   r = save(root, { 'sources/people.schema.json': strict });
   assert.equal(r.status, 400);

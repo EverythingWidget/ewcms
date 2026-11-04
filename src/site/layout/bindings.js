@@ -1,37 +1,38 @@
 /**
- * Bindings: a widget's field can show an item's values instead of its own, as parts
- * (./parts.js has the format):
+ * Bindings: a widget's setting can show an item's properties instead of its own value, as
+ * parts (./parts.js has the format):
  *
  *   "title": "Models"                              custom: the widget's own value
- *   "title": [{ "field": "name" }]                 the item's whole value (any field type: a
- *                                                  photo, a link, a list of photos), when the
- *                                                  types fit
- *   "title": [{ "field": "count" }, { "t": " photos" }]
- *                                                  text with fields (text fields only)
+ *   "title": [{ "property": "name" }]              the item's whole value (any property type:
+ *                                                  a photo, a link, a list of photos), when
+ *                                                  the types fit
+ *   "title": [{ "property": "count" }, { "t": " photos" }]
+ *                                                  text with properties (text settings only)
  *
  * The item: the first of the widget's source (./source.js: an item, the items of a list, the
- * ones From URL matches). A name that is no field of the item but a source's id is that
- * source's list (its length as text). A name that is neither is an 'error' (bindingProblems:
- * Save refuses it, the build stops); a field the item has empty is missing (its part empty;
- * every field part missing: the widget isn't rendered, ./index.js). Values are escaped by the
- * widgets as before: the resolver only swaps values (resolveWidget, applied to every widget
- * before it renders).
+ * ones From URL matches). A name that is no property of the item's schema but a source's id is
+ * that source's list (its length as text). A name that is neither is an 'error'
+ * (bindingProblems: Save refuses it, the build stops). A property the item has empty (missing,
+ * null, '') leaves its part empty; every property part of a widget empty: the widget isn't on
+ * the published page (./index.js). Values are escaped by the widgets as before: the resolver
+ * only swaps values (resolveWidget, applied to every widget before it renders).
  *
- * Which fields can bind: every field of a widget type (src/site/widgets/index.js) and its
- * config's text fields (links); a list of { src } binds to a photos field as a whole; in a list
- * of objects, each text subkey can be bound; the Text widget's lines hold field runs (../text.js).
- * BIND_TYPES (../field-types.js) says which source field types fit each widget field type.
+ * Which settings can bind: every setting of a widget type (src/site/widgets/index.js
+ * `settings`) and its config's links; a list of { src } binds to a photos property as a whole;
+ * in a list of objects, each text subkey can be bound; the Text widget's lines hold property
+ * runs (../text.js). BIND_TYPES (../property-types.js) says which property types fit each
+ * setting type.
  */
 import { schemaOf } from '../schemas.js';
 import { contentPath, pageFile } from '../files.js';
 import { isObject } from '../is.js';
 import { eachWidget } from './ids.js';
 import { MODES, sourceOf } from './source.js';
-import { BIND_TYPES, TEXT_TYPES } from '../field-types.js';
-import { isFieldPart, isParts, isWhole, partMissing, partText } from './parts.js';
+import { BIND_TYPES, TEXT_TYPES } from '../property-types.js';
+import { isPropertyPart, isParts, isWhole, partEmpty, partText } from './parts.js';
 
 /**
- * The bind type of a field definition: its type, 'link' for a config link field,
+ * The bind type of a setting's definition: its type, 'link' for a config link,
  * 'photos' for a list of { src } objects; null when it can't bind as a whole (other lists).
  */
 export function bindTypeOf(def, { config = false } = {}) {
@@ -43,29 +44,32 @@ export function bindTypeOf(def, { config = false } = {}) {
   return def.list.src === 'photo' ? 'photos' : null;
 }
 
-/** The field keys of a source (its schema), null without a source. */
+/** The property keys of a source (its schema), null without a source. */
 export const keysOf = (ctx, source) =>
-  source ? new Set((schemaOf(ctx, source)?.fields || []).map((f) => f.key)) : null;
+  source ? new Set((schemaOf(ctx, source)?.properties || []).map((f) => f.key)) : null;
 
 const empty = (def) => (def?.list ? [] : def?.type === 'number' ? undefined : '');
 
 /**
- * `value` of a field (def: its registry definition) with the item's values in it (scope: { item,
- * sources }). placeholders (the editor's preview): a missing part of a text shows {name}.
+ * `value` of a setting (def: its registry definition) with the item's properties in it (scope:
+ * { item, keys, sources }). placeholders (the editor's preview): an empty part of a text shows
+ * {name}.
  */
 export function resolve(value, { def, placeholders = false, ...scope } = {}) {
   const text = TEXT_TYPES.includes(def?.type || 'text') && !def?.list;
   if (isParts(value)) {
     if (isWhole(value) && !text) {
-      const name = value[0].field;
-      const v = partMissing(value[0], scope) ? empty(def) : scope.item?.[name];
+      const name = value[0].property;
+      const v = partEmpty(value[0], scope) ? empty(def) : scope.item?.[name];
       if (v === undefined) return empty(def);
       // an item's photo paths in a list of { src } (e.g. the hero's placed photos)
       return Array.isArray(v) && isObject(def?.list) ? v.map((src) => ({ src })) : v;
     }
     return value
       .map((p) =>
-        isFieldPart(p) ? partText(p, scope) || (placeholders && text ? `{${p.field}}` : '') : p.t,
+        isPropertyPart(p)
+          ? partText(p, scope) || (placeholders && text ? `{${p.property}}` : '')
+          : p.t,
       )
       .join('');
   }
@@ -85,27 +89,27 @@ export function resolve(value, { def, placeholders = false, ...scope } = {}) {
 }
 
 /**
- * Every field part of a widget: [{ path, part, type }], path from the widget (['title'],
+ * Every property part of a widget: [{ path, part, type, whole }], path from the widget (['title'],
  * ['config', 'link'], ['meta', 0, 'value'], ['body', 1, 'text', 2] for a Text line's run),
  * type: the bind type of a whole value (bindTypeOf), 'text' for a part of a text.
  */
-export function fieldPartsOf(widget, t) {
+export function propertyPartsOf(widget, t) {
   const out = [];
   const add = (path, v, type) => {
     if (!isParts(v)) return;
     const whole = isWhole(v);
     v.forEach((part, k) => {
-      if (isFieldPart(part))
+      if (isPropertyPart(part))
         out.push({ path: whole ? path : [...path, k], part, type: whole ? type : 'text', whole });
     });
   };
-  for (const f of t?.fields || []) {
+  for (const f of t?.settings || []) {
     const v = widget?.[f.key];
-    // rich text (../text.js): its field runs show the item's fields as text
+    // rich text (../text.js): its property runs show the item's properties as text
     if (f.type === 'rich' && Array.isArray(v)) {
       v.forEach((line, i) =>
         (Array.isArray(line?.text) ? line.text : []).forEach((r, k) => {
-          if (isFieldPart(r)) out.push({ path: [f.key, i, 'text', k], part: r, type: 'text' });
+          if (isPropertyPart(r)) out.push({ path: [f.key, i, 'text', k], part: r, type: 'text' });
         }),
       );
       continue;
@@ -125,29 +129,30 @@ export function fieldPartsOf(widget, t) {
 }
 
 /**
- * The names a widget's field parts miss (scope: { item, sources }): { parts, missing } (how
- * many field parts it has, the missing names in order, each once). Every part missing: the
- * widget isn't rendered on the site.
+ * The names of a widget's property parts that are empty (missing, null, '': ./parts.js isEmpty;
+ * scope: { item, keys, sources }): { parts, all, missing } (how many property parts it has,
+ * whether all are empty, the empty names in order, each once). All empty: the widget isn't on
+ * the published page; the editor dims it.
  */
 export function missingOf(widget, t, scope) {
-  const uses = fieldPartsOf(widget, t);
+  const uses = propertyPartsOf(widget, t);
   const missing = [
-    ...new Set(uses.filter((u) => partMissing(u.part, scope)).map((u) => u.part.field)),
+    ...new Set(uses.filter((u) => partEmpty(u.part, scope)).map((u) => u.part.property)),
   ];
   return {
     parts: uses.length,
-    all: uses.length > 0 && uses.every((u) => partMissing(u.part, scope)),
+    all: uses.length > 0 && uses.every((u) => partEmpty(u.part, scope)),
     missing,
   };
 }
 
 /**
- * A widget with its fields' and config links' parts resolved (scope: { item, sources }; the
+ * A widget with its settings' and config links' parts resolved (scope: { item, keys, sources }; the
  * widget as it is when nothing is bound, so widgets without bindings render exactly as before).
  */
 export function resolveWidget(widget, t, { placeholders = false, ...scope }) {
   const values = [
-    ...(t?.fields || []).map((f) => widget?.[f.key]),
+    ...(t?.settings || []).map((f) => widget?.[f.key]),
     ...Object.values(widget?.config || {}),
   ];
   const has = values.some(
@@ -157,7 +162,7 @@ export function resolveWidget(widget, t, { placeholders = false, ...scope }) {
   );
   if (!has) return widget;
   const out = { ...widget };
-  for (const f of t.fields || [])
+  for (const f of t.settings || [])
     if (out[f.key] !== undefined && f.type !== 'rich')
       out[f.key] = resolve(out[f.key], { ...scope, def: f, placeholders });
   if (isObject(widget.config)) {
@@ -172,8 +177,8 @@ export function resolveWidget(widget, t, { placeholders = false, ...scope }) {
 /**
  * Schema-aware checks of every page's widgets' sources and bindings (content:
  * contentFromFiles()): [{ level, message }]. 'error' (Save refuses, the build stops): a widget's
- * source that isn't a source, a field part whose name is neither a field of its source nor a
- * source (with or without a source), a whole value of a type that doesn't fit. 'warn': a
+ * source that isn't a source, a property part whose name is neither a property of its source
+ * nor a source (with or without a source), a whole value of a type that doesn't fit. 'warn': a
  * widget's item that isn't in its source. files: only pages of these files (all: null).
  */
 export function bindingProblems(content, { types, files = null }) {
@@ -201,29 +206,29 @@ export function bindingProblems(content, { types, files = null }) {
           continue;
         }
         if (s.mode === 'item' && !list.some((it) => it?.id === s.id))
-          problem('warn', `source: "${s.id}" is not in ${s.from}: its bound fields are empty`);
+          problem('warn', `source: "${s.id}" is not in ${s.from}: its bound settings are empty`);
       }
-      const uses = fieldPartsOf(widget, t);
-      const fields = s ? schemaOf(content, s.from)?.fields || [] : [];
+      const uses = propertyPartsOf(widget, t);
+      const props = s ? schemaOf(content, s.from)?.properties || [] : [];
       for (const u of uses) {
         const name = u.path.join('.');
-        const key = u.part.field;
-        const f = fields.find((x) => x.key === key);
-        // not a field of its item: a source's list (its length: text only), else unknown
+        const key = u.part.property;
+        const f = props.find((x) => x.key === key);
+        // not a property of its item: a source's list (its length: text only), else unknown
         if (!f) {
           if (!Array.isArray(content.sources?.[key]))
             problem(
               'error',
               s
-                ? `${name}: ${s.from} has no field "${key}" (and there is no source "${key}")`
-                : `${name}: "${key}" is not a source (and the widget has no source for its fields: pick one in its Content tab)`,
+                ? `${name}: ${s.from} has no property "${key}" (and there is no source "${key}")`
+                : `${name}: "${key}" is not a source (and the widget has no source for its properties: pick one in its Content tab)`,
             );
           else if (u.type !== 'text' && !TEXT_TYPES.includes(u.type))
-            problem('error', `${name}: the source ${key} (a list) only fits a text field`);
+            problem('error', `${name}: the source ${key} (a list) only fits a text setting`);
         } else if (u.whole && !(BIND_TYPES[u.type] || []).includes(f.type))
           problem(
             'error',
-            `${name}: ${s.from}.${key} (${f.type}) doesn't fit a ${u.type || 'list'} field`,
+            `${name}: ${s.from}.${key} (${f.type}) doesn't fit a ${u.type || 'list'} setting`,
           );
       }
     }

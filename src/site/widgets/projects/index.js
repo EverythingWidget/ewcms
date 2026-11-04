@@ -19,7 +19,7 @@ export const projects = {
   icon: 'list',
   line: 'Rows that open each project',
   sketch: 'projects',
-  fields: [
+  settings: [
     { key: 'eyebrow', label: 'Label', width: 'half' },
     { key: 'title', label: 'Title (empty: no heading)', width: 'half' },
     { key: 'cta', label: 'Button' },

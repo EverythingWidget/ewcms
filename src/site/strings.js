@@ -6,7 +6,7 @@
  *   t(ctx, 'album.prev')               "Previous photo"
  *   t(ctx, 'album.show', { n: 3 })     "Show photo 3"
  *
- * Widget content (titles, buttons a widget's fields hold) is not here: it is the page's.
+ * Widget content (titles, buttons a widget's settings hold) is not here: it is the page's.
  */
 import { isObject } from './is.js';
 

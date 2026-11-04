@@ -9,7 +9,7 @@ export default {
   label: 'Quote',
   icon: 'quote-left',
   line: 'A pull quote and who said it',
-  fields: [
+  settings: [
     { key: 'quote', label: 'Quote', type: 'multiline' },
     { key: 'author', label: 'Author', width: 'half' },
     { key: 'role', label: 'Role', width: 'half' },

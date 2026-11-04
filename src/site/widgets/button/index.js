@@ -20,7 +20,7 @@ export const button = {
   sketch: 'button',
   // its content box (the button): Fit hugs its label, Fill fills the widget; placed in it
   placement: { axes: 'both', box: true, place: 'left top' },
-  fields: [{ key: 'label', label: 'Label' }],
+  settings: [{ key: 'label', label: 'Label' }],
   config: [{ key: 'link', label: 'Link', type: 'link' }],
   defaults: {
     label: 'Get in touch',

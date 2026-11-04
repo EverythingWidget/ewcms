@@ -35,7 +35,7 @@ test('folders mirror URLs, in tree order', () => {
   assert.equal(r.find((x) => x.path === '/people/whatever/').title, 'Whatever | Site');
 });
 
-test('[param] template: a page per item, slug field or slugified name', () => {
+test('[param] template: a page per item, slug property or slugified name', () => {
   const c = content({
     'pages/people/index.json': {},
     'pages/people/[person]/index.json': paramPage('people/[person]', 'people'),
@@ -188,7 +188,7 @@ const nested = (extra = {}) =>
     },
     'sources/shoots.schema.json': {
       version: 1,
-      fields: [
+      properties: [
         { key: 'name', type: 'text' },
         { key: 'person', type: 'text' },
         { key: 'year', type: 'text' },
@@ -229,7 +229,7 @@ test('nested [param] folders: a fixed page wins, and gets no pages under it', ()
   );
 });
 
-test('nested [param] folders: Any or a missing field on the main widget builds no pages', () => {
+test('nested [param] folders: Any or a missing property on the main widget builds no pages', () => {
   const inner = (rules) => {
     const p = paramPage('people/[person]/[year]', 'shoots');
     p.sections[0].widgets[0].source.where.rules = rules;
@@ -237,25 +237,25 @@ test('nested [param] folders: Any or a missing field on the main widget builds n
   };
   const years = (c) => c.routes.filter((x) => x.id === 'people/[person]/[year]');
   // [person] on Any: every shoot under every person, the same page twice: no pages
-  const any = buildRoutes(nested(inner([{ param: 'year', field: 'year' }])));
+  const any = buildRoutes(nested(inner([{ param: 'year', property: 'year' }])));
   assert.deepEqual(years(any), []);
-  assert.match(any.warnings.join('\n'), /No pages are built: \[person\] needs a field to match/);
+  assert.match(any.warnings.join('\n'), /No pages are built: \[person\] needs a property to match/);
   const missing = buildRoutes(
     nested(
       inner([
-        { param: 'person', field: 'person' },
-        { param: 'year', field: 'when' },
+        { param: 'person', property: 'person' },
+        { param: 'year', property: 'when' },
       ]),
     ),
   );
   assert.deepEqual(years(missing), []);
-  assert.match(missing.warnings.join('\n'), /\[year\] matches no field/);
+  assert.match(missing.warnings.join('\n'), /\[year\] matches no property/);
   // the editor still gets pages to edit it on: the rules that can match, marked unbuilt
   const ed = buildRoutes(
     nested(
       inner([
-        { param: 'person', field: 'person' },
-        { param: 'year', field: 'when' },
+        { param: 'person', property: 'person' },
+        { param: 'year', property: 'when' },
       ]),
     ),
     { unbuilt: true },

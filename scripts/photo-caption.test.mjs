@@ -12,7 +12,7 @@ test('photo caption has no inline-edit marker, the photo keeps its picker', () =
 });
 
 test('photo popup has a Caption text field', () => {
-  const f = photo.fields.find((x) => x.key === 'caption');
+  const f = photo.settings.find((x) => x.key === 'caption');
   assert.ok(f);
   assert.match(f.label, /^Caption/);
   assert.equal(f.type, undefined);

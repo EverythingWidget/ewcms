@@ -67,7 +67,7 @@ export const hero = {
   icon: 'star',
   line: 'Your name with a photo beside or behind it, or photos scattered around',
   sketch: 'hero',
-  fields: [
+  settings: [
     { key: 'style', label: 'Style', type: 'seg', options: HERO_STYLES, unset: 'scattered' },
     { key: 'title', label: 'Name', type: 'words', width: 'half' },
     { key: 'eyebrow', label: 'Eyebrow', width: 'half' },

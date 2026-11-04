@@ -89,7 +89,7 @@ test("a widget whose source or item is cleared (the editor's ✕) still renders,
     const ids = new Set();
     const widget = newWidget(type, ids);
     for (const c of t.config || []) if (c.type === 'source') delete widget.config?.[c.key];
-    for (const f of t.fields || []) if (f.type === 'source') delete widget[f.key];
+    for (const f of t.settings || []) if (f.type === 'source') delete widget[f.key];
     delete widget.item;
     const list = [newSection(ids, [widget])];
     assert.doesNotThrow(() => renderSections(ctxOf(route), route, F, list), type);
@@ -423,7 +423,7 @@ test('add widget: its source fits the page; removing the main widget leaves the 
   });
   store.load({
     'sources/people.json': people,
-    'sources/people.schema.json': { version: 1, title: 'title', slug: 'slug', fields: [] },
+    'sources/people.schema.json': { version: 1, title: 'title', slug: 'slug', properties: [] },
     [P]: page('pg-t300'),
     [A]: page('pg-t301'),
   });
@@ -432,7 +432,7 @@ test('add widget: its source fits the page; removing the main widget leaves the 
   assert.deepEqual(widget(P, 'album').source, {
     mode: 'url',
     from: 'people',
-    where: { op: 'and', rules: [{ param: 'person', field: 'slug' }] },
+    where: { op: 'and', rules: [{ param: 'person', property: 'slug' }] },
   });
   // off one: no params to match, so its source's first item; a list keeps All
   assert.deepEqual(widget(A, 'album').source, { mode: 'item', from: 'people', id: 'p-noor' });

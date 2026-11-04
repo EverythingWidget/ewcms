@@ -1,20 +1,20 @@
 /**
  * Source schemas: content/en/sources/<id>.schema.json, next to the list it describes
- * (sources/people.json). A small format of its own, shaped like the widget registry's
- * field definitions (./widgets/index.js):
+ * (sources/people.json). A small format of its own, its properties shaped like the widget
+ * registry's settings (./widgets/index.js):
  *
  *   {
  *     "label": "People",           the source's name in the editor
- *     "title": "name",             the field that names an item (lists, page titles)
- *     "slug": "slug",              the field with an item's URL slug ('' = from the title)
- *     "fields": [{ key, label, type, width?, required?, help?, options?, list? }]
+ *     "title": "name",             the property that names an item (lists, page titles)
+ *     "slug": "slug",              the property with an item's URL slug ('' = from the title)
+ *     "properties": [{ key, label, type, width?, required?, help?, options?, list? }]
  *   }
  *
  *   type      text | multiline (lines) | number | photo (a media/ path or R2 key) |
  *             photos (a list of photo paths; alt and credit live in photos.json) | link (https://…, /path/ or mailto:) |
  *             choice (one of options: ["a", "b"]) | boolean | date (YYYY-MM-DD)
- *             (the field types: ./field-types.js, SOURCE_FIELD_TYPES)
- *   width     'half': two half fields side by side in the editor
+ *             (the property types: ./property-types.js, SOURCE_PROPERTY_TYPES)
+ *   width     'half': two half properties side by side in the editor
  *   required  must have a value (a photos list: at least one photo)
  *   help      a short hint under the label
  *   list      shown under the title in the editor's item lists (Source Explorer)
@@ -27,7 +27,7 @@
 import { PHOTOS, contentPath, isSlug, sourceFile } from './files.js';
 import { isId, newId } from './layout/ids.js';
 import { isObject, isExternal } from './is.js';
-import { SOURCE_FIELD_TYPES, blankOf } from './field-types.js';
+import { SOURCE_PROPERTY_TYPES, blankOf } from './property-types.js';
 
 const PHOTO = /^[\w-][\w./-]*\.(?:jpe?g|png|webp|avif|gif)$/i;
 const LINK = /^(?:https?:\/\/|\/|mailto:)\S*$/;
@@ -42,10 +42,10 @@ export const labelOf = (key) => {
   return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
-/** A photo's path or R2 key (a list of them is a photos field). */
+/** A photo's path or R2 key (a list of them is a photos property). */
 const PHOTO_PATH = /\.(jpe?g|png|webp|avif|gif)$/i;
 
-/** A field's type from all of its values (the same for every item, so the editor is stable). */
+/** A property's type from all of its values (the same for every item, so the editor is stable). */
 function inferType(values) {
   if (!values.length) return null;
   if (values.every((v) => typeof v === 'boolean')) return { type: 'boolean' };
@@ -66,21 +66,21 @@ function inferType(values) {
  * The schema of a source without a schema file, from its items: every key in item order,
  * typed by all its values (numbers, booleans, photo lists, media paths, long or short text);
  * keys with mixed or other values (objects) are left out. The title is "name", else "title",
- * else the first text field; the slug is "slug" when the items have one.
+ * else the first text property; the slug is "slug" when the items have one.
  */
 export function inferSchema(id, list) {
   const items = Array.isArray(list) ? list.filter(isObject) : [];
   const keys = [...new Set(items.flatMap((it) => Object.keys(it)))];
-  const fields = keys.flatMap((key) => {
+  const properties = keys.flatMap((key) => {
     const t = inferType(items.map((it) => it[key]).filter((v) => v !== undefined && v !== null));
     return t ? [{ key, label: labelOf(key), ...t }] : [];
   });
-  const text = (k) => fields.some((f) => f.key === k && f.type === 'text');
+  const text = (k) => properties.some((f) => f.key === k && f.type === 'text');
   return {
     label: labelOf(id),
-    title: ['name', 'title'].find(text) ?? fields.find((f) => f.type === 'text')?.key ?? '',
+    title: ['name', 'title'].find(text) ?? properties.find((f) => f.type === 'text')?.key ?? '',
     slug: text('slug') ? 'slug' : '',
-    fields,
+    properties,
   };
 }
 
@@ -99,7 +99,7 @@ export function schemaOf(content, id) {
   return inferred.get(list);
 }
 
-/** An item's name: its title field (string or number), else undefined. */
+/** An item's name: its title property (string or number), else undefined. */
 export const itemTitle = (item, schema) => {
   const v = schema?.title ? item?.[schema.title] : undefined;
   return v === undefined || v === null || v === '' ? undefined : String(v);
@@ -110,17 +110,22 @@ export function checkSchema(s) {
   if (!isObject(s)) return ['must be an object'];
   const out = [];
   if (s.label !== undefined && typeof s.label !== 'string') out.push('"label" must be a string');
-  if (!Array.isArray(s.fields)) return [...out, '"fields" must be a list'];
+  if (s.fields !== undefined)
+    return [
+      ...out,
+      '"fields" is "properties" now: write "properties": [{ "key", "label", "type" }]',
+    ];
+  if (!Array.isArray(s.properties)) return [...out, '"properties" must be a list'];
   const keys = new Set();
-  s.fields.forEach((f, i) => {
-    const name = `field ${i + 1}${typeof f?.key === 'string' ? ` ("${f.key}")` : ''}`;
+  s.properties.forEach((f, i) => {
+    const name = `property ${i + 1}${typeof f?.key === 'string' ? ` ("${f.key}")` : ''}`;
     const bad = (msg) => out.push(`${name}: ${msg}`);
     if (!isObject(f)) return bad('must be an object');
     if (typeof f.key !== 'string' || !f.key) bad('needs a "key"');
-    else if (keys.has(f.key)) bad('another field has this key');
+    else if (keys.has(f.key)) bad('another property has this key');
     keys.add(f.key);
-    if (!SOURCE_FIELD_TYPES.includes(f.type))
-      bad(`"type" must be one of ${SOURCE_FIELD_TYPES.join(', ')}`);
+    if (!SOURCE_PROPERTY_TYPES.includes(f.type))
+      bad(`"type" must be one of ${SOURCE_PROPERTY_TYPES.join(', ')}`);
     if (f.label !== undefined && typeof f.label !== 'string') bad('"label" must be a string');
     if (f.help !== undefined && typeof f.help !== 'string') bad('"help" must be a string');
     if (f.width !== undefined && f.width !== 'half') bad('"width" can only be "half"');
@@ -133,14 +138,14 @@ export function checkSchema(s) {
   });
   for (const k of ['title', 'slug'])
     if (s[k] !== undefined && s[k] !== '' && !keys.has(s[k]))
-      out.push(`"${k}" must be the key of one of its fields`);
-  if (typeof s.title !== 'string' || !s.title) out.push('"title" must name a field');
+      out.push(`"${k}" must be the key of one of its properties`);
+  if (typeof s.title !== 'string' || !s.title) out.push('"title" must name a property');
   return out;
 }
 
 const empty = (v) => v === undefined || v === null || v === '';
 
-/** Problems with one value of a field (its type), [] when fine. */
+/** Problems with one value of a property (its type), [] when fine. */
 function checkValue(f, v, photoExists) {
   if (empty(v) && f.type !== 'photos') return [];
   const want = (what) => [`must be ${what}`];
@@ -187,7 +192,7 @@ export function checkItems(list, schema, { photoExists } = {}) {
     if (!isId(item.id, 'p')) out.push(`${name}: "id" must be an item id ("p-k3x9")`);
     else if (ids.has(item.id)) out.push(`${name}: another item has the id "${item.id}"`);
     ids.add(item.id);
-    for (const f of schema.fields || []) {
+    for (const f of schema.properties || []) {
       const v = item[f.key];
       const label = `"${f.label || labelOf(f.key)}"`;
       if (f.required && (f.type === 'photos' ? !v?.length : empty(v)))
@@ -195,7 +200,7 @@ export function checkItems(list, schema, { photoExists } = {}) {
       out.push(...checkValue(f, v, photoExists).map((m) => `${name}: ${label} ${m}`));
     }
     // the cover: one of its own photos (its path)
-    const photos = (schema.fields || []).find((f) => f.type === 'photos')?.key;
+    const photos = (schema.properties || []).find((f) => f.type === 'photos')?.key;
     if (photos && typeof item.cover === 'string' && item.cover)
       if (!(Array.isArray(item[photos]) && item[photos].includes(item.cover)))
         out.push(`${name}: "cover" must be one of its photos ("${item.cover}" isn't)`);
@@ -224,7 +229,7 @@ export function checkSources(content) {
   );
 }
 
-/** A new item for a source: a new id, every schema field empty (text '', number 0 (a year: this year), false, []), a unique slug and title. */
+/** A new item for a source: a new id, every schema property empty (text '', number 0 (a year: this year), false, []), a unique slug and title. */
 export function newItemOf(schema, list = []) {
   const id = newId('p', new Set(list.map((it) => it?.id)));
   const slugs = new Set(list.map((it) => it?.[schema.slug]));
@@ -236,7 +241,10 @@ export function newItemOf(schema, list = []) {
       : f.type === 'choice' && f.required
         ? f.options[0]
         : blankOf(f.type);
-  const item = { id, ...Object.fromEntries((schema.fields || []).map((f) => [f.key, blank(f)])) };
+  const item = {
+    id,
+    ...Object.fromEntries((schema.properties || []).map((f) => [f.key, blank(f)])),
+  };
   if (schema.slug) item[schema.slug] = `new-item-${n}`;
   if (schema.title) item[schema.title] = `New item ${n}`;
   return item;

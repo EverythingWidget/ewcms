@@ -283,7 +283,7 @@ function nestedSite(redirects) {
   put('sources/shoots.schema.json', {
     version: 1,
     title: 'name',
-    fields: [
+    properties: [
       { key: 'name', type: 'text' },
       { key: 'person', type: 'text' },
       { key: 'year', type: 'text' },
@@ -390,8 +390,8 @@ test('rename a param: the URLs stay, the levels in it keep matching, redirects f
   const rules = (id) =>
     read(root, `pages/${id}/index.json`).sections[0].widgets[0].source.where.rules;
   assert.deepEqual(rules('people/[model]/[year]'), [
-    { param: 'model', field: 'person' },
-    { param: 'year', field: 'year' },
+    { param: 'model', property: 'person' },
+    { param: 'year', property: 'year' },
   ]);
   assert.deepEqual(urls(), before);
   assert.deepEqual(read(root, 'settings/redirects.json').redirects, [
@@ -401,8 +401,8 @@ test('rename a param: the URLs stay, the levels in it keep matching, redirects f
   // back again
   assert.equal(op('people/[model]', 'person').status, 200);
   assert.deepEqual(rules('people/[person]/[year]'), [
-    { param: 'person', field: 'person' },
-    { param: 'year', field: 'year' },
+    { param: 'person', property: 'person' },
+    { param: 'year', property: 'year' },
   ]);
   assert.deepEqual(urls(), before);
   // the inner level: renamed alone

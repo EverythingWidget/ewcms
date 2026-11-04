@@ -50,7 +50,7 @@
  *   z        its layer when widgets overlap (higher is in front)
  *   motion   optional { animation, ...timing }: its animation from the library and its own timing
  *            (./motion.js)
- *   item     optional { source, slug }: the source item its bound fields show (./bindings.js;
+ *   item     optional { source, slug }: the source item its bound settings show (./bindings.js;
  *            on a [param] page they show the page's item without one)
  * Positions become CSS variables on the elements; src/client/styles/_layout.scss lays them out.
  */
@@ -58,7 +58,7 @@ import { esc, ed, editRef, editable, slugify, warnOnce } from '../helpers.js';
 import { WIDGET_TYPES } from '../widgets/index.js';
 import { newId } from './ids.js';
 import { motionAttrs } from './motion.js';
-import { missingOf, resolveWidget } from './bindings.js';
+import { keysOf, missingOf, resolveWidget } from './bindings.js';
 import { isParts } from './parts.js';
 import { widgetItems } from './source.js';
 import { COLS, baseOf, phoneAreaOf, placeOf, setBase } from './grid.js';
@@ -293,15 +293,15 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
     return '';
   }
   const parts = (path) => ['sections', at, 'widgets', j, ...[path].flat()];
-  // what it shows (./source.js): its items, the first one for its bound fields
+  // what it shows (./source.js): its items, the first one for its bound settings
   const shown = widgetItems(ctx, route, widget);
   const { item } = shown;
   if (t.item && !item) {
     warnOnce(`${where}: a "${t.type}" widget shows an item: it has none: skipped`, 'layout');
     return '';
   }
-  const scope = { item, sources: ctx.sources };
-  // every field part missing (./parts.js): not on the site; the editor shows it dimmed, as
+  const scope = { item, keys: keysOf(ctx, shown.source), sources: ctx.sources };
+  // every property part empty (./parts.js): not on the published page; the editor shows it dimmed, as
   // big as it is, "No value for {name}" over it
   const gone = missingOf(widget, t, scope);
   if (gone.all && !editable) return '';
@@ -309,10 +309,10 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
     ? ` data-no-value="${esc(`No value for ${gone.missing.map((n) => `{${n}}`).join(', ')}`)}"`
     : '';
   // a bound value isn't edited in the preview: data-bound instead (a click selects the widget),
-  // and data-bound-missing when a field of it is missing (a dimmed {name})
+  // and data-bound-missing when a property of it is empty (a dimmed {name})
   const bound = (value, path) => {
     const attr = ` data-bound="${esc(editRef(file, parts(path)))}"`;
-    const miss = missingOf({ v: value }, { fields: [{ key: 'v' }] }, scope).missing.length;
+    const miss = missingOf({ v: value }, { settings: [{ key: 'v' }] }, scope).missing.length;
     return miss ? `${attr} data-bound-missing` : attr;
   };
   // the render's `widget` (src/site/widgets/index.js): its id, file, ed() and what it shows
@@ -326,7 +326,7 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
       return editable ? bound(value, path) : '';
     },
   };
-  // the widget with the item's values in its bound fields (as it is when nothing is bound)
+  // the widget with the item's properties in its bound settings (as it is when nothing is bound)
   const data = resolveWidget(widget, t, { ...scope, placeholders: editable });
   const marker = editable ? ` data-widget="${esc(widget.id)}"` : '';
   const hidden = widget.config?.enabled === false ? ' hidden' : '';

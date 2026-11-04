@@ -8,19 +8,19 @@
   grab: a pointerdown on the photo (a list's drag handle, PhotoList.svelte); the thumbnail or Change opens the Media window on it (MediaModal.svelte), which
   stores the photo picked there in this field: one undo step. No text input.
   Used by the Nav panel, the Sources modal and Settings.
-  Bindings (a widget's field: parts, src/site/layout/parts.js):
-    binds     the item's fields this one can show, [{ value, label, hint }] (null: it can't
+  Bindings (a widget's setting: parts, src/site/layout/parts.js):
+    binds     the item's properties this one can show, [{ value, label, hint }] (null: it can't
               bind). A picker at the end of the label row: Custom (its own text: what it showed
-              becomes it), one of them (stores [{ "field": "<name>" }]) or, a text field, Text
-              with fields (typed words and chips, a + Field menu); `from` names the item in the
-              picker's group
+              becomes it), one of them (stores [{ "property": "<name>" }]) or, a text field,
+              Text with properties (typed words and chips, a + Property menu); `from` names the
+              item in the picker's group
     formats   a text field: its input holds chips (PartsInput.svelte): typing {name} is the
               same as picking it; `lists` (the sources: {people} shows how many) are offered
-              too, `names` (fields and sources) are the names that aren't a warning chip
+              too, `names` (properties and sources) are the names that aren't a warning chip
     A whole value of another type (a photo, a number) is the item's, dimmed and read only.
 -->
 <script>
-  import { parseInput as parseValue } from '../../site/field-types.js';
+  import { parseInput as parseValue } from '../../site/property-types.js';
   import { isParts, isWhole } from '../../site/layout/parts.js';
   import PartsInput from './PartsInput.svelte';
   import { showValue } from '../lib/show-value.js';
@@ -85,9 +85,9 @@
     if (!invalid) onvalue(next);
   }
 
-  // ---- bindings: a value with fields (parts)
+  // ---- bindings: a value with properties (parts)
   const parts = $derived(isParts(value));
-  const whole = $derived(isWhole(value) ? value[0].field : null);
+  const whole = $derived(isWhole(value) ? value[0].property : null);
   // a text field holds chips (PartsInput); any other type's field shows the item's, read only
   const chips = $derived(!!binds && formats);
   const bound = $derived(parts && !chips);
@@ -98,10 +98,10 @@
       : list;
   });
   const CUSTOM = ''; // the picker's value for the field's own text
-  const MIXED = '\u0000mixed'; // Text with fields
-  let mixed = $state(false); // Text with fields picked, no field in it yet
+  const MIXED = '\u0000mixed'; // Text with properties
+  let mixed = $state(false); // Text with properties picked, no property in it yet
   const pickValue = $derived(
-    parts && !whole ? MIXED : whole ? `f:${whole}` : mixed && chips ? MIXED : CUSTOM,
+    parts && !whole ? MIXED : whole ? `p:${whole}` : mixed && chips ? MIXED : CUSTOM,
   );
   const pickOptions = $derived([
     { group: '', options: [{ value: CUSTOM, label: 'Custom', hint: 'your own text' }] },
@@ -111,7 +111,7 @@
             group: from ? `From the item · ${from}` : 'From the item',
             options: bindOptions.map((o) => ({
               ...o,
-              value: `f:${o.value}`,
+              value: `p:${o.value}`,
               label: `{${o.label}}`,
             })),
           },
@@ -122,7 +122,7 @@
           {
             group: 'How many',
             options: lists.map((id) => ({
-              value: `f:${id}`,
+              value: `p:${id}`,
               label: `{${id}}`,
               hint: `${id}: its length`,
             })),
@@ -130,17 +130,22 @@
         ]
       : []),
     ...(chips
-      ? [{ group: '', options: [{ value: MIXED, label: 'Text with fields', hint: 'type {name}' }] }]
+      ? [
+          {
+            group: '',
+            options: [{ value: MIXED, label: 'Text with properties', hint: 'type {name}' }],
+          },
+        ]
       : []),
   ]);
-  // Custom: what it showed becomes its own text; a field: [{ field }]; Text with fields: the
-  // text kept, a + Field menu
+  // Custom: what it showed becomes its own text; a property: [{ property }]; Text with
+  // properties: the text kept, a + Property menu
   function pick(v) {
     mixed = v === MIXED;
     if (v === MIXED) return;
     if (v === CUSTOM)
       return onvalue(typeof resolved === 'string' && parts ? resolved : parts ? '' : (value ?? ''));
-    onvalue([{ field: v.slice(2) }]);
+    onvalue([{ property: v.slice(2) }]);
   }
   const add = { insert: null }; // PartsInput's: a chip at its caret
   const addOptions = $derived([
@@ -239,9 +244,9 @@
       <span class="tf__add">
         <Select
           compact
-          aria-label="{label}: add a field"
+          aria-label="{label}: add a property"
           value=""
-          placeholder="+ Field"
+          placeholder="+ Property"
           options={addOptions}
           onchange={(v) => v && add.insert?.(v)}
         />
@@ -367,7 +372,7 @@
     }
   }
 
-  // a bound field's value: what the preview shows, dimmed, a lock at its end; 32px
+  // a bound setting's value: what the preview shows, dimmed, a lock at its end; 32px
   .tf__bound {
     @include row(var(--space-2));
     @include muted;
@@ -399,7 +404,7 @@
     }
   }
 
-  // Text with fields: + Field under the input, at its start
+  // Text with properties: + Property under the input, at its start
   .tf__add {
     @include row(0);
     margin-top: var(--space-2);

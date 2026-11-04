@@ -88,7 +88,7 @@ export const slugify = (text) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-/** URL slug of a source item: its schema's slug field, else its title slugified (src/site/schemas.js). */
+/** URL slug of a source item: its schema's slug property, else its title slugified (src/site/schemas.js). */
 export const itemSlug = (item, schema) => {
   const own = schema.slug ? item?.[schema.slug] : undefined;
   return own != null && own !== '' ? String(own) : slugify(itemTitle(item, schema) ?? '');

@@ -6,7 +6,7 @@
              preview, overlay.js)
     Content  its source (WidgetSource.svelte: Item / All, From URL or None, and on a [param] page
              whether it is the main widget), then its settings and texts (GroupFields.svelte),
-             each bindable field with its picker: Custom or a field of the item it shows
+             each bindable setting with its picker: Custom or a property of the item it shows
   (its motion is in the page's Element motion tab, MotionPanel.svelte)
   One level under the list of sections (a widget's row on its section's card, or the widget
   clicked in the preview): its top (ViewTop.svelte: ← Back to the list, Locate), then the widget
@@ -21,7 +21,7 @@
   import { schemaFor } from './source-items.js';
   import { isTemplate, pageIdOf, sourceFile } from '../../site/files.js';
   import { resolve } from '../../site/layout/bindings.js';
-  import { BIND_TYPES } from '../../site/field-types.js';
+  import { BIND_TYPES } from '../../site/property-types.js';
   import { widgetItems, sourceOf } from '../../site/layout/source.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import { ui } from './ui.svelte.js';
@@ -45,7 +45,7 @@
   const type = $derived(WIDGET_TYPES[g.type] || {});
 
   // ---- what it shows (src/site/layout/source.js): on a [param] page with the page the
-  // preview shows (its params), the item its fields show the first
+  // preview shows (its params), the item its bound settings show the first
   const pageId = $derived(pageIdOf(g.file) || '');
   // (read on its own: the store changes a value in place, so `widget` stays the same object)
   const source = $derived.by(() => {
@@ -68,19 +68,19 @@
     live.version;
     return isTemplate(pageId) && live.get(g.file, '/main') === g.id;
   });
-  // a field's value as one line (a field picker's hint)
+  // a property's value as one line (the picker's hint)
   const line = (v) =>
     typeof v === 'string' || typeof v === 'number'
       ? String(v)
       : Array.isArray(v)
         ? `${v.length} items`
         : '';
-  // for the fields (Field.svelte): the item's fields per bind type (with their value), what
+  // for the settings (Field.svelte): the item's properties per bind type (with their value), what
   // one shows, and the item's name for the picker's group
   const bindings = $derived({
-    // the title field first
+    // the title property first
     binds: (bindType) =>
-      (schema?.fields || [])
+      (schema?.properties || [])
         .filter((f) => (BIND_TYPES[bindType] || []).includes(f.type))
         .sort((a, b) => (b.key === schema.title) - (a.key === schema.title))
         .map((f) => ({
@@ -91,6 +91,7 @@
     resolved: (f) => {
       const v = resolve(live.get(f.file, f.ptr), {
         item,
+        keys: new Set((schema?.properties || []).map((p) => p.key)),
         sources: live.content?.sources,
         def: { type: f.type },
       });
@@ -98,14 +99,14 @@
     },
     // the sources: {people} shows how many there are (no item needed)
     lists: Object.keys(live.content?.sources || {}),
-    // the names a field part can have (any other is a warning chip)
+    // the names a property part can have (any other is a warning chip)
     names: new Set([
-      ...(schema?.fields || []).map((f) => f.key),
+      ...(schema?.properties || []).map((f) => f.key),
       ...Object.keys(item || {}),
       ...Object.keys(live.content?.sources || {}),
     ]),
     from: item && schema ? (schema.title && line(item[schema.title])) || from : from,
-    // a Text widget's summary: its fields' values, its own count
+    // a Text widget's summary: its properties' values, its own count
     item,
     items: shown.items?.length ?? 0,
   });

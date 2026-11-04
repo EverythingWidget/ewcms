@@ -4,17 +4,17 @@
  *
  *   "body": [
  *     { "style": "label", "text": [{ "t": "Photography" }] },
- *     { "style": "title", "text": [{ "t": "People " }, { "field": "people" }] },
+ *     { "style": "title", "text": [{ "t": "People " }, { "property": "people" }] },
  *     { "style": "paragraph", "text": [
  *       { "t": "Portraits, " }, { "t": "mostly", "marks": ["i"] },
  *       { "t": " natural light. " }, { "t": "Contact", "link": { "page": "pg-k2x9" } },
- *       { "field": "name", "format": "by {value}" } ] }
+ *       { "property": "name", "format": "by {value}" } ] }
  *   ]
  *
  * A run is one of:
  *   { t, marks?, link? }   text ("\n" a line break), marks: 'b' bold, 'i' italic, a link (a
  *                          page, an item or a URL: ./hrefs.js)
- *   { field, format? }     a field part (./layout/parts.js): a field of the item the widget
+ *   { property, format? }  a property part (./layout/parts.js): a property of the item the widget
  *                          shows (its source: ./layout/source.js) or a source's list (its
  *                          length: "people"), filled in when the page is built; format
  *                          "{value} photos"
@@ -26,7 +26,7 @@
  * the page [data-fit], sized by src/client/modules/fit.js (its own --tkf). The other lines keep
  * their style's size.
  * One line is one element (h1 / h2 / h3 / p) with its style's class (.ts--<style>). Every
- * value is escaped; fields are chips (data-field, labelled {name}) the editor's inline
+ * value is escaped; properties are chips (data-property, labelled {name}) the editor's inline
  * editor (src/editor/rich.js) keeps whole.
  *
  * Plain functions on the model (positions: { line, at }, `at` counting a chip as one
@@ -65,7 +65,7 @@ const withText = (line, text) => ({
 });
 
 const isText = (r) => isObject(r) && typeof r.t === 'string';
-const isField = (r) => isObject(r) && typeof r.field === 'string';
+const isProperty = (r) => isObject(r) && typeof r.property === 'string';
 /** A run's length in positions: its text's, a chip's 1. */
 export const runLength = (r) => (isText(r) ? r.t.length : 1);
 export const lineLength = (line) => (line?.text || []).reduce((n, r) => n + runLength(r), 0);
@@ -98,16 +98,20 @@ export function checkBody(body, key = 'body') {
           const bad = linkProblem(r.link);
           if (bad) out.push(`"${rat}.link": ${bad}`);
         }
-      } else if (isField(r)) {
-        if (!/^[\w-]+$/.test(r.field)) out.push(`"${rat}.field" must be a field name`);
+      } else if (isProperty(r)) {
+        if (!/^[\w-]+$/.test(r.property)) out.push(`"${rat}.property" must be a property name`);
         if (
           r.format !== undefined &&
           !(typeof r.format === 'string' && r.format.includes('{value}'))
         )
           out.push(`"${rat}.format" must be a text with {value} in it`);
       } else if (isObject(r) && isObject(r.count))
-        out.push(`"${rat}": a count is a field now: { "field": "<source>" } shows its length`);
-      else out.push(`"${rat}" must be { t } or { field }`);
+        out.push(
+          `"${rat}": a count is a property now: { "property": "<source>" } shows its length`,
+        );
+      else if (isObject(r) && typeof r.field === 'string')
+        out.push(`"${rat}": write "property" now: { "property": "${r.field}" } (not { "field" })`);
+      else out.push(`"${rat}" must be { t } or { property }`);
     });
   });
   return out;
@@ -150,11 +154,11 @@ const sameLook = (a, b) =>
 
 /**
  * Render a body. opts:
- *   value(run)  a field run's value (text, '' when it has none)
+ *   value(run)  a property run's value (text, '' when it has none)
  *   href(link)  a link's URL
  *   editing     chips show what they are ({name}) and can't be typed into
  *   attrs(i)    extra attributes of line i's element (data-anim)
- *   known(name) is a field run's name a field or a source (the editor: an unknown one's chip
+ *   known(name) is a property run's name a property or a source (the editor: an unknown one's chip
  *               is marked, data-unknown)
  */
 export function renderBody(
@@ -206,12 +210,12 @@ function renderRun(r, { value, href, editing, known }) {
     return out;
   }
   const ce = editing ? ' contenteditable="false"' : '';
-  if (isField(r)) {
-    const v = editing ? `{${r.field}}` : value(r);
+  if (isProperty(r)) {
+    const v = editing ? `{${r.property}}` : value(r);
     if (!editing && v === '') return ''; // missing: nothing on the site
     const fmt = r.format ? ` data-format="${esc(r.format)}"` : '';
-    const unknown = known && !known(r.field) ? ' data-unknown' : '';
-    return `<span class="ts__chip" data-field="${esc(r.field)}"${fmt}${unknown}${ce}>${esc(v)}</span>`;
+    const unknown = known && !known(r.property) ? ' data-unknown' : '';
+    return `<span class="ts__chip" data-property="${esc(r.property)}"${fmt}${unknown}${ce}>${esc(v)}</span>`;
   }
   return '';
 }
@@ -372,11 +376,12 @@ export function autoList(body, pos) {
 }
 
 /**
- * A `}` just typed at `pos` closing `{name}` in a text run: that text a field chip (the same run
- * the + Field menu puts in). `{{` is a literal `{`: `{{name}` stays the text "{name}".
+ * A `}` just typed at `pos` closing `{name}` in a text run: that text a property chip (the same
+ * run the + Property menu puts in). `{{` is a literal `{`: `{{name}` stays the text "{name}";
+ * `}}` is a literal `}`: a `}` typed right after a `}` leaves one.
  * { body, at } (at: the caret after it), or null when it closes nothing.
  */
-export function typedField(body, pos) {
+export function typedProperty(body, pos) {
   const line = body[pos.line];
   if (!line) return null;
   let n = 0;
@@ -386,16 +391,26 @@ export function typedField(body, pos) {
     if (pos.at > n && pos.at <= n + len) {
       if (!isText(r)) return null;
       const before = r.t.slice(0, pos.at - n);
+      const look0 = { ...(r.marks ? { marks: r.marks } : {}), ...(r.link ? { link: r.link } : {}) };
+      if (before.endsWith('}}')) {
+        const out = clone(body);
+        const t = before.slice(0, -1) + r.t.slice(pos.at - n);
+        out[pos.line] = withText(
+          line,
+          tidyRuns([...line.text.slice(0, k), { ...look0, t }, ...line.text.slice(k + 1)]),
+        );
+        return { body: out, at: { line: pos.line, at: pos.at - 1 } };
+      }
       const m = before.match(/(\{+)([\w-]+)\}$/);
       if (!m) return null;
       const braces = m[1].length;
       const lit = '{'.repeat(Math.floor(braces / 2));
       const keep = before.slice(0, before.length - m[0].length);
-      const look = { ...(r.marks ? { marks: r.marks } : {}), ...(r.link ? { link: r.link } : {}) };
+      const look = look0;
       const after = { ...look, t: r.t.slice(pos.at - n) };
       const mid =
         braces % 2
-          ? [{ ...look, t: keep + lit }, { field: m[2] }]
+          ? [{ ...look, t: keep + lit }, { property: m[2] }]
           : [{ ...look, t: `${keep}${lit}${m[2]}}` }];
       const out = clone(body);
       out[pos.line] = withText(
@@ -410,7 +425,7 @@ export function typedField(body, pos) {
   return null;
 }
 
-/** A chip run (a field) put in at a position. */
+/** A chip run (a property) put in at a position. */
 export function insertRun(body, pos, run) {
   const out = clone(body.length ? body : [{ style: 'paragraph', text: [] }]);
   const line = out[Math.min(pos.line, out.length - 1)];

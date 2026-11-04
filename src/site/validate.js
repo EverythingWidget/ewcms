@@ -6,7 +6,7 @@
  *   parseContent(text, file)   JSON.parse, with "content/<file>: invalid JSON … (line L, column C)"
  *   checkContent(file, data)   a list of problems ([] when fine), e.g. "footer must be an object"
  *
- * A source's items against its schema (required fields, types, photos) are checked by
+ * A source's items against its schema (required properties, types, photos) are checked by
  * checkItems (src/site/schemas.js): that needs the schema and the photos, not one file.
  */
 import { AREA_KEYS, storesRows } from './layout/grid.js';
@@ -51,8 +51,8 @@ import { linkProblem } from './hrefs.js';
 import { checkMotion, defaultsProblems } from './layout/motion.js';
 import { checkBackdrop } from './backdrop.js';
 import { bindTypeOf } from './layout/bindings.js';
-import { isFieldPart, isParts, isWhole, NAME } from './layout/parts.js';
-import { FORMAT_TYPES, storedAs } from './field-types.js';
+import { isPropertyPart, isParts, isWhole, NAME } from './layout/parts.js';
+import { FORMAT_TYPES, storedAs } from './property-types.js';
 import { isObject } from './is.js';
 
 const typeOf = (v) =>
@@ -400,14 +400,19 @@ function sourceProblems(src, t) {
     return ['"source.id" must be an item id ("p-k3x9")'];
   if (src.mode !== 'url') return [];
   const w = src.where;
+  const oldRule = Array.isArray(w?.rules) && w.rules.find((r) => isObject(r) && 'field' in r);
+  if (oldRule)
+    return [
+      `"source.where": write "property" now: { "param": ${JSON.stringify(oldRule.param)}, "property": ${JSON.stringify(oldRule.field)} } (not "field")`,
+    ];
   const rule = (r) =>
     isObject(r) &&
     isParamName(r.param) &&
-    typeof r.field === 'string' &&
-    /^[\w-]+$/.test(r.field) &&
+    typeof r.property === 'string' &&
+    /^[\w-]+$/.test(r.property) &&
     Object.keys(r).length === 2;
   if (!isObject(w) || w.op !== 'and' || !Array.isArray(w.rules) || !w.rules.every(rule))
-    return ['"source.where" must be { "op": "and", "rules": [{ "param", "field" }] }'];
+    return ['"source.where" must be { "op": "and", "rules": [{ "param", "property" }] }'];
   const params = w.rules.map((r) => r.param);
   if (new Set(params).size !== params.length) return ['"source.where": one rule per param'];
   return [];
@@ -445,31 +450,44 @@ function checkWidget(widget, where) {
   if (widget.item !== undefined) bad('item', 'left out: its "source" says which item');
   if (widget.source !== undefined)
     out.push(...sourceProblems(widget.source, t).map((p) => `${name}: ${p}`));
-  // a value can show the item's fields, as parts (../layout/parts.js): [{ t } | { field, format? }]
+  // a value can show the item's properties, as parts (../layout/parts.js): [{ t } | { property, format? }]
   const partsShape = (key, v, type) => {
     v.forEach((p, k) => {
       const extra = Object.keys(p).filter((x) =>
-        isFieldPart(p) ? x !== 'field' && x !== 'format' : x !== 't',
+        isPropertyPart(p) ? x !== 'property' && x !== 'format' : x !== 't',
       );
-      if (extra.length || (isFieldPart(p) && !NAME.test(p.field)))
-        bad(`${key}.${k}`, '{ "t": "<text>" } or { "field": "<name>", "format"?: "… {value} …" }');
+      if (extra.length || (isPropertyPart(p) && !NAME.test(p.property)))
+        bad(
+          `${key}.${k}`,
+          '{ "t": "<text>" } or { "property": "<name>", "format"?: "… {value} …" }',
+        );
       else if (
         p.format !== undefined &&
         !(typeof p.format === 'string' && p.format.includes('{value}'))
       )
         bad(`${key}.${k}.format`, 'a text with {value} in it');
     });
-    if (!type) bad(key, "a list of its own (it can't show an item's fields)");
+    if (!type) bad(key, "a list of its own (it can't show an item's properties)");
     else if (!isWhole(v) && !FORMAT_TYPES.includes(type))
-      bad(key, 'one field ([{ "field": "<name>" }]): only a text can mix text and fields');
+      bad(
+        key,
+        'one property ([{ "property": "<name>" }]): only a text can mix text and properties',
+      );
   };
-  // the old { "bind": "<field>", "format" } (before parts): its parts instead
+  // the old { "bind": "<name>", "format" } (before parts) and parts' old { "field" }: the
+  // new shape instead
   const oldBind = (v, key) => {
     if (isObject(v) && typeof v.bind === 'string') {
       bad(
         key,
-        `parts now: [{ "field": "${v.bind}"${v.format ? `, "format": ${JSON.stringify(v.format)}` : ''} }] (not { "bind" })`,
+        `parts now: [{ "property": "${v.bind}"${v.format ? `, "format": ${JSON.stringify(v.format)}` : ''} }] (not { "bind" })`,
       );
+      return true;
+    }
+    const oldPart =
+      Array.isArray(v) && v.find((p) => isObject(p) && typeof p.field === 'string' && !('t' in p));
+    if (oldPart) {
+      bad(key, `[{ "property": "${oldPart.field}" }] now (not { "field" })`);
       return true;
     }
     if (Array.isArray(v))
@@ -480,7 +498,7 @@ function checkWidget(widget, where) {
     return false;
   };
   const old = new Set([
-    ...(t.fields || []).filter((f) => oldBind(widget[f.key], f.key)).map((f) => f.key),
+    ...(t.settings || []).filter((f) => oldBind(widget[f.key], f.key)).map((f) => f.key),
     ...(t.config || [])
       .filter((c) => oldBind(widget.config?.[c.key], `config.${c.key}`))
       .map((c) => `config.${c.key}`),
@@ -489,7 +507,7 @@ function checkWidget(widget, where) {
     const v = widget.config?.[c.key];
     if (isParts(v)) partsShape(`config.${c.key}`, v, bindTypeOf(c, { config: true }));
   }
-  for (const f of t.fields || []) {
+  for (const f of t.settings || []) {
     const v = widget[f.key];
     if (v === undefined || old.has(f.key)) continue;
     if (isParts(v)) {

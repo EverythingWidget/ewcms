@@ -26,7 +26,7 @@ const interleave = (items, indexOf, perItem = 4) => {
 
 /** Photo tiles (people look): the first 4 photos of every item, interleaved. */
 const photoTiles = (ctx, source, items, layout, indexOf) => {
-  const { title } = schemaOf(ctx, source); // the field that names an item
+  const { title } = schemaOf(ctx, source); // the property that names an item
   return html` <div class="tiles${layout === 'even' ? ' tiles--even' : ''}">
     ${interleave(items, indexOf).map(
       ({ item, at, photo, index }) => html`
@@ -71,7 +71,7 @@ export const grid = {
   icon: 'table-cells',
   line: 'Photos from a source list',
   sketch: 'grid',
-  fields: [
+  settings: [
     { key: 'eyebrow', label: 'Label', width: 'half' },
     { key: 'title', label: 'Title', width: 'half' },
     { key: 'cta', label: 'Button' },

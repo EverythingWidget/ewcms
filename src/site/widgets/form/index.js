@@ -84,7 +84,7 @@ export const form = {
   icon: 'envelope',
   line: 'Name, email and a message',
   sketch: 'form',
-  fields: [
+  settings: [
     { key: 'title', label: 'Title (empty: none)' },
     { key: 'body', label: 'Intro (empty: none)', type: 'multiline' },
     {

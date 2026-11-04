@@ -1,8 +1,8 @@
 <!--
   A link (src/site/hrefs.js): one Select of where it goes, a page of the site (by its id), a
-  source item's page (by the item's id), a field of the widget's item (binds, [{ field }]) or an
+  source item's page (by the item's id), a property of the widget's item (binds, [{ property }]) or an
   external link (a URL), with the URL's input under it; the dropdown searchable. value: the link ({ page } | { item } | { href }
-  | [{ field }]); onvalue(next) gets the next one (undefined: no link, when `empty` is set).
+  | [{ property }]); onvalue(next) gets the next one (undefined: no link, when `empty` is set).
   Used by widget settings and list fields (GroupFields.svelte) and the header's menu (HeaderPart).
 -->
 <script>
@@ -37,7 +37,7 @@
       : kind === 'item'
         ? `item:${value.item?.source}:${value.item?.id}`
         : kind === 'bind'
-          ? `bind:${value[0].field}`
+          ? `bind:${value[0].property}`
           : kind === 'href'
             ? 'href'
             : '',
@@ -61,7 +61,7 @@
     });
   });
   // pinned at the top: No link (when it may be empty) and External link; then the search
-  // field (Select's search) and the groups under it: Pages, Items, this item's fields
+  // field (Select's search) and the groups under it: Pages, Items, this item's properties
   const options = $derived.by(() => {
     const out = [
       {
@@ -97,7 +97,7 @@
     const [k, a, b] = v.split(':');
     if (k === 'page') onvalue({ page: a });
     else if (k === 'item') onvalue({ item: { source: a, id: b } });
-    else if (k === 'bind') onvalue([{ field: a }]);
+    else if (k === 'bind') onvalue([{ property: a }]);
     else onvalue({ href: kind === 'href' ? value.href : 'https://' });
   }
 </script>

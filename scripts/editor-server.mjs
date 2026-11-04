@@ -132,7 +132,7 @@ const PROTECTED = new Set(['home', '404']); // no rename, move or delete
  *   add       { parent, name, title? }  the folder <parent>/<name>/ with its index.json
  *   template  { parent, source, param?, key? }
  *                                       <parent>/[param]/index.json: a page per item of the
- *                                       source (param: its name, default "slug"; key: the field
+ *                                       source (param: its name, default "slug"; key: the property
  *                                       whose value is the URL part, default the item's slug)
  *   rename    { id, name }              the page's folder, with everything in it; a [param]
  *                                       page: its param (name "model": [model]), URLs stay
@@ -300,11 +300,11 @@ export function pagesOp(
     if (!isSlug(source) || !fs.existsSync(abs(sourceFile(source))))
       return fail(400, `No source "${source ?? ''}"`);
     if (key !== undefined && (typeof key !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(key)))
-      return fail(400, `"${key}" is not a field name`);
+      return fail(400, `"${key}" is not a property name`);
     onWrite();
     const ids = new Set();
     // the item's album, filling the screen: its main widget (layout/source.js), each param of
-    // the address matching its default field (key: the new param's)
+    // the address matching its default property (key: the new param's)
     const album = albumWidget(root, source, ids, paramsOf(pid), key);
     write(pageFile(pid), {
       version: VERSION,
@@ -386,7 +386,7 @@ export function pagesOp(
   /**
    * rename a [param] page: its param ("[person]" -> "[model]"), the URLs stay. The folder
    * moves with everything in it; the From URL rules of its widgets and of the pages in it
-   * follow (the same field matches the renamed param); redirects naming the param in a
+   * follow (the same property matches the renamed param); redirects naming the param in a
    * pattern under it follow.
    */
   function renameParamOp(before) {
@@ -511,8 +511,9 @@ function sourceProblems(root, files) {
 }
 
 /**
- * A new [param] page's album widget, its texts bound to the source's fields (its schema): the
- * title field, the fields shown in item lists as facts ([{ "field": "role" }]), the first long text.
+ * A new [param] page's album widget, its texts bound to the source's properties (its schema):
+ * the title property, the properties shown in item lists as facts ([{ "property": "role" }]), the
+ * first long text.
  */
 function albumWidget(root, source, ids, params, key) {
   const list = itemsOf(readContentFile(root, sourceFile(source), { check: false }));
@@ -520,18 +521,18 @@ function albumWidget(root, source, ids, params, key) {
     ? readContentFile(root, schemaFile(source), { check: false })
     : undefined;
   const schema = schemaOf({ sources: { [source]: list }, schemas: { [source]: own } }, source);
-  const fields = schema.fields || [];
-  const long = fields.find((f) => f.type === 'multiline');
+  const properties = schema.properties || [];
+  const long = properties.find((f) => f.type === 'multiline');
   const where = defaultWhere(params, schema);
-  if (key) where.rules.at(-1).field = key;
+  if (key) where.rules.at(-1).property = key;
   return {
     ...newWidget('album', ids, { rows: 1 }),
     source: { mode: 'url', from: source, where },
-    title: schema.title ? [{ field: schema.title }] : '',
-    meta: fields
+    title: schema.title ? [{ property: schema.title }] : '',
+    meta: properties
       .filter((f) => f.list && ['text', 'choice', 'number', 'date'].includes(f.type))
-      .map((f) => ({ label: f.label, value: [{ field: f.key }] })),
-    body: long ? [{ field: long.key }] : '',
+      .map((f) => ({ label: f.label, value: [{ property: f.key }] })),
+    body: long ? [{ property: long.key }] : '',
   };
 }
 
@@ -547,7 +548,7 @@ function motionErrors(root, files) {
 
 /**
  * Bindings of the saved pages that don't fit their sources' schemas (src/site/layout/bindings.js;
- * the 'error' level: an unknown source or field, a type that doesn't fit). A saved schema or
+ * the 'error' level: an unknown source or property, a type that doesn't fit). A saved schema or
  * source can break any page's bindings, so then every page is checked.
  */
 function bindingErrors(root, files) {

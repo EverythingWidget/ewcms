@@ -2,9 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { paramPage } from './test-layout.mjs';
 import {
-  defaultField,
+  defaultProperty,
   defaultWhere,
-  hasField,
+  hasProperty,
   matches,
   query,
   ruleOf,
@@ -20,7 +20,7 @@ import { itemHref } from '../src/site/helpers.js';
 const schema = {
   version: 1,
   title: 'name',
-  fields: [
+  properties: [
     { key: 'name', type: 'text' },
     { key: 'person', type: 'text' },
     { key: 'year', type: 'text' },
@@ -35,30 +35,32 @@ const shoots = [
 const and = (...rules) => ({ op: 'and', rules });
 const names = (list) => list.map((s) => s.id);
 
-test('query: a field as a URL part, slug the item’s slug', () => {
+test('query: a property as a URL part, slug the item’s slug', () => {
   assert.equal(valueOf(shoots[1], 'slug', schema), 'forest-walk');
   assert.equal(valueOf(shoots[1], 'person', schema), 'noor'); // slugified
   assert.equal(valueOf(shoots[0], 'year', schema), '2024'); // numbers too
   assert.equal(valueOf(shoots[3], 'person', schema), '');
-  assert.ok(hasField(schema, 'slug') && hasField(schema, 'year') && !hasField(schema, 'when'));
-  // the default: the field of the same name, else slug
-  assert.equal(defaultField('year', schema), 'year');
-  assert.equal(defaultField('model', schema), 'slug');
+  assert.ok(
+    hasProperty(schema, 'slug') && hasProperty(schema, 'year') && !hasProperty(schema, 'when'),
+  );
+  // the default: the property of the same name, else slug
+  assert.equal(defaultProperty('year', schema), 'year');
+  assert.equal(defaultProperty('model', schema), 'slug');
   assert.deepEqual(
     defaultWhere(['person', 'slug'], schema),
-    and({ param: 'person', field: 'person' }, { param: 'slug', field: 'slug' }),
+    and({ param: 'person', property: 'person' }, { param: 'slug', property: 'slug' }),
   );
 });
 
 test('query: every rule must match; a param without a rule (Any) doesn’t filter', () => {
-  const where = and({ param: 'person', field: 'person' }, { param: 'year', field: 'year' });
+  const where = and({ param: 'person', property: 'person' }, { param: 'year', property: 'year' });
   assert.deepEqual(names(query(shoots, where, { person: 'noor', year: '2024' }, { schema })), [
     's-1',
     's-2',
   ]);
   assert.deepEqual(names(query(shoots, where, { person: 'noor', year: '2025' }, { schema })), []);
   // [year] on Any
-  const any = and({ param: 'person', field: 'person' });
+  const any = and({ param: 'person', property: 'person' });
   assert.deepEqual(names(query(shoots, any, { person: 'noor', year: '1999' }, { schema })), [
     's-1',
     's-2',
@@ -72,8 +74,8 @@ test('query: every rule must match; a param without a rule (Any) doesn’t filte
   assert.deepEqual(query('nope', where, {}), []);
 });
 
-test('query: a field holding the id of the param’s item matches (refs); groups nest', () => {
-  const where = and({ param: 'person', field: 'person' });
+test('query: a property holding the id of the param’s item matches (refs); groups nest', () => {
+  const where = and({ param: 'person', property: 'person' });
   assert.deepEqual(names(query(shoots, where, { person: 'daan' }, { schema })), []);
   assert.deepEqual(
     names(query(shoots, where, { person: 'daan' }, { schema, refs: { person: 'p-daan' } })),
@@ -82,7 +84,7 @@ test('query: a field holding the id of the param’s item matches (refs); groups
   // groups: room for more kinds of rules
   const or = {
     op: 'or',
-    rules: [and({ param: 'year', field: 'year' }), { param: 'person', field: 'person' }],
+    rules: [and({ param: 'year', property: 'year' }), { param: 'person', property: 'person' }],
   };
   assert.deepEqual(names(query(shoots, or, { year: '2023', person: 'noor' }, { schema })), [
     's-1',
@@ -92,11 +94,11 @@ test('query: a field holding the id of the param’s item matches (refs); groups
   assert.equal(matches(shoots[0], and({ param: 'x' }), { x: 'a' }), false); // a broken rule
 });
 
-test('unmatched: Any and a missing field, per param, in address order', () => {
-  const where = and({ param: 'year', field: 'when' });
+test('unmatched: Any and a missing property, per param, in address order', () => {
+  const where = and({ param: 'year', property: 'when' });
   assert.deepEqual(unmatched(where, ['person', 'year'], schema), [
     { param: 'person', problem: 'any' },
-    { param: 'year', problem: 'missing', field: 'when' },
+    { param: 'year', problem: 'missing', property: 'when' },
   ]);
   assert.deepEqual(
     unmatched(defaultWhere(['person', 'year'], schema), ['person', 'year'], schema),
@@ -158,7 +160,10 @@ test('main widget: a list widget decides too (a page exists if at least one item
             source: {
               mode: 'url',
               from: 'shoots',
-              where: and({ param: 'person', field: 'person' }, { param: 'year', field: 'year' }),
+              where: and(
+                { param: 'person', property: 'person' },
+                { param: 'year', property: 'year' },
+              ),
             },
           },
         ],
@@ -178,7 +183,7 @@ test('main widget: a list widget decides too (a page exists if at least one item
   assert.deepEqual(names(widgetItems(c, route, widget).items), ['s-1', 's-2']);
 });
 
-test('main widget: none, not From URL, Any or a missing field: no pages, says why', () => {
+test('main widget: none, not From URL, Any or a missing property: no pages, says why', () => {
   const kind = (c) => mainProblem(c, 'people/[person]/[year]')?.kind;
   const at = (c) => c.pages['people/[person]/[year]'];
   const none = site({ main: undefined });
@@ -191,16 +196,16 @@ test('main widget: none, not From URL, Any or a missing field: no pages, says wh
   at(any).sections[0].widgets[0].source.where.rules.pop();
   assert.deepEqual(mainProblem(any, 'people/[person]/[year]'), {
     kind: 'any',
-    message: 'No pages are built: [year] needs a field to match',
+    message: 'No pages are built: [year] needs a property to match',
     param: 'year',
     problem: 'any',
   });
   assert.deepEqual(years(any), []);
   const missing = site();
-  at(missing).sections[0].widgets[0].source.where.rules[0].field = 'model';
+  at(missing).sections[0].widgets[0].source.where.rules[0].property = 'model';
   assert.equal(
     mainProblem(missing, 'people/[person]/[year]').message,
-    'No pages are built: [person] matches no field',
+    'No pages are built: [person] matches no property',
   );
   assert.deepEqual(years(missing), []);
   // it still saves: a page whose main widget can't decide is valid content
@@ -230,7 +235,7 @@ test('source shapes: modes per widget kind, where rules', () => {
   assert.match(check({ mode: 'all', from: 'people' }).join(), /for list widgets/);
   assert.match(check({ mode: 'item', from: 'people', id: 'p-3pdk' }, 'albums').join(), /a list/);
   assert.match(check({ mode: 'nope', from: 'people' }).join(), /"source" must be/);
-  const twice = and({ param: 'person', field: 'slug' }, { param: 'person', field: 'name' });
+  const twice = and({ param: 'person', property: 'slug' }, { param: 'person', property: 'name' });
   assert.match(check({ mode: 'url', from: 'people', where: twice }).join(), /one rule per param/);
   assert.match(
     check({ mode: 'url', from: 'people', where: { op: 'or', rules: [] } }).join(),

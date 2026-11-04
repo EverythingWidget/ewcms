@@ -540,7 +540,7 @@ function rebind() {
   for (const root of syncRoots(bridge.doc))
     renderSections(
       [...root.querySelectorAll('[data-sec]')]
-        .filter((s) => s.querySelector('[data-bound], [data-field]'))
+        .filter((s) => s.querySelector('[data-bound], [data-property]'))
         .map((s) => s.dataset.sec),
       root,
     );

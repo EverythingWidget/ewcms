@@ -40,7 +40,7 @@ import {
   toggleMark,
   unlist,
   autoList,
-  typedField,
+  typedProperty,
 } from '../site/text.js';
 import { isSafeHref } from '../site/hrefs.js';
 
@@ -260,7 +260,7 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
         const { file, ptr } = splitEdit(el.dataset.edit);
         const value = store.get(file, ptr);
         if (value === undefined || value === null) continue;
-        // a Text widget's body: the dev server renders it (its fields' values)
+        // a Text widget's body: the dev server renders it (its properties' values)
         if (el.dataset.editType === 'rich') continue;
         if (el === skip) {
           applied.set(el, value);
@@ -853,10 +853,10 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
       if (rich && rich.el.contains(e.target)) {
         const body = readBody(rich.el);
         const sel = selectionOf(rich.el, win);
-        // "- " or "1. " typed at a line's start: a list item; {name} typed: a field chip
+        // "- " or "1. " typed at a line's start: a list item; {name} typed: a property chip
         const auto =
           sel && isCaret(sel)
-            ? autoList(body, sel.to) || (e.data === '}' && typedField(body, sel.to)) || null
+            ? autoList(body, sel.to) || (e.data === '}' && typedProperty(body, sel.to)) || null
             : null;
         writeRich(body);
         if (auto) {

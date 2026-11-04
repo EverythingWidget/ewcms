@@ -3,9 +3,9 @@
  * photo, numbered thumbnail strip, 01/08 counter, keyboard / drag / wheel navigation and a
  * Slider ⇄ Grid toggle. Its photos are its source's item (../../layout/source.js: on a [param]
  * page usually From URL, the page's own; item: true, without one it is skipped). A widget module (../index.js has the format).
- * Its texts show the item's fields (parts, ../../layout/parts.js): the title [{ "field": "title" }],
- * the facts ("Role" / [{ "field": "role" }]; a fact whose value is empty is left out, "Photos" and
- * the count always come last) and the body [{ "field": "body" }].
+ * Its texts show the item's properties (parts, ../../layout/parts.js): the title
+ * [{ "property": "title" }], the facts ("Role" / [{ "property": "role" }]; a fact whose value is empty is left out, "Photos" and
+ * the count always come last) and the body [{ "property": "body" }].
  */
 import {
   html,
@@ -32,7 +32,7 @@ export const album = {
   line: 'The item: its title, facts and photos',
   sketch: 'photo',
   item: true,
-  fields: [
+  settings: [
     { key: 'title', label: 'Title' },
     {
       key: 'meta',
@@ -46,12 +46,12 @@ export const album = {
   ],
   defaults: {
     source: { mode: 'url', from: 'people', where: { op: 'and', rules: [] } },
-    title: [{ field: 'title' }],
+    title: [{ property: 'title' }],
     meta: [
-      { label: 'Location', value: [{ field: 'location' }] },
-      { label: 'Year', value: [{ field: 'year' }] },
+      { label: 'Location', value: [{ property: 'location' }] },
+      { label: 'Year', value: [{ property: 'year' }] },
     ],
-    body: [{ field: 'body' }],
+    body: [{ property: 'body' }],
   },
   render: (s, ctx, widget) => albumOf(s, ctx, ctx.route, widget),
 };
@@ -61,7 +61,7 @@ function albumOf(s, ctx, route, widget) {
   const photos = photosOf(a);
   const n = photos.length;
   const file = sourceFile(widget.source);
-  const at = (field, type) => ed(file, ['items', widget.index, field], type);
+  const at = (key, type) => ed(file, ['items', widget.index, key], type);
   // a photo's path, edited (and uploaded) in the editor
   const photo = (i) => ed(file, ['items', widget.index, 'photos', i], 'photo');
   // back: the page around it (a [param] page's), else the page of all of its source

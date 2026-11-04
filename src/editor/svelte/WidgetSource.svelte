@@ -5,11 +5,12 @@
     the item     Item: the item selector (ItemPicker.svelte, an item); All and From URL: its
                  source (the same selector, a list)
     Match the address
-                 From URL: a row per param of the page's address, [ where | [person] | = | field ▾ ]:
-                 the source field it must equal (default: the field of the same name, else slug),
+                 From URL: a row per param of the page's address, [ where | [person] | = | property ▾ ]:
+                 the source property it must equal (default: the property of the same name, else
+                 slug),
                  or Any (no rule: not filtered; not on the main widget, the menu says why). A
-                 field the source doesn't have: the row in red and a note under the rows
-    what it shows  one line: how many items match (the fields show the first)
+                 property the source doesn't have: the row in red and a note under the rows
+    what it shows  one line: how many items match (the properties show the first)
     Main widget   on a [param] page: a switch, on: this widget decides which pages exist (the
                  page's "main"; turning it on makes it From URL), its hint how many are built
   Stored as the widget's "source" ({ mode, from, id | where }), every change one undo step that
@@ -25,9 +26,9 @@
   import { plural } from '../lib/format.js';
   import { isTemplate, pageIdOf, paramsOf, sourceFile } from '../../site/files.js';
   import { mainProblem, sourceOf, urlSource } from '../../site/layout/source.js';
-  import { isFieldPart, isParts, partText } from '../../site/layout/parts.js';
-  import { defaultField, hasField, ruleOf, SLUG } from '../../site/query.js';
-  import { MATCH_TYPES } from '../../site/field-types.js';
+  import { isPropertyPart, isParts, partText } from '../../site/layout/parts.js';
+  import { defaultProperty, hasProperty, ruleOf, SLUG } from '../../site/query.js';
+  import { MATCH_TYPES } from '../../site/property-types.js';
 
   // g: the widget's group; base: its pointer; list: a list widget (All instead of Item); shown:
   // what it shows on the page in the preview (widgetItems)
@@ -106,22 +107,23 @@
     if (it) set({ mode: 'item', from, id: it.id });
   }
   /**
-   * None: the widget's own texts. A field that showed the item's value keeps it as its own text
+   * None: the widget's own texts. A setting that showed the item's value keeps it as its own text
    * (a text: what it showed; anything else: its default), one undo step.
    */
   function toNone() {
     const sources = live.content?.sources || {};
-    const scope = { item: shown?.item, sources };
-    // a field part: what it showed, as text; a source's name ({people}) needs no item: kept
+    const keys = new Set((schema?.properties || []).map((f) => f.key));
+    const scope = { item: shown?.item, keys, sources };
+    // a property part: what it showed, as text; a source's name ({people}) needs no item: kept
     const own = (v, key) => {
       if (isParts(v)) {
         const parts = v.map((p) =>
-          isFieldPart(p) && !Array.isArray(sources[p.field])
+          isPropertyPart(p) && !Array.isArray(sources[p.property])
             ? { ...(p.marks ? { marks: p.marks } : {}), t: partText(p, scope) }
             : p,
         );
         if (key === 'text') return parts.filter((p) => !('t' in p) || p.t);
-        return parts.some(isFieldPart) ? parts : parts.map((p) => p.t).join('');
+        return parts.some(isPropertyPart) ? parts : parts.map((p) => p.t).join('');
       }
       if (Array.isArray(v)) return v.map((x) => own(x));
       if (v && typeof v === 'object')
@@ -133,7 +135,7 @@
       () => {
         set(undefined);
         for (const [k, v] of Object.entries(widget))
-          if (k !== 'source' && JSON.stringify(v).includes('"field"'))
+          if (k !== 'source' && JSON.stringify(v).includes('"property"'))
             live.store.set(g.file, `${base}/${k}`, own(structuredClone(v)), {
               source: 'panel',
               structure: true,
@@ -142,11 +144,11 @@
       { source: 'panel' },
     );
   }
-  /** The rule of `param` set to `field` (ANY: no rule), the others kept, in address order. */
-  function setRule(param, field) {
+  /** The rule of `param` set to `property` (ANY: no rule), the others kept, in address order. */
+  function setRule(param, property) {
     const rules = params
       .map((p) =>
-        p === param ? (field === ANY ? null : { param, field }) : ruleOf(source.where, p),
+        p === param ? (property === ANY ? null : { param, property }) : ruleOf(source.where, p),
       )
       .filter(Boolean);
     set({ ...source, where: { op: 'and', rules } });
@@ -165,9 +167,9 @@
   }
 
   // ---- the param rows
-  const fields = $derived([
+  const properties = $derived([
     SLUG,
-    ...(schema?.fields || [])
+    ...(schema?.properties || [])
       .filter((f) => !f.list && MATCHABLE.includes(f.type ?? 'text'))
       .map((f) => f.key)
       .filter((k) => k !== SLUG),
@@ -177,27 +179,27 @@
       ? []
       : params.map((p) => {
           const rule = ruleOf(source.where, p);
-          const missing = !!rule && !hasField(schema, rule.field);
-          const own = fields.map((f) => ({
+          const missing = !!rule && !hasProperty(schema, rule.property);
+          const own = properties.map((f) => ({
             value: f,
             label: f,
             hint: f === p ? 'same name' : f === SLUG ? 'default' : '',
           }));
           if (missing)
-            own.push({ value: rule.field, label: rule.field, hint: 'not in this source' });
+            own.push({ value: rule.property, label: rule.property, hint: 'not in this source' });
           return {
             param: p,
-            field: rule?.field ?? ANY,
+            property: rule?.property ?? ANY,
             missing,
             how: !rule
               ? ''
-              : rule.field === defaultField(p, schema)
-                ? rule.field === p
+              : rule.property === defaultProperty(p, schema)
+                ? rule.property === p
                   ? 'same name'
                   : 'default'
                 : '',
             options: [
-              { group: 'Match the field', options: own },
+              { group: 'Match the property', options: own },
               {
                 group: '',
                 options: [
@@ -215,7 +217,7 @@
         }),
   );
   const missing = $derived(rows.find((r) => r.missing));
-  const unused = $derived(rows.filter((r) => r.field === ANY).map((r) => `[${r.param}]`));
+  const unused = $derived(rows.filter((r) => r.property === ANY).map((r) => `[${r.param}]`));
 
   // ---- what it shows
   const showsLine = $derived.by(() => {
@@ -230,7 +232,7 @@
     if (n === 1 && first) return { text: `1 item: ${nameOf(source.from, first)}`, miss: false };
     const extra = unused.length ? ` (${unused.join(', ')} not used)` : '';
     const match = mode === 'all' ? `${n} items` : `${n} items match${extra}`;
-    return { text: list ? match : `${match} · the fields show the first`, miss: false };
+    return { text: list ? match : `${match} · the properties show the first`, miss: false };
   });
 
   // the page head's warning: this widget's row of that param, in view and focused
@@ -305,10 +307,12 @@
           <span class="bs__and">{i ? 'and' : 'where'}</span>
           <span class="bs__param">[{r.param}]</span>
           <span class="bs__eq">=</span>
-          <div class={['bs__field', r.field !== ANY && 'is-param', r.missing && 'is-missing']}>
+          <div
+            class={['bs__property', r.property !== ANY && 'is-param', r.missing && 'is-missing']}
+          >
             <Select
-              aria-label="The field [{r.param}] matches"
-              value={r.field}
+              aria-label="The property [{r.param}] matches"
+              value={r.property}
               options={r.options}
               onchange={(v) => setRule(r.param, v)}
             >
@@ -326,8 +330,8 @@
       <p class="bs__note" role="alert">
         <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
         <span
-          >[{missing.param}] matches “{missing.field}”, which this source doesn’t have. Pick a
-          field, or another source. It saves as it is; {isMain
+          >[{missing.param}] matches “{missing.property}”, which this source doesn’t have. Pick a
+          property, or another source. It saves as it is; {isMain
             ? 'no pages are built'
             : 'no item matches'} until then.</span
         >
@@ -395,7 +399,7 @@
     @include stack(var(--space-1));
   }
 
-  // [ where | [person] | = | field ▾ ]: 32px
+  // [ where | [person] | = | property ▾ ]: 32px
   .bs__rule {
     @include row(var(--space-2));
     height: var(--size-control);
@@ -422,7 +426,7 @@
     flex: none;
   }
 
-  .bs__field {
+  .bs__property {
     flex: 1;
     min-width: 0;
     color: var(--c-text-muted);

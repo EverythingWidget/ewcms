@@ -8,7 +8,7 @@
  *                               a page per item of a source, one URL segment per item, and
  *                               can hold one more [param] folder (see src/site/routes.js)
  *   content/en/sources/<id>.json   lists that grids pull from; the top level is a JSON array
- *   content/en/sources/<id>.schema.json  the fields of that list's items (src/site/schemas.js)
+ *   content/en/sources/<id>.schema.json  the properties of that list's items (src/site/schemas.js)
  *   content/en/settings/<id>.json  site-wide settings (site.json, nav.json: the menus,
  *                               animations.json, redirects.json: a list, footer.json: the
  *                               footer, a document like a page's: kind "part"), and photos.json:

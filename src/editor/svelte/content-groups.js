@@ -11,7 +11,7 @@ import { WIDGET_TYPES } from '../../site/widgets/index.js';
 import { bindTypeOf } from '../../site/layout/bindings.js';
 import { targetFile } from '../layout-sync.js';
 import { itemName, schemaFor } from './source-items.js';
-import { TEXT_TYPES } from '../../site/field-types.js';
+import { TEXT_TYPES } from '../../site/property-types.js';
 
 /** site.json values edited in the Settings tab: [key, label, field type]. */
 export const SITE_SETTINGS = [
@@ -40,7 +40,7 @@ const isItemPtr = (file, parts) => isSource(file) && parts[0] === 'items' && /^\
 
 /**
  * Human label for a pointer, e.g. sources/people.json#/items/0/name -> "Noor Vermeer / Name": a
- * source item by its name and its field by the schema's label.
+ * source item by its name and its property by the schema's label.
  */
 export function labelFor(store, { file, ptr }) {
   const parts = parse(ptr);
@@ -48,8 +48,8 @@ export function labelFor(store, { file, ptr }) {
     const schema = schemaFor(store, file);
     const item = store.current[file]?.items?.[parts[1]];
     const name = item ? itemName(item, schema) : `#${Number(parts[1]) + 1}`;
-    const field = schema.fields.find((f) => f.key === parts[2]);
-    return [name, field?.label ?? parts[2], ...parts.slice(3)].filter(Boolean).join(' / ');
+    const property = schema.properties.find((f) => f.key === parts[2]);
+    return [name, property?.label ?? parts[2], ...parts.slice(3)].filter(Boolean).join(' / ');
   }
   return parts.map((p) => (/^\d+$/.test(p) ? `#${Number(p) + 1}` : p)).join(' / ');
 }
@@ -120,7 +120,7 @@ function registryFields(file, base, s, t) {
       textual: TEXT_TYPES.includes(def.type || 'text'),
     };
   };
-  return (t.fields || []).map((f) => {
+  return (t.settings || []).map((f) => {
     if (!f.list) return field([f.key], f, f.label, true);
     const items = Array.isArray(s[f.key]) ? s[f.key] : [];
     const subs = typeof f.list === 'string' ? null : Object.entries(f.list);

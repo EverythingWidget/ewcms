@@ -1,12 +1,12 @@
 /**
  * Plain helpers for source items (the Source Explorer, SourcesModal.svelte, and the Content
- * tab): the source's schema (src/site/schemas.js), an item's name and list line, its fields
- * for the editor, a new item, the slug format.
+ * tab): the source's schema (src/site/schemas.js), an item's name and list line, its
+ * properties as the editor's fields, a new item, the slug format.
  */
 import { pointer } from '../../site/helpers.js';
 import { itemsOf, schemaFile, sourceIdOf } from '../../site/files.js';
 import { itemTitle, newItemOf, schemaOf } from '../../site/schemas.js';
-import { controlOf } from '../../site/field-types.js';
+import { controlOf } from '../../site/property-types.js';
 
 /** The schema of a source file ("sources/people.json") in the store: its schema file, else inferred. */
 export function schemaFor(store, file) {
@@ -20,9 +20,9 @@ export function schemaFor(store, file) {
 
 export const itemName = (item, schema) => itemTitle(item, schema) || 'Untitled';
 
-/** The line under an item's name in lists: its "list" fields, else its slug. */
+/** The line under an item's name in lists: its "list" properties, else its slug. */
 export const itemMeta = (item, schema) =>
-  (schema.fields || [])
+  (schema.properties || [])
     .filter((f) => f.list && item?.[f.key] !== undefined && item[f.key] !== '')
     .map((f) => item[f.key])
     .join(' · ') ||
@@ -34,7 +34,7 @@ export const pad = (i) => String(i + 1).padStart(2, '0');
 export { slugify } from '../../site/helpers.js';
 
 /**
- * What the editor shows for schema field `f` (a value at `path` in item i of `file`):
+ * What the editor shows for schema property `f` (a value at `path` in item i of `file`):
  * { key, label, path, edit, ptr, type (a widget), half, help, options ([[value, label]]) }.
  */
 function fieldOf(file, i, path, f, label = f.label) {
@@ -54,11 +54,11 @@ function fieldOf(file, i, path, f, label = f.label) {
 }
 
 /**
- * The editable fields of one item, from the schema, except the slug (its own input): every
- * photo of a photos field is one field ("Photo 2").
+ * The editable fields of one item, one per property of the schema, except the slug (its own
+ * input): every photo of a photos property is one field ("Photo 2").
  */
 export function itemFields(file, item, i, schema) {
-  return (schema.fields || []).flatMap((f) => {
+  return (schema.properties || []).flatMap((f) => {
     if (f.key === schema.slug) return [];
     if (f.type !== 'photos') return [fieldOf(file, i, [f.key], f)];
     const list = Array.isArray(item?.[f.key]) ? item[f.key] : [];
@@ -71,7 +71,7 @@ export function itemFields(file, item, i, schema) {
 /** The value at `path` in `item` (a field's path from itemFields). */
 export const valueAt = (item, path) => path.reduce((v, k) => v?.[k], item);
 
-/** A new item for `list`: the schema's fields empty, a unique slug new-item-N. */
+/** A new item for `list`: the schema's properties empty, a unique slug new-item-N. */
 export const newItem = (list, schema) => newItemOf(schema, list);
 
 /**

@@ -19,7 +19,7 @@ export const photo = {
   line: 'One photo, with a caption',
   sketch: 'photo',
   placement: { media: true, fill: true, place: 'center' },
-  fields: [
+  settings: [
     { key: 'src', label: 'Photo', type: 'photo' },
     { key: 'caption', label: 'Caption (empty: none)' },
   ],

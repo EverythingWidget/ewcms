@@ -1,12 +1,12 @@
 <!--
   Source Explorer: the lists in content/en/sources/ (people, places, projects, ...). It starts on
   the files with their item counts; click one to enter it: its items on the left, the
-  selected item's fields on the right, Back returns to the files. ContentPanel.svelte calls
+  selected item's properties on the right, Back returns to the files. ContentPanel.svelte calls
   open() from its Sources button (the files), and from a grid's Source edit button or a click
   on a list item in the preview (straight into that file, item or field).
   Where it is lives in ui.explorer, so persist.js can bring it back after a refresh.
   What an item has comes from its source's schema (sources/<id>.schema.json, else inferred:
-  src/site/schemas.js): the fields, their labels, widgets, widths and help, its name and slug.
+  src/site/schemas.js): the properties, their labels, types, widths and help, its name and slug.
 -->
 <script>
   import { plural } from '../lib/format.js';
@@ -51,9 +51,9 @@
   const item = $derived(isList ? list[index] : undefined);
   const schema = $derived.by(() => {
     live.version;
-    return file ? schemaFor(live.store, file) : { fields: [] };
+    return file ? schemaFor(live.store, file) : { properties: [] };
   });
-  const slugField = $derived(schema.fields.find((f) => f.key === schema.slug));
+  const slugField = $derived(schema.properties.find((f) => f.key === schema.slug));
   const fields = $derived(item ? itemFields(file, item, index, schema) : []);
   const halves = $derived(pairedHalves(fields));
 

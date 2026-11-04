@@ -17,11 +17,11 @@
  *                                                          around it, one per value of its own
  *
  * Which pages a [param] page has: its main widget decides ("main": "<widget id>", a From URL
- * widget, layout/source.js). Each param of the address matches a field of the main widget's
+ * widget, layout/source.js). Each param of the address matches a property of the main widget's
  * source (its rule, src/site/query.js); its pages: for each page of the folder around it, the
- * items that match the params above, one page per value of its own param's field among them
+ * items that match the params above, one page per value of its own param's property among them
  * (a URL part: the slug, or the value slugified), the first of those its item. A page exists
- * when at least one item matches; no main widget, or a param without a field to match: no pages
+ * when at least one item matches; no main widget, or a param without a property to match: no pages
  * (a warning). A [param] folder holds only its page and maybe one more [param] folder. Item
  * pages get `params` ({ person: "eeliya", year: "2018" }), `items` (each param's item), `album`
  * (their own), `source` (the main widget's), `count` (how many items match) and `members` (their
@@ -33,7 +33,7 @@
  * links to it go straight there (hrefs.js), and the build writes a redirect instead of the page.
  *
  * Folders nest to any depth. Every page is its list of sections of widgets (src/site/layout/). Its
- * "view" (the class of <main> and <html data-page>, for the styles) is its "view" field,
+ * "view" (the class of <main> and <html data-page>, for the styles) is its "view" key,
  * else the built-in name of the same page (home, photography, people, places, projects,
  * about, 404), else "page"; templates default to "album" (no footer).
  *
@@ -53,7 +53,7 @@ import { curtainMode } from '../client/anim/curtain.js';
 import { widgetsOf } from './layout/ids.js';
 import { lineText } from './text.js';
 import { mainOf, mainProblem, refsOf, sourceOf } from './layout/source.js';
-import { hasField, query, ruleOf, valueOf, SLUG } from './query.js';
+import { hasProperty, query, ruleOf, valueOf, SLUG } from './query.js';
 
 /** Curtain label shown during page transitions. Explicit "" means no text; missing falls back to the title. */
 function curtainOf(explicit, title) {
@@ -88,7 +88,7 @@ export const pathOfId = (id) =>
 
 /**
  * A page's title: the first title line of its first Text widget with one (widgets/text/index.js),
- * else undefined. A title with a field in it names the item, not the page: none.
+ * else undefined. A title with a property in it names the item, not the page: none.
  */
 export const pageTitle = (page) => {
   for (const widget of widgetsOf(page))
@@ -254,13 +254,13 @@ export function buildRoutes(content, { unbuilt = false } = {}) {
     const schema = schemaOf(content, s.from);
     // unbuilt: the rules that can match (a param without one doesn't filter)
     const where = problem
-      ? { ...s.where, rules: s.where.rules.filter((r) => hasField(schema, r.field)) }
+      ? { ...s.where, rules: s.where.rules.filter((r) => hasProperty(schema, r.property)) }
       : s.where;
-    const field = ruleOf(where, param)?.field;
+    const property = ruleOf(where, param)?.property;
     for (const at of outer) {
       // the items of the page around it (its params), then one page per value of this param
       const mine = query(list, where, at.params, { schema, refs: refsOf(at) });
-      if (!field) {
+      if (!property) {
         // unbuilt, its own param matching nothing: one page to edit it on, at its pattern
         // under the page around it ("/people/noor/:year/"), its first item shown
         const item = mine[0] ?? null;
@@ -282,12 +282,13 @@ export function buildRoutes(content, { unbuilt = false } = {}) {
       }
       const groups = new Map();
       for (const item of mine) {
-        const slug = valueOf(item, field, schema);
+        const slug = valueOf(item, property, schema);
         const index = list.indexOf(item);
         const label = `sources/${s.from}.json item ${index + 1}`;
         if (!slug) {
           const name = itemTitle(item, schema);
-          if (field !== SLUG) warnings.push(`${label}: no "${field}" for ${pathOfId(id)}: no page`);
+          if (property !== SLUG)
+            warnings.push(`${label}: no "${property}" for ${pathOfId(id)}: no page`);
           else if (name)
             warnings.push(
               `${label}: name "${name}" makes no slug, add a "${schema.slug || 'slug'}": no page`,
@@ -300,7 +301,7 @@ export function buildRoutes(content, { unbuilt = false } = {}) {
           continue;
         }
         // by slug, one item per page: a second with the same slug is a mistake
-        if (field === SLUG && groups.has(slug))
+        if (property === SLUG && groups.has(slug))
           warnings.push(`${label}: duplicate slug "${slug}": its page shows the first`);
         if (!groups.has(slug)) groups.set(slug, []);
         groups.get(slug).push(item);
@@ -309,8 +310,8 @@ export function buildRoutes(content, { unbuilt = false } = {}) {
         if (exists.has(`${up}/${slug}`)) continue; // a fixed page wins over the [param] page
         const item = matched[0];
         out.push({
-          // by its slug: the item's name; by another field: its value ("2018")
-          name: (field === SLUG ? itemTitle(item, schema) : String(item[field])) ?? slug,
+          // by its slug: the item's name; by another property: its value ("2018")
+          name: (property === SLUG ? itemTitle(item, schema) : String(item[property])) ?? slug,
           path: `${at.path}${slug}/`,
           params: { ...at.params, [param]: slug },
           items: { ...at.items, [param]: item },

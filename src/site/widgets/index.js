@@ -1,5 +1,5 @@
 /**
- * The widget registry: what a widget of each type shows and which fields the editor offers
+ * The widget registry: what a widget of each type shows and which settings the editor offers
  * for it. Every widget, built in or the site's own, is a widget module: a folder whose
  * index.js default-exports its definition (below), with an optional style.scss (its look,
  * bundled into the site's stylesheet) and client.js (its behaviour on the page: a default
@@ -13,7 +13,7 @@
  *
  * The widget's own content (texts, photos) sits next to its type, the items it shows under
  * "source" (../layout/source.js); how it works (its look, on/off) is under "config"; where it sits is the layout's (id, layout, z,
- * size: layout keys, never a field key). A type:
+ * size: layout keys, never a setting's key). A type:
  *
  *   type      its name in the content
  *   label     its name in the editor; icon: a Font Awesome icon name (no "fa-")
@@ -26,28 +26,29 @@
  *   scaleToFit  optional true: its whole text can scale down to fit it (the widget's "scale",
  *             Scale to fit; ../layout/type.js)
  *   size      optional false: no Size (Auto / Rows / Aspect); every built-in has it
- *   fields    its content fields for the editor: [{ key, label, type?, width?, list?, item? }]
+ *   settings  its content settings for the editor (each one field there; an item's properties
+ *             can fill them, ../layout/bindings.js): [{ key, label, type?, width?, list?, item? }]
  *               type: 'text' (default) | 'multiline' (multi-line) | 'words' | 'number' | 'photo'
- *                     (the field types: ../field-types.js)
- *               width: 'half' shares a row with a half field next to it (short texts)
- *               list: the field is a list: a type for a list of values ('multiline'), or
+ *                     (the types: ../property-types.js)
+ *               width: 'half' shares a row with a half setting next to it (short texts)
+ *               list: the setting is a list: a type for a list of values ('multiline'), or
  *                     { subkey: type } for a list of objects ({ title: 'text' }; a subkey
  *                     can also be 'source', a content/en/sources file, 'boolean' (a switch), or
  *                     { type, label, width?, options? }: a type with its label, 'select' with options
  *                     [[value, label]])
  *               item: a new item of the list (default: '' or the subkeys empty)
- *   config    its settings: [{ key, label, type, options?, empty? }]
+ *   config    how it works (its look, on/off): [{ key, label, type, options?, empty? }]
  *               type: 'source' (a content/en/sources file) | 'select' (options [[value, label]])
  *                     | 'text' | 'boolean'; every widget also has config.enabled (on/off)
  *   defaults  a new widget of this type (Add widget)
- *   check(widget)  optional: more problems than the fields' types (src/site/validate.js)
+ *   check(widget)  optional: more problems than its settings' types (src/site/validate.js)
  *   list      a list widget: it shows all its source's items (its source: All / From URL /
  *             None), not one (Item / From URL / None): ../layout/source.js
  *   item      it needs an item (its source's first): without one it is skipped
  *   render(data, ctx, widget)  its HTML, one root element. data: the widget's values (bound
- *             fields filled in); widget: { id, file, ed, source,
- *             items, item, index, indexOf }: the widget's id, the page file, ed(field or path, type), the editor marker of one
- *             of its fields, and what its source shows (widgetItems, ../layout/source.js)
+ *             settings filled in with the item's properties); widget: { id, file, ed, source,
+ *             items, item, index, indexOf }: the widget's id, the page file, ed(key or path, type), the editor marker of one
+ *             of its settings, and what its source shows (widgetItems, ../layout/source.js)
  */
 import text from './text/index.js';
 import photo from './photo/index.js';
@@ -92,7 +93,10 @@ export function widgetProblems(def) {
     out.push('"type" must be a name in lowercase letters, digits and "-" ("quote", "price-list")');
   if (typeof def.label !== 'string' || !def.label) out.push('"label" must be a text');
   if (typeof def.render !== 'function') out.push('"render" must be a function (data, ctx, widget)');
-  if (def.fields !== undefined && !Array.isArray(def.fields)) out.push('"fields" must be a list');
+  if (def.fields !== undefined)
+    out.push('"fields" is "settings" now: write `settings: [{ key, label, type? }]`');
+  if (def.settings !== undefined && !Array.isArray(def.settings))
+    out.push('"settings" must be a list');
   if (def.config !== undefined && !Array.isArray(def.config)) out.push('"config" must be a list');
   if (def.defaults !== undefined && !isObj(def.defaults)) out.push('"defaults" must be an object');
   for (const k of ['icon', 'line', 'sketch'])

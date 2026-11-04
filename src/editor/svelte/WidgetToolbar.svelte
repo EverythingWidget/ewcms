@@ -6,8 +6,8 @@
     text      (a Text widget) style ▾ (the line the caret is in: the whole line), Fit width
               (that line fills the widget's width, a line's "fit": text.js), B, I, link
               (the selected text only: greyed with nothing selected or when not editing),
-              + Field (a field of the item the widget shows, or a source: how many, at the caret; typing
-              {name} puts in the same chip)
+              + Property (a property of the item the widget shows, or a source: how many, at the
+              caret; typing {name} puts in the same chip)
 
   Selected, a widget with text shows Edit (where it is: the overlay's tag, its size and place;
   what it follows: its link line and its pop-up's Layout); its text tools only in its edit mode (Edit,
@@ -23,7 +23,7 @@
   (rich.js).
 -->
 <script>
-  import { BIND_TYPES } from '../../site/field-types.js';
+  import { BIND_TYPES } from '../../site/property-types.js';
   import { ui, previewClicks } from './ui.svelte.js';
   import { targetFile } from '../layout-sync.js';
   import { schemaFor } from './source-items.js';
@@ -71,7 +71,7 @@
     return where ? live.get(where.file, where.base) || {} : null;
   });
   const type = $derived(WIDGET_TYPES[widget?.type] || {});
-  const hasText = $derived(!!type.fields?.some((f) => f.type === 'rich'));
+  const hasText = $derived(!!type.settings?.some((f) => f.type === 'rich'));
   const rich = $derived(ui.rich && ui.rich.widget === where?.id ? ui.rich : null);
   const editing = $derived(!!rich);
   const style = $derived(rich ? rich.style : widget?.body?.[0]?.style || 'paragraph');
@@ -135,7 +135,7 @@
 
   // its toolbar's width (measured), for where it goes and what moves into "…"
   let barW = $state(0);
-  // the whole bar, about: style + Fit + lists + B I link + Field, then the layout part
+  // the whole bar, about: style + Fit + lists + B I link + Property, then the layout part
   const TEXT_W = 440;
   // (Scale to fit's shortcut: one more icon)
   const LAYOUT_W = $derived(13 + 32 + 4 + 136 + (canScaleFit ? 36 : 0));
@@ -318,13 +318,13 @@
     bridge.holdRich(false);
   }
 
-  // + Field: the item's fields (the widget's source; a list: its length), and the sources
+  // + Property: the item's properties (the widget's source; a list: its length), and the sources
   // ({people}: how many)
   const from = $derived(sourceOf(widget)?.from ?? null);
-  const fields = $derived.by(() => {
+  const properties = $derived.by(() => {
     live.version;
     return from
-      ? (schemaFor(live.store, sourceFile(from))?.fields || []).filter((f) =>
+      ? (schemaFor(live.store, sourceFile(from))?.properties || []).filter((f) =>
           [...BIND_TYPES.multiline, 'photos'].includes(f.type),
         )
       : [];
@@ -409,11 +409,11 @@
   >
   <button
     type="button"
-    class={['btb__btn btb__field', open === 'field' && 'is-open']}
+    class={['btb__btn btb__property', open === 'property' && 'is-open']}
     disabled={!editing}
-    title="A field of the item it shows, or how many a source has, at the caret: or type {name}"
-    onclick={(e) => toggle('field', e)}
-    ><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Field</span></button
+    title="A property of the item it shows, or how many a source has, at the caret: or type {name}"
+    onclick={(e) => toggle('property', e)}
+    ><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Property</span></button
   >
 {/snippet}
 
@@ -470,7 +470,7 @@
           type="button"
           class={['btb__btn btb__icon', open === 'more' && 'is-open']}
           aria-label="More"
-          title="More: bold, italic, link, field"
+          title="More: bold, italic, link, property"
           onclick={(e) => toggle('more', e)}
           ><i class="fa-solid fa-ellipsis" aria-hidden="true"></i></button
         >
@@ -502,7 +502,11 @@
     {#if open}
       <div
         bind:this={popEl}
-        class={['btb__pop', (open === 'style' || open === 'field') && 'is-list', popUp && 'is-up']}
+        class={[
+          'btb__pop',
+          (open === 'style' || open === 'property') && 'is-list',
+          popUp && 'is-up',
+        ]}
         style="left: {anchor}px; max-height: {popMax ? `${popMax}px` : 'none'}"
       >
         {#if open === 'style'}
@@ -522,10 +526,11 @@
             <button type="submit" class="btb__btn" disabled={!!linkError}>Link</button>
           </form>
           {#if linkError}<p class="btb__err" role="alert">{linkError}</p>{/if}
-        {:else if open === 'field'}
-          <span class="btb__grp">{from ? `A field of ${from}` : 'No source: no fields'}</span>
-          {#each fields as f (f.key)}
-            <button type="button" class="btb__opt" onclick={() => insert({ field: f.key })}
+        {:else if open === 'property'}
+          <span class="btb__grp">{from ? `A property of ${from}` : 'No source: no properties'}</span
+          >
+          {#each properties as f (f.key)}
+            <button type="button" class="btb__opt" onclick={() => insert({ property: f.key })}
               ><span class="btb__chip">{`{${f.key}}`}</span><span class="btb__hint"
                 >{f.label || f.type}</span
               ></button
@@ -533,7 +538,7 @@
           {/each}
           <span class="btb__grp">How many</span>
           {#each sources as s (s)}
-            <button type="button" class="btb__opt" onclick={() => insert({ field: s })}
+            <button type="button" class="btb__opt" onclick={() => insert({ property: s })}
               ><span class="btb__chip">{`{${s}}`}</span><span class="btb__hint">items in {s}</span
               ></button
             >
@@ -682,7 +687,7 @@
     width: 112px;
   }
 
-  .btb__field:not(:disabled) {
+  .btb__property:not(:disabled) {
     color: var(--c-widget-accent);
   }
 

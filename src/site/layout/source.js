@@ -1,5 +1,5 @@
 /**
- * A widget's source: the items it shows (its bound fields the first one, a list widget all of
+ * A widget's source: the items it shows (its bound settings the first one, a list widget all of
  * them). Stored on the widget as "source", one of:
  *
  *   { "mode": "item", "from": "people", "id": "p-qw7b" }   one item, picked
@@ -9,7 +9,7 @@
  *                                                          address (src/site/query.js)
  *   no "source"                                            None: the widget's own texts
  *
- * Field widgets (a type without `list`) offer Item / From URL / None, list widgets (`list: true`:
+ * Item widgets (a type without `list`) offer Item / From URL / None, list widgets (`list: true`:
  * album cards, grids, project lists) All / From URL / None. From URL only on a [param] page:
  * every param of its address has a row (a rule) or is Any (no rule).
  *
@@ -37,7 +37,7 @@ const listOf = (ctx, from) => (Array.isArray(ctx?.sources?.[from]) ? ctx.sources
 
 /**
  * What a widget shows: { source, items, item, index, indexOf }: its source's id, its items, the
- * first (its bound fields') and that one's index in the source (indexOf: any item's, for the
+ * first (its bound settings') and that one's index in the source (indexOf: any item's, for the
  * editor's markers); source null and items [] for None.
  * route: the page's (its params on a [param] page, the ids of their items as refs).
  */
@@ -57,7 +57,7 @@ export function widgetItems(ctx, route, widget) {
   return { source: s.from, items, item, index: item ? indexOf(item) : -1, indexOf };
 }
 
-/** The ids of a page's param items ({ person: "p-qw7b" }): what a reference field can hold. */
+/** The ids of a page's param items ({ person: "p-qw7b" }): what a reference property can hold. */
 export const refsOf = (route) =>
   Object.fromEntries(Object.entries(route?.items || {}).map(([p, it]) => [p, it?.id]));
 
@@ -79,9 +79,9 @@ export const pageSourceOf = (page) => sourceOf(mainOf(page))?.from ?? null;
 
 /**
  * Why [param] page `id` builds no pages, or null when its main widget can decide them:
- * { kind, message, param?, field? }. kind: 'none' (no main widget), 'mode' (not From URL),
+ * { kind, message, param?, property? }. kind: 'none' (no main widget), 'mode' (not From URL),
  * 'source' (its source isn't a list), 'any' / 'missing' (a param without a rule, or one whose
- * field the source doesn't have: param names it). The message is the page head's warning.
+ * property the source doesn't have: param names it). The message is the page head's warning.
  */
 export function mainProblem(content, id) {
   if (!isTemplate(id)) return null;
@@ -96,11 +96,11 @@ export function mainProblem(content, id) {
   const [first] = unmatched(s.where, paramsOf(id), schemaOf(content, s.from));
   if (!first) return null;
   return first.problem === 'any'
-    ? say('any', `[${first.param}] needs a field to match`, first)
-    : say('missing', `[${first.param}] matches no field`, first);
+    ? say('any', `[${first.param}] needs a property to match`, first)
+    : say('missing', `[${first.param}] matches no property`, first);
 }
 
-/** A From URL source of `from` on a page with `params`: each param on its default field. */
+/** A From URL source of `from` on a page with `params`: each param on its default property. */
 export const urlSource = (content, from, params) => ({
   mode: 'url',
   from,
@@ -109,7 +109,7 @@ export const urlSource = (content, from, params) => ({
 
 /**
  * A new widget's source fitted to its page (Add widget): From URL on a [param] page matches
- * every param of its address (its default fields); on a page without params From URL can't
+ * every param of its address (its default properties); on a page without params From URL can't
  * be, so a list shows All and one item its source's first (no item: None, undefined).
  * Item and All stay as they are.
  */

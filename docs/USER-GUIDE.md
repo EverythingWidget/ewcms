@@ -36,12 +36,13 @@ A page is a stack of **sections**; each holds **widgets** (text, photo, button, 
 - **Lists** in text: the two list buttons in the text toolbar (after Fit width), or type `- ` or `1. `
   at the start of a line. Enter adds the next item; Enter on an empty item ends the list;
   Backspace at the start of an item makes it a normal line again.
-- **Fields** in text: type `{name}` (a field of the widget's source, or a source's name for how
-  many items it has, e.g. `{people}`), or pick one from **+ Field**; both make the same chip.
-  Type `{{` for a plain `{`. A chip in orange is a name nothing has (Save refuses it). In a
-  field's settings, the picker at its label: **Custom** (its own text), a field, or **Text with
-  fields** (text and chips, + Field adds one). A widget whose fields all have no value isn't on
-  the site; in the editor it's dimmed with "No value for {name}".
+- **Properties** in text: type `{name}` (a property of the widget's source, or a source's name
+  for how many items it has, e.g. `{people}`), or pick one from **+ Property**; both make the
+  same chip. Type `{{` for a plain `{` and `}}` for a plain `}`. A chip in orange is a name
+  nothing has (Save refuses it). In a widget's settings, the picker at a setting's label:
+  **Custom** (its own text), a property, or **Text with properties** (text and chips, + Property
+  adds one). A widget whose properties all have no value (empty; 0 is a value) isn't on the
+  site; in the editor it's dimmed with "No value for {name}".
 - **Ctrl/⌘+Z** undoes, Shift+Ctrl/⌘+Z redoes.
 - An **ⓘ** beside a setting explains it: click it, Esc or a click elsewhere closes it.
 
