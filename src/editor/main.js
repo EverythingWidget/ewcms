@@ -596,7 +596,7 @@ bridge.on('navigate', (path) => {
 // after a save's reload: kept, but nothing opens for it)
 bridge.on('pick', pickElement);
 bridge.on('hover', hoverElement);
-bridge.on('textFocus', selectText);
+bridge.on('textPick', selectText);
 // the Text widget editor (bridge.js, rich.js): its state for the toolbar; an edit ended: its
 // section rendered again (the fields' values, the counts, the animations' markup)
 bridge.on('rich', (state) => (ui.rich = state));

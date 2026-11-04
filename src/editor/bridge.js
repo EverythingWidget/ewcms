@@ -104,7 +104,7 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
     pick: [], // an element picked in the preview (el, kind, { quiet }), or null: none
     hover: [], // the element under the pointer (animate clicks), or null
     key: [],
-    textFocus: [],
+    textPick: [],
     part: [],
     rich: [], // the Text widget editor's state changed (richState)
     richDone: [], // a Text widget's edit ended: its section renders again (edit ref)
@@ -720,7 +720,7 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
     /** A text's (or photo's, bound value's) field opens in the panel. */
     const pickField = (hit) => {
       emit('pick', hit, 'text');
-      emit('textFocus', hit.dataset.edit ?? hit.dataset.bound);
+      emit('textPick', hit.dataset.edit ?? hit.dataset.bound);
     };
 
     // Clicks: arrange and animate clicks select instead of navigating. With arrange clicks no link,
@@ -814,7 +814,7 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
         sel.collapseToEnd();
       }
       emit('pick', el, 'text');
-      emit('textFocus', el.dataset.edit);
+      emit('textPick', el.dataset.edit);
       // Focus (e.g. Tab to an off-screen field) may leave the field under the header or at
       // an edge: center it.
       setTimeout(() => bridge.reveal(el), 50);
