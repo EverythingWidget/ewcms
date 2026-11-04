@@ -66,6 +66,8 @@ html.__ed-arrange .hero__title { z-index: 5; }
 :is(html.__ed-arrange, html.__ed-animate) [data-header]:is(:hover, [data-ed-open])::before { content: 'Header'; top: auto; bottom: -28px; }
 :is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])[data-ed-open]::before { background: ${T.accent}; color: ${T.onAccent}; }
 html.__ed-animate [data-anim], html.__ed-animate [data-anim] *, html.__ed-animate [data-widget], html.__ed-animate [data-widget] * { cursor: pointer !important; }
+/* a press on a widget's link or button only picks the widget: the press misses it (no :active, :hover or focus look), the widget gets it; Alt+click still clicks through (__ed-alt) */
+html:is(.__ed-arrange, .__ed-animate):not(.__ed-alt) [data-widget] :is(a, button, [role="button"], summary, label):not([data-anim], :has([data-anim], [contenteditable]), [contenteditable] *) { pointer-events: none; }
 .__ed-box { position: fixed; z-index: 2147483646; pointer-events: none; border-radius: ${T.radiusSm}; opacity: 0; transition: opacity .15s; left: 0; top: 0; }
 .__ed-box.is-on { opacity: 1; }
 .__ed-box--hover { border: 1px dashed rgb(255 255 255 / .6); }
@@ -768,6 +770,10 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
       },
       true,
     );
+    // Alt held: a widget's links and buttons take the pointer again (Alt+click clicks through)
+    const altClass = (e) => doc.documentElement.classList.toggle('__ed-alt', !!e.altKey);
+    for (const type of ['keydown', 'keyup', 'pointermove', 'pointerdown'])
+      win.addEventListener(type, altClass, true);
     // a form doesn't send, Enter in a field included
     doc.addEventListener(
       'submit',

@@ -91,3 +91,28 @@ test('a link drag keeps the widget where it is (the gap: the rows between them)'
   assert.match(o, /onlink\(id, near\.id, b\.row - \(a\.row \+ a\.rows\), \{ mobile: phone \}\)/);
   assert.doesNotMatch(o, /onlink\(id, near\.id, 0,/);
 });
+
+test("a press on a widget's link or button only picks it: no pressed look, Alt still clicks through", () => {
+  const b = src('bridge.js');
+  const css = b.slice(
+    b.indexOf('const INJECTED_CSS'),
+    b.indexOf('`;', b.indexOf('const INJECTED_CSS')),
+  );
+  const rule = css
+    .split('\n')
+    .find((l) => l.includes('pointer-events: none;') && l.includes('[data-widget] :is(a, button'));
+  assert.ok(rule, "the injected CSS takes the pointer off a widget's links and buttons");
+  // only with arrange or animate clicks (visitor clicks press as on the site), never while Alt is held
+  assert.match(rule, /^html:is\(\.__ed-arrange, \.__ed-animate\):not\(\.__ed-alt\) /);
+  // an animated element stays pickable (animate clicks), a text being typed stays clickable
+  assert.match(
+    rule,
+    /:not\(\[data-anim\], :has\(\[data-anim\], \[contenteditable\]\), \[contenteditable\] \*\)/,
+  );
+  assert.match(b, /classList\.toggle\('__ed-alt', !!e\.altKey\)/);
+  // the site's own styles are untouched: the press look stays for visitors
+  assert.match(
+    read('theme-default/styles/_glass.scss'),
+    /&:active \{\s*transform: scale\(0\.97\);/,
+  );
+});
