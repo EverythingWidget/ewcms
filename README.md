@@ -1520,6 +1520,26 @@ Change in its field, see the Media window above). Edit
 - Inspiration: Gregor Collienne and Hannah Miles (home hero), Faint Film (album slider/grid),
   House of Yellow (a proper website with sections and a big footer).
 
+## Breaking content changes 0.3.0
+
+A Text widget's whole-widget `"fit"` is refused: `ewcms check` reports it as an error. A text widget
+scales as a whole with Scale to fit (`"scale": true`, the pop-up's Layout switch) instead, and one
+line fills the width with Fit width (that line's own `"fit": true`). The old cqi caps on the text
+styles are gone; Scale to fit replaces them. `scripts/rename-0-2-0.mjs` (the same script as for
+0.2.0, the same commands as below) converts it; on content already converted for 0.2.0 it changes
+only this:
+
+| Where         | Old                              | New                            |
+| ------------- | -------------------------------- | ------------------------------ |
+| a Text widget | `"fit": true` (the whole widget) | `"scale": true` (Scale to fit) |
+
+Also in 0.3.0 (the editor, no content change): the side panel's first tab is Pages (Back to
+pages); a page's Motion tab is split into Element motion and Page motion (Scroll backdrop, Page
+entrance); the widget pop-up has Content | Layout tabs; per-line Fit width and Scale to fit
+replace the whole-widget fit; the theme's Transition* / TransitionBackdrop files are Entrance* /
+ScrollBackdrop (CSS classes `entrance__*`, `scroll-backdrop__*`); the engine's tests are by
+topic, not by version.
+
 ## Breaking content changes 0.2.0
 
 0.2.0 renames things in a site's content. Nothing reads the old names, so convert a site's
@@ -1553,7 +1573,6 @@ changing only those lines; a script it can't match exactly it names, to change b
 | `settings/site.json`                          | `"ogImage"`                                    | `"ogPhoto"`                                    |
 | a page's `meta`                               | `"image"` (its share photo)                    | `"photo"`                                      |
 | the site's `package.json` scripts             | `"images": "ewcms images"`, `--no-images`      | `"photos": "ewcms photos"`, `--no-photos`      |
-| a Text widget                                 | `"fit": true` (the whole widget)               | `"scale": true` (Scale to fit)                 |
 | a Button widget                               | `"fit": true`                                  | (dropped: its label's style size)              |
 
 A theme's own widget code (not content) needs, by hand: field type `'block'` is

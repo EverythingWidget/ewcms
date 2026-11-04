@@ -7,6 +7,9 @@
  *   node scripts/rename-0-2-0.mjs <site>/content --write    change the files
  *
  * Run it once, on a clean checkout (git shows what it changed). Running it again changes nothing.
+ *
+ * It also covers 0.3.0 (README, "Breaking content changes 0.3.0"): a Text widget's whole-widget
+ * "fit": true becomes "scale": true (Scale to fit). The name stays rename-0-2-0.mjs.
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
