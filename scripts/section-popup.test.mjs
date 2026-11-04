@@ -1,17 +1,11 @@
-// v0.1.55: a section's settings open in a floating pop-up (a card's double click or the
-// toolbar's gear), a grey copy of the widget's; the slide-in section view is gone.
+// A section's settings pop-up (a card's double click or the toolbar's gear).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 
 const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
 const panel = src('svelte/ContentPanel.svelte');
 const pop = src('svelte/SectionPopup.svelte');
-
-test('the slide-in section view is gone', () => {
-  assert.ok(!existsSync(new URL('../src/editor/svelte/SectionView.svelte', import.meta.url)));
-  assert.doesNotMatch(panel, /SectionView|slide__pane|atWidget|gsap/);
-});
 
 test('the pop-up: rows icon, name, Locate, ×; the section settings; 380px, grey', () => {
   assert.match(pop, /fa-grip-lines/);

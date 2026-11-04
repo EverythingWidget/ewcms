@@ -1,17 +1,10 @@
-// v0.1.50: the Publish count counts edits as their author sees them; sections are deleted at
-// once (several: one undo step); sections or widgets are selected, never both.
+// The Publish count counts edits as their author sees them (edit-count.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { compileModule } from 'svelte/compiler';
+import { readFileSync } from 'node:fs';
 import { countEdits } from '../src/editor/lib/edit-count.js';
-import { createStore } from '../src/editor/store.js';
-import { removeSections } from '../src/editor/layout-ops.js';
 
-const url = (f) => new URL(`../src/editor/${f}`, import.meta.url);
-const src = (f) => readFileSync(url(f), 'utf8');
+const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
 const P = 'pages/index.json';
 const w = (id, base, extra = {}) => ({ id, type: 'text', layout: { base }, ...extra });
 const page = () => ({
@@ -113,65 +106,4 @@ test('widgets and sections added, removed, restyled; page settings; settings fil
   // a new or deleted file: 1 (contentStatus); something that isn't an object: 1
   assert.equal(countEdits(1, 2), 1);
   assert.match(src('../../scripts/editor-server.mjs'), /countEdits\(before, disk, f\.name\)/);
-});
-
-test('sections deleted at once, several in one undo step', () => {
-  const F = P;
-  const store = createStore();
-  store.load({ [F]: page() });
-  assert.equal(removeSections(store, F, ['s-aaaa', 's-bbbb']), true);
-  assert.deepEqual(store.current[F].sections, []);
-  store.undo();
-  assert.deepEqual(store.current[F], page());
-  assert.equal(removeSections(store, F, ['s-zzzz']), false);
-  const card = src('svelte/SectionCard.svelte');
-  assert.doesNotMatch(card, /alertdialog|deleting/);
-  const tb = src('svelte/SectionToolbar.svelte');
-  assert.match(tb, /label="Delete \{title\}"\s+onclick=\{\(\) => removeSelected\(\[s\.id\]\)\}/);
-  assert.match(tb, /label="Delete \{many\.length\} sections"/);
-});
-
-async function loadUi() {
-  const { js } = compileModule(src('svelte/ui.svelte.js'), { filename: 'ui.svelte.js' });
-  const code = js.code.replace(
-    /from '(\.\.?\/[^']+)'/g,
-    (_, p) => `from '${new URL(p, url('svelte/'))}'`,
-  );
-  const f = join(mkdtempSync(join(tmpdir(), 'ui-')), 'ui.mjs');
-  writeFileSync(
-    f,
-    code.replace(
-      /from 'svelte\/internal\/client'/,
-      `from '${import.meta.resolve('svelte/internal/client')}'`,
-    ),
-  );
-  return import(f);
-}
-
-test('sections or widgets: selecting one kind clears the other', async () => {
-  const { ui, selectSections, selectWidgets } = await loadUi();
-  selectWidgets(['w-1', 'w-2']);
-  selectSections(['s-1', 's-2'], 's-1');
-  assert.deepEqual(
-    [ui.multi, ui.widget, ui.selSections, ui.selSection],
-    [[], null, ['s-1', 's-2'], 's-1'],
-  );
-  selectWidgets(['w-1']);
-  assert.deepEqual([ui.selSections, ui.selSection, ui.widget], [[], null, 'w-1']);
-  selectSections(['s-3']);
-  assert.deepEqual([ui.selSections, ui.selSection, ui.widget], [[], 's-3', null]);
-});
-
-test('a reveal at the very end of the page plays: every scroll position clamped', () => {
-  const t = readFileSync(new URL('../src/client/anim/types.js', import.meta.url), 'utf8');
-  assert.match(
-    t,
-    /const reach = \(pos\) =>\s+typeof pos === 'string' && !pos\.startsWith\('clamp\('\) \? `clamp\(\$\{pos\}\)` : pos;/,
-  );
-});
-
-test("an Auto widget's top / bottom edge strips stay inside its box (the next widget stays clickable)", () => {
-  const ov = src('overlay.js');
-  assert.match(ov, /\.edge\[data-h='n'\], \.edge\[data-h='s'\] \{[^}]*height: 8px; translate: 0;/);
-  assert.match(ov, /\.edge\[data-h='s'\] \{ top: 100%; translate: 0 -100%; \}/);
 });

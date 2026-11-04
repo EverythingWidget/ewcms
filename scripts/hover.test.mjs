@@ -1,9 +1,20 @@
-// v0.1.30: a row hovered in the panel outlines its section or widget only; nothing dims
+// Hover: a panel row outlines its widget or section in the preview, and the preview lights the row.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
 const ov = readFileSync(new URL('../src/editor/overlay.js', import.meta.url), 'utf8');
+
+test('row hover outlines the widget in the preview, and the preview lights the row', () => {
+  const ov = src('overlay.js');
+  assert.match(ov, /ui\.hot\?\.from === 'panel' \? widgetEl\(ui\.hot\.id\)/);
+  assert.match(ov, /hotWidget\(id, 'preview'\)/);
+  assert.match(src('svelte/ui.svelte.js'), /ui\.hot = \{ id, from \}/);
+  const card = src('svelte/SectionCard.svelte');
+  assert.match(card, /hotWidget\(widget\.id, 'panel'\)/);
+  assert.match(src('svelte/WidgetRow.svelte'), /hot && 'is-hot'/);
+});
 
 test('a hovered row: no dimming boxes, its outline only; the Ctrl dimming stays', () => {
   assert.doesNotMatch(ov, /class="dims"|\.dim \{|els\.dims/);

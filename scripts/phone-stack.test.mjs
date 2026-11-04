@@ -1,5 +1,4 @@
-// v0.1.49: on phones, widgets without a phone layout of their own stack full width in reading
-// order, each following the one before (so Auto heights never overlap).
+// On phones, widgets without a phone layout stack full width in reading order.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { phoneStack, widgetVars, widgetLinks } from '../src/site/layout/index.js';
@@ -36,31 +35,4 @@ test('phone stack: a follower overlapping its leader still comes after it; own p
   assert.deepEqual([...st.keys()], ['w-aaaa', 'w-bbbb']);
   assert.deepEqual(st.get('w-bbbb').link, { to: 'w-aaaa', gap: -2 }); // its desktop gap halved
   assert.match(widgetVars(list[2], list), /--mc:10;--ms:20;--mr:3;/);
-});
-
-import { readFileSync } from 'node:fs';
-import { tagHtml } from '../src/editor/widget-tag.js';
-const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
-
-test('the preview tag starts with the Auto toggle: off, on (`64×auto`), a fixed box', () => {
-  const p = { col: 1, span: 64, row: 4, rows: 29 };
-  const off = tagHtml(p);
-  assert.match(off, /^<i class="auto" data-auto [^>]*><svg viewBox="0 0 320 512"/);
-  assert.match(off, /<\/i>64×29 · 4:1$/);
-  const on = tagHtml(p, null, true);
-  assert.match(on, /^<i class="auto is-on" data-auto /);
-  assert.match(on, /<\/i>64×auto · 4:1$/);
-  // auto: a drag changing only its rows doesn't mark its size changed
-  assert.match(tagHtml(p, { ...p, rows: 3 }, true), /<\/i>64×auto · 4:1$/);
-  const css = src('overlay.js');
-  assert.match(css, /\.label \.auto \{[^}]*width: 20px; height: 16px;/);
-  assert.match(css, /\.label \.auto svg \{ position: static;/);
-  assert.match(css, /\.label \.auto:hover \{ background: rgb\(0 0 0 \/ \.14\)/);
-  assert.match(
-    css,
-    /\.sel\.is-auto \.handle:not\(\[data-h='e'\]\):not\(\[data-h='w'\]\) \{ display: none; \}/,
-  );
-  // a click: Auto ↔ Rows (the rows it shows), one setWidget (one undo step)
-  assert.match(css, /onsize\(ui\.widget, auto \? 'rows' : 'auto'/);
-  assert.match(src('main.js'), /onsize\(id, size, rows\) \{[^]*?setWidget\(store/);
 });

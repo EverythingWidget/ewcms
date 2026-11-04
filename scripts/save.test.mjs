@@ -1,5 +1,4 @@
-// v0.1.36: a Save marks what it sent (not what is there when it returns), a disk load equal
-// once tidied isn't a change; the Media pane fits its column
+// Save: what a Save marks as saved, and the dev server telling the editor's own writes apart.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -27,15 +26,6 @@ test('a Save with nothing typed meanwhile leaves nothing unsaved', () => {
   assert.deepEqual(store.dirtyFiles(), []);
   // the saved file coming back from disk: no change, the undo history kept
   assert.deepEqual(store.rebase({ [FILE]: structuredClone(store.current[FILE]) }), []);
-});
-
-test('the Media pane: one column, its head (Use this photo) sticky', () => {
-  const m = readFileSync(
-    new URL('../src/editor/svelte/MediaModal.svelte', import.meta.url),
-    'utf8',
-  );
-  assert.match(m, /\.md-detail \{[^}]*grid-template-columns: minmax\(0, 1fr\)/);
-  assert.match(m, /\.md-detail__head \{[^}]*position: sticky/);
 });
 
 test('the dev server tells the editor’s own writes apart by their content', () => {

@@ -1,10 +1,10 @@
-// v0.1.35 (fields v2): a widget's fields one a row in the pop-up, the photo field in the
-// pop-up's scheme (variant A), a section's Height / Width as joined button groups
+// A widget's fields in the pop-up: one a row, the photo field, Height / Width, no layout numbers.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const read = (f) => readFileSync(new URL(`../src/editor/svelte/${f}`, import.meta.url), 'utf8');
+const readRoot = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 
 test("a widget's own fields: one a row (only list items pair halves)", () => {
   const g = read('GroupFields.svelte');
@@ -37,4 +37,19 @@ test('Height / Width: joined, no padding or gaps, 40px buttons, a hover wash', (
     btn,
     /&:hover \{\s*color: var\(--text-strong\);\s*background: var\(--field-hover\);/,
   );
+});
+
+test('no layout number fields on a widget (placed and sized in the preview)', () => {
+  const l = readRoot('src/editor/svelte/WidgetLayout.svelte');
+  for (const label of [
+    'Width (columns)',
+    'Left (column)',
+    'Top (row)',
+    'Gap (rows)',
+    'label="Rows"',
+  ])
+    assert.ok(!l.includes(label), label);
+  assert.match(l, /Follows \{leader\}, gap \{link\.gap\}/);
+  const ops = readRoot('src/editor/layout-ops.js');
+  assert.ok(!/export function (setColumns|setGap)\b/.test(ops));
 });

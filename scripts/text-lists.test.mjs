@@ -1,4 +1,4 @@
-// v0.1.42: lists in the Text widget (a line's "list"), the starter site.
+// Lists in the Text widget (a line's "list"): check, render, edit, paste.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseHTML } from 'linkedom';
@@ -19,7 +19,7 @@ import { isSafeHref } from '../src/site/hrefs.js';
 
 const P = (t, list) => ({ style: 'paragraph', ...(list ? { list } : {}), text: t ? [{ t }] : [] });
 
-test("v0.1.42: check: a line's list is bullet or number", () => {
+test("check: a line's list is bullet or number", () => {
   assert.deepEqual(checkBody([P('a', 'bullet'), P('b', 'number'), P('c')], 'body'), []);
   assert.deepEqual(checkBody([P('a', 'dash')], 'body'), [
     '"body.0.list" must be one of bullet, number',
@@ -30,7 +30,7 @@ test("v0.1.42: check: a line's list is bullet or number", () => {
   ]);
 });
 
-test('v0.1.42: the site renders a run of items as one <ul>/<ol>; the editor keeps lines flat', () => {
+test('the site renders a run of items as one <ul>/<ol>; the editor keeps lines flat', () => {
   const body = [
     P('a'),
     P('x', 'bullet'),
@@ -54,7 +54,7 @@ test('v0.1.42: the site renders a run of items as one <ul>/<ol>; the editor keep
   assert.deepEqual(readBody(document.getElementById('r')), tidyBody(body));
 });
 
-test('v0.1.42: Enter continues a list, ends it on an empty item; Backspace and the buttons', () => {
+test('Enter continues a list, ends it on an empty item; Backspace and the buttons', () => {
   assert.deepEqual(splitLine([P('ab', 'bullet')], { line: 0, at: 1 }), [
     P('a', 'bullet'),
     P('b', 'bullet'),
@@ -87,7 +87,7 @@ test('v0.1.42: Enter continues a list, ends it on an empty item; Backspace and t
   ]);
 });
 
-test('v0.1.42: typing "- " or "1. " at a line\'s start makes it an item', () => {
+test('typing "- " or "1. " at a line\'s start makes it an item', () => {
   assert.deepEqual(autoList([P('- hi')], { line: 0, at: 2 }), {
     body: [{ style: 'paragraph', text: [{ t: 'hi' }], list: 'bullet' }],
     at: { line: 0, at: 0 },
@@ -97,7 +97,7 @@ test('v0.1.42: typing "- " or "1. " at a line\'s start makes it an item', () => 
   assert.equal(autoList([P('- x', 'bullet')], { line: 0, at: 2 }), null);
 });
 
-test('v0.1.42: pasted <ul>/<ol> become list lines', () => {
+test('pasted <ul>/<ol> become list lines', () => {
   const { document } = parseHTML(
     '<html><body><p>Head</p><ul><li>one</li><li>two</li></ul><ol><li>first</li></ol><p>tail</p></body></html>',
   );

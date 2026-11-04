@@ -1,4 +1,4 @@
-// v0.1.31: a text widget's text fills the widget's width (no reading measure inside the grid)
+// A text widget's text fills the widget's width (no reading measure inside the grid).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';

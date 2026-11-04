@@ -32,7 +32,7 @@
     "docs/THEME-MIGRATION.md"
   ],
   "scripts": {
-    "test": "node --test",
+    "test": "node --test \"scripts/**/*.test.mjs\"",
     "lint": "eslint . && stylelint \"{src,theme-default,sandbox}/**/*.{scss,svelte}\"",
     "lint:fix": "eslint . --fix && stylelint \"{src,theme-default,sandbox}/**/*.{scss,svelte}\" --fix",
     "postinstall": "node scripts/hooks.mjs",

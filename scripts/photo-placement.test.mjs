@@ -1,5 +1,4 @@
-// v0.1.39: the photo widget's Fit (cover / contain) and Position (a 3 x 3 grid of spots); since
-// the content-box placement (src/site/layout/place.js) its widget's box and place.
+// The photo widget's content box and place (--fit / --pos).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';

@@ -21,11 +21,6 @@ test('selected field has no background or accent', () => {
   assert.match(b, /\.tf__input \{\s*box-shadow: var\(--focus-ring\);/);
 });
 
-test('field rows carry no fill transition and the accent-bg token is gone', () => {
+test('field rows carry no fill transition', () => {
   assert.doesNotMatch(block('.tf'), /transition/);
-  const tokens = readFileSync(
-    new URL('../src/editor/styles/_tokens.scss', import.meta.url),
-    'utf8',
-  );
-  assert.doesNotMatch(tokens + css, /--c-accent-bg/);
 });

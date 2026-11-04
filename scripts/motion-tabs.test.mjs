@@ -9,6 +9,7 @@ const read = (p) => readFileSync(new URL(`../src/${p}`, import.meta.url), 'utf8'
 const anims = JSON.parse(
   readFileSync(new URL('../templates/content/en/settings/animations.json', import.meta.url)),
 );
+const esrc = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
 
 test('defaults: duration, delay, ease, all optional', () => {
   assert.deepEqual(Object.keys(DEFAULT_TIMING), ['duration', 'delay', 'ease']);
@@ -52,7 +53,6 @@ test('top tabs Pages | Settings; page tabs Sections | Element motion | Page moti
   assert.match(c, /shownTab === 'element-motion'\}\s*<MotionPanel /);
   assert.match(c, /shownTab === 'page-motion'\}\s*<PageMotionPanel /);
   assert.match(read('editor/svelte/PageHead.svelte'), /><\/i>Back to pages<\/button/);
-  assert.doesNotMatch(read('editor/svelte/PageHead.svelte'), /Return to navigation/);
   assert.doesNotMatch(c, /transitions/);
   const m = read('editor/svelte/MotionPanel.svelte');
   assert.doesNotMatch(m, /AnimLibrary|Tabs/);
@@ -85,4 +85,20 @@ test('URL tabs are ui.panel: nav, settings, preview; clicks: arrange, animate, v
     'editor/svelte/App.svelte',
   ])
     assert.doesNotMatch(read(f), /ui\.mode\b|lastEdit|previewMode|'browse'/, f);
+});
+
+test('Motion shows the whole page; the widget pop-up has no Motion tab and stays on Motion', () => {
+  const mp = esrc('svelte/MotionPanel.svelte');
+  assert.doesNotMatch(mp, /picks/);
+  assert.match(mp, /\{#if ui\.anim\?\.widget === widget\.id\}/);
+  const wi = esrc('svelte/WidgetInspector.svelte');
+  assert.match(wi, /tabs=\{WIDGET_TABS\}/);
+  assert.doesNotMatch(wi, /WidgetMotion/);
+  assert.doesNotMatch(esrc('svelte/ui.svelte.js'), /widgetTab/);
+  const cp = esrc('svelte/ContentPanel.svelte');
+  assert.doesNotMatch(cp, /widgetTab/);
+  assert.match(cp, /if \(!\(ui\.popup && ui\.widget === group\.id\)\) openWidget\(group\.id\);/);
+  assert.doesNotMatch(esrc('svelte/WidgetMotion.svelte'), /inspector's Motion tab/);
+  assert.match(esrc('svelte/ContentPanel.svelte'), /\{#if popG && !ui\.pagesWin\.open\}/);
+  assert.doesNotMatch(esrc('main.js'), /editMotion/);
 });

@@ -1,5 +1,4 @@
-// v0.1.56: the pages list's head in a folder: a whole-row "← Return to /parent/" button (as
-// Back to pages), then the path with + on its own row; the arrow-only back is gone.
+// The pages list's head in a folder: Return to the parent, then the path.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';

@@ -1,4 +1,4 @@
-// v0.1.28: InfoHelp (i) beside settings: Source, Layer, section Height / Width, Curtain
+// InfoHelp (i) beside settings: Source, Layer, section Height / Width, Curtain.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
