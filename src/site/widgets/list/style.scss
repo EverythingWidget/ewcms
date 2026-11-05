@@ -1,5 +1,6 @@
-// The List widget's look (./index.js): its arrangement (Grid, Rows), the gap between its
-// items, and its presets' shapes (Card, Plain, Panel, Row). Items read the theme's --item-*
+// The List widget's look (./index.js): Arrangement Grid (columns 1–6; rows here means the
+// lines of that grid), the gap between its items, and its presets' shapes (Card, Plain, Panel,
+// Row). Items read the theme's --item-*
 // tokens (theme-default/styles/_tokens.scss), so a theme restyles every List at once. Bundled
 // into the site's stylesheet before the theme's look (src/client/styles/main.scss).
 @use '../../../client/styles/tokens' as *;
@@ -49,7 +50,7 @@
   margin: 0;
 }
 
-// one item: its widgets in a stack, the item style from the theme
+// one item: its widgets in a column, the item style from the theme
 .li {
   position: relative;
   display: grid;

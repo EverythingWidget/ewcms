@@ -85,23 +85,23 @@ html.__ed-arrange [contenteditable] .ts__chip[data-unknown] { color: rgb(${T.war
 [data-no-value] { position: relative; }
 [data-no-value] > * { opacity: .4; }
 /* tag + names hint as overlays (no layout shift). Readable chips: dark fill + light ring.
-   Tag sits just above the widget so a short facts line still shows both. */
+   Both sit just under the dimmed widget (into the gap), so a Card title above stays clear. */
 [data-no-value]::before,
 [data-no-value]::after {
-  position: absolute; left: 50%; z-index: 2;
-  max-width: min(280px, calc(100vw - 16px)); padding: 4px 8px; border-radius: ${T.radiusXs};
+  position: absolute; left: 0; z-index: 2;
+  max-width: min(280px, 100%); padding: 4px 8px; border-radius: ${T.radiusXs};
   background: rgb(0 0 0 / .82); box-shadow: 0 0 0 1px rgb(255 255 255 / .25);
-  color: ${T.white}; font: ${T.fsXs} ${T.font}; text-align: center;
+  color: ${T.white}; font: ${T.fsXs} ${T.font}; text-align: left;
   white-space: nowrap; pointer-events: none;
 }
 [data-no-value]::before {
   content: attr(data-missing-tag);
-  top: 0; transform: translate(-50%, calc(-100% - 4px));
+  top: calc(100% + 4px);
   letter-spacing: .06em; text-transform: uppercase;
 }
 [data-no-value]::after {
   content: attr(data-no-value);
-  top: 50%; transform: translate(-50%, -50%);
+  top: calc(100% + 28px);
 }
 html.__ed-arrange [data-edit-type="rich"][contenteditable] { outline-offset: 6px; }
 html.__ed-arrange [data-edit-type="rich"][contenteditable] a { cursor: text !important; }

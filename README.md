@@ -785,7 +785,7 @@ values of a **source item** instead of its own, as **parts** (`src/site/layout/p
 ### List widget
 
 A **List** (`src/site/widgets/list/`) shows every item of its source (All or From URL), each as
-the same small stack of widgets, the **preset**. Each item widget is a real widget (Photo, Text,
+the same **column of widgets**, the **preset**. Each item widget is a real widget (Photo, Text,
 Button), rendered by the same code as on a page with that item as its source, so bindings,
 formats and the hide rule work as anywhere.
 
@@ -799,8 +799,7 @@ formats and the hide rule work as anywhere.
     "arrangement": "grid",
     "columns": "3",
     "gap": "m",
-    "seeAll": true,
-    "missing": "hide"
+    "seeAll": true
   }
 }
 ```
@@ -808,23 +807,28 @@ formats and the hide rule work as anywhere.
 - **Presets** (`config.template`, `presets.js`): **Card** (photo, title, facts: Album cards),
   **Plain** (photo, title, long text, a View button), **Panel** (a big photo with its title and
   photo count over it: Photo panels), **Row** (a small photo, the title, the facts on the right:
-  Project list). Until Property mapping (step 6) they take their properties from the source's
-  schema: its title property, its first photo, its `list` properties as facts (`·` between them),
-  its first `photos` (the count) and its first long text.
-- **Arrangement** (Layout tab): **Grid** (`columns` `"1"`–`"6"`; 2 on a tablet, 1 on a phone) or
-  **Rows** (one per line; arrow keys, Home and End move between the items). **Gap** S / M / L.
-- **When a value is missing** (`config.missing`): **Hide** (default; the item's widget is left out,
-  as anywhere) or **Show empty** (it stays, empty, so items line up). The build warns once per List
-  (`List w-…: 1 of 4 items have no role: its widget is hidden there`); the editor dims it.
+  Project list). Each preset is a column of widgets. Until Property mapping (step 6) they take
+  their properties from the source's schema: its title property, its first photo, its `list`
+  properties as facts (`·` between them), its first `photos` (the count) and its first long text.
+  Picking **Row** sets **Columns** to `"1"`; the others default to `"3"`.
+- **Arrangement** (Layout tab): **Grid** only for now (`columns` `"1"`–`"6"`; 2 on a tablet, 1 on
+  a phone). Carousel comes later (not offered yet). Arrow keys, Home and End move between the
+  items in every column count. **Gap** S / M / L. (The old Arrangement **Rows** is gone: write
+  `"columns": "1"`.)
+- **When a value is missing** (`config.missing` on **every** widget, Layout tab): **Hide**
+  (default, omitted) leaves the widget out of the published page; **Show empty** keeps it empty
+  so neighbours line up. A List's item widgets inherit the List's choice unless they set their
+  own. The build warns once per List; the editor dims the widget and tags it **Hidden on the
+  page** or **Empty on the page**.
 - **See all** (`config.seeAll`) adds the section's See all link to the head; the heading is a
   normal bindable setting. No items: "Nothing here yet.".
 - **Look:** items use the theme's `--item-*` tokens (`theme-default/styles/_tokens.scss`), so a theme
   restyles every List at once.
 - **In the editor:** settings marked `tab: 'layout'` in a widget definition show in its Layout tab
-  (`layoutOptions()` in `src/editor/widget-layout.js`), the rest in Content; `off: { key: value }`
-  greys one out (Columns while the List is in Rows). The pickers and + Property offer `{items}`
-  under **This List** on a List (`src/editor/property-groups.js`).
-- Additive: content version stays 1; Album cards, Photo grid and Project list are unchanged.
+  (`layoutOptions()` in `src/editor/widget-layout.js`), the rest in Content. The pickers and
+  - Property offer `{items}` under **Count of this List** on a List
+    (`src/editor/property-groups.js`).
+- Album cards, Photo grid and Project list are unchanged.
 
 ### Menu
 

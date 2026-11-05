@@ -1,6 +1,6 @@
 /**
  * The List widget's presets (./index.js): ready-made item templates, in code. A preset is a
- * vertical stack of ordinary widgets (Photo, Text, Button) whose values are parts
+ * column of ordinary widgets (Photo, Text, Button) whose values are parts
  * (../../layout/parts.js), so each copy fills from its own item. Which property each part
  * names comes from the source's schema (Property mapping, later, will let a List change them):
  *
