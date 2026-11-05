@@ -13,8 +13,10 @@ import { bindingProblems } from '../src/site/layout/bindings.js';
 import { WIDGET_TYPES } from '../src/site/widgets/index.js';
 import { checkContent } from '../src/site/validate.js';
 import { PRESETS, factsRuns } from '../src/site/widgets/list/presets.js';
+import { nextItemIndex } from '../src/site/widgets/list/client.js';
 import { countGroups, THIS_LIST } from '../src/editor/property-groups.js';
-import { layoutOptions, layoutParts } from '../src/editor/widget-layout.js';
+import { layoutOptions, layoutParts, MISSING_OPTIONS } from '../src/editor/widget-layout.js';
+import { hideMissing } from '../src/site/layout/missing.js';
 import { SITE_A } from '../test/fixtures/index.mjs';
 
 const base = loadContent(SITE_A);
@@ -170,7 +172,7 @@ test('{items}: the List’s own items, how many; an item property of that name w
   );
 });
 
-test('Grid and Rows; columns and gap; See all', () => {
+test('Grid; columns and gap; See all; Row preset defaults to 1 column', () => {
   const grid = list(
     { arrangement: 'grid', columns: '4', gap: 'l', seeAll: true },
     { heading: 'P' },
@@ -180,10 +182,17 @@ test('Grid and Rows; columns and gap; See all', () => {
   assert.equal(items.getAttribute('data-cols'), '4');
   assert.ok(grid.el.querySelector('.list').classList.contains('list--gap-l'));
   assert.ok(grid.el.querySelector('.list__head .section__cta[href]'));
-  const rows = list({ arrangement: 'rows' });
-  assert.ok(rows.el.querySelector('.list__items').classList.contains('list__items--rows'));
   // no heading: no head
-  assert.equal(rows.el.querySelector('.list__head'), null);
+  assert.equal(list({ columns: '1' }).el.querySelector('.list__head'), null);
+  // Row preset's default columns when columns is omitted
+  assert.equal(
+    list({ template: 'preset:row', columns: undefined })
+      .el.querySelector('.list__items')
+      .getAttribute('data-cols'),
+    '1',
+  );
+  assert.equal(PRESETS.find((p) => p.id === 'preset:row').columns, '1');
+  assert.equal(PRESETS.find((p) => p.id === 'preset:card').columns, '3');
   // its defaults are valid content
   const ids = new Set();
   const w = newWidget('list', ids);
@@ -194,20 +203,30 @@ test('Grid and Rows; columns and gap; See all', () => {
       ...page,
       sections: [newSection(ids, [{ ...w, config: { ...w.config, arrangement: 'carousel' } }])],
     }).join('; '),
-    /config\.arrangement.*one of grid, rows/,
+    /config\.arrangement.*one of grid/,
   );
 });
 
-test('the pop-up: Arrangement, Columns, Gap in Layout; the rest in Content', () => {
+test('the pop-up: Arrangement, Columns, Gap in Layout; missing on every widget; Content has Preset', () => {
   assert.deepEqual(
     layoutOptions('list').map((c) => c.key),
     ['arrangement', 'columns', 'gap'],
   );
-  assert.deepEqual(layoutParts('list'), ['options', 'size', 'layer', 'link']);
+  assert.deepEqual(layoutParts('list'), ['options', 'missing', 'size', 'layer', 'link']);
+  assert.ok(layoutParts('button').includes('missing'));
+  assert.deepEqual(MISSING_OPTIONS, [
+    ['hide', 'Hide'],
+    ['show', 'Show empty'],
+  ]);
   const content = WIDGET_TYPES.list.config.filter((c) => c.tab !== 'layout').map((c) => c.key);
-  assert.deepEqual(content, ['template', 'seeAll', 'missing']);
-  // other types: no options row
+  assert.deepEqual(content, ['template', 'seeAll']);
+  // Arrangement: Grid only (Carousel later)
+  assert.deepEqual(WIDGET_TYPES.list.config.find((c) => c.key === 'arrangement').options, [
+    ['grid', 'Grid'],
+  ]);
+  // other types: no options row, still have missing
   assert.ok(!layoutParts('grid').includes('options'));
+  assert.ok(layoutParts('grid').includes('missing'));
 });
 
 // step 3b (review of 12740ba)
@@ -225,6 +244,7 @@ test('one hide rule: the page grid and a List item share it; its hint is strings
     const ed = list({ missing: 'hide' }, {}, content, { strings });
     const dim = ed.el.querySelector('[data-list-item] .li__facts');
     assert.equal(dim.getAttribute('data-no-value'), 'Geen waarde: {role}, {location}');
+    assert.equal(dim.getAttribute('data-missing-tag'), 'Hidden on the page');
     // a widget on the page grid, the same rule and text
     const { routes } = buildRoutes(content);
     const page = routes.find((r) => r.path === '/about/');
@@ -298,23 +318,8 @@ test('facts are joined by the separator: a missing first or middle fact leaves n
   );
 });
 
-test('Layout tab: Columns (Grid) is disabled, still there, while Arrangement is Rows', () => {
-  const cols = (config) => layoutOptions('list', config).find((c) => c.key === 'columns');
-  assert.equal(cols({ arrangement: 'rows' }).disabled, true);
-  assert.equal(cols({ arrangement: 'grid' }).disabled, false);
-  assert.equal(cols({}).disabled, false); // the default, Grid
-  // never hidden: the same three options either way
-  assert.deepEqual(
-    layoutOptions('list', { arrangement: 'rows' }).map((c) => [c.key, c.disabled]),
-    [
-      ['arrangement', false],
-      ['columns', true],
-      ['gap', false],
-    ],
-  );
-});
-
-test('{items} is offered under This List, only on a List', () => {
+test('{items} is offered under Count of this List, only on a List', () => {
+  assert.equal(THIS_LIST, 'Count of this List');
   const groups = (o) => countGroups(o).map((g) => [g.group, g.options.map((x) => x.value)]);
   assert.deepEqual(groups({ lists: ['people'], listItems: 4, prefix: 'p:' }), [
     [THIS_LIST, ['p:items']],
@@ -325,4 +330,116 @@ test('{items} is offered under This List, only on a List', () => {
     ['Count of a source', ['people']],
   ]);
   assert.deepEqual(groups({}), []);
+});
+
+// step 3c
+
+test('Arrangement Rows is rejected: write columns 1', () => {
+  const ids = new Set();
+  const w = newWidget('list', ids);
+  const page = { version: 1, kind: 'page', id: 'pg-li03', sections: [newSection(ids, [w])] };
+  const msg = checkContent('pages/x/index.json', {
+    ...page,
+    sections: [newSection(ids, [{ ...w, config: { ...w.config, arrangement: 'rows' } }])],
+  }).join('; ');
+  assert.match(msg, /config\.arrangement "rows" is gone/);
+  assert.match(msg, /columns": "1"/);
+  assert.doesNotMatch(msg, /one of grid, rows/);
+});
+
+test('arrow keys move between items in a multi-column grid', () => {
+  // 6 items, 3 columns: Down from 0 -> 3; Right from 0 -> 1; Up from 3 -> 0; End -> 5
+  assert.equal(nextItemIndex(0, 'ArrowDown', 3, 6), 3);
+  assert.equal(nextItemIndex(0, 'ArrowRight', 3, 6), 1);
+  assert.equal(nextItemIndex(3, 'ArrowUp', 3, 6), 0);
+  assert.equal(nextItemIndex(1, 'ArrowLeft', 3, 6), 0);
+  assert.equal(nextItemIndex(2, 'Home', 3, 6), 0);
+  assert.equal(nextItemIndex(0, 'End', 3, 6), 5);
+  // 1 column: Down is +1 (same as Right)
+  assert.equal(nextItemIndex(0, 'ArrowDown', 1, 4), 1);
+  assert.equal(nextItemIndex(3, 'ArrowDown', 1, 4), null);
+  // past the end: ignored
+  assert.equal(nextItemIndex(4, 'ArrowDown', 3, 6), null);
+  assert.equal(nextItemIndex(1, 'ArrowUp', 3, 6), null);
+});
+
+test('widget-level missing option: a page widget Hide / Show empty; tags in the editor', () => {
+  const sources = {
+    ...base.sources,
+    people: people.map((p, i) => (i === 0 ? { ...p, role: '' } : p)),
+  };
+  const content = { ...base, sources };
+  const { routes } = buildRoutes(content);
+  const page = routes.find((r) => r.path === '/about/');
+  const ids = new Set();
+  const btn = (missing) => ({
+    ...newWidget('button', ids),
+    id: `w-ms${missing || 'def'}`,
+    label: [{ property: 'role' }],
+    source: { mode: 'item', from: 'people', id: people[0].id },
+    config: { ...(missing ? { missing } : {}) },
+  });
+  assert.ok(hideMissing(undefined) && hideMissing({}) && hideMissing({ missing: 'hide' }));
+  assert.equal(hideMissing({ missing: 'show' }), false);
+  // published: Hide (default) leaves it out
+  let html = renderSections({ ...content, route: page, routes, curtains: {} }, page, F, [
+    newSection(ids, [btn()]),
+  ]);
+  assert.ok(!html.includes('wgt--button'), html);
+  // Show empty: it stays (empty label)
+  html = renderSections({ ...content, route: page, routes, curtains: {} }, page, F, [
+    newSection(ids, [btn('show')]),
+  ]);
+  assert.ok(html.includes('wgt--button'), html);
+  // editor: tags differ
+  setEditable(true);
+  try {
+    const hideHtml = renderSections({ ...content, route: page, routes, curtains: {} }, page, F, [
+      newSection(ids, [btn('hide')]),
+    ]);
+    assert.match(hideHtml, /data-missing-tag="Hidden on the page"/);
+    assert.match(hideHtml, /data-no-value="No value for \{role\}"/);
+    const showHtml = renderSections({ ...content, route: page, routes, curtains: {} }, page, F, [
+      newSection(ids, [btn('show')]),
+    ]);
+    assert.match(showHtml, /data-missing-tag="Empty on the page"/);
+  } finally {
+    setEditable(false);
+  }
+});
+
+test("a List's missing choice: item widgets inherit it unless they set their own", () => {
+  const sources = {
+    ...base.sources,
+    people: people.map((p, i) => (i === 0 ? { ...p, role: '', location: undefined } : p)),
+  };
+  const content = { ...base, sources };
+  // List Show empty: the first item's facts stay (other items still have values)
+  const show = list({ missing: 'show' }, {}, content);
+  assert.ok(show.el.querySelectorAll('[data-list-item]')[0].querySelector('.li__facts'));
+  // List Hide: the first item's facts are left out
+  const hide = list({ missing: 'hide' }, {}, content);
+  assert.equal(hide.el.querySelectorAll('[data-list-item]')[0].querySelector('.li__facts'), null);
+  // editor tags follow the List's choice
+  setEditable(true);
+  try {
+    const edHide = list({ missing: 'hide' }, {}, content);
+    assert.equal(
+      edHide.el
+        .querySelectorAll('[data-list-item]')[0]
+        .querySelector('.li__facts')
+        .getAttribute('data-missing-tag'),
+      'Hidden on the page',
+    );
+    const edShow = list({ missing: 'show' }, {}, content);
+    assert.equal(
+      edShow.el
+        .querySelectorAll('[data-list-item]')[0]
+        .querySelector('.li__facts')
+        .getAttribute('data-missing-tag'),
+      'Empty on the page',
+    );
+  } finally {
+    setEditable(false);
+  }
 });

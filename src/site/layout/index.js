@@ -59,7 +59,7 @@ import { WIDGET_TYPES } from '../widgets/index.js';
 import { newId } from './ids.js';
 import { motionAttrs } from './motion.js';
 import { keysOf, missingOf, resolveWidget } from './bindings.js';
-import { missingState } from './missing.js';
+import { hideMissing, missingState } from './missing.js';
 import { isParts } from './parts.js';
 import { widgetItems } from './source.js';
 import { COLS, baseOf, phoneAreaOf, placeOf, setBase } from './grid.js';
@@ -304,9 +304,10 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
   // {items} (./parts.js): a list widget's own items
   const items = t.list ? shown.items || [] : undefined;
   const scope = { item, keys: keysOf(ctx, shown.source), sources: ctx.sources, items };
-  // every property part empty (./parts.js): not on the published page; the editor shows it dimmed, as
-  // big as it is, "No value for {name}" over it
-  const gone = missingState(ctx, widget, t, scope);
+  // every property part empty (./parts.js): Hide leaves it out of the published page; Show empty
+  // keeps it. The editor shows it dimmed either way, with a tag and "No value for {name}"
+  // (config.missing on every widget; default Hide: ./missing.js)
+  const gone = missingState(ctx, widget, t, scope, { hide: hideMissing(widget.config) });
   if (gone.skip) return '';
   const noValue = gone.attr;
   // a bound value isn't edited in the preview: data-bound instead (a click selects the widget),

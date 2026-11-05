@@ -25,33 +25,35 @@ export function widgetTabOf(sections) {
   return WIDGET_TABS.some(([t]) => t === v) ? v : 'content';
 }
 
-/**
- * A type's widget settings its definition puts in the Layout tab (config entries with `tab:
- * 'layout'`), each with `disabled`: its `off` ({ key: value }) matches the widget's config (or
- * the type's default), e.g. a List's Columns while it is in Rows. Greyed out, never hidden.
- */
-export function layoutOptions(type, config = {}) {
+/** A type's widget settings its definition puts in the Layout tab (config entries with `tab: 'layout'`). */
+export function layoutOptions(type) {
   const def = typeof type === 'string' ? WIDGET_TYPES[type] : type;
-  const value = (k) => config?.[k] ?? def?.defaults?.config?.[k];
-  return (def?.config || [])
-    .filter((c) => c.tab === 'layout')
-    .map((c) => ({
-      ...c,
-      disabled: !!c.off && Object.entries(c.off).every(([k, v]) => value(k) === v),
-    }));
+  return (def?.config || []).filter((c) => c.tab === 'layout');
 }
 
 /**
+ * When a value is missing (every widget's Layout tab): Hide leaves the widget out of the
+ * published page; Show empty keeps it. Default Hide (omitted from content). A List's item
+ * widgets inherit the List's choice unless they set their own (../site/layout/missing.js).
+ */
+export const MISSING_OPTIONS = [
+  ['hide', 'Hide'],
+  ['show', 'Show empty'],
+];
+
+/**
  * What a type's Layout tab shows, in order: 'options' (its widget settings with `tab:
- * 'layout'`, a List's arrangement, columns and gap), 'size' (Auto / Rows / Aspect, unless its
- * definition says `size: false`), 'layer', 'link' (what it follows), 'box' (its content box),
- * 'placement', 'scale' (Scale to fit): from its definition.
+ * 'layout'`, a List's arrangement, columns and gap), 'missing' (When a value is missing),
+ * 'size' (Auto / Rows / Aspect, unless its definition says `size: false`), 'layer', 'link'
+ * (what it follows), 'box' (its content box), 'placement', 'scale' (Scale to fit): from its
+ * definition.
  */
 export function layoutParts(type) {
   const def = typeof type === 'string' ? WIDGET_TYPES[type] : type;
   const p = placementOf(def);
   return [
     ...(layoutOptions(def).length ? ['options'] : []),
+    'missing',
     ...(def?.size === false ? [] : ['size']),
     'layer',
     'link',

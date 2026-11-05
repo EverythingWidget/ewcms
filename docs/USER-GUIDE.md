@@ -53,12 +53,15 @@ A page is a stack of **sections**; each holds **widgets** (text, photo, button, 
   plain `{` and `}}` for a plain `}`. A chip in orange is a name nothing has (Save refuses it).
   In a widget's settings, the picker at a setting's label: **Custom** (its own text), a
   property, or **Text with properties** (text and chips, + Property adds one). A widget whose
-  properties all have no value (empty; 0 is a value) isn't on the site; in the editor it's
-  dimmed with "No value for {name}".
+  properties all have no value (empty; 0 is a value): **Hide** (Layout tab, default) leaves it
+  off the site; **Show empty** keeps it. In the editor it's dimmed with a tag and "No value for
+  {name}".
 - **List** shows every item of a source with one look per item: **Card**, **Plain**, **Panel**
-  or **Row** (Content tab, Template). In the Layout tab: **Grid** (1–6 columns) or **Rows**, and
-  the gap (Columns is greyed out in Rows). **When a value is missing**: **Hide** leaves that part of the item out; **Show empty**
-  keeps the space so items line up. `{items}` in its heading (under **This List** in the picker) is how many items it shows.
+  or **Row** (Content tab, Template; each is a column of widgets). In the Layout tab: **Grid**
+  (1–6 columns; Row defaults to 1) and the gap. Carousel comes later. **When a value is missing**
+  (every widget's Layout tab): **Hide** leaves it out of the page; **Show empty** keeps the
+  space. A List's items follow the List's choice unless set. `{items}` in its heading (under
+  **Count of this List** in the picker) is how many items it shows.
 - **Ctrl/⌘+Z** undoes, Shift+Ctrl/⌘+Z redoes.
 - An **ⓘ** beside a setting explains it: click it, Esc or a click elsewhere closes it.
 

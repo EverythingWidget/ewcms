@@ -24,6 +24,7 @@
     boxLabels,
     layoutOptions,
     layoutParts,
+    MISSING_OPTIONS,
     scaleHint,
     scalePatch,
     shownRows as rowsShown,
@@ -69,7 +70,7 @@
   // what its type supports (its definition), in the tab's order
   const parts = $derived(layoutParts(widget.type));
   // its widget settings in this tab (a List's arrangement, columns, gap): choices, as in Content
-  const options = $derived(layoutOptions(widget.type, widget.config));
+  const options = $derived(layoutOptions(widget.type));
   const optionPtr = (c) => `/sections/${at}/widgets/${j}/config/${c.key}`;
   const setOption = (c, v) =>
     live.store.set(file, optionPtr(c), v, { source: 'panel', structure: true });
@@ -147,11 +148,20 @@
           half={c.width === 'half'}
           value={widget.config?.[c.key] ?? ''}
           options={c.options ?? []}
-          disabled={c.disabled}
           changed={live.changed(file, optionPtr(c))}
           onvalue={(v) => setOption(c, v)}
         />
       {/each}
+    {:else if part === 'missing'}
+      <Field
+        edit="{file}#/sections/{at}/widgets/{j}/config/missing"
+        label="When a value is missing"
+        type="select"
+        value={widget.config?.missing ?? 'hide'}
+        options={MISSING_OPTIONS}
+        changed={live.changed(file, `/sections/${at}/widgets/${j}/config/missing`)}
+        onvalue={(v) => setOption({ key: 'missing' }, v === 'hide' ? undefined : v)}
+      />
     {:else if part === 'size'}
       <div class="wl__row">
         <div class="wl__size">

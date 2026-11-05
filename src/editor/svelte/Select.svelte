@@ -11,7 +11,7 @@
     onchange     (value, option) on a pick; with it the parent owns the value
     option       snippet (option) for an option's content; default: label + hint
     selected     snippet (option) for the button's content; default: label
-    compact      a 24px button as wide as its value (a label row's picker), the list at least
+    compact      a 24px button as wide as its value (a label row's picker), the list at least 280px so a Count of this List hint fits
                  200px wide
     search       a search field's placeholder: on, the list opens with the groups marked
                  { pinned: true } at its top, then the field (it takes the focus: typing filters the
@@ -91,8 +91,8 @@
     if (!list) return;
     const r = button.getBoundingClientRect();
     Object.assign(list.style, {
-      left: `${compact ? Math.max(8, r.right - Math.max(r.width, 200)) : r.left}px`,
-      width: `${compact ? Math.max(r.width, 200) : r.width}px`,
+      left: `${compact ? Math.max(8, r.right - Math.max(r.width, 280)) : r.left}px`,
+      width: `${compact ? Math.max(r.width, 280) : r.width}px`,
       top: up ? 'auto' : `${r.bottom}px`,
       bottom: up ? `${innerHeight - r.top}px` : 'auto',
       maxHeight: `${Math.min(360, up ? r.top - 8 : innerHeight - r.bottom - 8)}px`,

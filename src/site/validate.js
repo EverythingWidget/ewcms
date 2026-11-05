@@ -537,10 +537,15 @@ function checkWidget(widget, where) {
   if (t.check) out.push(...t.check(widget).map((p) => `${name}: ${p}`));
   if (widget.config === undefined) return out;
   if (!isObject(widget.config)) return [...out, `${name}: "config" must be an object`];
-  const { enabled } = widget.config;
+  const { enabled, missing } = widget.config;
   if (enabled !== undefined && typeof enabled !== 'boolean') bad('config.enabled', 'true or false');
+  // every widget: Hide (default) | Show empty (./layout/missing.js); omitted means Hide
+  if (missing !== undefined && missing !== 'hide' && missing !== 'show')
+    bad('config.missing', '"hide" or "show"');
   for (const c of t.config || []) {
     const v = widget.config[c.key];
+    // list.check already names the replacement for arrangement "rows"
+    if (c.key === 'arrangement' && v === 'rows') continue;
     if (v === undefined || (c.empty && v === '') || isParts(v) || old.has(`config.${c.key}`))
       continue;
     if (c.type === 'link') {

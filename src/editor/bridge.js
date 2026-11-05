@@ -82,8 +82,27 @@ html.__ed-arrange .ts__chip { border-radius: ${T.radiusXs}; background: rgb(${T.
 html.__ed-arrange [contenteditable] .ts__chip { color: rgb(${T.chipRgb}); user-select: all; cursor: default; }
 html.__ed-arrange .ts__chip[data-unknown] { background: rgb(${T.warningRgb} / .16); box-shadow: inset 0 0 0 1px rgb(${T.warningRgb} / .6); }
 html.__ed-arrange [contenteditable] .ts__chip[data-unknown] { color: rgb(${T.warningRgb}); }
+[data-no-value] { position: relative; }
 [data-no-value] > * { opacity: .4; }
-[data-no-value]::after { content: attr(data-no-value); position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; color: ${T.white}; font: ${T.fsXs} ${T.font}; text-align: center; pointer-events: none; }
+/* tag + names hint as overlays (no layout shift). Readable chips: dark fill + light ring.
+   Tag sits just above the widget so a short facts line still shows both. */
+[data-no-value]::before,
+[data-no-value]::after {
+  position: absolute; left: 50%; z-index: 2;
+  max-width: min(280px, calc(100vw - 16px)); padding: 4px 8px; border-radius: ${T.radiusXs};
+  background: rgb(0 0 0 / .82); box-shadow: 0 0 0 1px rgb(255 255 255 / .25);
+  color: ${T.white}; font: ${T.fsXs} ${T.font}; text-align: center;
+  white-space: nowrap; pointer-events: none;
+}
+[data-no-value]::before {
+  content: attr(data-missing-tag);
+  top: 0; transform: translate(-50%, calc(-100% - 4px));
+  letter-spacing: .06em; text-transform: uppercase;
+}
+[data-no-value]::after {
+  content: attr(data-no-value);
+  top: 50%; transform: translate(-50%, -50%);
+}
 html.__ed-arrange [data-edit-type="rich"][contenteditable] { outline-offset: 6px; }
 html.__ed-arrange [data-edit-type="rich"][contenteditable] a { cursor: text !important; }
 html.__ed-arrange [data-widget] :is([data-edit], [data-bound]):not(.__ed-invalid) { outline: none !important; }

@@ -5,15 +5,16 @@
  *
  *   { "type": "list", "heading": "People", "source": { "mode": "all", "from": "people" },
  *     "config": { "template": "preset:card", "arrangement": "grid", "columns": "3",
- *                 "gap": "m", "seeAll": true, "missing": "hide" } }
+ *                 "gap": "m", "seeAll": true } }
  *
  * template     a preset (./presets.js): preset:card | preset:plain | preset:panel | preset:row
- * arrangement  how the items are laid out: grid (columns) | rows (one a row)
- * columns      Grid's columns, "1"–"6" (two on a tablet, one on a phone)
+ * arrangement  Grid (columns). Carousel comes later (not offered yet).
+ * columns      "1"–"6" (two on a tablet, one on a phone). Row preset defaults to "1", others "3".
  * gap          between the items: s | m | l
  * seeAll       a link to the source's page after the heading (when it has one)
- * missing      when a value is missing: hide (the item's widget whose every property part is
- *              empty is left out, the page's hide rule) | show (it stays, its values empty)
+ *
+ * When a value is missing (every widget's Layout tab, config.missing: hide | show): item
+ * widgets inherit this List's choice unless they set their own (../../layout/missing.js).
  *
  * {items} in the heading (or any part of its items) is the List's own items: a list, so a
  * part shows how many (the A1 rule: an item's own "items" property wins; ../../layout/parts.js).
@@ -23,7 +24,7 @@ import { html, esc, editable, itemHref, warnOnce } from '../../helpers.js';
 import { contentPath } from '../../files.js';
 import { t } from '../../strings.js';
 import { keysOf, resolveWidget } from '../../layout/bindings.js';
-import { missingState } from '../../layout/missing.js';
+import { hideMissing, missingState } from '../../layout/missing.js';
 import { partEmpty } from '../../layout/parts.js';
 import { WIDGET_TYPES } from '../index.js';
 import { sourcePage } from '../data.js';
@@ -75,31 +76,19 @@ export const list = {
     },
     { key: 'seeAll', label: 'See all link', type: 'boolean' },
     {
-      key: 'missing',
-      label: 'When a value is missing',
-      type: 'select',
-      options: [
-        ['hide', 'Hide'],
-        ['show', 'Show empty'],
-      ],
-    },
-    {
       key: 'arrangement',
       label: 'Arrangement',
       type: 'select',
       tab: 'layout',
-      options: [
-        ['grid', 'Grid'],
-        ['rows', 'Rows'],
-      ],
+      // Carousel comes later: not offered yet (disabled would need Field support for a third
+      // option state; Grid is the only choice until then)
+      options: [['grid', 'Grid']],
     },
     {
       key: 'columns',
-      label: 'Columns (Grid)',
+      label: 'Columns',
       type: 'select',
       tab: 'layout',
-      // greyed out (not hidden: nothing moves) while the items are in Rows
-      off: { arrangement: 'rows' },
       width: 'half',
       options: COLUMNS.map((n) => [n, n]),
     },
@@ -125,18 +114,24 @@ export const list = {
       columns: '3',
       gap: 'm',
       seeAll: false,
-      missing: 'hide',
     },
     motion: { animation: 'grid-reveal' },
   },
+  // arrangement "rows" is gone: one column is columns "1" (pre-v1: change by hand)
+  check: (widget) =>
+    widget.config?.arrangement === 'rows'
+      ? [
+          'config.arrangement "rows" is gone: write "columns": "1" (Arrangement is only Grid; Carousel comes later)',
+        ]
+      : [],
   render: (s, ctx, widget) => {
     const c = s.config || {};
     const source = widget.source || ''; // None: no items
     const preset = presetOf(c.template);
-    const arrangement = c.arrangement === 'rows' ? 'rows' : 'grid';
-    const columns = COLUMNS.includes(String(c.columns)) ? String(c.columns) : '3';
+    const columns = COLUMNS.includes(String(c.columns)) ? String(c.columns) : preset.columns || '3';
     const gap = GAPS.includes(c.gap) ? c.gap : 'm';
-    const hide = c.missing !== 'show';
+    // this List's choice; each item widget may override (hideMissing on its own config)
+    const listHide = hideMissing(c);
     const items = widget.items || [];
     const keys = keysOf(ctx, source);
     const shape = preset.id.slice('preset:'.length);
@@ -151,9 +146,12 @@ export const list = {
       const link = item?.id ? { item: { source, id: item.id } } : undefined;
       const scope = { item, keys, sources: ctx.sources, items };
       const api = { id: widget.id, file: widget.file, source, items: [item], item, index: at };
-      const ws = template.map((w) =>
-        itemWidget(forItem(w, scope, link, sep), ctx, scope, { hide, api }),
-      );
+      const ws = template.map((w) => {
+        const filled = forItem(w, scope, link, sep);
+        // item widgets inherit the List's missing choice unless they set their own
+        const hide = filled.config?.missing !== undefined ? hideMissing(filled.config) : listHide;
+        return itemWidget(filled, ctx, scope, { hide, api });
+      });
       ws.forEach((w) => w.missing.forEach((n) => missing.set(n, (missing.get(n) || 0) + 1)));
       const [first, ...rest] = ws.map((w) => w.html);
       const inner = photoFirst
@@ -166,7 +164,7 @@ export const list = {
     if (!editable)
       for (const [name, n] of missing)
         warnOnce(
-          `${contentPath(widget.file)}: List ${widget.id}: ${n} of ${items.length} items have no {${name}}: ${hide ? 'its widget is hidden there' : 'it shows empty'}`,
+          `${contentPath(widget.file)}: List ${widget.id}: ${n} of ${items.length} items have no {${name}}: ${listHide ? 'its widget is hidden there' : 'it shows empty'}`,
           'layout',
         );
     const head = s.heading
@@ -176,9 +174,9 @@ export const list = {
         </header>`
       : '';
     const body = items.length
-      ? `<div class="list__items list__items--${arrangement}" style="--list-cols:${columns}" data-cols="${columns}">${out.join('')}</div>`
+      ? `<div class="list__items list__items--grid" style="--list-cols:${columns}" data-cols="${columns}">${out.join('')}</div>`
       : `<p class="list__empty label muted" data-list-empty>${esc(t(ctx, 'list.empty'))}</p>`;
-    return `<div class="list list--${shape} list--gap-${gap}" data-arrangement="${arrangement}">${head}${body}</div>`;
+    return `<div class="list list--${shape} list--gap-${gap}" data-arrangement="grid" data-cols="${columns}">${head}${body}</div>`;
   },
 };
 

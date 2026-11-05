@@ -540,7 +540,7 @@
               ></button
             >
           {/each}
-          <!-- This List (a List only) and Count of a source: ../property-groups.js -->
+          <!-- Count of this List (a List only) and Count of a source: ../property-groups.js -->
           {#each countGroups({ lists: sources, listItems: type.list ? true : null }) as g (g.group)}
             <span class="btb__grp">{g.group}</span>
             {#each g.options as o (o.value)}

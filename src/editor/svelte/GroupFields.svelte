@@ -28,6 +28,7 @@
   import ItemPicker from './ItemPicker.svelte';
   import { sourceFile } from '../../site/files.js';
   import { isParts } from '../../site/layout/parts.js';
+  import { presetOf } from '../../site/widgets/list/presets.js';
 
   let { g, live, bridge, sourceIds, onsource, bindings = null, lead } = $props();
 
@@ -92,6 +93,19 @@
       structure,
       ...(typed ? { key: `text:${f.edit}` } : {}),
     });
+    // a List's Preset: its default columns (Row: 1, the others: 3)
+    if (
+      typeof f.ptr === 'string' &&
+      f.ptr.endsWith('/config/template') &&
+      typeof value === 'string'
+    ) {
+      const cols = presetOf(value)?.columns;
+      if (cols)
+        live.store.set(f.file, f.ptr.replace(/\/template$/, '/columns'), cols, {
+          source: 'panel',
+          structure: true,
+        });
+    }
   }
 
   // a source's items (for the source fields' counts)

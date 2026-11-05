@@ -743,8 +743,9 @@ values of a **source item** instead of its own, as **parts** (`src/site/layout/p
   text and its inputs; the `+ Property` menu and the picker save the same parts).
 - **Empty:** a property the item doesn't have or has empty (`null`, `""`; `0` and `[]` are
   values) leaves its part empty; the rest shows. When every property part of a widget is empty,
-  the widget isn't rendered on the site; the
-  editor shows it dimmed with "No value for {name}" (no layout change).
+  **Hide** (default, `config.missing`) leaves it out of the site; **Show empty** keeps it.
+  The editor shows it dimmed with a tag (Hidden / Empty on the page) and "No value for {name}"
+  (no layout change).
 - **The item:** the first item of the widget's source (see "Widget sources"): the one picked, or
   the first matching the page's address.
 - **Rendering:** one resolver, `resolveWidget()`, swaps the values in before every widget renders
@@ -1585,7 +1586,9 @@ Change in its field, see the Media window above). Edit
 
 ## Breaking content changes (next minor, unreleased)
 
-The List widget adds nothing breaking (new widget type, `{items}` only on a List).
+The List widget: Arrangement **Rows** is gone (write `"columns": "1"`; the validator says so).
+Carousel is not offered yet. `config.missing` is now on every widget (Layout tab; default Hide).
+Fixtures never used Arrangement Rows.
 
 Bound values are **parts** now (see "Bindings"), and what a source's item has is its
 **properties** (a widget's own inputs are its **settings**). Nothing reads the old shapes: `ewcms

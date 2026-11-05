@@ -18,7 +18,7 @@
               same as picking it; `lists` (the sources: {people} shows how many) are offered
               too, `names` (properties and sources) are the names that aren't a warning chip;
               `listItems` (a List's: how many items it shows, else null) offers {items} under
-              This List (../property-groups.js)
+              Count of this List (../property-groups.js)
     A whole value of another type (a photo, a number) is the item's, dimmed and read only.
 -->
 <script>

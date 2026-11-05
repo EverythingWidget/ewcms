@@ -22,7 +22,7 @@ import { schemaOf } from '../../schemas.js';
 
 /**
  * The presets, in the picker's order. Each is data the List reads (no preset names in its
- * render): `roles` its widgets top to bottom (one the source has nothing for is left out),
+ * render): `roles` its widgets as a column (top to bottom) (one the source has nothing for is left out),
  * `link` whether the whole item is a link to the item's page (Plain has its own button
  * instead), `photoFirst` whether its photo sits apart from the text after it (.li__text).
  */
@@ -34,6 +34,7 @@ export const PRESETS = [
     roles: ['photo', 'title', 'facts'],
     link: true,
     photoFirst: true,
+    columns: '3',
   },
   {
     id: 'preset:plain',
@@ -42,6 +43,7 @@ export const PRESETS = [
     roles: ['photo', 'title', 'body', 'button'],
     link: false,
     photoFirst: true,
+    columns: '3',
   },
   {
     id: 'preset:panel',
@@ -50,6 +52,7 @@ export const PRESETS = [
     roles: ['photo', 'title', 'count'],
     link: true,
     photoFirst: true,
+    columns: '3',
   },
   {
     id: 'preset:row',
@@ -58,6 +61,7 @@ export const PRESETS = [
     roles: ['photo', 'title', 'facts'],
     link: true,
     photoFirst: true,
+    columns: '1',
   },
 ];
 export const PRESET_IDS = PRESETS.map((p) => p.id);

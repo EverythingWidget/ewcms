@@ -43,10 +43,6 @@
       grid-template-columns: minmax(0, 1fr);
     }
   }
-
-  &--rows {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 .list__empty {
@@ -96,15 +92,11 @@
 }
 
 // a missing value in the editor: dimmed as big as it is (the bridge's [data-no-value] look);
-// its "No value for {…}" hint sits on this widget (the facts line), not on the item
+// its tag and "No value for {…}" hint sit on this widget (the facts line), not on the item
 .li__w[data-no-value] {
   position: relative;
-
-  // one line, from the start: a short facts line keeps its hint on it
-  &::after {
-    justify-content: flex-start;
-    white-space: nowrap;
-  }
+  // the tag sits above the widget (bridge.js ::before): don't clip it
+  overflow: visible;
 }
 
 .li__photo {
