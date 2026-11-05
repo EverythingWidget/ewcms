@@ -12,7 +12,8 @@ import { newWidget, newSection, renderSections } from '../src/site/layout/index.
 import { bindingProblems } from '../src/site/layout/bindings.js';
 import { WIDGET_TYPES } from '../src/site/widgets/index.js';
 import { checkContent } from '../src/site/validate.js';
-import { PRESETS } from '../src/site/widgets/list/presets.js';
+import { PRESETS, factsRuns } from '../src/site/widgets/list/presets.js';
+import { countGroups, THIS_LIST } from '../src/editor/property-groups.js';
 import { layoutOptions, layoutParts } from '../src/editor/widget-layout.js';
 import { SITE_A } from '../test/fixtures/index.mjs';
 
@@ -21,14 +22,14 @@ const F = 'pages/test/index.json';
 let n = 0;
 
 /** A List (config over its defaults) rendered on /about/ of `content`: its root element. */
-function list(config = {}, more = {}, content = base) {
+function list(config = {}, more = {}, content = base, extraCtx = {}) {
   const { routes } = buildRoutes(content);
   const page = routes.find((r) => r.path === '/about/');
   const ids = new Set();
   const w = newWidget('list', ids);
   const widget = { ...w, id: `w-ls${String(++n).padStart(3, '0')}`, ...more };
   widget.config = { ...w.config, ...config };
-  const ctx = { ...content, route: page, routes, curtains: {} };
+  const ctx = { ...content, route: page, routes, curtains: {}, ...extraCtx };
   const [html, seen] = warnings(() => renderSections(ctx, page, F, [newSection(ids, [widget])]));
   const { document } = parseHTML(`<!doctype html><html><body>${html}</body></html>`);
   return { el: document.querySelector('.wgt--list'), html, seen, widget };
@@ -58,7 +59,7 @@ test('each preset renders its own shape', () => {
     return { el, first: el.querySelector('[data-list-item]') };
   };
   assert.deepEqual(
-    PRESETS.map(([id, label]) => [id, label]),
+    PRESETS.map((p) => [p.id, p.label]),
     [
       ['preset:card', 'Card'],
       ['preset:plain', 'Plain'],
@@ -207,4 +208,121 @@ test('the pop-up: Arrangement, Columns, Gap in Layout; the rest in Content', () 
   assert.deepEqual(content, ['template', 'seeAll', 'missing']);
   // other types: no options row
   assert.ok(!layoutParts('grid').includes('options'));
+});
+
+// step 3b (review of 12740ba)
+
+test('one hide rule: the page grid and a List item share it; its hint is strings.js widget.noValue', () => {
+  const sources = {
+    ...base.sources,
+    people: people.map((p, i) => (i === 0 ? { ...p, role: '', location: undefined } : p)),
+  };
+  const content = { ...base, sources };
+  const strings = { widget: { noValue: 'Geen waarde: {names}' } };
+  setEditable(true);
+  try {
+    // a List's item widget
+    const ed = list({ missing: 'hide' }, {}, content, { strings });
+    const dim = ed.el.querySelector('[data-list-item] .li__facts');
+    assert.equal(dim.getAttribute('data-no-value'), 'Geen waarde: {role}, {location}');
+    // a widget on the page grid, the same rule and text
+    const { routes } = buildRoutes(content);
+    const page = routes.find((r) => r.path === '/about/');
+    const ids = new Set();
+    const btn = {
+      ...newWidget('button', ids),
+      id: 'w-lsb01',
+      label: [{ property: 'role' }],
+      source: { mode: 'item', from: 'people', id: people[0].id },
+    };
+    const ctx = { ...content, route: page, routes, curtains: {}, strings };
+    const html = renderSections(ctx, page, F, [newSection(ids, [btn])]);
+    assert.match(html, /data-widget="w-lsb01"[^>]*data-no-value="Geen waarde: \{role\}"/);
+    // the default English text
+    const en = list({ missing: 'hide' }, {}, content);
+    assert.equal(
+      en.el.querySelector('[data-list-item] .li__facts').getAttribute('data-no-value'),
+      'No value for {role}, {location}',
+    );
+  } finally {
+    setEditable(false);
+  }
+});
+
+test('presets are data: link and photoFirst on the entry decide the item', () => {
+  const plain = PRESETS.find((p) => p.id === 'preset:plain');
+  const card = PRESETS.find((p) => p.id === 'preset:card');
+  assert.equal(plain.link, false);
+  assert.equal(card.photoFirst, true);
+  try {
+    plain.link = true; // Plain as a link: the entry decides, not its name
+    assert.equal(
+      list({ template: 'preset:plain' }).el.querySelector('[data-list-item]').tagName,
+      'A',
+    );
+    card.photoFirst = false; // the photo inside the text stack
+    const first = list({ template: 'preset:card' }).el.querySelector('[data-list-item]');
+    assert.equal(first.firstElementChild.className, 'li__text');
+    assert.ok(first.querySelector('.li__text > .li__photo'));
+  } finally {
+    plain.link = false;
+    card.photoFirst = true;
+  }
+  assert.equal(
+    list({ template: 'preset:plain' }).el.querySelector('[data-list-item]').tagName,
+    'DIV',
+  );
+});
+
+test('facts are joined by the separator: a missing first or middle fact leaves no stray " · "', () => {
+  const p0 = people[0];
+  const facts = (item) => {
+    const sources = { ...base.sources, people: [item, ...people.slice(1)] };
+    return list({}, {}, { ...base, sources })
+      .el.querySelector('[data-list-item] .li__facts')
+      ?.textContent.trim();
+  };
+  assert.equal(facts({ ...p0, role: '' }), p0.location);
+  assert.equal(facts({ ...p0, location: null }), p0.role);
+  assert.equal(facts(p0), `${p0.role} · ${p0.location}`);
+  // the runs themselves: separators only between values
+  const empty = (part) => part.property === 'b';
+  assert.deepEqual(factsRuns(['a', 'b', 'c'], empty), [
+    { property: 'a' },
+    { t: ' · ' },
+    { property: 'c' },
+  ]);
+  assert.deepEqual(
+    factsRuns(['a', 'b'], () => true),
+    [{ property: 'a' }, { property: 'b' }],
+  );
+});
+
+test('Layout tab: Columns (Grid) is disabled, still there, while Arrangement is Rows', () => {
+  const cols = (config) => layoutOptions('list', config).find((c) => c.key === 'columns');
+  assert.equal(cols({ arrangement: 'rows' }).disabled, true);
+  assert.equal(cols({ arrangement: 'grid' }).disabled, false);
+  assert.equal(cols({}).disabled, false); // the default, Grid
+  // never hidden: the same three options either way
+  assert.deepEqual(
+    layoutOptions('list', { arrangement: 'rows' }).map((c) => [c.key, c.disabled]),
+    [
+      ['arrangement', false],
+      ['columns', true],
+      ['gap', false],
+    ],
+  );
+});
+
+test('{items} is offered under This List, only on a List', () => {
+  const groups = (o) => countGroups(o).map((g) => [g.group, g.options.map((x) => x.value)]);
+  assert.deepEqual(groups({ lists: ['people'], listItems: 4, prefix: 'p:' }), [
+    [THIS_LIST, ['p:items']],
+    ['Count of a source', ['p:people']],
+  ]);
+  assert.equal(countGroups({ listItems: 1 })[0].options[0].hint, '1 item it shows');
+  assert.deepEqual(groups({ lists: ['people'], listItems: null }), [
+    ['Count of a source', ['people']],
+  ]);
+  assert.deepEqual(groups({}), []);
 });

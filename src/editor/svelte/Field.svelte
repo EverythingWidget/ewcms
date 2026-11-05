@@ -16,7 +16,9 @@
               item in the picker's group
     formats   a text field: its input holds chips (PartsInput.svelte): typing {name} is the
               same as picking it; `lists` (the sources: {people} shows how many) are offered
-              too, `names` (properties and sources) are the names that aren't a warning chip
+              too, `names` (properties and sources) are the names that aren't a warning chip;
+              `listItems` (a List's: how many items it shows, else null) offers {items} under
+              This List (../property-groups.js)
     A whole value of another type (a photo, a number) is the item's, dimmed and read only.
 -->
 <script>
@@ -26,6 +28,7 @@
   import { showValue } from '../lib/show-value.js';
   import Button from './Button.svelte';
   import Select from './Select.svelte';
+  import { countGroups } from '../property-groups.js';
   import Position from './Position.svelte';
   import { baseName } from '../../site/files.js';
   import { fallback, openMedia, photoInfo, photoLine, thumbUrl } from './media.svelte.js';
@@ -57,11 +60,13 @@
     from = '',
     formats = false,
     lists = [],
+    listItems = null,
     names = null,
     resolved = '',
     bare = false,
     grab = null,
     remove = null,
+    disabled = false,
   } = $props();
 
   const uid = $props.id();
@@ -93,7 +98,10 @@
   const bound = $derived(parts && !chips);
   const bindOptions = $derived.by(() => {
     const list = binds || [];
-    return whole && !list.some((o) => o.value === whole) && !lists.includes(whole)
+    return whole &&
+      !list.some((o) => o.value === whole) &&
+      !lists.includes(whole) &&
+      !(listItems !== null && whole === 'items')
       ? [...list, { value: whole, label: `{${whole}} (missing)` }]
       : list;
   });
@@ -117,18 +125,7 @@
           },
         ]
       : []),
-    ...(chips && lists.length
-      ? [
-          {
-            group: 'Count of a source',
-            options: lists.map((id) => ({
-              value: `p:${id}`,
-              label: `{${id}}`,
-              hint: `items in ${id}`,
-            })),
-          },
-        ]
-      : []),
+    ...(chips ? countGroups({ lists, listItems, prefix: 'p:' }) : []),
     ...(chips
       ? [
           {
@@ -157,14 +154,7 @@
           },
         ]
       : []),
-    ...(lists.length
-      ? [
-          {
-            group: 'Count of a source',
-            options: lists.map((id) => ({ value: id, label: `{${id}}`, hint: `items in ${id}` })),
-          },
-        ]
-      : []),
+    ...countGroups({ lists, listItems }),
   ]);
 
   function change() {
@@ -177,7 +167,13 @@
 <svelte:element
   this={tag}
   for={tag === 'label' && type !== 'boolean' ? uid : undefined}
-  class={['tf', changed && 'is-changed', selected && 'is-selected', half && 'is-half']}
+  class={[
+    'tf',
+    changed && 'is-changed',
+    selected && 'is-selected',
+    half && 'is-half',
+    disabled && 'is-disabled',
+  ]}
   data-edit={edit}
 >
   {#if !bare && !inner}<span class="tf__label">
@@ -318,6 +314,7 @@
       aria-label={label}
       value={value ?? ''}
       placeholder="Pick…"
+      {disabled}
       options={options.map(([v, text]) => ({ value: v, label: text }))}
       onchange={(v) => onvalue(v)}
     />
@@ -349,6 +346,11 @@
 
 <style lang="scss">
   @use '../styles/mixins' as *;
+
+  // a setting that can't be used now (a List's Columns in Rows): greyed out, same size
+  .tf.is-disabled {
+    opacity: var(--o-disabled);
+  }
 
   // with a picker the label gives up the room first
   .tf__name {

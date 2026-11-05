@@ -99,6 +99,8 @@
     },
     // the sources: {people} shows how many there are (no item needed)
     lists: Object.keys(live.content?.sources || {}),
+    // a List: {items}, how many it shows (This List in the pickers); else none
+    listItems: type.list ? (shown.items?.length ?? 0) : null,
     // the names a property part can have (any other is a warning chip)
     names: new Set([
       ...(schema?.properties || []).map((f) => f.key),

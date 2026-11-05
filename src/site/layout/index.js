@@ -59,6 +59,7 @@ import { WIDGET_TYPES } from '../widgets/index.js';
 import { newId } from './ids.js';
 import { motionAttrs } from './motion.js';
 import { keysOf, missingOf, resolveWidget } from './bindings.js';
+import { missingState } from './missing.js';
 import { isParts } from './parts.js';
 import { widgetItems } from './source.js';
 import { COLS, baseOf, phoneAreaOf, placeOf, setBase } from './grid.js';
@@ -305,11 +306,9 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
   const scope = { item, keys: keysOf(ctx, shown.source), sources: ctx.sources, items };
   // every property part empty (./parts.js): not on the published page; the editor shows it dimmed, as
   // big as it is, "No value for {name}" over it
-  const gone = missingOf(widget, t, scope);
-  if (gone.all && !editable) return '';
-  const noValue = gone.all
-    ? ` data-no-value="${esc(`No value for ${gone.missing.map((n) => `{${n}}`).join(', ')}`)}"`
-    : '';
+  const gone = missingState(ctx, widget, t, scope);
+  if (gone.skip) return '';
+  const noValue = gone.attr;
   // a bound value isn't edited in the preview: data-bound instead (a click selects the widget),
   // and data-bound-missing when a property of it is empty (a dimmed {name})
   const bound = (value, path) => {

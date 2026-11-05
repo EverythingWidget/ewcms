@@ -28,6 +28,7 @@
   import { targetFile } from '../layout-sync.js';
   import { schemaFor } from './source-items.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
+  import { countGroups } from '../property-groups.js';
   import { sourceFile, sourceIds as sourceIdsOf } from '../../site/files.js';
   import { sourceOf } from '../../site/layout/source.js';
   import { untrack } from 'svelte';
@@ -539,12 +540,15 @@
               ></button
             >
           {/each}
-          <span class="btb__grp">Count of a source</span>
-          {#each sources as s (s)}
-            <button type="button" class="btb__opt" onclick={() => insert({ property: s })}
-              ><span class="btb__chip">{`{${s}}`}</span><span class="btb__hint">items in {s}</span
-              ></button
-            >
+          <!-- This List (a List only) and Count of a source: ../property-groups.js -->
+          {#each countGroups({ lists: sources, listItems: type.list ? true : null }) as g (g.group)}
+            <span class="btb__grp">{g.group}</span>
+            {#each g.options as o (o.value)}
+              <button type="button" class="btb__opt" onclick={() => insert({ property: o.value })}
+                ><span class="btb__chip">{o.label}</span><span class="btb__hint">{o.hint}</span
+                ></button
+              >
+            {/each}
           {/each}
         {:else if open === 'more'}
           <div class="btb__bar btb__bar--inner">{@render marks()}</div>

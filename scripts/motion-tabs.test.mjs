@@ -106,11 +106,13 @@ test('Motion shows the whole page; the widget pop-up has no Motion tab and stays
 test('+ Property: source counts are "Count of a source", not properties; the explorer highlights a property', () => {
   const bar = read('editor/svelte/WidgetToolbar.svelte');
   assert.match(bar, /'No source, so no properties'/);
-  assert.match(bar, /<span class="btb__grp">Count of a source<\/span>/);
+  // both menus take their count groups from one place (../src/editor/property-groups.js)
+  assert.match(bar, /countGroups\(/);
   assert.doesNotMatch(bar, /How many/);
   const field = read('editor/svelte/Field.svelte');
-  assert.equal(field.match(/group: 'Count of a source'/g).length, 2);
+  assert.equal(field.match(/countGroups\(/g).length, 2);
   assert.doesNotMatch(field, /How many/);
+  assert.match(read('editor/property-groups.js'), /SOURCE_COUNTS = 'Count of a source'/);
   // the Source Explorer: ui.explorer.property, &property= in the URL
   assert.match(
     read('editor/svelte/ui.svelte.js'),

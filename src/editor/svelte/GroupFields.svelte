@@ -160,6 +160,7 @@
       formats={!!bindings && f.textual}
       resolved={bindings?.resolved(f) ?? ''}
       lists={bindings?.lists ?? []}
+      listItems={bindings?.listItems ?? null}
       names={bindings?.names ?? null}
       {...extra}
     />

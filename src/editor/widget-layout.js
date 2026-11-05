@@ -25,10 +25,20 @@ export function widgetTabOf(sections) {
   return WIDGET_TABS.some(([t]) => t === v) ? v : 'content';
 }
 
-/** A type's widget settings its definition puts in the Layout tab (config entries with `tab: 'layout'`). */
-export function layoutOptions(type) {
+/**
+ * A type's widget settings its definition puts in the Layout tab (config entries with `tab:
+ * 'layout'`), each with `disabled`: its `off` ({ key: value }) matches the widget's config (or
+ * the type's default), e.g. a List's Columns while it is in Rows. Greyed out, never hidden.
+ */
+export function layoutOptions(type, config = {}) {
   const def = typeof type === 'string' ? WIDGET_TYPES[type] : type;
-  return (def?.config || []).filter((c) => c.tab === 'layout');
+  const value = (k) => config?.[k] ?? def?.defaults?.config?.[k];
+  return (def?.config || [])
+    .filter((c) => c.tab === 'layout')
+    .map((c) => ({
+      ...c,
+      disabled: !!c.off && Object.entries(c.off).every(([k, v]) => value(k) === v),
+    }));
 }
 
 /**

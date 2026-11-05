@@ -22,10 +22,12 @@
 import { html, esc, editable, itemHref, warnOnce } from '../../helpers.js';
 import { contentPath } from '../../files.js';
 import { t } from '../../strings.js';
-import { keysOf, missingOf, resolveWidget } from '../../layout/bindings.js';
+import { keysOf, resolveWidget } from '../../layout/bindings.js';
+import { missingState } from '../../layout/missing.js';
+import { partEmpty } from '../../layout/parts.js';
 import { WIDGET_TYPES } from '../index.js';
 import { sourcePage } from '../data.js';
-import { PRESETS, PRESET_IDS, presetWidgets } from './presets.js';
+import { PRESETS, factsRuns, presetOf, presetWidgets } from './presets.js';
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
 const GAPS = ['s', 'm', 'l'];
@@ -33,18 +35,25 @@ const GAPS = ['s', 'm', 'l'];
 /** One widget of an item's template, filled from `item` (scope); '' when it is left out. */
 function itemWidget(w, ctx, scope, { hide, api }) {
   const def = WIDGET_TYPES[w.type];
-  const gone = missingOf(w, def, scope);
-  if (gone.all && hide && !editable) return { html: '', missing: gone.missing };
+  const gone = missingState(ctx, w, def, scope, { hide });
+  if (gone.skip) return { html: '', missing: gone.missing };
   const data = resolveWidget(w, def, { ...scope, placeholders: editable });
-  const noValue =
-    gone.all && editable
-      ? ` data-no-value="${esc(`No value for ${gone.missing.map((n) => `{${n}}`).join(', ')}`)}"`
-      : '';
   const out = def.render(data, ctx, { ...api, scopeItems: scope.items, ed: () => '' });
   return {
-    html: `<div class="li__w li__${w.role}"${noValue}>${out}</div>`,
+    html: `<div class="li__w li__${w.role}"${gone.attr}>${out}</div>`,
     missing: gone.all ? gone.missing : [],
   };
+}
+
+/** A template widget for one item: its facts joined from the values it has, its item link. */
+function forItem(w, scope, link, sep) {
+  if (w.facts)
+    return {
+      ...w,
+      body: [{ ...w.body[0], text: factsRuns(w.facts, (p) => partEmpty(p, scope), sep) }],
+    };
+  if (w.itemLink) return { ...w, config: { ...w.config, link } };
+  return w;
 }
 
 export const list = {
@@ -58,7 +67,12 @@ export const list = {
   sketch: 'list',
   settings: [{ key: 'heading', label: 'Heading (empty: none)' }],
   config: [
-    { key: 'template', label: 'Preset', type: 'select', options: PRESETS.map(([v, l]) => [v, l]) },
+    {
+      key: 'template',
+      label: 'Preset',
+      type: 'select',
+      options: PRESETS.map((p) => [p.id, p.label]),
+    },
     { key: 'seeAll', label: 'See all link', type: 'boolean' },
     {
       key: 'missing',
@@ -84,6 +98,8 @@ export const list = {
       label: 'Columns (Grid)',
       type: 'select',
       tab: 'layout',
+      // greyed out (not hidden: nothing moves) while the items are in Rows
+      off: { arrangement: 'rows' },
       width: 'half',
       options: COLUMNS.map((n) => [n, n]),
     },
@@ -116,14 +132,18 @@ export const list = {
   render: (s, ctx, widget) => {
     const c = s.config || {};
     const source = widget.source || ''; // None: no items
-    const preset = PRESET_IDS.includes(c.template) ? c.template : 'preset:card';
+    const preset = presetOf(c.template);
     const arrangement = c.arrangement === 'rows' ? 'rows' : 'grid';
     const columns = COLUMNS.includes(String(c.columns)) ? String(c.columns) : '3';
     const gap = GAPS.includes(c.gap) ? c.gap : 'm';
     const hide = c.missing !== 'show';
     const items = widget.items || [];
     const keys = keysOf(ctx, source);
-    const shape = preset.slice('preset:'.length);
+    const shape = preset.id.slice('preset:'.length);
+    const sep = t(ctx, 'list.sep');
+    // the template, once per List: its widgets, and whether its photo sits apart from the text
+    const template = presetWidgets(preset.id, ctx, source, { open: t(ctx, 'list.open') });
+    const photoFirst = preset.photoFirst && template[0]?.role === 'photo';
     const href = source && c.seeAll ? sourcePage(ctx, source) : '';
     const missing = new Map(); // name -> how many items have no value for it
     const out = items.map((item, i) => {
@@ -131,16 +151,15 @@ export const list = {
       const link = item?.id ? { item: { source, id: item.id } } : undefined;
       const scope = { item, keys, sources: ctx.sources, items };
       const api = { id: widget.id, file: widget.file, source, items: [item], item, index: at };
-      const ws = presetWidgets(preset, ctx, source, { link, open: t(ctx, 'list.open') }).map((w) =>
-        itemWidget(w, ctx, scope, { hide, api }),
+      const ws = template.map((w) =>
+        itemWidget(forItem(w, scope, link, sep), ctx, scope, { hide, api }),
       );
       ws.forEach((w) => w.missing.forEach((n) => missing.set(n, (missing.get(n) || 0) + 1)));
       const [first, ...rest] = ws.map((w) => w.html);
-      const photoFirst = presetWidgets(preset, ctx, source)[0]?.role === 'photo';
       const inner = photoFirst
         ? `${first}<div class="li__text">${rest.join('')}</div>`
         : `<div class="li__text">${ws.map((w) => w.html).join('')}</div>`;
-      const tag = shape === 'plain' || !link ? 'div' : 'a';
+      const tag = preset.link && link ? 'a' : 'div';
       const ref = tag === 'a' ? ` href="${esc(itemHref(ctx, source, item))}"` : '';
       return `<${tag} class="li li--${shape}"${ref} data-list-item data-anim-item>${inner}</${tag}>`;
     });

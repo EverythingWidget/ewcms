@@ -33,6 +33,7 @@
     selected: selectedSnippet,
     compact = false,
     search = '',
+    disabled = false,
   } = $props();
 
   const uid = $props.id();
@@ -269,6 +270,7 @@
   aria-haspopup="listbox"
   aria-expanded={open}
   aria-controls={listId}
+  {disabled}
   aria-activedescendant={open && active >= 0 ? optionId(active) : undefined}
   bind:this={button}
   onclick={() => (open ? (open = false) : openList())}

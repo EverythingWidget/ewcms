@@ -34,7 +34,9 @@ export const CORE_STRINGS = Object.freeze({
     grid: 'Grid',
   },
   projects: { visit: 'Visit' },
-  list: { empty: 'Nothing here yet.', open: 'View', seeAll: 'See all' },
+  list: { empty: 'Nothing here yet.', open: 'View', seeAll: 'See all', sep: ' · ' },
+  // the editor's hint on a widget whose every property is empty (./layout/missing.js)
+  widget: { noValue: 'No value for {names}' },
   form: {
     honeypot: 'Leave this empty',
     submit: 'Send',

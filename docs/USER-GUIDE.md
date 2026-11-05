@@ -57,8 +57,8 @@ A page is a stack of **sections**; each holds **widgets** (text, photo, button, 
   dimmed with "No value for {name}".
 - **List** shows every item of a source with one look per item: **Card**, **Plain**, **Panel**
   or **Row** (Content tab, Template). In the Layout tab: **Grid** (1–6 columns) or **Rows**, and
-  the gap. **When a value is missing**: **Hide** leaves that part of the item out; **Show empty**
-  keeps the space so items line up. `{items}` in its heading is how many items it shows.
+  the gap (Columns is greyed out in Rows). **When a value is missing**: **Hide** leaves that part of the item out; **Show empty**
+  keeps the space so items line up. `{items}` in its heading (under **This List** in the picker) is how many items it shows.
 - **Ctrl/⌘+Z** undoes, Shift+Ctrl/⌘+Z redoes.
 - An **ⓘ** beside a setting explains it: click it, Esc or a click elsewhere closes it.
 

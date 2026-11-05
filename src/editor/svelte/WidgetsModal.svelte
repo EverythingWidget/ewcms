@@ -73,33 +73,33 @@
   }
 </script>
 
-<!-- a widget's sketch: grey shapes, 2:1 -->
-{#snippet sketch(type)}
-  <span class="as-sk as-sk--{type}" aria-hidden="true">
-    {#if type === 'text'}<b class="w40 h4"></b><b class="w70 h12"></b><b class="w90 h4"></b><b
+<!-- a widget's sketch: grey shapes, 2:1; `name` is its definition's `sketch` (not its type) -->
+{#snippet sketch(name)}
+  <span class="as-sk as-sk--{name}" aria-hidden="true">
+    {#if name === 'text'}<b class="w40 h4"></b><b class="w70 h12"></b><b class="w90 h4"></b><b
         class="w60 h4"
       ></b>
-    {:else if type === 'photo'}<b class="img"></b><b class="w40 h4"></b>
-    {:else if type === 'button'}<b class="pill"></b>
-    {:else if type === 'form'}<b class="w90 h8 box"></b><b class="w90 h8 box"></b><b
+    {:else if name === 'photo'}<b class="img"></b><b class="w40 h4"></b>
+    {:else if name === 'button'}<b class="pill"></b>
+    {:else if name === 'form'}<b class="w90 h8 box"></b><b class="w90 h8 box"></b><b
         class="w90 h16 box"
       ></b>
-    {:else if type === 'hero'}<b class="sc s1"></b><b class="sc s2"></b><b class="sc s3"></b><b
+    {:else if name === 'hero'}<b class="sc s1"></b><b class="sc s2"></b><b class="sc s3"></b><b
         class="w70 h12 mid"
       ></b>
-    {:else if type === 'grid'}<span class="g g3"
+    {:else if name === 'grid'}<span class="g g3"
         >{#each Array(6) as _, i (i)}<b></b>{/each}</span
       >
-    {:else if type === 'albums'}<span class="g g3"
+    {:else if name === 'albums'}<span class="g g3"
         >{#each Array(3) as _, i (i)}<b></b>{/each}</span
       >
-    {:else if type === 'panels'}<span class="g g2"
+    {:else if name === 'panels'}<span class="g g2"
         >{#each Array(2) as _, i (i)}<b></b>{/each}</span
       >
-    {:else if type === 'list'}<span class="g g3"
+    {:else if name === 'list'}<span class="g g3"
         >{#each Array(3) as _, i (i)}<b></b>{/each}</span
       ><b class="w40 h4"></b>
-    {:else if type === 'projects'}{#each Array(4) as _, i (i)}<b class="w90 h8"></b>{/each}
+    {:else if name === 'projects'}{#each Array(4) as _, i (i)}<b class="w90 h8"></b>{/each}
     {:else}<b class="w70 h8"></b><b class="w50 h4"></b>
     {/if}
   </span>

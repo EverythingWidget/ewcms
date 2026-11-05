@@ -69,7 +69,7 @@
   // what its type supports (its definition), in the tab's order
   const parts = $derived(layoutParts(widget.type));
   // its widget settings in this tab (a List's arrangement, columns, gap): choices, as in Content
-  const options = $derived(layoutOptions(widget.type));
+  const options = $derived(layoutOptions(widget.type, widget.config));
   const optionPtr = (c) => `/sections/${at}/widgets/${j}/config/${c.key}`;
   const setOption = (c, v) =>
     live.store.set(file, optionPtr(c), v, { source: 'panel', structure: true });
@@ -147,6 +147,7 @@
           half={c.width === 'half'}
           value={widget.config?.[c.key] ?? ''}
           options={c.options ?? []}
+          disabled={c.disabled}
           changed={live.changed(file, optionPtr(c))}
           onvalue={(v) => setOption(c, v)}
         />

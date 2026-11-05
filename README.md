@@ -820,7 +820,9 @@ formats and the hide rule work as anywhere.
 - **Look:** items use the theme's `--item-*` tokens (`theme-default/styles/_tokens.scss`), so a theme
   restyles every List at once.
 - **In the editor:** settings marked `tab: 'layout'` in a widget definition show in its Layout tab
-  (`layoutOptions()` in `src/editor/widget-layout.js`), the rest in Content.
+  (`layoutOptions()` in `src/editor/widget-layout.js`), the rest in Content; `off: { key: value }`
+  greys one out (Columns while the List is in Rows). The pickers and + Property offer `{items}`
+  under **This List** on a List (`src/editor/property-groups.js`).
 - Additive: content version stays 1; Album cards, Photo grid and Project list are unchanged.
 
 ### Menu

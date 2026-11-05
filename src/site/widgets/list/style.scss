@@ -95,9 +95,16 @@
   }
 }
 
-// a missing value in the editor: dimmed, as big as it is (the page's hide rule's look)
+// a missing value in the editor: dimmed as big as it is (the bridge's [data-no-value] look);
+// its "No value for {…}" hint sits on this widget (the facts line), not on the item
 .li__w[data-no-value] {
-  opacity: 0.4;
+  position: relative;
+
+  // one line, from the start: a short facts line keeps its hint on it
+  &::after {
+    justify-content: flex-start;
+    white-space: nowrap;
+  }
 }
 
 .li__photo {
