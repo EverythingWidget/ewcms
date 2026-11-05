@@ -75,7 +75,7 @@
       : Array.isArray(v)
         ? `${v.length} items`
         : '';
-  // for the settings (Field.svelte): the item's properties per bind type (with their value), what
+  // for the widget settings (Field.svelte): the item's properties per bind type (with their value), what
   // one shows, and the item's name for the picker's group
   const bindings = $derived({
     // the title property first

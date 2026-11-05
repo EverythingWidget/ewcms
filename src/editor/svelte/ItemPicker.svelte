@@ -211,7 +211,7 @@
           <ExplorerRow
             icon="fa-ban"
             name={none}
-            meta={items_ ? 'No item: the settings show their own text' : 'No source'}
+            meta={items_ ? 'No item: the widget settings show their own text' : 'No source'}
             selected={!current}
             onclick={() => pick(undefined)}
           />

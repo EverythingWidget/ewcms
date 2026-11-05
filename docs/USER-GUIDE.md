@@ -10,6 +10,16 @@ Only your **site** repo: the content the editor saves (`content/`), your photos 
 your theme. Never edit the engine (`ewcms`, in `node_modules`); update it by changing its
 version in `package.json`.
 
+## Words
+- **Site Settings**: the editor's second tab, what is the same on every page. In a sentence:
+  site Settings.
+- **widget settings**: what one widget shows and how it works (its pop-up's Content and Layout
+  tabs).
+- **section settings**: one section's name, rows, background and the like (its gear).
+- Never just "the settings": say which of the three.
+- **source**: a list of items (people, places, projects); **property**: one value of an item
+  (its title, photos, year). A widget shows its source's properties as `{name}` chips.
+
 ## Pages
 The **Pages** tab starts at the pages list, in menu order. **+** adds a page. Drag a row to
 reorder the menu, or into **Not linked** to take it out. Double-click a row to go in, or use the

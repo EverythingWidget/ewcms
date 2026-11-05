@@ -133,6 +133,12 @@ that change files copy it to a temp folder first.
 
 ## How it works
 
+**Words** (the editor's and these docs'): **Site Settings** is the editor's second tab (in a
+sentence, site Settings: `content/en/settings/`); **widget settings** are one widget's own
+inputs (its definition's `settings:`, the pop-up's Content and Layout tabs); **section
+settings** are one section's (its gear). Never "the settings" alone. A **source** is a list of
+items; a **property** is one value of an item (`{ "property": "title" }`).
+
 **Site config:** `site.config.mjs` names the site's folders: `contentDir` (`content/en`),
 `mediaDir` (`media`), `publicDir` and `publicMediaDir` (`public/media`), `generatedDir`
 (`.generated`, the media manifest), `outDir` (`dist`), and `repo` (GitHub links when the git

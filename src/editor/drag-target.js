@@ -7,7 +7,7 @@
  *   y      the pointer
  * Returns { at, to, line: { j, side } } (to: its index in that section once moved; line: the
  * drop line, before or after row j), or null: nothing moves (its own place, or the pointer is
- * over no section's widgets: between cards, over the settings).
+ * over no section's widgets: between cards, over the section settings).
  */
 // px: around a widgets area that still count as over it, and how far a press moves to be a drag
 export const SLACK = 4;

@@ -103,7 +103,7 @@
   const itemOf = (f) => Number(parse(f.ptr)[0]) || 0; // a source field's item
   // the fields shown: not a Text widget's text (edited in the preview only)
   const fields = $derived(g.fields.filter((f) => f.type !== 'rich'));
-  // the settings shown: a source, a choice, a switch, a link (in the config's order)
+  // the widget settings shown: a source, a choice, a switch, a link (in the config's order)
   const settings = $derived(
     g.config?.filter(
       (c) => c.type === 'source' || c.type === 'link' || c.options || c.type === 'boolean',
@@ -217,7 +217,7 @@
   {/if}
 {/snippet}
 
-<!-- one grid (.fields): the settings (the widget's item, `lead`, and its config), a line, then
+<!-- one grid (.fields): the widget settings (the widget's item, `lead`, and its config), a line, then
      the content fields; a list field takes a whole row -->
 <div class="fields">
   {@render lead?.()}
@@ -264,7 +264,7 @@
 </div>
 
 <style lang="scss">
-  // between the settings and the content: a full row, 1px
+  // between the widget settings and the content: a full row, 1px
   .fields__line {
     margin: var(--space-1) 0;
     border: 0;

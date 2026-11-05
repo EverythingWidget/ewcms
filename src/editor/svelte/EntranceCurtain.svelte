@@ -1,7 +1,7 @@
 <!--
   A page entrance curtain: a fixed total duration, the timeline (EntranceCurtainTimeline), one ease
   for every step or per-step eases (Advanced), and every value as a number under Advanced.
-  All edits go through entrance-curtain.js. The Settings tab's Page entrance section, under a
+  All edits go through entrance-curtain.js. The Site Settings tab's Page entrance section, under a
   "Curtain" heading: the one curtain every page uses
   (settings/animations.json); a page only turns it off (Pages > a page > Page motion > Page entrance, EntrancePageCurtain.svelte).
 -->

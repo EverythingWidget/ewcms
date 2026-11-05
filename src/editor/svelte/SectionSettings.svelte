@@ -204,7 +204,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  // the settings, then the widgets
+  // the section settings, then the widgets
   // the name's #anchor hint at its right, under it
   .fields > :global(:first-child .tf__help) {
     text-align: right;

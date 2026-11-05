@@ -13,7 +13,7 @@ import { targetFile } from '../layout-sync.js';
 import { itemName, schemaFor } from './source-items.js';
 import { TEXT_TYPES } from '../../site/property-types.js';
 
-/** site.json values edited in the Settings tab: [key, label, field type]. */
+/** site.json values edited in the Site Settings tab: [key, label, field type]. */
 export const SITE_SETTINGS = [
   ['name', 'Site name', 'text'],
   ['accent', 'Accent color', 'text'],
