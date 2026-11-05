@@ -36,10 +36,15 @@ export const text = {
     const body = Array.isArray(s.body) ? s.body : [];
     // the names its property runs can have (the editor marks the others: data-names for its
     // inline editor, src/editor/rich.js)
-    const scope = { item: widget.item, sources: ctx.sources, keys: keysOf(ctx, widget.source) };
+    const scope = {
+      item: widget.item,
+      sources: ctx.sources,
+      keys: keysOf(ctx, widget.source),
+      items: widget.scopeItems, // {items}: a list widget's own items (a List's item: its List's)
+    };
     const known = editable ? (name) => knownName(name, scope) : null;
     const names = editable
-      ? ` data-names="${[...new Set([...(scope.keys || []), ...Object.keys(widget.item || {}), ...Object.keys(ctx.sources || {})])].join(' ')}"`
+      ? ` data-names="${[...new Set([...(scope.keys || []), ...Object.keys(widget.item || {}), ...(widget.scopeItems ? ['items'] : []), ...Object.keys(ctx.sources || {})])].join(' ')}"`
       : '';
     // an empty property: nothing on the site, its {name} (dimmed) in the editor
     const value = (r) => partText(r, scope) || (editable ? `{${r.property}}` : '');

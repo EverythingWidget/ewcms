@@ -19,6 +19,11 @@
  * many people there are. A schema property never falls back to a source of the same name: an
  * item without it is missing. A list shows its length (an empty list "0").
  *
+ * `items` is a reserved name: the widget's own items (scope.items: a List's, or a list widget's
+ * source items), a list, so it shows how many. The same A1 rule: the item's own `items`
+ * property (or one its schema names) wins, then the widget's items, then a source called
+ * "items". Order: item property > schema property (missing) > {items} > a source.
+ *
  * Empty: missing, null or '' (0, false and an empty list are values). An empty property's part
  * is empty, the rest shows; when every property part of a widget is empty the widget isn't on
  * the published page (./index.js; the editor shows it dimmed: "No value for …").
@@ -37,6 +42,9 @@ export const isParts = (v) =>
 export const isWhole = (v) => isParts(v) && v.length === 1 && v[0].format === undefined;
 
 export const NAME = /^[\w-]+$/;
+
+/** The reserved name of a widget's own items ({items}: how many it shows). */
+export const ITEMS = 'items';
 
 /** Typed text as parts ({name}: a property, {{ a literal {, }} a literal }); only text: a string. */
 export function parseTyped(s) {
@@ -70,16 +78,22 @@ export const typedText = (v) =>
         .join('');
 
 /** Is a name known: a property of the item (keys: its schema's) or a source? */
-export const knownName = (name, { keys, item, sources } = {}) =>
-  !!(keys?.has(name) || (item && name in item) || Array.isArray(sources?.[name]));
+export const knownName = (name, { keys, item, sources, items } = {}) =>
+  !!(
+    keys?.has(name) ||
+    (item && name in item) ||
+    (name === ITEMS && Array.isArray(items)) ||
+    Array.isArray(sources?.[name])
+  );
 
 /**
  * A name's value: the item's property, else a source's list; undefined when neither. A name
  * the item's schema has (keys) or the item has is never a source's.
  */
-export function propertyValue(name, { item, keys, sources } = {}) {
+export function propertyValue(name, { item, keys, sources, items } = {}) {
   if (isObject(item) && name in item) return item[name];
   if (keys?.has(name)) return undefined;
+  if (name === ITEMS && Array.isArray(items)) return items;
   return Array.isArray(sources?.[name]) ? sources[name] : undefined;
 }
 

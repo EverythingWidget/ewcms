@@ -103,6 +103,7 @@
     names: new Set([
       ...(schema?.properties || []).map((f) => f.key),
       ...Object.keys(item || {}),
+      ...(type.list ? ['items'] : []), // {items}: a list widget's own items
       ...Object.keys(live.content?.sources || {}),
     ]),
     from: item && schema ? (schema.title && line(item[schema.title])) || from : from,

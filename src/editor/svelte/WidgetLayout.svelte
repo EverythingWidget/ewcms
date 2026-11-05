@@ -1,6 +1,7 @@
 <!--
   A widget's Layout tab (WidgetInspector.svelte): what its type's definition supports
-  (layoutParts, ../widget-layout.js), in order: one row of its size (Auto | Rows | Aspect,
+  (layoutParts, ../widget-layout.js), in order: its widget settings marked `tab: 'layout'` (a
+  List's Arrangement, Columns, Gap: choices, as the Content tab's); one row of its size (Auto | Rows | Aspect,
   Aspect showing its ratio and opening the ratios under the group; it stays open after a pick)
   and its layer (forward / backward) at the end; what it follows; its content box (a photo's
   Contain | Cover, else Fit | Fill); its placement; Scale to fit (type.js "scale": its whole
@@ -18,8 +19,10 @@
   import Position from './Position.svelte';
   import { fillOf, placeOfBox, placementOf, placesOf } from '../../site/layout/place.js';
   import { scaledToFit } from '../../site/layout/type.js';
+  import Field from './Field.svelte';
   import {
     boxLabels,
+    layoutOptions,
     layoutParts,
     scaleHint,
     scalePatch,
@@ -65,6 +68,11 @@
 
   // what its type supports (its definition), in the tab's order
   const parts = $derived(layoutParts(widget.type));
+  // its widget settings in this tab (a List's arrangement, columns, gap): choices, as in Content
+  const options = $derived(layoutOptions(widget.type));
+  const optionPtr = (c) => `/sections/${at}/widgets/${j}/config/${c.key}`;
+  const setOption = (c, v) =>
+    live.store.set(file, optionPtr(c), v, { source: 'panel', structure: true });
   // Scale to fit (off by default): its hint has two lines' room, so nothing moves when it changes
   const isScaled = $derived(scaledToFit(widget));
 
@@ -130,7 +138,20 @@
 
 <div class="fields wl">
   {#each parts as part (part)}
-    {#if part === 'size'}
+    {#if part === 'options'}
+      {#each options as c (c.key)}
+        <Field
+          edit="{file}#{optionPtr(c)}"
+          label={c.label}
+          type="select"
+          half={c.width === 'half'}
+          value={widget.config?.[c.key] ?? ''}
+          options={c.options ?? []}
+          changed={live.changed(file, optionPtr(c))}
+          onvalue={(v) => setOption(c, v)}
+        />
+      {/each}
+    {:else if part === 'size'}
       <div class="wl__row">
         <div class="wl__size">
           <div class="seg" role="radiogroup" aria-label="Size">

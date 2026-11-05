@@ -60,6 +60,7 @@ import albums from './albums/index.js';
 import panels from './panels/index.js';
 import projects from './projects/index.js';
 import album from './album/index.js';
+import list from './list/index.js';
 
 /** The built-in widgets, always on, in the order the editor offers them. */
 export const BUILTIN_WIDGETS = Object.freeze([
@@ -73,6 +74,7 @@ export const BUILTIN_WIDGETS = Object.freeze([
   panels,
   projects,
   album,
+  list,
 ]);
 
 /**

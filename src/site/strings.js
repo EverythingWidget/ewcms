@@ -34,6 +34,7 @@ export const CORE_STRINGS = Object.freeze({
     grid: 'Grid',
   },
   projects: { visit: 'Visit' },
+  list: { empty: 'Nothing here yet.', open: 'View', seeAll: 'See all' },
   form: {
     honeypot: 'Leave this empty',
     submit: 'Send',

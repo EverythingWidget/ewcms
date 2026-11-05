@@ -45,6 +45,7 @@ test('each type: what its Layout tab shows (its definition)', () => {
     panels: ['size', 'layer', 'link'],
     projects: ['size', 'layer', 'link'],
     form: ['size', 'layer', 'link'],
+    list: ['options', 'size', 'layer', 'link'],
   };
   assert.deepEqual(Object.keys(WIDGET_TYPES).sort(), Object.keys(want).sort());
   for (const [type, parts] of Object.entries(want))

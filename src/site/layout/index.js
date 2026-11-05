@@ -300,7 +300,9 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
     warnOnce(`${where}: a "${t.type}" widget shows an item: it has none: skipped`, 'layout');
     return '';
   }
-  const scope = { item, keys: keysOf(ctx, shown.source), sources: ctx.sources };
+  // {items} (./parts.js): a list widget's own items
+  const items = t.list ? shown.items || [] : undefined;
+  const scope = { item, keys: keysOf(ctx, shown.source), sources: ctx.sources, items };
   // every property part empty (./parts.js): not on the published page; the editor shows it dimmed, as
   // big as it is, "No value for {name}" over it
   const gone = missingOf(widget, t, scope);
@@ -320,6 +322,7 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
     id: widget.id,
     file,
     ...shown,
+    scopeItems: items,
     ed: (path, type) => {
       const value = [path].flat().reduce((v, k) => v?.[k], widget);
       if (!isParts(value)) return ed(file, parts(path), type);

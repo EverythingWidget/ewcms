@@ -26,6 +26,8 @@ import { anchors } from './modules/anchors.js';
 import { backdrop } from './modules/backdrop.js';
 import { fitText } from './modules/fit.js';
 import { watchNavHeight } from './modules/navbar.js';
+// the built-in List widget's client module (its widget module's client.js)
+import listClient from '../site/widgets/list/client.js';
 // the site's own widgets (site.config.mjs widgets): their styles and client modules
 import siteWidgets from 'virtual:site-widgets/client';
 
@@ -36,7 +38,7 @@ const widgetModule =
     const off = [...root.querySelectorAll(`.wgt--${type}`)].map((el) => init(el));
     return () => off.forEach((fn) => typeof fn === 'function' && fn());
   };
-const siteModules = siteWidgets.map(widgetModule);
+const siteModules = [{ type: 'list', init: listClient }, ...siteWidgets].map(widgetModule);
 
 const pageModules = [
   photoFade,

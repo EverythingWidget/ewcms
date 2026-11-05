@@ -734,7 +734,9 @@ values of a **source item** instead of its own, as **parts** (`src/site/layout/p
 - **A name** is a property of the item (when the source's schema has it, it is never a source,
   even when the item leaves it empty); a name that isn't one but is a source's id is that source's
   list. A list shows its length (`{people}`: "12"; an empty list "0") in the text's own look.
-  A name that is neither is an error, with or without a source.
+  A name that is neither is an error, with or without a source. On a List widget (and the
+  widgets inside its items) `{items}` is the List's own items (`{items}`: "4"); an item property
+  called `items` wins over it, then a source called `items` comes after.
 - **`{value}`** is only the placeholder of a `format` (`"format": "({value})"`); a part or a
   typed `{value}` is a property called `value`.
 - **Typed:** `{name}` is a property, `{{` a literal `{` and `}}` a literal `}` (the editor's
@@ -778,6 +780,48 @@ values of a **source item** instead of its own, as **parts** (`src/site/layout/p
   page; elsewhere All for a list, the source's first item for one); removing the main widget
   leaves the page without one (the page head says so). Under the widget's card, on all its tabs, is its section's
   section settings card (the same as its card's pen opens), 12px under it.
+
+### List widget
+
+A **List** (`src/site/widgets/list/`) shows every item of its source (All or From URL), each as
+the same small stack of widgets, the **preset**. Each item widget is a real widget (Photo, Text,
+Button), rendered by the same code as on a page with that item as its source, so bindings,
+formats and the hide rule work as anywhere.
+
+```json
+{
+  "type": "list",
+  "heading": [{ "t": "People " }, { "property": "items" }],
+  "source": { "mode": "all", "from": "people" },
+  "config": {
+    "template": "preset:card",
+    "arrangement": "grid",
+    "columns": "3",
+    "gap": "m",
+    "seeAll": true,
+    "missing": "hide"
+  }
+}
+```
+
+- **Presets** (`config.template`, `presets.js`): **Card** (photo, title, facts: Album cards),
+  **Plain** (photo, title, long text, a View button), **Panel** (a big photo with its title and
+  photo count over it: Photo panels), **Row** (a small photo, the title, the facts on the right:
+  Project list). Until Property mapping (step 6) they take their properties from the source's
+  schema: its title property, its first photo, its `list` properties as facts (`·` between them),
+  its first `photos` (the count) and its first long text.
+- **Arrangement** (Layout tab): **Grid** (`columns` `"1"`–`"6"`; 2 on a tablet, 1 on a phone) or
+  **Rows** (one per line; arrow keys, Home and End move between the items). **Gap** S / M / L.
+- **When a value is missing** (`config.missing`): **Hide** (default; the item's widget is left out,
+  as anywhere) or **Show empty** (it stays, empty, so items line up). The build warns once per List
+  (`List w-…: 1 of 4 items have no role: its widget is hidden there`); the editor dims it.
+- **See all** (`config.seeAll`) adds the section's See all link to the head; the heading is a
+  normal bindable setting. No items: "Nothing here yet.".
+- **Look:** items use the theme's `--item-*` tokens (`theme-default/styles/_tokens.scss`), so a theme
+  restyles every List at once.
+- **In the editor:** settings marked `tab: 'layout'` in a widget definition show in its Layout tab
+  (`layoutOptions()` in `src/editor/widget-layout.js`), the rest in Content.
+- Additive: content version stays 1; Album cards, Photo grid and Project list are unchanged.
 
 ### Menu
 
@@ -1538,6 +1582,8 @@ Change in its field, see the Media window above). Edit
   House of Yellow (a proper website with sections and a big footer).
 
 ## Breaking content changes (next minor, unreleased)
+
+The List widget adds nothing breaking (new widget type, `{items}` only on a List).
 
 Bound values are **parts** now (see "Bindings"), and what a source's item has is its
 **properties** (a widget's own inputs are its **settings**). Nothing reads the old shapes: `ewcms

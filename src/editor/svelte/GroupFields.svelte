@@ -103,10 +103,13 @@
   const itemOf = (f) => Number(parse(f.ptr)[0]) || 0; // a source field's item
   // the fields shown: not a Text widget's text (edited in the preview only)
   const fields = $derived(g.fields.filter((f) => f.type !== 'rich'));
-  // the widget settings shown: a source, a choice, a switch, a link (in the config's order)
+  // the widget settings shown: a source, a choice, a switch, a link (in the config's order);
+  // not the ones its definition puts in the Layout tab (`tab: 'layout'`: WidgetLayout.svelte)
   const settings = $derived(
     g.config?.filter(
-      (c) => c.type === 'source' || c.type === 'link' || c.options || c.type === 'boolean',
+      (c) =>
+        c.tab !== 'layout' &&
+        (c.type === 'source' || c.type === 'link' || c.options || c.type === 'boolean'),
     ) ?? [],
   );
 </script>

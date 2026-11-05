@@ -25,8 +25,15 @@ export function widgetTabOf(sections) {
   return WIDGET_TABS.some(([t]) => t === v) ? v : 'content';
 }
 
+/** A type's widget settings its definition puts in the Layout tab (config entries with `tab: 'layout'`). */
+export function layoutOptions(type) {
+  const def = typeof type === 'string' ? WIDGET_TYPES[type] : type;
+  return (def?.config || []).filter((c) => c.tab === 'layout');
+}
+
 /**
- * What a type's Layout tab shows, in order: 'size' (Auto / Rows / Aspect, unless its
+ * What a type's Layout tab shows, in order: 'options' (its widget settings with `tab:
+ * 'layout'`, a List's arrangement, columns and gap), 'size' (Auto / Rows / Aspect, unless its
  * definition says `size: false`), 'layer', 'link' (what it follows), 'box' (its content box),
  * 'placement', 'scale' (Scale to fit): from its definition.
  */
@@ -34,6 +41,7 @@ export function layoutParts(type) {
   const def = typeof type === 'string' ? WIDGET_TYPES[type] : type;
   const p = placementOf(def);
   return [
+    ...(layoutOptions(def).length ? ['options'] : []),
     ...(def?.size === false ? [] : ['size']),
     'layer',
     'link',

@@ -29,7 +29,7 @@ import { isObject } from '../is.js';
 import { eachWidget } from './ids.js';
 import { MODES, sourceOf } from './source.js';
 import { BIND_TYPES, TEXT_TYPES } from '../property-types.js';
-import { isPropertyPart, isParts, isWhole, partEmpty, partText } from './parts.js';
+import { ITEMS, isPropertyPart, isParts, isWhole, partEmpty, partText } from './parts.js';
 
 /**
  * The bind type of a setting's definition: its type, 'link' for a config link,
@@ -215,7 +215,11 @@ export function bindingProblems(content, { types, files = null }) {
         const key = u.part.property;
         const f = props.find((x) => x.key === key);
         // not a property of its item: a source's list (its length: text only), else unknown
-        if (!f) {
+        // {items}: a list widget's own items (./parts.js), a list: text only
+        if (!f && key === ITEMS && t.list) {
+          if (u.type !== 'text' && !TEXT_TYPES.includes(u.type))
+            problem('error', `${name}: {items} (a list) only fits a text setting`);
+        } else if (!f) {
           if (!Array.isArray(content.sources?.[key]))
             problem(
               'error',

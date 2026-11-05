@@ -96,6 +96,9 @@
     {:else if type === 'panels'}<span class="g g2"
         >{#each Array(2) as _, i (i)}<b></b>{/each}</span
       >
+    {:else if type === 'list'}<span class="g g3"
+        >{#each Array(3) as _, i (i)}<b></b>{/each}</span
+      ><b class="w40 h4"></b>
     {:else if type === 'projects'}{#each Array(4) as _, i (i)}<b class="w90 h8"></b>{/each}
     {:else}<b class="w70 h8"></b><b class="w50 h4"></b>
     {/if}

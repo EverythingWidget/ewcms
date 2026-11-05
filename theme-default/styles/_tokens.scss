@@ -53,8 +53,10 @@
   // items: one entry of a source as a list shows it (a card, a tile, a row). Defaults are
   // today's cards (Album cards, the places' cards): no box, a 4px photo radius, 16px between
   // the photo and the text. A site's theme overrides them in theme/tokens.scss (the site's
-  // theme/ folder). The -s/-m/-l steps of --item-shadow and --item-pad are for the list's
-  // look settings (step 9): nothing uses them yet.
+  // theme/ folder). The List widget's presets use them (src/site/widgets/list/style.scss):
+  // every item takes --item-radius, -border, -shadow, -pad, -gap, -bg and -bg-hover; the
+  // --item-pad-s/-m/-l steps space its text, Row's and Panel's. --item-shadow-s/-m/-l are for
+  // the item style settings (step 9): set --item-shadow to one of them for boxed items.
   --item-radius: 4px;
   --item-border: none;
   --item-shadow: none;
