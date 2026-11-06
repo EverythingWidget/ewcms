@@ -295,8 +295,8 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
   }
   const parts = (path) => ['sections', at, 'widgets', j, ...[path].flat()];
   // what it shows (./source.js): its items, the first one for its bound settings
-  // (Hand-made Lists: widgetItems already returns config.items resolved)
-  const shown = widgetItems(ctx, route, widget);
+  // (a type's own items hook: the List's hand-made config.items)
+  const shown = widgetItems(ctx, route, widget, t);
   const { item } = shown;
   if (t.item && !item) {
     warnOnce(`${where}: a "${t.type}" widget shows an item: it has none: skipped`, 'layout');

@@ -39,7 +39,7 @@ import { partEmpty } from '../../layout/parts.js';
 import { WIDGET_TYPES } from '../index.js';
 import { sourcePage } from '../data.js';
 import { PRESETS, factsRuns, presetOf, presetWidgets } from './presets.js';
-import { HANDMADE_ITEM, handmadeItemProblem } from './handmade.js';
+import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from './handmade.js';
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
 const GAPS = ['s', 'm', 'l'];
@@ -90,6 +90,8 @@ export const list = {
   list: true,
   // Content tab: From a source | Hand-made (ListLead.svelte); items at config.items
   handmade: true,
+  // widgetItems (../../layout/source.js): hand-made items instead of the source's
+  items: (ctx, widget) => (isHandmade(widget) ? handmadeItemsOf(ctx, widget) : undefined),
   label: 'List',
   icon: 'table-list',
   line: 'An item per entry of a source, or items you add by hand, in a look you pick',

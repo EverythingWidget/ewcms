@@ -6,6 +6,7 @@
   change one undo step. Used for the list fields of sections (Content: hero photos, facts,
   panels, ...) and the header's menu (Nav > Header, nested for sub-items).
     label     the list's name, on top
+    ariaLabel the group's accessible name when label is empty (default: label)
     items     the list
     name      (item, i) → an item's name (default "<label> <n>")
     addLabel  the Add button's text
@@ -19,6 +20,7 @@
 
   let {
     label,
+    ariaLabel,
     items = [],
     name = (_, i) => `${label} ${i + 1}`,
     addLabel = 'Add',
@@ -53,7 +55,7 @@
   }
 </script>
 
-<div class="lf" role="group" aria-label={label || undefined}>
+<div class="lf" role="group" aria-label={ariaLabel || label || undefined}>
   {#if label}<span class="tf__label">{label}</span>{/if}
   <div class="lf__list" bind:this={list}>
     {#each items as it, i (i)}

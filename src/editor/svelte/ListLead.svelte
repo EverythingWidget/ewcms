@@ -181,6 +181,7 @@
     <div class={['ll__pane', !handmade && 'is-hidden']} inert={!handmade || undefined}>
       <ListField
         label=""
+        ariaLabel="Items"
         items={itemsField.items}
         name={(fields, i) => itemName(fields, i)}
         addLabel="Add"

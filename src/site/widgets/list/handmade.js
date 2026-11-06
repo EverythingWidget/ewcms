@@ -30,7 +30,9 @@ export function sourceCover(ctx, source) {
 
 /**
  * One hand-made config item as a List item for presets: title, photo (own or source cover),
- * unit, source id, and href (own link or the pointed source's page). No source-item id.
+ * unit, source id, link (as written), href (own link or the pointed source's page) and count
+ * (the pointed source's items; '' without one). Every key is always there, '' when empty. No
+ * source-item id.
  */
 export function resolveHandmadeItem(ctx, raw = {}) {
   const title = typeof raw.title === 'string' ? raw.title : '';
@@ -41,7 +43,12 @@ export function resolveHandmadeItem(ctx, raw = {}) {
   let href = '';
   if (raw.link !== undefined && raw.link !== null) href = hrefOf(ctx, raw.link, 'a List item') || '';
   if (!href && source) href = sourcePage(ctx, source) || '';
-  return { title, photo, unit, source, href };
+  // every key, even empty: a part's {unit} / {count} never falls through to a same-named
+  // property of an outer scope (the page's item, its sources)
+  const link = isObject(raw.link) || typeof raw.link === 'string' ? raw.link : '';
+  const count =
+    source && Array.isArray(ctx?.sources?.[source]) ? ctx.sources[source].length : '';
+  return { title, photo, link, href, unit, source, count };
 }
 
 /** config.items resolved for render and {items}. */

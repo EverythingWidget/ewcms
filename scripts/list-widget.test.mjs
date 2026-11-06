@@ -15,6 +15,8 @@ import { WIDGET_TYPES } from '../src/site/widgets/index.js';
 import { checkContent } from '../src/site/validate.js';
 import { PRESETS, factsRuns } from '../src/site/widgets/list/presets.js';
 import { nextItemIndex } from '../src/site/widgets/list/client.js';
+import { resolveHandmadeItem } from '../src/site/widgets/list/handmade.js';
+import { widgetItems } from '../src/site/layout/source.js';
 import { countGroups, THIS_LIST } from '../src/editor/property-groups.js';
 import { layoutOptions, layoutParts, MISSING_OPTIONS } from '../src/editor/widget-layout.js';
 import { hideMissing } from '../src/site/layout/missing.js';
@@ -632,6 +634,7 @@ test('ListLead: From a source / Hand-made switch, dual panes, seeAll disabled wh
   // segment keeps "Items"; ListField has no second title
   assert.match(lead, /tf__label">Items</);
   assert.match(lead, /label=""/);
+  assert.match(lead, /ariaLabel="Items"/);
   const gf = readFileSync(
     new URL('../src/editor/svelte/GroupFields.svelte', import.meta.url),
     'utf8',
@@ -653,6 +656,25 @@ test('ListLead: From a source / Hand-made switch, dual panes, seeAll disabled wh
   assert.doesNotMatch(layout, /widgets\/list\/(hand|handmade)/);
   assert.doesNotMatch(layout, /type === ['"]list['"]/);
   const source = readFileSync(new URL('../src/site/layout/source.js', import.meta.url), 'utf8');
-  assert.match(source, /isHandmade/);
-  assert.match(source, /handmadeItemsOf/);
+  // the generic helper never imports a widget module: the List def's items hook
+  assert.doesNotMatch(source, /widgets\//);
+  assert.match(source, /type\?\.items\?\.\(ctx, widget\)/);
+  assert.equal(typeof WIDGET_TYPES.list.items, 'function');
+});
+
+test('resolveHandmadeItem: every key always present, empty when missing', () => {
+  const ctx = { sources: { people: [{ id: 'a' }, { id: 'b' }] } };
+  const keys = ['count', 'href', 'link', 'photo', 'source', 'title', 'unit'];
+  const empty = resolveHandmadeItem(ctx, {});
+  assert.deepEqual(Object.keys(empty).sort(), keys);
+  for (const k of keys) assert.equal(empty[k], '', k);
+  const full = resolveHandmadeItem(ctx, { title: 'P', source: 'people', unit: 'models' });
+  assert.deepEqual(Object.keys(full).sort(), keys);
+  assert.equal(full.count, 2);
+  assert.equal(full.unit, 'models');
+  // a hand-made List gives these items through widgetItems (the def hook)
+  const w = { type: 'list', config: { handmade: true, items: [{}] } };
+  const shown = widgetItems(ctx, {}, w, WIDGET_TYPES.list);
+  assert.equal(shown.source, null);
+  assert.deepEqual(Object.keys(shown.items[0]).sort(), keys);
 });
