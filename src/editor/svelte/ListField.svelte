@@ -94,6 +94,7 @@
   @use '../styles/mixins' as *;
 
   .lf {
+    min-width: 0;
     @include stack(var(--space-2));
     justify-items: start;
 
@@ -112,6 +113,7 @@
 
   .lf__item {
     position: relative;
+    min-width: 0;
     @include stack(var(--gap-items));
     padding: var(--space-2);
     border-radius: var(--radius-xl);

@@ -588,6 +588,7 @@ kbd {
 // selected: no fill, the label goes whitish (--text-strong) and the input gets the focus ring
 .tf {
   display: block;
+  min-width: 0;
   border-radius: var(--radius-md);
 }
 
@@ -666,7 +667,9 @@ kbd {
 }
 
 .tf__input {
+  box-sizing: border-box;
   width: 100%;
+  min-width: 0;
   resize: none;
   display: block;
 
@@ -691,8 +694,12 @@ kbd {
   grid-template-columns: 1fr 1fr;
   gap: var(--gap-fields);
 
+  // min-width: 0 so a half field's input (browser default ~20ch) can shrink to the column;
+  // without it a two-column Title / Unit row is a few px wider than a 380px pop-up once the
+  // vertical scrollbar is present, and overflow:auto shows a horizontal bar.
   > * {
     grid-column: 1 / -1;
+    min-width: 0;
   }
 
   > .is-half {

@@ -63,3 +63,22 @@ test('the rows: a double click or Enter opens, a click selects; the open one hig
   assert.doesNotMatch(panel, /<WidgetInspector/, 'no widget settings in the panel');
   assert.match(panel, /<WidgetPopup/);
 });
+
+test('the pop-up body scrolls vertically only (no horizontal bar from a vertical scrollbar)', () => {
+  const pop = readFileSync(
+    new URL('../src/editor/svelte/WidgetPopup.svelte', import.meta.url),
+    'utf8',
+  );
+  const body = pop.match(/\.wpop__body \{[\s\S]*?\n {2}\}/)[0];
+  assert.match(body, /min-width: 0/);
+  assert.match(body, /overflow: hidden auto/);
+  assert.doesNotMatch(body, /overflow:\s*auto;/);
+  // section pop-up: the same chrome
+  const sec = readFileSync(
+    new URL('../src/editor/svelte/SectionPopup.svelte', import.meta.url),
+    'utf8',
+  );
+  const sbody = sec.match(/\.spop__body \{[\s\S]*?\n {2}\}/)[0];
+  assert.match(sbody, /overflow: hidden auto/);
+  assert.match(sbody, /min-width: 0/);
+});

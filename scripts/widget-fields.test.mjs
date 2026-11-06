@@ -53,3 +53,14 @@ test('no layout number fields on a widget (placed and sized in the preview)', ()
   const ops = readRoot('src/editor/layout-ops.js');
   assert.ok(!/export function (setColumns|setGap)\b/.test(ops));
 });
+
+test('half fields shrink inside the pop-up: .fields items and inputs have min-width 0', () => {
+  const css = readRoot('src/editor/styles/editor.scss');
+  const fields = css.match(/\.fields \{[\s\S]*?\n\}/)[0];
+  assert.match(fields, /> \* \{[\s\S]*?min-width: 0;/);
+  assert.match(css, /\.tf \{[\s\S]*?min-width: 0;/);
+  assert.match(css, /\.tf__input \{[\s\S]*?min-width: 0;/);
+  const lf = read('ListField.svelte');
+  assert.match(lf, /\.lf \{[\s\S]*?min-width: 0;/);
+  assert.match(lf, /\.lf__item \{[\s\S]*?min-width: 0;/);
+});

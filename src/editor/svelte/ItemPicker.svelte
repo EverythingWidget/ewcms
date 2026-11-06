@@ -264,6 +264,7 @@
   // text 3 x 16px at most)
   .sc {
     @include row(var(--space-3));
+    min-width: 0;
     padding: var(--space-2);
     border-radius: var(--radius-md);
     background: var(--field-bg);

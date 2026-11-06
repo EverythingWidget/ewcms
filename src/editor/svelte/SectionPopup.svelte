@@ -212,9 +212,10 @@
 
   .spop__body {
     flex: 1;
+    min-width: 0;
     min-height: 0;
     padding: var(--space-3);
-    overflow: auto;
+    overflow: hidden auto;
     overscroll-behavior: contain;
   }
 </style>

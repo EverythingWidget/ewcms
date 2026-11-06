@@ -204,9 +204,11 @@
 
   .wpop__body {
     flex: 1;
+    min-width: 0;
     min-height: 0;
     padding-bottom: var(--space-3);
-    overflow: auto;
+    // vertical only: same as .ed-body — a vertical scrollbar must not open a horizontal one
+    overflow: hidden auto;
     overscroll-behavior: contain;
   }
 
