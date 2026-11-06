@@ -53,8 +53,8 @@
   }
 </script>
 
-<div class="lf" role="group" aria-label={label}>
-  <span class="tf__label">{label}</span>
+<div class="lf" role="group" aria-label={label || undefined}>
+  {#if label}<span class="tf__label">{label}</span>{/if}
   <div class="lf__list" bind:this={list}>
     {#each items as it, i (i)}
       <!-- the item takes Alt+↑/↓ (keys from its focused fields and buttons); its grip the drag -->

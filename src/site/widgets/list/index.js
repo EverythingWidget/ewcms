@@ -8,20 +8,20 @@
  *                 "gap": "m", "seeAll": true } }
  *
  *   Hand-made (Photography-style panels by hand):
- *   { "type": "list", "config": { "hand": true, "template": "preset:panel", "columns": "2",
+ *   { "type": "list", "config": { "handmade": true, "template": "preset:panel", "columns": "2",
  *       "items": [
  *         { "title": "People", "source": "people", "unit": "models" },
  *         { "title": "Places", "source": "places", "unit": "places" }
  *       ] } }
  *
  * template     a preset (./presets.js): preset:card | preset:plain | preset:panel | preset:row
- * hand         true: items come from config.items (Hand-made); omit/false: from the source
+ * handmade     true: items come from config.items (Hand-made); omit/false: from the source
  * items        hand-made entries [{ title, photo?, link?, source?, unit? }]; kept when switching
  *              back to From a source (and source is kept when switching to Hand-made)
  * arrangement  Grid (columns). Carousel comes later (not offered yet).
  * columns      "1"–"6" (two on a tablet, one on a phone). Row preset defaults to "1", others "3".
  * gap          between the items: s | m | l
- * seeAll       a link to the source's page after the heading (From a source only; ignored when hand)
+ * seeAll       a link to the source's page after the heading (From a source only; ignored when handmade)
  *
  * When a value is missing (every widget's Content tab, config.missing: hide | show): item
  * widgets inherit this List's choice unless they set their own (../../layout/missing.js).
@@ -39,7 +39,7 @@ import { partEmpty } from '../../layout/parts.js';
 import { WIDGET_TYPES } from '../index.js';
 import { sourcePage } from '../data.js';
 import { PRESETS, factsRuns, presetOf, presetWidgets } from './presets.js';
-import { HAND_ITEM, handItemProblem, handItemsOf } from './hand.js';
+import { HANDMADE_ITEM, handmadeItemProblem } from './handmade.js';
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
 const GAPS = ['s', 'm', 'l'];
@@ -61,8 +61,8 @@ function itemWidget(w, ctx, scope, { hide, api }) {
  * A template widget for one item: facts joined; item link; hand-made Panel count from the
  * pointed source + unit (absent when there is nothing to count).
  */
-function forItem(w, scope, link, sep, { hand = false, href = '' } = {}) {
-  if (w.handCount) {
+function forItem(w, scope, link, sep, { handmade = false, href = '' } = {}) {
+  if (w.handmadeCount) {
     const src = scope.item?.source;
     const unit = scope.item?.unit;
     if (!src || !Array.isArray(scope.sources?.[src])) return null; // no count overlay
@@ -77,7 +77,7 @@ function forItem(w, scope, link, sep, { hand = false, href = '' } = {}) {
     };
   if (w.itemLink) {
     // hand-made: the button uses the resolved href (no source-item id)
-    if (hand && href) return { ...w, config: { ...w.config, link: { href } } };
+    if (handmade && href) return { ...w, config: { ...w.config, link: { href } } };
     return { ...w, config: { ...w.config, link } };
   }
   return w;
@@ -89,15 +89,15 @@ export const list = {
   added: { size: 'auto' },
   list: true,
   // Content tab: From a source | Hand-made (ListLead.svelte); items at config.items
-  handMade: true,
+  handmade: true,
   label: 'List',
   icon: 'table-list',
-  line: 'An item per entry of a source, in a look you pick',
+  line: 'An item per entry of a source, or items you add by hand, in a look you pick',
   sketch: 'list',
   settings: [{ key: 'heading', label: 'Heading (empty: none)' }],
   config: [
-    // hand + items: Content tab via ListLead (not the generic settings loop)
-    { key: 'hand', type: 'boolean' },
+    // handmade + items: Content tab via ListLead (not the generic settings loop)
+    { key: 'handmade', type: 'boolean' },
     {
       key: 'items',
       label: 'Items',
@@ -108,7 +108,7 @@ export const list = {
         photo: { type: 'photo', label: 'Photo' },
         link: { type: 'link', label: 'Link' },
       },
-      item: { ...HAND_ITEM },
+      item: { ...HANDMADE_ITEM },
     },
     {
       key: 'template',
@@ -166,14 +166,18 @@ export const list = {
       out.push(
         'config.arrangement "rows" is gone: write "columns": "1" (Arrangement is only Grid; Carousel comes later)',
       );
-    if (widget.config?.hand !== undefined && widget.config.hand !== true && widget.config.hand !== false)
-      out.push('config.hand must be true (Hand-made) or left out (From a source)');
+    if (
+      widget.config?.handmade !== undefined &&
+      widget.config.handmade !== true &&
+      widget.config.handmade !== false
+    )
+      out.push('config.handmade must be true (Hand-made) or left out (From a source)');
     const items = widget.config?.items;
     if (items !== undefined) {
       if (!Array.isArray(items)) out.push('config.items must be a list');
       else
         items.forEach((it, i) => {
-          const p = handItemProblem(it, `config.items.${i}`);
+          const p = handmadeItemProblem(it, `config.items.${i}`);
           if (p) out.push(p);
         });
     }
@@ -182,16 +186,16 @@ export const list = {
   render: (s, ctx, widget) => {
     // `s` is the content widget (resolveWidget); `widget` is the render api (id, items, …)
     const c = s.config || {};
-    const hand = c.hand === true;
-    const source = hand ? '' : widget.source || ''; // None / hand: no source list
+    const handmade = c.handmade === true;
+    const source = handmade ? '' : widget.source || ''; // None / handmade: no source list
     const preset = presetOf(c.template);
     const columns = COLUMNS.includes(String(c.columns)) ? String(c.columns) : preset.columns || '3';
     const gap = GAPS.includes(c.gap) ? c.gap : 'm';
     // this List's choice; each item widget may override (hideMissing on its own config)
     const listHide = hideMissing(c);
-    // From a source: api.items (layout); Hand-made: config.items resolved (photo/link fallbacks)
-    const items = hand ? handItemsOf(ctx, { config: c }) : widget.items || [];
-    const keys = hand
+    // items from layout (widgetItems: source list or resolved config.items)
+    const items = widget.items || [];
+    const keys = handmade
       ? new Set(['title', 'photo', 'unit', 'count', 'source'])
       : keysOf(ctx, source);
     const shape = preset.id.slice('preset:'.length);
@@ -199,16 +203,16 @@ export const list = {
     // the template, once per List: its widgets, and whether its photo sits apart from the text
     const template = presetWidgets(preset.id, ctx, source, {
       open: t(ctx, 'list.open'),
-      hand,
+      handmade,
     });
     const photoFirst = preset.photoFirst && template[0]?.role === 'photo';
     // See all: only From a source (hand-made has no single source page)
-    const href = !hand && source && c.seeAll ? sourcePage(ctx, source) : '';
+    const href = !handmade && source && c.seeAll ? sourcePage(ctx, source) : '';
     const missing = new Map(); // name -> how many items have no value for it
     const out = items.map((item, i) => {
       const at = widget.indexOf ? widget.indexOf(item) : i;
-      const itemHrefLink = !hand && item?.id ? { item: { source, id: item.id } } : undefined;
-      const handHref = hand ? item.href || '' : '';
+      const itemHrefLink = !handmade && item?.id ? { item: { source, id: item.id } } : undefined;
+      const handmadeHref = handmade ? item.href || '' : '';
       const scope = { item, keys, sources: ctx.sources, items };
       const api = {
         id: widget.id,
@@ -220,7 +224,7 @@ export const list = {
       };
       const ws = template
         .map((w) => {
-          const filled = forItem(w, scope, itemHrefLink, sep, { hand, href: handHref });
+          const filled = forItem(w, scope, itemHrefLink, sep, { handmade, href: handmadeHref });
           if (!filled) return { html: '', missing: [] };
           // item widgets inherit the List's missing choice unless they set their own
           const hide = filled.config?.missing !== undefined ? hideMissing(filled.config) : listHide;
@@ -232,7 +236,7 @@ export const list = {
       const inner = photoFirst
         ? `${first}<div class="li__text">${rest.join('')}</div>`
         : `<div class="li__text">${parts.join('')}</div>`;
-      const url = hand ? handHref : itemHrefLink ? itemHref(ctx, source, item) : '';
+      const url = handmade ? handmadeHref : itemHrefLink ? itemHref(ctx, source, item) : '';
       const tag = preset.link && url ? 'a' : 'div';
       const ref = tag === 'a' ? ` href="${esc(url)}"` : '';
       return `<${tag} class="li li--${shape}"${ref} data-list-item data-anim-item>${inner}</${tag}>`;

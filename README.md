@@ -786,7 +786,7 @@ values of a **source item** instead of its own, as **parts** (`src/site/layout/p
 
 A **List** (`src/site/widgets/list/`) shows items as the same **column of widgets**, the
 **preset**: either every item of its source (**From a source**: All or From URL), or items you
-add by hand (**Hand-made**: `config.hand` and `config.items`). Each item widget is a real widget
+add by hand (**Hand-made**: `config.handmade` and `config.items`). Each item widget is a real widget
 (Photo, Text, Button), rendered by the same code as on a page, so bindings, formats and the hide
 rule work as anywhere.
 
@@ -821,7 +821,7 @@ rule work as anywhere.
   so neighbours line up. A List's item widgets inherit the List's choice unless they set their
   own. The build warns once per List; the editor dims the widget and tags it **Hidden on the
   page** or **Empty on the page**.
-- **From a source / Hand-made** (`config.hand`): Content tab. From a source is today's source
+- **From a source / Hand-made** (`config.handmade`): Content tab. From a source is today's source
   picker; Hand-made edits `config.items` (`[{ title, photo, link, source, unit }]`). A pointed
   `source` fills photo (first cover) and link (that source's page) when those are empty, and
   Panel's count is `{<source>}` plus `unit`. Switching modes keeps unused source and items.

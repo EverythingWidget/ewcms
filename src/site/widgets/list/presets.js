@@ -70,7 +70,7 @@ export const PRESET_IDS = PRESETS.map((p) => p.id);
 export const presetOf = (id) => PRESETS.find((p) => p.id === id) || PRESETS[0];
 
 /** Hand-made List items (no List-level source): title, photo, and Panel's count. */
-export const HAND_NAMES = Object.freeze({
+export const HANDMADE_NAMES = Object.freeze({
   title: 'title',
   photo: 'photo',
   facts: [],
@@ -79,11 +79,11 @@ export const HAND_NAMES = Object.freeze({
 });
 
 /**
- * The properties a preset fills: from the source's schema, or HAND_NAMES when `hand` (a
+ * The properties a preset fills: from the source's schema, or HANDMADE_NAMES when `handmade` (a
  * hand-made List has no List-level source).
  */
-export function namesOf(ctx, source, { hand = false } = {}) {
-  if (hand) return { ...HAND_NAMES };
+export function namesOf(ctx, source, { handmade = false } = {}) {
+  if (handmade) return { ...HANDMADE_NAMES };
   const props = (source && schemaOf(ctx, source)?.properties) || [];
   const first = (type) => props.find((p) => p.type === type)?.key ?? null;
   const title = (source && schemaOf(ctx, source)?.title) || 'title';
@@ -116,18 +116,18 @@ export function factsRuns(facts, isEmpty = () => false, sep = ' · ') {
  * (style.scss .li__<role>); facts carry `facts` (their names, joined per item: factsRuns), the
  * button `itemLink` (its link is the item's page, set per item). Unknown id: Card's.
  */
-export function presetWidgets(id, ctx, source, { open = 'View', hand = false } = {}) {
-  const n = namesOf(ctx, source, { hand });
+export function presetWidgets(id, ctx, source, { open = 'View', handmade = false } = {}) {
+  const n = namesOf(ctx, source, { handmade });
   const make = {
     photo: () => n.photo && { type: 'photo', role: 'photo', src: [prop(n.photo)] },
     title: () => textW('title', line('heading', [prop(n.title)])),
     facts: () =>
       n.facts.length && { ...textW('facts', line('label', factsRuns(n.facts))), facts: n.facts },
-    // hand: per-item count from the pointed source + unit (forHandItem in ./index.js); marker
+    // handmade: per-item count from the pointed source + unit (forItem in ./index.js); marker
     count: () =>
       n.count &&
-      (hand
-        ? { ...textW('count', line('label', [prop(n.count)])), handCount: true }
+      (handmade
+        ? { ...textW('count', line('label', [prop(n.count)])), handmadeCount: true }
         : textW('count', line('label', [prop(n.count)]))),
     body: () => n.body && textW('body', line('paragraph', [prop(n.body)])),
     button: () => ({ type: 'button', role: 'button', label: open, itemLink: true, config: {} }),

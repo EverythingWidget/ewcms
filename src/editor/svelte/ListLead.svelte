@@ -2,7 +2,7 @@
   A List widget's Content lead (WidgetInspector.svelte): From a source | Hand-made, then either
   the source picker (WidgetSource.svelte) or the hand-made items (ListField on config.items).
   Both panes stay in one grid cell (visibility:hidden / inert) so switching does not shift layout.
-  Switching modes only flips config.hand; source and config.items are kept for switching back.
+  Switching modes only flips config.handmade; source and config.items are kept for switching back.
 -->
 <script>
   import WidgetSource from './WidgetSource.svelte';
@@ -12,22 +12,22 @@
   import ItemPicker from './ItemPicker.svelte';
   import { pairedHalves } from './source-items.js';
   import { sourceFile } from '../../site/files.js';
-  import { HAND_ITEM } from '../../site/widgets/list/hand.js';
+  import { HANDMADE_ITEM } from '../../site/widgets/list/handmade.js';
     import { TEXT_TYPES } from '../../site/property-types.js';
   import { pointer } from '../../site/helpers.js';
 
   let { g, live, base, list = false, shown, sourceIds, onsource, bindings = null } = $props();
 
-  const handPtr = $derived(`${base}/config/hand`);
+  const handmadePtr = $derived(`${base}/config/handmade`);
   const itemsPtr = $derived(`${base}/config/items`);
-  const hand = $derived.by(() => {
+  const handmade = $derived.by(() => {
     live.version;
-    return live.get(g.file, handPtr) === true;
+    return live.get(g.file, handmadePtr) === true;
   });
 
-  const setHand = (on) =>
-    live.store.set(g.file, handPtr, on ? true : undefined, {
-      key: `config:${g.file}${handPtr}`,
+  const setHandmade = (on) =>
+    live.store.set(g.file, handmadePtr, on ? true : undefined, {
+      key: `config:${g.file}${handmadePtr}`,
       source: 'panel',
       structure: true,
     });
@@ -47,7 +47,7 @@
         photo: { type: 'photo', label: 'Photo' },
         link: { type: 'link', label: 'Link' },
       },
-      item: { ...HAND_ITEM },
+      item: { ...HANDMADE_ITEM },
       label: 'Items',
     },
   );
@@ -76,7 +76,7 @@
       file: g.file,
       ptr: itemsPtr,
       label: listDef.label || 'Items',
-      item: listDef.item ?? { ...HAND_ITEM },
+      item: listDef.item ?? { ...HANDMADE_ITEM },
       photo: null, // ListField (not PhotoList); photo is a sub-field of each item
       items: items.map((_, j) =>
         subs.map(([sub, type]) => field([...basePath, j, sub], type, sub, true)),
@@ -159,28 +159,28 @@
       <button
         type="button"
         role="radio"
-        aria-checked={!hand}
-        class={['seg__btn', !hand && 'is-active']}
-        onclick={() => setHand(false)}>From a source</button
+        aria-checked={!handmade}
+        class={['seg__btn', !handmade && 'is-active']}
+        onclick={() => setHandmade(false)}>From a source</button
       >
       <button
         type="button"
         role="radio"
-        aria-checked={hand}
-        class={['seg__btn', hand && 'is-active']}
-        onclick={() => setHand(true)}>Hand-made</button
+        aria-checked={handmade}
+        class={['seg__btn', handmade && 'is-active']}
+        onclick={() => setHandmade(true)}>Hand-made</button
       >
     </div>
   </div>
 
   <!-- both panes always mounted: same height cell, no shift on a switch -->
   <div class="ll__body">
-    <div class={['ll__pane', hand && 'is-hidden']} inert={hand || undefined}>
+    <div class={['ll__pane', handmade && 'is-hidden']} inert={handmade || undefined}>
       <WidgetSource {g} {live} {base} {list} {shown} {sourceIds} {onsource} />
     </div>
-    <div class={['ll__pane', !hand && 'is-hidden']} inert={!hand || undefined}>
+    <div class={['ll__pane', !handmade && 'is-hidden']} inert={!handmade || undefined}>
       <ListField
-        label={itemsField.label}
+        label=""
         items={itemsField.items}
         name={(fields, i) => itemName(fields, i)}
         addLabel="Add"

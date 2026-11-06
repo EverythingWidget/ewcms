@@ -121,19 +121,19 @@
   const fields = $derived(g.fields.filter((f) => f.type !== 'rich'));
   // the widget settings shown: a source, a choice, a switch, a link (in the config's order);
   // not the ones its definition puts in the Layout tab (`tab: 'layout'`: WidgetLayout.svelte)
-  // List hand-made: hand + items are edited in ListLead (not here); seeAll stays but is
+  // List hand-made: handmade + items are edited in ListLead (not here); seeAll stays but is
   // disabled when Hand-made (no layout shift)
-  const handMade = $derived.by(() => {
+  const handmade = $derived.by(() => {
     live.version;
     if (!g.widget) return false;
-    const ptr = `/sections/${g.widget.at}/widgets/${g.widget.j}/config/hand`;
+    const ptr = `/sections/${g.widget.at}/widgets/${g.widget.j}/config/handmade`;
     return live.get(g.file, ptr) === true;
   });
   const settings = $derived(
     g.config?.filter(
       (c) =>
         c.tab !== 'layout' &&
-        c.key !== 'hand' &&
+        c.key !== 'handmade' &&
         c.key !== 'items' &&
         !c.list &&
         (c.type === 'source' || c.type === 'link' || c.options || c.type === 'boolean'),
@@ -253,7 +253,7 @@
       value={c.type === 'boolean' ? !!value : (value ?? '')}
       options={c.options ?? []}
       changed={live.changed(g.file, c.ptr)}
-      disabled={handMade && c.key === 'seeAll'}
+      disabled={handmade && c.key === 'seeAll'}
       onvalue={(v) => setConfig(c, v)}
     />
   {/if}

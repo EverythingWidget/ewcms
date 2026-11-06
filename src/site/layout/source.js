@@ -23,6 +23,7 @@ import { isObject } from '../is.js';
 import { schemaOf } from '../schemas.js';
 import { defaultWhere, query, unmatched } from '../query.js';
 import { widgetsOf, eachWidget } from './ids.js';
+import { handmadeItemsOf, isHandmade } from '../widgets/list/handmade.js';
 
 export const MODES = ['item', 'all', 'url'];
 
@@ -39,9 +40,23 @@ const listOf = (ctx, from) => (Array.isArray(ctx?.sources?.[from]) ? ctx.sources
  * What a widget shows: { source, items, item, index, indexOf }: its source's id, its items, the
  * first (its bound settings') and that one's index in the source (indexOf: any item's, for the
  * editor's markers); source null and items [] for None.
+ * Hand-made Lists (config.handmade): items are config.items (resolved photo/link fallbacks);
+ * source is null (the List has no List-level source). The unused `source` on the widget is kept
+ * for switching back to From a source.
  * route: the page's (its params on a [param] page, the ids of their items as refs).
  */
 export function widgetItems(ctx, route, widget) {
+  if (isHandmade(widget)) {
+    const items = handmadeItemsOf(ctx, widget);
+    const item = items[0] ?? null;
+    return {
+      source: null,
+      items,
+      item,
+      index: item ? 0 : -1,
+      indexOf: (it) => items.indexOf(it),
+    };
+  }
   const s = sourceOf(widget);
   if (!s) return { source: null, items: [], item: null, index: -1, indexOf: () => -1 };
   const list = listOf(ctx, s.from);

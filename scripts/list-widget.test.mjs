@@ -222,12 +222,12 @@ test('the pop-up: Arrangement, Columns, Gap in Layout; Content has Preset and Wh
   ]);
   const content = WIDGET_TYPES.list.config.filter((c) => c.tab !== 'layout').map((c) => c.key);
   assert.deepEqual(
-    content.filter((k) => k !== 'hand' && k !== 'items'),
+    content.filter((k) => k !== 'handmade' && k !== 'items'),
     ['template', 'seeAll'],
   );
-  assert.ok(content.includes('hand'));
+  assert.ok(content.includes('handmade'));
   assert.ok(content.includes('items'));
-  assert.equal(WIDGET_TYPES.list.handMade, true);
+  assert.equal(WIDGET_TYPES.list.handmade, true);
   // Arrangement: Grid only (Carousel later)
   assert.deepEqual(WIDGET_TYPES.list.config.find((c) => c.key === 'arrangement').options, [
     ['grid', 'Grid'],
@@ -469,7 +469,7 @@ test("a List's missing choice: item widgets inherit it unless they set their own
 test('hand-made Panel like Photography: titles, counts, units, source covers, source page links', () => {
   const { el } = list(
     {
-      hand: true,
+      handmade: true,
       template: 'preset:panel',
       columns: '2',
       items: [
@@ -500,7 +500,7 @@ test('hand-made Panel like Photography: titles, counts, units, source covers, so
 test('hand-made: own photo and link win over the pointed source', () => {
   const { el } = list(
     {
-      hand: true,
+      handmade: true,
       template: 'preset:panel',
       items: [
         {
@@ -523,7 +523,7 @@ test('hand-made: own photo and link win over the pointed source', () => {
 test('hand-made: {items} is the hand-made list; See all is off; empty has no count', () => {
   const { el } = list(
     {
-      hand: true,
+      handmade: true,
       template: 'preset:panel',
       seeAll: true,
       items: [
@@ -541,7 +541,7 @@ test('hand-made: {items} is the hand-made list; See all is off; empty has no cou
   assert.equal(el.querySelector('.list__head .section__cta'), null);
   // no pointed source: title only, no count overlay
   const bare = list(
-    { hand: true, template: 'preset:panel', items: [{ title: 'Solo' }] },
+    { handmade: true, template: 'preset:panel', items: [{ title: 'Solo' }] },
     { source: undefined },
   );
   assert.equal(bare.el.querySelector('[data-list-item] .li__count'), null);
@@ -556,7 +556,7 @@ test('source-mode Panel still works; reorder of hand items keeps values', () => 
   // reorder: render with swapped config.items
   const a = list(
     {
-      hand: true,
+      handmade: true,
       template: 'preset:card',
       items: [
         { title: 'A', source: 'people' },
@@ -567,7 +567,7 @@ test('source-mode Panel still works; reorder of hand items keeps values', () => 
   );
   const b = list(
     {
-      hand: true,
+      handmade: true,
       template: 'preset:card',
       items: [
         { title: 'B', source: 'places' },
@@ -588,7 +588,7 @@ test('hand-made validation; mode switch keeps unused data (shape allows both)', 
     source: { mode: 'all', from: 'people' },
     config: {
       ...newWidget('list', new Set()).config,
-      hand: true,
+      handmade: true,
       items: [
         { title: 'People', source: 'people', unit: 'models' },
         { title: 'Places', source: 'places', unit: 'places' },
@@ -616,28 +616,43 @@ test('hand-made validation; mode switch keeps unused data (shape allows both)', 
   assert.match(checkContent('pages/x/index.json', bad).join('; '), /config\.items\.0\.title/);
 });
 
-test('ListLead: From a source / Hand-made switch, dual panes, seeAll disabled when hand', () => {
+test('ListLead: From a source / Hand-made switch, dual panes, seeAll disabled when handmade', () => {
   const lead = readFileSync(
     new URL('../src/editor/svelte/ListLead.svelte', import.meta.url),
     'utf8',
   );
   assert.match(lead, /From a source/);
   assert.match(lead, /Hand-made/);
-  assert.match(lead, /config\/hand/);
+  assert.match(lead, /config\/handmade/);
   assert.match(lead, /config\/items/);
   assert.match(lead, /ll__pane/);
   assert.match(lead, /visibility: hidden/);
   assert.match(lead, /ListField/);
   assert.match(lead, /WidgetSource/);
+  // segment keeps "Items"; ListField has no second title
+  assert.match(lead, /tf__label">Items</);
+  assert.match(lead, /label=""/);
   const gf = readFileSync(
     new URL('../src/editor/svelte/GroupFields.svelte', import.meta.url),
     'utf8',
   );
-  assert.match(gf, /disabled=\{handMade && c\.key === 'seeAll'\}/);
+  assert.match(gf, /disabled=\{handmade && c\.key === 'seeAll'\}/);
   const insp = readFileSync(
     new URL('../src/editor/svelte/WidgetInspector.svelte', import.meta.url),
     'utf8',
   );
-  assert.match(insp, /type\.handMade/);
+  assert.match(insp, /type\.handmade/);
   assert.match(insp, /ListLead/);
+  // add-menu line mentions hand-made items
+  assert.match(
+    WIDGET_TYPES.list.line,
+    /An item per entry of a source, or items you add by hand, in a look you pick/,
+  );
+  // layout: no type === 'list' leak; items via widgetItems (source.js)
+  const layout = readFileSync(new URL('../src/site/layout/index.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(layout, /widgets\/list\/(hand|handmade)/);
+  assert.doesNotMatch(layout, /type === ['"]list['"]/);
+  const source = readFileSync(new URL('../src/site/layout/source.js', import.meta.url), 'utf8');
+  assert.match(source, /isHandmade/);
+  assert.match(source, /handmadeItemsOf/);
 });

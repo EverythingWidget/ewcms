@@ -1,5 +1,5 @@
 /**
- * Hand-made List items (./index.js): config.hand + config.items. Each item is
+ * Hand-made List items (./index.js): config.handmade + config.items. Each item is
  * { title, photo, link, source?, unit }; a pointed source fills photo and link when those
  * are empty, and supplies the Panel count ({people} + unit).
  */
@@ -8,11 +8,11 @@ import { hrefOf, linkProblem } from '../../hrefs.js';
 import { isObject } from '../../is.js';
 import { sourcePage } from '../data.js';
 
-/** Is this List in hand-made mode (config.hand)? */
-export const isHandList = (widget) => widget?.config?.hand === true;
+/** Is this List in Hand-made mode (config.handmade)? */
+export const isHandmade = (widget) => widget?.config?.handmade === true;
 
 /** A new hand-made item (Add): empty texts; source left for the editor to pick. */
-export const HAND_ITEM = Object.freeze({
+export const HANDMADE_ITEM = Object.freeze({
   title: '',
   photo: '',
   source: '',
@@ -32,7 +32,7 @@ export function sourceCover(ctx, source) {
  * One hand-made config item as a List item for presets: title, photo (own or source cover),
  * unit, source id, and href (own link or the pointed source's page). No source-item id.
  */
-export function resolveHandItem(ctx, raw = {}) {
+export function resolveHandmadeItem(ctx, raw = {}) {
   const title = typeof raw.title === 'string' ? raw.title : '';
   const unit = typeof raw.unit === 'string' ? raw.unit : '';
   const source = typeof raw.source === 'string' ? raw.source : '';
@@ -45,16 +45,16 @@ export function resolveHandItem(ctx, raw = {}) {
 }
 
 /** config.items resolved for render and {items}. */
-export const handItemsOf = (ctx, widget) =>
+export const handmadeItemsOf = (ctx, widget) =>
   (Array.isArray(widget?.config?.items) ? widget.config.items : []).map((it) =>
-    resolveHandItem(ctx, it),
+    resolveHandmadeItem(ctx, it),
   );
 
 /**
  * What's wrong with one hand-made item (null when fine). `where` prefixes messages
  * (e.g. config.items.0).
  */
-export function handItemProblem(it, where = 'item') {
+export function handmadeItemProblem(it, where = 'item') {
   if (!isObject(it)) return `${where} must be an object`;
   for (const k of ['title', 'photo', 'unit', 'source'])
     if (it[k] !== undefined && typeof it[k] !== 'string') return `${where}.${k} must be a text`;

@@ -142,7 +142,7 @@
     <div class={['card__pane', tab !== 'content' && 'is-hidden']} inert={tab !== 'content'}>
       <!-- its source first (a widget whose type shows items), then its settings and fields -->
       {#snippet lead()}
-        {#if type.handMade}
+        {#if type.handmade}
           <ListLead
             {g}
             {live}
@@ -164,7 +164,7 @@
         {sourceIds}
         {onsource}
         {bindings}
-        lead={type.list || type.item || type.handMade || g.fields.some((f) => f.bindType) || widget.source
+        lead={type.list || type.item || type.handmade || g.fields.some((f) => f.bindType) || widget.source
           ? lead
           : undefined}
       />
