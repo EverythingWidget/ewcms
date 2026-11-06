@@ -13,7 +13,8 @@
     lead      snippet: first in the grid (the widget's source, WidgetSource.svelte)
   A Text widget's text (type 'rich') isn't shown: it is edited in the preview only.
   Settings and content share one .fields grid (all through Field, the same labels and gaps),
-  a 1px line between them when both are there.
+  a 1px line between them when both are there. After the widget's own settings and fields:
+  **When a value is missing** (every widget; Hide / Show empty, config.missing).
 -->
 <script>
   import Field from './Field.svelte';
@@ -29,6 +30,7 @@
   import { sourceFile } from '../../site/files.js';
   import { isParts } from '../../site/layout/parts.js';
   import { presetOf } from '../../site/widgets/list/presets.js';
+  import { MISSING_OPTIONS } from '../widget-layout.js';
 
   let { g, live, bridge, sourceIds, onsource, bindings = null, lead } = $props();
 
@@ -126,6 +128,16 @@
         (c.type === 'source' || c.type === 'link' || c.options || c.type === 'boolean'),
     ) ?? [],
   );
+  // every widget: When a value is missing (config.missing)
+  const missingPtr = $derived(
+    g.widget ? `/sections/${g.widget.at}/widgets/${g.widget.j}/config/missing` : '',
+  );
+  const setMissing = (v) =>
+    live.store.set(g.file, missingPtr, v === 'hide' ? undefined : v, {
+      key: `config:${g.file}${missingPtr}`,
+      source: 'panel',
+      structure: true,
+    });
 </script>
 
 <!-- one field: a Field (text, photo, switch, choice), or a source field (a list item's
@@ -279,6 +291,17 @@
       {/if}
     {/if}
   {/each}
+  {#if g.widget}
+    <Field
+      edit="{g.file}#{missingPtr}"
+      label="When a value is missing"
+      type="select"
+      value={live.get(g.file, missingPtr) ?? 'hide'}
+      options={MISSING_OPTIONS}
+      changed={live.changed(g.file, missingPtr)}
+      onvalue={setMissing}
+    />
+  {/if}
 </div>
 
 <style lang="scss">

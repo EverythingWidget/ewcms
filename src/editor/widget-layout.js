@@ -32,9 +32,10 @@ export function layoutOptions(type) {
 }
 
 /**
- * When a value is missing (every widget's Layout tab): Hide leaves the widget out of the
- * published page; Show empty keeps it. Default Hide (omitted from content). A List's item
- * widgets inherit the List's choice unless they set their own (../site/layout/missing.js).
+ * When a value is missing (every widget's Content tab, GroupFields.svelte): Hide leaves the
+ * widget out of the published page; Show empty keeps it. Default Hide (omitted from content).
+ * A List's item widgets inherit the List's choice unless they set their own
+ * (../site/layout/missing.js).
  */
 export const MISSING_OPTIONS = [
   ['hide', 'Hide'],
@@ -43,17 +44,16 @@ export const MISSING_OPTIONS = [
 
 /**
  * What a type's Layout tab shows, in order: 'options' (its widget settings with `tab:
- * 'layout'`, a List's arrangement, columns and gap), 'missing' (When a value is missing),
- * 'size' (Auto / Rows / Aspect, unless its definition says `size: false`), 'layer', 'link'
- * (what it follows), 'box' (its content box), 'placement', 'scale' (Scale to fit): from its
- * definition.
+ * 'layout'`, a List's arrangement, columns and gap), 'size' (Auto / Rows / Aspect, unless its
+ * definition says `size: false`), 'layer', 'link' (what it follows), 'box' (its content box),
+ * 'placement', 'scale' (Scale to fit): from its definition. (When a value is missing lives on
+ * the Content tab.)
  */
 export function layoutParts(type) {
   const def = typeof type === 'string' ? WIDGET_TYPES[type] : type;
   const p = placementOf(def);
   return [
     ...(layoutOptions(def).length ? ['options'] : []),
-    'missing',
     ...(def?.size === false ? [] : ['size']),
     'layer',
     'link',

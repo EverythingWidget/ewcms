@@ -35,24 +35,23 @@ test('the widget pop-up: Content | Layout, the last tab kept once for every widg
 
 test('each type: what its Layout tab shows (its definition)', () => {
   const want = {
-    text: ['missing', 'size', 'layer', 'link', 'placement', 'scale'],
-    button: ['missing', 'size', 'layer', 'link', 'box', 'placement'],
-    photo: ['missing', 'size', 'layer', 'link', 'box', 'placement'],
-    hero: ['missing', 'size', 'layer', 'link'],
-    album: ['missing', 'size', 'layer', 'link'],
-    albums: ['missing', 'size', 'layer', 'link'],
-    grid: ['missing', 'size', 'layer', 'link'],
-    panels: ['missing', 'size', 'layer', 'link'],
-    projects: ['missing', 'size', 'layer', 'link'],
-    form: ['missing', 'size', 'layer', 'link'],
-    list: ['options', 'missing', 'size', 'layer', 'link'],
+    text: ['size', 'layer', 'link', 'placement', 'scale'],
+    button: ['size', 'layer', 'link', 'box', 'placement'],
+    photo: ['size', 'layer', 'link', 'box', 'placement'],
+    hero: ['size', 'layer', 'link'],
+    album: ['size', 'layer', 'link'],
+    albums: ['size', 'layer', 'link'],
+    grid: ['size', 'layer', 'link'],
+    panels: ['size', 'layer', 'link'],
+    projects: ['size', 'layer', 'link'],
+    form: ['size', 'layer', 'link'],
+    list: ['options', 'size', 'layer', 'link'],
   };
   assert.deepEqual(Object.keys(WIDGET_TYPES).sort(), Object.keys(want).sort());
   for (const [type, parts] of Object.entries(want))
     assert.deepEqual(layoutParts(type), parts, type);
   // read from the definition, not the type's name
   assert.deepEqual(layoutParts({ type: 'mine', scaleToFit: true, size: false }), [
-    'missing',
     'layer',
     'link',
     'scale',

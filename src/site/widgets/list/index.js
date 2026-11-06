@@ -13,7 +13,7 @@
  * gap          between the items: s | m | l
  * seeAll       a link to the source's page after the heading (when it has one)
  *
- * When a value is missing (every widget's Layout tab, config.missing: hide | show): item
+ * When a value is missing (every widget's Content tab, config.missing: hide | show): item
  * widgets inherit this List's choice unless they set their own (../../layout/missing.js).
  *
  * {items} in the heading (or any part of its items) is the List's own items: a list, so a

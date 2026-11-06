@@ -24,7 +24,6 @@
     boxLabels,
     layoutOptions,
     layoutParts,
-    MISSING_OPTIONS,
     scaleHint,
     scalePatch,
     shownRows as rowsShown,
@@ -152,16 +151,6 @@
           onvalue={(v) => setOption(c, v)}
         />
       {/each}
-    {:else if part === 'missing'}
-      <Field
-        edit="{file}#/sections/{at}/widgets/{j}/config/missing"
-        label="When a value is missing"
-        type="select"
-        value={widget.config?.missing ?? 'hide'}
-        options={MISSING_OPTIONS}
-        changed={live.changed(file, `/sections/${at}/widgets/${j}/config/missing`)}
-        onvalue={(v) => setOption({ key: 'missing' }, v === 'hide' ? undefined : v)}
-      />
     {:else if part === 'size'}
       <div class="wl__row">
         <div class="wl__size">

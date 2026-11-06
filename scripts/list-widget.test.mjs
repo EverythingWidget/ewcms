@@ -3,6 +3,7 @@
 // with its build warning; {items}; the arrangements; its Layout tab.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { warnings } from './test-layout.mjs';
 import { loadContent } from './content.mjs';
@@ -207,13 +208,14 @@ test('Grid; columns and gap; See all; Row preset defaults to 1 column', () => {
   );
 });
 
-test('the pop-up: Arrangement, Columns, Gap in Layout; missing on every widget; Content has Preset', () => {
+test('the pop-up: Arrangement, Columns, Gap in Layout; Content has Preset and When a value is missing', () => {
   assert.deepEqual(
     layoutOptions('list').map((c) => c.key),
     ['arrangement', 'columns', 'gap'],
   );
-  assert.deepEqual(layoutParts('list'), ['options', 'missing', 'size', 'layer', 'link']);
-  assert.ok(layoutParts('button').includes('missing'));
+  assert.deepEqual(layoutParts('list'), ['options', 'size', 'layer', 'link']);
+  assert.ok(!layoutParts('button').includes('missing'));
+  assert.ok(!layoutParts('grid').includes('missing'));
   assert.deepEqual(MISSING_OPTIONS, [
     ['hide', 'Hide'],
     ['show', 'Show empty'],
@@ -224,9 +226,21 @@ test('the pop-up: Arrangement, Columns, Gap in Layout; missing on every widget; 
   assert.deepEqual(WIDGET_TYPES.list.config.find((c) => c.key === 'arrangement').options, [
     ['grid', 'Grid'],
   ]);
-  // other types: no options row, still have missing
+  // other types: no options row
   assert.ok(!layoutParts('grid').includes('options'));
-  assert.ok(layoutParts('grid').includes('missing'));
+  // Content tab (GroupFields): When a value is missing on every widget
+  const gf = readFileSync(
+    new URL('../src/editor/svelte/GroupFields.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.match(gf, /When a value is missing/);
+  assert.match(gf, /MISSING_OPTIONS/);
+  assert.match(gf, /config\/missing/);
+  const wl = readFileSync(
+    new URL('../src/editor/svelte/WidgetLayout.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.doesNotMatch(wl, /When a value is missing/);
 });
 
 // step 3b (review of 12740ba)

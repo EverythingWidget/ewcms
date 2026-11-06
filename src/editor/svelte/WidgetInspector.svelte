@@ -154,9 +154,6 @@
           ? lead
           : undefined}
       />
-      {#if !g.fields.length && !g.config?.length}
-        <p class="hint small">No texts or settings in this widget.</p>
-      {/if}
     </div>
   </div>
 </div>

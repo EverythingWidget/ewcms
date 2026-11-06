@@ -815,7 +815,7 @@ formats and the hide rule work as anywhere.
   a phone). Carousel comes later (not offered yet). Arrow keys, Home and End move between the
   items in every column count. **Gap** S / M / L. (The old Arrangement **Rows** is gone: write
   `"columns": "1"`.)
-- **When a value is missing** (`config.missing` on **every** widget, Layout tab): **Hide**
+- **When a value is missing** (`config.missing` on **every** widget, Content tab): **Hide**
   (default, omitted) leaves the widget out of the published page; **Show empty** keeps it empty
   so neighbours line up. A List's item widgets inherit the List's choice unless they set their
   own. The build warns once per List; the editor dims the widget and tags it **Hidden on the
@@ -1591,7 +1591,7 @@ Change in its field, see the Media window above). Edit
 ## Breaking content changes (next minor, unreleased)
 
 The List widget: Arrangement **Rows** is gone (write `"columns": "1"`; the validator says so).
-Carousel is not offered yet. `config.missing` is now on every widget (Layout tab; default Hide).
+Carousel is not offered yet. `config.missing` is now on every widget (Content tab; default Hide).
 Fixtures never used Arrangement Rows.
 
 Bound values are **parts** now (see "Bindings"), and what a source's item has is its
