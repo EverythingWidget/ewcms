@@ -107,7 +107,7 @@ export function checkScale(widget) {
   const out = [];
   if (widget?.fit !== undefined)
     out.push(
-      '"fit" is a line\'s now (a line\'s "fit": true): node scripts/rename-0-2-0.mjs converts it',
+      '"fit" is a line\'s now (a line\'s "fit": true for Fit width); for Scale to fit on the whole widget write "scale": true',
     );
   if (widget?.scale === undefined) return out;
   if (!hasScaleToFit(widget.type)) {

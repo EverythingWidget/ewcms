@@ -1626,9 +1626,8 @@ reads `}}` as a literal `}` (as `{{` is a `{`); `isBinding` / `bindingsOf` / `fo
 A Text widget's whole-widget `"fit"` is refused: `ewcms check` reports it as an error. A text widget
 scales as a whole with Scale to fit (`"scale": true`, the pop-up's Layout switch) instead, and one
 line fills the width with Fit width (that line's own `"fit": true`). The old cqi caps on the text
-styles are gone; Scale to fit replaces them. `scripts/rename-0-2-0.mjs` (the same script as for
-0.2.0, the same commands as below) converts it; on content already converted for 0.2.0 it changes
-only this:
+styles are gone; Scale to fit replaces them. Content already on the 0.2.0 names needed only this
+change (done by hand; the one-off converter that shipped with 0.2.0/0.3.0 is gone):
 
 | Where         | Old                              | New                            |
 | ------------- | -------------------------------- | ------------------------------ |
@@ -1643,17 +1642,9 @@ topic, not by version.
 
 ## Breaking content changes 0.2.0
 
-0.2.0 renames things in a site's content. Nothing reads the old names, so convert a site's
-content once, on a clean checkout:
-
-```sh
-node node_modules/ewcms/scripts/rename-0-2-0.mjs content            # what it would change
-node node_modules/ewcms/scripts/rename-0-2-0.mjs content --write    # change the files
-```
-
-It writes the files as the editor's Save does; running it again changes nothing. It also renames
-`ewcms images` / `--no-images` in the scripts of the site's `package.json` (next to `content/`),
-changing only those lines; a script it can't match exactly it names, to change by hand.
+0.2.0 renamed things in a site's content. Nothing reads the old names. Sites that still had the
+pre-0.2.0 shapes were converted once (by hand, or with a one-off script that shipped with 0.2.0 /
+0.3.0 and is no longer in the engine). The table is the changelog of what changed:
 
 | Where                                         | Old                                            | New                                            |
 | --------------------------------------------- | ---------------------------------------------- | ---------------------------------------------- |
