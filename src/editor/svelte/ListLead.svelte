@@ -3,6 +3,9 @@
   the source picker (WidgetSource.svelte) or the hand-made items (ListField on config.items).
   Both panes stay in one grid cell (visibility:hidden / inert) so switching does not shift layout.
   Switching modes only flips config.handmade; source and config.items are kept for switching back.
+  From a source: the type's property mapping rows under the source (type.mapping, the List's
+  config.properties: "Template needs photo" → a property). MAP_SLOTS rows always laid out, the
+  ones not needed visibility:hidden / inert, so a row appearing or going shifts nothing.
 -->
 <script>
   import WidgetSource from './WidgetSource.svelte';
@@ -13,8 +16,9 @@
   import { pairedHalves } from './source-items.js';
   import { sourceFile } from '../../site/files.js';
   import { HANDMADE_ITEM } from '../../site/widgets/list/handmade.js';
-    import { TEXT_TYPES } from '../../site/property-types.js';
+  import { TEXT_TYPES } from '../../site/property-types.js';
   import { pointer } from '../../site/helpers.js';
+  import { WIDGET_TYPES } from '../../site/widgets/index.js';
 
   let { g, live, base, list = false, shown, sourceIds, onsource, bindings = null } = $props();
 
@@ -105,6 +109,30 @@
     return typeof text === 'string' && text.trim() ? text : `Item ${i + 1}`;
   }
 
+  // ---- property mapping (config.properties), a slot per mappable role: no shift
+  const MAP_SLOTS = 4;
+  const propsPtr = $derived(`${base}/config/properties`);
+  const mapRows = $derived.by(() => {
+    live.version;
+    const mapping = WIDGET_TYPES[g.type]?.mapping;
+    if (!mapping) return [];
+    const widget = {
+      source: live.get(g.file, `${base}/source`),
+      config: live.get(g.file, `${base}/config`),
+    };
+    return mapping(live.content, widget);
+  });
+  const slots = $derived(Array.from({ length: MAP_SLOTS }, (_, i) => mapRows[i] || null));
+  function setMapping(role, key) {
+    const cur = live.get(g.file, propsPtr);
+    const next = { ...(cur && typeof cur === 'object' ? cur : {}) };
+    if (key) next[role] = key;
+    else delete next[role];
+    const opts = { key: `config:${g.file}${propsPtr}`, source: 'panel', structure: true };
+    if (Object.keys(next).length) live.store.set(g.file, propsPtr, next, opts);
+    else if (cur !== undefined) live.store.remove(g.file, propsPtr, opts);
+  }
+
   function setValue(f, value) {
     live.store.set(f.file, f.ptr, value, { source: 'panel', structure: true });
   }
@@ -177,6 +205,29 @@
   <div class="ll__body">
     <div class={['ll__pane', handmade && 'is-hidden']} inert={handmade || undefined}>
       <WidgetSource {g} {live} {base} {list} {shown} {sourceIds} {onsource} />
+      {#if WIDGET_TYPES[g.type]?.mapping}
+        <div class="ll__map" data-mapping>
+          {#each slots as row, i (i)}
+            <div
+              class={['ll__maprow', !row?.show && 'is-hidden']}
+              inert={!row?.show || undefined}
+              data-mapping-row={row?.role || undefined}
+            >
+              {#if row}
+                <Field
+                  edit={`${g.file}#${propsPtr}/${row.role}`}
+                  label={row.label}
+                  type="select"
+                  value={row.value}
+                  options={[['', `Pick a property (${row.options.length})`], ...row.options]}
+                  changed={live.changed(g.file, `${propsPtr}/${row.role}`)}
+                  onvalue={(v) => setMapping(row.role, v)}
+                />
+              {/if}
+            </div>
+          {/each}
+        </div>
+      {/if}
     </div>
     <div class={['ll__pane', !handmade && 'is-hidden']} inert={!handmade || undefined}>
       <ListField
@@ -213,6 +264,17 @@
     min-width: 0;
   }
 
+  // the mapping rows: every slot laid out (space reserved), unused ones hidden
+  .ll__map {
+    @include stack(var(--gap-fields));
+    margin-top: var(--gap-fields);
+  }
+
+  .ll__maprow {
+    min-height: var(--map-row, 56px);
+  }
+
+  .ll__maprow.is-hidden,
   .ll__pane.is-hidden {
     visibility: hidden;
   }

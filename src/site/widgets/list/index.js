@@ -21,6 +21,8 @@
  * arrangement  Grid (columns). Carousel comes later (not offered yet).
  * columns      "1"–"6" (two on a tablet, one on a phone). Row preset defaults to "1", others "3".
  * gap          between the items: s | m | l
+ * properties   mapping { role: property } (title, photo, count, body) when the source's
+ *              names differ: { "photo": "cover" }; defaults: schema title, first photo
  * seeAll       a link to the source's page after the heading (From a source only; ignored when handmade)
  *
  * When a value is missing (every widget's Content tab, config.missing: hide | show): item
@@ -32,13 +34,14 @@
  */
 import { html, esc, editable, itemHref, warnOnce } from '../../helpers.js';
 import { contentPath } from '../../files.js';
+import { isObject } from '../../is.js';
 import { t } from '../../strings.js';
 import { keysOf, resolveWidget } from '../../layout/bindings.js';
 import { hideMissing, missingState } from '../../layout/missing.js';
 import { partEmpty } from '../../layout/parts.js';
 import { WIDGET_TYPES } from '../index.js';
 import { sourcePage } from '../data.js';
-import { PRESETS, factsRuns, presetOf, presetWidgets } from './presets.js';
+import { MAPPABLE, PRESETS, factsRuns, mappingRows, presetOf, presetWidgets } from './presets.js';
 import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from './handmade.js';
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
@@ -92,6 +95,17 @@ export const list = {
   handmade: true,
   // widgetItems (../../layout/source.js): hand-made items instead of the source's
   items: (ctx, widget) => (isHandmade(widget) ? handmadeItemsOf(ctx, widget) : undefined),
+  // Property mapping (config.properties): the Content tab's rows for this List (none when
+  // hand-made: its item shape is fixed)
+  mapping: (ctx, widget) =>
+    widget?.config?.handmade === true
+      ? []
+      : mappingRows(
+          ctx,
+          widget?.source?.from || '',
+          widget?.config?.template,
+          widget?.config?.properties,
+        ),
   label: 'List',
   icon: 'table-list',
   line: 'An item per entry of a source, or items you add by hand, in a look you pick',
@@ -174,6 +188,19 @@ export const list = {
       widget.config.handmade !== false
     )
       out.push('config.handmade must be true (Hand-made) or left out (From a source)');
+    const props = widget.config?.properties;
+    if (props !== undefined) {
+      if (!isObject(props)) out.push('config.properties must be an object: { "photo": "cover" }');
+      else
+        for (const [role, key] of Object.entries(props)) {
+          if (!MAPPABLE[role])
+            out.push(
+              `config.properties has no "${role}" (it maps ${Object.keys(MAPPABLE).join(', ')})`,
+            );
+          else if (typeof key !== 'string' || !key)
+            out.push(`config.properties.${role} must be a property name`);
+        }
+    }
     const items = widget.config?.items;
     if (items !== undefined) {
       if (!Array.isArray(items)) out.push('config.items must be a list');
@@ -206,6 +233,7 @@ export const list = {
     const template = presetWidgets(preset.id, ctx, source, {
       open: t(ctx, 'list.open'),
       handmade,
+      properties: c.properties,
     });
     const photoFirst = preset.photoFirst && template[0]?.role === 'photo';
     // See all: only From a source (hand-made has no single source page)

@@ -19,6 +19,7 @@
  *   Row    a small photo left, title and facts right (Project list)
  */
 import { schemaOf } from '../../schemas.js';
+import { isObject } from '../../is.js';
 
 /**
  * The presets, in the picker's order. Each is data the List reads (no preset names in its
@@ -79,21 +80,87 @@ export const HANDMADE_NAMES = Object.freeze({
 });
 
 /**
- * The properties a preset fills: from the source's schema, or HANDMADE_NAMES when `handmade` (a
- * hand-made List has no List-level source).
+ * Property mapping (config.properties, e.g. { "photo": "cover" }): the roles a List can map to
+ * one of its source's properties, and the property types each takes. Facts are the schema's
+ * `list` properties (not mapped).
  */
-export function namesOf(ctx, source, { handmade = false } = {}) {
-  if (handmade) return { ...HANDMADE_NAMES };
-  const props = (source && schemaOf(ctx, source)?.properties) || [];
+export const MAPPABLE = Object.freeze({
+  title: ['text', 'words', 'multiline', 'number'],
+  photo: ['photo'],
+  count: ['photos'],
+  body: ['multiline'],
+});
+
+/** A source's properties ([] for none / no source). */
+const propsOf = (ctx, source) => (source && schemaOf(ctx, source)?.properties) || [];
+
+/**
+ * config.properties kept to what it can mean for this source: known roles naming a property of
+ * the source of a type that role takes (anything else is ignored, so the defaults apply).
+ */
+export function mappingOf(ctx, source, properties) {
+  if (!isObject(properties)) return {};
+  const props = propsOf(ctx, source);
+  const out = {};
+  for (const [role, key] of Object.entries(properties)) {
+    const p = MAPPABLE[role] && typeof key === 'string' && props.find((x) => x.key === key);
+    if (p && MAPPABLE[role].includes(p.type)) out[role] = key;
+  }
+  return out;
+}
+
+/** Each role's default: the schema's title property, its first photo / photos / long text. */
+function defaultsOf(ctx, source) {
+  const props = propsOf(ctx, source);
   const first = (type) => props.find((p) => p.type === type)?.key ?? null;
   const title = (source && schemaOf(ctx, source)?.title) || 'title';
+  return { title, photo: first('photo'), count: first('photos'), body: first('multiline') };
+}
+
+/**
+ * The properties a preset fills: the source's schema defaults, then its mapping
+ * (config.properties) over them; HANDMADE_NAMES when `handmade` (its item shape is fixed: no
+ * mapping).
+ */
+export function namesOf(ctx, source, { handmade = false, properties } = {}) {
+  if (handmade) return { ...HANDMADE_NAMES };
+  const props = propsOf(ctx, source);
+  const n = { ...defaultsOf(ctx, source), ...mappingOf(ctx, source, properties) };
   return {
-    title,
-    photo: first('photo'),
-    facts: props.filter((p) => p.list && p.key !== title).map((p) => p.key),
-    count: first('photos'),
-    body: first('multiline'),
+    ...n,
+    facts: props.filter((p) => p.list && p.key !== n.title).map((p) => p.key),
   };
+}
+
+/**
+ * The Content tab's mapping rows for a preset on a source ("Template needs photo" → a property):
+ * one per mappable role the preset uses, in its order: { role, label, value, options, show }.
+ * show: the source lacks the role's default (none of that type, or the title property isn't
+ * one of its properties) or it is mapped (so it can be changed back). value: the mapped
+ * property ('' when unmapped); options [[key, label]]: the source's properties of a type the
+ * role takes.
+ */
+export function mappingRows(ctx, source, presetId, properties) {
+  if (!source) return [];
+  const props = propsOf(ctx, source);
+  const defaults = defaultsOf(ctx, source);
+  const mapped = mappingOf(ctx, source, properties);
+  return presetOf(presetId)
+    .roles.filter((r) => MAPPABLE[r])
+    .map((role) => {
+      const d = defaults[role];
+      const lacks = !d || !props.some((p) => p.key === d);
+      const value = mapped[role] || '';
+      return {
+        role,
+        label: `Template needs ${role}`,
+        value,
+        options: props
+          .filter((p) => MAPPABLE[role].includes(p.type))
+          .map((p) => [p.key, p.label || p.key]),
+        show: lacks || !!value,
+      };
+    });
 }
 
 const prop = (property) => ({ property });
@@ -116,8 +183,13 @@ export function factsRuns(facts, isEmpty = () => false, sep = ' · ') {
  * (style.scss .li__<role>); facts carry `facts` (their names, joined per item: factsRuns), the
  * button `itemLink` (its link is the item's page, set per item). Unknown id: Card's.
  */
-export function presetWidgets(id, ctx, source, { open = 'View', handmade = false } = {}) {
-  const n = namesOf(ctx, source, { handmade });
+export function presetWidgets(
+  id,
+  ctx,
+  source,
+  { open = 'View', handmade = false, properties } = {},
+) {
+  const n = namesOf(ctx, source, { handmade, properties });
   const make = {
     photo: () => n.photo && { type: 'photo', role: 'photo', src: [prop(n.photo)] },
     title: () => textW('title', line('heading', [prop(n.title)])),
