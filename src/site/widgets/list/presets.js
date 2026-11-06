@@ -1,17 +1,18 @@
 /**
  * The List widget's presets (./index.js): ready-made item templates, in code. A preset is a
  * column of ordinary widgets (Photo, Text, Button) whose values are parts
- * (../../layout/parts.js), so each copy fills from its own item. Which property each part
- * names comes from the source's schema (Property mapping, later, will let a List change them):
+ * (../../layout/parts.js), so each copy fills from its own item. Which property each role
+ * shows is the List's property mapping (config.properties, one row per role in the Content
+ * tab), else the property of the role's own name when it has a type the role takes:
  *
- *   title   the schema's title property ("title" when it names none)
- *   photo   its first photo property (cover, photo)
+ *   title   "title" (text, words, multi-line or number)
+ *   photo   "photo" (a photo)
+ *   body    "body" (multi-line)
  *   facts   the properties it shows under an item's title in its lists (`list: true`)
- *   count   its first photos property: a list, so a part shows its length
- *   body    its first multi-line property
+ *   count   a plain bound count: {photos} (a list, so a part shows its length); not mapped
  *
- * A widget the source has nothing for is left out (a source without a photo property: no
- * photo). `role` names each widget's place in the preset's look (style.scss: .li__<role>).
+ * Nothing is guessed (no "first photo property"): a role with neither is left out until it is
+ * mapped. `role` names each widget's place in the preset's look (style.scss: .li__<role>).
  *
  *   Card   photo on top, title, facts (Album cards, the places' cards)
  *   Plain  photo, title, body, a button to the item's page; no box
@@ -79,86 +80,101 @@ export const HANDMADE_NAMES = Object.freeze({
   body: null,
 });
 
+/** The plain bound count a source's Panel shows: {photos}. */
+export const COUNT_PROPERTY = 'photos';
+
 /**
- * Property mapping (config.properties, e.g. { "photo": "cover" }): the roles a List can map to
- * one of its source's properties, and the property types each takes. Facts are the schema's
- * `list` properties (not mapped).
+ * Property mapping (config.properties, e.g. { "photo": "cover" }): the roles a List maps to one
+ * of its source's properties, and the property types each takes. Facts are the schema's `list`
+ * properties and the count is {photos}: neither is mapped.
  */
 export const MAPPABLE = Object.freeze({
   title: ['text', 'words', 'multiline', 'number'],
   photo: ['photo'],
-  count: ['photos'],
   body: ['multiline'],
 });
+const ROLE_LABELS = { title: 'Title', photo: 'Photo', body: 'Text' };
 
 /** A source's properties ([] for none / no source). */
 const propsOf = (ctx, source) => (source && schemaOf(ctx, source)?.properties) || [];
+const fits = (role, p) => !!p && MAPPABLE[role].includes(p.type);
 
 /**
  * config.properties kept to what it can mean for this source: known roles naming a property of
- * the source of a type that role takes (anything else is ignored, so the defaults apply).
+ * the source of a type that role takes (anything else is ignored: the automatic choice applies).
  */
 export function mappingOf(ctx, source, properties) {
   if (!isObject(properties)) return {};
   const props = propsOf(ctx, source);
   const out = {};
-  for (const [role, key] of Object.entries(properties)) {
-    const p = MAPPABLE[role] && typeof key === 'string' && props.find((x) => x.key === key);
-    if (p && MAPPABLE[role].includes(p.type)) out[role] = key;
-  }
+  for (const [role, key] of Object.entries(properties))
+    if (
+      MAPPABLE[role] &&
+      typeof key === 'string' &&
+      fits(
+        role,
+        props.find((x) => x.key === key),
+      )
+    )
+      out[role] = key;
   return out;
 }
 
-/** Each role's default: the schema's title property, its first photo / photos / long text. */
-function defaultsOf(ctx, source) {
+/** Each role's automatic choice: the property of its own name with a type it takes, else null. */
+function autoOf(ctx, source) {
   const props = propsOf(ctx, source);
-  const first = (type) => props.find((p) => p.type === type)?.key ?? null;
-  const title = (source && schemaOf(ctx, source)?.title) || 'title';
-  return { title, photo: first('photo'), count: first('photos'), body: first('multiline') };
+  return Object.fromEntries(
+    Object.keys(MAPPABLE).map((role) => [
+      role,
+      fits(
+        role,
+        props.find((p) => p.key === role),
+      )
+        ? role
+        : null,
+    ]),
+  );
 }
 
 /**
- * The properties a preset fills: the source's schema defaults, then its mapping
- * (config.properties) over them; HANDMADE_NAMES when `handmade` (its item shape is fixed: no
- * mapping).
+ * The properties a preset fills: the automatic choices, then the mapping (config.properties)
+ * over them; HANDMADE_NAMES when `handmade` (its item shape is fixed: no mapping).
  */
 export function namesOf(ctx, source, { handmade = false, properties } = {}) {
   if (handmade) return { ...HANDMADE_NAMES };
   const props = propsOf(ctx, source);
-  const n = { ...defaultsOf(ctx, source), ...mappingOf(ctx, source, properties) };
+  const n = { ...autoOf(ctx, source), ...mappingOf(ctx, source, properties) };
   return {
     ...n,
     facts: props.filter((p) => p.list && p.key !== n.title).map((p) => p.key),
+    count: props.some((p) => p.key === COUNT_PROPERTY) ? COUNT_PROPERTY : null,
   };
 }
 
 /**
- * The Content tab's mapping rows for a preset on a source ("Template needs photo" → a property):
- * one per mappable role the preset uses, in its order: { role, label, value, options, show }.
- * show: the source lacks the role's default (none of that type, or the title property isn't
- * one of its properties) or it is mapped (so it can be changed back). value: the mapped
- * property ('' when unmapped); options [[key, label]]: the source's properties of a type the
- * role takes.
+ * The Content tab's mapping rows for a preset on a source: one per mappable role the preset
+ * uses, in its order, always shown: { role, label, value, auto, options, none }. value: the
+ * property it shows (the mapping, else the automatic choice; '' for none); auto: the automatic
+ * choice; options [[key, label]]: the source's properties of a type the role takes; none: the
+ * row's text when there are no options ("No photo property in People").
  */
 export function mappingRows(ctx, source, presetId, properties) {
   if (!source) return [];
   const props = propsOf(ctx, source);
-  const defaults = defaultsOf(ctx, source);
+  const auto = autoOf(ctx, source);
   const mapped = mappingOf(ctx, source, properties);
+  const name = schemaOf(ctx, source)?.label || source;
   return presetOf(presetId)
     .roles.filter((r) => MAPPABLE[r])
     .map((role) => {
-      const d = defaults[role];
-      const lacks = !d || !props.some((p) => p.key === d);
-      const value = mapped[role] || '';
+      const options = props.filter((p) => fits(role, p)).map((p) => [p.key, p.label || p.key]);
       return {
         role,
-        label: `Template needs ${role}`,
-        value,
-        options: props
-          .filter((p) => MAPPABLE[role].includes(p.type))
-          .map((p) => [p.key, p.label || p.key]),
-        show: lacks || !!value,
+        label: ROLE_LABELS[role],
+        value: mapped[role] || auto[role] || '',
+        auto: auto[role] || '',
+        options,
+        none: options.length ? '' : `No ${role} property in ${name}`,
       };
     });
 }
@@ -196,6 +212,7 @@ export function presetWidgets(
     facts: () =>
       n.facts.length && { ...textW('facts', line('label', factsRuns(n.facts))), facts: n.facts },
     // handmade: per-item count from the pointed source + unit (forItem in ./index.js); marker
+    // a plain bound count ({photos}); hand-made: the item's count + unit (forItem, ./index.js)
     count: () =>
       n.count &&
       (handmade

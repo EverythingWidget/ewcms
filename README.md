@@ -808,10 +808,31 @@ rule work as anywhere.
   **Plain** (photo, title, long text, a View button), **Panel** (a big photo with its title and
   photo count over it: the Photography panels, a hand-made List; the old Photo panels widget
   (`panels`) is gone and content that still has one is rejected with a pointer to List), **Row** (a small photo, the title, the facts on the right:
-  Project list). Each preset is a column of widgets. Until Property mapping (step 6) they take
-  their properties from the source's schema: its title property, its first photo, its `list`
-  properties as facts (`·` between them), its first `photos` (the count) and its first long text.
+  Project list). Each preset is a column of widgets; its facts are the source's `list`
+  properties (`·` between them) and Panel's count is the plain `{photos}` (how many).
+- **Property mapping** (`config.properties`, Content tab under the source): one row per role the
+  preset uses, **Photo**, **Title**, **Text** (`photo`, `title`, `body`), each a picker of the
+  source's properties of a type that role takes (photo: `photo`; title: text, words,
+  multi-line, number; text: multi-line). A row is prefilled with its automatic choice: the
+  property of the role's own name when its type fits (`photo`, `title`, `body`), nothing
+  guessed (no "first photo property"). A source with none says so ("No photo property in
+  People") instead of an empty picker. Picking another stores it, picking the automatic one
+  again removes it:
+
+  ```json
+  {
+    "type": "list",
+    "source": { "mode": "all", "from": "people" },
+    "config": { "template": "preset:card", "properties": { "photo": "cover" } }
+  }
+  ```
+
+  A role naming a property the source doesn't have, or one of the wrong type, is ignored (the
+  automatic choice applies); other keys are rejected. Hand-made Lists have no mapping (their
+  item shape is fixed). The rows take the same room for every preset (hidden slots), so nothing
+  shifts.
   Picking **Row** sets **Columns** to `"1"`; the others default to `"3"`.
+
 - **Arrangement** (Layout tab): **Grid** only for now (`columns` `"1"`–`"6"`; 2 on a tablet, 1 on
   a phone). Carousel comes later (not offered yet). Arrow keys, Home and End move between the
   items in every column count. **Gap** S / M / L. (The old Arrangement **Rows** is gone: write
@@ -823,8 +844,9 @@ rule work as anywhere.
   page** or **Empty on the page**.
 - **From a source / Hand-made** (`config.handmade`): Content tab. From a source is today's source
   picker; Hand-made edits `config.items` (`[{ title, photo, link, source, unit }]`). A pointed
-  `source` fills photo (first cover) and link (that source's page) when those are empty, and
-  Panel's count is `{<source>}` plus `unit`. Switching modes keeps unused source and items.
+  `source` fills the link (that source's page) when it is empty, and Panel's count is how many
+  items it has (two digits, `04`) plus `unit`. The photo is the item's own `photo` (nothing is
+  taken from the source's items). Switching modes keeps unused source and items.
   **See all** (`config.seeAll`) is From a source only (disabled when Hand-made). The heading is a
   normal bindable setting. No items: "Nothing here yet.".
 - **Look:** items use the theme's `--item-*` tokens (`theme-default/styles/_tokens.scss`), so a theme

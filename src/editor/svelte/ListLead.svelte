@@ -4,8 +4,9 @@
   Both panes stay in one grid cell (visibility:hidden / inert) so switching does not shift layout.
   Switching modes only flips config.handmade; source and config.items are kept for switching back.
   From a source: the type's property mapping rows under the source (type.mapping, the List's
-  config.properties: "Template needs photo" → a property). MAP_SLOTS rows always laid out, the
-  ones not needed visibility:hidden / inert, so a row appearing or going shifts nothing.
+  config.properties: a row per role the preset uses, "Photo" → a property, prefilled with the
+  automatic choice; "No photo property in People" when the source has none). MAP_SLOTS rows
+  always laid out, the ones the preset doesn't use visibility:hidden / inert: no shift.
 -->
 <script>
   import WidgetSource from './WidgetSource.svelte';
@@ -110,7 +111,7 @@
   }
 
   // ---- property mapping (config.properties), a slot per mappable role: no shift
-  const MAP_SLOTS = 4;
+  const MAP_SLOTS = 3;
   const propsPtr = $derived(`${base}/config/properties`);
   const mapRows = $derived.by(() => {
     live.version;
@@ -209,19 +210,24 @@
         <div class="ll__map" data-mapping>
           {#each slots as row, i (i)}
             <div
-              class={['ll__maprow', !row?.show && 'is-hidden']}
-              inert={!row?.show || undefined}
+              class={['ll__maprow', !row && 'is-hidden']}
+              inert={!row || undefined}
               data-mapping-row={row?.role || undefined}
             >
-              {#if row}
+              {#if row?.none}
+                <div class="tf">
+                  <span class="tf__label">{row.label}</span>
+                  <p class="ll__none" data-mapping-none>{row.none}</p>
+                </div>
+              {:else if row}
                 <Field
                   edit={`${g.file}#${propsPtr}/${row.role}`}
                   label={row.label}
                   type="select"
                   value={row.value}
-                  options={[['', `Pick a property (${row.options.length})`], ...row.options]}
+                  options={row.value ? row.options : [['', 'Pick a property'], ...row.options]}
                   changed={live.changed(g.file, `${propsPtr}/${row.role}`)}
-                  onvalue={(v) => setMapping(row.role, v)}
+                  onvalue={(v) => setMapping(row.role, v === row.auto ? '' : v)}
                 />
               {/if}
             </div>
@@ -268,6 +274,11 @@
   .ll__map {
     @include stack(var(--gap-fields));
     margin-top: var(--gap-fields);
+  }
+
+  .ll__none {
+    margin: 0;
+    color: var(--c-text-faint);
   }
 
   .ll__maprow {

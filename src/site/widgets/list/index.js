@@ -21,8 +21,8 @@
  * arrangement  Grid (columns). Carousel comes later (not offered yet).
  * columns      "1"–"6" (two on a tablet, one on a phone). Row preset defaults to "1", others "3".
  * gap          between the items: s | m | l
- * properties   mapping { role: property } (title, photo, count, body) when the source's
- *              names differ: { "photo": "cover" }; defaults: schema title, first photo
+ * properties   mapping { role: property } (title, photo, body): { "photo": "cover" }; a role
+ *              left out shows the property of its own name (when its type fits), else nothing
  * seeAll       a link to the source's page after the heading (From a source only; ignored when handmade)
  *
  * When a value is missing (every widget's Content tab, config.missing: hide | show): item

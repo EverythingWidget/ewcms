@@ -33,7 +33,8 @@ function list(config = {}, more = {}, content = base, extraCtx = {}) {
   const ids = new Set();
   const w = newWidget('list', ids);
   const widget = { ...w, id: `w-ls${String(++n).padStart(3, '0')}`, ...more };
-  widget.config = { ...w.config, ...config };
+  // the fixtures' photo property is "cover": mapped once (step 6), as a site would
+  widget.config = { properties: { photo: 'cover' }, ...w.config, ...config };
   const ctx = { ...content, route: page, routes, curtains: {}, ...extraCtx };
   const [html, seen] = warnings(() => renderSections(ctx, page, F, [newSection(ids, [widget])]));
   const { document } = parseHTML(`<!doctype html><html><body>${html}</body></html>`);
@@ -475,8 +476,8 @@ test('hand-made Panel like Photography: titles, counts, units, source covers, so
       template: 'preset:panel',
       columns: '2',
       items: [
-        { title: 'People', source: 'people', unit: 'models' },
-        { title: 'Places', source: 'places', unit: 'places' },
+        { title: 'People', photo: people[0].cover, source: 'people', unit: 'models' },
+        { title: 'Places', photo: base.sources.places[0].cover, source: 'places', unit: 'places' },
       ],
     },
     { heading: 'Photography', source: undefined },
@@ -492,7 +493,7 @@ test('hand-made Panel like Photography: titles, counts, units, source covers, so
   // links to those source pages
   assert.ok(items[0].getAttribute('href')?.includes('people'));
   assert.ok(items[1].getAttribute('href')?.includes('places'));
-  // photos from each source's first cover (img present)
+  // photos: each item's own (no cover taken from the source's items)
   assert.ok(items[0].querySelector('.li__photo img, .li__photo picture, img'));
   assert.ok(items[1].querySelector('.li__photo img, .li__photo picture, img'));
 });
@@ -691,109 +692,103 @@ test('Photo panels is gone: a "panels" widget is rejected, pointing to List', ()
 });
 
 // ---- step 6: property mapping (config.properties)
-/** base with a "shots" source whose photo property is "cover" and title "name" (not the defaults). */
+/** base with a "shots" source: title "name", photos "cover" and "still" (no "photo"). */
+const shotsSchema = (props) => ({ title: 'name', label: 'Shots', properties: props });
 const mapped = {
   ...base,
   sources: {
     ...base.sources,
     shots: [
-      { id: 's-1', name: 'Dune', cover: 'people/noor/1.jpg', still: 'people/noor/2.jpg' },
-      { id: 's-2', name: 'Pier', cover: 'people/daan/1.jpg', still: 'people/daan/2.jpg' },
+      {
+        id: 's-1',
+        title: 'Dune',
+        name: 'n1',
+        cover: 'people/noor/1.jpg',
+        still: 'people/noor/2.jpg',
+        photos: ['a', 'b'],
+      },
+      {
+        id: 's-2',
+        title: 'Pier',
+        name: 'n2',
+        cover: 'people/daan/1.jpg',
+        still: 'people/daan/2.jpg',
+        photos: ['c'],
+      },
     ],
   },
   schemas: {
     ...base.schemas,
-    shots: {
-      title: 'name',
-      properties: [
-        { key: 'name', type: 'text' },
-        { key: 'cover', type: 'text' },
-        { key: 'still', type: 'text' },
-      ],
-    },
+    shots: shotsSchema([
+      { key: 'title', type: 'text' },
+      { key: 'name', type: 'text' },
+      { key: 'cover', type: 'photo', label: 'Cover' },
+      { key: 'still', type: 'photo' },
+      { key: 'photos', type: 'photos' },
+    ]),
   },
 };
-const withPhoto = (type) => ({
-  ...mapped,
-  schemas: {
-    ...mapped.schemas,
-    shots: {
-      ...mapped.schemas.shots,
-      properties: mapped.schemas.shots.properties.map((p) =>
-        p.key === 'name' ? p : { ...p, type },
-      ),
-    },
-  },
-});
+const shots = (config = {}) => ({ source: { mode: 'all', from: 'shots' }, config });
+const srcs = (el) =>
+  [...el.querySelectorAll('[data-list-item] .li__photo img')].map((i) => i.getAttribute('src'));
 
-test('mapping: a source lacking a property the preset uses shows a mapping row', () => {
-  const w = { source: { mode: 'all', from: 'shots' }, config: { template: 'preset:card' } };
-  const rows = WIDGET_TYPES.list.mapping(mapped, w);
-  const photo = rows.find((r) => r.role === 'photo');
-  assert.equal(photo.show, true);
-  assert.equal(photo.label, 'Template needs photo');
-  assert.deepEqual(photo.options, []); // no photo-type property yet
-  const rows2 = WIDGET_TYPES.list.mapping(withPhoto('photo'), w);
-  const p2 = rows2.find((r) => r.role === 'photo');
+test('mapping: one row per role the preset uses, labelled by role, prefilled', () => {
+  const rows = WIDGET_TYPES.list.mapping(mapped, shots({ template: 'preset:plain' }));
   assert.deepEqual(
-    p2.options.map(([k]) => k),
+    rows.map((r) => [r.role, r.label]),
+    [
+      ['photo', 'Photo'],
+      ['title', 'Title'],
+      ['body', 'Text'],
+    ],
+  );
+  const by = Object.fromEntries(rows.map((r) => [r.role, r]));
+  // automatic: only the property of the role's own name with a fitting type
+  assert.equal(by.title.value, 'title'); // not the schema's title ("name")
+  assert.equal(by.photo.value, ''); // no "photo": cover / still are not guessed
+  assert.deepEqual(
+    by.photo.options.map(([k]) => k),
     ['cover', 'still'],
   );
-  // defaults: the first photo property, so no row is needed then (title: the schema's)
-  assert.equal(p2.show, false);
-  assert.equal(rows2.find((r) => r.role === 'title').show, false);
-  // people (a fixture source with a photo): nothing to map
-  const people = WIDGET_TYPES.list.mapping(base, {
-    source: { mode: 'all', from: 'people' },
-    config: { template: 'preset:card' },
-  });
-  assert.ok(people.every((r) => !r.show));
+  assert.equal(by.photo.none, '');
+  // nothing fits: a plain line, no empty picker
+  assert.equal(by.body.none, 'No body property in Shots');
+  assert.deepEqual(by.body.options, []);
   // hand-made: no mapping at all
-  assert.deepEqual(
-    WIDGET_TYPES.list.mapping(mapped, { ...w, config: { ...w.config, handmade: true } }),
-    [],
-  );
+  assert.deepEqual(WIDGET_TYPES.list.mapping(mapped, shots({ handmade: true })), []);
 });
 
-test('mapping: defaults are the schema title and the first photo property', () => {
-  const ctx = withPhoto('photo');
-  const { el } = list({ template: 'preset:card' }, { source: { mode: 'all', from: 'shots' } }, ctx);
+test('mapping: automatic choices render, nothing guessed', () => {
+  const { el } = list({ template: 'preset:card', properties: undefined }, shots(), mapped);
   assert.deepEqual(texts(el, '[data-list-item] .li__title'), ['Dune', 'Pier']);
-  const srcs = [...el.querySelectorAll('[data-list-item] .li__photo img')].map((i) =>
-    i.getAttribute('src'),
-  );
-  assert.equal(srcs.length, 2);
-  assert.ok(
-    srcs.every((s) => /\/1[.-]/.test(s) || /1\.jpg|\/1/.test(s)),
-    srcs.join(),
-  );
+  assert.deepEqual(srcs(el), []); // no "photo" property: no photo until mapped
+  // the count is the plain {photos}
+  const panel = list({ template: 'preset:panel', properties: undefined }, shots(), mapped).el;
+  assert.deepEqual(texts(panel, '[data-list-item] .li__count'), ['2', '1']);
 });
 
 test('mapping: a saved config.properties is used in render', () => {
-  const ctx = withPhoto('photo');
   const { el, seen } = list(
-    { template: 'preset:card', properties: { photo: 'still' } },
-    { source: { mode: 'all', from: 'shots' } },
-    ctx,
+    { template: 'preset:card', properties: { photo: 'still', title: 'name' } },
+    shots(),
+    mapped,
   );
-  const srcs = [...el.querySelectorAll('[data-list-item] .li__photo img')].map((i) =>
-    i.getAttribute('src'),
-  );
-  assert.equal(srcs.length, 2);
+  assert.equal(srcs(el).length, 2);
   assert.ok(
-    srcs.every((s) => /2/.test(s)),
-    srcs.join(),
+    srcs(el).every((s) => /2/.test(s)),
+    srcs(el).join(),
   );
-  assert.ok(!seen.some((w) => /have no \{/.test(w)), seen.join()); // nothing missing
-  // the row shows for a mapped role (so it can be changed back), with its value
+  assert.deepEqual(texts(el, '[data-list-item] .li__title'), ['n1', 'n2']);
+  assert.ok(!seen.some((w) => /have no \{/.test(w)), seen.join());
   const row = WIDGET_TYPES.list
-    .mapping(ctx, {
-      source: { mode: 'all', from: 'shots' },
-      config: { properties: { photo: 'still' } },
-    })
+    .mapping(mapped, shots({ properties: { photo: 'still' } }))
     .find((r) => r.role === 'photo');
-  assert.equal(row.show, true);
   assert.equal(row.value, 'still');
+  // a mapping of the wrong type is ignored (the automatic choice applies)
+  const bad = WIDGET_TYPES.list
+    .mapping(mapped, shots({ properties: { photo: 'name' } }))
+    .find((r) => r.role === 'photo');
+  assert.equal(bad.value, '');
   // stored at config.properties, checked by the List definition (no content break)
   const ok = {
     ...newWidget('list', new Set()),
@@ -802,8 +797,8 @@ test('mapping: a saved config.properties is used in render', () => {
   };
   assert.deepEqual(WIDGET_TYPES.list.check(ok), []);
   assert.match(
-    WIDGET_TYPES.list.check({ ...ok, config: { properties: { image: 'x' } } }).join(),
-    /config\.properties has no "image"/,
+    WIDGET_TYPES.list.check({ ...ok, config: { properties: { count: 'x' } } }).join(),
+    /config\.properties has no "count"/,
   );
   assert.match(
     WIDGET_TYPES.list.check({ ...ok, config: { properties: [] } }).join(),
@@ -811,23 +806,33 @@ test('mapping: a saved config.properties is used in render', () => {
   );
 });
 
+test('no "first cover of a list" fallback: a hand-made item shows only its own photo', () => {
+  const handmade = readFileSync(
+    new URL('../src/site/widgets/list/handmade.js', import.meta.url),
+    'utf8',
+  );
+  assert.doesNotMatch(handmade, /sourceCover|coverOf/);
+  const it = resolveHandmadeItem(base, { title: 'P', source: 'people' });
+  assert.equal(it.photo, '');
+  const presets = readFileSync(
+    new URL('../src/site/widgets/list/presets.js', import.meta.url),
+    'utf8',
+  );
+  assert.doesNotMatch(presets, /first\('photo'\)|first\('photos'\)/);
+});
+
 test('mapping rows: every slot laid out, unused ones hidden (no layout shift)', () => {
   const lead = readFileSync(
     new URL('../src/editor/svelte/ListLead.svelte', import.meta.url),
     'utf8',
   );
-  assert.match(lead, /const MAP_SLOTS = 4/);
+  assert.match(lead, /const MAP_SLOTS = 3/);
   assert.match(lead, /\{#each slots as row, i \(i\)\}/);
-  assert.match(lead, /'ll__maprow', !row\?\.show && 'is-hidden'/);
+  assert.match(lead, /'ll__maprow', !row && 'is-hidden'/);
   assert.match(lead, /\.ll__maprow\.is-hidden,\s*\.ll__pane\.is-hidden \{\s*visibility: hidden;/);
+  assert.match(lead, /data-mapping-none/);
   assert.match(lead, /config\/properties/);
-  assert.doesNotMatch(lead, /config\/fields/);
-  // every preset's mappable roles fit the reserved slots
-  for (const p of PRESETS) {
-    const rows = WIDGET_TYPES.list.mapping(mapped, {
-      source: { mode: 'all', from: 'shots' },
-      config: { template: p.id },
-    });
-    assert.ok(rows.length <= 4, p.id);
-  }
+  assert.doesNotMatch(lead, /config\/fields|Template needs/);
+  for (const p of PRESETS)
+    assert.ok(WIDGET_TYPES.list.mapping(mapped, shots({ template: p.id })).length <= 3, p.id);
 });
