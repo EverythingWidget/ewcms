@@ -198,6 +198,22 @@ a.li:hover .li__title .ts {
     line-height: 0.85;
   }
 
+  // one or two columns: big panels (the Photography overview), titles by the page's width
+  [data-cols='1'] > &,
+  [data-cols='2'] > & {
+    .li__text {
+      bottom: 22px;
+    }
+
+    .li__title .ts {
+      font-size: clamp(48px, 7vw, 120px);
+    }
+
+    .li__count .ts {
+      color: var(--muted);
+    }
+  }
+
   .li__count .ts {
     color: var(--fg);
   }

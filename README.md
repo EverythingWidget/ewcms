@@ -587,7 +587,6 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
 | `hero`     | the home hero: `title` (one word per line), `eyebrow`, `body`, scattered `photos`; as tall as its widget (Rows / Aspect), Auto: its section's preset height under the navbar |
 | `grid`     | **list**: a head + tiles of its source's items; config `layout` (`staggered` / `even`); `places` shows cards                                                                 |
 | `albums`   | **list**: album cards of its items (the people/places index); config `layout` (`portrait` / `landscape`)                                                                     |
-| `panels`   | big links to sources: `panels` `[{ source, title, unit }]` (photography)                                                                                                     |
 | `projects` | **list**: the project accordion of its items; with a `title` it gets a head (home)                                                                                           |
 | `album`    | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped                                                              |
 
@@ -807,7 +806,8 @@ rule work as anywhere.
 
 - **Presets** (`config.template`, `presets.js`): **Card** (photo, title, facts: Album cards),
   **Plain** (photo, title, long text, a View button), **Panel** (a big photo with its title and
-  photo count over it: Photo panels), **Row** (a small photo, the title, the facts on the right:
+  photo count over it: the Photography panels, a hand-made List; the old Photo panels widget
+  (`panels`) is gone and content that still has one is rejected with a pointer to List), **Row** (a small photo, the title, the facts on the right:
   Project list). Each preset is a column of widgets. Until Property mapping (step 6) they take
   their properties from the source's schema: its title property, its first photo, its `list`
   properties as facts (`·` between them), its first `photos` (the count) and its first long text.

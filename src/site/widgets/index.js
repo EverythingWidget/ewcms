@@ -57,7 +57,6 @@ import form from './form/index.js';
 import hero from './hero/index.js';
 import grid from './grid/index.js';
 import albums from './albums/index.js';
-import panels from './panels/index.js';
 import projects from './projects/index.js';
 import album from './album/index.js';
 import list from './list/index.js';
@@ -71,11 +70,19 @@ export const BUILTIN_WIDGETS = Object.freeze([
   hero,
   grid,
   albums,
-  panels,
   projects,
   album,
   list,
 ]);
+
+/**
+ * Widget types that are gone, each with what to write instead: content that still has one is
+ * rejected (src/site/validate.js); nothing converts it.
+ */
+export const RETIRED_WIDGETS = Object.freeze({
+  panels:
+    'Photo panels ("panels") is gone: use a List ("list") with "config": { "handmade": true, "template": "preset:panel", "columns": "2", "items": [{ "title", "source", "unit" }] }',
+});
 
 /**
  * Every widget type: the built-ins, then the site's own (registerWidgets, from site.config.mjs

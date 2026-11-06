@@ -31,7 +31,7 @@ import {
 } from './files.js';
 import { CORE_STRINGS } from './strings.js';
 import { checkSchema } from './schemas.js';
-import { WIDGET_TYPES } from './widgets/index.js';
+import { RETIRED_WIDGETS, WIDGET_TYPES } from './widgets/index.js';
 import {
   COLS,
   HEIGHTS,
@@ -422,6 +422,7 @@ function sourceProblems(src, t) {
 function checkWidget(widget, where) {
   if (!isObject(widget)) return [`${where} must be an object`];
   if (typeof widget.type !== 'string') return [`${where} needs a "type"`];
+  if (RETIRED_WIDGETS[widget.type]) return [`${where}: ${RETIRED_WIDGETS[widget.type]}`];
   const t = WIDGET_TYPES[widget.type];
   const name = t ? `${where} (${t.label})` : where;
   const out = [];

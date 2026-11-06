@@ -93,9 +93,6 @@
     {:else if name === 'albums'}<span class="g g3"
         >{#each Array(3) as _, i (i)}<b></b>{/each}</span
       >
-    {:else if name === 'panels'}<span class="g g2"
-        >{#each Array(2) as _, i (i)}<b></b>{/each}</span
-      >
     {:else if name === 'list'}<span class="g g3"
         >{#each Array(3) as _, i (i)}<b></b>{/each}</span
       ><b class="w40 h4"></b>
@@ -324,9 +321,6 @@
     .g3 {
       grid-template-columns: repeat(3, 1fr);
     }
-    .g2 {
-      grid-template-columns: 1fr 1fr;
-    }
 
     .sc {
       position: absolute;
@@ -355,8 +349,7 @@
   }
 
   .as-sk--grid,
-  .as-sk--albums,
-  .as-sk--panels {
+  .as-sk--albums {
     padding: 8px;
   }
 </style>

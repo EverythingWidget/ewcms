@@ -199,7 +199,7 @@
               "list": "bullet",
               "text": [
                 {
-                  "t": "Widgets: text, photo, button, hero, grids, albums, projects, panels, contact form; sites can add their own."
+                  "t": "Widgets: text, photo, button, hero, grids, albums, projects, lists, contact form; sites can add their own."
                 }
               ]
             },

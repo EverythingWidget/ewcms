@@ -94,57 +94,6 @@
   }
 }
 
-/* ---------------- Photography overview panels ---------------- */
-.ppanels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--gap);
-  @media (max-width: $bp-sm) {
-    grid-template-columns: 1fr;
-  }
-}
-.ppanel {
-  position: relative;
-  display: block;
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
-  border-radius: 6px;
-  &__media {
-    position: absolute;
-    inset: 0;
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(transparent 50%, var(--shade-65));
-  }
-  &__info {
-    position: absolute;
-    left: 24px;
-    right: 24px;
-    bottom: 22px;
-    z-index: 1;
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-  }
-  &__title {
-    font-family: var(--f-display);
-    font-size: clamp(48px, 7vw, 120px);
-    line-height: 0.85;
-    transition: transform 0.8s var(--ease-out);
-  }
-  &:hover &__title {
-    transform: translateX(10px);
-  }
-}
-
 /* ---------------- Projects index ---------------- */
 .plist {
   border-top: 1px solid var(--line);

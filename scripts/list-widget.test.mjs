@@ -483,14 +483,12 @@ test('hand-made Panel like Photography: titles, counts, units, source covers, so
   );
   const items = [...el.querySelectorAll('[data-list-item]')];
   assert.equal(items.length, 2);
-  assert.deepEqual(
-    texts(el, '[data-list-item] .li__title'),
-    ['People', 'Places'],
-  );
-  // counts from source lengths + units
+  assert.deepEqual(texts(el, '[data-list-item] .li__title'), ['People', 'Places']);
+  // counts from source lengths (two digits, as Photo panels showed them) + units
   const counts = texts(el, '[data-list-item] .li__count');
-  assert.equal(counts[0], `${people.length} models`);
-  assert.equal(counts[1], `${base.sources.places.length} places`);
+  const two = (n) => String(n).padStart(2, '0');
+  assert.equal(counts[0], `${two(people.length)} models`);
+  assert.equal(counts[1], `${two(base.sources.places.length)} places`);
   // links to those source pages
   assert.ok(items[0].getAttribute('href')?.includes('people'));
   assert.ok(items[1].getAttribute('href')?.includes('places'));
@@ -670,11 +668,24 @@ test('resolveHandmadeItem: every key always present, empty when missing', () => 
   for (const k of keys) assert.equal(empty[k], '', k);
   const full = resolveHandmadeItem(ctx, { title: 'P', source: 'people', unit: 'models' });
   assert.deepEqual(Object.keys(full).sort(), keys);
-  assert.equal(full.count, 2);
+  assert.equal(full.count, '02');
   assert.equal(full.unit, 'models');
   // a hand-made List gives these items through widgetItems (the def hook)
   const w = { type: 'list', config: { handmade: true, items: [{}] } };
   const shown = widgetItems(ctx, {}, w, WIDGET_TYPES.list);
   assert.equal(shown.source, null);
   assert.deepEqual(Object.keys(shown.items[0]).sort(), keys);
+});
+
+test('Photo panels is gone: a "panels" widget is rejected, pointing to List', () => {
+  assert.equal(WIDGET_TYPES.panels, undefined);
+  const page = {
+    version: 1,
+    kind: 'page',
+    id: 'pg-oldp',
+    sections: [{ id: 's-oldp', widgets: [{ id: 'w-oldp', type: 'panels', panels: [] }] }],
+  };
+  const out = checkContent('pages/x/index.json', page).join('; ');
+  assert.match(out, /Photo panels \("panels"\) is gone: use a List \("list"\)/);
+  assert.match(out, /"handmade": true/);
 });

@@ -3,7 +3,7 @@
  * { title, photo, link, source?, unit }; a pointed source fills photo and link when those
  * are empty, and supplies the Panel count ({people} + unit).
  */
-import { coverOf } from '../../helpers.js';
+import { coverOf, pad } from '../../helpers.js';
 import { hrefOf, linkProblem } from '../../hrefs.js';
 import { isObject } from '../../is.js';
 import { sourcePage } from '../data.js';
@@ -31,7 +31,7 @@ export function sourceCover(ctx, source) {
 /**
  * One hand-made config item as a List item for presets: title, photo (own or source cover),
  * unit, source id, link (as written), href (own link or the pointed source's page) and count
- * (the pointed source's items; '' without one). Every key is always there, '' when empty. No
+ * (the pointed source's items, two digits as the Panel shows it: "04"; '' without one). Every key is always there, '' when empty. No
  * source-item id.
  */
 export function resolveHandmadeItem(ctx, raw = {}) {
@@ -41,13 +41,14 @@ export function resolveHandmadeItem(ctx, raw = {}) {
   const photo =
     typeof raw.photo === 'string' && raw.photo ? raw.photo : source ? sourceCover(ctx, source) : '';
   let href = '';
-  if (raw.link !== undefined && raw.link !== null) href = hrefOf(ctx, raw.link, 'a List item') || '';
+  if (raw.link !== undefined && raw.link !== null)
+    href = hrefOf(ctx, raw.link, 'a List item') || '';
   if (!href && source) href = sourcePage(ctx, source) || '';
   // every key, even empty: a part's {unit} / {count} never falls through to a same-named
   // property of an outer scope (the page's item, its sources)
   const link = isObject(raw.link) || typeof raw.link === 'string' ? raw.link : '';
   const count =
-    source && Array.isArray(ctx?.sources?.[source]) ? ctx.sources[source].length : '';
+    source && Array.isArray(ctx?.sources?.[source]) ? pad(ctx.sources[source].length) : '';
   return { title, photo, link, href, unit, source, count };
 }
 

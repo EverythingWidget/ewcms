@@ -63,10 +63,10 @@ function itemWidget(w, ctx, scope, { hide, api }) {
  */
 function forItem(w, scope, link, sep, { handmade = false, href = '' } = {}) {
   if (w.handmadeCount) {
-    const src = scope.item?.source;
+    // the item's own count (resolveHandmadeItem: the pointed source's, "04"), then its unit
     const unit = scope.item?.unit;
-    if (!src || !Array.isArray(scope.sources?.[src])) return null; // no count overlay
-    const runs = [{ property: src }];
+    if (!scope.item?.count) return null; // no count overlay
+    const runs = [{ property: 'count' }];
     if (unit) runs.push({ t: unit.startsWith(' ') ? unit : ` ${unit}` });
     return { type: 'text', role: 'count', body: [{ style: 'label', text: runs }] };
   }
@@ -224,14 +224,13 @@ export const list = {
         item,
         index: at,
       };
-      const ws = template
-        .map((w) => {
-          const filled = forItem(w, scope, itemHrefLink, sep, { handmade, href: handmadeHref });
-          if (!filled) return { html: '', missing: [] };
-          // item widgets inherit the List's missing choice unless they set their own
-          const hide = filled.config?.missing !== undefined ? hideMissing(filled.config) : listHide;
-          return itemWidget(filled, ctx, scope, { hide, api });
-        });
+      const ws = template.map((w) => {
+        const filled = forItem(w, scope, itemHrefLink, sep, { handmade, href: handmadeHref });
+        if (!filled) return { html: '', missing: [] };
+        // item widgets inherit the List's missing choice unless they set their own
+        const hide = filled.config?.missing !== undefined ? hideMissing(filled.config) : listHide;
+        return itemWidget(filled, ctx, scope, { hide, api });
+      });
       ws.forEach((w) => w.missing.forEach((n) => missing.set(n, (missing.get(n) || 0) + 1)));
       const parts = ws.map((w) => w.html);
       const [first, ...rest] = parts;
