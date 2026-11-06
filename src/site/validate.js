@@ -548,6 +548,8 @@ function checkWidget(widget, where) {
     if (c.key === 'arrangement' && v === 'rows') continue;
     if (v === undefined || (c.empty && v === '') || isParts(v) || old.has(`config.${c.key}`))
       continue;
+    // a list in config (List hand-made items): shape is the type's check(), not a string
+    if (c.list) continue;
     if (c.type === 'link') {
       const p = linkProblem(v);
       if (p) bad(`config.${c.key}`, p);

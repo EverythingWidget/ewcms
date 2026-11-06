@@ -56,12 +56,14 @@ A page is a stack of **sections**; each holds **widgets** (text, photo, button, 
   properties all have no value (empty; 0 is a value): **Hide** (Content tab, default) leaves it
   off the site; **Show empty** keeps it. In the editor it's dimmed with a tag and "No value for
   {name}".
-- **List** shows every item of a source with one look per item: **Card**, **Plain**, **Panel**
-  or **Row** (Content tab, Template; each is a column of widgets). In the Layout tab: **Grid**
-  (1–6 columns; Row defaults to 1) and the gap. Carousel comes later. **When a value is missing**
-  (every widget's Content tab): **Hide** leaves it out of the page; **Show empty** keeps the
-  space. A List's items follow the List's choice unless set. `{items}` in its heading (under
-  **Count of this List** in the picker) is how many items it shows.
+- **List** shows items with one look each: **Card**, **Plain**, **Panel** or **Row** (Content
+  tab, Preset; each is a column of widgets). **From a source** (All / From URL) or **Hand-made**
+  (you add the items: title, photo, link, an optional pointed source, and unit). Hand-made Panel
+  items can point at a source so the count and cover come from that list. In the Layout tab:
+  **Grid** (1–6 columns; Row defaults to 1) and the gap. Carousel comes later. **When a value is
+  missing** (every widget's Content tab): **Hide** leaves it out of the page; **Show empty**
+  keeps the space. A List's items follow the List's choice unless set. `{items}` in its heading
+  (under **Count of this List** in the picker) is how many items it shows.
 - **Ctrl/⌘+Z** undoes, Shift+Ctrl/⌘+Z redoes.
 - An **ⓘ** beside a setting explains it: click it, Esc or a click elsewhere closes it.
 

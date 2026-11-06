@@ -221,7 +221,13 @@ test('the pop-up: Arrangement, Columns, Gap in Layout; Content has Preset and Wh
     ['show', 'Show empty'],
   ]);
   const content = WIDGET_TYPES.list.config.filter((c) => c.tab !== 'layout').map((c) => c.key);
-  assert.deepEqual(content, ['template', 'seeAll']);
+  assert.deepEqual(
+    content.filter((k) => k !== 'hand' && k !== 'items'),
+    ['template', 'seeAll'],
+  );
+  assert.ok(content.includes('hand'));
+  assert.ok(content.includes('items'));
+  assert.equal(WIDGET_TYPES.list.handMade, true);
   // Arrangement: Grid only (Carousel later)
   assert.deepEqual(WIDGET_TYPES.list.config.find((c) => c.key === 'arrangement').options, [
     ['grid', 'Grid'],
@@ -456,4 +462,182 @@ test("a List's missing choice: item widgets inherit it unless they set their own
   } finally {
     setEditable(false);
   }
+});
+
+// step 4: hand-made items
+
+test('hand-made Panel like Photography: titles, counts, units, source covers, source page links', () => {
+  const { el } = list(
+    {
+      hand: true,
+      template: 'preset:panel',
+      columns: '2',
+      items: [
+        { title: 'People', source: 'people', unit: 'models' },
+        { title: 'Places', source: 'places', unit: 'places' },
+      ],
+    },
+    { heading: 'Photography', source: undefined },
+  );
+  const items = [...el.querySelectorAll('[data-list-item]')];
+  assert.equal(items.length, 2);
+  assert.deepEqual(
+    texts(el, '[data-list-item] .li__title'),
+    ['People', 'Places'],
+  );
+  // counts from source lengths + units
+  const counts = texts(el, '[data-list-item] .li__count');
+  assert.equal(counts[0], `${people.length} models`);
+  assert.equal(counts[1], `${base.sources.places.length} places`);
+  // links to those source pages
+  assert.ok(items[0].getAttribute('href')?.includes('people'));
+  assert.ok(items[1].getAttribute('href')?.includes('places'));
+  // photos from each source's first cover (img present)
+  assert.ok(items[0].querySelector('.li__photo img, .li__photo picture, img'));
+  assert.ok(items[1].querySelector('.li__photo img, .li__photo picture, img'));
+});
+
+test('hand-made: own photo and link win over the pointed source', () => {
+  const { el } = list(
+    {
+      hand: true,
+      template: 'preset:panel',
+      items: [
+        {
+          title: 'Custom',
+          source: 'people',
+          unit: 'models',
+          photo: 'people/noor-vermeer/01.jpg',
+          link: { href: 'https://example.com/x' },
+        },
+      ],
+    },
+    { source: undefined },
+  );
+  const a = el.querySelector('[data-list-item]');
+  assert.equal(a.getAttribute('href'), 'https://example.com/x');
+  const img = a.querySelector('img');
+  assert.ok(img?.getAttribute('src')?.includes('noor-vermeer') || img?.getAttribute('srcset'));
+});
+
+test('hand-made: {items} is the hand-made list; See all is off; empty has no count', () => {
+  const { el } = list(
+    {
+      hand: true,
+      template: 'preset:panel',
+      seeAll: true,
+      items: [
+        { title: 'People', source: 'people', unit: 'models' },
+        { title: 'Places', source: 'places', unit: 'places' },
+      ],
+    },
+    {
+      heading: [{ t: '' }, { property: 'items' }, { t: ' groups' }],
+      source: undefined,
+    },
+  );
+  assert.match(el.querySelector('.list__head .section__title')?.textContent || '', /2 groups/);
+  // See all ignored when hand-made
+  assert.equal(el.querySelector('.list__head .section__cta'), null);
+  // no pointed source: title only, no count overlay
+  const bare = list(
+    { hand: true, template: 'preset:panel', items: [{ title: 'Solo' }] },
+    { source: undefined },
+  );
+  assert.equal(bare.el.querySelector('[data-list-item] .li__count'), null);
+  assert.equal(bare.el.querySelector('[data-list-item] .li__title')?.textContent.trim(), 'Solo');
+});
+
+test('source-mode Panel still works; reorder of hand items keeps values', () => {
+  // source Panel unchanged
+  const { el: src } = list({ template: 'preset:panel' });
+  assert.ok(src.querySelectorAll('[data-list-item]').length >= 1);
+  assert.ok(src.querySelector('[data-list-item] .li__count'));
+  // reorder: render with swapped config.items
+  const a = list(
+    {
+      hand: true,
+      template: 'preset:card',
+      items: [
+        { title: 'A', source: 'people' },
+        { title: 'B', source: 'places' },
+      ],
+    },
+    { source: undefined },
+  );
+  const b = list(
+    {
+      hand: true,
+      template: 'preset:card',
+      items: [
+        { title: 'B', source: 'places' },
+        { title: 'A', source: 'people' },
+      ],
+    },
+    { source: undefined },
+  );
+  assert.deepEqual(texts(a.el, '[data-list-item] .li__title'), ['A', 'B']);
+  assert.deepEqual(texts(b.el, '[data-list-item] .li__title'), ['B', 'A']);
+});
+
+test('hand-made validation; mode switch keeps unused data (shape allows both)', () => {
+  const ids = new Set();
+  const w = {
+    ...newWidget('list', ids),
+    id: 'w-hand1',
+    source: { mode: 'all', from: 'people' },
+    config: {
+      ...newWidget('list', new Set()).config,
+      hand: true,
+      items: [
+        { title: 'People', source: 'people', unit: 'models' },
+        { title: 'Places', source: 'places', unit: 'places' },
+      ],
+    },
+  };
+  const page = { version: 1, kind: 'page', id: 'pg-hand', sections: [newSection(ids, [w])] };
+  assert.deepEqual(checkContent('pages/x/index.json', page), []);
+  // both source and items present (switching back would use them)
+  assert.equal(w.source.from, 'people');
+  assert.equal(w.config.items.length, 2);
+  // bad item
+  const bad = {
+    ...page,
+    sections: [
+      newSection(ids, [
+        {
+          ...w,
+          id: 'w-hand2',
+          config: { ...w.config, items: [{ title: 1 }] },
+        },
+      ]),
+    ],
+  };
+  assert.match(checkContent('pages/x/index.json', bad).join('; '), /config\.items\.0\.title/);
+});
+
+test('ListLead: From a source / Hand-made switch, dual panes, seeAll disabled when hand', () => {
+  const lead = readFileSync(
+    new URL('../src/editor/svelte/ListLead.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.match(lead, /From a source/);
+  assert.match(lead, /Hand-made/);
+  assert.match(lead, /config\/hand/);
+  assert.match(lead, /config\/items/);
+  assert.match(lead, /ll__pane/);
+  assert.match(lead, /visibility: hidden/);
+  assert.match(lead, /ListField/);
+  assert.match(lead, /WidgetSource/);
+  const gf = readFileSync(
+    new URL('../src/editor/svelte/GroupFields.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.match(gf, /disabled=\{handMade && c\.key === 'seeAll'\}/);
+  const insp = readFileSync(
+    new URL('../src/editor/svelte/WidgetInspector.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.match(insp, /type\.handMade/);
+  assert.match(insp, /ListLead/);
 });

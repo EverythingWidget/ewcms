@@ -17,6 +17,7 @@
 <script>
   import GroupFields from './GroupFields.svelte';
   import WidgetSource from './WidgetSource.svelte';
+  import ListLead from './ListLead.svelte';
   import Tabs from './Tabs.svelte';
   import { schemaFor } from './source-items.js';
   import { isTemplate, pageIdOf, sourceFile } from '../../site/files.js';
@@ -141,7 +142,20 @@
     <div class={['card__pane', tab !== 'content' && 'is-hidden']} inert={tab !== 'content'}>
       <!-- its source first (a widget whose type shows items), then its settings and fields -->
       {#snippet lead()}
-        <WidgetSource {g} {live} {base} list={!!type.list} {shown} {sourceIds} {onsource} />
+        {#if type.handMade}
+          <ListLead
+            {g}
+            {live}
+            {base}
+            list={!!type.list}
+            {shown}
+            {sourceIds}
+            {onsource}
+            {bindings}
+          />
+        {:else}
+          <WidgetSource {g} {live} {base} list={!!type.list} {shown} {sourceIds} {onsource} />
+        {/if}
       {/snippet}
       <GroupFields
         {g}
@@ -150,7 +164,7 @@
         {sourceIds}
         {onsource}
         {bindings}
-        lead={type.list || type.item || g.fields.some((f) => f.bindType) || widget.source
+        lead={type.list || type.item || type.handMade || g.fields.some((f) => f.bindType) || widget.source
           ? lead
           : undefined}
       />

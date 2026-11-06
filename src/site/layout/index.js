@@ -62,6 +62,7 @@ import { keysOf, missingOf, resolveWidget } from './bindings.js';
 import { hideMissing, missingState } from './missing.js';
 import { isParts } from './parts.js';
 import { widgetItems } from './source.js';
+import { handItemsOf, isHandList } from '../widgets/list/hand.js';
 import { COLS, baseOf, phoneAreaOf, placeOf, setBase } from './grid.js';
 import { linkOf } from './links.js';
 import { scaledToFit } from './type.js';
@@ -296,14 +297,32 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
   const parts = (path) => ['sections', at, 'widgets', j, ...[path].flat()];
   // what it shows (./source.js): its items, the first one for its bound settings
   const shown = widgetItems(ctx, route, widget);
-  const { item } = shown;
+  // Hand-made List: config.items (resolved photo/link fallbacks), not the source list
+  const hand = t.type === 'list' && isHandList(widget);
+  const handItems = hand ? handItemsOf(ctx, widget) : null;
+  const shownFor = hand
+    ? {
+        ...shown,
+        source: null,
+        items: handItems,
+        item: handItems[0] ?? null,
+        index: handItems.length ? 0 : -1,
+        indexOf: (it) => handItems.indexOf(it),
+      }
+    : shown;
+  const { item } = shownFor;
   if (t.item && !item) {
     warnOnce(`${where}: a "${t.type}" widget shows an item: it has none: skipped`, 'layout');
     return '';
   }
-  // {items} (./parts.js): a list widget's own items
-  const items = t.list ? shown.items || [] : undefined;
-  const scope = { item, keys: keysOf(ctx, shown.source), sources: ctx.sources, items };
+  // {items} (./parts.js): a list widget's own items (hand-made: config.items)
+  const items = t.list ? shownFor.items || [] : undefined;
+  const scope = {
+    item,
+    keys: hand ? new Set(['title', 'photo', 'unit', 'count', 'source']) : keysOf(ctx, shownFor.source),
+    sources: ctx.sources,
+    items,
+  };
   // every property part empty (./parts.js): Hide leaves it out of the published page; Show empty
   // keeps it. The editor shows it dimmed either way, with a tag and "No value for {name}"
   // (config.missing on every widget; default Hide: ./missing.js)
@@ -321,7 +340,7 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
   const api = {
     id: widget.id,
     file,
-    ...shown,
+    ...shownFor,
     scopeItems: items,
     ed: (path, type) => {
       const value = [path].flat().reduce((v, k) => v?.[k], widget);

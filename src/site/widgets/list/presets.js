@@ -69,8 +69,21 @@ export const PRESET_IDS = PRESETS.map((p) => p.id);
 /** A preset by id (an unknown id: Card). */
 export const presetOf = (id) => PRESETS.find((p) => p.id === id) || PRESETS[0];
 
-/** The properties a preset fills, from the source's schema: { title, photo, facts, count, body }. */
-export function namesOf(ctx, source) {
+/** Hand-made List items (no List-level source): title, photo, and Panel's count. */
+export const HAND_NAMES = Object.freeze({
+  title: 'title',
+  photo: 'photo',
+  facts: [],
+  count: 'count',
+  body: null,
+});
+
+/**
+ * The properties a preset fills: from the source's schema, or HAND_NAMES when `hand` (a
+ * hand-made List has no List-level source).
+ */
+export function namesOf(ctx, source, { hand = false } = {}) {
+  if (hand) return { ...HAND_NAMES };
   const props = (source && schemaOf(ctx, source)?.properties) || [];
   const first = (type) => props.find((p) => p.type === type)?.key ?? null;
   const title = (source && schemaOf(ctx, source)?.title) || 'title';
@@ -103,14 +116,19 @@ export function factsRuns(facts, isEmpty = () => false, sep = ' · ') {
  * (style.scss .li__<role>); facts carry `facts` (their names, joined per item: factsRuns), the
  * button `itemLink` (its link is the item's page, set per item). Unknown id: Card's.
  */
-export function presetWidgets(id, ctx, source, { open = 'View' } = {}) {
-  const n = namesOf(ctx, source);
+export function presetWidgets(id, ctx, source, { open = 'View', hand = false } = {}) {
+  const n = namesOf(ctx, source, { hand });
   const make = {
     photo: () => n.photo && { type: 'photo', role: 'photo', src: [prop(n.photo)] },
     title: () => textW('title', line('heading', [prop(n.title)])),
     facts: () =>
       n.facts.length && { ...textW('facts', line('label', factsRuns(n.facts))), facts: n.facts },
-    count: () => n.count && textW('count', line('label', [prop(n.count)])),
+    // hand: per-item count from the pointed source + unit (forHandItem in ./index.js); marker
+    count: () =>
+      n.count &&
+      (hand
+        ? { ...textW('count', line('label', [prop(n.count)])), handCount: true }
+        : textW('count', line('label', [prop(n.count)]))),
     body: () => n.body && textW('body', line('paragraph', [prop(n.body)])),
     button: () => ({ type: 'button', role: 'button', label: open, itemLink: true, config: {} }),
   };
