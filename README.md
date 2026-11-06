@@ -814,7 +814,7 @@ rule work as anywhere.
   preset uses, **Photo**, **Title**, **Text** (`photo`, `title`, `body`), each a picker of the
   source's properties of a type that role takes (photo: `photo`; title: text, words,
   multi-line, number; text: multi-line). A row is prefilled with its automatic choice: the
-  property of the role's own name when its type fits (`photo`, `title`, `body`), nothing
+  schema's declared title property for Title, the property of the role's own name for the others (`photo`, `body`), when its type fits, nothing
   guessed (no "first photo property"). A source with none says so ("No photo property in
   People") instead of an empty picker. Picking another stores it, picking the automatic one
   again removes it:

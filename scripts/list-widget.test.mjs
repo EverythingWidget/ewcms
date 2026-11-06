@@ -744,7 +744,7 @@ test('mapping: one row per role the preset uses, labelled by role, prefilled', (
   );
   const by = Object.fromEntries(rows.map((r) => [r.role, r]));
   // automatic: only the property of the role's own name with a fitting type
-  assert.equal(by.title.value, 'title'); // not the schema's title ("name")
+  assert.equal(by.title.value, 'name'); // the schema's declared title, not a key named "title"
   assert.equal(by.photo.value, ''); // no "photo": cover / still are not guessed
   assert.deepEqual(
     by.photo.options.map(([k]) => k),
@@ -760,7 +760,8 @@ test('mapping: one row per role the preset uses, labelled by role, prefilled', (
 
 test('mapping: automatic choices render, nothing guessed', () => {
   const { el } = list({ template: 'preset:card', properties: undefined }, shots(), mapped);
-  assert.deepEqual(texts(el, '[data-list-item] .li__title'), ['Dune', 'Pier']);
+  // Title: the schema's declared title property ("name")
+  assert.deepEqual(texts(el, '[data-list-item] .li__title'), ['n1', 'n2']);
   assert.deepEqual(srcs(el), []); // no "photo" property: no photo until mapped
   // the count is the plain {photos}
   const panel = list({ template: 'preset:panel', properties: undefined }, shots(), mapped).el;
@@ -769,7 +770,7 @@ test('mapping: automatic choices render, nothing guessed', () => {
 
 test('mapping: a saved config.properties is used in render', () => {
   const { el, seen } = list(
-    { template: 'preset:card', properties: { photo: 'still', title: 'name' } },
+    { template: 'preset:card', properties: { photo: 'still', title: 'title' } },
     shots(),
     mapped,
   );
@@ -778,7 +779,7 @@ test('mapping: a saved config.properties is used in render', () => {
     srcs(el).every((s) => /2/.test(s)),
     srcs(el).join(),
   );
-  assert.deepEqual(texts(el, '[data-list-item] .li__title'), ['n1', 'n2']);
+  assert.deepEqual(texts(el, '[data-list-item] .li__title'), ['Dune', 'Pier']);
   assert.ok(!seen.some((w) => /have no \{/.test(w)), seen.join());
   const row = WIDGET_TYPES.list
     .mapping(mapped, shots({ properties: { photo: 'still' } }))
@@ -835,4 +836,24 @@ test('mapping rows: every slot laid out, unused ones hidden (no layout shift)', 
   assert.doesNotMatch(lead, /config\/fields|Template needs/);
   for (const p of PRESETS)
     assert.ok(WIDGET_TYPES.list.mapping(mapped, shots({ template: p.id })).length <= 3, p.id);
+});
+
+test('mapping: Title auto-matches the declared title property only when its type fits', () => {
+  const withName = (type) => ({
+    ...mapped,
+    schemas: {
+      ...mapped.schemas,
+      shots: shotsSchema([
+        { key: 'title', type: 'text' },
+        { key: 'name', type },
+      ]),
+    },
+  });
+  const title = (ctx) =>
+    WIDGET_TYPES.list.mapping(ctx, shots()).find((r) => r.role === 'title').value;
+  assert.equal(title(withName('text')), 'name');
+  assert.equal(title(withName('photo')), ''); // declared, but not a text: no choice
+  const bare = withName('text');
+  bare.schemas.shots = { ...bare.schemas.shots, title: undefined };
+  assert.equal(title(bare), 'title'); // none declared: "title"
 });

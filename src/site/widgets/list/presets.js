@@ -5,7 +5,8 @@
  * shows is the List's property mapping (config.properties, one row per role in the Content
  * tab), else the property of the role's own name when it has a type the role takes:
  *
- *   title   "title" (text, words, multi-line or number)
+ *   title   the schema's declared title property ("title" when it names none; text, words,
+ *           multi-line or number)
  *   photo   "photo" (a photo)
  *   body    "body" (multi-line)
  *   facts   the properties it shows under an item's title in its lists (`list: true`)
@@ -120,19 +121,27 @@ export function mappingOf(ctx, source, properties) {
   return out;
 }
 
-/** Each role's automatic choice: the property of its own name with a type it takes, else null. */
+/**
+ * Each role's automatic choice, else null: Title the schema's declared title property, the
+ * others the property of the role's own name; either only when its type fits the role.
+ */
 function autoOf(ctx, source) {
   const props = propsOf(ctx, source);
+  const own = (role) =>
+    role === 'title' ? (source && schemaOf(ctx, source)?.title) || 'title' : role;
   return Object.fromEntries(
-    Object.keys(MAPPABLE).map((role) => [
-      role,
-      fits(
+    Object.keys(MAPPABLE).map((role) => {
+      const key = own(role);
+      return [
         role,
-        props.find((p) => p.key === role),
-      )
-        ? role
-        : null,
-    ]),
+        fits(
+          role,
+          props.find((p) => p.key === key),
+        )
+          ? key
+          : null,
+      ];
+    }),
   );
 }
 
