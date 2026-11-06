@@ -1588,7 +1588,7 @@ Change in its field, see the Media window above). Edit
 - Inspiration: Gregor Collienne and Hannah Miles (home hero), Faint Film (album slider/grid),
   House of Yellow (a proper website with sections and a big footer).
 
-## Breaking content changes (next minor, unreleased)
+## Breaking content changes 0.4.0
 
 The List widget: Arrangement **Rows** is gone (write `"columns": "1"`; the validator says so).
 Carousel is not offered yet. `config.missing` is now on every widget (Content tab; default Hide).
