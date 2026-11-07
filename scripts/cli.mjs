@@ -90,6 +90,16 @@ export async function checkContentOf(root) {
       problems.push(err.message);
     }
   }
+  // the site-wide item templates (content/templates/t-*.json)
+  for (const name of walkJson(site.templatesDir)) {
+    const file = `templates/${name}`;
+    try {
+      const data = parseContent(fs.readFileSync(path.join(site.templatesDir, name), 'utf8'), file);
+      problems.push(...checkContent(file, data).map((p) => `${site.templatesRel}/${name}: ${p}`));
+    } catch (err) {
+      problems.push(err.message);
+    }
+  }
   if (problems.length) return problems;
   const render = await import(pathToFileURL(enginePath('src/site/render.js')).href);
   const { checkSources } = await import(pathToFileURL(enginePath('src/site/schemas.js')).href);

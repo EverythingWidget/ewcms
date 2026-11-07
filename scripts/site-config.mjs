@@ -76,6 +76,8 @@ export function loadSiteConfig(root = process.cwd()) {
     root,
     config,
     contentDir: abs(config.contentDir),
+    // item templates: site-wide, next to the language folders (content/templates)
+    templatesDir: path.join(path.dirname(abs(config.contentDir)), 'templates'),
     mediaDir: abs(config.mediaDir),
     publicDir: abs(config.publicDir),
     publicMediaDir: abs(config.publicMediaDir),
@@ -90,6 +92,9 @@ export function loadSiteConfig(root = process.cwd()) {
       ...(layerDir ? readJson(path.join(layerDir, 'theme.json')) : {}),
     },
     contentRel: posix(path.relative(root, abs(config.contentDir))),
+    templatesRel: posix(
+      path.relative(root, path.join(path.dirname(abs(config.contentDir)), 'templates')),
+    ),
     mediaUrl: `/${posix(path.relative(abs(config.publicDir), abs(config.publicMediaDir)))}`,
   };
   cache.set(root, site);

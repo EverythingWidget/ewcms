@@ -88,6 +88,17 @@ export const pagesOp = (body) =>
   });
 
 /**
+ * A new item template (POST /__editor/templates, templatesOp in scripts/editor-server.mjs):
+ * { op: 'add', data }. Answers { id, file, data }.
+ */
+export const templatesOp = (body) =>
+  json('/__editor/templates', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+/**
  * The Media window's photo ops (POST /__editor/media, mediaOp in scripts/editor-server.mjs):
  * { op: 'alt', key, alt } or { op: 'delete', key }. Takes the fresh photo lists it answers.
  */

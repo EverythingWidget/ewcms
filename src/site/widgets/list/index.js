@@ -14,7 +14,8 @@
  *         { "title": "Places", "source": "places", "unit": "places" }
  *       ] } }
  *
- * template     a preset (./presets.js): preset:card | preset:plain | preset:panel | preset:row
+ * template     a preset (./presets.js): preset:card | preset:plain | preset:panel | preset:row,
+ *              or a site template "t-…" (content/templates/t-….json: Duplicate preset makes one)
  * handmade     true: items come from config.items (Hand-made); omit/false: from the source
  * items        hand-made entries [{ title, photo?, link?, source?, unit? }]; kept when switching
  *              back to From a source (and source is kept when switching to Hand-made)
@@ -41,7 +42,17 @@ import { hideMissing, missingState } from '../../layout/missing.js';
 import { partEmpty } from '../../layout/parts.js';
 import { WIDGET_TYPES } from '../index.js';
 import { sourcePage } from '../data.js';
-import { MAPPABLE, PRESETS, factsRuns, mappingRows, presetOf, presetWidgets } from './presets.js';
+import {
+  MAPPABLE,
+  PRESETS,
+  PRESET_IDS,
+  factsRuns,
+  mappingRows,
+  presetWidgets,
+  shapeOf,
+  templateOf,
+} from './presets.js';
+import { isTemplateId } from '../../files.js';
 import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from './handmade.js';
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
@@ -55,7 +66,7 @@ function itemWidget(w, ctx, scope, { hide, api }) {
   const data = resolveWidget(w, def, { ...scope, placeholders: editable });
   const out = def.render(data, ctx, { ...api, scopeItems: scope.items, ed: () => '' });
   return {
-    html: `<div class="li__w li__${w.role}"${gone.attr}>${out}</div>`,
+    html: `<div class="li__w${w.role ? ` li__${w.role}` : ''}"${gone.attr}>${out}</div>`,
     missing: gone.all ? gone.missing : [],
   };
 }
@@ -97,8 +108,9 @@ export const list = {
   items: (ctx, widget) => (isHandmade(widget) ? handmadeItemsOf(ctx, widget) : undefined),
   // Property mapping (config.properties): the Content tab's rows for this List (none when
   // hand-made: its item shape is fixed)
+  // (a site template names its properties itself: no rows)
   mapping: (ctx, widget) =>
-    widget?.config?.handmade === true
+    widget?.config?.handmade === true || isTemplateId(widget?.config?.template)
       ? []
       : mappingRows(
           ctx,
@@ -128,8 +140,12 @@ export const list = {
     },
     {
       key: 'template',
-      label: 'Preset',
+      label: 'Template',
       type: 'select',
+      // the Content tab's template picker (ListLead.svelte): presets, then the site's templates
+      lead: true,
+      // besides the presets: a site template (content/templates/t-….json)
+      also: isTemplateId,
       options: PRESETS.map((p) => [p.id, p.label]),
     },
     { key: 'seeAll', label: 'See all link', type: 'boolean' },
@@ -188,6 +204,11 @@ export const list = {
       widget.config.handmade !== false
     )
       out.push('config.handmade must be true (Hand-made) or left out (From a source)');
+    const tpl = widget.config?.template;
+    if (tpl !== undefined && !PRESET_IDS.includes(tpl) && !isTemplateId(tpl))
+      out.push(
+        `config.template must be a preset (${PRESET_IDS.join(', ')}) or a site template ("t-" and 4–12 letters or digits, content/templates)`,
+      );
     const props = widget.config?.properties;
     if (props !== undefined) {
       if (!isObject(props)) out.push('config.properties must be an object: { "photo": "cover" }');
@@ -217,7 +238,14 @@ export const list = {
     const c = s.config || {};
     const handmade = c.handmade === true;
     const source = handmade ? '' : widget.source || ''; // None / handmade: no source list
-    const preset = presetOf(c.template);
+    // config.template: a preset ("preset:card"), or a site template ("t-…", content/templates)
+    const own = templateOf(ctx, c.template);
+    if (isTemplateId(c.template) && !own)
+      warnOnce(
+        `${contentPath(widget.file)}: List ${widget.id}: template "${c.template}" is missing (content/templates/${c.template}.json): it shows Card`,
+        'layout',
+      );
+    const preset = shapeOf(ctx, c.template);
     const columns = COLUMNS.includes(String(c.columns)) ? String(c.columns) : preset.columns || '3';
     const gap = GAPS.includes(c.gap) ? c.gap : 'm';
     // this List's choice; each item widget may override (hideMissing on its own config)
@@ -230,12 +258,17 @@ export const list = {
     const shape = preset.id.slice('preset:'.length);
     const sep = t(ctx, 'list.sep');
     // the template, once per List: its widgets, and whether its photo sits apart from the text
-    const template = presetWidgets(preset.id, ctx, source, {
-      open: t(ctx, 'list.open'),
-      handmade,
-      properties: c.properties,
-    });
-    const photoFirst = preset.photoFirst && template[0]?.role === 'photo';
+    // the template, once per List: its widgets, and whether its photo sits apart from the text
+    const template = own
+      ? structuredClone(own.widgets)
+      : presetWidgets(preset.id, ctx, source, {
+          open: t(ctx, 'list.open'),
+          handmade,
+          properties: c.properties,
+        });
+    const link = own ? own.link !== false : preset.link;
+    const photoFirst =
+      (own ? own.photoFirst !== false : preset.photoFirst) && template[0]?.type === 'photo';
     // See all: only From a source (hand-made has no single source page)
     const href = !handmade && source && c.seeAll ? sourcePage(ctx, source) : '';
     const missing = new Map(); // name -> how many items have no value for it
@@ -266,7 +299,7 @@ export const list = {
         ? `${first}<div class="li__text">${rest.join('')}</div>`
         : `<div class="li__text">${parts.join('')}</div>`;
       const url = handmade ? handmadeHref : itemHrefLink ? itemHref(ctx, source, item) : '';
-      const tag = preset.link && url ? 'a' : 'div';
+      const tag = link && url ? 'a' : 'div';
       const ref = tag === 'a' ? ` href="${esc(url)}"` : '';
       return `<${tag} class="li li--${shape}"${ref} data-list-item data-anim-item>${inner}</${tag}>`;
     });

@@ -30,8 +30,28 @@ export let CONTENT_DIR = 'content/en';
 export const setContentDir = (dir) => {
   if (dir) CONTENT_DIR = String(dir).replace(/\/+$/, '');
 };
+/**
+ * Item templates (the List's config.template "t-…"): site-wide, for every language, so they sit
+ * next to the language folders: content/templates/t-<id>.json. Their file name in the content
+ * files is "templates/t-<id>.json"; on disk it is one folder up from the content folder
+ * (templatesDir in scripts/site-config.mjs).
+ */
+export const TEMPLATES = 'templates';
+export const TEMPLATE_ID = /^t-[a-z0-9]{4,12}$/;
+export const isTemplateId = (id) => typeof id === 'string' && TEMPLATE_ID.test(id);
+export const templateFile = (id) => `${TEMPLATES}/${id}.json`;
+const TEMPLATE_FILE = /^templates\/(t-[a-z0-9]{4,12})\.json$/;
+/** "templates/t-ab12.json" -> "t-ab12" (null for anything else). */
+export const templateIdOf = (file) => TEMPLATE_FILE.exec(file || '')?.[1] ?? null;
+/** A template file's folder from the site's root: the content folder's parent + templates. */
+const templatesRel = () =>
+  `${CONTENT_DIR.includes('/') ? CONTENT_DIR.replace(/\/[^/]+$/, '') : '.'}/${TEMPLATES}`;
+
 /** A content file's path from the site's root, for messages: "content/en/pages/index.json". */
-export const contentPath = (file) => `${CONTENT_DIR}/${file}`;
+export const contentPath = (file) =>
+  templateIdOf(file)
+    ? `${templatesRel()}/${file.slice(TEMPLATES.length + 1)}`
+    : `${CONTENT_DIR}/${file}`;
 /**
  * The shape version of every content file: its first key, "version": 1. A file whose top level
  * is a list or a map keeps it under one key next to it: a source's "items", redirects.json
@@ -153,7 +173,7 @@ export const schemaIdOf = (file) => SCHEMA.exec(file || '')?.[1] ?? null;
  * settings/<name>.json, and the page files: pages/index.json and pages/<folders>/index.json
  * (a folder: a name or a [param]). Nothing else.
  */
-export const isContentFile = (file) => CONTENT_FILE.test(file || '');
+export const isContentFile = (file) => CONTENT_FILE.test(file || '') || !!templateIdOf(file);
 
 /** Name without the kind folder, for compact labels: "pages/people/index.json" -> "people/index.json". */
 export const baseName = (file) => String(file || '').replace(/^(pages|sources|settings)\//, '');
@@ -178,6 +198,8 @@ export function contentFromFiles(files) {
     pages: byId(pageIdOf),
     sources,
     schemas: byId(schemaIdOf),
+    // the site's item templates by id (content/templates/t-*.json): the List's config.template
+    templates: byId(templateIdOf),
     animations: files[ANIMATIONS] || {},
     // { path or key: { alt, and for R2 photos width, height, srcset, color, lqip } }
     photos: files[PHOTOS]?.photos || {},

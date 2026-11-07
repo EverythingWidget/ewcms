@@ -7,6 +7,9 @@
   config.properties: a row per role the preset uses, "Photo" → a property, prefilled with the
   automatic choice; "No photo property in People" when the source has none). MAP_SLOTS rows
   always laid out, the ones the preset doesn't use visibility:hidden / inert: no shift.
+  Template (config.template, both modes): the presets, then the site's templates
+  (content/templates/t-….json); Duplicate preset copies the one picked into a new template file
+  (POST /__editor/templates, kept in the store at once) and points the List at it.
 -->
 <script>
   import WidgetSource from './WidgetSource.svelte';
@@ -20,6 +23,11 @@
   import { TEXT_TYPES } from '../../site/property-types.js';
   import { pointer } from '../../site/helpers.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
+  import Button from './Button.svelte';
+  import { PRESETS, cloneTemplate } from '../../site/widgets/list/presets.js';
+  import { t } from '../../site/strings.js';
+  import { templatesOp } from '../source.js';
+  import { toast } from './toasts.svelte.js';
 
   let { g, live, base, list = false, shown, sourceIds, onsource, bindings = null } = $props();
 
@@ -134,6 +142,50 @@
     else if (cur !== undefined) live.store.remove(g.file, propsPtr, opts);
   }
 
+  // ---- template (config.template): presets, then the site's templates
+  const templatePtr = $derived(`${base}/config/template`);
+  const templateId = $derived.by(() => {
+    live.version;
+    return live.get(g.file, templatePtr) || PRESETS[0].id;
+  });
+  const templateOptions = $derived.by(() => {
+    live.version;
+    const own = Object.entries(live.content?.templates || {})
+      .map(([id, tpl]) => [id, tpl?.label || id])
+      .sort((a, b) => a[1].localeCompare(b[1]));
+    return [...PRESETS.map((p) => [p.id, p.label]), ...own];
+  });
+  const setTemplate = (id) =>
+    live.store.set(g.file, templatePtr, id, {
+      key: `config:${g.file}${templatePtr}`,
+      source: 'panel',
+      structure: true,
+    });
+  let duplicating = $state(false);
+  async function duplicate() {
+    if (duplicating) return;
+    duplicating = true;
+    try {
+      const ctx = live.content;
+      const config = live.get(g.file, `${base}/config`) || {};
+      const data = cloneTemplate(ctx, shown?.source || '', templateId, {
+        handmade,
+        properties: config.properties,
+        open: t(ctx, 'list.open'),
+        sep: t(ctx, 'list.sep'),
+      });
+      const { version: _v, ...body } = data; // eslint-disable-line no-unused-vars
+      const res = await templatesOp({ op: 'add', data: body });
+      live.store.files({ [res.file]: res.data });
+      setTemplate(res.id);
+      toast(`Template “${res.data.label}” added (content/templates/${res.id}.json)`);
+    } catch (err) {
+      toast(err.message, { kind: 'error' });
+    } finally {
+      duplicating = false;
+    }
+  }
+
   function setValue(f, value) {
     live.store.set(f.file, f.ptr, value, { source: 'panel', structure: true });
   }
@@ -202,6 +254,27 @@
     </div>
   </div>
 
+  <!-- the item template: both modes use the same ones -->
+  <div class="ll__template" data-template-picker>
+    <Field
+      edit={`${g.file}#${templatePtr}`}
+      label="Template"
+      type="select"
+      value={templateId}
+      options={templateOptions}
+      changed={live.changed(g.file, templatePtr)}
+      onvalue={(v) => setTemplate(v)}
+    />
+    <Button
+      size="small"
+      icon="clone"
+      label="Duplicate preset"
+      title="Copy this template into a new one of the site's (content/templates)"
+      disabled={duplicating}
+      onclick={duplicate}
+    />
+  </div>
+
   <!-- both panes always mounted: same height cell, no shift on a switch -->
   <div class="ll__body">
     <div class={['ll__pane', handmade && 'is-hidden']} inert={handmade || undefined}>
@@ -258,6 +331,13 @@
   .ll {
     @include stack(var(--gap-items));
     min-width: 0;
+  }
+
+  .ll__template {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--gap-rows);
+    align-items: end;
   }
 
   .ll__body {

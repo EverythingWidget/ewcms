@@ -810,6 +810,33 @@ rule work as anywhere.
   (`panels`) is gone and content that still has one is rejected with a pointer to List), **Row** (a small photo, the title, the facts on the right:
   Project list). Each preset is a column of widgets; its facts are the source's `list`
   properties (`·` between them) and Panel's count is the plain `{photos}` (how many).
+- **Item templates** (`content/templates/t-<id>.json`, step 7): site-wide (every language
+  folder uses them, so they sit next to `content/en/`), each a vertical stack of the
+  registry's widgets whose values are `{property}` parts:
+
+  ```json
+  { "version": 1, "kind": "template", "label": "People card", "from": "preset:card",
+    "link": true, "photoFirst": true,
+    "widgets": [
+      { "type": "photo", "role": "photo", "src": [{ "property": "cover" }] },
+      { "type": "text", "role": "title", "body": [{ "style": "heading", "text": [{ "property": "title" }] }] }
+    ] }
+  ```
+
+  A List picks one with `config.template: "t-<id>"` (the **Template** picker in the Content
+  tab lists the presets, then the site's templates); without `config.template` it shows its
+  preset (Card) as before. From a source and Hand-made Lists use the same templates.
+  **Duplicate preset** (next to the picker) copies the picked preset, as it shows now (its
+  property mapping applied, facts joined, a hand-made Panel's count as `{count} {unit}`), or the
+  picked template, into a new `t-` file (the dev server's `POST /__editor/templates`: Save
+  never creates files) and points the List at it; `from` keeps where it came from and gives
+  the template its preset's look (`li--card`, columns). `role` names a widget's place in that
+  look (`.li__<role>`); a button's `"itemLink": true` opens the item's page; `link` makes the
+  whole item a link, `photoFirst` sets a leading photo apart. A template has no `source` (the
+  List gives each copy its item), no List inside it yet (nested Lists come later), and its
+  widgets have no `id` or `layout`; `ewcms check` and Save reject anything else with a message.
+  A List pointing at a missing template warns and shows Card. Property mapping does not apply
+  to a template (it names its properties itself). Editing a template comes in step 8.
 - **Property mapping** (`config.properties`, Content tab under the source): one row per role the
   preset uses, **Photo**, **Title**, **Text** (`photo`, `title`, `body`), each a picker of the
   source's properties of a type that role takes (photo: `photo`; title: text, words,

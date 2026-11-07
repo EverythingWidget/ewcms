@@ -28,6 +28,8 @@ import {
   schemaIdOf,
   sourceIdOf,
   contentPath,
+  isTemplateId,
+  templateIdOf,
 } from './files.js';
 import { CORE_STRINGS } from './strings.js';
 import { checkSchema } from './schemas.js';
@@ -558,7 +560,8 @@ function checkWidget(widget, where) {
     }
     if (typeof v !== (CONFIG_TYPES[c.type] || 'string'))
       bad(`config.${c.key}`, `a ${CONFIG_TYPES[c.type] || 'string'}`);
-    else if (c.options && !c.options.some(([o]) => o === v))
+    // `also`: values a setting takes besides its options (a List's site templates, "t-…")
+    else if (c.options && !c.options.some(([o]) => o === v) && !c.also?.(v))
       bad(`config.${c.key}`, `one of ${c.options.map(([o]) => o).join(', ')}`);
   }
   return out;
@@ -632,7 +635,59 @@ export function checkContent(file, data) {
   if (file === PHOTOS)
     return isObject(d.photos) ? checkPhotos(d.photos) : ['"photos" must be an object'];
   if (docKindOf(file)) return checkDoc(file, d);
+  if (templateIdOf(file)) return checkItemTemplate(d);
   return [];
+}
+
+/** Presets a template can come from (src/site/widgets/list/presets.js PRESETS ids). */
+const PRESET_FROM = ['preset:card', 'preset:plain', 'preset:panel', 'preset:row'];
+const ROLE = /^[a-z][a-z0-9-]*$/;
+
+/**
+ * An item template (content/templates/t-….json): { kind: "template", label, from?, link?,
+ * photoFirst?, widgets: [...] }, its widgets a vertical stack of the registry's widgets whose
+ * values are {property} parts. No List inside one yet (nested Lists come later), no "source"
+ * (the List gives each copy its item), and none of a page widget's place (id, layout).
+ */
+export function checkItemTemplate(d) {
+  const out = [];
+  if (d.kind !== 'template') out.push('"kind" must be "template"');
+  if (typeof d.label !== 'string' || !d.label.trim())
+    out.push('"label" must be a text (its name in the List\'s Template picker)');
+  if (d.from !== undefined && !PRESET_FROM.includes(d.from) && !isTemplateId(d.from))
+    out.push(`"from" must be a preset (${PRESET_FROM.join(', ')}) or a template id ("t-…")`);
+  for (const k of ['link', 'photoFirst'])
+    if (d[k] !== undefined && typeof d[k] !== 'boolean') out.push(`"${k}" must be true or false`);
+  const known = ['kind', 'label', 'from', 'link', 'photoFirst', 'widgets'];
+  for (const k of Object.keys(d))
+    if (!known.includes(k)) out.push(`"${k}" is not a template key (${known.join(', ')})`);
+  if (!Array.isArray(d.widgets) || !d.widgets.length) {
+    out.push('"widgets" must be a list of widgets (top to bottom)');
+    return out;
+  }
+  d.widgets.forEach((w, i) => {
+    const at = `widgets.${i}`;
+    if (!isObject(w)) return out.push(`${at} must be an object`);
+    if (RETIRED_WIDGETS[w.type]) return out.push(`${at}: ${RETIRED_WIDGETS[w.type]}`);
+    if (!WIDGET_TYPES[w.type])
+      return out.push(
+        `${at}: "${w.type}" is not a widget type (${Object.keys(WIDGET_TYPES)
+          .filter((t) => t !== 'list')
+          .join(', ')})`,
+      );
+    if (w.type === 'list')
+      return out.push(`${at}: a List inside a template comes later (nested Lists)`);
+    if (w.source !== undefined)
+      out.push(`${at}: no "source" in a template: the List gives each copy its item`);
+    for (const k of ['id', 'layout', 'z'])
+      if (w[k] !== undefined)
+        out.push(`${at}: no "${k}": a template's widgets stack top to bottom`);
+    if (w.role !== undefined && (typeof w.role !== 'string' || !ROLE.test(w.role)))
+      out.push(`${at}.role must be a name in lowercase letters, digits and "-"`);
+    if (w.itemLink !== undefined && (w.type !== 'button' || w.itemLink !== true))
+      out.push(`${at}.itemLink: only a button's, true (it opens the item's page)`);
+  });
+  return out;
 }
 
 /** Keys starting with "_" (comments), anywhere in the data: their paths. */

@@ -234,3 +234,66 @@ export function presetWidgets(
     .roles.map((r) => make[r]())
     .filter(Boolean);
 }
+
+/**
+ * A preset (or a site template) copied into a new item template (content/templates/t-….json):
+ * its widgets as plain widgets with {property} parts, for the List's source as it shows now (its
+ * mapping applied, facts joined with `sep`, a hand-made Panel's count as {count} {unit}). `from`
+ * keeps where it came from; link and photoFirst are the preset's. A template's own widgets are
+ * copied as they are.
+ */
+export function cloneTemplate(
+  ctx,
+  source,
+  id,
+  { handmade = false, properties, open = 'View', sep = ' · ', label } = {},
+) {
+  const own = templateOf(ctx, id);
+  if (own)
+    return {
+      version: 1,
+      kind: 'template',
+      label: label || `${own.label || id} copy`,
+      from: id,
+      link: own.link !== false,
+      photoFirst: own.photoFirst !== false,
+      widgets: structuredClone(own.widgets),
+    };
+  const preset = presetOf(id);
+  const widgets = presetWidgets(preset.id, ctx, source, { open, handmade, properties }).map((w) => {
+    const { facts, handmadeCount, ...rest } = w;
+    if (facts)
+      return { ...rest, body: [{ ...rest.body[0], text: factsRuns(facts, () => false, sep) }] };
+    if (handmadeCount)
+      return {
+        ...rest,
+        body: [{ style: 'label', text: [prop('count'), { t: ' ' }, prop('unit')] }],
+      };
+    return rest;
+  });
+  return {
+    version: 1,
+    kind: 'template',
+    label: label || `${preset.label} copy`,
+    from: preset.id,
+    link: preset.link,
+    photoFirst: preset.photoFirst,
+    widgets,
+  };
+}
+
+/** A site template by id (config.template "t-…"), null when it isn't one or is missing. */
+export const templateOf = (ctx, id) =>
+  (typeof id === 'string' && id.startsWith('t-') && ctx?.templates?.[id]) || null;
+
+/**
+ * The preset whose look (li--<shape>, columns) a template has: its `from`, followed through
+ * templates; Card when it names none.
+ */
+export function shapeOf(ctx, id, seen = new Set()) {
+  const own = templateOf(ctx, id);
+  if (!own) return presetOf(id);
+  if (seen.has(id)) return PRESETS[0];
+  seen.add(id);
+  return shapeOf(ctx, own.from, seen);
+}

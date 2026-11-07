@@ -135,6 +135,7 @@
         c.tab !== 'layout' &&
         c.key !== 'handmade' &&
         c.key !== 'items' &&
+        !c.lead &&
         !c.list &&
         (c.type === 'source' || c.type === 'link' || c.options || c.type === 'boolean'),
     ) ?? [],

@@ -19,6 +19,8 @@
  *   POST /__editor/publish  → { message }: git add + commit ONLY the changed content files in
  *                             one commit, then git push origin <current branch>
  *   POST /__editor/pages    → { op, ... }: add, rename or delete pages (pagesOp)
+ *   POST /__editor/templates → { op: 'add', data }: a new item template (content/templates/
+ *                             t-<id>.json, Duplicate preset): answers { id, file, data }
  *   POST /__editor/media    → { op, key, alt? }: a photo's alt text, or delete an unused photo
  *                             (mediaOp), answers the photos and media lists afresh
  *
@@ -58,6 +60,7 @@ import {
   schemaFile,
   schemaIdOf,
   sourceFile,
+  templateFile,
   sourceIdOf,
   contentFromFiles,
   FOLDERS,
@@ -70,6 +73,8 @@ import { photoUses } from '../src/editor/lib/photo-uses.js';
 import {
   loadContent,
   readContentDir,
+  contentFilePath,
+  templateFiles,
   readContentFile,
   walkJson,
   writeFileAtomic,
@@ -116,7 +121,35 @@ export function editableFiles(root) {
   }
   for (const file of ROOT_FILES)
     if (fs.existsSync(path.join(contentDirOf(root), file))) files.push(file);
+  files.push(...templateFiles(root));
   return new Set(files);
+}
+
+// ---------------------------------------------------------------- item templates
+/**
+ * POST /templates { op: 'add', data }: write `data` (an item template, src/site/validate.js
+ * checkItemTemplate) as a new content/templates/t-<id>.json under a fresh id. The only way a
+ * template file is made (Save never creates files). Returns { status, body }: body { ok, id,
+ * file, data, created: [file] }.
+ */
+export function templatesOp(root, { op, data } = {}, onWrite = () => {}, random = Math.random) {
+  if (op !== 'add') return { status: 400, body: { error: `Unknown template op "${op}"` } };
+  const have = new Set(templateFiles(root));
+  let id;
+  for (let i = 0; i < 50 && (!id || have.has(templateFile(id))); i++)
+    id = `t-${Array.from({ length: 4 }, () => '0123456789abcdefghjkmnpqrstvwxyz'[Math.floor(random() * 32)]).join('')}`;
+  if (have.has(templateFile(id))) return { status: 500, body: { error: 'No free template id' } };
+  const file = templateFile(id);
+  const clean = { version: VERSION, ...(data && typeof data === 'object' ? data : {}) };
+  const problems = checkContent(file, clean);
+  if (problems.length)
+    return { status: 400, body: { error: `Not added. ${problems.join('; ')}`, problems } };
+  const abs = contentFilePath(root, file);
+  fs.mkdirSync(path.dirname(abs), { recursive: true });
+  const text = formatJSON(clean);
+  onWrite(new Map([[abs, text]]));
+  writeFileAtomic(abs, text);
+  return { status: 200, body: { ok: true, id, file, data: clean, created: [file], removed: [] } };
 }
 
 // ---------------------------------------------------------------- pages
@@ -586,7 +619,7 @@ export function save(root, files, onWrite = () => {}) {
     return { status: 400, body: { error: `Not saved. ${problems.join('; ')}`, problems } };
   // what it writes, by path: the dev server knows these changes are the editor's own however
   // late its watcher reports them (vite-plugin-static-site.mjs)
-  const texts = new Map(names.map((n) => [path.join(contentDirOf(root), n), formatJSON(files[n])]));
+  const texts = new Map(names.map((n) => [contentFilePath(root, n), formatJSON(files[n])]));
   onWrite(texts);
   for (const [file, text] of texts) writeFileAtomic(file, text);
   return { status: 200, body: { ok: true, written: names } };
@@ -826,6 +859,7 @@ export async function contentStatus(root) {
   const rel = [
     ...FOLDERS.map((d) => `:(glob)${contentRel(root)}/${d}/**/*.json`),
     ...ROOT_FILES.map((f) => `${contentRel(root)}/${f}`),
+    `:(glob)${loadSiteConfig(root).templatesRel}/*.json`,
   ];
 
   const st = await git(root, [
@@ -840,8 +874,14 @@ export async function contentStatus(root) {
   const entries = st.stdout.split('\0').filter(Boolean);
   const add = (repoPath, status) => {
     const p = repoPath.startsWith(prefix) ? repoPath.slice(prefix.length) : repoPath;
-    const name = p.slice(contentRel(root).length + 1);
-    if (isContentFile(name) && p === `${contentRel(root)}/${name}`)
+    const tRel = loadSiteConfig(root).templatesRel;
+    const name = p.startsWith(`${tRel}/`)
+      ? `templates/${p.slice(tRel.length + 1)}`
+      : p.slice(contentRel(root).length + 1);
+    if (
+      isContentFile(name) &&
+      (p === `${contentRel(root)}/${name}` || p === `${tRel}/${name.slice(10)}`)
+    )
       files.push({ name, path: p, status });
   };
   for (let i = 0; i < entries.length; i++) {
@@ -1181,6 +1221,13 @@ export function editorMiddleware({
           log(
             `editor pages: ${op.op} ${[...body.created, ...body.removed.map((f) => `-${f}`)].join(', ')}`,
           );
+        return sendJSON(res, status, body);
+      }
+
+      if (route === 'POST /templates') {
+        const { status, body } = templatesOp(root, await readJSON(req), onWrite);
+        if (body.ok)
+          log(`editor templates: added ${loadSiteConfig(root).templatesRel}/${body.id}.json`);
         return sendJSON(res, status, body);
       }
 

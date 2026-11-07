@@ -230,7 +230,7 @@ export default function staticSite() {
       server.middlewares.use((req, res, next) => widgetsReady.then(() => next(), next));
       // Content and media manifest changes re-render pages (see handleHotUpdate).
       const site = loadSiteConfig(root);
-      server.watcher.add([site.contentDir, site.generatedDir]);
+      server.watcher.add([site.contentDir, site.templatesDir, site.generatedDir]);
       // a theme layer added or deleted: the site-layer stubs follow (Vite then rebuilds the CSS)
       if (site.themeLayerDir) {
         server.watcher.add(site.themeLayerDir);
@@ -332,7 +332,7 @@ export default function staticSite() {
       const rel = path.relative(config.root, file).split(path.sep).join('/');
       // content and media manifest files are data: they re-render pages, never hot-update modules
       const site = loadSiteConfig(config.root);
-      const content = [site.contentDir, site.generatedDir].some((d) =>
+      const content = [site.contentDir, site.templatesDir, site.generatedDir].some((d) =>
         rel.startsWith(`${posixRel(config.root, d)}/`),
       );
       // the engine's templates: src/site in the engine's folder

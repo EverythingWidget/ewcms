@@ -1,7 +1,14 @@
 /** Load all content files (+ the generated media manifest) into one object. Node only. */
 import fs from 'node:fs';
 import path from 'node:path';
-import { FOLDERS, ROOT_FILES, contentFromFiles, isContentFile } from '../src/site/files.js';
+import {
+  FOLDERS,
+  ROOT_FILES,
+  TEMPLATES,
+  contentFromFiles,
+  isContentFile,
+  templateIdOf,
+} from '../src/site/files.js';
 import { assertContent, parseContent } from '../src/site/validate.js';
 import { setContentDir } from '../src/site/files.js';
 import { loadSiteConfig } from './site-config.mjs';
@@ -14,13 +21,27 @@ const read = (file, fallback) =>
  * mistake throws an error that names the file (and the line, for broken JSON).
  */
 export function readContentFile(root, file, { check = true } = {}) {
-  const data = parseContent(
-    fs.readFileSync(path.join(loadSiteConfig(root).contentDir, file), 'utf8'),
-    file,
-  );
+  const data = parseContent(fs.readFileSync(contentFilePath(root, file), 'utf8'), file);
   if (check) assertContent(file, data);
   return data;
 }
+
+/**
+ * A content file's path on disk: under the content folder, a template ("templates/t-….json")
+ * in the site-wide templates folder next to it (content/templates).
+ */
+export function contentFilePath(root, file) {
+  const site = loadSiteConfig(root);
+  return templateIdOf(file)
+    ? path.join(site.templatesDir, file.slice(TEMPLATES.length + 1))
+    : path.join(site.contentDir, file);
+}
+
+/** The template files on disk ("templates/t-ab12.json"), sorted. */
+export const templateFiles = (root) =>
+  walkJson(loadSiteConfig(root).templatesDir)
+    .map((n) => `${TEMPLATES}/${n}`)
+    .filter((f) => templateIdOf(f));
 
 /**
  * Write a file in one step: a temporary file next to it, then a rename over it, so a crash
@@ -64,6 +85,7 @@ export function readContentDir(root) {
   }
   for (const file of ROOT_FILES)
     if (fs.existsSync(path.join(dir, file))) files[file] = readContentFile(root, file);
+  for (const file of templateFiles(root)) files[file] = readContentFile(root, file);
   return files;
 }
 
