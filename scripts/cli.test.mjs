@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { checkContentOf, newSite, themeWarning } from './cli.mjs';
+import { checkContentOf, newSite, siteCode, themeWarning } from './cli.mjs';
 import { loadSiteConfig } from './site-config.mjs';
 import { ENGINE, enginePath, fsUrl, withEngineUrls, ENGINE_MARK } from './engine.mjs';
 
@@ -75,4 +75,35 @@ test('bin: ewcms --version and usage', () => {
     version,
   );
   assert.match(execFileSync(process.execPath, [bin, 'help'], { encoding: 'utf8' }), /usage: ewcms/);
+});
+
+test('siteCode: config, functions/ and content are no reason to warn; own JS and SCSS are', () => {
+  const site = (files) => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-code-'));
+    for (const [rel, text] of Object.entries(files)) {
+      fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+      fs.writeFileSync(path.join(root, rel), text);
+    }
+    return root;
+  };
+  const base = {
+    'site.config.mjs': 'export default {};\n',
+    'functions/api/contact.js': '// x\n',
+    'content/en/x.js': '',
+    'public/a.js': '',
+    'dist/assets/b.js': '',
+    'node_modules/p/index.js': '',
+    '.generated/c.mjs': '',
+  };
+  const a = site(base);
+  const b = site({ ...base, 'widgets/quote/index.js': '', 'theme/styles/_look.scss': 'a {}\n' });
+  try {
+    // like eeliyarasta-website: config + one function, no theme of its own: nothing to warn about
+    assert.deepEqual(siteCode(a, loadSiteConfig(a)), { js: [], scss: [] });
+    const code = siteCode(b, loadSiteConfig(b));
+    assert.deepEqual(code.js, ['widgets/quote/index.js']);
+    assert.deepEqual(code.scss, ['theme/styles/_look.scss']);
+  } finally {
+    for (const r of [a, b]) fs.rmSync(r, { recursive: true, force: true });
+  }
 });

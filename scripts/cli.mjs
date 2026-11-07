@@ -120,13 +120,67 @@ async function optional(name) {
   }
 }
 
-/** The site's own code and styles linted with the engine's rules: problems as text lines. */
+/** Folders that hold no code of the site's own (content, built or installed files). */
+const NOT_CODE = new Set([
+  'content',
+  'public',
+  'dist',
+  'node_modules',
+  'media',
+  '.generated',
+  '.git',
+  '.wrangler',
+  '.cache',
+]);
+
+/** A folder's files (relative, posix) whose name matches `re`, skipping NOT_CODE folders. */
+function filesIn(root, dir, re, out = []) {
+  if (!dir || !fs.existsSync(dir)) return out;
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) {
+      if (!NOT_CODE.has(e.name)) filesIn(root, p, re, out);
+    } else if (re.test(e.name)) out.push(posixPath(path.relative(root, p)));
+  }
+  return out;
+}
+
+/**
+ * The site's own code a missing linter would leave unchecked: { js, scss } (relative paths).
+ * js: .js / .mjs outside content, public, dist, node_modules, .generated and the like, and
+ * not site.config.mjs (settings) or functions/ (the small server functions ewcms scaffolds):
+ * those alone are no reason to warn. scss: the theme's and the site's widgets' (what Stylelint
+ * lints). ESLint, when installed, still lints them all.
+ */
+export function siteCode(root, site = loadSiteConfig(root)) {
+  const js = filesIn(root, root, /\.(m?js)$/).filter(
+    (f) => f !== 'site.config.mjs' && !f.startsWith('functions/'),
+  );
+  const dirs = [
+    site.themeDir,
+    site.themeLayerDir,
+    ...(site.config?.widgets || []).map((w) => path.resolve(root, w)),
+  ].filter((d) => d && !path.resolve(d).startsWith(ENGINE));
+  const scss = [...new Set(dirs.flatMap((d) => filesIn(root, d, /\.scss$/)))];
+  return { js, scss };
+}
+
+/**
+ * The site's own code and styles linted with the engine's rules: problems as text lines. A
+ * missing linter warns only when the site has files of its kind (siteCode); else it is skipped
+ * quietly.
+ */
 export async function lintSite(root, log = console) {
   const site = loadSiteConfig(root);
   const out = [];
+  const code = siteCode(root, site);
   const eslintPkg = await optional('eslint');
-  if (!eslintPkg) log.warn("[check] ESLint is not installed: the site's JS is not linted");
-  else {
+  if (!eslintPkg) {
+    if (code.js.length)
+      log.warn(
+        `[check] ESLint is not installed: the site's JS is not linted (${code.js.length} file${code.js.length === 1 ? '' : 's'})`,
+      );
+  } else {
     const { default: js } = await optional('@eslint/js');
     const { default: globals } = await optional('globals');
     const eslint = new eslintPkg.ESLint({
@@ -152,8 +206,12 @@ export async function lintSite(root, log = console) {
         );
   }
   const stylelint = await optional('stylelint');
-  if (!stylelint) log.warn("[check] Stylelint is not installed: the theme's SCSS is not linted");
-  else {
+  if (!stylelint) {
+    if (code.scss.length)
+      log.warn(
+        `[check] Stylelint is not installed: the theme's SCSS is not linted (${code.scss.length} file${code.scss.length === 1 ? '' : 's'})`,
+      );
+  } else {
     const { default: config } = await import(
       pathToFileURL(enginePath('stylelint.config.mjs')).href
     );
