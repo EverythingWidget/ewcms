@@ -684,6 +684,8 @@ export function checkItemTemplate(d) {
         out.push(`${at}: no "${k}": a template's widgets stack top to bottom`);
     if (w.role !== undefined && (typeof w.role !== 'string' || !ROLE.test(w.role)))
       out.push(`${at}.role must be a name in lowercase letters, digits and "-"`);
+    if (w.join !== undefined && (w.type !== 'text' || typeof w.join !== 'string'))
+      out.push(`${at}.join: only a text's, a text (its first line's properties joined by it)`);
     if (w.itemLink !== undefined && (w.type !== 'button' || w.itemLink !== true))
       out.push(`${at}.itemLink: only a button's, true (it opens the item's page)`);
   });

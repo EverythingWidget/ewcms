@@ -212,11 +212,40 @@ test('the panel: a Template picker and Duplicate preset, in both modes, no shift
   const lead = read('src/editor/svelte/ListLead.svelte');
   assert.match(lead, /data-template-picker/);
   assert.match(lead, /label="Template"/);
-  assert.match(lead, /label="Duplicate preset"/);
+  // Duplicate (a preset) / Duplicate template, both labels in one cell: no shift
+  assert.match(lead, />Duplicate<\/span/);
+  assert.match(lead, />Duplicate template<\/span/);
+  assert.match(lead, /\.ll__dup \{\s*display: inline-grid;\s*> span \{\s*grid-area: 1 \/ 1;/);
+  // the switch saved at once unless the page has other unsaved edits; else the note
+  assert.match(lead, /const pending = live\.store\.dirtyFiles\(\)\.includes\(g\.file\)/);
+  assert.match(lead, /await saveDev\(sent\);\s*live\.store\.markSaved\(\[g\.file\], sent\)/);
+  assert.match(lead, /Saved as template \$\{res\.id\}/);
+  assert.match(lead, /'ll__note', !note && 'is-hidden'/);
   assert.match(lead, /templatesOp\(\{ op: 'add'/);
   // outside the two panes: the same row whichever mode
   assert.ok(lead.indexOf('data-template-picker') < lead.indexOf('class="ll__body"'));
   // the generic settings leave it to ListLead
   assert.equal(WIDGET_TYPES.list.config.find((c) => c.key === 'template').lead, true);
   assert.match(read('src/editor/svelte/GroupFields.svelte'), /!c\.lead &&/);
+});
+
+test('a copied facts line drops the separator of an empty fact at render', () => {
+  const tpl = cloneTemplate(base, 'people', 'preset:card', { properties: { photo: 'cover' } });
+  const facts = tpl.widgets.find((w) => w.role === 'facts');
+  assert.equal(facts.join, ' · ');
+  assert.deepEqual(checkContent(T, tpl), []);
+  // one person without a role: "Amsterdam", not " · Amsterdam"
+  const ctx = withTemplate(tpl);
+  const gone = {
+    ...ctx,
+    sources: { ...ctx.sources, people: people.map((p, i) => (i ? p : { ...p, role: '' })) },
+  };
+  const { el } = list({ template: 't-ab12' }, {}, gone);
+  const lines = texts(el, '[data-list-item] .li__facts');
+  assert.equal(lines[0], people[0].location);
+  assert.equal(lines[1], `${people[1].role} · ${people[1].location}`);
+  assert.match(
+    checkContent(T, { ...tpl, widgets: [{ type: 'photo', join: ' · ' }] }).join(),
+    /join: only a text/,
+  );
 });

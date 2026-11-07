@@ -263,7 +263,12 @@ export function cloneTemplate(
   const widgets = presetWidgets(preset.id, ctx, source, { open, handmade, properties }).map((w) => {
     const { facts, handmadeCount, ...rest } = w;
     if (facts)
-      return { ...rest, body: [{ ...rest.body[0], text: factsRuns(facts, () => false, sep) }] };
+      // join: the separator goes only between the facts that have a value (forItem, ./index.js)
+      return {
+        ...rest,
+        join: sep,
+        body: [{ ...rest.body[0], text: factsRuns(facts, () => false, sep) }],
+      };
     if (handmadeCount)
       return {
         ...rest,

@@ -89,6 +89,19 @@ function forItem(w, scope, link, sep, { handmade = false, href = '' } = {}) {
       ...w,
       body: [{ ...w.body[0], text: factsRuns(w.facts, (p) => partEmpty(p, scope), sep) }],
     };
+  // a template's joined line ("join": " · "): its properties with a value, the join between
+  // them only (an empty one takes no separator with it)
+  if (typeof w.join === 'string' && w.body?.[0]) {
+    const names = (w.body[0].text || []).filter((r) => r?.property).map((r) => r.property);
+    const { join, ...rest } = w;
+    return {
+      ...rest,
+      body: [
+        { ...w.body[0], text: factsRuns(names, (p) => partEmpty(p, scope), join) },
+        ...w.body.slice(1),
+      ],
+    };
+  }
   if (w.itemLink) {
     // hand-made: the button uses the resolved href (no source-item id)
     if (handmade && href) return { ...w, config: { ...w.config, link: { href } } };

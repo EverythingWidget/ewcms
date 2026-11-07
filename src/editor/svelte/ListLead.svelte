@@ -8,8 +8,12 @@
   automatic choice; "No photo property in People" when the source has none). MAP_SLOTS rows
   always laid out, the ones the preset doesn't use visibility:hidden / inert: no shift.
   Template (config.template, both modes): the presets, then the site's templates
-  (content/templates/t-….json); Duplicate preset copies the one picked into a new template file
-  (POST /__editor/templates, kept in the store at once) and points the List at it.
+  (content/templates/t-….json); Duplicate (a preset) / Duplicate template copies the one picked
+  into a new template file (POST /__editor/templates, kept in the store at once) and points the
+  List at it. That switch is saved at once when the page had no other unsaved edits (so nothing
+  is left pending); otherwise it stays an unsaved edit next to them (Save never writes edits the
+  user didn't ask to save) and the note under the row says "Saved as template t-…". The button
+  keeps the longer label's width and the note line is always laid out: no shift.
 -->
 <script>
   import WidgetSource from './WidgetSource.svelte';
@@ -26,7 +30,7 @@
   import Button from './Button.svelte';
   import { PRESETS, cloneTemplate } from '../../site/widgets/list/presets.js';
   import { t } from '../../site/strings.js';
-  import { templatesOp } from '../source.js';
+  import { saveDev, templatesOp } from '../source.js';
   import { toast } from './toasts.svelte.js';
 
   let { g, live, base, list = false, shown, sourceIds, onsource, bindings = null } = $props();
@@ -161,10 +165,15 @@
       source: 'panel',
       structure: true,
     });
+  const isOwnTemplate = $derived(templateId.startsWith('t-'));
   let duplicating = $state(false);
+  let note = $state('');
   async function duplicate() {
     if (duplicating) return;
     duplicating = true;
+    note = '';
+    // the page's other unsaved edits: then the switch is not saved on its own
+    const pending = live.store.dirtyFiles().includes(g.file);
     try {
       const ctx = live.content;
       const config = live.get(g.file, `${base}/config`) || {};
@@ -178,7 +187,14 @@
       const res = await templatesOp({ op: 'add', data: body });
       live.store.files({ [res.file]: res.data });
       setTemplate(res.id);
-      toast(`Template “${res.data.label}” added (content/templates/${res.id}.json)`);
+      live.store.seal();
+      if (pending) note = `Saved as template ${res.id}: the List's switch is saved with the page`;
+      else {
+        const sent = { [g.file]: structuredClone(live.store.current[g.file]) };
+        await saveDev(sent);
+        live.store.markSaved([g.file], sent);
+        toast(`Template “${res.data.label}” added and used (content/templates/${res.id}.json)`);
+      }
     } catch (err) {
       toast(err.message, { kind: 'error' });
     } finally {
@@ -263,16 +279,27 @@
       value={templateId}
       options={templateOptions}
       changed={live.changed(g.file, templatePtr)}
-      onvalue={(v) => setTemplate(v)}
+      onvalue={(v) => {
+        note = '';
+        setTemplate(v);
+      }}
     />
     <Button
       size="small"
       icon="clone"
-      label="Duplicate preset"
       title="Copy this template into a new one of the site's (content/templates)"
       disabled={duplicating}
       onclick={duplicate}
-    />
+      data-duplicate
+      ><span class="ll__dup"
+        ><span class={[isOwnTemplate && 'is-hidden']}>Duplicate</span><span
+          class={[!isOwnTemplate && 'is-hidden']}>Duplicate template</span
+        ></span
+      ></Button
+    >
+    <p class={['ll__note', !note && 'is-hidden']} data-template-note aria-live="polite">
+      {note || ' '}
+    </p>
   </div>
 
   <!-- both panes always mounted: same height cell, no shift on a switch -->
@@ -338,6 +365,27 @@
     grid-template-columns: minmax(0, 1fr) auto;
     gap: var(--gap-rows);
     align-items: end;
+  }
+
+  // both labels in one cell: the button keeps the longer one's width
+  .ll__dup {
+    display: inline-grid;
+
+    > span {
+      grid-area: 1 / 1;
+    }
+  }
+
+  .ll__note {
+    grid-column: 1 / -1;
+    min-height: 16px;
+    margin: 0;
+    color: var(--c-text-muted);
+  }
+
+  .ll__dup .is-hidden,
+  .ll__note.is-hidden {
+    visibility: hidden;
   }
 
   .ll__body {
