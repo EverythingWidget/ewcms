@@ -286,7 +286,8 @@ export default function staticSite() {
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
             return res.end(await server.transformIndexHtml(req.url, shell));
           }
-          const { getRoutes, renderRoute } = await server.ssrLoadModule(RENDER_MODULE);
+          const { getRoutes, renderRoute, templatePreview, templateOfPath } =
+            await server.ssrLoadModule(RENDER_MODULE);
           // the site's widgets in the render's own module graph too (Vite's SSR one)
           const { registerWidgets } = await server.ssrLoadModule(WIDGETS_MODULE);
           await registerSiteWidgets(root, {
@@ -300,6 +301,10 @@ export default function staticSite() {
           let pathname = url.pathname.replace(/index\.html$/, '');
           if (!pathname.endsWith('/')) pathname += '/';
           let route = routes.find((r) => r.path === pathname);
+          let shown = content;
+          // the template editor's preview (/__template/<id>/): one List, one sample item
+          const preview = !route && templatePreview(content, templateOfPath(pathname));
+          if (preview) ({ route, content: shown } = preview);
           if (route?.redirect) {
             // a folder without its own page (routes.js): its first sub page
             res.writeHead(302, { Location: route.redirect + url.search });
@@ -312,7 +317,7 @@ export default function staticSite() {
             req.url,
             fill(
               shell,
-              renderRoute(route, content, { editable: true, unbuilt: !!draft }),
+              renderRoute(route, shown, { editable: true, unbuilt: !!draft }),
               loadSiteConfig(root).theme,
             ),
           );

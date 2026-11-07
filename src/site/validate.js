@@ -644,8 +644,9 @@ const PRESET_FROM = ['preset:card', 'preset:plain', 'preset:panel', 'preset:row'
 const ROLE = /^[a-z][a-z0-9-]*$/;
 
 /**
- * An item template (content/templates/t-….json): { kind: "template", label, from?, link?,
- * photoFirst?, widgets: [...] }, its widgets a vertical stack of the registry's widgets whose
+ * An item template (content/templates/t-….json): { kind: "template", label, from?, source?,
+ * link?, photoFirst?, widgets: [...] } (source: the source it came from, the template
+ * editor's sample item), its widgets a vertical stack of the registry's widgets whose
  * values are {property} parts. No List inside one yet (nested Lists come later), no "source"
  * (the List gives each copy its item), and none of a page widget's place (id, layout).
  */
@@ -658,7 +659,9 @@ export function checkItemTemplate(d) {
     out.push(`"from" must be a preset (${PRESET_FROM.join(', ')}) or a template id ("t-…")`);
   for (const k of ['link', 'photoFirst'])
     if (d[k] !== undefined && typeof d[k] !== 'boolean') out.push(`"${k}" must be true or false`);
-  const known = ['kind', 'label', 'from', 'link', 'photoFirst', 'widgets'];
+  if (d.source !== undefined && (typeof d.source !== 'string' || !ROLE.test(d.source)))
+    out.push('"source" must be a source name (the source its sample item comes from)');
+  const known = ['kind', 'label', 'from', 'source', 'link', 'photoFirst', 'widgets'];
   for (const k of Object.keys(d))
     if (!known.includes(k)) out.push(`"${k}" is not a template key (${known.join(', ')})`);
   if (!Array.isArray(d.widgets) || !d.widgets.length) {

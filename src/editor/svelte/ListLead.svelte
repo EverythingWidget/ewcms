@@ -28,6 +28,7 @@
   import { pointer } from '../../site/helpers.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import Button from './Button.svelte';
+  import { ui } from './ui.svelte.js';
   import { PRESETS, cloneTemplate } from '../../site/widgets/list/presets.js';
   import { t } from '../../site/strings.js';
   import { saveDev, templatesOp } from '../source.js';
@@ -297,6 +298,17 @@
         ></span
       ></Button
     >
+    <!-- always laid out (no shift): hidden while a preset is picked -->
+    <span class={['ll__edit', !isOwnTemplate && 'is-hidden']} aria-hidden={!isOwnTemplate}>
+      <Button
+        size="small"
+        icon="pen"
+        title="Open this template in the template editor (Pages > Site > Templates)"
+        disabled={!isOwnTemplate}
+        onclick={() => ui.openTemplate?.(templateId)}
+        data-edit-template>Edit template</Button
+      >
+    </span>
     <p class={['ll__note', !note && 'is-hidden']} data-template-note aria-live="polite">
       {note || ' '}
     </p>
@@ -362,7 +374,7 @@
 
   .ll__template {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     gap: var(--gap-rows);
     align-items: end;
   }
@@ -384,6 +396,7 @@
   }
 
   .ll__dup .is-hidden,
+  .ll__edit.is-hidden,
   .ll__note.is-hidden {
     visibility: hidden;
   }

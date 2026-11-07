@@ -1,6 +1,7 @@
 <!--
   Pages tab (ui.panel 'nav'): the pages list (PagesList.svelte, while ui.pagesWin.open), or the page in the
-  preview or a site part (the Header: HeaderPart.svelte; the Footer) under PageHead.svelte
+  preview or a site part (the Header: HeaderPart.svelte; the Footer; an item template:
+  TemplatePanel.svelte) under PageHead.svelte
   (Back to pages: back to the pages list). The two swap with a slide (lib/slide.js):
   a page opened comes in from the right, the list comes back from the left. A page is a list of sections
   holding widgets (src/site/layout/), and nothing else. A page's panel has four tabs (Tabs.svelte,
@@ -45,6 +46,7 @@
   } from './ui.svelte.js';
   import HeaderPart from './HeaderPart.svelte';
   import PageHead from './PageHead.svelte';
+  import TemplatePanel from './TemplatePanel.svelte';
   import PagesList from './PagesList.svelte';
   import MotionPanel from './MotionPanel.svelte';
   import PageMotionPanel from './PageMotionPanel.svelte';
@@ -273,6 +275,9 @@
   <section class="ed-body" bind:this={panel}>
     <PagesList {live} {actions} />
   </section>
+{:else if ui.target?.kind === 'item-template'}
+  <PageHead {live} {actions} />
+  <TemplatePanel {live} />
 {:else}
   <PageHead {live} {actions} />
   {#if isPage}

@@ -15,6 +15,7 @@ import { BACKDROP, renderBackdrop } from './backdrop.js';
 import { getRoutes, buildRoutes, curtainOverrides, sitemapXml } from './routes.js';
 
 export { getRoutes, buildRoutes, sitemapXml };
+export { templatePreview, templateOfPath } from './widgets/list/template-preview.js';
 export { seoWarnings } from './seo.js';
 export {
   buildRedirects,

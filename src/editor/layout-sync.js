@@ -153,7 +153,8 @@ function applyLayout(el, s, moved = [], touched = { layout: false }) {
 export function syncLayout(doc, store, { structure = false, root = pageView(doc) } = {}) {
   const view = root;
   const sections = store.current[view?.dataset.pageFile]?.sections;
-  if (!view || !Array.isArray(sections)) return [];
+  // nothing to sync (a page the store has no file of: the template editor's preview)
+  if (!view || !Array.isArray(sections)) return Object.assign([], { motion: [] });
   const els = sectionsIn(view);
   const ids = new Set(sections.map((s) => s?.id));
   for (const [id, el] of els) if (!ids.has(id)) el.remove();

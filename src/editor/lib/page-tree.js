@@ -185,11 +185,13 @@ export const hasInside = (row) => !row.self && !row.part && (row.kids > 0 || !!r
  */
 export const entryFor = (pages, row) =>
   pages.find((p) =>
-    row.part
-      ? p.kind === 'part' && p.id === row.id
-      : row.template
-        ? p.template === row.id
-        : p.kind === 'page' && p.path === row.path && !p.items,
+    row.itemTemplate
+      ? p.kind === 'item-template' && p.id === row.id
+      : row.part
+        ? p.kind === 'part' && p.id === row.id
+        : row.template
+          ? p.template === row.id
+          : p.kind === 'page' && p.path === row.path && !p.items,
   );
 
 /** The path crumbs of a level: [{ label: '/', level: '' }, { label: 'photography/', … }]. */

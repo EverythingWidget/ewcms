@@ -844,11 +844,31 @@ rule work as anywhere.
   facts line keeps `"join": " · "`: the separator goes only between facts with a value; `from` keeps where it came from and gives
   the template its preset's look (`li--card`, columns). `role` names a widget's place in that
   look (`.li__<role>`); a button's `"itemLink": true` opens the item's page; `link` makes the
-  whole item a link, `photoFirst` sets a leading photo apart. A template has no `source` (the
-  List gives each copy its item), no List inside it yet (nested Lists come later), and its
-  widgets have no `id` or `layout`; `ewcms check` and Save reject anything else with a message.
-  A List pointing at a missing template warns and shows Card. Property mapping does not apply
-  to a template (it names its properties itself). Editing a template comes in step 8.
+  whole item a link, `photoFirst` sets a leading photo apart. A template's optional top-level
+  `"source": "<source>"` (Duplicate records the List's) only names where the template editor's
+  sample item comes from; its widgets have no `source` (the List gives each copy its item), no
+  List inside it yet (nested Lists come later), and no `id` or `layout`; `ewcms check` and Save
+  reject anything else with a message. A List pointing at a missing template warns and shows
+  Card. Property mapping does not apply to a template (it names its properties itself).
+
+- **The template editor** (local editor): **Pages > Site > Templates** lists every
+  `content/templates/t-*.json` under Header and Footer; opening one works like opening a page,
+  and **Edit template** (next to the List's Template picker, shown only while a template is
+  picked, its place always kept) jumps to it. The preview (the dev server's
+  `/__template/<id>/`, never built) shows the template as a List of one sample item: the first
+  item of its `source`, else a hand-made sample. Two tabs:
+  - **Widgets**: its name, then the vertical stack: drag a widget's grip (or Alt+↑/↓) to reorder,
+    × removes it, **Add text / Add photo / Add button** adds one. Each widget has its **Role**
+    (`.li__<role>`); a Text its lines (style + text), a Photo its photo, a Button its label and
+    **Opens the item's page** (`itemLink`). Every value takes `{property}` chips: type `{name}`
+    or pick one from the source's properties.
+  - **Properties**: every property the template binds, one box each; a new name (Enter or
+    leaving the box) changes every `{old}` bind in the template to `{new}`, one undo step. A
+    name the sample's source doesn't have says "Not in <Source>". This replaces mapping for
+    templates.
+
+  **Save** writes the template file (validated as above); every List using it shows the change.
+  Templates are site-wide, shared by every language.
 
 - **Property mapping** (`config.properties`, Content tab under the source): one row per role the
   preset uses, **Photo**, **Title**, **Text** (`photo`, `title`, `body`), each a picker of the

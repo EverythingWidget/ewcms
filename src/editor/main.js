@@ -41,6 +41,7 @@ import {
   clearSelection,
   openPopup,
   closePopup,
+  closeWidgetPopup,
   clearAnim,
   setMod,
 } from './svelte/ui.svelte.js';
@@ -97,7 +98,8 @@ import { nudgeStep, selectedIds } from './multi-select.js';
 import { restoreUi, restorePlace } from './svelte/persist.js';
 import { editorHref } from './lib/editor-url.js';
 import editorConfig from 'virtual:editor-config';
-import { setContentDir } from '../site/files.js';
+import { setContentDir, templateFile, templateIdOf } from '../site/files.js';
+import { templateOfPath, templatePreviewPath } from '../site/widgets/list/template-preview.js';
 import { keepUnsaved, restoreUnsaved } from './keep-unsaved.js';
 
 // the site's content folder (site.config.mjs), for the paths the editor shows
@@ -276,14 +278,43 @@ function updatePages() {
   ui.pages = [
     { kind: 'part', id: 'header', title: 'Header', path: '---' },
     { kind: 'part', id: 'footer', title: 'Footer', path: '---' },
+    ...templateEntries(store.current),
     ...pageEntries(routes),
   ];
-  // Header / Footer stay picked; otherwise follow the page shown in the preview.
+  // Header / Footer stay picked; otherwise follow the page (or template) shown in the preview.
   if (ui.target?.kind !== 'part') ui.target = shownPage(path);
 }
 
+/** The item templates (content/templates/t-….json): { kind: 'item-template', id, title, path }. */
+function templateEntries(files) {
+  return Object.keys(files)
+    .map((f) => templateIdOf(f))
+    .filter(Boolean)
+    .sort()
+    .map((id) => ({
+      kind: 'item-template',
+      id,
+      title: files[templateFile(id)]?.label || id,
+      path: templatePreviewPath(id),
+    }));
+}
+
+/** Open item template `id` (the List panel's Edit template): its editor, the pages list closed. */
+ui.openTemplate = (id) => {
+  const entry = ui.pages.find((i) => i.kind === 'item-template' && i.id === id);
+  if (!entry)
+    return void toast(`No template ${id} (content/templates/${id}.json)`, { kind: 'error' });
+  closeWidgetPopup();
+  ui.pagesWin = { ...ui.pagesWin, open: false };
+  if (ui.panel !== 'nav') setPanel('nav');
+  pickTarget(entry);
+};
+
 /** The page entry of the page shown (a template page: the template's entry). */
 function shownPage(path = bridge.path() || '/') {
+  const tpl = templateOfPath(path);
+  const own = tpl && ui.pages.find((i) => i.kind === 'item-template' && i.id === tpl);
+  if (own) return own;
   const shows = (i) => i.path === path || i.items?.some((it) => it.path === path);
   return (
     ui.pages.find((i) => i.kind === 'page' && shows(i)) || ui.pages.find((i) => i.kind === 'page')
@@ -322,6 +353,7 @@ function pickTarget(item, path) {
   if (!item) return;
   ui.target = item;
   applyPart();
+  if (item.kind === 'item-template') return void bridge.navigate(item.path);
   if (item.kind !== 'page') return;
   const items = item.items;
   const has = (p) => !!p && items.some((i) => i.path === p);
@@ -584,7 +616,7 @@ bridge.on('navigate', (path) => {
   url.pathname = path; // the editor's URL is the previewed page's (src/editor/lib/editor-url.js)
   history.replaceState(null, '', editorHref(url));
   // Keep Header/Footer selection; only sync target when browsing pages.
-  if (ui.target?.kind !== 'part') {
+  if (ui.target?.kind !== 'part' && !templateOfPath(path)) {
     ui.target = { kind: 'page', path, title: path === '/' ? 'Home' : path };
   }
   updatePages();
@@ -708,9 +740,12 @@ store.on(({ files, source: src, structure }) => {
   const inPlace = roots.map((r) => r.dataset.pageFile);
   if (files.some((f) => f !== ANIMATIONS))
     pushDraft({
-      refresh: structure && files.some((f) => !inPlace.includes(f)),
+      // an item template: every List using it renders again (the template editor's preview too)
+      refresh: (structure && files.some((f) => !inPlace.includes(f))) || files.some(templateIdOf),
       sources: files.some((f) => sourceIdOf(f) || schemaIdOf(f)),
     });
+  // a template's label: its row in the pages list
+  if (files.some(templateIdOf)) updatePages();
   // After a save the files on disk caught up with us: nothing changes in the preview.
   if (src === 'saved') return;
   const textChanged = files.some((f) => f !== ANIMATIONS);

@@ -33,7 +33,7 @@
   import { ui } from './ui.svelte.js';
   import { toast } from './toasts.svelte.js';
   import { listDrag, rowsOf } from './list-drag.svelte.js';
-  import { NAV, isTemplate, pageFile } from '../../site/files.js';
+  import { NAV, isTemplate, pageFile, templateFile } from '../../site/files.js';
   import { parentId, pathOfId } from '../../site/routes.js';
   import {
     crumbsOf,
@@ -64,6 +64,18 @@
     { id: 'header', title: 'Header', sub: 'The menu and its labels' },
     { id: 'footer', title: 'Footer', sub: 'Its sections and widgets' },
   ];
+  // the item templates (content/templates/t-….json, main.js templateEntries): site parts too
+  const templates = $derived(
+    ui.pages
+      .filter((p) => p.kind === 'item-template')
+      .map((p) => ({
+        id: p.id,
+        title: p.title,
+        sub: `content/templates/${p.id}.json`,
+        part: true,
+        itemTemplate: true,
+      })),
+  );
   let filter = $state('all');
   let sel = $state('');
   let asking = $state(''); // the row whose delete is asked
@@ -326,6 +338,7 @@
     >
       <span class="prow__title">
         {#if r.template}<i class="fa-solid fa-layer-group" aria-hidden="true"></i>{/if}
+        {#if r.itemTemplate}<i class="fa-solid fa-clone" aria-hidden="true"></i>{/if}
         <span>{r.title}</span>
         {#if tag}
           <span
@@ -335,7 +348,7 @@
               : null}>{tag.text}</span
           >
         {/if}
-        {#if !r.part && live.changed(pageFile(r.id), '')}
+        {#if r.itemTemplate ? live.changed(templateFile(r.id), '') : !r.part && live.changed(pageFile(r.id), '')}
           <i class="prow__dot" role="img" title="Unsaved changes" aria-label="Unsaved changes"></i>
         {/if}
       </span>
@@ -585,6 +598,13 @@
     <ul class="pl-rows">
       {#each SITE_PARTS as p (p.id)}{@render row({ ...p, part: true })}{/each}
     </ul>
+    {@render head('Templates', templates.length)}
+    <ul class="pl-rows" data-templates>
+      {#each templates as p (p.id)}{@render row(p)}{/each}
+    </ul>
+    {#if !templates.length}
+      <p class="hint small">No templates yet: a List’s Duplicate makes one.</p>
+    {/if}
   {/if}
 </div>
 
