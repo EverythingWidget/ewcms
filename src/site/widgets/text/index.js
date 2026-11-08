@@ -4,7 +4,7 @@
  */
 import { html, editable } from '../../helpers.js';
 import { checkBody, renderBody } from '../../text.js';
-import { knownName, partText } from '../../layout/parts.js';
+import { knownName, partLabel, partText } from '../../layout/parts.js';
 import { keysOf } from '../../layout/bindings.js';
 import { hrefOf } from '../../hrefs.js';
 
@@ -41,13 +41,14 @@ export const text = {
       sources: ctx.sources,
       keys: keysOf(ctx, widget.source),
       items: widget.scopeItems, // {items}: a list widget's own items (a List's item: its List's)
+      parent: widget.parent, // an inner List's item: the outer item ({ of: "parent" } parts)
     };
     const known = editable ? (name) => knownName(name, scope) : null;
     const names = editable
       ? ` data-names="${[...new Set([...(scope.keys || []), ...Object.keys(widget.item || {}), ...(widget.scopeItems ? ['items'] : []), ...Object.keys(ctx.sources || {})])].join(' ')}"`
       : '';
     // an empty property: nothing on the site, its {name} (dimmed) in the editor
-    const value = (r) => partText(r, scope) || (editable ? `{${r.property}}` : '');
+    const value = (r) => partText(r, scope) || (editable ? partLabel(r) : '');
     const firstTitle = body.findIndex((l) => l?.style === 'title');
     const own = typeof s.motion?.animation === 'string';
     const attrs = (i, style) =>

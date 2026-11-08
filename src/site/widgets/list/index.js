@@ -55,6 +55,7 @@ import {
 import { isTemplateId } from '../../files.js';
 import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from './handmade.js';
 import { presetStyle, styleMarkup } from './item-style.js';
+import { innerItems, innerKeys } from './nested.js';
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
 const GAPS = ['s', 'm', 'l'];
@@ -62,6 +63,34 @@ const GAPS = ['s', 'm', 'l'];
 /** One widget of an item's template, filled from `item` (scope); '' when it is left out. */
 function itemWidget(w, ctx, scope, { hide, api }) {
   const def = WIDGET_TYPES[w.type];
+  if (w.type === 'list') {
+    // an inner List (./nested.js): its items from this item; a third level never renders
+    if (api.depth >= 2) {
+      warnOnce(
+        `${contentPath(api.file)}: List ${api.id}: a list inside a list's template can't hold another list (two levels at most)`,
+        'layout',
+      );
+      return { html: '', missing: [] };
+    }
+    const { source, items } = innerItems(ctx, w.source, scope.item);
+    const out = def.render(w, ctx, {
+      id: `${api.id}-${w.role || 'list'}`,
+      file: api.file,
+      source,
+      items,
+      item: items[0] ?? null,
+      index: 0,
+      indexOf: (it) => items.indexOf(it),
+      parent: scope.item,
+      keys: innerKeys(w.source),
+      depth: 2,
+      ed: () => '',
+    });
+    return {
+      html: `<div class="li__w li__inner${w.role ? ` li__${w.role}` : ''}">${out}</div>`,
+      missing: [],
+    };
+  }
   const gone = missingState(ctx, w, def, scope, { hide });
   if (gone.skip) return { html: '', missing: gone.missing };
   const data = resolveWidget(w, def, { ...scope, placeholders: editable });
@@ -270,7 +299,7 @@ export const list = {
     const items = widget.items || [];
     const keys = handmade
       ? new Set(['title', 'photo', 'unit', 'count', 'source'])
-      : keysOf(ctx, source);
+      : widget.keys || keysOf(ctx, source);
     const shape = own ? 'template' : preset.id.slice('preset:'.length);
     const sep = t(ctx, 'list.sep');
     // the template, once per List: its widgets, and whether its photo sits apart from the text
@@ -279,7 +308,8 @@ export const list = {
       ? structuredClone(own.widgets)
       : presetWidgets(preset.id, ctx, source, {
           open: t(ctx, 'list.open'),
-          handmade,
+          // an inner List on a property ({ photo, title, index } items): named as hand-made
+          handmade: handmade || !!widget.keys,
           properties: c.properties,
         });
     const link = own ? own.link !== false : preset.link;
@@ -296,7 +326,8 @@ export const list = {
       const at = widget.indexOf ? widget.indexOf(item) : i;
       const itemHrefLink = !handmade && item?.id ? { item: { source, id: item.id } } : undefined;
       const handmadeHref = handmade ? item.href || '' : '';
-      const scope = { item, keys, sources: ctx.sources, items };
+      // parent: an inner List's outer item ({ of: "parent" } parts, ./nested.js)
+      const scope = { item, keys, sources: ctx.sources, items, parent: widget.parent };
       const api = {
         id: widget.id,
         file: widget.file,
@@ -304,6 +335,8 @@ export const list = {
         items: [item],
         item,
         index: at,
+        parent: widget.parent,
+        depth: widget.depth || 1,
       };
       const ws = template.map((w) => {
         const filled = forItem(w, scope, itemHrefLink, sep, { handmade, href: handmadeHref });

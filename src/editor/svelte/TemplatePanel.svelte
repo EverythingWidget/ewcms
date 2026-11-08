@@ -19,13 +19,17 @@
   import ListField from './ListField.svelte';
   import Button from './Button.svelte';
   import Tabs from './Tabs.svelte';
-  import { templateFile } from '../../site/files.js';
+  import { sourceIds as sourceIdsOf, templateFile } from '../../site/files.js';
   import { LINE_STYLES } from '../../site/text.js';
   import { schemaOf } from '../../site/schemas.js';
   import { sampleSource } from '../../site/widgets/list/template-preview.js';
   import { STYLE_ROWS } from '../lib/item-style-rows.js';
   import { isObject } from '../../site/is.js';
+  import { PRESETS } from '../../site/widgets/list/presets.js';
+  import { innerChoice, innerTemplates } from '../../site/widgets/list/nested.js';
   import {
+    ITEMS_FROM,
+    innerSourceFor,
     STACK_TYPES,
     keepMarks,
     moveStack,
@@ -53,6 +57,69 @@
   const used = $derived(templateProperties(widgets));
   const binds = $derived([...new Set([...own, ...used])].map((k) => ({ value: k, label: k })));
   const names = $derived(new Set(binds.map((b) => b.value)));
+
+  // ---- nested Lists (src/site/widgets/list/nested.js): two levels at most
+  const templates = $derived(live.content?.templates || {});
+  // a template another template's inner List uses: a list here would be a third level
+  const outer = $derived(
+    Object.entries(templates).find(([, t]) => innerTemplates(t).includes(id))?.[0] || '',
+  );
+  // its outer item's properties: {parent: name} binds
+  const parentFrom = $derived(outer ? sampleSource(live.content, templates[outer]) : '');
+  const parentKeys = $derived(
+    parentFrom ? (schemaOf(live.content, parentFrom)?.properties || []).map((p) => p.key) : [],
+  );
+  const allBinds = $derived([
+    ...binds,
+    ...parentKeys.map((k) => ({ value: `parent:${k}`, label: `parent: ${k}` })),
+  ]);
+  // the item's list properties (Photos, or any whose value is a list)
+  const listProps = $derived(
+    (schema?.properties || [])
+      .filter(
+        (p) =>
+          p.type === 'photos' || (from && Array.isArray(live.content.sources[from]?.[0]?.[p.key])),
+      )
+      .map((p) => [p.key, p.label || p.key]),
+  );
+  const sourceIds = $derived(sourceIdsOf(live.store.current));
+  const propsOf = (src) =>
+    (schemaOf(live.content, src)?.properties || []).map((p) => [p.key, p.label || p.key]);
+  // presets, then the templates: one that loops is left out, one that would be a third level
+  // is there, disabled, with why
+  const innerOptions = $derived([
+    ...PRESETS.map((p) => [p.id, p.label]),
+    ...Object.entries(templates)
+      .filter(([t]) => t !== id && innerChoice(templates, id, t) !== 'loop')
+      .map(([t, tp]) =>
+        innerChoice(templates, id, t) === 'deep'
+          ? [t, tp.label || t, { disabled: true, hint: 'It holds a list: a third level' }]
+          : [t, tp.label || t],
+      ),
+  ]);
+  const COLUMNS = ['1', '2', '3', '4', '5', '6'].map((n) => [n, n]);
+  const GAPS = [
+    ['s', 'S'],
+    ['m', 'M'],
+    ['l', 'L'],
+  ];
+  function setInner(i, mode) {
+    const prev = widgets[i].source || {};
+    set(
+      `/widgets/${i}/source`,
+      innerSourceFor(mode, prev, {
+        listProperty: listProps[0]?.[0] || 'photos',
+        source: from || sourceIds[0] || '',
+        own: schema?.slug || 'slug',
+      }),
+      true,
+    );
+  }
+  function setRule(i, key, v) {
+    const where = structuredClone(widgets[i].source?.where || { op: 'and', rules: [{}] });
+    where.rules[0] = { ...where.rules[0], [key]: v };
+    set(`/widgets/${i}/source/where`, where, true);
+  }
 
   const TABS = [
     ['widgets', 'Widgets'],
@@ -101,7 +168,15 @@
     set(`/widgets/${i}/role`, role || undefined);
   }
   const add = (type) =>
-    setWidgets([...widgets, newStackWidget(type, used[0] || schema?.title || 'title')]);
+    setWidgets([
+      ...widgets,
+      newStackWidget(
+        type,
+        used[0] || schema?.title || 'title',
+        'View',
+        listProps[0]?.[0] || 'photos',
+      ),
+    ]);
 
   // ---- Properties: a rename commits on Enter or leaving the box (not per letter)
   let drafts = $state({});
@@ -186,7 +261,7 @@
                 edit={`${file}#/widgets/${i}/body/${j}/text`}
                 label="Text"
                 value={l.text}
-                {binds}
+                binds={allBinds}
                 {names}
                 formats
                 {from}
@@ -220,18 +295,95 @@
             edit={`${file}#/widgets/${i}/src`}
             label="Photo"
             value={w.src}
-            {binds}
+            binds={allBinds}
             {names}
             formats
             {from}
             onvalue={(v) => set(`/widgets/${i}/src`, v)}
           />
+        {:else if w.type === 'list'}
+          {@const src = w.source || {}}
+          {@const mode = src.mode === 'item' ? 'all' : src.mode}
+          <!-- every row always there (no shift): the ones the Items from doesn't use disabled -->
+          <Field
+            edit={`${file}#/widgets/${i}/source/mode`}
+            label="Items from"
+            type="select"
+            value={mode}
+            options={ITEMS_FROM}
+            onvalue={(v) => setInner(i, v)}
+          />
+          <Field
+            edit={`${file}#/widgets/${i}/source/property`}
+            label="Property"
+            type="select"
+            value={src.property || ''}
+            options={listProps.length ? listProps : [['', 'No list property in the sample']]}
+            disabled={mode !== 'property'}
+            onvalue={(v) => set(`/widgets/${i}/source/property`, v, true)}
+          />
+          <Field
+            edit={`${file}#/widgets/${i}/source/from`}
+            label="Source"
+            type="select"
+            value={src.from || ''}
+            options={sourceIds.map((n) => [n, schemaOf(live.content, n)?.label || n])}
+            disabled={mode === 'property'}
+            onvalue={(v) => set(`/widgets/${i}/source/from`, v, true)}
+          />
+          <div class="tp__match">
+            <Field
+              edit={`${file}#/widgets/${i}/source/where/rules/0/property`}
+              label="Match: their property"
+              type="select"
+              value={src.where?.rules?.[0]?.property || ''}
+              options={propsOf(src.from)}
+              disabled={mode !== 'match'}
+              onvalue={(v) => setRule(i, 'property', v)}
+            />
+            <span class="tp__is">is this item’s</span>
+            <Field
+              edit={`${file}#/widgets/${i}/source/where/rules/0/parent`}
+              label="Property"
+              type="select"
+              value={src.where?.rules?.[0]?.parent || ''}
+              options={propsOf(from)}
+              disabled={mode !== 'match'}
+              onvalue={(v) => setRule(i, 'parent', v)}
+            />
+          </div>
+          <Field
+            edit={`${file}#/widgets/${i}/config/template`}
+            label="Template"
+            type="select"
+            value={w.config?.template || 'preset:card'}
+            options={innerOptions}
+            onvalue={(v) => set(`/widgets/${i}/config/template`, v, true)}
+          />
+          <div class="tp__pair">
+            <Field
+              edit={`${file}#/widgets/${i}/config/columns`}
+              label="Columns"
+              type="select"
+              value={w.config?.columns || '3'}
+              options={COLUMNS}
+              onvalue={(v) => set(`/widgets/${i}/config/columns`, v)}
+            />
+            <Field
+              edit={`${file}#/widgets/${i}/config/gap`}
+              label="Space between items"
+              type="select"
+              value={w.config?.gap || 'm'}
+              options={GAPS}
+              onvalue={(v) => set(`/widgets/${i}/config/gap`, v)}
+            />
+          </div>
         {:else if w.type === 'button'}
           <Field
             edit={`${file}#/widgets/${i}/label`}
             label="Label"
             value={w.label}
-            {binds}
+            binds={allBinds}
             {names}
             formats
             {from}
@@ -249,7 +401,15 @@
     </ListField>
     <div class="tp__add" role="group" aria-label="Add a widget">
       {#each STACK_TYPES.filter(([t]) => t !== 'text') as [t, label] (t)}
-        <Button size="small" icon="plus" onclick={() => add(t)}>Add {label.toLowerCase()}</Button>
+        <Button
+          size="small"
+          icon="plus"
+          disabled={t === 'list' && !!outer}
+          title={t === 'list' && outer
+            ? 'This template is shown inside another List: a list here would be a third level'
+            : undefined}
+          onclick={() => add(t)}>Add {label.toLowerCase()}</Button
+        >
       {/each}
     </div>
   {:else if tab === 'style'}
@@ -315,8 +475,28 @@
     justify-self: start;
   }
 
+  .tp__match {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: var(--space-2);
+    align-items: end;
+  }
+
+  .tp__is {
+    height: var(--size-control);
+    line-height: var(--size-control);
+    color: var(--c-text-muted);
+  }
+
+  .tp__pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
   .tp__add {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-2);
   }
 

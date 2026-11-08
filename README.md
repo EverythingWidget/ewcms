@@ -870,6 +870,37 @@ rule work as anywhere.
   **Save** writes the template file (validated as above); every List using it shows the change.
   Templates are site-wide, shared by every language.
 
+- **Nested Lists** (two levels): a template's stack can hold a `list` widget, an inner List
+  filled per item. **Add list** in the template editor adds one (disabled, with its reason, in a
+  template that is itself shown inside another List). Its `source` is one of:
+
+  | `source`                                                                                                                 | Items from                     | Items                                                                                                                          |
+  | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+  | `{ "mode": "property", "property": "photos" }`                                                                           | A property of this item        | each entry of a list property of the outer item: a photo `{ photo, index }`, a text `{ title, index }` (`index` "01", "02", …) |
+  | `{ "mode": "match", "from": "shoots", "where": { "op": "and", "rules": [{ "property": "person", "parent": "slug" }] } }` | A source, matched to this item | that source's items whose `person` is the outer item's `slug` (`"op": "or"`: any rule)                                         |
+  | `{ "mode": "all", "from": "places" }` / `{ "mode": "item", … }`                                                          | A source                       | a fixed source, as on a page                                                                                                   |
+
+  ```json
+  {
+    "type": "list",
+    "role": "photos",
+    "source": { "mode": "property", "property": "photos" },
+    "config": { "template": "t-ph00", "columns": "4", "gap": "s" }
+  }
+  ```
+
+  Its settings are `template`, `columns` and `gap` only (no limit). Its rows in the template
+  editor are always there, the ones its **Items from** doesn't use disabled: **Property**,
+  **Source**, **Match: their property** _is this item's_ **Property**, **Template**, **Columns**,
+  **Space between items**. Its widgets reach the outer item with `{ "property": "title", "of":
+"parent" }`, the chip `{parent: title}` (type `{parent: title}`, or pick it under the item's
+  properties). Two levels at most: an inner List's template can't hold a List, and a template
+  can't lead back to itself ("This list can't use Cards, because Cards already contains it.").
+  `ewcms check` and Save reject both; the editor leaves a loop out of the Template picker and
+  shows a third level disabled; a deeper List never renders (it warns). These source forms are
+  for an inner List only; a page's List keeps its own. The property form is the shape a later
+  top-level "One item per" can reuse.
+
 - **Item style** (a template's `style`; the template editor's **Style** tab): how each item
   looks, over the theme's `--item-*` tokens. Every key is optional; a picker's first option,
   **Theme**, leaves the key out of the file (never saved). Sizes are px on the 4px grid:

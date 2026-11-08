@@ -104,12 +104,24 @@ export const isEmpty = (v) => v === undefined || v === null || v === '';
 export const asText = (v) =>
   Array.isArray(v) ? String(v.length) : isEmpty(v) || typeof v === 'object' ? '' : String(v);
 
+/**
+ * The scope a part reads: its own, or the outer item's for { "of": "parent" } (an inner List's
+ * widget reaching the item its List sits in: widgets/list/nested.js).
+ */
+export const scopeFor = (part, scope = {}) =>
+  part?.of === 'parent' ? { item: scope.parent ?? null, sources: scope.sources } : scope;
+
+/** A part's label: {title}, an outer item's {parent: title}. */
+export const partLabel = (p) =>
+  p?.of === 'parent' ? `{parent: ${p.property}}` : `{${p.property}}`;
+
 /** A property part's text ('' when empty), in its format. */
 export function partText(part, scope) {
-  const v = asText(propertyValue(part.property, scope));
+  const v = asText(propertyValue(part.property, scopeFor(part, scope)));
   if (v === '') return '';
   return typeof part.format === 'string' ? part.format.replaceAll('{value}', v) : v;
 }
 
 /** Is a property part empty (missing, null or '')? */
-export const partEmpty = (part, scope) => isEmpty(propertyValue(part.property, scope));
+export const partEmpty = (part, scope) =>
+  isEmpty(propertyValue(part.property, scopeFor(part, scope)));

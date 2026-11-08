@@ -11,11 +11,20 @@ export const STACK_TYPES = [
   ['text', 'Text'],
   ['photo', 'Photo'],
   ['button', 'Button'],
+  ['list', 'List'],
 ];
 export const typeLabel = (type) => STACK_TYPES.find(([t]) => t === type)?.[1] || type;
 
 /** A new widget for the stack (Add): its first line, photo or button bound to `property`. */
-export function newStackWidget(type, property = 'title', open = 'View') {
+export function newStackWidget(type, property = 'title', open = 'View', listProperty = 'photos') {
+  // an inner List (two levels: src/site/widgets/list/nested.js): the item's list property
+  if (type === 'list')
+    return {
+      type: 'list',
+      role: 'list',
+      source: { mode: 'property', property: listProperty },
+      config: { template: 'preset:card', columns: '4', gap: 's' },
+    };
   if (type === 'photo') return { type: 'photo', src: [{ property }] };
   if (type === 'button') return { type: 'button', label: open, itemLink: true, config: {} };
   return { type: 'text', body: [{ style: 'paragraph', text: [{ property }] }] };
@@ -101,4 +110,30 @@ export function keepMarks(prev, next) {
     else out.push({ t: tok.c, ...attrs });
   });
   return out;
+}
+
+/** The inner List's "Items from" options (its source's mode; one item of a source shows as A source). */
+export const ITEMS_FROM = [
+  ['property', 'A property of this item'],
+  ['all', 'A source'],
+  ['match', 'A source, matched to this item'],
+];
+
+/**
+ * An inner List's source for a new "Items from" (`mode`), keeping what fits from `prev`:
+ * property (the item's first list property), all (a source), match (one rule).
+ */
+export function innerSourceFor(
+  mode,
+  prev = {},
+  { listProperty = 'photos', source = '', own = 'slug', theirs = '' } = {},
+) {
+  const from = prev.from || source;
+  if (mode === 'property') return { mode, property: prev.property || listProperty };
+  if (mode === 'all') return { mode, from };
+  return {
+    mode: 'match',
+    from,
+    where: prev.where || { op: 'and', rules: [{ property: theirs || own, parent: own }] },
+  };
 }

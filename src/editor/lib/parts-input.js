@@ -3,13 +3,23 @@
  * render a value as text and chips, read it back, turn a typed {name} into a chip.
  */
 import { esc } from '../../site/helpers.js';
-import { isPropertyPart, isParts } from '../../site/layout/parts.js';
+import { isPropertyPart, isParts, partLabel } from '../../site/layout/parts.js';
 
 const unknown = (names, name) => !!names && !names.has(name);
 
 /** A property's chip: {name}; a name not in `names` a warning chip. */
-export const chipHtml = (p, names) =>
-  `<span class="pin__chip${unknown(names, p.property) ? ' is-unknown' : ''}" data-property="${esc(p.property)}"${p.format ? ` data-format="${esc(p.format)}"` : ''} contenteditable="false"${unknown(names, p.property) ? ` title="No property or source “${esc(p.property)}”"` : ''}>{${esc(p.property)}}</span>`;
+export const chipHtml = (p, names) => {
+  // an outer item's property ({ of: "parent" }, a nested List's): {parent: title}, never a warning
+  const parent = p.of === 'parent';
+  const bad = !parent && unknown(names, p.property);
+  return `<span class="pin__chip${bad ? ' is-unknown' : ''}" data-property="${esc(p.property)}"${p.format ? ` data-format="${esc(p.format)}"` : ''}${parent ? ' data-of="parent"' : ''} contenteditable="false"${bad ? ` title="No property or source “${esc(p.property)}”"` : ''}>${esc(partLabel(p))}</span>`;
+};
+
+/** A chip's name as the + Property menu and typing give it: "title", or "parent:title". */
+export const partOfName = (name) =>
+  /^parent:\s*/.test(name)
+    ? { property: name.replace(/^parent:\s*/, ''), of: 'parent' }
+    : { property: name };
 
 const partsOf = (v) => (isParts(v) ? v : typeof v === 'string' && v ? [{ t: v }] : []);
 
@@ -35,6 +45,7 @@ export function readParts(el) {
       return out.push({
         property: n.dataset.property,
         ...(n.dataset.format ? { format: n.dataset.format } : {}),
+        ...(n.dataset.of === 'parent' ? { of: 'parent' } : {}),
       });
     if (n.tagName === 'BR') return n.nextSibling ? text('\n') : undefined;
     if (n.tagName === 'DIV' && n.previousSibling) text('\n');
@@ -46,7 +57,7 @@ export function readParts(el) {
 
 const chipNode = (doc, name, names) => {
   const tmp = doc.createElement('span');
-  tmp.innerHTML = chipHtml({ property: name }, names);
+  tmp.innerHTML = chipHtml(partOfName(name), names);
   return tmp.firstChild;
 };
 
@@ -69,7 +80,7 @@ export function typedChip(el, names) {
     sel.addRange(r);
     return true;
   }
-  const m = before.match(/(\{+)([\w-]+)\}$/);
+  const m = before.match(/(\{+)((?:parent:\s*)?[\w-]+)\}$/);
   if (!m) return false;
   const braces = m[1].length;
   const start = sel.anchorOffset - m[0].length;

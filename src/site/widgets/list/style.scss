@@ -243,3 +243,15 @@ a.li:not(.li--hover-none):hover .li__title .ts {
   font-size: 15px;
   line-height: 1.7;
 }
+
+// ---- an inner List (nested.js): the outer item's hover doesn't reach its items
+.li__inner {
+  .li:not(:hover) .li__photo img,
+  .li:not(:hover) .li__title .ts {
+    transform: none;
+  }
+
+  a.li:not(:hover) .li__title .ts {
+    color: inherit;
+  }
+}

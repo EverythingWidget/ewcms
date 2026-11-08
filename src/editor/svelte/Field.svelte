@@ -25,6 +25,7 @@
   import { parseInput as parseValue } from '../../site/property-types.js';
   import { isParts, isWhole } from '../../site/layout/parts.js';
   import PartsInput from './PartsInput.svelte';
+  import { partOfName } from '../lib/parts-input.js';
   import { showValue } from '../lib/show-value.js';
   import Button from './Button.svelte';
   import Select from './Select.svelte';
@@ -92,7 +93,10 @@
 
   // ---- bindings: a value with properties (parts)
   const parts = $derived(isParts(value));
-  const whole = $derived(isWhole(value) ? value[0].property : null);
+  // an outer item's ({ of: "parent" }): "parent:title", as its option's value
+  const whole = $derived(
+    isWhole(value) ? (value[0].of === 'parent' ? 'parent:' : '') + value[0].property : null,
+  );
   // a text field holds chips (PartsInput); any other type's field shows the item's, read only
   const chips = $derived(!!binds && formats);
   const bound = $derived(parts && !chips);
@@ -142,7 +146,7 @@
     if (v === MIXED) return;
     if (v === CUSTOM)
       return onvalue(typeof resolved === 'string' && parts ? resolved : parts ? '' : (value ?? ''));
-    onvalue([{ property: v.slice(2) }]);
+    onvalue([partOfName(v.slice(2))]);
   }
   const add = { insert: null }; // PartsInput's: a chip at its caret
   const addOptions = $derived([
@@ -315,7 +319,7 @@
       value={value ?? ''}
       placeholder="Pick…"
       {disabled}
-      options={options.map(([v, text]) => ({ value: v, label: text }))}
+      options={options.map(([v, text, more]) => ({ value: v, label: text, ...more }))}
       onchange={(v) => onvalue(v)}
     />
   {:else if type === 'boolean'}

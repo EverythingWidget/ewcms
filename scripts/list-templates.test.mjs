@@ -79,7 +79,10 @@ test('a valid template passes; an invalid one is rejected with a clear message',
     msg(card({ widgets: [{ type: 'text', source: { mode: 'all', from: 'people' } }] })),
     /no "source" in a template/,
   );
-  assert.match(msg(card({ widgets: [{ type: 'list' }] })), /a List inside a template comes later/);
+  assert.match(
+    msg(card({ widgets: [{ type: 'list' }] })),
+    /widgets\.0\.source must be \{ "mode": "property"/,
+  );
   assert.match(msg(card({ widgets: [{ type: 'text', id: 'w-aaaa' }] })), /no "id"/);
   assert.match(
     msg(card({ widgets: [{ type: 'text', itemLink: true }] })),

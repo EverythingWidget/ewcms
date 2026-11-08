@@ -53,6 +53,7 @@ function readRuns(node, marks = [], link = null, self = false) {
       out.push({
         property: n.dataset.property,
         ...(n.dataset.format ? { format: n.dataset.format } : {}),
+        ...(n.dataset.of === 'parent' ? { of: 'parent' } : {}),
       });
       return;
     }

@@ -57,6 +57,7 @@ import { isPropertyPart, isParts, isWhole, NAME } from './layout/parts.js';
 import { FORMAT_TYPES, storedAs } from './property-types.js';
 import { isObject } from './is.js';
 import { styleProblems } from './widgets/list/item-style.js';
+import { innerSourceProblems } from './widgets/list/nested.js';
 
 const typeOf = (v) =>
   v === null
@@ -680,9 +681,16 @@ export function checkItemTemplate(d) {
           .filter((t) => t !== 'list')
           .join(', ')})`,
       );
-    if (w.type === 'list')
-      return out.push(`${at}: a List inside a template comes later (nested Lists)`);
-    if (w.source !== undefined)
+    if (w.type === 'list') {
+      // an inner List (two levels: widgets/list/nested.js; loops and depth: bindingProblems)
+      out.push(...innerSourceProblems(w.source, at));
+      const tp = w.config?.template;
+      if (tp !== undefined && !PRESET_FROM.includes(tp) && !isTemplateId(tp))
+        out.push(`${at}.config.template must be a preset or a template id ("t-…")`);
+      for (const k of Object.keys(w.config || {}))
+        if (!['template', 'columns', 'gap', 'properties'].includes(k))
+          out.push(`${at}.config.${k} is not an inner List setting (template, columns, gap)`);
+    } else if (w.source !== undefined)
       out.push(`${at}: no "source" in a template: the List gives each copy its item`);
     for (const k of ['id', 'layout', 'z'])
       if (w[k] !== undefined)

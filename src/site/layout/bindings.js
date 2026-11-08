@@ -24,12 +24,22 @@
  * setting type.
  */
 import { schemaOf } from '../schemas.js';
-import { contentPath, pageFile } from '../files.js';
+import { contentPath, pageFile, templateIdOf } from '../files.js';
 import { isObject } from '../is.js';
 import { eachWidget } from './ids.js';
 import { MODES, sourceOf } from './source.js';
 import { BIND_TYPES, TEXT_TYPES } from '../property-types.js';
-import { ITEMS, isPropertyPart, isParts, isWhole, partEmpty, partText } from './parts.js';
+import { nestingProblems } from '../widgets/list/nested.js';
+import {
+  ITEMS,
+  isPropertyPart,
+  isParts,
+  isWhole,
+  partEmpty,
+  partLabel,
+  partText,
+  scopeFor,
+} from './parts.js';
 
 /**
  * The bind type of a setting's definition: its type, 'link' for a config link,
@@ -60,16 +70,14 @@ export function resolve(value, { def, placeholders = false, ...scope } = {}) {
   if (isParts(value)) {
     if (isWhole(value) && !text) {
       const name = value[0].property;
-      const v = partEmpty(value[0], scope) ? empty(def) : scope.item?.[name];
+      const v = partEmpty(value[0], scope) ? empty(def) : scopeFor(value[0], scope).item?.[name];
       if (v === undefined) return empty(def);
       // an item's photo paths in a list of { src } (e.g. the hero's placed photos)
       return Array.isArray(v) && isObject(def?.list) ? v.map((src) => ({ src })) : v;
     }
     return value
       .map((p) =>
-        isPropertyPart(p)
-          ? partText(p, scope) || (placeholders && text ? `{${p.property}}` : '')
-          : p.t,
+        isPropertyPart(p) ? partText(p, scope) || (placeholders && text ? partLabel(p) : '') : p.t,
       )
       .join('');
   }
@@ -237,5 +245,8 @@ export function bindingProblems(content, { types, files = null }) {
       }
     }
   }
+  // nested Lists (widgets/list/nested.js): loops and a third level, across the templates
+  if (!files || [...files].some((f) => templateIdOf(f)))
+    out.push(...nestingProblems(content?.templates));
   return out;
 }

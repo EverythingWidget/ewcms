@@ -211,11 +211,13 @@ function renderRun(r, { value, href, editing, known }) {
   }
   const ce = editing ? ' contenteditable="false"' : '';
   if (isProperty(r)) {
-    const v = editing ? `{${r.property}}` : value(r);
+    const parent = r.of === 'parent';
+    const v = editing ? (parent ? `{parent: ${r.property}}` : `{${r.property}}`) : value(r);
     if (!editing && v === '') return ''; // missing: nothing on the site
     const fmt = r.format ? ` data-format="${esc(r.format)}"` : '';
-    const unknown = known && !known(r.property) ? ' data-unknown' : '';
-    return `<span class="ts__chip" data-property="${esc(r.property)}"${fmt}${unknown}${ce}>${esc(v)}</span>`;
+    const of = parent ? ' data-of="parent"' : '';
+    const unknown = known && !parent && !known(r.property) ? ' data-unknown' : '';
+    return `<span class="ts__chip" data-property="${esc(r.property)}"${fmt}${of}${unknown}${ce}>${esc(v)}</span>`;
   }
   return '';
 }
