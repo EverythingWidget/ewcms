@@ -9,6 +9,7 @@
  * A source's items against its schema (required properties, types, photos) are checked by
  * checkItems (src/site/schemas.js): that needs the schema and the photos, not one file.
  */
+import { PHOTO_WIDTHS, sideBySideProblems } from './widgets/list/side-by-side.js';
 import { AREA_KEYS, storesRows } from './layout/grid.js';
 import { storedDefaults } from './defaults.js';
 import {
@@ -671,37 +672,51 @@ export function checkItemTemplate(d) {
     out.push('"widgets" must be a list of widgets (top to bottom)');
     return out;
   }
-  d.widgets.forEach((w, i) => {
-    const at = `widgets.${i}`;
-    if (!isObject(w)) return out.push(`${at} must be an object`);
-    if (RETIRED_WIDGETS[w.type]) return out.push(`${at}: ${RETIRED_WIDGETS[w.type]}`);
-    if (!WIDGET_TYPES[w.type])
-      return out.push(
-        `${at}: "${w.type}" is not a widget type (${Object.keys(WIDGET_TYPES)
-          .filter((t) => t !== 'list')
-          .join(', ')})`,
-      );
-    if (w.type === 'list') {
-      // an inner List (two levels: widgets/list/nested.js; loops and depth: bindingProblems)
-      out.push(...innerSourceProblems(w.source, at));
-      const tp = w.config?.template;
-      if (tp !== undefined && !PRESET_FROM.includes(tp) && !isTemplateId(tp))
-        out.push(`${at}.config.template must be a preset or a template id ("t-…")`);
-      for (const k of Object.keys(w.config || {}))
-        if (!['template', 'columns', 'gap', 'properties'].includes(k))
-          out.push(`${at}.config.${k} is not an inner List setting (template, columns, gap)`);
-    } else if (w.source !== undefined)
-      out.push(`${at}: no "source" in a template: the List gives each copy its item`);
-    for (const k of ['id', 'layout', 'z'])
-      if (w[k] !== undefined)
-        out.push(`${at}: no "${k}": a template's widgets stack top to bottom`);
-    if (w.role !== undefined && (typeof w.role !== 'string' || !ROLE.test(w.role)))
-      out.push(`${at}.role must be a name in lowercase letters, digits and "-"`);
-    if (w.join !== undefined && (w.type !== 'text' || typeof w.join !== 'string'))
-      out.push(`${at}.join: only a text's, a text (its first line's properties joined by it)`);
-    if (w.itemLink !== undefined && (w.type !== 'button' || w.itemLink !== true))
-      out.push(`${at}.itemLink: only a button's, true (it opens the item's page)`);
-  });
+  d.widgets.forEach((w, i) => out.push(...checkTemplateWidget(w, `widgets.${i}`)));
+  return out;
+}
+
+/** One widget of an item template at `at` (inside: in a Side by side): its problems. */
+function checkTemplateWidget(w, at, inside = false) {
+  const out = [];
+  if (!isObject(w)) return [`${at} must be an object`];
+  if (w.type === 'sideBySide') {
+    if (inside) return [`${at}: no Side by side inside a Side by side (one level)`];
+    return sideBySideProblems(w, at, (k, here) => checkTemplateWidget(k, here, true));
+  }
+  if (RETIRED_WIDGETS[w.type]) return [`${at}: ${RETIRED_WIDGETS[w.type]}`];
+  if (!WIDGET_TYPES[w.type])
+    return [
+      `${at}: "${w.type}" is not a widget type (${Object.keys(WIDGET_TYPES)
+        .filter((t) => t !== 'list')
+        .join(', ')}, sideBySide)`,
+    ];
+  if (w.type === 'list') {
+    // an inner List (two levels: widgets/list/nested.js; loops and depth: bindingProblems)
+    out.push(...innerSourceProblems(w.source, at));
+    const tp = w.config?.template;
+    if (tp !== undefined && !PRESET_FROM.includes(tp) && !isTemplateId(tp))
+      out.push(`${at}.config.template must be a preset or a template id ("t-…")`);
+    for (const k of Object.keys(w.config || {}))
+      if (!['template', 'columns', 'gap', 'properties'].includes(k))
+        out.push(`${at}.config.${k} is not an inner List setting (template, columns, gap)`);
+  } else if (w.source !== undefined)
+    out.push(`${at}: no "source" in a template: the List gives each copy its item`);
+  for (const k of ['id', 'layout', 'z'])
+    if (w[k] !== undefined) out.push(`${at}: no "${k}": a template's widgets stack top to bottom`);
+  if (w.role !== undefined && (typeof w.role !== 'string' || !ROLE.test(w.role)))
+    out.push(`${at}.role must be a name in lowercase letters, digits and "-"`);
+  if (w.join !== undefined && (w.type !== 'text' || typeof w.join !== 'string'))
+    out.push(`${at}.join: only a text's, a text (its first line's properties joined by it)`);
+  if (w.itemLink !== undefined && (w.type !== 'button' || w.itemLink !== true))
+    out.push(`${at}.itemLink: only a button's, true (it opens the item's page)`);
+
+  if (w.grow !== undefined && !inside)
+    out.push(`${at}.grow: only a widget in a Side by side fills the space`);
+  if (w.type === 'photo' && w.config?.width !== undefined) {
+    if (!inside) out.push(`${at}.config.width: a photo's width only applies in a Side by side`);
+    else if (!PHOTO_WIDTHS[w.config.width]) out.push(`${at}.config.width must be "s", "m" or "l"`);
+  }
   return out;
 }
 

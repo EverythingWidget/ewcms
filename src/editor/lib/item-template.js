@@ -12,6 +12,7 @@ export const STACK_TYPES = [
   ['photo', 'Photo'],
   ['button', 'Button'],
   ['list', 'List'],
+  ['sideBySide', 'Side by side'],
 ];
 export const typeLabel = (type) => STACK_TYPES.find(([t]) => t === type)?.[1] || type;
 
@@ -24,6 +25,16 @@ export function newStackWidget(type, property = 'title', open = 'View', listProp
       role: 'list',
       source: { mode: 'property', property: listProperty },
       config: { template: 'preset:card', columns: '4', gap: 's' },
+    };
+  // Side by side (src/site/widgets/list/side-by-side.js): {number}, then the property filling the space
+  if (type === 'sideBySide')
+    return {
+      type: 'sideBySide',
+      config: { align: 'center', spacing: 16, phone: 'wrap' },
+      widgets: [
+        { type: 'text', body: [{ style: 'label', text: [{ property: 'number' }] }] },
+        { type: 'text', grow: true, body: [{ style: 'paragraph', text: [{ property }] }] },
+      ],
     };
   if (type === 'photo') return { type: 'photo', src: [{ property }] };
   if (type === 'button') return { type: 'button', label: open, itemLink: true, config: {} };

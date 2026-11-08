@@ -873,15 +873,66 @@ rule work as anywhere.
   **Save** writes the template file (validated as above); every List using it shows the change.
   Templates are site-wide, shared by every language.
 
+- **{number}**: every List item has `number`, its place in the List as shown (after any match):
+  "01", "02" … "99", then "100". An item's own `number` property wins. In the template editor it is
+  **Number (01, 02 …)** among the item's properties. Inner Lists use the same name.
+- **Side by side** (`sideBySide`, `src/site/widgets/list/side-by-side.js`): in an item template
+  only, a group whose widgets sit on one line. **Add side by side** adds one ({number}, then a
+  property that fills the space).
+
+  ```json
+  {
+    "type": "sideBySide",
+    "role": "head",
+    "config": { "align": "baseline", "spacing": 16, "phone": "wrap" },
+    "widgets": [
+      {
+        "type": "text",
+        "role": "num",
+        "body": [{ "style": "label", "text": [{ "property": "number" }] }]
+      },
+      {
+        "type": "text",
+        "role": "title",
+        "grow": true,
+        "body": [{ "style": "heading", "text": [{ "property": "title" }] }]
+      },
+      {
+        "type": "text",
+        "role": "kind",
+        "body": [{ "style": "label", "text": [{ "property": "type" }] }]
+      },
+      {
+        "type": "text",
+        "role": "year",
+        "body": [{ "style": "label", "text": [{ "property": "year" }] }]
+      }
+    ]
+  }
+  ```
+
+  | Key                      | Values                                            | Label                                                                                              |
+  | ------------------------ | ------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+  | `config.align`           | `top`, `center` (default), `bottom`, `baseline`   | **Align**: Top / Middle / Bottom / Baseline                                                        |
+  | `config.spacing`         | 0, 4, 8, 12, 16 (default), 24, 32 (px)            | **Space between**                                                                                  |
+  | `config.phone`           | `wrap` (default), `stack`, `keep`                 | **On a phone**: Wrap / Stack / Keep on one line (texts cut with …), at the List's one-column width |
+  | a widget's `grow`        | `true` (one per Side by side)                     | **Fill the space**: it takes the space left                                                        |
+  | a photo's `config.width` | `s` 64 px, `m` 96 px, `l` 160 px (else its share) | **Photo width**: Small / Medium / Large                                                            |
+
+  Rules (`ewcms check`, Save; the editor disables what doesn't fit): 2–6 widgets, each a text,
+  photo or button; no Side by side inside one; no List in one (it needs the whole width); `grow`
+  and a photo's `width` only inside one. Widths come from the content and a fixed gap: nothing
+  is measured, so an item never reflows. It is not a page widget.
+
 - **Nested Lists** (two levels): a template's stack can hold a `list` widget, an inner List
   filled per item. **Add list** in the template editor adds one (disabled, with its reason, in a
   template that is itself shown inside another List). Its `source` is one of:
 
-  | `source`                                                                                                                 | Items from                     | Items                                                                                                                          |
-  | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-  | `{ "mode": "property", "property": "photos" }`                                                                           | A property of this item        | each entry of a list property of the outer item: a photo `{ photo, index }`, a text `{ title, index }` (`index` "01", "02", …) |
-  | `{ "mode": "match", "from": "shoots", "where": { "op": "and", "rules": [{ "property": "person", "parent": "slug" }] } }` | A source, matched to this item | that source's items whose `person` is the outer item's `slug` (`"op": "or"`: any rule)                                         |
-  | `{ "mode": "all", "from": "places" }` / `{ "mode": "item", … }`                                                          | A source                       | a fixed source, as on a page                                                                                                   |
+  | `source`                                                                                                                 | Items from                     | Items                                                                                                               |
+  | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+  | `{ "mode": "property", "property": "photos" }`                                                                           | A property of this item        | each entry of a list property of the outer item: a photo `{ photo }`, a text `{ title }` (each with its `{number}`) |
+  | `{ "mode": "match", "from": "shoots", "where": { "op": "and", "rules": [{ "property": "person", "parent": "slug" }] } }` | A source, matched to this item | that source's items whose `person` is the outer item's `slug` (`"op": "or"`: any rule)                              |
+  | `{ "mode": "all", "from": "places" }` / `{ "mode": "item", … }`                                                          | A source                       | a fixed source, as on a page                                                                                        |
 
   ```json
   {

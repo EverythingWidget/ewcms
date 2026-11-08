@@ -53,7 +53,7 @@ const photoTpl = tpl('Photo', [
     body: [
       {
         style: 'label',
-        text: [{ property: 'title', of: 'parent' }, { t: ' ' }, { property: 'index' }],
+        text: [{ property: 'title', of: 'parent' }, { t: ' ' }, { property: 'number' }],
       },
     ],
   },
@@ -99,7 +99,7 @@ test("the plan's test: each person's card shows its own photos as an inner grid"
   assert.ok(!seen.some((w) => /two levels/.test(w)), seen.join());
 });
 
-test('an inner template reads the outer item: {parent: title} and {index}', () => {
+test('an inner template reads the outer item: {parent: title} and {number}', () => {
   const { el, seen } = render({
     't-card': tpl('Person', [title, inner({ mode: 'property', property: 'photos' })]),
     't-ph00': photoTpl,
@@ -111,7 +111,7 @@ test('an inner template reads the outer item: {parent: title} and {index}', () =
     assert.equal(grid.getAttribute('data-cols'), '4');
     const imgs = grid.querySelectorAll('.li .li__photo img');
     assert.equal(imgs.length, people[i].photos.length, people[i].title);
-    // {parent: title} is the outer item's, {index} the photo's number
+    // {parent: title} is the outer item's, {number} the photo's number
     assert.equal(grid.querySelector('.li__facts').textContent.trim(), `${people[i].title} 01`);
   });
   assert.ok(!seen.some((w) => /two levels/.test(w)), seen.join());
@@ -140,13 +140,12 @@ test('the three source forms: a property, a source, a source matched to this ite
   const noor = people[0];
   assert.deepEqual(innerItems(base, { mode: 'property', property: 'photos' }, noor).items[0], {
     photo: noor.photos[0],
-    index: '01',
   });
   assert.deepEqual(
     innerItems(base, { mode: 'property', property: 'role' }, { role: ['a', 'b'] }).items,
     [
-      { title: 'a', index: '01' },
-      { title: 'b', index: '02' },
+      { title: 'a' },
+      { title: 'b' },
     ],
   );
   assert.equal(

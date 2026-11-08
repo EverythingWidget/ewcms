@@ -33,7 +33,7 @@
  * part shows how many (the A1 rule: an item's own "items" property wins; ../../layout/parts.js).
  * No items: the List's empty state, never nothing.
  */
-import { html, esc, editable, itemHref, warnOnce } from '../../helpers.js';
+import { html, esc, editable, itemHref, pad, warnOnce } from '../../helpers.js';
 import { contentPath } from '../../files.js';
 import { isObject } from '../../is.js';
 import { t } from '../../strings.js';
@@ -55,13 +55,14 @@ import {
 import { isTemplateId } from '../../files.js';
 import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from './handmade.js';
 import { presetStyle, styleMarkup } from './item-style.js';
+import { childClass, sideBySideHtml } from './side-by-side.js';
 import { innerItems, innerKeys } from './nested.js';
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
 const GAPS = ['s', 'm', 'l'];
 
 /** One widget of an item's template, filled from `item` (scope); '' when it is left out. */
-function itemWidget(w, ctx, scope, { hide, api }) {
+function itemWidget(w, ctx, scope, { hide, api, cls = '' }) {
   const def = WIDGET_TYPES[w.type];
   if (w.type === 'list') {
     // an inner List (./nested.js): its items from this item; a third level never renders
@@ -96,7 +97,7 @@ function itemWidget(w, ctx, scope, { hide, api }) {
   const data = resolveWidget(w, def, { ...scope, placeholders: editable });
   const out = def.render(data, ctx, { ...api, scopeItems: scope.items, ed: () => '' });
   return {
-    html: `<div class="li__w${w.role ? ` li__${w.role}` : ''}"${gone.attr}>${out}</div>`,
+    html: `<div class="li__w${w.role ? ` li__${w.role}` : ''}${cls}"${gone.attr}>${out}</div>`,
     missing: gone.all ? gone.missing : [],
   };
 }
@@ -297,9 +298,14 @@ export const list = {
     const listHide = hideMissing(c);
     // items from layout (widgetItems: source list or resolved config.items)
     const items = widget.items || [];
-    const keys = handmade
-      ? new Set(['title', 'photo', 'unit', 'count', 'source'])
-      : widget.keys || keysOf(ctx, source);
+    // {number}: every item's place in the List as shown ("01", "02" … "100"; an item's own
+    // "number" property wins)
+    const keys = new Set([
+      ...(handmade
+        ? ['title', 'photo', 'unit', 'count', 'source']
+        : widget.keys || keysOf(ctx, source) || []),
+      'number',
+    ]);
     const shape = own ? 'template' : preset.id.slice('preset:'.length);
     const sep = t(ctx, 'list.sep');
     // the template, once per List: its widgets, and whether its photo sits apart from the text
@@ -327,23 +333,37 @@ export const list = {
       const itemHrefLink = !handmade && item?.id ? { item: { source, id: item.id } } : undefined;
       const handmadeHref = handmade ? item.href || '' : '';
       // parent: an inner List's outer item ({ of: "parent" } parts, ./nested.js)
-      const scope = { item, keys, sources: ctx.sources, items, parent: widget.parent };
+      const own = isObject(item) ? item : {};
+      const numbered = own.number === undefined ? { ...own, number: pad(i + 1) } : own;
+      const scope = { item: numbered, keys, sources: ctx.sources, items, parent: widget.parent };
       const api = {
         id: widget.id,
         file: widget.file,
         source,
-        items: [item],
-        item,
+        items: [numbered],
+        item: numbered,
         index: at,
         parent: widget.parent,
         depth: widget.depth || 1,
       };
-      const ws = template.map((w) => {
+      const one = (w, cls = '') => {
         const filled = forItem(w, scope, itemHrefLink, sep, { handmade, href: handmadeHref });
         if (!filled) return { html: '', missing: [] };
         // item widgets inherit the List's missing choice unless they set their own
         const hide = filled.config?.missing !== undefined ? hideMissing(filled.config) : listHide;
-        return itemWidget(filled, ctx, scope, { hide, api });
+        return itemWidget(filled, ctx, scope, { hide, api, cls });
+      };
+      const ws = template.map((w) => {
+        if (w.type !== 'sideBySide') return one(w);
+        // Side by side (./side-by-side.js): its widgets on one line
+        const kids = (Array.isArray(w.widgets) ? w.widgets : []).map((c) => one(c, childClass(c)));
+        return {
+          html: sideBySideHtml(
+            w,
+            kids.map((k) => k.html),
+          ),
+          missing: kids.flatMap((k) => k.missing),
+        };
       });
       ws.forEach((w) => w.missing.forEach((n) => missing.set(n, (missing.get(n) || 0) + 1)));
       const parts = ws.map((w) => w.html);

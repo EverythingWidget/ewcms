@@ -255,3 +255,72 @@ a.li:not(.li--hover-none):hover .li__title .ts {
     color: inherit;
   }
 }
+
+// ---- Side by side (./side-by-side.js): its widgets on one line, a fixed gap, widths from the
+// content (nothing measured: no reflow on hover or load)
+.li__sbs {
+  display: flex;
+  gap: var(--sbs-gap, 16px);
+  align-items: center;
+  justify-self: stretch;
+
+  > .li__w {
+    flex: 0 1 auto;
+  }
+
+  > .li__grow {
+    flex: 1 1 0;
+  }
+
+  &--top {
+    align-items: flex-start;
+  }
+
+  &--bottom {
+    align-items: flex-end;
+  }
+
+  &--baseline {
+    align-items: baseline;
+  }
+
+  // a photo's fixed width (config.width: s | m | l)
+  > .li__pw {
+    flex: 0 0 auto;
+  }
+
+  > .li__pw--s {
+    width: 64px;
+  }
+
+  > .li__pw--m {
+    width: 96px;
+  }
+
+  > .li__pw--l {
+    width: 160px;
+  }
+
+  // the List's one-column width: wrap, stack or keep on one line
+  @media (width <= $bp-sm) {
+    &--wrap {
+      flex-wrap: wrap;
+    }
+
+    &--stack {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    &--keep > .li__w {
+      overflow: hidden;
+
+      .ts,
+      .text__body > * {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}

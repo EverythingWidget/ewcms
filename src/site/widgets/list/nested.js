@@ -2,8 +2,8 @@
  * Nested Lists (step 10): a List inside an item template, two levels at most. The inner
  * List's "source" takes one of three forms (only inside a template):
  *   { "mode": "property", "property": "photos" }   each entry of a list property of the
- *                     outer item: a photo path → { photo, index }, a text → { title, index },
- *                     an object as it is (+ index)
+ *                     outer item: a photo path → { photo }, a text → { title }, an object as
+ *                     it is (each with the List's {number})
  *   { "mode": "match", "from": "shoots", "where": { "op": "and", "rules":
  *       [{ "property": "person", "parent": "slug" }] } }
  *                     another source's items whose property equals the outer item's
@@ -17,19 +17,18 @@ import { isTemplateId } from '../../files.js';
 export const INNER_MODES = ['property', 'match', 'all', 'item'];
 const NAME = /^[\w-]+$/;
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
-const pad = (n) => String(n).padStart(2, '0');
-
 /** The inner List's items for the outer `item` ({ source: its source name or '', items }). */
 export function innerItems(ctx, source, item) {
   const s = isObject(source) ? source : {};
   if (s.mode === 'property') {
     const v = isObject(item) ? item[s.property] : undefined;
-    const items = (Array.isArray(v) ? v : []).map((e, i) =>
+    // {number} is the List's own (every item's, ./index.js)
+    const items = (Array.isArray(v) ? v : []).map((e) =>
       isObject(e)
-        ? { ...e, index: pad(i + 1) }
+        ? e
         : typeof e === 'string' && /\.(jpe?g|png|webp|avif|gif)$/i.test(e)
-          ? { photo: e, index: pad(i + 1) }
-          : { title: String(e ?? ''), index: pad(i + 1) },
+          ? { photo: e }
+          : { title: String(e ?? '') },
     );
     return { source: '', items };
   }
@@ -63,7 +62,7 @@ export function innerItems(ctx, source, item) {
 
 /** The keys an inner List's items have (for its binds): the property form's, else null. */
 export const innerKeys = (source) =>
-  source?.mode === 'property' ? new Set(['photo', 'title', 'index']) : null;
+  source?.mode === 'property' ? new Set(['photo', 'title']) : null;
 
 /** Problems with an inner List's source ([] when fine). */
 export function innerSourceProblems(src, at) {

@@ -27,6 +27,7 @@
   import { isObject } from '../../site/is.js';
   import { PRESETS } from '../../site/widgets/list/presets.js';
   import { innerChoice, innerTemplates } from '../../site/widgets/list/nested.js';
+  import { SBS, SBS_CHILDREN } from '../../site/widgets/list/side-by-side.js';
   import {
     ITEMS_FROM,
     innerSourceFor,
@@ -55,7 +56,13 @@
   const schema = $derived(from ? schemaOf(live.content, from) : null);
   const own = $derived((schema?.properties || []).map((p) => p.key));
   const used = $derived(templateProperties(widgets));
-  const binds = $derived([...new Set([...own, ...used])].map((k) => ({ value: k, label: k })));
+  // {number}: every item's place in its List (01, 02 …)
+  const binds = $derived([
+    ...[...new Set([...own, ...used])]
+      .filter((k) => k !== 'number' || own.includes('number'))
+      .map((k) => ({ value: k, label: k })),
+    ...(own.includes('number') ? [] : [{ value: 'number', label: 'Number (01, 02 …)' }]),
+  ]);
   const names = $derived(new Set(binds.map((b) => b.value)));
 
   // ---- nested Lists (src/site/widgets/list/nested.js): two levels at most
@@ -103,10 +110,16 @@
     ['m', 'M'],
     ['l', 'L'],
   ];
-  function setInner(i, mode) {
-    const prev = widgets[i].source || {};
+  // a widget by its pointer: "/widgets/2", or in a Side by side "/widgets/2/widgets/1"
+  const wAt = (b) =>
+    b
+      .split('/')
+      .slice(1)
+      .reduce((o, k) => o?.[k], tpl) || {};
+  function setInner(b, mode) {
+    const prev = wAt(b).source || {};
     set(
-      `/widgets/${i}/source`,
+      `${b}/source`,
       innerSourceFor(mode, prev, {
         listProperty: listProps[0]?.[0] || 'photos',
         source: from || sourceIds[0] || '',
@@ -115,10 +128,10 @@
       true,
     );
   }
-  function setRule(i, key, v) {
-    const where = structuredClone(widgets[i].source?.where || { op: 'and', rules: [{}] });
+  function setRule(b, key, v) {
+    const where = structuredClone(wAt(b).source?.where || { op: 'and', rules: [{}] });
     where.rules[0] = { ...where.rules[0], [key]: v };
-    set(`/widgets/${i}/source/where`, where, true);
+    set(`${b}/source/where`, where, true);
   }
 
   const TABS = [
@@ -145,38 +158,57 @@
   const setWidgets = (next) => set('/widgets', next, true);
   const STYLES = LINE_STYLES.map(([v, l]) => [v, l]);
 
-  function setLine(i, j, key, value) {
-    const body = structuredClone(widgets[i].body || []);
+  function setLine(b, j, key, value) {
+    const body = structuredClone(wAt(b).body || []);
     body[j] = {
       ...body[j],
       [key]: key === 'text' ? keepMarks(body[j].text, runsOf(value)) : value,
     };
-    set(`/widgets/${i}/body`, body);
+    set(`${b}/body`, body);
   }
-  function addLine(i) {
-    const body = [...(widgets[i].body || []), { style: 'paragraph', text: [] }];
-    set(`/widgets/${i}/body`, body, true);
+  function addLine(b) {
+    const body = [...(wAt(b).body || []), { style: 'paragraph', text: [] }];
+    set(`${b}/body`, body, true);
   }
-  function removeLine(i, j) {
-    const body = (widgets[i].body || []).filter((_, k) => k !== j);
-    set(`/widgets/${i}/body`, body, true);
+  function removeLine(b, j) {
+    const body = (wAt(b).body || []).filter((_, k) => k !== j);
+    set(`${b}/body`, body, true);
   }
-  function setRole(i, v) {
+  function setRole(b, v) {
     const role = String(v || '')
       .toLowerCase()
       .replace(/[^a-z0-9-]/g, '');
-    set(`/widgets/${i}/role`, role || undefined);
+    set(`${b}/role`, role || undefined);
   }
-  const add = (type) =>
-    setWidgets([
-      ...widgets,
-      newStackWidget(
-        type,
-        used[0] || schema?.title || 'title',
-        'View',
-        listProps[0]?.[0] || 'photos',
-      ),
-    ]);
+  const fresh = (type) =>
+    newStackWidget(
+      type,
+      used[0] || schema?.title || 'title',
+      'View',
+      listProps[0]?.[0] || 'photos',
+    );
+  const add = (type) => setWidgets([...widgets, fresh(type)]);
+  // a widget into the Side by side at `b`
+  const addIn = (b, type) => set(`${b}/widgets`, [...(wAt(b).widgets || []), fresh(type)], true);
+  const SBS_TYPES = STACK_TYPES.filter(([t]) => SBS_CHILDREN.includes(t));
+  const SBS_ALIGN = [
+    ['top', 'Top'],
+    ['center', 'Middle'],
+    ['bottom', 'Bottom'],
+    ['baseline', 'Baseline'],
+  ];
+  const SBS_SPACING = SBS.spacing.map((n) => [String(n), `${n} px`]);
+  const SBS_PHONE = [
+    ['wrap', 'Wrap'],
+    ['stack', 'Stack'],
+    ['keep', 'Keep on one line'],
+  ];
+  const PHOTO_WIDTH = [
+    ['', 'As wide as its share'],
+    ['s', 'Small (64 px)'],
+    ['m', 'Medium (96 px)'],
+    ['l', 'Large (160 px)'],
+  ];
 
   // ---- Properties: a rename commits on Enter or leaving the box (not per letter)
   let drafts = $state({});
@@ -187,6 +219,247 @@
     setWidgets(renameProperty(widgets, old, to));
   }
 </script>
+
+{#snippet editW(w, b)}
+  <Field
+    edit={`${file}#${b}/role`}
+    label="Role"
+    value={w.role || ''}
+    placeholder="none"
+    help="Its class: .li__<role>"
+    onvalue={(v) => setRole(b, v)}
+  />
+  {#if w.type === 'text'}
+    {#each w.body || [] as l, j (j)}
+      <div class="tp__line">
+        <Field
+          edit={`${file}#${b}/body/${j}/style`}
+          label="Line {j + 1}"
+          type="select"
+          value={l.style}
+          options={STYLES}
+          onvalue={(v) => setLine(b, j, 'style', v)}
+        />
+        <Field
+          edit={`${file}#${b}/body/${j}/text`}
+          label="Text"
+          value={l.text}
+          binds={allBinds}
+          {names}
+          formats
+          {from}
+          onvalue={(v) => setLine(b, j, 'text', v)}
+        />
+        {#if (w.body || []).length > 1}
+          <Button
+            size="small"
+            icon="xmark"
+            iconOnly
+            label="Remove line {j + 1}"
+            onclick={() => removeLine(b, j)}
+          />
+        {/if}
+      </div>
+    {/each}
+    <span class="tp__start"
+      ><Button size="small" icon="plus" onclick={() => addLine(b)}>Add line</Button></span
+    >
+    {#if w.join !== undefined}
+      <Field
+        edit={`${file}#${b}/join`}
+        label="Between facts"
+        value={w.join}
+        help="Its first line’s properties joined by it; an empty one takes none"
+        onvalue={(v) => set(`${b}/join`, v)}
+      />
+    {/if}
+  {:else if w.type === 'photo'}
+    <Field
+      edit={`${file}#${b}/src`}
+      label="Photo"
+      value={w.src}
+      binds={allBinds}
+      {names}
+      formats
+      {from}
+      onvalue={(v) => set(`${b}/src`, v)}
+    />
+  {:else if w.type === 'list'}
+    {@const src = w.source || {}}
+    {@const mode = src.mode === 'item' ? 'all' : src.mode}
+    <!-- every row always there (no shift): the ones the Items from doesn't use disabled -->
+    <Field
+      edit={`${file}#${b}/source/mode`}
+      label="Items from"
+      type="select"
+      value={mode}
+      options={ITEMS_FROM}
+      onvalue={(v) => setInner(b, v)}
+    />
+    <Field
+      edit={`${file}#${b}/source/property`}
+      label="Property"
+      type="select"
+      value={src.property || ''}
+      options={listProps.length ? listProps : [['', 'No list property in the sample']]}
+      disabled={mode !== 'property'}
+      onvalue={(v) => set(`${b}/source/property`, v, true)}
+    />
+    <Field
+      edit={`${file}#${b}/source/from`}
+      label="Source"
+      type="select"
+      value={src.from || ''}
+      options={sourceIds.map((n) => [n, schemaOf(live.content, n)?.label || n])}
+      disabled={mode === 'property'}
+      onvalue={(v) => set(`${b}/source/from`, v, true)}
+    />
+    <div class="tp__match">
+      <Field
+        edit={`${file}#${b}/source/where/rules/0/property`}
+        label="Match: their property"
+        type="select"
+        value={src.where?.rules?.[0]?.property || ''}
+        options={propsOf(src.from)}
+        disabled={mode !== 'match'}
+        onvalue={(v) => setRule(b, 'property', v)}
+      />
+      <span class="tp__is">is this item’s</span>
+      <Field
+        edit={`${file}#${b}/source/where/rules/0/parent`}
+        label="Property"
+        type="select"
+        value={src.where?.rules?.[0]?.parent || ''}
+        options={propsOf(from)}
+        disabled={mode !== 'match'}
+        onvalue={(v) => setRule(b, 'parent', v)}
+      />
+    </div>
+    <Field
+      edit={`${file}#${b}/config/template`}
+      label="Template"
+      type="select"
+      value={w.config?.template || 'preset:card'}
+      options={innerOptions}
+      onvalue={(v) => set(`${b}/config/template`, v, true)}
+    />
+    <div class="tp__pair">
+      <Field
+        edit={`${file}#${b}/config/columns`}
+        label="Columns"
+        type="select"
+        value={w.config?.columns || '3'}
+        options={COLUMNS}
+        onvalue={(v) => set(`${b}/config/columns`, v)}
+      />
+      <Field
+        edit={`${file}#${b}/config/gap`}
+        label="Space between items"
+        type="select"
+        value={w.config?.gap || 'm'}
+        options={GAPS}
+        onvalue={(v) => set(`${b}/config/gap`, v)}
+      />
+    </div>
+  {:else if w.type === 'sideBySide'}
+    <div class="tp__sbs">
+      <Field
+        edit={`${file}#${b}/config/align`}
+        label="Align"
+        type="select"
+        value={w.config?.align || 'center'}
+        options={SBS_ALIGN}
+        onvalue={(v) => set(`${b}/config/align`, v)}
+      />
+      <Field
+        edit={`${file}#${b}/config/spacing`}
+        label="Space between"
+        type="select"
+        value={String(w.config?.spacing ?? 16)}
+        options={SBS_SPACING}
+        onvalue={(v) => set(`${b}/config/spacing`, Number(v))}
+      />
+      <Field
+        edit={`${file}#${b}/config/phone`}
+        label="On a phone"
+        type="select"
+        value={w.config?.phone || 'wrap'}
+        options={SBS_PHONE}
+        onvalue={(v) => set(`${b}/config/phone`, v)}
+      />
+    </div>
+    {@const kids = Array.isArray(w.widgets) ? w.widgets : []}
+    <ListField
+      label="Side by side"
+      items={kids}
+      name={(c) => stackName(c)}
+      addLabel="Add text"
+      onmove={(x, y) => set(`${b}/widgets`, moveStack(kids, x, y), true)}
+      onremove={(j) =>
+        set(
+          `${b}/widgets`,
+          kids.filter((_, k) => k !== j),
+          true,
+        )}
+      onadd={() => addIn(b, 'text')}
+    >
+      {#snippet item(c, j)}
+        {@const cb = `${b}/widgets/${j}`}
+        <Field
+          edit={`${file}#${cb}/grow`}
+          label="Fill the space"
+          type="boolean"
+          value={c.grow === true}
+          disabled={c.grow !== true && kids.some((k) => k.grow === true)}
+          help={c.grow !== true && kids.some((k) => k.grow === true)
+            ? 'Another widget here fills the space'
+            : 'It takes the space left, pushing the next ones to the end'}
+          onvalue={(v) => set(`${cb}/grow`, v ? true : undefined)}
+        />
+        {#if c.type === 'photo'}
+          <Field
+            edit={`${file}#${cb}/config/width`}
+            label="Photo width"
+            type="select"
+            value={c.config?.width || ''}
+            options={PHOTO_WIDTH}
+            onvalue={(v) => set(`${cb}/config/width`, v || undefined)}
+          />
+        {/if}
+        {@render editW(c, cb)}
+      {/snippet}
+    </ListField>
+    <div class="tp__add" role="group" aria-label="Add a widget to Side by side">
+      {#each SBS_TYPES as [t, label] (t)}
+        <Button
+          size="small"
+          icon="plus"
+          disabled={kids.length >= 6}
+          title={kids.length >= 6 ? 'Six widgets at most' : undefined}
+          onclick={() => addIn(b, t)}>Add {label.toLowerCase()}</Button
+        >
+      {/each}
+    </div>
+  {:else if w.type === 'button'}
+    <Field
+      edit={`${file}#${b}/label`}
+      label="Label"
+      value={w.label}
+      binds={allBinds}
+      {names}
+      formats
+      {from}
+      onvalue={(v) => set(`${b}/label`, v)}
+    />
+    <Field
+      edit={`${file}#${b}/itemLink`}
+      label="Opens the item’s page"
+      type="boolean"
+      value={w.itemLink === true}
+      onvalue={(v) => set(`${b}/itemLink`, v ? true : undefined)}
+    />
+  {/if}
+{/snippet}
 
 <Tabs
   tabs={TABS}
@@ -238,165 +511,7 @@
       onadd={() => add('text')}
     >
       {#snippet item(w, i)}
-        <Field
-          edit={`${file}#/widgets/${i}/role`}
-          label="Role"
-          value={w.role || ''}
-          placeholder="none"
-          help="Its class: .li__<role>"
-          onvalue={(v) => setRole(i, v)}
-        />
-        {#if w.type === 'text'}
-          {#each w.body || [] as l, j (j)}
-            <div class="tp__line">
-              <Field
-                edit={`${file}#/widgets/${i}/body/${j}/style`}
-                label="Line {j + 1}"
-                type="select"
-                value={l.style}
-                options={STYLES}
-                onvalue={(v) => setLine(i, j, 'style', v)}
-              />
-              <Field
-                edit={`${file}#/widgets/${i}/body/${j}/text`}
-                label="Text"
-                value={l.text}
-                binds={allBinds}
-                {names}
-                formats
-                {from}
-                onvalue={(v) => setLine(i, j, 'text', v)}
-              />
-              {#if (w.body || []).length > 1}
-                <Button
-                  size="small"
-                  icon="xmark"
-                  iconOnly
-                  label="Remove line {j + 1}"
-                  onclick={() => removeLine(i, j)}
-                />
-              {/if}
-            </div>
-          {/each}
-          <span class="tp__start"
-            ><Button size="small" icon="plus" onclick={() => addLine(i)}>Add line</Button></span
-          >
-          {#if w.join !== undefined}
-            <Field
-              edit={`${file}#/widgets/${i}/join`}
-              label="Between facts"
-              value={w.join}
-              help="Its first line’s properties joined by it; an empty one takes none"
-              onvalue={(v) => set(`/widgets/${i}/join`, v)}
-            />
-          {/if}
-        {:else if w.type === 'photo'}
-          <Field
-            edit={`${file}#/widgets/${i}/src`}
-            label="Photo"
-            value={w.src}
-            binds={allBinds}
-            {names}
-            formats
-            {from}
-            onvalue={(v) => set(`/widgets/${i}/src`, v)}
-          />
-        {:else if w.type === 'list'}
-          {@const src = w.source || {}}
-          {@const mode = src.mode === 'item' ? 'all' : src.mode}
-          <!-- every row always there (no shift): the ones the Items from doesn't use disabled -->
-          <Field
-            edit={`${file}#/widgets/${i}/source/mode`}
-            label="Items from"
-            type="select"
-            value={mode}
-            options={ITEMS_FROM}
-            onvalue={(v) => setInner(i, v)}
-          />
-          <Field
-            edit={`${file}#/widgets/${i}/source/property`}
-            label="Property"
-            type="select"
-            value={src.property || ''}
-            options={listProps.length ? listProps : [['', 'No list property in the sample']]}
-            disabled={mode !== 'property'}
-            onvalue={(v) => set(`/widgets/${i}/source/property`, v, true)}
-          />
-          <Field
-            edit={`${file}#/widgets/${i}/source/from`}
-            label="Source"
-            type="select"
-            value={src.from || ''}
-            options={sourceIds.map((n) => [n, schemaOf(live.content, n)?.label || n])}
-            disabled={mode === 'property'}
-            onvalue={(v) => set(`/widgets/${i}/source/from`, v, true)}
-          />
-          <div class="tp__match">
-            <Field
-              edit={`${file}#/widgets/${i}/source/where/rules/0/property`}
-              label="Match: their property"
-              type="select"
-              value={src.where?.rules?.[0]?.property || ''}
-              options={propsOf(src.from)}
-              disabled={mode !== 'match'}
-              onvalue={(v) => setRule(i, 'property', v)}
-            />
-            <span class="tp__is">is this item’s</span>
-            <Field
-              edit={`${file}#/widgets/${i}/source/where/rules/0/parent`}
-              label="Property"
-              type="select"
-              value={src.where?.rules?.[0]?.parent || ''}
-              options={propsOf(from)}
-              disabled={mode !== 'match'}
-              onvalue={(v) => setRule(i, 'parent', v)}
-            />
-          </div>
-          <Field
-            edit={`${file}#/widgets/${i}/config/template`}
-            label="Template"
-            type="select"
-            value={w.config?.template || 'preset:card'}
-            options={innerOptions}
-            onvalue={(v) => set(`/widgets/${i}/config/template`, v, true)}
-          />
-          <div class="tp__pair">
-            <Field
-              edit={`${file}#/widgets/${i}/config/columns`}
-              label="Columns"
-              type="select"
-              value={w.config?.columns || '3'}
-              options={COLUMNS}
-              onvalue={(v) => set(`/widgets/${i}/config/columns`, v)}
-            />
-            <Field
-              edit={`${file}#/widgets/${i}/config/gap`}
-              label="Space between items"
-              type="select"
-              value={w.config?.gap || 'm'}
-              options={GAPS}
-              onvalue={(v) => set(`/widgets/${i}/config/gap`, v)}
-            />
-          </div>
-        {:else if w.type === 'button'}
-          <Field
-            edit={`${file}#/widgets/${i}/label`}
-            label="Label"
-            value={w.label}
-            binds={allBinds}
-            {names}
-            formats
-            {from}
-            onvalue={(v) => set(`/widgets/${i}/label`, v)}
-          />
-          <Field
-            edit={`${file}#/widgets/${i}/itemLink`}
-            label="Opens the item’s page"
-            type="boolean"
-            value={w.itemLink === true}
-            onvalue={(v) => set(`/widgets/${i}/itemLink`, v ? true : undefined)}
-          />
-        {/if}
+        {@render editW(w, `/widgets/${i}`)}
       {/snippet}
     </ListField>
     <div class="tp__add" role="group" aria-label="Add a widget">
@@ -486,6 +601,12 @@
     height: var(--size-control);
     line-height: var(--size-control);
     color: var(--c-text-muted);
+  }
+
+  .tp__sbs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
   }
 
   .tp__pair {
