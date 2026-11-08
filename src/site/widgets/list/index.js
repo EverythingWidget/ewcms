@@ -97,6 +97,8 @@ const CAROUSEL_ROWS = [
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
 const GAPS = ['s', 'm', 'l'];
+/** A phone's columns (config.phoneColumns; left out: 1). */
+const PHONE_COLUMNS = ['1', '2', '3'];
 
 /** One widget of an item's template, filled from `item` (scope); '' when it is left out. */
 function itemWidget(w, ctx, scope, { hide, api, cls = '' }) {
@@ -250,6 +252,13 @@ export const list = {
       tab: 'layout',
       width: 'half',
       options: COLUMNS.map((n) => [n, n]),
+      // per layout (the editor's phone view): its phone value under its own key
+      phone: {
+        key: 'phoneColumns',
+        label: 'Phone columns',
+        options: PHONE_COLUMNS.map((n) => [n, n]),
+        default: '1',
+      },
     },
     {
       key: 'gap',
@@ -336,6 +345,7 @@ export const list = {
     const preset = presetOf(own ? 'preset:card' : c.template);
     const columns = COLUMNS.includes(String(c.columns)) ? String(c.columns) : preset.columns || '3';
     const gap = GAPS.includes(c.gap) ? c.gap : 'm';
+    const phoneCols = PHONE_COLUMNS.includes(String(c.phoneColumns)) ? String(c.phoneColumns) : '';
     // this List's choice; each item widget may override (hideMissing on its own config)
     const listHide = hideMissing(c);
     // items from layout (widgetItems: source list or resolved config.items)
@@ -460,7 +470,7 @@ export const list = {
           ${href ? html`<a class="btn glass section__cta" href="${esc(href)}"><span>${esc(t(ctx, 'list.seeAll'))}</span> <span aria-hidden="true">→</span></a>` : ''}
         </header>`
       : '';
-    const gridHtml = `<div class="list__items list__items--grid" style="--list-cols:${columns}" data-cols="${columns}"${opens ? ` data-opens="${several ? 'several' : 'one'}"` : ''}>${out.join('')}</div>`;
+    const gridHtml = `<div class="list__items list__items--grid" style="--list-cols:${columns}${phoneCols ? `;--list-mcols:${phoneCols}` : ''}" data-cols="${columns}"${opens ? ` data-opens="${several ? 'several' : 'one'}"` : ''}>${out.join('')}</div>`;
     const carousel = c.arrangement === 'carousel' && items.length && !opens;
     if (c.arrangement === 'carousel' && opens)
       warnOnce(

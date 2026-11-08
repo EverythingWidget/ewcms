@@ -41,8 +41,9 @@
       }
     }
 
+    // a phone: one, or the List's phone columns (config.phoneColumns)
     @media (width <= $bp-sm) {
-      grid-template-columns: minmax(0, 1fr);
+      grid-template-columns: repeat(var(--list-mcols, 1), minmax(0, 1fr));
     }
   }
 }

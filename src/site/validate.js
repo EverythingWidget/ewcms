@@ -553,6 +553,10 @@ function checkWidget(widget, where) {
   const np = needsProblem(widget.config.needs);
   if (np) bad('config.needs', np);
   for (const c of t.config || []) {
+    // its phone value (per layout: the editor's phone view), under its own key
+    const pv = c.phone ? widget.config[c.phone.key] : undefined;
+    if (pv !== undefined && !c.phone.options.some(([o]) => o === pv))
+      bad(`config.${c.phone.key}`, `one of ${c.phone.options.map(([o]) => o).join(', ')}`);
     const v = widget.config[c.key];
     // list.check already names the replacement for arrangement "rows"
     if (c.key === 'arrangement' && v === 'rows') continue;
@@ -805,7 +809,15 @@ function checkTemplateWidget(w, at) {
     const tp = w.config?.template;
     if (tp !== undefined && !PRESET_FROM.includes(tp) && !isTemplateId(tp))
       out.push(`${at}.config.template must be a preset or a template id ("t-…")`);
-    const allowed = ['template', 'columns', 'gap', 'properties', 'arrangement', ...CAROUSEL_KEYS];
+    const allowed = [
+      'template',
+      'columns',
+      'phoneColumns',
+      'gap',
+      'properties',
+      'arrangement',
+      ...CAROUSEL_KEYS,
+    ];
     for (const k of Object.keys(w.config || {}))
       if (!allowed.includes(k))
         out.push(

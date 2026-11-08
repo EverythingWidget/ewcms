@@ -1111,6 +1111,10 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
   a phone). Carousel comes later (not offered yet). Arrow keys, Home and End move between the
   items in every column count. **Space between items** (`gap`) S / M / L. (The old Arrangement **Rows** is gone: write
   `"columns": "1"`.)
+- **Phone columns** (`config.phoneColumns`: `"1"` default \| `"2"` \| `"3"`): the Columns row
+  per layout. In the editor's phone view the Columns row shows **Phone columns** in its place
+  (no shift) and sets this key; the desktop's `columns` stays. Left out, a phone shows one
+  column as before; a tablet still shows two. On an inner List too.
 - **When a value is missing** (`config.missing` on **every** widget, Content tab): **Hide**
   (default, omitted) leaves the widget out of the published page; **Show empty** keeps it empty
   so neighbours line up. A List's item widgets inherit the List's choice unless they set their

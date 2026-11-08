@@ -73,7 +73,8 @@
   const options = $derived(layoutOptions(widget.type));
   const optionPtr = (c) => `/sections/${at}/widgets/${j}/config/${c.key}`;
   // a setting's default when the widget leaves it out (a List's carousel ones: carousel.js)
-  const listDefault = (c) => (widget.type === 'list' ? CAROUSEL[c.key]?.[0] : undefined);
+  const listDefault = (c) =>
+    c.default ?? (widget.type === 'list' ? CAROUSEL[c.key]?.[0] : undefined);
   const setOption = (c, v) =>
     widget.type === 'list' && c.key === 'arrangement'
       ? live.store.set(
@@ -152,7 +153,9 @@
 <div class="fields wl">
   {#each parts as part (part)}
     {#if part === 'options'}
-      {#each options as c (c.key)}
+      {#each options as row (row.key)}
+        <!-- a setting per layout (row.phone): in the phone view its phone value, in the same place -->
+        {@const c = phoneView && row.phone ? { ...row, ...row.phone } : row}
         <Field
           edit="{file}#{optionPtr(c)}"
           label={c.label}
