@@ -56,6 +56,7 @@ import { isTemplateId } from '../../files.js';
 import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from './handmade.js';
 import { presetStyle, styleMarkup } from './item-style.js';
 import { childClass, sideBySideHtml } from './side-by-side.js';
+import { detailsAt, opensHtml, toggleHtml } from './opens.js';
 import { innerItems, innerKeys } from './nested.js';
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
@@ -64,6 +65,8 @@ const GAPS = ['s', 'm', 'l'];
 /** One widget of an item's template, filled from `item` (scope); '' when it is left out. */
 function itemWidget(w, ctx, scope, { hide, api, cls = '' }) {
   const def = WIDGET_TYPES[w.type];
+  // the +/× of an item that opens (./opens.js)
+  if (w.type === 'toggle') return { html: toggleHtml(w.role), missing: [] };
   if (w.type === 'list') {
     // an inner List (./nested.js): its items from this item; a third level never renders
     if (api.depth >= 2) {
@@ -318,13 +321,18 @@ export const list = {
           handmade: handmade || !!widget.keys,
           properties: c.properties,
         });
-    const link = own ? own.link !== false : preset.link;
+    // items that open (./opens.js): summary, then the details from the "details" widget on
+    const opens = !!own && isObject(own.opens) && (widget.depth || 1) < 2;
+    const cut = opens ? detailsAt(template) : -1;
+    const link = opens ? false : own ? own.link !== false : preset.link;
     // the item style (./item-style.js): the template's own, else the preset's
     const look = styleMarkup(own ? own.style : presetStyle(preset.id));
     const liClass = ['li', `li--${shape}`, ...look.cls].join(' ');
     const liStyle = look.vars ? ` style="${esc(look.vars)}"` : '';
     const photoFirst =
-      (own ? own.photoFirst !== false : preset.photoFirst) && template[0]?.type === 'photo';
+      !opens &&
+      (own ? own.photoFirst !== false : preset.photoFirst) &&
+      template[0]?.type === 'photo';
     // See all: only From a source (hand-made has no single source page)
     const href = !handmade && source && c.seeAll ? sourcePage(ctx, source) : '';
     const missing = new Map(); // name -> how many items have no value for it
@@ -368,13 +376,26 @@ export const list = {
       ws.forEach((w) => w.missing.forEach((n) => missing.set(n, (missing.get(n) || 0) + 1)));
       const parts = ws.map((w) => w.html);
       const [first, ...rest] = parts;
-      const inner = photoFirst
-        ? `${first}<div class="li__text">${rest.join('')}</div>`
-        : `<div class="li__text">${parts.join('')}</div>`;
+      // the editor shows the first item open, so its details can be edited
+      const open = opens && cut > 0 && editable && i === 0;
+      const inner =
+        opens && cut > 0
+          ? opensHtml(
+              `${widget.id}-${i + 1}`,
+              parts.slice(0, cut).join(''),
+              parts.slice(cut).join(''),
+              open,
+            )
+          : photoFirst
+            ? `${first}<div class="li__text">${rest.join('')}</div>`
+            : `<div class="li__text">${parts.join('')}</div>`;
       const url = handmade ? handmadeHref : itemHrefLink ? itemHref(ctx, source, item) : '';
       const tag = link && url ? 'a' : 'div';
       const ref = tag === 'a' ? ` href="${esc(url)}"` : '';
-      return `<${tag} class="${liClass}"${liStyle}${ref} data-list-item data-anim-item>${inner}</${tag}>`;
+      const opensAttr = opens
+        ? ` data-opens${open ? ' data-open' : ''}${item?.slug ? ` data-slug="${esc(item.slug)}"` : ''}`
+        : '';
+      return `<${tag} class="${liClass}${opens ? ' li--opens' : ''}"${liStyle}${ref}${opensAttr} data-list-item data-anim-item>${inner}</${tag}>`;
     });
     if (!editable)
       for (const [name, n] of missing)
@@ -389,7 +410,7 @@ export const list = {
         </header>`
       : '';
     const body = items.length
-      ? `<div class="list__items list__items--grid" style="--list-cols:${columns}" data-cols="${columns}">${out.join('')}</div>`
+      ? `<div class="list__items list__items--grid" style="--list-cols:${columns}" data-cols="${columns}"${opens ? ` data-opens="${own.opens.several === true ? 'several' : 'one'}"` : ''}>${out.join('')}</div>`
       : `<p class="list__empty label muted" data-list-empty>${esc(t(ctx, 'list.empty'))}</p>`;
     return `<div class="list list--${shape} list--gap-${gap}" data-arrangement="grid" data-cols="${columns}">${head}${body}</div>`;
   },

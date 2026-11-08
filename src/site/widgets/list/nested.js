@@ -127,6 +127,11 @@ export function nestingProblems(templates = {}) {
           level: 'error',
           message: `templates/${id}.json: This list can't use ${labelOf(templates, inner)}, because ${labelOf(templates, inner)} already contains it.`,
         });
+      else if (templates[inner]?.opens !== undefined)
+        out.push({
+          level: 'error',
+          message: `templates/${id}.json: A list inside a list's template can't use items that open: ${labelOf(templates, inner)} opens.`,
+        });
       else if (holdsList(templates[inner]))
         out.push({
           level: 'error',
@@ -136,7 +141,7 @@ export function nestingProblems(templates = {}) {
   return out;
 }
 
-/** Would `inner` in template `id`'s inner List loop ('loop'), go three deep ('deep') or be fine ('')? */
+/** Would `inner` in template `id`'s inner List loop ('loop'), open ('opens': not inside a List), go three deep ('deep') or be fine ('')? */
 export function innerChoice(templates, id, inner) {
   if (!isTemplateId(inner)) return '';
   if (
@@ -148,5 +153,6 @@ export function innerChoice(templates, id, inner) {
     )
   )
     return 'loop';
+  if (templates?.[inner]?.opens !== undefined) return 'opens';
   return holdsList(templates?.[inner]) ? 'deep' : '';
 }

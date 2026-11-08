@@ -13,6 +13,7 @@ export const STACK_TYPES = [
   ['button', 'Button'],
   ['list', 'List'],
   ['sideBySide', 'Side by side'],
+  ['toggle', 'Toggle'],
 ];
 export const typeLabel = (type) => STACK_TYPES.find(([t]) => t === type)?.[1] || type;
 
@@ -36,6 +37,8 @@ export function newStackWidget(type, property = 'title', open = 'View', listProp
         { type: 'text', grow: true, body: [{ style: 'paragraph', text: [{ property }] }] },
       ],
     };
+  // the +/× of an item that opens (src/site/widgets/list/opens.js)
+  if (type === 'toggle') return { type: 'toggle', role: 'toggle' };
   if (type === 'photo') return { type: 'photo', src: [{ property }] };
   if (type === 'button') return { type: 'button', label: open, itemLink: true, config: {} };
   return { type: 'text', body: [{ style: 'paragraph', text: [{ property }] }] };
@@ -147,4 +150,18 @@ export function innerSourceFor(
     from,
     where: prev.where || { op: 'and', rules: [{ property: theirs || own, parent: own }] },
   };
+}
+
+/** The widgets with the details starting at `i` (one "details": true; -1: none). */
+export const setDetails = (widgets, i) =>
+  widgets.map((w, k) => {
+    const { details: _d, ...rest } = w; // eslint-disable-line no-unused-vars
+    return k === i ? { ...rest, details: true } : rest;
+  });
+
+/** Where a new top-level widget of `type` goes: a toggle before the details, others last. */
+export function addAt(widgets, w) {
+  const cut = widgets.findIndex((x) => x?.details === true);
+  if (w.type !== 'toggle' || cut < 0) return [...widgets, w];
+  return [...widgets.slice(0, cut), w, ...widgets.slice(cut)];
 }

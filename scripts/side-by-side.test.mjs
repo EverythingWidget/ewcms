@@ -169,7 +169,7 @@ test('only in templates: not a page widget (the widget registry has none)', () =
 });
 
 test('editor: Add side by side gives {number} and a property filling the space', () => {
-  assert.deepEqual(STACK_TYPES.at(-1), ['sideBySide', 'Side by side']);
+  assert.ok(STACK_TYPES.some(([t, l]) => t === 'sideBySide' && l === 'Side by side'));
   const w = newStackWidget('sideBySide', 'title');
   assert.deepEqual(problems(tpl([w])), []);
   assert.deepEqual(

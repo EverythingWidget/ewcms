@@ -10,6 +10,7 @@
  * checkItems (src/site/schemas.js): that needs the schema and the photos, not one file.
  */
 import { PHOTO_WIDTHS, sideBySideProblems } from './widgets/list/side-by-side.js';
+import { opensProblems } from './widgets/list/opens.js';
 import { AREA_KEYS, storesRows } from './layout/grid.js';
 import { storedDefaults } from './defaults.js';
 import {
@@ -665,7 +666,17 @@ export function checkItemTemplate(d) {
   if (d.source !== undefined && (typeof d.source !== 'string' || !ROLE.test(d.source)))
     out.push('"source" must be a source name (the source its sample item comes from)');
   out.push(...styleProblems(d.style));
-  const known = ['kind', 'label', 'basedOn', 'source', 'link', 'photoFirst', 'style', 'widgets'];
+  const known = [
+    'kind',
+    'label',
+    'basedOn',
+    'source',
+    'link',
+    'photoFirst',
+    'opens',
+    'style',
+    'widgets',
+  ];
   for (const k of Object.keys(d))
     if (!known.includes(k)) out.push(`"${k}" is not a template key (${known.join(', ')})`);
   if (!Array.isArray(d.widgets) || !d.widgets.length) {
@@ -673,6 +684,7 @@ export function checkItemTemplate(d) {
     return out;
   }
   d.widgets.forEach((w, i) => out.push(...checkTemplateWidget(w, `widgets.${i}`)));
+  out.push(...opensProblems(d));
   return out;
 }
 
@@ -684,12 +696,19 @@ function checkTemplateWidget(w, at, inside = false) {
     if (inside) return [`${at}: no Side by side inside a Side by side (one level)`];
     return sideBySideProblems(w, at, (k, here) => checkTemplateWidget(k, here, true));
   }
+  if (w.type === 'toggle') {
+    // the +/× icon of an item that opens (widgets/list/opens.js)
+    const extra = Object.keys(w).filter((k) => !['type', 'role', 'details'].includes(k));
+    return extra.length
+      ? [`${at}: a toggle has only "type" and "role" (not ${extra.join(', ')})`]
+      : [];
+  }
   if (RETIRED_WIDGETS[w.type]) return [`${at}: ${RETIRED_WIDGETS[w.type]}`];
   if (!WIDGET_TYPES[w.type])
     return [
       `${at}: "${w.type}" is not a widget type (${Object.keys(WIDGET_TYPES)
         .filter((t) => t !== 'list')
-        .join(', ')}, sideBySide)`,
+        .join(', ')}, sideBySide, toggle)`,
     ];
   if (w.type === 'list') {
     // an inner List (two levels: widgets/list/nested.js; loops and depth: bindingProblems)

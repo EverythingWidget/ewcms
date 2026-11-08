@@ -324,3 +324,93 @@ a.li:not(.li--hover-none):hover .li__title .ts {
     }
   }
 }
+
+// ---- items that open and close (./opens.js, ./client.js): the summary is the item's button;
+// the details open with their grid row (0fr → 1fr), nothing measured: the summary and the
+// item's width never move
+.li__opens {
+  gap: 0;
+  justify-items: stretch;
+}
+
+.li__summary {
+  display: grid;
+  gap: var(--item-pad-s);
+  border-radius: var(--radius-s, 4px);
+  cursor: pointer;
+  outline: none;
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+}
+
+.li__details {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.35s var(--ease-out, ease),
+    visibility 0s linear 0.35s;
+}
+
+.li__details-in {
+  display: grid;
+  gap: var(--item-pad-s);
+  align-content: start;
+  justify-items: start;
+  min-height: 0;
+  padding-top: var(--item-pad-s);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.li[data-open] {
+  .li__details {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition: grid-template-rows 0.35s var(--ease-out, ease);
+  }
+
+  .li__details-in {
+    opacity: 1;
+    transition: opacity 0.3s 0.1s;
+  }
+
+  .li__toggle {
+    transform: rotate(45deg);
+  }
+}
+
+// the +/×: two bars, turned (no size change)
+.li__toggle {
+  position: relative;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  transition: transform 0.35s var(--ease-out, ease);
+
+  i {
+    position: absolute;
+    top: 7px;
+    left: 0;
+    width: 16px;
+    height: 2px;
+    background: currentcolor;
+  }
+
+  i + i {
+    transform: rotate(90deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .li__details,
+  .li__details-in,
+  .li__toggle,
+  .li[data-open] .li__details,
+  .li[data-open] .li__details-in {
+    transition: none;
+  }
+}

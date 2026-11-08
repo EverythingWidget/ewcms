@@ -924,6 +924,73 @@ rule work as anywhere.
   and a photo's `width` only inside one. Widths come from the content and a fixed gap: nothing
   is measured, so an item never reflows. It is not a page widget.
 
+- **Items that open and close** (`opens`, `src/site/widgets/list/opens.js`): each item shows its
+  **summary**; its **details** open below it. In the template: `"opens": { "several": false }`
+  and `"details": true` on the top-level widget the details start at (it and the ones after it;
+  the ones before it are the summary). `{ "type": "toggle" }` is the +/× icon (it turns into ×
+  when open).
+
+  ```json
+  {
+    "kind": "template",
+    "label": "Project row",
+    "link": false,
+    "opens": { "several": false },
+    "widgets": [
+      {
+        "type": "sideBySide",
+        "role": "head",
+        "config": { "align": "baseline" },
+        "widgets": [
+          {
+            "type": "text",
+            "role": "num",
+            "body": [{ "style": "label", "text": [{ "property": "number" }] }]
+          },
+          {
+            "type": "text",
+            "role": "title",
+            "grow": true,
+            "body": [{ "style": "heading", "text": [{ "property": "title" }] }]
+          },
+          { "type": "toggle" }
+        ]
+      },
+      {
+        "type": "sideBySide",
+        "role": "more",
+        "details": true,
+        "config": { "align": "top" },
+        "widgets": [
+          { "type": "photo", "src": [{ "property": "photo" }], "config": { "width": "l" } },
+          {
+            "type": "text",
+            "grow": true,
+            "body": [{ "style": "paragraph", "text": [{ "property": "body" }] }]
+          }
+        ]
+      }
+    ]
+  }
+  ```
+
+  - Items start closed; `#<slug>` in the page URL opens that item. `several: false` (default):
+    opening one closes the open one; `true`: each opens on its own.
+  - The summary is the item's button (`role="button"`, `tabindex="0"`, `aria-expanded`,
+    `aria-controls`); the details a `region` labelled by it, `inert` while closed. Click, Enter
+    or Space opens and closes; Esc closes and gives the summary focus back; the arrow keys move
+    between summaries as between links.
+  - The details open with their grid row (`0fr` → `1fr`) and fade in: nothing is measured, the
+    summary and the item's width never move (the items below follow). Reduced motion: no
+    transition.
+  - Template editor: **Opens: items open and close**, **Several open at once**, on each widget
+    **Details start here** (a **Details, hidden until opened** line above it), **Add toggle**.
+    The preview shows the first item open.
+  - Rules (`ewcms check`, Save; the editor disables what doesn't fit): not with Link (`"link":
+false`; a button in the details can link); one `details` widget with a widget before it;
+    one toggle, in the summary; no button in the summary; `details` and toggles only with
+    `opens`; not in an inner List's template; Photo first doesn't apply.
+
 - **Nested Lists** (two levels): a template's stack can hold a `list` widget, an inner List
   filled per item. **Add list** in the template editor adds one (disabled, with its reason, in a
   template that is itself shown inside another List). Its `source` is one of:

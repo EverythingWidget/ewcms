@@ -35,6 +35,8 @@
     keepMarks,
     moveStack,
     newStackWidget,
+    addAt,
+    setDetails,
     renameProperty,
     runsOf,
     stackName,
@@ -101,7 +103,9 @@
       .map(([t, tp]) =>
         innerChoice(templates, id, t) === 'deep'
           ? [t, tp.label || t, { disabled: true, hint: 'It holds a list: a third level' }]
-          : [t, tp.label || t],
+          : innerChoice(templates, id, t) === 'opens'
+            ? [t, tp.label || t, { disabled: true, hint: 'Its items open: not inside a List' }]
+            : [t, tp.label || t],
       ),
   ]);
   const COLUMNS = ['1', '2', '3', '4', '5', '6'].map((n) => [n, n]);
@@ -187,7 +191,32 @@
       'View',
       listProps[0]?.[0] || 'photos',
     );
-  const add = (type) => setWidgets([...widgets, fresh(type)]);
+  const add = (type) => setWidgets(addAt(widgets, fresh(type)));
+  // ---- items that open (src/site/widgets/list/opens.js)
+  const opens = $derived(isObject(tpl?.opens));
+  const cut = $derived(widgets.findIndex((w) => w?.details === true));
+  const hasToggle = $derived(
+    widgets.some(
+      (w) => w?.type === 'toggle' || (w?.widgets || []).some((c) => c?.type === 'toggle'),
+    ),
+  );
+  // an item that opens can't be a link: turning Opens on turns Link off
+  function setOpens(on) {
+    if (on) {
+      set('/link', false);
+      set('/opens', { several: false }, true);
+    } else set('/opens', undefined, true);
+  }
+  const topOf = (b) => Number(b.split('/')[2]);
+  // why Add toggle is off here ('' when it can): `top` the top-level widget it would go in
+  const toggleOff = (top = -1) =>
+    !opens
+      ? 'Only for items that open'
+      : hasToggle
+        ? 'One toggle per template'
+        : top >= 0 && cut >= 0 && top >= cut
+          ? 'The toggle goes in the summary, before the details'
+          : '';
   // a widget into the Side by side at `b`
   const addIn = (b, type) => set(`${b}/widgets`, [...(wAt(b).widgets || []), fresh(type)], true);
   const SBS_TYPES = STACK_TYPES.filter(([t]) => SBS_CHILDREN.includes(t));
@@ -434,8 +463,12 @@
         <Button
           size="small"
           icon="plus"
-          disabled={kids.length >= 6}
-          title={kids.length >= 6 ? 'Six widgets at most' : undefined}
+          disabled={kids.length >= 6 || (t === 'toggle' && !!toggleOff(topOf(b)))}
+          title={kids.length >= 6
+            ? 'Six widgets at most'
+            : t === 'toggle' && toggleOff(topOf(b))
+              ? toggleOff(topOf(b))
+              : undefined}
           onclick={() => addIn(b, t)}>Add {label.toLowerCase()}</Button
         >
       {/each}
@@ -484,9 +517,33 @@
       edit={`${file}#/link`}
       label="Link: whole item opens the item’s page"
       type="boolean"
-      value={tpl.link !== false}
+      value={!opens && tpl.link !== false}
+      disabled={opens}
+      help={opens ? 'An item that opens can’t also be a link' : ''}
       changed={live.changed(file, '/link')}
       onvalue={(v) => set('/link', v)}
+    />
+    <Field
+      edit={`${file}#/opens`}
+      label="Opens: items open and close"
+      type="boolean"
+      value={opens}
+      disabled={!!outer && !opens}
+      help={outer
+        ? 'This template is shown inside another List: its items can’t open'
+        : 'Each item shows its summary; its details open below it'}
+      changed={live.changed(file, '/opens')}
+      onvalue={(v) => setOpens(v)}
+    />
+    <Field
+      edit={`${file}#/opens/several`}
+      label="Several open at once"
+      type="boolean"
+      value={tpl.opens?.several === true}
+      disabled={!opens}
+      help="Off: opening one closes the open one"
+      changed={live.changed(file, '/opens/several')}
+      onvalue={(v) => set('/opens/several', v)}
     />
     <Field
       edit={`${file}#/photoFirst`}
@@ -511,6 +568,22 @@
       onadd={() => add('text')}
     >
       {#snippet item(w, i)}
+        {#if opens && w.details === true}
+          <p class="tp__divider" data-details-divider>Details, hidden until opened</p>
+        {/if}
+        <Field
+          edit={`${file}#/widgets/${i}/details`}
+          label="Details start here"
+          type="boolean"
+          value={opens && w.details === true}
+          disabled={!opens || i === 0}
+          help={!opens
+            ? 'For items that open'
+            : i === 0
+              ? 'The summary needs a widget before the details'
+              : 'It and the widgets after it are the details'}
+          onvalue={(v) => setWidgets(setDetails(widgets, v ? i : -1))}
+        />
         {@render editW(w, `/widgets/${i}`)}
       {/snippet}
     </ListField>
@@ -519,10 +592,12 @@
         <Button
           size="small"
           icon="plus"
-          disabled={t === 'list' && !!outer}
+          disabled={(t === 'list' && !!outer) || (t === 'toggle' && !!toggleOff())}
           title={t === 'list' && outer
             ? 'This template is shown inside another List: a list here would be a third level'
-            : undefined}
+            : t === 'toggle' && toggleOff()
+              ? toggleOff()
+              : undefined}
           onclick={() => add(t)}>Add {label.toLowerCase()}</Button
         >
       {/each}
@@ -601,6 +676,15 @@
     height: var(--size-control);
     line-height: var(--size-control);
     color: var(--c-text-muted);
+  }
+
+  // the line between the summary and the details (inside the widget's card: no shift)
+  .tp__divider {
+    margin: 0;
+    padding-bottom: var(--space-2);
+    font-size: var(--fs-base);
+    color: var(--c-text-muted);
+    box-shadow: inset 0 -1px 0 var(--c-line, currentcolor);
   }
 
   .tp__sbs {
