@@ -358,3 +358,16 @@ test('the editor: Arrangement Grid / Carousel and the carousel rows, disabled wi
     assert.equal(r.disabledWhen({ arrangement: 'carousel' }), false);
   }
 });
+
+test('a button label of typed text only ([{ t }]) shows that text, not "[object Object]"', async () => {
+  const { el } = render({ tpl: personTpl(), config: { template: 't-pers' } });
+  const btn = el.querySelector('.li__back .btn, .btn');
+  assert.ok(btn, 'the back button');
+  assert.match(btn.textContent, /← People/);
+  assert.doesNotMatch(el.innerHTML, /object Object/);
+  const { resolve } = await import('../src/site/layout/bindings.js');
+  assert.equal(resolve([{ t: 'a' }, { t: 'b' }], { def: { type: 'text' } }), 'ab');
+  // not a text setting (a list's entries): left as it is
+  const list = [{ t: 'x' }];
+  assert.deepEqual(resolve(list, { def: { type: 'text', list: { t: 'text' } } }), list);
+});

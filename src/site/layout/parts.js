@@ -31,6 +31,8 @@
 import { isObject } from '../is.js';
 
 const isTextPart = (p) => isObject(p) && typeof p.t === 'string';
+/** Parts with no property: typed text only ([{ "t": "← People" }]); their value is that text. */
+export const isTextParts = (v) => Array.isArray(v) && v.length > 0 && v.every(isTextPart);
 export const isPropertyPart = (p) => isObject(p) && typeof p.property === 'string';
 /** A list of parts with a property in it. */
 export const isParts = (v) =>

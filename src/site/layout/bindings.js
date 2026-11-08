@@ -35,6 +35,7 @@ import {
   ITEMS,
   isPropertyPart,
   isParts,
+  isTextParts,
   isWhole,
   partEmpty,
   partLabel,
@@ -68,6 +69,8 @@ const empty = (def) => (def?.list ? [] : def?.type === 'number' ? undefined : ''
  */
 export function resolve(value, { def, placeholders = false, ...scope } = {}) {
   const text = TEXT_TYPES.includes(def?.type || 'text') && !def?.list;
+  // typed text only (no property): a text setting's value is that text (was "[object Object]")
+  if (text && isTextParts(value)) return value.map((p) => p.t).join('');
   if (isParts(value)) {
     if (isWhole(value) && !text) {
       const name = value[0].property;
@@ -167,6 +170,7 @@ export function resolveWidget(widget, t, { placeholders = false, ...scope }) {
   const has = values.some(
     (v) =>
       isParts(v) ||
+      isTextParts(v) ||
       (Array.isArray(v) && v.some((e) => isObject(e) && Object.values(e).some(isParts))),
   );
   if (!has) return widget;
