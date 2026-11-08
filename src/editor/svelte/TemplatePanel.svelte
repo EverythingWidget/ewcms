@@ -6,6 +6,8 @@
                 Alt+↑/↓ to reorder, × removes, Add Text / Photo / Button): each widget's role
                 (its .li__<role> class) and settings, its values with {property} chips
                 (Field.svelte formats: type {name}, or pick one).
+    Style       the item style (src/site/widgets/list/item-style.js): one picker per key,
+                Theme first (the key left out of the file)
     Properties  every property the template binds, renamed in one go: each {old} part in its
                 widgets becomes {new} (lib/item-template.js renameProperty). Replaces the List's
                 mapping for templates (a List using a template has no Properties rows).
@@ -21,6 +23,8 @@
   import { LINE_STYLES } from '../../site/text.js';
   import { schemaOf } from '../../site/schemas.js';
   import { sampleSource } from '../../site/widgets/list/template-preview.js';
+  import { STYLE_ROWS } from '../lib/item-style-rows.js';
+  import { isObject } from '../../site/is.js';
   import {
     STACK_TYPES,
     keepMarks,
@@ -53,8 +57,21 @@
   const TABS = [
     ['widgets', 'Widgets'],
     ['properties', 'Properties'],
+    ['style', 'Style'],
   ];
-  const tab = $derived(ui.sections[`tpltab:${id}`] === 'properties' ? 'properties' : 'widgets');
+  const tab = $derived.by(() => {
+    const v = ui.sections[`tpltab:${id}`];
+    return TABS.some(([t]) => t === v) ? v : 'widgets';
+  });
+  const style = $derived(isObject(tpl?.style) ? tpl.style : {});
+  // a row picked Theme: its key removed (never saved); the last one: no "style" at all
+  function setStyle(key, raw) {
+    const v = STYLE_ROWS.find((r) => r.key === key).parse(raw);
+    const next = { ...style };
+    if (v === undefined) delete next[key];
+    else next[key] = v;
+    set('/style', Object.keys(next).length ? next : undefined, true);
+  }
 
   const set = (ptr, value, structure = false) =>
     live.store.set(file, ptr, value, { source: 'panel', structure });
@@ -235,6 +252,22 @@
         <Button size="small" icon="plus" onclick={() => add(t)}>Add {label.toLowerCase()}</Button>
       {/each}
     </div>
+  {:else if tab === 'style'}
+    <p class="hint small">How each item looks. Theme: the site theme’s value.</p>
+    <div class="tp__style" data-template-style>
+      {#each STYLE_ROWS as r (r.key)}
+        <Field
+          edit={`${file}#/style/${r.key}`}
+          label={r.label}
+          type="select"
+          half
+          value={style[r.key] === undefined ? '' : String(style[r.key])}
+          options={r.options}
+          changed={live.changed(file, `/style/${r.key}`)}
+          onvalue={(v) => setStyle(r.key, v)}
+        />
+      {/each}
+    </div>
   {:else}
     <p class="hint small">
       The properties its widgets show. A new name changes every chip of it in this template{from
@@ -285,6 +318,12 @@
   .tp__add {
     display: flex;
     gap: var(--space-2);
+  }
+
+  .tp__style {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap-rows) var(--space-2);
   }
 
   .tp__props {

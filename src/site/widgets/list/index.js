@@ -54,6 +54,7 @@ import {
 } from './presets.js';
 import { isTemplateId } from '../../files.js';
 import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from './handmade.js';
+import { presetStyle, styleMarkup } from './item-style.js';
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
 const GAPS = ['s', 'm', 'l'];
@@ -181,7 +182,7 @@ export const list = {
     },
     {
       key: 'gap',
-      label: 'Gap',
+      label: 'Space between items',
       type: 'select',
       tab: 'layout',
       width: 'half',
@@ -280,6 +281,10 @@ export const list = {
           properties: c.properties,
         });
     const link = own ? own.link !== false : preset.link;
+    // the item style (./item-style.js): the template's own, else the preset's
+    const look = styleMarkup(own ? own.style : presetStyle(preset.id), preset.look);
+    const liClass = ['li', `li--${shape}`, ...look.cls].join(' ');
+    const liStyle = look.vars ? ` style="${esc(look.vars)}"` : '';
     const photoFirst =
       (own ? own.photoFirst !== false : preset.photoFirst) && template[0]?.type === 'photo';
     // See all: only From a source (hand-made has no single source page)
@@ -314,7 +319,7 @@ export const list = {
       const url = handmade ? handmadeHref : itemHrefLink ? itemHref(ctx, source, item) : '';
       const tag = link && url ? 'a' : 'div';
       const ref = tag === 'a' ? ` href="${esc(url)}"` : '';
-      return `<${tag} class="li li--${shape}"${ref} data-list-item data-anim-item>${inner}</${tag}>`;
+      return `<${tag} class="${liClass}"${liStyle}${ref} data-list-item data-anim-item>${inner}</${tag}>`;
     });
     if (!editable)
       for (const [name, n] of missing)

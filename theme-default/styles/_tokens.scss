@@ -54,22 +54,26 @@
   // today's cards (Album cards, the places' cards): no box, a 4px photo radius, 16px between
   // the photo and the text. A site's theme overrides them in theme/tokens.scss (the site's
   // theme/ folder). The List widget's presets use them (src/site/widgets/list/style.scss):
-  // every item takes --item-radius, -border, -shadow, -pad, -gap, -bg and -bg-hover; the
-  // --item-pad-s/-m/-l steps space its text, Row's and Panel's. --item-shadow-s/-m/-l are for
-  // the item style settings (step 9): set --item-shadow to one of them for boxed items.
+  // every item takes --item-radius, -border, -shadow, -pad, -gap, -bg, -bg-hover and its
+  // photo's -photo-ratio and -photo-fit; the --item-pad-s/-m/-l steps space its text.
+  // --item-border is an inset box-shadow ring (no layout shift) and --item-shadow a shadow:
+  // both box-shadow values, never "none" (they are listed together). A template's item style
+  // (src/site/widgets/list/item-style.js) overrides them per item.
   --item-radius: 4px;
-  --item-border: none;
-  --item-shadow: none;
+  --item-border: inset 0 0 0 0 transparent;
+  --item-shadow: 0 0 0 0 transparent;
   --item-shadow-s: 0 1px 2px var(--shade-15), 0 4px 12px var(--shade-35);
   --item-shadow-m: 0 2px 4px var(--shade-35), 0 12px 32px var(--shade-45);
   --item-shadow-l: 0 4px 8px var(--shade-40), 0 24px 64px var(--shade-65);
-  --item-pad: 0;
+  --item-pad: 0px; // with its unit: Border bottom adds to it (calc)
   --item-pad-s: 8px;
   --item-pad-m: 16px;
   --item-pad-l: 24px;
   --item-gap: 16px;
   --item-bg: transparent;
   --item-bg-hover: var(--item-bg);
+  --item-photo-ratio: 4 / 5;
+  --item-photo-fit: cover;
 
   @media (width <= $bp-sm) {
     --header-h: 64px;

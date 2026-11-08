@@ -56,6 +56,7 @@ import { bindTypeOf } from './layout/bindings.js';
 import { isPropertyPart, isParts, isWhole, NAME } from './layout/parts.js';
 import { FORMAT_TYPES, storedAs } from './property-types.js';
 import { isObject } from './is.js';
+import { styleProblems } from './widgets/list/item-style.js';
 
 const typeOf = (v) =>
   v === null
@@ -645,7 +646,7 @@ const ROLE = /^[a-z][a-z0-9-]*$/;
 
 /**
  * An item template (content/templates/t-….json): { kind: "template", label, basedOn?, source?,
- * link?, photoFirst?, widgets: [...] } (source: the source it came from, the template
+ * link?, photoFirst?, style?, widgets: [...] } (style: the item style, widgets/list/item-style.js) (source: the source it came from, the template
  * editor's sample item), its widgets a vertical stack of the registry's widgets whose
  * values are {property} parts. No List inside one yet (nested Lists come later), no "source"
  * (the List gives each copy its item), and none of a page widget's place (id, layout).
@@ -661,7 +662,8 @@ export function checkItemTemplate(d) {
     if (d[k] !== undefined && typeof d[k] !== 'boolean') out.push(`"${k}" must be true or false`);
   if (d.source !== undefined && (typeof d.source !== 'string' || !ROLE.test(d.source)))
     out.push('"source" must be a source name (the source its sample item comes from)');
-  const known = ['kind', 'label', 'basedOn', 'source', 'link', 'photoFirst', 'widgets'];
+  out.push(...styleProblems(d.style));
+  const known = ['kind', 'label', 'basedOn', 'source', 'link', 'photoFirst', 'style', 'widgets'];
   for (const k of Object.keys(d))
     if (!known.includes(k)) out.push(`"${k}" is not a template key (${known.join(', ')})`);
   if (!Array.isArray(d.widgets) || !d.widgets.length) {

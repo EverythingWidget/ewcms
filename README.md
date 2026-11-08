@@ -871,6 +871,47 @@ rule work as anywhere.
   **Save** writes the template file (validated as above); every List using it shows the change.
   Templates are site-wide, shared by every language.
 
+- **Item style** (a template's `style`; the template editor's **Style** tab): how each item
+  looks, over the theme's `--item-*` tokens. Every key is optional; a picker's first option,
+  **Theme**, leaves the key out of the file (never saved). Sizes are px on the 4px grid:
+
+  | Key               | Label                 | Values                                                                                                                                                   |
+  | ----------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `photoRatio`      | Photo ratio           | `"1/1"`, `"4/5"`, `"4/3"`, `"3/2"`, `"16/9"`, `"auto"` (Natural)                                                                                         |
+  | `photoFit`        | Photo fit             | `"fill"` (Fill: cropped to the ratio), `"fit"` (Fit: all of it)                                                                                          |
+  | `radius`          | Corner radius         | 0, 4, 8, 12, 16, 24                                                                                                                                      |
+  | `border`          | Border                | `"none"`, `"line"`, `"strong"`, `"bottom"` (a divider: square, 16px more above and below)                                                                |
+  | `shadow`          | Shadow                | `"none"`, `"s"`, `"m"`, `"l"`                                                                                                                            |
+  | `padding`         | Padding               | 0, 8, 12, 16, 24, 32                                                                                                                                     |
+  | `spacing`         | Space between widgets | 0, 4, 8, 12, 16, 24                                                                                                                                      |
+  | `background`      | Background            | `"none"`, `"surface"`, `"surface-2"`                                                                                                                     |
+  | `hoverBackground` | Background on hover   | as `background`                                                                                                                                          |
+  | `textOverPhoto`   | Text over photo       | `"none"`, `"bottom"` (on a shade at the photo's foot)                                                                                                    |
+  | `hoverEffect`     | Hover effect          | `"none"`, `"accent"` (Accent title), `"zoom"` (Zoom photo), `"shift"` (Slide title), `"lift"` (Lift); all but none turn a linked item's title the accent |
+  | `align`           | Align                 | `"start"`, `"center"`, `"end"`                                                                                                                           |
+
+  ```json
+  {
+    "style": {
+      "photoRatio": "3/2",
+      "photoFit": "fit",
+      "radius": 8,
+      "border": "line",
+      "padding": 16
+    }
+  }
+  ```
+
+  A border is an inset box-shadow ring (`--item-border`, listed with `--item-shadow`), so it
+  never shifts the layout. The presets are style values too: Card `photoRatio 4/5, hoverEffect
+accent`; Plain `photoRatio 4/3, padding 0, border none, shadow none, background none,
+hoverEffect accent`; Panel `photoRatio 4/5, padding 0, textOverPhoto bottom, hoverEffect
+zoom`; Row `photoRatio 4/3, border bottom, hoverEffect shift`. Duplicate writes the preset's
+  style into the new template (a template copy keeps its own). Beyond style a preset has its
+  look, which a template takes from its `basedOn`: Plain's and Row's title size, Plain's body
+  as prose, Row's photo beside the text. The List stylesheet names no preset. `ewcms check`
+  and Save reject an unknown key or value.
+
 - **Property mapping** (`config.properties`, Content tab under the source): one row per role the
   preset uses, **Photo**, **Title**, **Text** (`photo`, `title`, `body`), each a picker of the
   source's properties of a type that role takes (photo: `photo`; title: text, words,
@@ -896,7 +937,7 @@ rule work as anywhere.
 
 - **Arrangement** (Layout tab): **Grid** only for now (`columns` `"1"`–`"6"`; 2 on a tablet, 1 on
   a phone). Carousel comes later (not offered yet). Arrow keys, Home and End move between the
-  items in every column count. **Gap** S / M / L. (The old Arrangement **Rows** is gone: write
+  items in every column count. **Space between items** (`gap`) S / M / L. (The old Arrangement **Rows** is gone: write
   `"columns": "1"`.)
 - **When a value is missing** (`config.missing` on **every** widget, Content tab): **Hide**
   (default, omitted) leaves the widget out of the published page; **Show empty** keeps it empty

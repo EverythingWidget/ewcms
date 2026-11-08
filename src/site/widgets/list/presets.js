@@ -22,6 +22,7 @@
  */
 import { schemaOf } from '../../schemas.js';
 import { isObject } from '../../is.js';
+import { presetStyle } from './item-style.js';
 
 /**
  * The presets, in the picker's order. Each is data the List reads (no preset names in its
@@ -29,6 +30,8 @@ import { isObject } from '../../is.js';
  * `link` whether the whole item is a link to the item's page (Plain has its own button
  * instead), `photoFirst` whether its photo sits apart from the text after it (.li__text).
  */
+// look: what a preset's shape has beyond the item style (style.js): its title's size, the
+// photo beside the text (Row), the body as prose (Plain); a template takes its basedOn's
 export const PRESETS = [
   {
     id: 'preset:card',
@@ -47,6 +50,7 @@ export const PRESETS = [
     link: false,
     photoFirst: true,
     columns: '3',
+    look: { titleSize: 'clamp(28px, 2.6vw, 44px)', prose: true },
   },
   {
     id: 'preset:panel',
@@ -65,6 +69,7 @@ export const PRESETS = [
     link: true,
     photoFirst: true,
     columns: '1',
+    look: { titleSize: 'clamp(30px, 4.4vw, 76px)', beside: true },
   },
 ];
 export const PRESET_IDS = PRESETS.map((p) => p.id);
@@ -258,6 +263,9 @@ export function cloneTemplate(
       ...(own.source || (!handmade && source) ? { source: own.source || source } : {}),
       link: own.link !== false,
       photoFirst: own.photoFirst !== false,
+      ...(isObject(own.style) && Object.keys(own.style).length
+        ? { style: structuredClone(own.style) }
+        : {}),
       widgets: structuredClone(own.widgets),
     };
   const preset = presetOf(id);
@@ -285,6 +293,7 @@ export function cloneTemplate(
     ...(!handmade && source ? { source } : {}),
     link: preset.link,
     photoFirst: preset.photoFirst,
+    style: presetStyle(preset.id),
     widgets,
   };
 }
