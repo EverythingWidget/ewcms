@@ -124,8 +124,11 @@ test('a List with config.template "t-…" renders the template, from a source an
     people.map((p) => p.title),
   );
   assert.ok(items[0].querySelector('.li__photo img'));
-  // its look is its "basedOn" preset's
-  assert.ok(items[0].classList.contains('li--card'));
+  // its look is its own style alone: "basedOn" is only a note (a Row basedOn changes nothing)
+  assert.ok(items[0].classList.contains('li--template'));
+  const row = list({ template: 't-ab12' }, {}, withTemplate(card({ basedOn: 'preset:row' }))).el;
+  assert.ok(!row.querySelector('.li--beside'));
+  assert.equal(row.querySelector('.li').getAttribute('style'), null);
   assert.ok(!seen.some((w) => /missing/.test(w)), seen.join());
   // no mapping rows for a template (it names its properties itself)
   assert.deepEqual(

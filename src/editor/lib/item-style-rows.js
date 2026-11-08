@@ -27,6 +27,9 @@ const NAMES = {
     lift: 'Lift',
   },
   align: { start: 'Start', center: 'Center', end: 'End' },
+  photoPlacement: { above: 'Above', beside: 'Beside' },
+  titleSize: { s: 'Small', m: 'Medium', l: 'Large' },
+  textBody: { lines: 'Lines', prose: 'Prose' },
 };
 NAMES.hoverBackground = NAMES.background;
 NAMES.photoRatio = RATIO;
@@ -34,6 +37,7 @@ NAMES.photoRatio = RATIO;
 const LABELS = [
   ['photoRatio', 'Photo ratio'],
   ['photoFit', 'Photo fit'],
+  ['photoPlacement', 'Photo placement'],
   ['radius', 'Corner radius'],
   ['border', 'Border'],
   ['shadow', 'Shadow'],
@@ -43,6 +47,8 @@ const LABELS = [
   ['hoverBackground', 'Background on hover'],
   ['textOverPhoto', 'Text over photo'],
   ['hoverEffect', 'Hover effect'],
+  ['titleSize', 'Title size'],
+  ['textBody', 'Text body'],
   ['align', 'Align'],
 ];
 

@@ -30,8 +30,6 @@ import { presetStyle } from './item-style.js';
  * `link` whether the whole item is a link to the item's page (Plain has its own button
  * instead), `photoFirst` whether its photo sits apart from the text after it (.li__text).
  */
-// look: what a preset's shape has beyond the item style (style.js): its title's size, the
-// photo beside the text (Row), the body as prose (Plain); a template takes its basedOn's
 export const PRESETS = [
   {
     id: 'preset:card',
@@ -50,7 +48,6 @@ export const PRESETS = [
     link: false,
     photoFirst: true,
     columns: '3',
-    look: { titleSize: 'clamp(28px, 2.6vw, 44px)', prose: true },
   },
   {
     id: 'preset:panel',
@@ -69,7 +66,6 @@ export const PRESETS = [
     link: true,
     photoFirst: true,
     columns: '1',
-    look: { titleSize: 'clamp(30px, 4.4vw, 76px)', beside: true },
   },
 ];
 export const PRESET_IDS = PRESETS.map((p) => p.id);
@@ -301,15 +297,3 @@ export function cloneTemplate(
 /** A site template by id (config.template "t-…"), null when it isn't one or is missing. */
 export const templateOf = (ctx, id) =>
   (typeof id === 'string' && id.startsWith('t-') && ctx?.templates?.[id]) || null;
-
-/**
- * The preset whose look (li--<shape>, columns) a template has: its `basedOn`, followed through
- * templates; Card when it names none.
- */
-export function shapeOf(ctx, id, seen = new Set()) {
-  const own = templateOf(ctx, id);
-  if (!own) return presetOf(id);
-  if (seen.has(id)) return PRESETS[0];
-  seen.add(id);
-  return shapeOf(ctx, own.basedOn, seen);
-}

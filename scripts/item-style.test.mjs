@@ -35,6 +35,7 @@ test('the keys and their values: sizes on the 4px grid, Fill / Fit, Border as a 
   assert.deepEqual(Object.keys(STYLE_KEYS), [
     'photoRatio',
     'photoFit',
+    'photoPlacement',
     'radius',
     'border',
     'shadow',
@@ -44,8 +45,13 @@ test('the keys and their values: sizes on the 4px grid, Fill / Fit, Border as a 
     'hoverBackground',
     'textOverPhoto',
     'hoverEffect',
+    'titleSize',
+    'textBody',
     'align',
   ]);
+  assert.deepEqual(STYLE_KEYS.titleSize, ['s', 'm', 'l']);
+  assert.deepEqual(STYLE_KEYS.photoPlacement, ['above', 'beside']);
+  assert.deepEqual(STYLE_KEYS.textBody, ['lines', 'prose']);
   for (const k of ['radius', 'padding', 'spacing'])
     assert.ok(
       STYLE_KEYS[k].every((n) => n % 4 === 0),
@@ -110,6 +116,16 @@ test('presets are style values; Duplicate writes them out; a template copy keeps
   ]);
   for (const [id, s] of Object.entries(PRESET_STYLES)) assert.deepEqual(styleProblems(s), [], id);
   assert.equal(PRESET_STYLES['preset:row'].border, 'bottom'); // Row's divider
+  // every preset sets its title size, photo placement and text body: nothing beyond style
+  for (const s of Object.values(PRESET_STYLES))
+    assert.ok(s.titleSize && s.photoPlacement && s.textBody);
+  assert.equal(PRESET_STYLES['preset:row'].photoPlacement, 'beside');
+  assert.equal(PRESET_STYLES['preset:plain'].textBody, 'prose');
+  const m = styleMarkup({ titleSize: 'l', photoPlacement: 'beside', textBody: 'prose' });
+  assert.deepEqual(m.cls, ['li--beside', 'li--prose']);
+  assert.equal(m.vars, '--li-title-size:clamp(30px, 4.4vw, 76px)');
+  // the look data is gone: presets are style values only
+  assert.doesNotMatch(read('src/site/widgets/list/presets.js'), /\blook:|shapeOf/);
   assert.equal(PRESET_STYLES['preset:panel'].textOverPhoto, 'bottom');
   const card = cloneTemplate(base, 'people', 'preset:card');
   assert.deepEqual(card.style, presetStyle('preset:card'));
@@ -136,6 +152,9 @@ test('the Style tab: Theme first and never saved, the agreed labels, Space betwe
   assert.equal(labels.spacing, 'Space between widgets');
   assert.equal(labels.textOverPhoto, 'Text over photo');
   assert.equal(labels.hoverEffect, 'Hover effect');
+  assert.equal(labels.titleSize, 'Title size');
+  assert.equal(labels.photoPlacement, 'Photo placement');
+  assert.equal(labels.textBody, 'Text body');
   const fit = STYLE_ROWS.find((r) => r.key === 'photoFit');
   assert.deepEqual(fit.options, [
     ['', 'Theme'],

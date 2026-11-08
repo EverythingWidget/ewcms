@@ -7,6 +7,7 @@
  *
  *   photoRatio       "1/1" | "4/5" | "4/3" | "3/2" | "16/9" | "auto"   the photo's shape
  *   photoFit         "fill" | "fit"            fill the shape (cropped) or fit in it
+ *   photoPlacement   "above" | "beside"        the photo above the text, or a small one left
  *   radius           0 | 4 | 8 | 12 | 16 | 24  the item's and its photo's corners
  *   border           "none" | "line" | "strong" | "bottom"   an inset ring (no layout shift);
  *                    bottom: a divider line under the item (square corners, 16px more above
@@ -19,6 +20,8 @@
  *   textOverPhoto    "none" | "bottom"         the text over the photo's foot, a shade under it
  *   hoverEffect      "none" | "accent" | "zoom" | "shift" | "lift"   on hover: the title in the
  *                    accent (a linked item), plus zoom the photo, slide the title or lift the item
+ *   titleSize        "s" | "m" | "l"           the title's size (Text over photo sizes its own)
+ *   textBody         "lines" | "prose"         the body text as lines, or a readable paragraph
  *   align            "start" | "center" | "end"   the text
  */
 import { isObject } from '../../is.js';
@@ -27,6 +30,7 @@ const PX = (...n) => n;
 export const STYLE_KEYS = {
   photoRatio: ['1/1', '4/5', '4/3', '3/2', '16/9', 'auto'],
   photoFit: ['fill', 'fit'],
+  photoPlacement: ['above', 'beside'],
   radius: PX(0, 4, 8, 12, 16, 24),
   border: ['none', 'line', 'strong', 'bottom'],
   shadow: ['none', 's', 'm', 'l'],
@@ -36,22 +40,48 @@ export const STYLE_KEYS = {
   hoverBackground: ['none', 'surface', 'surface-2'],
   textOverPhoto: ['none', 'bottom'],
   hoverEffect: ['none', 'accent', 'zoom', 'shift', 'lift'],
+  titleSize: ['s', 'm', 'l'],
+  textBody: ['lines', 'prose'],
   align: ['start', 'center', 'end'],
 };
 
 /** The presets as style values (their look, the same pixels as before step 9). */
 export const PRESET_STYLES = {
-  'preset:card': { photoRatio: '4/5', hoverEffect: 'accent' },
+  'preset:card': {
+    photoRatio: '4/5',
+    photoPlacement: 'above',
+    hoverEffect: 'accent',
+    titleSize: 'm',
+    textBody: 'lines',
+  },
   'preset:plain': {
     photoRatio: '4/3',
+    photoPlacement: 'above',
     padding: 0,
     border: 'none',
     shadow: 'none',
     background: 'none',
     hoverEffect: 'accent',
+    titleSize: 's',
+    textBody: 'prose',
   },
-  'preset:panel': { photoRatio: '4/5', padding: 0, textOverPhoto: 'bottom', hoverEffect: 'zoom' },
-  'preset:row': { photoRatio: '4/3', border: 'bottom', hoverEffect: 'shift' },
+  'preset:panel': {
+    photoRatio: '4/5',
+    photoPlacement: 'above',
+    padding: 0,
+    textOverPhoto: 'bottom',
+    hoverEffect: 'zoom',
+    titleSize: 'm',
+    textBody: 'lines',
+  },
+  'preset:row': {
+    photoRatio: '4/3',
+    photoPlacement: 'beside',
+    border: 'bottom',
+    hoverEffect: 'shift',
+    titleSize: 'l',
+    textBody: 'lines',
+  },
 };
 export const presetStyle = (id) => ({ ...(PRESET_STYLES[id] || PRESET_STYLES['preset:card']) });
 
@@ -85,6 +115,11 @@ const RING = {
   strong: 'inset 0 0 0 1px var(--muted)',
   bottom: 'inset 0 -1px 0 var(--line)',
 };
+const TITLE = {
+  s: 'clamp(28px, 2.6vw, 44px)',
+  m: 'clamp(34px, 3.6vw, 60px)',
+  l: 'clamp(30px, 4.4vw, 76px)',
+};
 const SHADOW = {
   none: '0 0 0 0 transparent',
   s: 'var(--item-shadow-s)',
@@ -94,10 +129,9 @@ const SHADOW = {
 
 /**
  * One item's style as markup: { cls: its modifier classes, vars: its inline --item-*
- * overrides ("" when none) }. A look (presets.js PRESET_LOOKS: the title's size, the photo
- * beside the text) comes with it.
+ * overrides ("" when none) }.
  */
-export function styleMarkup(style, look = {}) {
+export function styleMarkup(style) {
   const s = cleanStyle(style);
   const v = [];
   const put = (name, value) => value !== undefined && v.push(`${name}:${value}`);
@@ -110,14 +144,14 @@ export function styleMarkup(style, look = {}) {
   put('--item-gap', s.spacing !== undefined ? `${s.spacing}px` : undefined);
   put('--item-bg', s.background && FILL[s.background]);
   put('--item-bg-hover', s.hoverBackground && FILL[s.hoverBackground]);
-  put('--li-title-size', look.titleSize);
+  put('--li-title-size', s.titleSize && TITLE[s.titleSize]);
   const cls = [
     s.border === 'bottom' && 'li--border-bottom',
     s.textOverPhoto === 'bottom' && 'li--over-bottom',
     s.hoverEffect && `li--hover-${s.hoverEffect}`,
     s.align && s.align !== 'start' && `li--align-${s.align}`,
-    look.beside && 'li--beside',
-    look.prose && 'li--prose',
+    s.photoPlacement === 'beside' && 'li--beside',
+    s.textBody === 'prose' && 'li--prose',
   ].filter(Boolean);
   return { cls, vars: v.join(';') };
 }

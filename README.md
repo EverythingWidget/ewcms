@@ -841,9 +841,8 @@ rule work as anywhere.
   picked template, into a new `t-` file (the dev server's `POST /__editor/templates`: Save
   never creates files) and points the List at it, saving that switch at once (unless the page has
   other unsaved edits: then it stays unsaved and a note says "Saved as template t-…"). A copied
-  facts line keeps `"join": " · "`: the separator goes only between facts with a value; `basedOn` keeps the preset or template it was copied from and gives
-  the template its preset's look (`li--card`, columns). `role` names a widget's place in that
-  look (`.li__<role>`); a button's `"itemLink": true` opens the item's page; `link` makes the
+  facts line keeps `"join": " · "`: the separator goes only between facts with a value; `basedOn` notes the preset or template it was copied from (only a note). `role` names a widget's place in the
+  item (`.li__<role>`); a button's `"itemLink": true` opens the item's page; `link` makes the
   whole item a link, `photoFirst` sets a leading photo apart. A template's optional top-level
   `"source": "<source>"` (Duplicate records the List's) only names where the template editor's
   sample item comes from; its widgets have no `source` (the List gives each copy its item), no
@@ -903,13 +902,16 @@ rule work as anywhere.
   ```
 
   A border is an inset box-shadow ring (`--item-border`, listed with `--item-shadow`), so it
-  never shifts the layout. The presets are style values too: Card `photoRatio 4/5, hoverEffect
-accent`; Plain `photoRatio 4/3, padding 0, border none, shadow none, background none,
-hoverEffect accent`; Panel `photoRatio 4/5, padding 0, textOverPhoto bottom, hoverEffect
-zoom`; Row `photoRatio 4/3, border bottom, hoverEffect shift`. Duplicate writes the preset's
-  style into the new template (a template copy keeps its own). Beyond style a preset has its
-  look, which a template takes from its `basedOn`: Plain's and Row's title size, Plain's body
-  as prose, Row's photo beside the text. The List stylesheet names no preset. `ewcms check`
+  never shifts the layout. The presets are style values only (`PRESET_STYLES` in
+  `src/site/widgets/list/item-style.js`): Card `photoRatio 4/5, photoPlacement above,
+hoverEffect accent, titleSize m, textBody lines`; Plain `photoRatio 4/3, photoPlacement above,
+padding 0, border none, shadow none, background none, hoverEffect accent, titleSize s,
+textBody prose`; Panel `photoRatio 4/5, photoPlacement above, padding 0, textOverPhoto bottom,
+hoverEffect zoom, titleSize m, textBody lines`; Row `photoRatio 4/3, photoPlacement beside,
+border bottom, hoverEffect shift, titleSize l, textBody lines`. Duplicate writes the preset's
+  style into the new template (a template copy keeps its own). A template looks as its own
+  `style` says, nothing else: `basedOn` is only a note of where it came from (its columns'
+  default is 3, as Card's). The List stylesheet names no preset. `ewcms check`
   and Save reject an unknown key or value.
 
 - **Property mapping** (`config.properties`, Content tab under the source): one row per role the

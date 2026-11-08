@@ -49,7 +49,7 @@ import {
   factsRuns,
   mappingRows,
   presetWidgets,
-  shapeOf,
+  presetOf,
   templateOf,
 } from './presets.js';
 import { isTemplateId } from '../../files.js';
@@ -259,7 +259,9 @@ export const list = {
         `${contentPath(widget.file)}: List ${widget.id}: template "${c.template}" is missing (content/templates/${c.template}.json): it shows Card`,
         'layout',
       );
-    const preset = shapeOf(ctx, c.template);
+    // a template's look is its own style alone ("basedOn" is only a note); the columns'
+    // default and the item class are Card's then
+    const preset = presetOf(own ? 'preset:card' : c.template);
     const columns = COLUMNS.includes(String(c.columns)) ? String(c.columns) : preset.columns || '3';
     const gap = GAPS.includes(c.gap) ? c.gap : 'm';
     // this List's choice; each item widget may override (hideMissing on its own config)
@@ -269,7 +271,7 @@ export const list = {
     const keys = handmade
       ? new Set(['title', 'photo', 'unit', 'count', 'source'])
       : keysOf(ctx, source);
-    const shape = preset.id.slice('preset:'.length);
+    const shape = own ? 'template' : preset.id.slice('preset:'.length);
     const sep = t(ctx, 'list.sep');
     // the template, once per List: its widgets, and whether its photo sits apart from the text
     // the template, once per List: its widgets, and whether its photo sits apart from the text
@@ -282,7 +284,7 @@ export const list = {
         });
     const link = own ? own.link !== false : preset.link;
     // the item style (./item-style.js): the template's own, else the preset's
-    const look = styleMarkup(own ? own.style : presetStyle(preset.id), preset.look);
+    const look = styleMarkup(own ? own.style : presetStyle(preset.id));
     const liClass = ['li', `li--${shape}`, ...look.cls].join(' ');
     const liStyle = look.vars ? ` style="${esc(look.vars)}"` : '';
     const photoFirst =

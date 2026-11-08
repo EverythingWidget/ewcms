@@ -225,8 +225,7 @@ a.li:not(.li--hover-none):hover .li__title .ts {
   }
 }
 
-// ---- looks (presets.js PRESET look, a template takes its basedOn's)
-// beside: a small photo left, the text right
+// ---- photoPlacement beside: a small photo left, the text right
 .li--beside {
   grid-template-columns: minmax(64px, 120px) minmax(0, 1fr);
   align-items: center;
@@ -238,7 +237,7 @@ a.li:not(.li--hover-none):hover .li__title .ts {
   }
 }
 
-// prose: the body as a readable paragraph
+// ---- textBody prose: the body as a readable paragraph
 .li--prose .li__body .ts {
   max-width: 52ch;
   font-size: 15px;
