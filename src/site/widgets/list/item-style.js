@@ -82,6 +82,21 @@ export const PRESET_STYLES = {
     titleSize: 'l',
     textBody: 'lines',
   },
+  'preset:photo': {
+    photoRatio: '4/5',
+    photoFit: 'fill',
+    photoPlacement: 'above',
+    padding: 0,
+    spacing: 0,
+    border: 'none',
+    shadow: 'none',
+    background: 'none',
+    hoverBackground: 'none',
+    textOverPhoto: 'none',
+    hoverEffect: 'none',
+    titleSize: 's',
+    textBody: 'lines',
+  },
 };
 export const presetStyle = (id) => ({ ...(PRESET_STYLES[id] || PRESET_STYLES['preset:card']) });
 

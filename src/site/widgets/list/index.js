@@ -14,7 +14,7 @@
  *         { "title": "Places", "source": "places", "unit": "places" }
  *       ] } }
  *
- * template     a preset (./presets.js): preset:card | preset:plain | preset:panel | preset:row,
+ * template     a preset (./presets.js): preset:card | preset:plain | preset:panel | preset:row | preset:photo,
  *              or a site template "t-…" (content/templates/t-….json: Duplicate preset makes one)
  * handmade     true: items come from config.items (Hand-made); omit/false: from the source
  * items        hand-made entries [{ title, photo?, link?, source?, unit? }]; kept when switching

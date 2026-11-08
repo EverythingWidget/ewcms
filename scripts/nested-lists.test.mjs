@@ -16,6 +16,8 @@ import {
   innerSourceProblems,
   nestingProblems,
 } from '../src/site/widgets/list/nested.js';
+import { presetOf, cloneTemplate } from '../src/site/widgets/list/presets.js';
+import { PRESET_STYLES, styleProblems } from '../src/site/widgets/list/item-style.js';
 import { partLabel, partText } from '../src/site/layout/parts.js';
 import { chipHtml, partOfName } from '../src/editor/lib/parts-input.js';
 import { innerSourceFor, newStackWidget } from '../src/editor/lib/item-template.js';
@@ -79,6 +81,26 @@ function render(templates, config = { template: 't-card' }, content = base) {
 
 test("the plan's test: each person's card shows its own photos as an inner grid", () => {
   const { el, seen } = render({
+    't-card': tpl('Person', [
+      title,
+      inner({ mode: 'property', property: 'photos' }, 'preset:photo'),
+    ]),
+  });
+  const outer = [...el.querySelector('.list__items').children];
+  assert.equal(outer.length, people.length);
+  outer.forEach((li, i) => {
+    const grid = li.querySelector('.li__inner .list__items');
+    assert.equal(grid.getAttribute('data-cols'), '4');
+    const imgs = grid.querySelectorAll('.li .li__photo img');
+    assert.equal(imgs.length, people[i].photos.length, people[i].title);
+    // the Photo preset: a photo only, no text
+    assert.equal(grid.querySelectorAll('.li .ts').length, 0);
+  });
+  assert.ok(!seen.some((w) => /two levels/.test(w)), seen.join());
+});
+
+test('an inner template reads the outer item: {parent: title} and {index}', () => {
+  const { el, seen } = render({
     't-card': tpl('Person', [title, inner({ mode: 'property', property: 'photos' })]),
     't-ph00': photoTpl,
   });
@@ -93,6 +115,25 @@ test("the plan's test: each person's card shows its own photos as an inner grid"
     assert.equal(grid.querySelector('.li__facts').textContent.trim(), `${people[i].title} 01`);
   });
   assert.ok(!seen.some((w) => /two levels/.test(w)), seen.join());
+});
+
+test('preset:photo: a photo only, its style spelled out, and Duplicate copies it', () => {
+  assert.deepEqual(presetOf('preset:photo').roles, ['photo']);
+  const copy = cloneTemplate(base, 'people', 'preset:photo', { properties: { photo: 'cover' } });
+  assert.equal(copy.label, 'Photo copy');
+  assert.equal(copy.basedOn, 'preset:photo');
+  assert.deepEqual(copy.style, PRESET_STYLES['preset:photo']);
+  assert.deepEqual(
+    copy.widgets.map((w) => w.type),
+    ['photo'],
+  );
+  assert.deepEqual(styleProblems(copy.style), []);
+  assert.deepEqual(
+    checkContent({ ...base, templates: { 't-copy': copy } }).filter((p) =>
+      /t-copy/.test(p.file || p.message || ''),
+    ),
+    [],
+  );
 });
 
 test('the three source forms: a property, a source, a source matched to this item', () => {

@@ -19,6 +19,7 @@
  *   Plain  photo, title, body, a button to the item's page; no box
  *   Panel  a big photo, title and count over it (photo tiles, Photo panels)
  *   Row    a small photo left, title and facts right (Project list)
+ *   Photo  a photo only: no text, no box (a photo grid, an inner List of an item's photos)
  */
 import { schemaOf } from '../../schemas.js';
 import { isObject } from '../../is.js';
@@ -66,6 +67,15 @@ export const PRESETS = [
     link: true,
     photoFirst: true,
     columns: '1',
+  },
+  {
+    id: 'preset:photo',
+    label: 'Photo',
+    hint: 'A photo only; no text, no box',
+    roles: ['photo'],
+    link: false,
+    photoFirst: true,
+    columns: '4',
   },
 ];
 export const PRESET_IDS = PRESETS.map((p) => p.id);

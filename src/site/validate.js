@@ -642,7 +642,7 @@ export function checkContent(file, data) {
 }
 
 /** Presets a template can come from (src/site/widgets/list/presets.js PRESETS ids). */
-const PRESET_FROM = ['preset:card', 'preset:plain', 'preset:panel', 'preset:row'];
+const PRESET_FROM = ['preset:card', 'preset:plain', 'preset:panel', 'preset:row', 'preset:photo'];
 const ROLE = /^[a-z][a-z0-9-]*$/;
 
 /**

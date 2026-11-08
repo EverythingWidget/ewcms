@@ -70,7 +70,14 @@ async function gh(url) {
   return res.json();
 }
 
-const readPkg = (root) => JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+/** The site's package.json, null when it has none (or it doesn't parse): no pinned ewcms. */
+export function readPkg(root) {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  } catch {
+    return null;
+  }
+}
 
 export function createUpdater({ root, server, logger = console, fetchJSON = gh }) {
   let checked = null; // { at, body }
@@ -87,7 +94,13 @@ export function createUpdater({ root, server, logger = console, fetchJSON = gh }
       changes: [],
     };
     if (dep) {
-      const tags = await fetchJSON(`/repos/${dep.owner}/${dep.repo}/tags?per_page=100`);
+      let tags;
+      try {
+        tags = await fetchJSON(`/repos/${dep.owner}/${dep.repo}/tags?per_page=100`);
+      } catch {
+        // offline, rate-limited or GitHub down: no notice, checked again next time
+        return { ...body, latest: 'unknown', boot: BOOT };
+      }
       body.latest = newestTag(tags.map((t) => t.name));
       const cur = parseVersion(dep.tag);
       const lat = parseVersion(body.latest);

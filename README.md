@@ -44,7 +44,9 @@ always loads; the site's `theme/` layers on it (see **Theme**).
 `#vX.Y.Z` in the site's `package.json`, its header shows **Update available**; the card lists the
 versions and the commits between. **Update** sets the tag in `package.json`, runs `npm install`
 and restarts `ewcms dev` (the editor reloads by itself); then commit `package.json` and the
-lockfile. A failed install changes nothing. A linked or `file:` engine is never offered one.
+lockfile. A failed install changes nothing. A linked or `file:` engine is never offered one. No check is
+an error: offline (or GitHub down), `GET /__editor/update` answers 200 with `"latest": "unknown"`
+and no notice, and a site with no `package.json` is simply not pinned.
 
 ## Working on ewcms and a site together (the workspace, no npm link)
 
@@ -808,7 +810,8 @@ rule work as anywhere.
   **Plain** (photo, title, long text, a View button), **Panel** (a big photo with its title and
   photo count over it: the Photography panels, a hand-made List; the old Photo panels widget
   (`panels`) is gone and content that still has one is rejected with a pointer to List), **Row** (a small photo, the title, the facts on the right:
-  Project list). Each preset is a column of widgets; its facts are the source's `list`
+  Project list), **Photo** (`preset:photo`, a photo only: no text, no box, no link; four
+  columns: a photo grid, an inner List of an item's photos). Each preset is a column of widgets; its facts are the source's `list`
   properties (`·` between them) and Panel's count is the plain `{photos}` (how many).
 - **Item templates** (`content/templates/t-<id>.json`, step 7): site-wide (every language
   folder uses them, so they sit next to `content/en/`), each a vertical stack of the
@@ -885,7 +888,7 @@ rule work as anywhere.
     "type": "list",
     "role": "photos",
     "source": { "mode": "property", "property": "photos" },
-    "config": { "template": "t-ph00", "columns": "4", "gap": "s" }
+    "config": { "template": "preset:photo", "columns": "4", "gap": "s" }
   }
   ```
 
@@ -939,7 +942,10 @@ hoverEffect accent, titleSize m, textBody lines`; Plain `photoRatio 4/3, photoPl
 padding 0, border none, shadow none, background none, hoverEffect accent, titleSize s,
 textBody prose`; Panel `photoRatio 4/5, photoPlacement above, padding 0, textOverPhoto bottom,
 hoverEffect zoom, titleSize m, textBody lines`; Row `photoRatio 4/3, photoPlacement beside,
-border bottom, hoverEffect shift, titleSize l, textBody lines`. Duplicate writes the preset's
+border bottom, hoverEffect shift, titleSize l, textBody lines`; Photo `photoRatio 4/5, photoFit
+fill, photoPlacement above, padding 0, spacing 0, border none, shadow none, background none,
+hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBody lines` (its
+  radius the theme's). Duplicate writes the preset's
   style into the new template (a template copy keeps its own). A template looks as its own
   `style` says, nothing else: `basedOn` is only a note of where it came from (its columns'
   default is 3, as Card's). The List stylesheet names no preset. `ewcms check`

@@ -113,6 +113,7 @@ test('presets are style values; Duplicate writes them out; a template copy keeps
     'preset:plain',
     'preset:panel',
     'preset:row',
+    'preset:photo',
   ]);
   for (const [id, s] of Object.entries(PRESET_STYLES)) assert.deepEqual(styleProblems(s), [], id);
   assert.equal(PRESET_STYLES['preset:row'].border, 'bottom'); // Row's divider

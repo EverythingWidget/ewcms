@@ -92,3 +92,18 @@ test('a failed install puts package.json and the lockfile back', async () => {
     false,
   );
 });
+
+test('update check: no package.json or offline is quiet, never an error', async () => {
+  const bare = fs.mkdtempSync(path.join(os.tmpdir(), 'upd-'));
+  const b = await createUpdater({ root: bare, logger: quiet, fetchJSON }).check();
+  assert.equal(b.available, false);
+  const off = async () => {
+    throw new Error('fetch failed');
+  };
+  const o = await createUpdater({
+    root: site('github:eeliya/ewcms#v0.1.36'),
+    logger: quiet,
+    fetchJSON: off,
+  }).check();
+  assert.deepEqual([o.available, o.latest, o.current], [false, 'unknown', 'v0.1.36']);
+});

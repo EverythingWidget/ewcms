@@ -71,8 +71,14 @@ test('each preset renders its own shape', () => {
       ['preset:plain', 'Plain'],
       ['preset:panel', 'Panel'],
       ['preset:row', 'Row'],
+      ['preset:photo', 'Photo'],
     ],
   );
+  // Photo: a photo only, no link, no text
+  const photo = shape('preset:photo').first;
+  assert.equal(photo.tagName, 'DIV');
+  assert.ok(photo.querySelector('.li__photo img'));
+  assert.equal(photo.querySelectorAll('.ts').length, 0);
   // Card: a link, photo on top, then title and facts (the source's list properties)
   const card = shape('preset:card').first;
   assert.equal(card.tagName, 'A');
