@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { resolveRows, rowsFor } from '../src/site/layout/flow.js';
 import { rowsOf } from '../src/site/layout/index.js';
 import { createStore } from '../src/editor/store.js';
-import { placeWidget, placeMobile, setSection } from '../src/editor/layout-ops.js';
+import { placeWidget, placePhone, setSection } from '../src/editor/layout-ops.js';
 
 const b = (id, col, span, row, rows, need) => ({ id, col, span, row, rows, need });
 
@@ -94,8 +94,8 @@ test("a drag stores where the section's widgets are now (their real rows), one u
   assert.equal(s.rows, undefined);
   store.undo();
   assert.deepEqual(store.current[F], page);
-  // on the phone: the other widgets' mobile rows
-  placeMobile(
+  // on the phone: the other widgets' phone rows
+  placePhone(
     store,
     F,
     0,

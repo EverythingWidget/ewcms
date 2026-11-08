@@ -90,7 +90,7 @@ import {
   placeWidget,
   setWidget,
   removeWidgets,
-  placeMobile,
+  placePhone,
   setSectionRows,
 } from './layout-ops.js';
 import { createOverlay } from './overlay.js';
@@ -142,14 +142,14 @@ const overlay = createOverlay({
     selectWidgets(ids);
   },
   // the selected widgets dragged (or nudged) by whole cells: one undo step
-  ongroupmove(ids, dc, dr, { mobile = false, flow = {}, rows = 0 } = {}) {
+  ongroupmove(ids, dc, dr, { phone = false, flow = {}, rows = 0 } = {}) {
     const found = widgetAt(ids[0]);
-    if (found) moveWidgets(store, found.file, found.at, ids, dc, dr, { phone: mobile, flow, rows });
+    if (found) moveWidgets(store, found.file, found.at, ids, dc, dr, { phone, flow, rows });
   },
-  onplace(id, pos, { mobile = false, flow = {}, rows = 0, size } = {}) {
+  onplace(id, pos, { phone = false, flow = {}, rows = 0, size } = {}) {
     const found = widgetAt(id);
     if (!found) return;
-    if (mobile) placeMobile(store, found.file, found.at, found.j, pos, { flow, rows });
+    if (phone) placePhone(store, found.file, found.at, found.j, pos, { flow, rows });
     else placeWidget(store, found.file, found.at, found.j, pos, undefined, { flow, rows, size });
   },
   // the preview tag's Auto toggle: Size Auto ↔ Rows (keeping the rows it shows), one undo step
@@ -164,17 +164,17 @@ const overlay = createOverlay({
     });
   },
   // a widget linked to another (its top circle dropped on that one's bottom circle) or freed
-  onlink(id, to, gap, { mobile = false, row } = {}) {
+  onlink(id, to, gap, { phone = false, row } = {}) {
     const found = widgetAt(id);
     if (!found) return;
-    if (linkWidget(store, found.file, found.at, found.j, to, gap, { phone: mobile, row }) === null)
+    if (linkWidget(store, found.file, found.at, found.j, to, gap, { phone, row }) === null)
       toast("Can't link those widgets (another section's, or a loop)", { kind: 'error' });
   },
   // a Custom section's bottom edge dragged: its rows (one undo step)
-  onrows(id, rows, { mobile = false } = {}) {
+  onrows(id, rows, { phone = false } = {}) {
     const file = targetFile(ui.target, bridge.doc);
     const at = (store.current[file]?.sections || []).findIndex((s) => s?.id === id);
-    if (at >= 0) setSectionRows(store, file, at, rows, { phone: mobile });
+    if (at >= 0) setSectionRows(store, file, at, rows, { phone });
   },
   widgetOf(id) {
     const found = widgetAt(id);

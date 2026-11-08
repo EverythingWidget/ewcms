@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from './content.mjs';
 import { buildRoutes } from '../src/site/routes.js';
-import { header, mobileMenu } from '../src/site/templates/header.js';
+import { header, phoneMenu } from '../src/site/templates/header.js';
 import { checkContent } from '../src/site/validate.js';
 import { setEditable } from '../src/site/helpers.js';
 import { warnings } from './test-layout.mjs';
@@ -49,7 +49,7 @@ test('nav.json validation: links, nesting depth; no footer menu', () => {
   );
 });
 
-test('render: the header and mobile menu follow nav.json', () => {
+test('render: the header and phone menu follow nav.json', () => {
   const nav = {
     header: [
       {
@@ -90,7 +90,7 @@ test('render: the header and mobile menu follow nav.json', () => {
     h,
     /<a class="nav__item" href="\/photography\/people\/noor-vermeer\/" data-nav="\/photography\/people\/noor-vermeer\/"><span>Noor/,
   );
-  const m = mobileMenu(ctx);
+  const m = phoneMenu(ctx);
   assert.match(
     m,
     /<a class="mmenu__head" href="\/photography\/people\/"><span>Faces<\/span><\/a><a href="\/photography\/people\/noor-vermeer\/">/,

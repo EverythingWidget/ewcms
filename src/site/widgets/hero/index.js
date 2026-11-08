@@ -8,12 +8,12 @@ import { hrefOf } from '../../hrefs.js';
 
 const heroPhoto = (ctx, widget, p, i) => {
   // phone: its own x / y / w over the desktop's (partly or all); null: hidden on phones
-  const mobile = p.phone !== null;
+  const phone = p.phone !== null;
   const ph = { x: p.x, y: p.y, w: p.w, ...(p.phone || {}) };
-  const style = `--x:${p.x}%;--y:${p.y}%;--w:${p.w}vw;${mobile ? `--mx:${ph.x}%;--my:${ph.y}%;--mw:${ph.w}vw;` : ''}`;
+  const style = `--x:${p.x}%;--y:${p.y}%;--w:${p.w}vw;${phone ? `--mx:${ph.x}%;--my:${ph.y}%;--mw:${ph.w}vw;` : ''}`;
   if (!p.src) return '';
   return html` <a
-    class="scatter scatter--${p.layer === 'front' ? 'front' : 'back'}${mobile ? '' : ' scatter--desktop'}"
+    class="scatter scatter--${p.layer === 'front' ? 'front' : 'back'}${phone ? '' : ' scatter--desktop'}"
     href="${esc(hrefOf(ctx, p.link, 'a hero photo'))}"
     style="${style}"
     data-depth="${p.depth}"
@@ -21,7 +21,7 @@ const heroPhoto = (ctx, widget, p, i) => {
   >
     <span class="scatter__drift"
       ><span class="scatter__frame">
-        ${img(ctx, p.src, { decorative: true, sizes: sizes(`${mobile ? ph.w : 30}vw`, `${p.w}vw`), ...firstPhotos(i), attrs: widget.ed(['photos', i, 'src'], 'photo') })}
+        ${img(ctx, p.src, { decorative: true, sizes: sizes(`${phone ? ph.w : 30}vw`, `${p.w}vw`), ...firstPhotos(i), attrs: widget.ed(['photos', i, 'src'], 'photo') })}
       </span></span
     >
   </a>`;

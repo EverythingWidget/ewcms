@@ -35,7 +35,7 @@ export function placeOf(pos, cols = COLS) {
 }
 
 /** Does a widget's `phone` hold an area (it can hold only a link)? */
-export const hasMobileArea = (m) => !!m && AREA_KEYS.some((k) => m[k] !== undefined);
+export const hasPhoneArea = (m) => !!m && AREA_KEYS.some((k) => m[k] !== undefined);
 
 /**
  * A desktop area halved onto the phone grid: the cells it covers, half as many (its first
@@ -55,7 +55,7 @@ export const STACK_GAP = 4;
 /** Is a widget's phone layout its own (an area or a link set in the phone view)? */
 const ownPhone = (widget) => {
   const m = phoneOf(widget);
-  return hasMobileArea(m) || isObject(m?.link);
+  return hasPhoneArea(m) || isObject(m?.link);
 };
 
 /**
@@ -122,7 +122,7 @@ export function phoneStack(widgets) {
  * place in their default stack (phoneStack); else its desktop area halved.
  */
 export function phoneAreaOf(widget, widgets) {
-  if (hasMobileArea(phoneOf(widget))) return placeOf(phoneOf(widget), MCOLS);
+  if (hasPhoneArea(phoneOf(widget))) return placeOf(phoneOf(widget), MCOLS);
   const s = widgets && phoneStack(widgets).get(widget?.id);
   return s ? s.area : halfArea(baseOf(widget));
 }

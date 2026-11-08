@@ -88,7 +88,7 @@ test('the selected widget is dragged where widgets overlap; a click picks the to
 
 test('a link drag keeps the widget where it is (the gap: the rows between them)', () => {
   const o = read('src/editor/overlay.js');
-  assert.match(o, /onlink\(id, near\.id, b\.row - \(a\.row \+ a\.rows\), \{ mobile: phone \}\)/);
+  assert.match(o, /onlink\(id, near\.id, b\.row - \(a\.row \+ a\.rows\), \{ phone \}\)/);
   assert.doesNotMatch(o, /onlink\(id, near\.id, 0,/);
 });
 

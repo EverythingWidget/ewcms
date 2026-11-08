@@ -157,7 +157,7 @@
   // Auto height: the Layout tab's Size Auto ↔ Rows at the rows it shows now (one code path)
   const toggleAuto = () => {
     if (!where) return;
-    const rows = shownRows(bridge.doc, where.id, widget, ui.viewport === 'mobile', NEW_ROWS);
+    const rows = shownRows(bridge.doc, where.id, widget, ui.viewport === 'phone', NEW_ROWS);
     setWidget(live.store, where.file, where.at, where.j, autoPatch(!auto, rows));
   };
   const BAR_H = 40;

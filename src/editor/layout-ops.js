@@ -12,11 +12,11 @@ import {
   MCOLS,
   HEIGHTS,
   minRowsOf,
-  mobileMinRowsOf,
+  phoneMinRowsOf,
   phoneHeightOf,
-  mobileRowsOf,
+  phoneRowsOf,
   rowsOf,
-  hasMobileArea,
+  hasPhoneArea,
   linkOf,
   makesLoop,
   newWidget,
@@ -67,7 +67,7 @@ function settleLinks(section) {
     widgets.map((widget) => ({ id: widget.id, ...placeOf(baseOf(widget)), link: linkOf(widget) })),
     1,
   ).at;
-  const own = widgets.filter((widget) => hasMobileArea(phoneOf(widget)));
+  const own = widgets.filter((widget) => hasPhoneArea(phoneOf(widget)));
   const phone = resolveRows(
     own.map((widget) => ({
       id: widget.id,
@@ -190,7 +190,7 @@ export function setSection(store, file, at, patch, key) {
   // (a default is left out: src/site/defaults.js)
   for (const k of Object.keys(patch))
     if (patch[k] === undefined || patch[k] === DEFAULTS.section[k]) delete next[k];
-  return writeSection(store, file, at, tidyMobile(next), key);
+  return writeSection(store, file, at, tidyPhone(next), key);
 }
 
 /**
@@ -203,7 +203,7 @@ export function toggleSection(store, file, at) {
 }
 
 /** Its phone rows only while its phone height is custom; no empty `phone`. */
-function tidyMobile(s) {
+function tidyPhone(s) {
   if (!s.phone || typeof s.phone !== 'object') return s;
   const m = { ...s.phone };
   if (phoneHeightOf(s) !== 'custom') delete m.rows;
@@ -221,11 +221,11 @@ export function setPhoneHeight(store, file, at, height) {
   const s = listOf(store, file)[at];
   if (!s || (height !== undefined && !HEIGHTS.includes(height))) return false;
   if (height === s.phone?.height) return false;
-  const mobile = { ...s.phone, height };
-  if (height === undefined) delete mobile.height;
-  if (height === 'custom' && !Number.isInteger(mobile.rows?.min))
-    mobile.rows = { min: Math.ceil(minRowsOf(s) / 2) || mobileRowsOf(s) };
-  return setSection(store, file, at, { phone: mobile });
+  const phone = { ...s.phone, height };
+  if (height === undefined) delete phone.height;
+  if (height === 'custom' && !Number.isInteger(phone.rows?.min))
+    phone.rows = { min: Math.ceil(minRowsOf(s) / 2) || phoneRowsOf(s) };
+  return setSection(store, file, at, { phone });
 }
 
 /**
@@ -234,7 +234,7 @@ export function setPhoneHeight(store, file, at, height) {
  * phone's own rows on the phone). Only ever grows. In place, part of the move's undo step.
  */
 function grow(section, content, phone = false) {
-  const now = phone ? mobileMinRowsOf(section) : minRowsOf(section);
+  const now = phone ? phoneMinRowsOf(section) : minRowsOf(section);
   if (!now || content <= now) return;
   const rows = Math.min(MAX_MIN_ROWS, content);
   if (phone) section.phone = { ...section.phone, rows: { min: rows } };
@@ -383,7 +383,7 @@ function writeDropMain(store, file, list, gone) {
 
 /**
  * The rows the page shows (src/site/layout/flow.js) stored: flow { id: area } where the
- * section's other widgets are now (their row and rows; `phone`: their mobile areas). Widgets that grew or shrank (content, an aspect at this width) and the
+ * section's other widgets are now (their row and rows; `phone`: their phone areas). Widgets that grew or shrank (content, an aspect at this width) and the
  * widgets they pushed are stored as they are seen.
  */
 function storeFlow(section, j, flow = {}, phone = false) {
@@ -392,7 +392,7 @@ function storeFlow(section, j, flow = {}, phone = false) {
     if (!a) return;
     // on the phone only a widget's own phone area (one without shows its desktop area halved)
     if (phone) {
-      if (hasMobileArea(phoneOf(widget))) setPhone(widget, { row: a.row, rows: a.rows });
+      if (hasPhoneArea(phoneOf(widget))) setPhone(widget, { row: a.row, rows: a.rows });
     } else setBase(widget, { row: a.row, rows: a.rows });
   });
 }
@@ -450,7 +450,7 @@ export function linkWidget(store, file, at, j, to, gap = 0, { phone = false, row
   const stay = !next && Number.isInteger(row) && row > 0 ? { row } : {};
   if (phone) {
     ownPhoneLayout(section);
-    if (!hasMobileArea(phoneOf(widget))) setPhone(widget, phoneAreaOf(widget, section.widgets));
+    if (!hasPhoneArea(phoneOf(widget))) setPhone(widget, phoneAreaOf(widget, section.widgets));
     setPhone(widget, { link: next, ...stay });
   } else setBase(widget, { link: next, ...stay });
   if (next && makesLoop(section.widgets, widget.id, to, phone)) return null;
@@ -502,7 +502,7 @@ export function setWidget(store, file, at, j, patch, key) {
  * from then on (the first time, its desktop link comes along as its phone link, the gap
  * halved). A linked widget's gap follows where it was put. One undo step; key: see writeSection.
  */
-export function placeMobile(store, file, at, j, area, { key, flow, rows = 0 } = {}) {
+export function placePhone(store, file, at, j, area, { key, flow, rows = 0 } = {}) {
   const section = listOf(store, file)[at];
   ownPhoneLayout(section);
   storeFlow(section, j, flow, true);
@@ -513,7 +513,7 @@ export function placeMobile(store, file, at, j, area, { key, flow, rows = 0 } = 
     setPhone(widget, {
       link: { to: l.to, gap: gapAt(section, l, phoneOf(widget).row, flow, true) },
     });
-  grow(section, Math.max(rows, mobileRowsOf(section)), true);
+  grow(section, Math.max(rows, phoneRowsOf(section)), true);
   return writeSection(store, file, at, section, key);
 }
 
@@ -521,7 +521,7 @@ export function placeMobile(store, file, at, j, area, { key, flow, rows = 0 } = 
  * Section `at` back to its default phone layout (stacked: grid.js phoneStack): its widgets'
  * phone areas and phone links removed.
  */
-export function resetMobile(store, file, at) {
+export function resetPhone(store, file, at) {
   const section = listOf(store, file)[at];
   if (!section.widgets.some((widget) => widget.layout?.phone !== undefined)) return false;
   for (const widget of section.widgets) setPhone(widget, null);
@@ -559,7 +559,7 @@ export function moveWidgets(
     const a = !ids.includes(widget.id) && flow[widget.id];
     if (!a) return;
     if (phone) {
-      if (hasMobileArea(phoneOf(widget))) setPhone(widget, { row: a.row, rows: a.rows });
+      if (hasPhoneArea(phoneOf(widget))) setPhone(widget, { row: a.row, rows: a.rows });
     } else setBase(widget, { row: a.row, rows: a.rows });
   });
   for (const j of js) {
@@ -575,7 +575,7 @@ export function moveWidgets(
       else setBase(widget, { link: { to: l.to, gap } });
     }
   }
-  if (phone) grow(section, Math.max(rows, mobileRowsOf(section)), true);
+  if (phone) grow(section, Math.max(rows, phoneRowsOf(section)), true);
   else grow(section, Math.max(rows, rowsOf(section)));
   return writeSection(store, file, at, section);
 }

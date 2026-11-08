@@ -25,7 +25,7 @@ import {
   duplicateWidget,
   linkWidget,
   placeWidget,
-  placeMobile,
+  placePhone,
   removeWidget,
 } from '../src/editor/layout-ops.js';
 
@@ -231,7 +231,7 @@ test('editor: phone links are separate; the first phone move brings the desktop 
   });
   const widget = () => store.current[F].sections[0].widgets[1];
   // on the phone a's halved area ends at row 5; b dropped at row 9: gap 3
-  placeMobile(store, F, 0, 1, { col: 1, span: 60, row: 9, rows: 2 });
+  placePhone(store, F, 0, 1, { col: 1, span: 60, row: 9, rows: 2 });
   assert.deepEqual(flat(widget()).phone, {
     col: 1,
     span: 60,

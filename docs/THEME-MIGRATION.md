@@ -25,7 +25,7 @@ optional:
 4. Rule changes in `_chrome`, `_home`, `_pages`, `_album`, `_glass` go in `theme/overrides.scss`.
 5. In `theme/theme.json` keep only the keys that differ.
 6. Delete `theme/styles/`. A `theme/` with only the engine's values can go entirely.
-7. `npx ewcms check` (no theme warning), then compare every page, desktop and mobile, before and
+7. `npx ewcms check` (no theme warning), then compare every page, desktop and phone, before and
    after (screenshots).
 
 ## 0.1.41: `--brand` and the hero's height

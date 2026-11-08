@@ -14,7 +14,7 @@
   import {
     anchorOf,
     heightOf,
-    mobileMinRowsOf,
+    phoneMinRowsOf,
     phoneHeightOf,
     nameProblems,
     rowsOf,
@@ -63,19 +63,19 @@
     return parseInt(el?.style.getPropertyValue('--frows'), 10) || 0;
   };
   // the phone preview shows and edits a custom height's own phone rows (phone.rows.min)
-  const phoneView = $derived(ui.viewport === 'mobile');
+  const phoneView = $derived(ui.viewport === 'phone');
   const rowsShown = (s) =>
     ui.secRows?.id === s.id
       ? ui.secRows.rows
       : phoneView
-        ? mobileMinRowsOf(s)
+        ? phoneMinRowsOf(s)
         : (s.rows?.min ?? rowsOf(s));
   // a custom height's rows, typed: one undo step per field edit
   const setMinRows = (at, v) => {
     if (typeof v !== 'number' || !Number.isFinite(v)) return;
     setSectionRows(live.store, file, at, v, {
       phone: phoneView,
-      key: `section:${file}#${at}/${phoneView ? 'mobile/' : ''}rows/min`,
+      key: `section:${file}#${at}/${phoneView ? 'phone/' : ''}rows/min`,
     });
   };
   // its name: empty removes it (no anchor)
@@ -106,7 +106,7 @@
      picked: Height and Width. options: [value, label, its icon's argument] -->
 {#snippet choices(at, key, title, options, now, icon, reset = null)}
   {@const id = `${sections[at].id}-${key}`}
-  {@const ptr = key === 'phoneHeight' ? 'mobile/height' : key}
+  {@const ptr = key === 'phoneHeight' ? 'phone/height' : key}
   <div
     class={['tf', 'is-half', changed(at, ptr) && 'is-changed']}
     data-edit="{file}#/sections/{at}/{ptr}"
@@ -187,7 +187,7 @@
     <!-- custom: its rows (square cells, from the top; those below its last widget are empty
          space; on phones half as many) -->
     <Field
-      edit="{file}#/sections/{at}/{phoneView ? 'mobile/' : ''}rows/min"
+      edit="{file}#/sections/{at}/{phoneView ? 'phone/' : ''}rows/min"
       label={phoneView ? 'Phone rows' : 'Rows'}
       type="number"
       half
@@ -195,7 +195,7 @@
       help={phoneView
         ? 'Phone only; unset: half the desktop rows'
         : 'Rows below the last widget are space (phones: their own, or half)'}
-      changed={changed(at, phoneView ? 'mobile/rows/min' : 'rows/min')}
+      changed={changed(at, phoneView ? 'phone/rows/min' : 'rows/min')}
       onvalue={(v) => setMinRows(at, v)}
     />
   {/if}

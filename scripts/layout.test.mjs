@@ -12,7 +12,7 @@ import { setEditable } from '../src/site/helpers.js';
 import { checkContent } from '../src/site/validate.js';
 import { WIDGET_TYPES } from '../src/site/widgets/index.js';
 import {
-  mobileRowsOf,
+  phoneRowsOf,
   newWidget,
   newSection,
   renderSections,
@@ -146,9 +146,9 @@ test('render: sections are grids, widgets carry their area; off is hidden', () =
   assert.match(ed, /data-sec="[^"]+" style="--rows:1;--mrows:1" hidden>[\s\S]*Three/);
   assert.ok(ed.indexOf('One') < ed.indexOf('Two') && ed.indexOf('Two') < ed.indexOf('Three'));
   // a phone area of its own: on the 60-column phone grid
-  const mobile = [section([widget('text', { phone: { col: 1, span: 24, row: 1, rows: 2 } })])];
+  const phone = [section([widget('text', { phone: { col: 1, span: 24, row: 1, rows: 2 } })])];
   assert.match(
-    renderSections(ctxOf(page), page, F, mobile),
+    renderSections(ctxOf(page), page, F, phone),
     /class="sec"[\s\S]*;--mc:1;--ms:24;--mr:1;--mrs:1"/,
   );
   // links and fit text on the element
@@ -377,7 +377,7 @@ test('render endpoint: one section of a page, from the editor copy over the draf
   assert.match(
     html,
     new RegExp(
-      `^<section class="sec" data-sec="${s.id}" style="--rows:${rowsOf(s)};--mrows:${mobileRowsOf(s)}">`,
+      `^<section class="sec" data-sec="${s.id}" style="--rows:${rowsOf(s)};--mrows:${phoneRowsOf(s)}">`,
     ),
   );
   assert.match(html, /Edited caption/);

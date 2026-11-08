@@ -46,7 +46,7 @@
     ['settings', 'Site Settings'],
   ];
   const nav = $derived(ui.panel === 'nav');
-  const mobile = $derived(ui.viewport === 'mobile');
+  const phone = $derived(ui.viewport === 'phone');
   // Preview: a toggle; off goes back to the tab it came from
   const previewing = $derived(ui.panel === 'preview');
   const togglePreview = () => actions.setPanel(previewing ? ui.panelBeforePreview : 'preview');
@@ -113,7 +113,7 @@
       const typing =
         e.target instanceof Element &&
         e.target.closest?.('input, textarea, select, [contenteditable]');
-      if (typing || previewClicks() !== 'arrange' || !ui.widget || mobile) return;
+      if (typing || previewClicks() !== 'arrange' || !ui.widget || phone) return;
       const file = targetFile(ui.target, bridge.doc);
       const list = live.get(file, '/sections') || [];
       for (const [at, s] of list.entries()) {
@@ -166,7 +166,7 @@
 {#if ui.loadError}
   <p class="ed-boot">Could not load content: {ui.loadError}</p>
 {:else}
-  <main class={['ed-stage', mobile && 'is-mobile']}>
+  <main class={['ed-stage', phone && 'is-phone']}>
     <iframe class="ed-frame" title="Site preview" {@attach bridge.attach}></iframe>
     <WidgetToolbar {live} {bridge} />
   </main>
@@ -204,8 +204,8 @@
           icon="mobile-screen-button"
           iconOnly
           label="Phone view"
-          aria-pressed={mobile}
-          onclick={() => (ui.viewport = mobile ? 'desktop' : 'mobile')}
+          aria-pressed={phone}
+          onclick={() => (ui.viewport = phone ? 'desktop' : 'phone')}
         />
         <Button
           icon="rotate-left"
@@ -303,7 +303,7 @@
     background: var(--c-bg-site);
   }
 
-  .ed-stage.is-mobile .ed-frame {
+  .ed-stage.is-phone .ed-frame {
     width: 392px;
     height: min(844px, 100%);
     border-radius: var(--radius-3xl);

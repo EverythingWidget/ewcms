@@ -18,7 +18,7 @@ export const CORE_STRINGS = Object.freeze({
     clock: '',
     home: '{name}, home',
     main: 'Main',
-    mobile: 'Mobile',
+    phone: 'Phone',
   },
   tag: { placeholder: 'Placeholder' },
   hero: { scroll: 'Scroll' },

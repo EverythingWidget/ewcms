@@ -1,6 +1,6 @@
 /** An item's grid markup (./item-grid.js has the model): a section of its own. */
 import { esc } from '../../helpers.js';
-import { mobileRowsOf, rowsOf, widgetClass, widgetLinks, widgetVars } from '../../layout/index.js';
+import { phoneRowsOf, rowsOf, widgetClass, widgetLinks, widgetVars } from '../../layout/index.js';
 import { asPageWidget } from './item-grid.js';
 
 /** The template's rows (desktop, phone): down to its lowest widget, as a section's. */
@@ -11,7 +11,7 @@ export function itemRows(widgets) {
 
 // phone rows without the page's default stack: own phone areas, else the desktop halved
 function phoneRows(widgets) {
-  return mobileRowsOf({ widgets: widgets.filter((w) => w?.layout?.phone) });
+  return phoneRowsOf({ widgets: widgets.filter((w) => w?.layout?.phone) });
 }
 
 /**

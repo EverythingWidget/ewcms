@@ -1,6 +1,6 @@
 import { html, esc, editable } from '../helpers.js';
 import { seoOf } from '../seo.js';
-import { header, mobileMenu } from './header.js';
+import { header, phoneMenu } from './header.js';
 import { typographyVars } from '../layout/type.js';
 import { layoutVars } from '../layout/contain.js';
 import { footer } from './footer.js';
@@ -93,7 +93,7 @@ export function body(ctx, route, accent, view, file) {
       <div class="ground__grain"></div>
     </div>
     <div id="backdrop"></div>
-    ${header(ctx)} ${mobileMenu(ctx)}
+    ${header(ctx)} ${phoneMenu(ctx)}
     <main
       id="main"
       tabindex="-1"

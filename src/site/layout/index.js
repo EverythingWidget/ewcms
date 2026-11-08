@@ -72,7 +72,7 @@ export {
   COLS,
   MCOLS,
   halfArea,
-  hasMobileArea,
+  hasPhoneArea,
   phoneAreaOf,
   phoneStack,
   placeOf,
@@ -102,7 +102,7 @@ export const phoneHeightOf = (s) =>
  * A section's phone rows when its phone height is custom: its own (phone.rows.min), or its
  * desktop rows halved, rounded up; 0 otherwise (also custom without rows: as fit).
  */
-export const mobileMinRowsOf = (s) => {
+export const phoneMinRowsOf = (s) => {
   if (phoneHeightOf(s) !== 'custom') return 0;
   const own = s.phone?.rows?.min;
   if (Number.isInteger(own) && own >= 1) return Math.min(own, MAX_MIN_ROWS);
@@ -110,7 +110,7 @@ export const mobileMinRowsOf = (s) => {
 };
 export const WIDTHS = ['contained', 'full'];
 /** Ids the page's own templates use: no section is named one of them. */
-const RESERVED_IDS = ['main', 'portal', 'page-curtains', 'accent-init', 'mobile-menu'];
+const RESERVED_IDS = ['main', 'portal', 'page-curtains', 'accent-init', 'phone-menu'];
 
 /** A section's height preset ('fit' when unset or unknown). */
 export const heightOf = (s) => (HEIGHTS.includes(s?.height) ? s.height : 'fit');
@@ -165,7 +165,7 @@ export function rowsOf(section) {
  * The rows of a section's phone grid: as far down as its widgets' phone areas reach, and its
  * desktop rows halved (the empty rows below its widgets scale with it).
  */
-export function mobileRowsOf(section) {
+export function phoneRowsOf(section) {
   const widgets = Array.isArray(section?.widgets) ? section.widgets : [];
   return Math.max(
     Math.ceil(rowsOf(section) / 2),
@@ -183,9 +183,9 @@ export function sectionVars(s) {
   // or the desktop's): its own phone rows, or the desktop's halved, like a widget's area there.
   // rows.js keeps it so as the content grows (--minrows / --mminrows)
   const min = minRowsOf(s);
-  const m = mobileMinRowsOf(s);
+  const m = phoneMinRowsOf(s);
   return (
-    `--rows:${Math.max(rowsOf(s), min)};--mrows:${Math.max(mobileRowsOf(s), m)}` +
+    `--rows:${Math.max(rowsOf(s), min)};--mrows:${Math.max(phoneRowsOf(s), m)}` +
     (min ? `;--minrows:${min}` : '') +
     (m ? `;--mminrows:${m}` : '')
   );
@@ -196,7 +196,7 @@ export function sectionClass(s) {
   const h = heightOf(s) === 'custom' && !minRowsOf(s) ? 'fit' : heightOf(s);
   // a phone height of its own: sec--mh-* (phones only)
   const own = HEIGHTS.includes(s?.phone?.height);
-  const m = phoneHeightOf(s) === 'custom' && !mobileMinRowsOf(s) ? 'fit' : phoneHeightOf(s);
+  const m = phoneHeightOf(s) === 'custom' && !phoneMinRowsOf(s) ? 'fit' : phoneHeightOf(s);
   return (
     'sec' +
     (h !== 'fit' ? ` sec--h-${h}` : '') +

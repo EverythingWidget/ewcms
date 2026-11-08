@@ -38,7 +38,7 @@
   const set = (patch, key) => setWidget(live.store, file, at, j, patch, key);
   const layer = (dir) => layerWidget(live.store, file, at, j, dir);
   // what it follows (was the widget toolbar's Info; its size and place: the preview's tag)
-  const link = $derived(linkOf(widget, ui.viewport === 'mobile'));
+  const link = $derived(linkOf(widget, ui.viewport === 'phone'));
   const leader = $derived.by(() => {
     if (!link) return '';
     const widget = (live.get(file, `/sections/${at}`)?.widgets || []).find(
@@ -47,7 +47,7 @@
     return widget ? nameOf(widget) || WIDGET_TYPES[widget.type]?.label || widget.id : link.to;
   });
 
-  const phoneView = $derived(ui.viewport === 'mobile');
+  const phoneView = $derived(ui.viewport === 'phone');
 
   // the rows it shows now (the preview's), so a size it is given keeps its height
   const shownRows = () => rowsShown(bridge.doc, id, widget, phoneView, NEW_ROWS);

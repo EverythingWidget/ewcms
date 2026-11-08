@@ -1,7 +1,7 @@
 /**
  * Navigation. Everything opens on CLICK (never hover):
  *  - desktop: glass dropdowns under "Photography" and "Projects"
- *  - mobile:  full-screen glass menu behind the "Menu" button
+ *  - phone:  full-screen glass menu behind the "Menu" button
  * Esc, outside click and route changes close them.
  *
  * Animation (GSAP): one timeline per panel. The panel fades in and slides down by `y`
@@ -31,7 +31,7 @@ const timing = () => {
  * Interrupt-safe show/hide of one panel.
  *  el     - element toggled with `hidden`
  *  panel  - the glass element that slides and fades (often el itself)
- *  dim    - optional overlay whose background fades in (mobile menu)
+ *  dim    - optional overlay whose background fades in (phone menu)
  *  yScale - multiplier for the configured y offset
  */
 function createReveal({ el, panel, dim = null, yScale = 1 }) {
@@ -121,20 +121,20 @@ function hideDropdown({ instant = false, focusToggle = false } = {}) {
   reveal.hide(instant);
 }
 
-// ---------------------------------------------------------------- mobile menu
-let mobile = null;
+// ---------------------------------------------------------------- phone menu
+let phoneMenu = null;
 
-function setMobile(open, { focusToggle = false } = {}) {
-  const menu = document.querySelector('[data-mobile-menu]');
+function setPhoneMenu(open, { focusToggle = false } = {}) {
+  const menu = document.querySelector('[data-phone-menu]');
   const btn = document.querySelector('[data-menu-toggle]');
   if (!menu || !btn) return;
-  mobile ||= createReveal({
+  phoneMenu ||= createReveal({
     el: menu,
     panel: menu.querySelector('.mmenu__panel'),
     dim: menu,
     yScale: 2,
   });
-  if (open === mobile.open) return;
+  if (open === phoneMenu.open) return;
   btn.setAttribute('aria-expanded', String(open));
   document.documentElement.classList.toggle('menu-open', open);
   const label = btn.querySelector('.menu-toggle__label');
@@ -149,16 +149,16 @@ function setMobile(open, { focusToggle = false } = {}) {
   }
   lockScroll(open);
   if (open) {
-    mobile.show();
+    phoneMenu.show();
   } else {
     if (focusToggle || menu.contains(document.activeElement)) btn.focus();
-    mobile.hide();
+    phoneMenu.hide();
   }
 }
 
 export function closeMenus() {
   hideDropdown();
-  setMobile(false);
+  setPhoneMenu(false);
 }
 
 export function initMenu() {
@@ -171,20 +171,20 @@ export function initMenu() {
   });
   document
     .querySelector('[data-menu-toggle]')
-    ?.addEventListener('click', () => setMobile(!mobile?.open));
+    ?.addEventListener('click', () => setPhoneMenu(!phoneMenu?.open));
   document.addEventListener('click', (e) => {
     if (openToggle && !dropdownFor(openToggle).el.contains(e.target)) hideDropdown();
-    // Mobile: a click on the dimmed area around the panel closes the menu.
-    if (mobile?.open && e.target.matches?.('[data-mobile-menu]')) setMobile(false);
+    // Phone: a click on the dimmed area around the panel closes the menu.
+    if (phoneMenu?.open && e.target.matches?.('[data-phone-menu]')) setPhoneMenu(false);
   });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (openToggle) hideDropdown({ focusToggle: true });
-    if (mobile?.open) setMobile(false, { focusToggle: true });
+    if (phoneMenu?.open) setPhoneMenu(false, { focusToggle: true });
   });
   window
     .matchMedia('(min-width: 900px)')
-    .addEventListener('change', (m) => m.matches && setMobile(false));
+    .addEventListener('change', (m) => m.matches && setPhoneMenu(false));
 }
 
 /** Highlight the nav item for the current path. */

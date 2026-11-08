@@ -36,7 +36,7 @@ export const ui = $state({
   panelBeforePreview: 'nav',
   /** The open page's tab, or null when no page is open (the pages list, Header, Footer). */
   pageTab: null,
-  /** 'desktop' | 'mobile' preview size */
+  /** 'desktop' | 'phone' preview size */
   viewport: 'desktop',
   saving: false,
   publishing: false,

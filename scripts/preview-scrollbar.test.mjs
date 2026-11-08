@@ -10,7 +10,7 @@ test('the preview frame has no border radius (the phone frame keeps its own)', (
   const app = read('editor/svelte/App.svelte');
   const frame = app.slice(
     app.indexOf('  .ed-frame {'),
-    app.indexOf('  .ed-stage.is-mobile .ed-frame'),
+    app.indexOf('  .ed-stage.is-phone .ed-frame'),
   );
   assert.match(frame, /border-radius: 0;/);
 });

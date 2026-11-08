@@ -13,7 +13,7 @@
  * phone area or link has only its own phone link. (Without its section: its desktop link, the
  * gap halved.)
  */
-import { baseOf, hasMobileArea, phoneOf, phoneStack } from './grid.js';
+import { baseOf, hasPhoneArea, phoneOf, phoneStack } from './grid.js';
 import { isObject } from '../is.js';
 
 /** A link as stored, checked for shape only: { to, gap } or null. */
@@ -28,7 +28,7 @@ const halfGap = (g) => Math.sign(g) * Math.round(Math.abs(g) / 2);
 /** The link a widget follows on the desktop grid, or on the phone grid (`phone`); null: free. */
 export function linkOf(widget, phone = false, widgets) {
   if (!phone) return linkShape(baseOf(widget).link);
-  if (hasMobileArea(phoneOf(widget)) || isObject(phoneOf(widget)?.link))
+  if (hasPhoneArea(phoneOf(widget)) || isObject(phoneOf(widget)?.link))
     return linkShape(phoneOf(widget).link);
   // its section's default phone stack (grid.js phoneStack): the widget before it
   const s = widgets && phoneStack(widgets).get(widget?.id);
@@ -90,7 +90,7 @@ export function linkProblems(widgets, elsewhere = new Set()) {
         if (on.has(at)) {
           const loop = path.slice(path.indexOf(at));
           // a phone loop of desktop links only is the desktop's (reported there)
-          const own = !phone || loop.some((x) => hasMobileArea(phoneOf(byId.get(x))));
+          const own = !phone || loop.some((x) => hasPhoneArea(phoneOf(byId.get(x))));
           if (loop.length > 1 && own && !loop.some((x) => reported.has(x))) {
             loop.forEach((x) => reported.add(x));
             out.push(`${phone ? 'phone ' : ''}links make a loop: ${[...loop, at].join(' -> ')}`);

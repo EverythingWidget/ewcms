@@ -287,7 +287,7 @@ site settings can live side by side):
 
 | file                                  | what                                                                                                                                                                                                                                                                                                              |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content/en/settings/nav.json`        | the **menus**: the header (nav pill, dropdowns, mobile menu; see "Menu")                                                                                                                                                                                                                                          |
+| `content/en/settings/nav.json`        | the **menus**: the header (nav pill, dropdowns, phone menu; see "Menu")                                                                                                                                                                                                                                           |
 | `content/en/settings/footer.json`     | the **footer**: `{ version, kind: "part", sections }`, sections and widgets exactly like a page's, under every page (see "Footer")                                                                                                                                                                                |
 | `content/en/strings.json`             | UI text of the templates: the menu button and clock labels (`nav.menu`, `nav.close`, `nav.clock`)                                                                                                                                                                                                                 |
 | `content/en/settings/site.json`       | name, the **SEO defaults** (`title`, `titleTemplate`, `description`, `ogPhoto`, `url`, `robots`, `lang`; see "SEO"), `forms` (where contact forms send, see "Contact form"), socials, email, `timezone` of the clock, `jobTitle` / `country` (structured data on home)                                            |
@@ -461,7 +461,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   for a moment while `rows.js`, fonts and photos settle the layout above it (until you scroll).
   Validation: the name's slug must start with a letter (a number is an album photo's hash), not
   be one of the page's own ids (`main`, `portal`, `page-curtains`, `accent-init`,
-  `mobile-menu`), and be unique on the page; a clash with another id on the rendered page (a
+  `phone-menu`), and be unique on the page; a clash with another id on the rendered page (a
   project row's slug, say) is a build warning (`[anchors]`). Without a name: no id.
 - **A page** has no grid setting: the page grid is always 120 columns (a `grid` key is
   refused).
@@ -1151,7 +1151,7 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
 ### Menu
 
 `content/en/settings/nav.json` holds the menu: `header` (the nav pill, its dropdowns and the
-mobile menu). An item is a link (see Links) with a
+phone menu). An item is a link (see Links) with a
 label: to a page by its id (`page`), to an item's page (`item`), or anywhere else (`href`,
 opens in a new tab). A page or item that isn't there gives a `[links]` build warning and `#`:
 

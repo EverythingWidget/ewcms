@@ -1,6 +1,6 @@
 /**
  * The header (logo, nav pill with click-to-open dropdowns, local time, menu toggle) and the
- * mobile menu, both from content/en/settings/nav.json "header": a list of items
+ * phone menu, both from content/en/settings/nav.json "header": a list of items
  *
  *   { "label": "About", "page": "/about/" }                  a page, by its URL
  *   { "label": "Shop", "href": "https://…" }                 any other link (opens in a new tab)
@@ -96,7 +96,7 @@ const ddLinks = (ctx, items) =>
   </li>`;
       });
 
-/** Mobile menu links of an item's source items. */
+/** Phone menu links of an item's source items. */
 const mmLinks = (ctx, items) =>
   items.pages
     ? items.list.map(
@@ -157,7 +157,7 @@ function navItem(ctx, item, i) {
         </div>`;
 }
 
-/** Persistent header: logo, glass nav pill with click-to-open dropdowns, local time, mobile menu toggle. */
+/** Persistent header: logo, glass nav pill with click-to-open dropdowns, local time, phone menu toggle. */
 export function header(ctx) {
   const { site } = ctx;
   const items = Array.isArray(ctx.nav?.header) ? ctx.nav.header : [];
@@ -173,7 +173,7 @@ export function header(ctx) {
 
     <div class="header__right">
       <span class="header__clock"><span class="header__clock-dot"></span><span${ed(STRINGS, ['nav', 'clock'])}>${esc(t(ctx, 'nav.clock'))}</span> <time data-clock="${esc(site.timezone)}">--:--</time></span>
-      <button class="menu-toggle glass" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle>
+      <button class="menu-toggle glass" type="button" aria-expanded="false" aria-controls="phone-menu" data-menu-toggle>
         <span class="menu-toggle__label" data-open-label="${esc(t(ctx, 'nav.close'))}"><span${ed(STRINGS, ['nav', 'menu'])}>${esc(t(ctx, 'nav.menu'))}</span></span>
         <span class="menu-toggle__icon" aria-hidden="true"><i></i><i></i></span>
       </button>
@@ -181,7 +181,7 @@ export function header(ctx) {
   </header>`;
 }
 
-/** One top-level item of the mobile menu. */
+/** One top-level item of the phone menu. */
 function mmItem(ctx, item, i) {
   const at = ['header', i];
   const href = linkOf(ctx, item);
@@ -210,13 +210,13 @@ function mmItem(ctx, item, i) {
 }
 
 /** Full-screen glass menu used on small screens (opens on click only). */
-export function mobileMenu(ctx) {
+export function phoneMenu(ctx) {
   const { site } = ctx;
   const items = Array.isArray(ctx.nav?.header) ? ctx.nav.header : [];
   return html`
-  <div class="mmenu" id="mobile-menu" data-mobile-menu hidden>
+  <div class="mmenu" id="phone-menu" data-phone-menu hidden>
     <div class="mmenu__panel glass">
-      <nav class="mmenu__nav" aria-label="${esc(t(ctx, 'nav.mobile'))}">
+      <nav class="mmenu__nav" aria-label="${esc(t(ctx, 'nav.phone'))}">
         ${items.map((item, i) => mmItem(ctx, item, i)).join('\n        ')}
       </nav>
       <div class="mmenu__foot" data-mm-item>
