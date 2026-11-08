@@ -118,7 +118,7 @@ const RING = {
 const TITLE = {
   s: 'clamp(28px, 2.6vw, 44px)',
   m: 'clamp(34px, 3.6vw, 60px)',
-  l: 'clamp(30px, 4.4vw, 76px)',
+  l: 'clamp(34px, 4.4vw, 76px)', // its minimum Medium's: never smaller than m
 };
 const SHADOW = {
   none: '0 0 0 0 transparent',

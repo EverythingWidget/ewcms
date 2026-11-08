@@ -123,7 +123,7 @@ test('presets are style values; Duplicate writes them out; a template copy keeps
   assert.equal(PRESET_STYLES['preset:plain'].textBody, 'prose');
   const m = styleMarkup({ titleSize: 'l', photoPlacement: 'beside', textBody: 'prose' });
   assert.deepEqual(m.cls, ['li--beside', 'li--prose']);
-  assert.equal(m.vars, '--li-title-size:clamp(30px, 4.4vw, 76px)');
+  assert.equal(m.vars, '--li-title-size:clamp(34px, 4.4vw, 76px)');
   // the look data is gone: presets are style values only
   assert.doesNotMatch(read('src/site/widgets/list/presets.js'), /\blook:|shapeOf/);
   assert.equal(PRESET_STYLES['preset:panel'].textOverPhoto, 'bottom');
@@ -170,4 +170,17 @@ test('the Style tab: Theme first and never saved, the agreed labels, Space betwe
   assert.match(panel, /\['style', 'Style'\]/);
   assert.match(panel, /if \(v === undefined\) delete next\[key\]/);
   assert.equal(WIDGET_TYPES.list.config.find((c) => c.key === 'gap').label, 'Space between items');
+});
+
+test('Title size: Large is never smaller than Medium, nor Medium than Small, at any width', () => {
+  const size = (k, vw) => {
+    const [, min, v, max] = /clamp\((\d+)px, ([\d.]+)vw, (\d+)px\)/.exec(
+      styleMarkup({ titleSize: k }).vars,
+    );
+    return Math.min(+max, Math.max(+min, (+v * vw) / 100));
+  };
+  for (let vw = 240; vw <= 3840; vw += 4) {
+    assert.ok(size('l', vw) >= size('m', vw), `l < m at ${vw}px`);
+    assert.ok(size('m', vw) >= size('s', vw), `m < s at ${vw}px`);
+  }
 });
