@@ -277,3 +277,11 @@ test('the editor: Add Summary and details, its rows; no shift', () => {
   assert.match(css, /grid-template-rows: 0fr/);
   assert.match(css, /prefers-reduced-motion: reduce/);
 });
+
+test('an item is as wide as the List gives it, never its content (a resize re-measures it)', () => {
+  const css = read('src/site/widgets/list/style.scss');
+  const block = css.slice(css.indexOf('.li--template {'));
+  assert.match(block, /grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(block, /\.li__details-in \{[^}]*justify-items: stretch/);
+  assert.match(block, /\.sec--item \{[^}]*width: 100%/);
+});

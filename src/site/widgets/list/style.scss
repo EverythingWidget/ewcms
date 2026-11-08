@@ -581,9 +581,25 @@ a.li:not(.li--hover-none):hover .li__title .ts {
 .li--template {
   container-type: inline-size;
   align-self: stretch;
-  // the space inside an item is the template's grid
+  // the space inside an item is the template's grid; its one column is the item's width,
+  // never its content's (the grid's cells are fixed: a wider track would feed back)
+  grid-template-columns: minmax(0, 1fr);
   gap: 0;
   padding: 0;
+
+  .li__opens,
+  .li__summary,
+  .li__details,
+  .li__details-in {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: stretch;
+    min-width: 0;
+  }
+
+  .sec--item {
+    width: 100%;
+    min-width: 0;
+  }
 
   // a widget's content fills its area (an Aspect or Rows photo: the whole box)
   .wgt > .li__w {

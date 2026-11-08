@@ -28,6 +28,7 @@
   import { PRESETS } from '../../site/widgets/list/presets.js';
   import { innerChoice, innerTemplates } from '../../site/widgets/list/nested.js';
   import TemplateGridRows from './TemplateGridRows.svelte';
+  import { MIN_TEXT_PX, sizeLine, textSizes } from '../lib/small-text.js';
   import { GRID_STYLE_KEYS } from '../../site/widgets/list/item-grid.js';
   import { CAROUSEL, CAROUSEL_KEYS, withArrangement } from '../../site/widgets/list/carousel.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
@@ -50,7 +51,18 @@
   } from '../lib/item-template.js';
 
   // live: the reactive store (live.svelte.js)
-  let { live } = $props();
+  let { live, bridge = null } = $props();
+  // each widget's smallest text in the preview (lib/small-text.js): read while the panel is open
+  let sizes = $state({});
+  $effect(() => {
+    const read = () => {
+      const next = textSizes(bridge?.doc);
+      if (JSON.stringify(next) !== JSON.stringify(sizes)) sizes = next;
+    };
+    read();
+    const t = setInterval(read, 700);
+    return () => clearInterval(t);
+  });
 
   const id = $derived(ui.target.id);
   const file = $derived(templateFile(id));
@@ -556,6 +568,14 @@
       {#snippet item(w, i)}
         <!-- its place on the template's grid (as a page widget's) -->
         <TemplateGridRows {file} b={`/widgets/${i}`} {w} {widgets} {set} />
+        <!-- its text size in the preview: always one line (no shift), a warning under 11 px -->
+        <p
+          class="hint small tp__size"
+          class:tp__size--warn={sizes[w.id] < MIN_TEXT_PX}
+          data-text-size={w.id}
+        >
+          {sizeLine(sizes[w.id]) || 'No text in the preview'}
+        </p>
         {@render editW(w, `/widgets/${i}`)}
       {/snippet}
     </ListField>
@@ -648,6 +668,19 @@
     height: var(--size-control);
     line-height: var(--size-control);
     color: var(--c-text-muted);
+  }
+
+  .tp__size {
+    overflow: hidden;
+    height: 16px;
+    margin: 0;
+    line-height: 16px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .tp__size--warn {
+    color: var(--c-warning);
   }
 
   .tp__pair {

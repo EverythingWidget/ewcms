@@ -209,7 +209,10 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   assert.match(panel, /formats/);
   assert.match(panel, /renameProperty\(widgets, old, to\)/);
   assert.doesNotMatch(panel, /(label|help|title|placeholder)="[^"]*\bfield/i);
-  assert.match(read('src/editor/svelte/ContentPanel.svelte'), /<TemplatePanel \{live\} \/>/);
+  assert.match(
+    read('src/editor/svelte/ContentPanel.svelte'),
+    /<TemplatePanel \{live\} \{bridge\} \/>/,
+  );
   // Edit template: always laid out, hidden while a preset is picked
   const lead = read('src/editor/svelte/ListLead.svelte');
   assert.match(lead, /class=\{\['ll__edit', !isOwnTemplate && 'is-hidden'\]\}/);
@@ -265,4 +268,22 @@ test('a line edited in the chips box keeps its bold, italic and links', () => {
     read('src/editor/svelte/TemplatePanel.svelte'),
     /keepMarks\(body\[j\]\.text, runsOf\(value\)\)/,
   );
+});
+
+test('text under 11 px: a warning line under the widget in the template editor (no minimum size)', async () => {
+  const { MIN_TEXT_PX, sizeLine, textSizes } = await import('../src/editor/lib/small-text.js');
+  const { parseHTML } = await import('linkedom');
+  assert.equal(MIN_TEXT_PX, 11);
+  assert.equal(sizeLine(undefined), '');
+  assert.equal(sizeLine(14), 'Text 14 px here');
+  assert.equal(sizeLine(9.5), 'Text 9.5 px here: under 11 px, hard to read');
+  const { document } = parseHTML(
+    '<div class="sec sec--item"><div class="wgt" data-tw="w-aaaa"><p style="font-size:9px">01</p></div><div class="wgt" data-tw="w-bbbb"><h2 style="font-size:20px">Title <small style="font-size:12px">x</small></h2></div><div class="wgt" data-tw="w-cccc"><img alt=""></div></div>',
+  );
+  document.defaultView.getComputedStyle = (el) => ({ fontSize: el.style?.fontSize || '16px' });
+  assert.deepEqual(textSizes(document), { 'w-aaaa': 9, 'w-bbbb': 12 });
+  assert.deepEqual(textSizes(null), {});
+  const panel = read('src/editor/svelte/TemplatePanel.svelte');
+  assert.ok(panel.includes('data-text-size') && panel.includes('tp__size--warn'));
+  assert.match(panel, /\.tp__size \{[^}]*height: 16px/); // one line always: no shift
 });

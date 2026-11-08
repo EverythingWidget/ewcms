@@ -277,7 +277,7 @@
   </section>
 {:else if ui.target?.kind === 'item-template'}
   <PageHead {live} {actions} />
-  <TemplatePanel {live} />
+  <TemplatePanel {live} {bridge} />
 {:else}
   <PageHead {live} {actions} />
   {#if isPage}

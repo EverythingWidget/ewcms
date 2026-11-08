@@ -878,7 +878,10 @@ rule work as anywhere.
     the grid (`TemplateGridRows.svelte`): **Column**, **Columns**, **Row** (off while it
     follows another), **Height** (Auto / Aspect / Rows), **Ratio**, **Rows**, **Follows**,
     **Rows between**, **Layer**, **Own phone layout** (off: the desktop layout, scaled down)
-    and its **Phone column / columns / row**; then its **Role**
+    and its **Phone column / columns / row**; under them one line with its text's size in the
+    preview ("Text 14 px here"; under 11 px a warning: "under 11 px, hard to read"; text has no
+    minimum size, `src/editor/lib/small-text.js`; switch the preview to a phone to check the
+    phone size); then its **Role**
     (`.li__<role>`); a Text its lines (style + text), a Photo its photo, a Button its label and
     **Opens the item's page** (`itemLink`). A line's bold, italic and links stay through an edit (typed text takes the marks of the text before it). Every value takes `{property}` chips: type `{name}`
     or pick one from the source's properties.
