@@ -59,3 +59,46 @@ export function moveStack(widgets, from, to) {
   next.splice(to, 0, w);
   return next;
 }
+
+// ---- a line's marks (bold, italic, a link) kept through an edit in a chips box, which shows
+// and gives back plain text and chips only
+const attrsOf = (run) => {
+  const { t: _t, property: _p, format: _f, ...rest } = run; // eslint-disable-line no-unused-vars
+  return rest;
+};
+const tokensOf = (runs) =>
+  runs.flatMap((r) =>
+    isPropertyPart(r)
+      ? [{ key: `\u0000${r.property}\u0000${r.format ?? ''}`, run: r, attrs: attrsOf(r) }]
+      : [...String(r.t ?? '')].map((c) => ({ key: c, c, attrs: attrsOf(r) })),
+  );
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * `next` (the box's runs, no marks) with the marks `prev` had: what stayed (the unchanged start
+ * and end) keeps its own, what was typed takes the marks of the text before it (else after).
+ */
+export function keepMarks(prev, next) {
+  const a = tokensOf(Array.isArray(prev) ? prev : []);
+  const b = tokensOf(next);
+  let s = 0;
+  while (s < a.length && s < b.length && a[s].key === b[s].key) s++;
+  let e = 0;
+  while (
+    e < a.length - s &&
+    e < b.length - s &&
+    a[a.length - 1 - e].key === b[b.length - 1 - e].key
+  )
+    e++;
+  const near = a[s - 1]?.attrs ?? a[a.length - e]?.attrs ?? {};
+  const out = [];
+  b.forEach((tok, i) => {
+    const attrs =
+      i < s ? a[i].attrs : i >= b.length - e ? a[a.length - (b.length - i)].attrs : near;
+    if (!tok.c) return out.push({ ...tok.run, ...attrs });
+    const z = out.at(-1);
+    if (z && 't' in z && same(attrsOf(z), attrs)) z.t += tok.c;
+    else out.push({ t: tok.c, ...attrs });
+  });
+  return out;
+}

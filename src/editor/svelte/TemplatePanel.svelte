@@ -23,6 +23,7 @@
   import { sampleSource } from '../../site/widgets/list/template-preview.js';
   import {
     STACK_TYPES,
+    keepMarks,
     moveStack,
     newStackWidget,
     renameProperty,
@@ -62,7 +63,10 @@
 
   function setLine(i, j, key, value) {
     const body = structuredClone(widgets[i].body || []);
-    body[j] = { ...body[j], [key]: key === 'text' ? runsOf(value) : value };
+    body[j] = {
+      ...body[j],
+      [key]: key === 'text' ? keepMarks(body[j].text, runsOf(value)) : value,
+    };
     set(`/widgets/${i}/body`, body);
   }
   function addLine(i) {

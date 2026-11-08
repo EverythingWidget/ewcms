@@ -861,7 +861,7 @@ rule work as anywhere.
     first: a leading photo set apart** (`photoFirst`), then the vertical stack: drag a widget's grip (or Alt+↑/↓) to reorder,
     × removes it, **Add text / Add photo / Add button** adds one. Each widget has its **Role**
     (`.li__<role>`); a Text its lines (style + text), a Photo its photo, a Button its label and
-    **Opens the item's page** (`itemLink`). Every value takes `{property}` chips: type `{name}`
+    **Opens the item's page** (`itemLink`). A line's bold, italic and links stay through an edit (typed text takes the marks of the text before it). Every value takes `{property}` chips: type `{name}`
     or pick one from the source's properties.
   - **Properties**: every property the template binds, one box each; a new name (Enter or
     leaving the box) changes every `{old}` bind in the template to `{new}`, one undo step. A

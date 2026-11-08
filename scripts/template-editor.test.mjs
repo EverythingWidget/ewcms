@@ -14,6 +14,7 @@ import {
   sampleSource,
 } from '../src/site/widgets/list/template-preview.js';
 import {
+  keepMarks,
   moveStack,
   newStackWidget,
   renameProperty,
@@ -180,5 +181,50 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   assert.match(
     read('scripts/vite-plugin-static-site.mjs'),
     /templatePreview\(content, templateOfPath\(pathname\)\)/,
+  );
+});
+
+test('a line edited in the chips box keeps its bold, italic and links', () => {
+  const prev = [
+    { t: 'Shot by ' },
+    { t: 'Eeliya', marks: ['b'] },
+    { t: ' in ' },
+    { property: 'place', marks: ['i'] },
+    { t: ' now', link: { href: '/about/' } },
+  ];
+  const plain = (runs) => runs.map(({ t, property }) => (property ? { property } : { t }));
+  // nothing changed: the same runs
+  assert.deepEqual(keepMarks(prev, plain(prev)), prev);
+  // text typed inside the bold word: bold too; the rest as it was
+  const typed = keepMarks(prev, [
+    { t: 'Shot by EeliyaX in ' },
+    { property: 'place' },
+    { t: ' now' },
+  ]);
+  assert.deepEqual(typed, [
+    { t: 'Shot by ' },
+    { t: 'EeliyaX', marks: ['b'] },
+    { t: ' in ' },
+    { property: 'place', marks: ['i'] },
+    { t: ' now', link: { href: '/about/' } },
+  ]);
+  // text typed at the start, then a chip removed: the marks after it kept
+  // (each keystroke is one edit)
+  const hi = keepMarks(prev, [
+    { t: 'Hi Shot by Eeliya in ' },
+    { property: 'place' },
+    { t: ' now' },
+  ]);
+  const cut = keepMarks(hi, [{ t: 'Hi Shot by Eeliya in  now' }]);
+  assert.deepEqual(
+    cut.find((r) => r.t === 'Eeliya'),
+    { t: 'Eeliya', marks: ['b'] },
+  );
+  assert.deepEqual(cut.at(-1), { t: ' now', link: { href: '/about/' } });
+  // no marks before: plain runs
+  assert.deepEqual(keepMarks([{ t: 'a' }], [{ t: 'ab' }]), [{ t: 'ab' }]);
+  assert.match(
+    read('src/editor/svelte/TemplatePanel.svelte'),
+    /keepMarks\(body\[j\]\.text, runsOf\(value\)\)/,
   );
 });
