@@ -41,9 +41,13 @@
       }
     }
 
-    // a phone: one, or the List's phone columns (config.phoneColumns)
+    // a phone: one, or the List's phone columns (config.phoneColumns); as specific as the
+    // tablet rule above (and after it), so it wins at a phone's width
     @media (width <= $bp-sm) {
-      grid-template-columns: repeat(var(--list-mcols, 1), minmax(0, 1fr));
+      &,
+      &:not([data-cols='1']) {
+        grid-template-columns: repeat(var(--list-mcols, 1), minmax(0, 1fr));
+      }
     }
   }
 }
