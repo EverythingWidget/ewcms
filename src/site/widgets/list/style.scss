@@ -93,14 +93,6 @@
   }
 }
 
-// a missing value in the editor: dimmed as big as it is (the bridge's [data-no-value] look);
-// its tag and "No value for {…}" hint sit on this widget (the facts line), not on the item
-.li__w[data-no-value] {
-  position: relative;
-  // the tag sits above the widget (bridge.js ::before): don't clip it
-  overflow: visible;
-}
-
 .li__photo {
   overflow: hidden;
   border-radius: var(--item-radius);

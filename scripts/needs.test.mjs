@@ -200,3 +200,16 @@ test('a text line with no property shows its text in the chips box (was empty)',
   renderParts(el, [{ t: 'Placeholder' }], new Set());
   assert.equal(el.textContent, 'Placeholder');
 });
+
+test('the editor: the Hidden tag sits inside the dimmed widget, clipped to its box (no overlap)', () => {
+  const css = read('src/editor/bridge.js');
+  const rule = css.slice(
+    css.indexOf('[data-no-value]::before {'),
+    css.indexOf('}', css.indexOf('[data-no-value]::before {')),
+  );
+  assert.match(css, /\[data-no-value\] \{ position: relative; overflow: clip; \}/);
+  assert.match(rule, /top: 0; left: 0/);
+  assert.match(rule, /max-width: 100%; max-height: 100%/);
+  assert.doesNotMatch(css, /calc\(100% \+/); // nothing below the box any more
+  assert.doesNotMatch(css, /\[data-no-value\]::after/);
+});

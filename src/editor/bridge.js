@@ -82,26 +82,18 @@ html.__ed-arrange .ts__chip { border-radius: ${T.radiusXs}; background: rgb(${T.
 html.__ed-arrange [contenteditable] .ts__chip { color: rgb(${T.chipRgb}); user-select: all; cursor: default; }
 html.__ed-arrange .ts__chip[data-unknown] { background: rgb(${T.warningRgb} / .16); box-shadow: inset 0 0 0 1px rgb(${T.warningRgb} / .6); }
 html.__ed-arrange [contenteditable] .ts__chip[data-unknown] { color: rgb(${T.warningRgb}); }
-[data-no-value] { position: relative; }
+[data-no-value] { position: relative; overflow: clip; }
 [data-no-value] > * { opacity: .4; }
-/* tag + names hint as overlays (no layout shift). Readable chips: dark fill + light ring.
-   Both sit just under the dimmed widget (into the gap), so a Card title above stays clear. */
-[data-no-value]::before,
-[data-no-value]::after {
-  position: absolute; left: 0; z-index: 2;
-  max-width: min(280px, 100%); padding: 4px 8px; border-radius: ${T.radiusXs};
-  background: rgb(0 0 0 / .82); box-shadow: 0 0 0 1px rgb(255 255 255 / .25);
-  color: ${T.white}; font: ${T.fsXs} ${T.font}; text-align: left;
-  white-space: nowrap; pointer-events: none;
-}
+/* tag + names hint as one compact corner chip INSIDE the widget's own box: no layout shift, no
+   overlap of the widgets around it; clipped to the box (a one-line label fits it), cut with …. */
 [data-no-value]::before {
-  content: attr(data-missing-tag);
-  top: calc(100% + 4px);
-  letter-spacing: .06em; text-transform: uppercase;
-}
-[data-no-value]::after {
-  content: attr(data-no-value);
-  top: calc(100% + 28px);
+  content: attr(data-missing-tag) " · " attr(data-no-value);
+  position: absolute; top: 0; left: 0; z-index: 2;
+  max-width: 100%; max-height: 100%; box-sizing: border-box; overflow: hidden;
+  padding: 0 4px; border-radius: ${T.radiusXs};
+  background: rgb(0 0 0 / .82); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .25);
+  color: ${T.white}; font: ${T.fsXs}/16px ${T.font}; letter-spacing: .04em; text-align: left;
+  white-space: nowrap; text-overflow: ellipsis; pointer-events: none;
 }
 html.__ed-arrange [data-edit-type="rich"][contenteditable] { outline-offset: 6px; }
 html.__ed-arrange [data-edit-type="rich"][contenteditable] a { cursor: text !important; }

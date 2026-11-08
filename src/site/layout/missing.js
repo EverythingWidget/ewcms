@@ -77,6 +77,9 @@ export function missingState(ctx, widget, def, scope, { hide = true, edit = edit
   return {
     ...gone,
     skip: hide && !edit,
-    attr: edit ? ` data-no-value="${esc(hint)}" data-missing-tag="${esc(tag)}"` : '',
+    // the corner chip can be cut (a narrow widget): its whole text on hover
+    attr: edit
+      ? ` data-no-value="${esc(hint)}" data-missing-tag="${esc(tag)}" title="${esc(`${tag} · ${hint}`)}"`
+      : '',
   };
 }
