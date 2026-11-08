@@ -21,7 +21,15 @@ export const partOfName = (name) =>
     ? { property: name.replace(/^parent:\s*/, ''), of: 'parent' }
     : { property: name };
 
-const partsOf = (v) => (isParts(v) ? v : typeof v === 'string' && v ? [{ t: v }] : []);
+// parts, a text line's runs with no property ([{ t: "Placeholder" }]) or a string
+const partsOf = (v) =>
+  isParts(v)
+    ? v
+    : Array.isArray(v)
+      ? v.filter((p) => isPropertyPart(p) || typeof p?.t === 'string')
+      : typeof v === 'string' && v
+        ? [{ t: v }]
+        : [];
 
 /** A value (a string or parts) rendered into `el`. */
 export function renderParts(el, v, names) {

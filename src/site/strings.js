@@ -38,6 +38,7 @@ export const CORE_STRINGS = Object.freeze({
   // the editor's hint and tag on a widget whose every property is empty (./layout/missing.js)
   widget: {
     noValue: 'No value for {names}',
+    needs: 'Needs {names}',
     hidden: 'Hidden on the page',
     empty: 'Empty on the page',
   },

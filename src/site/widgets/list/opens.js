@@ -106,3 +106,37 @@ export function opensProblems(d) {
   });
   return out;
 }
+
+const hasParts = (v) =>
+  Array.isArray(v)
+    ? v.some((x) => (x && typeof x === 'object' && typeof x.property === 'string') || hasParts(x))
+    : isObject(v)
+      ? Object.values(v).some(hasParts)
+      : false;
+
+/** Can Hide leave this widget out (it binds a property, or needs one)? */
+const canHide = (w) =>
+  w?.type !== 'toggle' &&
+  w?.config?.missing !== 'show' &&
+  (hasParts(w) || (Array.isArray(w?.config?.needs) && w.config.needs.length > 0));
+
+/**
+ * Warnings across the templates ([{ level, message }]): an item that opens whose every summary
+ * widget can be hidden (an item could have nothing to click).
+ */
+export function opensWarnings(templates = {}) {
+  const out = [];
+  for (const [id, tpl] of Object.entries(templates || {})) {
+    if (!isObject(tpl?.opens) || !Array.isArray(tpl.widgets)) continue;
+    const cut = detailsAt(tpl.widgets);
+    const summary = tpl.widgets
+      .slice(0, cut < 0 ? tpl.widgets.length : cut)
+      .flatMap((w) => (w?.type === 'sideBySide' ? w.widgets || [] : [w]));
+    if (summary.length && summary.every(canHide))
+      out.push({
+        level: 'warning',
+        message: `templates/${id}.json: Its summary can be empty: an item could have nothing to click (every summary widget can be hidden; a toggle, or one set to Show empty, keeps it)`,
+      });
+  }
+  return out;
+}

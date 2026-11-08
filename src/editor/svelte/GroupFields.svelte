@@ -14,7 +14,8 @@
   A Text widget's text (type 'rich') isn't shown: it is edited in the preview only.
   Settings and content share one .fields grid (all through Field, the same labels and gaps),
   a 1px line between them when both are there. After the widget's own settings and fields:
-  **When a value is missing** (every widget; Hide / Show empty, config.missing).
+  **When a value is missing** (every widget; Hide / Show empty, config.missing), then **Also
+  needs** (config.needs: properties it is hidden without, too).
 -->
 <script>
   import Field from './Field.svelte';
@@ -31,6 +32,7 @@
   import { isParts } from '../../site/layout/parts.js';
   import { presetOf } from '../../site/widgets/list/presets.js';
   import { MISSING_OPTIONS } from '../widget-layout.js';
+  import { needsFrom, needsValue } from '../lib/item-template.js';
 
   let { g, live, bridge, sourceIds, onsource, bindings = null, lead } = $props();
 
@@ -143,6 +145,10 @@
   // every widget: When a value is missing (config.missing)
   const missingPtr = $derived(
     g.widget ? `/sections/${g.widget.at}/widgets/${g.widget.j}/config/missing` : '',
+  );
+  // Also needs (config.needs): property names; hidden when one of them is empty, too
+  const needsPtr = $derived(
+    g.widget ? `/sections/${g.widget.at}/widgets/${g.widget.j}/config/needs` : '',
   );
   const setMissing = (v) =>
     live.store.set(g.file, missingPtr, v === 'hide' ? undefined : v, {
@@ -313,6 +319,24 @@
       options={MISSING_OPTIONS}
       changed={live.changed(g.file, missingPtr)}
       onvalue={setMissing}
+    />
+    <Field
+      edit="{g.file}#{needsPtr}"
+      label="Also needs"
+      value={needsValue(live.get(g.file, needsPtr))}
+      binds={bindings ? bindings.binds('text') : null}
+      formats={!!bindings}
+      from={bindings?.from ?? ''}
+      names={bindings?.names ?? null}
+      disabled={!bindings || live.get(g.file, missingPtr) === 'show'}
+      help="Hidden when one of these is empty, too"
+      changed={live.changed(g.file, needsPtr)}
+      onvalue={(v) =>
+        live.store.set(g.file, needsPtr, needsFrom(v), {
+          key: `config:${g.file}${needsPtr}`,
+          source: 'panel',
+          structure: true,
+        })}
     />
   {/if}
 </div>

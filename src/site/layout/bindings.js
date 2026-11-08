@@ -30,6 +30,7 @@ import { eachWidget } from './ids.js';
 import { MODES, sourceOf } from './source.js';
 import { BIND_TYPES, TEXT_TYPES } from '../property-types.js';
 import { nestingProblems } from '../widgets/list/nested.js';
+import { opensWarnings } from '../widgets/list/opens.js';
 import {
   ITEMS,
   isPropertyPart,
@@ -247,6 +248,6 @@ export function bindingProblems(content, { types, files = null }) {
   }
   // nested Lists (widgets/list/nested.js): loops and a third level, across the templates
   if (!files || [...files].some((f) => templateIdOf(f)))
-    out.push(...nestingProblems(content?.templates));
+    out.push(...nestingProblems(content?.templates), ...opensWarnings(content?.templates));
   return out;
 }

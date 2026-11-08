@@ -549,6 +549,8 @@ function checkWidget(widget, where) {
   // every widget: Hide (default) | Show empty (./layout/missing.js); omitted means Hide
   if (missing !== undefined && missing !== 'hide' && missing !== 'show')
     bad('config.missing', '"hide" or "show"');
+  const np = needsProblem(widget.config.needs);
+  if (np) bad('config.needs', np);
   for (const c of t.config || []) {
     const v = widget.config[c.key];
     // list.check already names the replacement for arrangement "rows"
@@ -688,6 +690,38 @@ export function checkItemTemplate(d) {
   return out;
 }
 
+/** "Also needs" (config.needs, ./layout/missing.js): a list of property names; null when fine. */
+function needsProblem(v) {
+  if (v === undefined) return null;
+  if (!Array.isArray(v) || !v.every((k) => typeof k === 'string' && NAME.test(k)))
+    return 'a list of property names (["placeholder"])';
+  return null;
+}
+
+/** A template widget's When a value is missing and Also needs (in a template: left out = As the List). */
+function missingProblems(w, at) {
+  const out = [];
+  if (!isObject(w.config)) return out;
+  const { missing, needs } = w.config;
+  if (missing !== undefined && missing !== 'hide' && missing !== 'show')
+    out.push(`${at}.config.missing must be "hide" or "show" (left out: as the List)`);
+  const np = needsProblem(needs);
+  if (np) out.push(`${at}.config.needs must be ${np}`);
+  return out;
+}
+
+/** A template button's link: bound parts, or a fixed link; a property inside "href" is refused. */
+function templateLinkProblems(w, at) {
+  const link = isObject(w.config) ? w.config.link : undefined;
+  if (w.type !== 'button' || link === undefined || isParts(link)) return [];
+  if (isObject(link) && (isParts(link.href) || isObject(link.href)))
+    return [
+      `${at}.config.link: a property goes in the link itself: write "link": [{ "property": "url" }], not { "href": … }`,
+    ];
+  const p = linkProblem(link);
+  return p ? [`${at}.config.link must be ${p}`] : [];
+}
+
 /** One widget of an item template at `at` (inside: in a Side by side): its problems. */
 function checkTemplateWidget(w, at, inside = false) {
   const out = [];
@@ -729,7 +763,7 @@ function checkTemplateWidget(w, at, inside = false) {
     out.push(`${at}.join: only a text's, a text (its first line's properties joined by it)`);
   if (w.itemLink !== undefined && (w.type !== 'button' || w.itemLink !== true))
     out.push(`${at}.itemLink: only a button's, true (it opens the item's page)`);
-
+  out.push(...missingProblems(w, at), ...templateLinkProblems(w, at));
   if (w.grow !== undefined && !inside)
     out.push(`${at}.grow: only a widget in a Side by side fills the space`);
   if (w.type === 'photo' && w.config?.width !== undefined) {
