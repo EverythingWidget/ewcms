@@ -21,6 +21,8 @@
  *   Row    a small photo left, title and facts right (Project list)
  *   Photo  a photo only: no text, no box (a photo grid, an inner List of an item's photos)
  */
+import { gridStyle, stackToGrid } from './item-grid.js';
+import { newId } from '../../layout/ids.js';
 import { schemaOf } from '../../schemas.js';
 import { isObject } from '../../is.js';
 import { presetStyle } from './item-style.js';
@@ -268,13 +270,13 @@ export function cloneTemplate(
       basedOn: id,
       ...(own.source || (!handmade && source) ? { source: own.source || source } : {}),
       link: own.link !== false,
-      photoFirst: own.photoFirst !== false,
       ...(isObject(own.style) && Object.keys(own.style).length
         ? { style: structuredClone(own.style) }
         : {}),
       widgets: structuredClone(own.widgets),
     };
   const preset = presetOf(id);
+  const taken = new Set();
   const widgets = presetWidgets(preset.id, ctx, source, { open, handmade, properties }).map((w) => {
     const { facts, handmadeCount, ...rest } = w;
     if (facts)
@@ -298,9 +300,9 @@ export function cloneTemplate(
     basedOn: preset.id,
     ...(!handmade && source ? { source } : {}),
     link: preset.link,
-    photoFirst: preset.photoFirst,
-    style: presetStyle(preset.id),
-    widgets,
+    style: gridStyle(presetStyle(preset.id)),
+    // the preset's stack on the template grid (./item-grid.js)
+    widgets: stackToGrid(widgets, presetStyle(preset.id), () => newId('w', taken)),
   };
 }
 

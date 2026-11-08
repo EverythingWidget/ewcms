@@ -1,6 +1,8 @@
 // List step 10: nested Lists (two levels; src/site/widgets/list/nested.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { onGrid } from './grid-helper.mjs';
+import { gridStyle } from '../src/site/widgets/list/item-grid.js';
 import fs from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { warnings } from './test-layout.mjs';
@@ -30,7 +32,7 @@ const tpl = (label, widgets, more = {}) => ({
   version: 1,
   kind: 'template',
   label,
-  widgets,
+  widgets: onGrid(widgets),
   ...more,
 });
 const title = {
@@ -122,7 +124,10 @@ test('preset:photo: a photo only, its style spelled out, and Duplicate copies it
   const copy = cloneTemplate(base, 'people', 'preset:photo', { properties: { photo: 'cover' } });
   assert.equal(copy.label, 'Photo copy');
   assert.equal(copy.basedOn, 'preset:photo');
-  assert.deepEqual(copy.style, PRESET_STYLES['preset:photo']);
+  // its style without the keys the template grid took over; the photo's ratio is its size
+  assert.deepEqual(copy.style, gridStyle(PRESET_STYLES['preset:photo']));
+  assert.equal(copy.widgets[0].size, 'aspect');
+  assert.equal(copy.widgets[0].aspect, '4:5');
   assert.deepEqual(
     copy.widgets.map((w) => w.type),
     ['photo'],
@@ -143,10 +148,7 @@ test('the three source forms: a property, a source, a source matched to this ite
   });
   assert.deepEqual(
     innerItems(base, { mode: 'property', property: 'role' }, { role: ['a', 'b'] }).items,
-    [
-      { title: 'a' },
-      { title: 'b' },
-    ],
+    [{ title: 'a' }, { title: 'b' }],
   );
   assert.equal(
     innerItems(base, { mode: 'all', from: 'places' }, noor).items.length,

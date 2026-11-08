@@ -74,7 +74,7 @@ function readSection(sec, phone, row) {
   for (const el of widgetsOf(sec)) {
     if (el.hidden) continue;
     const area = areaOfEl(el, phone);
-    const id = el.dataset.widget || `b${els.size}`;
+    const id = el.dataset.widget || el.dataset.tw || `b${els.size}`;
     const kind = el.classList.contains('wgt--aspect')
       ? 'aspect'
       : el.classList.contains('wgt--auto')

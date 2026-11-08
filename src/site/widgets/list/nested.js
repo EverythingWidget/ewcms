@@ -13,6 +13,7 @@
  */
 import { isObject } from '../../is.js';
 import { isTemplateId } from '../../files.js';
+import { detailsOf } from './details.js';
 
 export const INNER_MODES = ['property', 'match', 'all', 'item'];
 const NAME = /^[\w-]+$/;
@@ -103,11 +104,8 @@ export const innerTemplates = (tpl) =>
 /** Does a template hold a List? */
 export const holdsList = (tpl) => flatWidgets(tpl).some((w) => w?.type === 'list');
 
-/** A template's widgets, a Side by side's own widgets in its place (it may hold a List). */
-export const flatWidgets = (tpl) =>
-  (Array.isArray(tpl?.widgets) ? tpl.widgets : []).flatMap((w) =>
-    w?.type === 'sideBySide' && Array.isArray(w.widgets) ? w.widgets : [w],
-  );
+/** A template's widgets (all on its grid: none holds others). */
+export const flatWidgets = (tpl) => (Array.isArray(tpl?.widgets) ? tpl.widgets : []);
 
 /** Does a template hold a List shown as a carousel? (no carousel inside a carousel) */
 export const holdsCarousel = (tpl) =>
@@ -136,10 +134,10 @@ export function nestingProblems(templates = {}) {
           level: 'error',
           message: `templates/${id}.json: This list can't use ${labelOf(templates, inner)}, because ${labelOf(templates, inner)} already contains it.`,
         });
-      else if (templates[inner]?.opens !== undefined)
+      else if (detailsOf(templates[inner]))
         out.push({
           level: 'error',
-          message: `templates/${id}.json: A list inside a list's template can't use items that open: ${labelOf(templates, inner)} opens.`,
+          message: `templates/${id}.json: A list inside a list's template can't use items that open: ${labelOf(templates, inner)} has Summary and details.`,
         });
       else if (holdsList(templates[inner]))
         out.push({
@@ -162,6 +160,6 @@ export function innerChoice(templates, id, inner) {
     )
   )
     return 'loop';
-  if (templates?.[inner]?.opens !== undefined) return 'opens';
+  if (detailsOf(templates?.[inner])) return 'opens';
   return holdsList(templates?.[inner]) ? 'deep' : '';
 }

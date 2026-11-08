@@ -2,6 +2,7 @@
 // and on pages; a button hides on an empty link or label; false is empty for hiding.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { onGrid } from './grid-helper.mjs';
 import fs from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { warnings } from './test-layout.mjs';
@@ -44,8 +45,7 @@ const tpl = (widgets) => ({
   label: 'Row',
   source: 'projects',
   link: false,
-  photoFirst: false,
-  widgets,
+  widgets: onGrid(widgets),
 });
 
 function render(t, listConfig = {}) {
@@ -145,7 +145,7 @@ test('validator: missing, needs, toggle / Side by side, the href bug', () => {
   );
   assert.match(
     p({ type: 'sideBySide', config: { needs: ['x'] }, widgets: [title, title] }),
-    /config.needs is not a Side by side setting/,
+    /Side by side is gone: place its widgets next to each other on the template's grid/,
   );
   // a page widget
   const page = {
@@ -153,28 +153,26 @@ test('validator: missing, needs, toggle / Side by side, the href bug', () => {
     kind: 'page',
     id: 'pg-need',
     sections: [
-      { id: 's-need', widgets: [{ id: 'w-nedd', type: 'text', body: [], config: { needs: [1] } }] },
+      {
+        id: 's-need',
+        widgets: [{ id: 'w-nedd', type: 'text', body: [], config: { needs: [1] } }],
+      },
     ],
   };
   assert.ok(checkContent('pages/x/index.json', page).some((m) => /config.needs/.test(m)));
 });
 
 test('warning: a summary that can be empty', () => {
-  const opens = (summary) => ({
-    ...tpl([...summary, { ...title, details: true }]),
-    opens: { several: false },
-  });
+  const dw = (icon) => ({ type: 'details', config: { template: 't-more', icon } });
+  const opens = (summary) => ({ ...tpl(summary), link: false });
   const warn = (t) =>
     bindingProblems({ ...base, templates: { 't-need': t } }, { types: WIDGET_TYPES }).filter((x) =>
       /summary can be empty/.test(x.message),
     );
-  assert.equal(warn(opens([title])).length, 1);
-  assert.equal(warn(opens([title]))[0].level, 'warning');
-  assert.equal(
-    warn(opens([{ type: 'sideBySide', widgets: [title, { type: 'toggle' }] }])).length,
-    0,
-  );
-  assert.equal(warn(opens([{ ...title, config: { missing: 'show' } }])).length, 0);
+  assert.equal(warn(opens([title, dw('none')])).length, 1);
+  assert.equal(warn(opens([title, dw('none')]))[0].level, 'warning');
+  assert.equal(warn(opens([title, dw('plus')])).length, 0); // the +/× keeps it
+  assert.equal(warn(opens([{ ...title, config: { missing: 'show' } }, dw('none')])).length, 0);
 });
 
 test('editor: As the List, Also needs as chips and back; the rows in the template editor', () => {

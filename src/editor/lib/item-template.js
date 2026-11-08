@@ -5,6 +5,8 @@
  */
 import { isObject } from '../../site/is.js';
 import { isPropertyPart } from '../../site/layout/parts.js';
+import { newId } from '../../site/layout/ids.js';
+import { STACK_ROWS_GAP } from '../../site/widgets/list/item-grid.js';
 
 /** The widget types a template stacks (no List inside one: nested Lists come later). */
 export const STACK_TYPES = [
@@ -12,8 +14,7 @@ export const STACK_TYPES = [
   ['photo', 'Photo'],
   ['button', 'Button'],
   ['list', 'List'],
-  ['sideBySide', 'Side by side'],
-  ['toggle', 'Toggle'],
+  ['details', 'Summary and details'],
 ];
 export const typeLabel = (type) => STACK_TYPES.find(([t]) => t === type)?.[1] || type;
 
@@ -27,18 +28,9 @@ export function newStackWidget(type, property = 'title', open = 'View', listProp
       source: { mode: 'property', property: listProperty },
       config: { template: 'preset:card', columns: '4', gap: 's' },
     };
-  // Side by side (src/site/widgets/list/side-by-side.js): {number}, then the property filling the space
-  if (type === 'sideBySide')
-    return {
-      type: 'sideBySide',
-      config: { align: 'center', spacing: 16, phone: 'wrap' },
-      widgets: [
-        { type: 'text', body: [{ style: 'label', text: [{ property: 'number' }] }] },
-        { type: 'text', grow: true, body: [{ style: 'paragraph', text: [{ property }] }] },
-      ],
-    };
-  // the +/× of an item that opens (src/site/widgets/list/opens.js)
-  if (type === 'toggle') return { type: 'toggle', role: 'toggle' };
+  // Summary and details (src/site/widgets/list/details.js): its +/×; the details' template is
+  // picked next
+  if (type === 'details') return { type: 'details', config: { several: false, icon: 'plus' } };
   if (type === 'photo') return { type: 'photo', src: [{ property }] };
   if (type === 'button') return { type: 'button', label: open, itemLink: true, config: {} };
   return { type: 'text', body: [{ style: 'paragraph', text: [{ property }] }] };
@@ -152,18 +144,51 @@ export function innerSourceFor(
   };
 }
 
-/** The widgets with the details starting at `i` (one "details": true; -1: none). */
-export const setDetails = (widgets, i) =>
-  widgets.map((w, k) => {
-    const { details: _d, ...rest } = w; // eslint-disable-line no-unused-vars
-    return k === i ? { ...rest, details: true } : rest;
-  });
-
-/** Where a new top-level widget of `type` goes: a toggle before the details, others last. */
+/**
+ * A new widget on the template's grid (src/site/widgets/list/item-grid.js): its own id, full
+ * width, below the last widget (it follows it: an Auto one above pushes it down), last. Summary
+ * and details: its +/× at the first row's right end.
+ */
 export function addAt(widgets, w) {
-  const cut = widgets.findIndex((x) => x?.details === true);
-  if (w.type !== 'toggle' || cut < 0) return [...widgets, w];
-  return [...widgets.slice(0, cut), w, ...widgets.slice(cut)];
+  const taken = new Set(widgets.map((x) => x?.id));
+  const at = widgets.length;
+  const prev = widgets[at - 1]?.id;
+  const placed = {
+    id: newId('w', taken),
+    ...w,
+    layout:
+      w.type === 'details'
+        ? { base: { col: 113, span: 8, row: 1 } }
+        : {
+            base: {
+              col: 1,
+              span: 120,
+              row: 1,
+              ...(prev ? { link: { to: prev, gap: STACK_ROWS_GAP } } : {}),
+            },
+          },
+  };
+  return [...widgets.slice(0, at), placed, ...widgets.slice(at)];
+}
+
+/**
+ * The widgets without widget `i`: a widget that followed it (a link) follows what it followed
+ * instead (or stays where it is), so no link points at a widget that is gone.
+ */
+export function removeWidget(widgets, i) {
+  const gone = widgets[i];
+  const to = gone?.layout?.base?.link;
+  return widgets
+    .filter((_, k) => k !== i)
+    .map((w) => {
+      const l = w?.layout?.base?.link;
+      if (!gone?.id || l?.to !== gone.id) return w;
+      const { link: _l, ...base } = w.layout.base; // eslint-disable-line no-unused-vars
+      return {
+        ...w,
+        layout: { ...w.layout, base: to ? { ...base, link: { to: to.to, gap: l.gap } } : base },
+      };
+    });
 }
 
 /**

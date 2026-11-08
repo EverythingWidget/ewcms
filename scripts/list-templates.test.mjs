@@ -1,6 +1,7 @@
 // List step 7: site-wide item templates (content/templates/t-….json, config.template "t-…").
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { onGrid } from './grid-helper.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -41,12 +42,11 @@ const card = (more = {}) => ({
   label: 'People card',
   basedOn: 'preset:card',
   link: true,
-  photoFirst: true,
-  widgets: [
+  widgets: onGrid([
     { type: 'photo', role: 'photo', src: [{ property: 'cover' }] },
     { type: 'text', role: 'title', body: [{ style: 'heading', text: [{ property: 'title' }] }] },
     { type: 'text', body: [{ style: 'label', text: [{ property: 'location' }] }] },
-  ],
+  ]),
   ...more,
 });
 const withTemplate = (tpl, id = 't-ab12') => ({
@@ -69,11 +69,17 @@ test('a valid template passes; an invalid one is rejected with a clear message',
   assert.match(msg(card({ kind: 'page' })), /"kind" must be "template"/);
   assert.match(msg(card({ label: '' })), /"label" must be a text/);
   assert.match(msg(card({ basedOn: 'preset:huge' })), /"basedOn" must be a preset/);
-  assert.match(msg(card({ widgets: [] })), /"widgets" must be a list of widgets/);
+  assert.match(msg(card({ widgets: onGrid([]) })), /"widgets" must be a list of widgets/);
   assert.match(msg(card({ extra: 1 })), /"extra" is not a template key/);
   // only the registry's widgets
-  assert.match(msg(card({ widgets: [{ type: 'carousel' }] })), /"carousel" is not a widget type/);
-  assert.match(msg(card({ widgets: [{ type: 'panels' }] })), /Photo panels \("panels"\) is gone/);
+  assert.match(
+    msg(card({ widgets: onGrid([{ type: 'carousel' }]) })),
+    /"carousel" is not a widget type/,
+  );
+  assert.match(
+    msg(card({ widgets: onGrid([{ type: 'panels' }]) })),
+    /Photo panels \("panels"\) is gone/,
+  );
   // no source (the List gives each copy its item), no nested List yet, no page place
   assert.match(
     msg(card({ widgets: [{ type: 'text', source: { mode: 'all', from: 'people' } }] })),
@@ -83,7 +89,38 @@ test('a valid template passes; an invalid one is rejected with a clear message',
     msg(card({ widgets: [{ type: 'list' }] })),
     /widgets\.0\.source must be \{ "mode": "property"/,
   );
-  assert.match(msg(card({ widgets: [{ type: 'text', id: 'w-aaaa' }] })), /no "id"/);
+  // on the grid, as a page widget: an id, a layout; its layer is "layer" (not "z")
+  assert.match(msg(card({ widgets: [{ type: 'text' }] })), /widgets\.0: "id" must be a widget id/);
+  assert.match(
+    msg(card({ widgets: [{ type: 'text', id: 'w-aaaa', z: 2 }] })),
+    /"z" is a page widget's: a template's is "layer"/,
+  );
+  assert.match(
+    msg(
+      card({
+        widgets: [{ type: 'text', id: 'w-aaaa', layout: { base: { col: 1, span: 200, row: 0 } } }],
+      }),
+    ),
+    /layout\.base/,
+  );
+  assert.match(
+    msg(
+      card({
+        widgets: [
+          {
+            type: 'text',
+            id: 'w-aaaa',
+            layout: { base: { col: 1, row: 1, link: { to: 'w-zzzz', gap: 2 } } },
+          },
+        ],
+      }),
+    ),
+    /w-zzzz/,
+  );
+  assert.match(
+    msg(card({ photoFirst: true })),
+    /"photoFirst" is gone: the photo's place is its own "layout"/,
+  );
   assert.match(
     msg(card({ widgets: [{ type: 'text', itemLink: true }] })),
     /itemLink: only a button/,

@@ -2,7 +2,7 @@
   An item template open (Pages > Site > Templates: ui.target { kind: 'item-template', id }):
   its file content/templates/<id>.json edited like a page, the preview its List of one sample
   item (src/site/widgets/list/template-preview.js). Two tabs:
-    Widgets     its name, Link (the whole item opens its page) and Photo first, then the vertical stack of widgets (ListField: drag the grip or
+    Widgets     its name and Link (the whole item opens its page), then its widgets, each placed on the template's 120-column grid as a page widget is (TemplateGridRows.svelte) (ListField: drag the grip or
                 Alt+↑/↓ to reorder, × removes, Add Text / Photo / Button): each widget's role
                 (its .li__<role> class) and settings, its values with {property} chips
                 (Field.svelte formats: type {name}, or pick one).
@@ -27,7 +27,8 @@
   import { isObject } from '../../site/is.js';
   import { PRESETS } from '../../site/widgets/list/presets.js';
   import { innerChoice, innerTemplates } from '../../site/widgets/list/nested.js';
-  import { SBS, SBS_CHILDREN } from '../../site/widgets/list/side-by-side.js';
+  import TemplateGridRows from './TemplateGridRows.svelte';
+  import { GRID_STYLE_KEYS } from '../../site/widgets/list/item-grid.js';
   import { CAROUSEL, CAROUSEL_KEYS, withArrangement } from '../../site/widgets/list/carousel.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import {
@@ -36,12 +37,12 @@
     STACK_TYPES,
     keepMarks,
     moveStack,
+    removeWidget,
     newStackWidget,
     needsFrom,
     needsValue,
     TEMPLATE_MISSING,
     addAt,
-    setDetails,
     renameProperty,
     runsOf,
     stackName,
@@ -124,7 +125,7 @@
     ['m', 'M'],
     ['l', 'L'],
   ];
-  // a widget by its pointer: "/widgets/2", or in a Side by side "/widgets/2/widgets/1"
+  // a widget by its pointer: "/widgets/2"
   const wAt = (b) =>
     b
       .split('/')
@@ -201,58 +202,33 @@
       'View',
       listProps[0]?.[0] || 'photos',
     );
-  const add = (type) => setWidgets(addAt(widgets, fresh(type)));
-  // ---- items that open (src/site/widgets/list/opens.js)
-  const opens = $derived(isObject(tpl?.opens));
-  const cut = $derived(widgets.findIndex((w) => w?.details === true));
-  const hasToggle = $derived(
-    widgets.some(
-      (w) => w?.type === 'toggle' || (w?.widgets || []).some((c) => c?.type === 'toggle'),
-    ),
+  const add = (type) => {
+    if (type === 'details') set('/link', false);
+    setWidgets(addAt(widgets, fresh(type)));
+  };
+  // ---- Summary and details (src/site/widgets/list/details.js): one per template; the item
+  // is then the summary's button, not a link
+  const hasDetails = $derived(widgets.some((w) => w?.type === 'details'));
+  const detailsOff = $derived(
+    outer
+      ? 'This template is shown inside another List: its items can’t open'
+      : hasDetails
+        ? 'One Summary and details per template'
+        : '',
   );
-  // an item that opens can't be a link: turning Opens on turns Link off
-  function setOpens(on) {
-    if (on) {
-      set('/link', false);
-      set('/opens', { several: false }, true);
-    } else set('/opens', undefined, true);
-  }
-  const topOf = (b) => Number(b.split('/')[2]);
-  // why Add toggle is off here ('' when it can): `top` the top-level widget it would go in
-  const toggleOff = (top = -1) =>
-    !opens
-      ? 'Only for items that open'
-      : hasToggle
-        ? 'One toggle per template'
-        : top >= 0 && cut >= 0 && top >= cut
-          ? 'The toggle goes in the summary, before the details'
-          : '';
-  // a widget into the Side by side at `b`
-  const addIn = (b, type) => set(`${b}/widgets`, [...(wAt(b).widgets || []), fresh(type)], true);
+  const detailsOptions = $derived(
+    Object.entries(templates)
+      .filter(([t]) => t !== id)
+      .map(([t, tp]) =>
+        tp?.widgets?.some?.((w) => w?.type === 'details')
+          ? [t, tp.label || t, { disabled: true, hint: 'It has Summary and details of its own' }]
+          : [t, tp.label || t],
+      ),
+  );
   // an inner List's Arrangement and Carousel rows (the List's own definitions)
   const LIST_CONFIG = WIDGET_TYPES.list.config;
   const ARRANGE = LIST_CONFIG.find((c) => c.key === 'arrangement').options;
   const CAR_ROWS = LIST_CONFIG.filter((c) => CAROUSEL_KEYS.includes(c.key));
-  const SBS_TYPES = STACK_TYPES.filter(([t]) => SBS_CHILDREN.includes(t));
-  const SBS_ALIGN = [
-    ['top', 'Top'],
-    ['center', 'Middle'],
-    ['bottom', 'Bottom'],
-    ['baseline', 'Baseline'],
-  ];
-  const SBS_SPACING = SBS.spacing.map((n) => [String(n), `${n} px`]);
-  const SBS_PHONE = [
-    ['wrap', 'Wrap'],
-    ['stack', 'Stack'],
-    ['keep', 'Keep on one line'],
-  ];
-  const PHOTO_WIDTH = [
-    ['', 'As wide as its share'],
-    ['s', 'Small (64 px)'],
-    ['m', 'Medium (96 px)'],
-    ['l', 'Large (160 px)'],
-  ];
-
   // ---- Properties: a rename commits on Enter or leaving the box (not per letter)
   let drafts = $state({});
   function rename(old, next) {
@@ -453,89 +429,51 @@
         />
       {/each}
     </div>
-  {:else if w.type === 'sideBySide'}
-    <div class="tp__sbs">
-      <Field
-        edit={`${file}#${b}/config/align`}
-        label="Align"
-        type="select"
-        value={w.config?.align || 'center'}
-        options={SBS_ALIGN}
-        onvalue={(v) => set(`${b}/config/align`, v)}
-      />
-      <Field
-        edit={`${file}#${b}/config/spacing`}
-        label="Space between"
-        type="select"
-        value={String(w.config?.spacing ?? 16)}
-        options={SBS_SPACING}
-        onvalue={(v) => set(`${b}/config/spacing`, Number(v))}
-      />
-      <Field
-        edit={`${file}#${b}/config/phone`}
-        label="On a phone"
-        type="select"
-        value={w.config?.phone || 'wrap'}
-        options={SBS_PHONE}
-        onvalue={(v) => set(`${b}/config/phone`, v)}
-      />
-    </div>
-    {@const kids = Array.isArray(w.widgets) ? w.widgets : []}
-    <ListField
-      label="Side by side"
-      items={kids}
-      name={(c) => stackName(c)}
-      addLabel="Add text"
-      onmove={(x, y) => set(`${b}/widgets`, moveStack(kids, x, y), true)}
-      onremove={(j) =>
-        set(
-          `${b}/widgets`,
-          kids.filter((_, k) => k !== j),
-          true,
-        )}
-      onadd={() => addIn(b, 'text')}
-    >
-      {#snippet item(c, j)}
-        {@const cb = `${b}/widgets/${j}`}
-        <Field
-          edit={`${file}#${cb}/grow`}
-          label="Fill the space"
-          type="boolean"
-          value={c.grow === true}
-          disabled={c.grow !== true && kids.some((k) => k.grow === true)}
-          help={c.grow !== true && kids.some((k) => k.grow === true)
-            ? 'Another widget here fills the space'
-            : 'It takes the space left, pushing the next ones to the end'}
-          onvalue={(v) => set(`${cb}/grow`, v ? true : undefined)}
-        />
-        {#if c.type === 'photo'}
-          <Field
-            edit={`${file}#${cb}/config/width`}
-            label="Photo width"
-            type="select"
-            value={c.config?.width || ''}
-            options={PHOTO_WIDTH}
-            onvalue={(v) => set(`${cb}/config/width`, v || undefined)}
-          />
-        {/if}
-        {@render editW(c, cb)}
-      {/snippet}
-    </ListField>
-    <div class="tp__add" role="group" aria-label="Add a widget to Side by side">
-      {#each SBS_TYPES as [t, label] (t)}
-        <Button
-          size="small"
-          icon="plus"
-          disabled={kids.length >= 6 || (t === 'toggle' && !!toggleOff(topOf(b)))}
-          title={kids.length >= 6
-            ? 'Six widgets at most'
-            : t === 'toggle' && toggleOff(topOf(b))
-              ? toggleOff(topOf(b))
-              : undefined}
-          onclick={() => addIn(b, t)}>Add {label.toLowerCase()}</Button
-        >
-      {/each}
-    </div>
+  {:else if w.type === 'details'}
+    <Field
+      edit={`${file}#${b}/config/template`}
+      label="Details template"
+      type="select"
+      value={w.config?.template || ''}
+      options={[['', 'Pick a template'], ...detailsOptions]}
+      help="What opens below the summary, filled from the same item"
+      onvalue={(v) => set(`${b}/config/template`, v || undefined)}
+    />
+    <Field
+      edit={`${file}#${b}/config/several`}
+      label="Several open at once"
+      type="boolean"
+      value={w.config?.several === true}
+      help="Off: opening one closes the open one"
+      onvalue={(v) => set(`${b}/config/several`, v)}
+    />
+    <Field
+      edit={`${file}#${b}/config/icon`}
+      label="Icon"
+      type="select"
+      value={w.config?.icon || 'plus'}
+      options={[
+        ['plus', '+ / ×'],
+        ['none', 'None'],
+      ]}
+      onvalue={(v) => set(`${b}/config/icon`, v)}
+    />
+    <Field
+      edit={`${file}#${b}/config/screenReaderName`}
+      label="Screen reader name"
+      type="select"
+      value={w.config?.screenReaderName?.[0]?.property || ''}
+      options={[['', 'What the summary shows'], ...binds.map((x) => [x.value, x.label])]}
+      onvalue={(v) => set(`${b}/config/screenReaderName`, v ? [{ property: v }] : undefined)}
+    />
+    <Field
+      edit={`${file}#${b}/config/open`}
+      label="First item open"
+      type="boolean"
+      value={w.config?.open === 'first'}
+      help="Off: every item starts closed"
+      onvalue={(v) => set(`${b}/config/open`, v ? 'first' : undefined)}
+    />
   {:else if w.type === 'button'}
     <Field
       edit={`${file}#${b}/label`}
@@ -595,41 +533,11 @@
       edit={`${file}#/link`}
       label="Link: whole item opens the item’s page"
       type="boolean"
-      value={!opens && tpl.link !== false}
-      disabled={opens}
-      help={opens ? 'An item that opens can’t also be a link' : ''}
+      value={!hasDetails && tpl.link !== false}
+      disabled={hasDetails}
+      help={hasDetails ? 'An item that opens can’t also be a link' : ''}
       changed={live.changed(file, '/link')}
       onvalue={(v) => set('/link', v)}
-    />
-    <Field
-      edit={`${file}#/opens`}
-      label="Opens: items open and close"
-      type="boolean"
-      value={opens}
-      disabled={!!outer && !opens}
-      help={outer
-        ? 'This template is shown inside another List: its items can’t open'
-        : 'Each item shows its summary; its details open below it'}
-      changed={live.changed(file, '/opens')}
-      onvalue={(v) => setOpens(v)}
-    />
-    <Field
-      edit={`${file}#/opens/several`}
-      label="Several open at once"
-      type="boolean"
-      value={tpl.opens?.several === true}
-      disabled={!opens}
-      help="Off: opening one closes the open one"
-      changed={live.changed(file, '/opens/several')}
-      onvalue={(v) => set('/opens/several', v)}
-    />
-    <Field
-      edit={`${file}#/photoFirst`}
-      label="Photo first: a leading photo set apart"
-      type="boolean"
-      value={tpl.photoFirst !== false}
-      changed={live.changed(file, '/photoFirst')}
-      onvalue={(v) => set('/photoFirst', v)}
     />
     <p class="hint small tp__sample">
       {from
@@ -642,26 +550,12 @@
       name={(w) => stackName(w)}
       addLabel="Add text"
       onmove={(a, b) => setWidgets(moveStack(widgets, a, b))}
-      onremove={(i) => setWidgets(widgets.filter((_, k) => k !== i))}
+      onremove={(i) => setWidgets(removeWidget(widgets, i))}
       onadd={() => add('text')}
     >
       {#snippet item(w, i)}
-        {#if opens && w.details === true}
-          <p class="tp__divider" data-details-divider>Details, hidden until opened</p>
-        {/if}
-        <Field
-          edit={`${file}#/widgets/${i}/details`}
-          label="Details start here"
-          type="boolean"
-          value={opens && w.details === true}
-          disabled={!opens || i === 0}
-          help={!opens
-            ? 'For items that open'
-            : i === 0
-              ? 'The summary needs a widget before the details'
-              : 'It and the widgets after it are the details'}
-          onvalue={(v) => setWidgets(setDetails(widgets, v ? i : -1))}
-        />
+        <!-- its place on the template's grid (as a page widget's) -->
+        <TemplateGridRows {file} b={`/widgets/${i}`} {w} {widgets} {set} />
         {@render editW(w, `/widgets/${i}`)}
       {/snippet}
     </ListField>
@@ -670,11 +564,11 @@
         <Button
           size="small"
           icon="plus"
-          disabled={(t === 'list' && !!outer) || (t === 'toggle' && !!toggleOff())}
+          disabled={(t === 'list' && !!outer) || (t === 'details' && !!detailsOff)}
           title={t === 'list' && outer
             ? 'This template is shown inside another List: a list here would be a third level'
-            : t === 'toggle' && toggleOff()
-              ? toggleOff()
+            : t === 'details' && detailsOff
+              ? detailsOff
               : undefined}
           onclick={() => add(t)}>Add {label.toLowerCase()}</Button
         >
@@ -683,7 +577,7 @@
   {:else if tab === 'style'}
     <p class="hint small">How each item looks. Theme: the site theme’s value.</p>
     <div class="tp__style" data-template-style>
-      {#each STYLE_ROWS as r (r.key)}
+      {#each STYLE_ROWS.filter((r) => !GRID_STYLE_KEYS.includes(r.key)) as r (r.key)}
         <Field
           edit={`${file}#/style/${r.key}`}
           label={r.label}
@@ -754,21 +648,6 @@
     height: var(--size-control);
     line-height: var(--size-control);
     color: var(--c-text-muted);
-  }
-
-  // the line between the summary and the details (inside the widget's card: no shift)
-  .tp__divider {
-    margin: 0;
-    padding-bottom: var(--space-2);
-    font-size: var(--fs-base);
-    color: var(--c-text-muted);
-    box-shadow: inset 0 -1px 0 var(--c-line, currentcolor);
-  }
-
-  .tp__sbs {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-2);
   }
 
   .tp__pair {

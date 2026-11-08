@@ -36,32 +36,31 @@ const personTpl = (inner = {}) => ({
   label: 'Person',
   source: 'people',
   link: false,
-  photoFirst: false,
+  // on the template grid: the back button on top, the title left (columns 1–40), the
+  // carousel beside it (41–120), both following the button
   widgets: [
     {
+      id: 'w-back',
       type: 'button',
       role: 'back',
       label: [{ t: '← People' }],
       config: { link: [{ property: 'back' }] },
+      layout: { base: { col: 1, span: 40, row: 1 } },
     },
     {
-      type: 'sideBySide',
-      role: 'row',
-      config: { align: 'top', spacing: 24, phone: 'stack' },
-      widgets: [
-        {
-          type: 'text',
-          role: 'title',
-          body: [{ style: 'heading', text: [{ property: 'title' }] }],
-        },
-        {
-          type: 'list',
-          role: 'photos',
-          grow: true,
-          source: { mode: 'property', property: 'photos' },
-          config: { template: 'preset:photo', arrangement: 'carousel', ...inner },
-        },
-      ],
+      id: 'w-titl',
+      type: 'text',
+      role: 'title',
+      body: [{ style: 'heading', text: [{ property: 'title' }] }],
+      layout: { base: { col: 1, span: 36, row: 1, link: { to: 'w-back', gap: 4 } } },
+    },
+    {
+      id: 'w-phot',
+      type: 'list',
+      role: 'photos',
+      source: { mode: 'property', property: 'photos' },
+      config: { template: 'preset:photo', arrangement: 'carousel', ...inner },
+      layout: { base: { col: 41, span: 80, row: 1, link: { to: 'w-back', gap: 4 } } },
     },
   ],
 });
@@ -235,7 +234,7 @@ test('credits: a photo item gets {credit} and {creditUrl} from photos.json; empt
   assert.equal(off.querySelector('[data-car-credit]'), null);
 });
 
-test('the person template: {back}, a carousel of the photos in a Side by side', () => {
+test('the person template: {back}, a carousel of the photos beside the title on the grid', () => {
   const t = personTpl({ alsoGrid: true });
   assert.deepEqual(checkContent('templates/t-pers.json', t), []);
   const { el, seen } = render({ config: { template: 't-pers' }, tpl: t });
@@ -244,8 +243,9 @@ test('the person template: {back}, a carousel of the photos in a Side by side', 
   assert.ok(back, 'a back button');
   assert.equal(back.getAttribute('href'), sourcePage(base, 'people'));
   assert.ok(back.getAttribute('href'));
-  const car = el.querySelector('.li__sbs [data-carousel]');
-  assert.ok(car, 'the carousel inside the Side by side');
+  const car = el.querySelector('.sec--item > .wgt[data-tw="w-phot"] [data-carousel]');
+  assert.ok(car, 'the carousel on the item grid');
+  assert.equal(el.querySelector('[data-tw="w-phot"]').getAttribute('data-link'), 'w-back 4');
   assert.equal(car.querySelectorAll('.car__slide').length, noor.photos.length);
   assert.equal(car.querySelectorAll('.car__thumb img').length, noor.photos.length);
   assert.ok(car.querySelector('[data-car-grid] .list__items'));
@@ -313,11 +313,11 @@ test('checks: values, carousel keys refused with Grid, opens, nesting, thumbnail
       /no carousel inside a carousel/.test(m),
     ),
   );
-  // a template that opens
+  // a template that opens (Summary and details)
   const opens = {
     ...personTpl(),
-    opens: {},
-    widgets: [{ type: 'text', body: [{ style: 'label', text: [{ property: 'title' }] }] }],
+    link: false,
+    widgets: [{ id: 'w-dets', type: 'details', config: { template: 't-pers' } }],
   };
   assert.ok(
     probs({ 't-open': opens }, list('t-open')).some((m) => /can't use items that open/.test(m)),

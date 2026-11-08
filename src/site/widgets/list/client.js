@@ -3,7 +3,7 @@
  * .wgt--list, ../index.js has the format): the arrow keys move between its items' links
  * (Left / Right by one, Up / Down by a column of the grid, Home / End), so a long list is
  * quick to go through by keyboard. Works for every column count (1–6). Items that open
- * (./opens.js): a click, Enter or Space on a summary opens or closes it (one open at a time
+ * (./details.js): a click, Enter or Space on a summary opens or closes it (one open at a time
  * unless data-opens="several"), Esc closes the open one and gives its summary focus back,
  * and "#<slug>" opens that item on load.
  */

@@ -30,7 +30,7 @@ import { eachWidget } from './ids.js';
 import { MODES, sourceOf } from './source.js';
 import { BIND_TYPES, TEXT_TYPES } from '../property-types.js';
 import { flatWidgets, holdsCarousel, nestingProblems } from '../widgets/list/nested.js';
-import { opensWarnings } from '../widgets/list/opens.js';
+import { detailsOf, detailsWarnings } from '../widgets/list/details.js';
 import {
   ITEMS,
   isPropertyPart,
@@ -250,7 +250,7 @@ export function bindingProblems(content, { types, files = null }) {
   }
   // nested Lists (widgets/list/nested.js): loops and a third level, across the templates
   if (!files || [...files].some((f) => templateIdOf(f))) {
-    out.push(...nestingProblems(content?.templates), ...opensWarnings(content?.templates));
+    out.push(...nestingProblems(content?.templates), ...detailsWarnings(content?.templates));
     for (const [id, tpl] of Object.entries(content?.templates || {}))
       for (const w of flatWidgets(tpl))
         if (w?.type === 'list')
@@ -272,7 +272,7 @@ function carouselChecks(content, widget, problem, deep = null) {
     );
   const tpl = isTemplateId(c.template) ? content?.templates?.[c.template] : null;
   if (!tpl) return;
-  if (tpl.opens !== undefined)
+  if (detailsOf(tpl))
     problem(
       'error',
       `config.template: a carousel can't use items that open (${tpl.label || c.template} opens)`,

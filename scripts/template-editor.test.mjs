@@ -1,6 +1,7 @@
 // List step 8: the template editor (Pages > Site > Templates, content/templates/t-….json).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { onGrid } from './grid-helper.mjs';
 import fs from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { loadContent } from './content.mjs';
@@ -16,6 +17,8 @@ import {
 import {
   keepMarks,
   moveStack,
+  addAt,
+  removeWidget,
   newStackWidget,
   renameProperty,
   runsOf,
@@ -33,8 +36,7 @@ const card = (more = {}) => ({
   label: 'People card',
   basedOn: 'preset:card',
   link: true,
-  photoFirst: true,
-  widgets: [
+  widgets: onGrid([
     { type: 'photo', role: 'photo', src: [{ property: 'cover' }] },
     { type: 'text', role: 'title', body: [{ style: 'heading', text: [{ property: 'title' }] }] },
     {
@@ -45,7 +47,7 @@ const card = (more = {}) => ({
         { style: 'label', text: [{ property: 'location' }, { t: ' · ' }, { property: 'title' }] },
       ],
     },
-  ],
+  ]),
   ...more,
 });
 const withTemplate = (tpl, id = 't-ab12') => ({
@@ -109,9 +111,22 @@ test('the stack: add, remove, reorder; every new widget passes the validator', (
     ['title', 'facts', 'photo'],
   );
   for (const type of ['text', 'photo', 'button']) {
-    const next = card({ widgets: [...w, newStackWidget(type, 'title')] });
+    // Add: on the grid, its own id, full width, following the last widget
+    const next = card({ widgets: addAt(w, newStackWidget(type, 'title')) });
     assert.deepEqual(checkContent(T, next), [], type);
+    const added = next.widgets.at(-1);
+    assert.match(added.id, /^w-[a-z0-9]{4}$/);
+    assert.deepEqual(added.layout.base, {
+      col: 1,
+      span: 120,
+      row: 1,
+      link: { to: w.at(-1).id, gap: 2 },
+    });
   }
+  // remove: a widget that followed it follows what it followed
+  const gone = removeWidget(w, 1);
+  assert.deepEqual(gone[1].layout.base.link, { to: w[0].id, gap: 2 });
+  assert.deepEqual(checkContent(T, card({ widgets: gone })), []);
   assert.deepEqual(newStackWidget('photo', 'cover').src, [{ property: 'cover' }]);
   assert.equal(newStackWidget('button').itemLink, true);
   assert.equal(stackName(w[1]), 'Text · title');
@@ -165,9 +180,32 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   assert.match(panel, /<ListField/);
   // the template's own settings, always shown (no shift)
   assert.match(panel, /label="Link: whole item opens the item’s page"/);
-  assert.match(panel, /label="Photo first: a leading photo set apart"/);
+  assert.doesNotMatch(panel, /Photo first|photoFirst/);
   assert.match(panel, /set\('\/link', v\)/);
-  assert.match(panel, /set\('\/photoFirst', v\)/);
+  // each widget's place on the template's grid, as a page widget's
+  assert.match(
+    panel,
+    /<TemplateGridRows \{file\} b=\{`\/widgets\/\$\{i\}`\} \{w\} \{widgets\} \{set\} \/>/,
+  );
+  const rows = read('src/editor/svelte/TemplateGridRows.svelte');
+  for (const l of [
+    'Column',
+    'Columns',
+    'Row',
+    'Height',
+    'Ratio',
+    'Rows',
+    'Follows',
+    'Rows between',
+    'Layer',
+    'Own phone layout',
+    'Phone column',
+    'Phone columns',
+    'Phone row',
+  ])
+    assert.match(rows, new RegExp(`label="${l}"`), l);
+  assert.match(rows, /Off: the desktop layout, scaled down/);
+  assert.doesNotMatch(panel + rows, /Side by side|Fill the space|Photo width|On a phone/);
   assert.match(panel, /formats/);
   assert.match(panel, /renameProperty\(widgets, old, to\)/);
   assert.doesNotMatch(panel, /(label|help|title|placeholder)="[^"]*\bfield/i);

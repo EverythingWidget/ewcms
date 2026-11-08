@@ -814,8 +814,9 @@ rule work as anywhere.
   columns: a photo grid, an inner List of an item's photos). Each preset is a column of widgets; its facts are the source's `list`
   properties (`·` between them) and Panel's count is the plain `{photos}` (how many).
 - **Item templates** (`content/templates/t-<id>.json`, step 7): site-wide (every language
-  folder uses them, so they sit next to `content/en/`), each a vertical stack of the
-  registry's widgets whose values are `{property}` parts:
+  folder uses them, so they sit next to `content/en/`), each the registry's widgets placed on
+  the template's own 120-column grid (as a page's section: see **The template grid** below),
+  their values `{property}` parts:
 
   ```json
   {
@@ -824,13 +825,24 @@ rule work as anywhere.
     "label": "People card",
     "basedOn": "preset:card",
     "link": true,
-    "photoFirst": true,
     "widgets": [
-      { "type": "photo", "role": "photo", "src": [{ "property": "cover" }] },
       {
+        "id": "w-phot",
+        "type": "photo",
+        "role": "photo",
+        "src": [{ "property": "cover" }],
+        "size": "aspect",
+        "aspect": "4:5",
+        "layout": { "base": { "col": 1, "span": 120, "row": 1, "rows": 150 } }
+      },
+      {
+        "id": "w-titl",
         "type": "text",
         "role": "title",
-        "body": [{ "style": "heading", "text": [{ "property": "title" }] }]
+        "body": [{ "style": "heading", "text": [{ "property": "title" }] }],
+        "layout": {
+          "base": { "col": 1, "span": 120, "row": 1, "link": { "to": "w-phot", "gap": 2 } }
+        }
       }
     ]
   }
@@ -846,10 +858,10 @@ rule work as anywhere.
   other unsaved edits: then it stays unsaved and a note says "Saved as template t-…"). A copied
   facts line keeps `"join": " · "`: the separator goes only between facts with a value; `basedOn` notes the preset or template it was copied from (only a note). `role` names a widget's place in the
   item (`.li__<role>`); a button's `"itemLink": true` opens the item's page; `link` makes the
-  whole item a link, `photoFirst` sets a leading photo apart. A template's optional top-level
+  whole item a link. A template's optional top-level
   `"source": "<source>"` (Duplicate records the List's) only names where the template editor's
   sample item comes from; its widgets have no `source` (the List gives each copy its item), no
-  List inside it yet (nested Lists come later), and no `id` or `layout`; `ewcms check` and Save
+  List inside it yet (nested Lists come later); `ewcms check` and Save
   reject anything else with a message. A List pointing at a missing template warns and shows
   Card. Property mapping does not apply to a template (it names its properties itself).
 
@@ -859,9 +871,14 @@ rule work as anywhere.
   picked, its place always kept) jumps to it. The preview (the dev server's
   `/__template/<id>/`, never built) shows the template as a List of one sample item: the first
   item of its `source`, else a hand-made sample. Two tabs:
-  - **Widgets**: its name, **Link: whole item opens the item's page** (`link`) and **Photo
-    first: a leading photo set apart** (`photoFirst`), then the vertical stack: drag a widget's grip (or Alt+↑/↓) to reorder,
-    × removes it, **Add text / Add photo / Add button** adds one. Each widget has its **Role**
+  - **Widgets**: its name, **Link: whole item opens the item's page** (`link`), then its
+    widgets: drag a widget's grip (or Alt+↑/↓) to reorder, × removes it (a widget that followed
+    it follows what it followed), **Add text / Add photo / Add button / Add list / Add summary
+    and details** adds one (full width, following the last widget). Each widget has its place on
+    the grid (`TemplateGridRows.svelte`): **Column**, **Columns**, **Row** (off while it
+    follows another), **Height** (Auto / Aspect / Rows), **Ratio**, **Rows**, **Follows**,
+    **Rows between**, **Layer**, **Own phone layout** (off: the desktop layout, scaled down)
+    and its **Phone column / columns / row**; then its **Role**
     (`.li__<role>`); a Text its lines (style + text), a Photo its photo, a Button its label and
     **Opens the item's page** (`itemLink`). A line's bold, italic and links stay through an edit (typed text takes the marks of the text before it). Every value takes `{property}` chips: type `{name}`
     or pick one from the source's properties.
@@ -909,121 +926,79 @@ rule work as anywhere.
   `thumbnails: "photos"` with no photo in the template warns (numbers show). The Album widget
   stays for now.
 
-- **Side by side** (`sideBySide`, `src/site/widgets/list/side-by-side.js`): in an item template
-  only, a group whose widgets sit on one line. **Add side by side** adds one ({number}, then a
-  property that fills the space).
+- **The template grid** (`src/site/widgets/list/item-grid.js`, `item-grid-render.js`): each
+  item is a grid of its own, as a page's section (`.sec.sec--item`, 120 columns, 60 on a phone)
+  and its widgets are placed as page widgets are, with the same keys and the same mechanism
+  (`src/client/modules/rows.js` flows it with the page; `data-tw` names a widget): `id`,
+  `layout.base` (`col`, `span`, `row`, `rows`, `link: { to, gap }`), `layout.phone`, `size`
+  (`auto` default, `aspect` + `aspect`, `rows`) and `layer` (a page widget's `z`).
+  - **Auto height**, as on a page: a text grows with its content and pushes the widgets that
+    follow it (`link`) down; widgets on the same grid line take the tallest one's height; an
+    inner List grows too. Nothing is cut: no fixed size, no ellipsis.
+  - **On a phone**: the widget's own phone layout (`layout.phone`) when it has one, else its
+    desktop layout scaled down (halved, on 60 columns).
+  - **Hide** (When a value is missing) leaves a widget out exactly as on a page: the widgets
+    that follow it move up.
+  - No shift: before the script the rows are the stored ones (container units: an item's cell
+    is `100cqw / 120`); the script sets the measured rows in the same flow as the page's, under
+    the page's first paint (checked with a layout-shift observer: no shift inside an item, none
+    when an item opens).
+  - The presets (Card, Row, Panel …) keep their stack until step 12; **Duplicate** places a
+    preset's widgets on the grid, each full width below the one before (a photo with a ratio as
+    `size: "aspect"`), its style without the keys the grid took over.
+  - **Gone, and what replaced it** (`ewcms check` and Save name the replacement):
+
+    | gone                                                                       | now                                                                    |
+    | -------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+    | `sideBySide` (Side by side)                                                | its widgets next to each other on the grid, each with its own `layout` |
+    | a widget's `grow` (Fill the space), a photo's `config.width` (Photo width) | the columns it spans (`layout`)                                        |
+    | `photoFirst`                                                               | the photo's own `layout`                                               |
+    | `style.padding`, `style.spacing`                                           | the widgets' places and rows (a link's `gap`)                          |
+    | `style.photoRatio`, `style.photoFit`, `style.photoPlacement`               | the photo's `size: "aspect"` + `aspect`, its fit, its `layout`         |
+    | `style.textOverPhoto`                                                      | the text over the photo on the grid, a higher `layer`                  |
+    | `style.align`, `style.titleSize`                                           | each text's own alignment and style                                    |
+    | `opens`, `{ "type": "toggle" }`, `"details": true`                         | a `details` widget (Summary and details, below)                        |
+
+- **Summary and details** (`"type": "details"`, `src/site/widgets/list/details.js`): an item
+  that opens. The template is the **summary** (always shown); the `details` widget sits on its
+  grid where the +/× goes and names the **details' template**, shown below once opened, on its
+  own grid and filled from the same item.
 
   ```json
   {
-    "type": "sideBySide",
-    "role": "head",
-    "config": { "align": "baseline", "spacing": 16, "phone": "wrap" },
-    "widgets": [
-      {
-        "type": "text",
-        "role": "num",
-        "body": [{ "style": "label", "text": [{ "property": "number" }] }]
-      },
-      {
-        "type": "text",
-        "role": "title",
-        "grow": true,
-        "body": [{ "style": "heading", "text": [{ "property": "title" }] }]
-      },
-      {
-        "type": "text",
-        "role": "kind",
-        "body": [{ "style": "label", "text": [{ "property": "type" }] }]
-      },
-      {
-        "type": "text",
-        "role": "year",
-        "body": [{ "style": "label", "text": [{ "property": "year" }] }]
-      }
-    ]
+    "id": "w-popn",
+    "type": "details",
+    "layout": { "base": { "col": 116, "span": 5, "row": 1 } },
+    "config": {
+      "template": "t-pmor",
+      "several": false,
+      "icon": "plus",
+      "screenReaderName": [{ "property": "title" }],
+      "open": "none"
+    }
   }
   ```
 
-  | Key                      | Values                                            | Label                                                                                              |
-  | ------------------------ | ------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-  | `config.align`           | `top`, `center` (default), `bottom`, `baseline`   | **Align**: Top / Middle / Bottom / Baseline                                                        |
-  | `config.spacing`         | 0, 4, 8, 12, 16 (default), 24, 32 (px)            | **Space between**                                                                                  |
-  | `config.phone`           | `wrap` (default), `stack`, `keep`                 | **On a phone**: Wrap / Stack / Keep on one line (texts cut with …), at the List's one-column width |
-  | a widget's `grow`        | `true` (one per Side by side)                     | **Fill the space**: it takes the space left                                                        |
-  | a photo's `config.width` | `s` 64 px, `m` 96 px, `l` 160 px (else its share) | **Photo width**: Small / Medium / Large                                                            |
-
-  Rules (`ewcms check`, Save; the editor disables what doesn't fit): 2–6 widgets, each a text,
-  photo, button, toggle or List (an inner List, e.g. a carousel beside the item's text); no Side
-  by side inside one; `grow`
-  and a photo's `width` only inside one. Widths come from the content and a fixed gap: nothing
-  is measured, so an item never reflows. It is not a page widget.
-
-- **Items that open and close** (`opens`, `src/site/widgets/list/opens.js`): each item shows its
-  **summary**; its **details** open below it. In the template: `"opens": { "several": false }`
-  and `"details": true` on the top-level widget the details start at (it and the ones after it;
-  the ones before it are the summary). `{ "type": "toggle" }` is the +/× icon (it turns into ×
-  when open).
-
-  ```json
-  {
-    "kind": "template",
-    "label": "Project row",
-    "link": false,
-    "opens": { "several": false },
-    "widgets": [
-      {
-        "type": "sideBySide",
-        "role": "head",
-        "config": { "align": "baseline" },
-        "widgets": [
-          {
-            "type": "text",
-            "role": "num",
-            "body": [{ "style": "label", "text": [{ "property": "number" }] }]
-          },
-          {
-            "type": "text",
-            "role": "title",
-            "grow": true,
-            "body": [{ "style": "heading", "text": [{ "property": "title" }] }]
-          },
-          { "type": "toggle" }
-        ]
-      },
-      {
-        "type": "sideBySide",
-        "role": "more",
-        "details": true,
-        "config": { "align": "top" },
-        "widgets": [
-          { "type": "photo", "src": [{ "property": "photo" }], "config": { "width": "l" } },
-          {
-            "type": "text",
-            "grow": true,
-            "body": [{ "style": "paragraph", "text": [{ "property": "body" }] }]
-          }
-        ]
-      }
-    ]
-  }
-  ```
-
-  - Items start closed; `#<slug>` in the page URL opens that item. `several: false` (default):
-    opening one closes the open one; `true`: each opens on its own.
+  | key                       | values (default first)                   | row                                                             |
+  | ------------------------- | ---------------------------------------- | --------------------------------------------------------------- |
+  | `config.template`         | a template id (`t-…`)                    | **Details template**                                            |
+  | `config.several`          | `false` \| `true`                        | **Several open at once** (off: opening one closes the open one) |
+  | `config.icon`             | `"plus"` \| `"none"`                     | **Icon**: + / × (it turns into × when open), or none            |
+  | `config.screenReaderName` | parts (left out: what the summary shows) | **Screen reader name**                                          |
+  | `config.open`             | `"none"` \| `"first"`                    | **First item open**                                             |
+  - Items start closed (unless `open: "first"`); `#<slug>` in the page URL opens that item.
   - The summary is the item's button (`role="button"`, `tabindex="0"`, `aria-expanded`,
-    `aria-controls`); the details a `region` labelled by it, `inert` while closed. Click, Enter
-    or Space opens and closes; Esc closes and gives the summary focus back; the arrow keys move
-    between summaries as between links.
+    `aria-controls`, `aria-label` from `screenReaderName`); the details a `region` labelled by
+    it, `inert` while closed. Click, Enter or Space opens and closes; Esc closes and gives the
+    summary focus back; the arrow keys move between summaries as between links.
   - The details open with their grid row (`0fr` → `1fr`) and fade in: nothing is measured, the
     summary and the item's width never move (the items below follow). Reduced motion: no
     transition.
-  - Template editor: **Opens: items open and close**, **Several open at once**, on each widget
-    **Details start here** (a **Details, hidden until opened** line above it), **Add toggle**.
-    The preview shows the first item open.
-  - Rules (`ewcms check`, Save; the editor disables what doesn't fit): not with Link (`"link":
-false`; a button in the details can link); one `details` widget with a widget before it;
-    one toggle, in the summary; no button in the summary; `details` and toggles only with
-    `opens`; not in an inner List's template; Photo first doesn't apply.
+  - Template editor: **Add summary and details** (once per template; it turns Link off), its
+    rows above. The preview shows the first item open.
+  - Rules (`ewcms check`, Save): one per template; not with Link (`"link": false`; a button in
+    the details can link); no button in the summary; the details' template exists and has no
+    Summary and details of its own; not in an inner List's template, nor a carousel's.
 
 - **Nested Lists** (two levels): a template's stack can hold a `list` widget, an inner List
   filled per item. **Add list** in the template editor adds one (disabled, with its reason, in a
@@ -1144,10 +1119,10 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
     set. A property goes in the link itself: `{ "href": [{ "property": "url" }] }` is refused.
   - For hiding, `false` is empty too (a boolean property that is off).
   - In an item template each text, photo and button has both rows; **When a value is missing**
-    offers **As the List** (the key left out), Hide, Show empty. Not on a toggle or a Side by side.
+    offers **As the List** (the key left out), Hide, Show empty. Not on Summary and details.
   - Hidden widgets stay in the editor's preview, dimmed and as big as they are (no shift).
   - `ewcms check` warns when every summary widget of an item that opens can be hidden ("Its
-    summary can be empty"); a toggle, or one set to Show empty, keeps it.
+    summary can be empty"); the +/× icon, or a widget set to Show empty, keeps it.
 - **From a source / Hand-made** (`config.handmade`): Content tab. From a source is today's source
   picker; Hand-made edits `config.items` (`[{ title, photo, link, source, unit }]`). A pointed
   `source` fills the link (that source's page) when it is empty, and Panel's count is how many

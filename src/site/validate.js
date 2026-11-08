@@ -9,8 +9,8 @@
  * A source's items against its schema (required properties, types, photos) are checked by
  * checkItems (src/site/schemas.js): that needs the schema and the photos, not one file.
  */
-import { PHOTO_WIDTHS, sideBySideProblems } from './widgets/list/side-by-side.js';
-import { opensProblems } from './widgets/list/opens.js';
+import { asPageWidget } from './widgets/list/item-grid.js';
+import { detailsProblems, detailsWidgetProblems } from './widgets/list/details.js';
 import { CAROUSEL_KEYS, carouselProblems } from './widgets/list/carousel.js';
 import { AREA_KEYS, storesRows } from './layout/grid.js';
 import { storedDefaults } from './defaults.js';
@@ -664,19 +664,29 @@ export function checkItemTemplate(d) {
     out.push('"label" must be a text (its name in the List\'s Template picker)');
   if (d.basedOn !== undefined && !PRESET_FROM.includes(d.basedOn) && !isTemplateId(d.basedOn))
     out.push(`"basedOn" must be a preset (${PRESET_FROM.join(', ')}) or a template id ("t-…")`);
-  for (const k of ['link', 'photoFirst'])
-    if (d[k] !== undefined && typeof d[k] !== 'boolean') out.push(`"${k}" must be true or false`);
+  if (d.link !== undefined && typeof d.link !== 'boolean') out.push('"link" must be true or false');
+  // retired by the template grid (step I): what replaced each
+  for (const [k, msg] of Object.entries(RETIRED_TEMPLATE_KEYS))
+    if (d[k] !== undefined) out.push(`"${k}" is gone: ${msg}`);
+  if (isObject(d.style))
+    for (const [k, msg] of Object.entries(RETIRED_STYLE_KEYS))
+      if (d.style[k] !== undefined) out.push(`"style.${k}" is gone: ${msg}`);
   if (d.source !== undefined && (typeof d.source !== 'string' || !ROLE.test(d.source)))
     out.push('"source" must be a source name (the source its sample item comes from)');
-  out.push(...styleProblems(d.style));
+  out.push(
+    ...styleProblems(
+      isObject(d.style)
+        ? Object.fromEntries(Object.entries(d.style).filter(([k]) => !RETIRED_STYLE_KEYS[k]))
+        : d.style,
+    ),
+  );
   const known = [
     'kind',
     'label',
     'basedOn',
     'source',
     'link',
-    'photoFirst',
-    'opens',
+    ...Object.keys(RETIRED_TEMPLATE_KEYS),
     'style',
     'widgets',
   ];
@@ -687,7 +697,14 @@ export function checkItemTemplate(d) {
     return out;
   }
   d.widgets.forEach((w, i) => out.push(...checkTemplateWidget(w, `widgets.${i}`)));
-  out.push(...opensProblems(d));
+  // the grid (widgets/list/item-grid.js): ids unique, links to a widget of the template, no loops
+  const ws = d.widgets.filter(isObject).map(asPageWidget);
+  out.push(...linkProblems(ws));
+  const seen = new Set();
+  for (const w of ws)
+    if (typeof w.id === 'string' && seen.has(w.id)) out.push(`the id "${w.id}" is used twice`);
+    else seen.add(w.id);
+  out.push(...detailsProblems(d));
   return out;
 }
 
@@ -723,27 +740,59 @@ function templateLinkProblems(w, at) {
   return p ? [`${at}.config.link must be ${p}`] : [];
 }
 
-/** One widget of an item template at `at` (inside: in a Side by side): its problems. */
-function checkTemplateWidget(w, at, inside = false) {
+/** Template keys retired by the template grid (step I), and what replaced each. */
+const RETIRED_TEMPLATE_KEYS = {
+  opens:
+    'a "details" widget (Summary and details) on the template: its "config.template" holds the details, "config.several" is "opens.several"',
+  photoFirst: 'the photo\'s place is its own "layout" on the template\'s grid',
+};
+/** Item style keys the template grid took over. */
+const RETIRED_STYLE_KEYS = {
+  padding: "the space inside an item is the template's grid: place the widgets where they go",
+  spacing: 'the space between widgets is their rows on the template\'s grid (or a link\'s "gap")',
+  photoRatio: 'the photo widget\'s own size: "size": "aspect" with "aspect": "4:5"',
+  photoFit: 'the photo widget\'s own fit ("box")',
+  photoPlacement: 'the photo widget\'s "layout" (above, beside: where you place it)',
+  textOverPhoto: 'place the text over the photo on the grid (a higher "layer")',
+  align: "each text widget's own alignment",
+  titleSize: "the title text widget's own style",
+};
+
+/** One widget of an item template at `at`: its problems. */
+function checkTemplateWidget(w, at) {
   const out = [];
   if (!isObject(w)) return [`${at} must be an object`];
-  if (w.type === 'sideBySide') {
-    if (inside) return [`${at}: no Side by side inside a Side by side (one level)`];
-    return sideBySideProblems(w, at, (k, here) => checkTemplateWidget(k, here, true));
-  }
-  if (w.type === 'toggle') {
-    // the +/× icon of an item that opens (widgets/list/opens.js)
-    const extra = Object.keys(w).filter((k) => !['type', 'role', 'details'].includes(k));
-    return extra.length
-      ? [`${at}: a toggle has only "type" and "role" (not ${extra.join(', ')})`]
-      : [];
+  if (w.type === 'sideBySide')
+    return [
+      `${at}: Side by side is gone: place its widgets next to each other on the template's grid (each its own "layout")`,
+    ];
+  if (w.type === 'toggle')
+    return [
+      `${at}: the toggle is gone: a "details" widget (Summary and details) shows the +/× where it sits`,
+    ];
+  if (w.details !== undefined)
+    out.push(
+      `${at}.details is gone: the details are a template of their own, named by a "details" widget's "config.template"`,
+    );
+  if (w.type === 'details') {
+    out.push(...detailsWidgetProblems(w, at));
+    if (!isId(w.id, 'w')) out.push(`${at}: "id" must be a widget id like "w-7qpa"`);
+    out.push(...checkWidgetLayout(w).map((p) => `${at}: ${p}`));
+    const extra = Object.keys(w).filter(
+      (k) => !['id', 'type', 'role', 'layout', 'layer', 'config'].includes(k),
+    );
+    if (extra.length)
+      out.push(
+        `${at}: Summary and details has only id, type, role, layout, layer and config (not ${extra.join(', ')})`,
+      );
+    return out;
   }
   if (RETIRED_WIDGETS[w.type]) return [`${at}: ${RETIRED_WIDGETS[w.type]}`];
   if (!WIDGET_TYPES[w.type])
     return [
       `${at}: "${w.type}" is not a widget type (${Object.keys(WIDGET_TYPES)
         .filter((t) => t !== 'list')
-        .join(', ')}, sideBySide, toggle)`,
+        .join(', ')}, details)`,
     ];
   if (w.type === 'list') {
     // an inner List (two levels: widgets/list/nested.js; loops and depth: bindingProblems)
@@ -760,8 +809,16 @@ function checkTemplateWidget(w, at, inside = false) {
     out.push(...carouselProblems(w.config, `${at}.config`));
   } else if (w.source !== undefined)
     out.push(`${at}: no "source" in a template: the List gives each copy its item`);
-  for (const k of ['id', 'layout', 'z'])
-    if (w[k] !== undefined) out.push(`${at}: no "${k}": a template's widgets stack top to bottom`);
+  // on the grid, as a page's widget (layout, size, aspect; its layer is "layer", not "z")
+  if (!isId(w.id, 'w')) out.push(`${at}: "id" must be a widget id like "w-7qpa"`);
+  if (w.z !== undefined) out.push(`${at}: "z" is a page widget's: a template's is "layer"`);
+  if (w.layer !== undefined && !Number.isInteger(w.layer))
+    out.push(`${at}.layer must be a whole number`);
+  out.push(...checkWidgetLayout(w).map((p) => `${at}: ${p}`));
+  if (w.size !== undefined && !SIZES.includes(w.size))
+    out.push(`${at}.size must be ${SIZES.join(', ')}`);
+  if ((w.size === 'aspect' || w.aspect !== undefined) && !isRatio(w.aspect))
+    out.push(`${at}.aspect must be a ratio like "4:5"`);
   if (w.role !== undefined && (typeof w.role !== 'string' || !ROLE.test(w.role)))
     out.push(`${at}.role must be a name in lowercase letters, digits and "-"`);
   if (w.join !== undefined && (w.type !== 'text' || typeof w.join !== 'string'))
@@ -769,12 +826,12 @@ function checkTemplateWidget(w, at, inside = false) {
   if (w.itemLink !== undefined && (w.type !== 'button' || w.itemLink !== true))
     out.push(`${at}.itemLink: only a button's, true (it opens the item's page)`);
   out.push(...missingProblems(w, at), ...templateLinkProblems(w, at));
-  if (w.grow !== undefined && !inside)
-    out.push(`${at}.grow: only a widget in a Side by side fills the space`);
-  if (w.type === 'photo' && w.config?.width !== undefined) {
-    if (!inside) out.push(`${at}.config.width: a photo's width only applies in a Side by side`);
-    else if (!PHOTO_WIDTHS[w.config.width]) out.push(`${at}.config.width must be "s", "m" or "l"`);
-  }
+  if (w.grow !== undefined)
+    out.push(
+      `${at}.grow is gone (Fill the space): give the widget the columns it fills (its "layout")`,
+    );
+  if (w.type === 'photo' && w.config?.width !== undefined)
+    out.push(`${at}.config.width is gone (Photo width): give the photo its columns (its "layout")`);
   return out;
 }
 

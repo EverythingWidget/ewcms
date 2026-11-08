@@ -1,6 +1,8 @@
 // List step 9: item style (a template's "style", src/site/widgets/list/item-style.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { GRID_STYLE_KEYS, gridStyle } from '../src/site/widgets/list/item-grid.js';
+import { onGrid } from './grid-helper.mjs';
 import fs from 'node:fs';
 import * as sass from 'sass';
 import { loadContent } from './content.mjs';
@@ -25,9 +27,9 @@ const tpl = (style) => ({
   label: 'People card',
   basedOn: 'preset:card',
   ...(style === undefined ? {} : { style }),
-  widgets: [
+  widgets: onGrid([
     { type: 'text', role: 'title', body: [{ style: 'heading', text: [{ property: 'title' }] }] },
-  ],
+  ]),
 });
 const read = (f) => fs.readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 
@@ -63,13 +65,16 @@ test('the keys and their values: sizes on the 4px grid, Fill / Fit, Border as a 
 });
 
 test('the validator: a valid style passes, a wrong key or value is named, "theme" is never a value', () => {
-  assert.deepEqual(checkContent(T, tpl({ radius: 8, border: 'line', photoFit: 'fit' })), []);
+  assert.deepEqual(checkContent(T, tpl({ radius: 8, border: 'line', shadow: 's' })), []);
   assert.deepEqual(checkContent(T, tpl({})), []);
   const msg = (s) => checkContent(T, tpl(s)).join('; ');
   assert.match(msg({ radius: 6 }), /style\.radius must be one of 0, 4, 8, 12, 16, 24/);
   assert.match(msg({ ring: 'line' }), /style\.ring is not an item style key/);
   assert.match(msg({ gap: 8 }), /style\.gap is not an item style key/);
-  assert.match(msg({ photoFit: 'cover' }), /style\.photoFit must be one of "fill", "fit"/);
+  // the keys the template grid took over (a preset keeps them): each names what replaced it
+  assert.match(msg({ photoFit: 'cover' }), /"style\.photoFit" is gone: the photo widget's own fit/);
+  for (const k of GRID_STYLE_KEYS)
+    assert.match(msg({ [k]: 0 }), new RegExp(`"style\\.${k}" is gone: `));
   assert.match(msg({ border: 'theme' }), /style\.border must be one of/);
   assert.match(msg('big'), /"style" must be an object/);
   assert.deepEqual(styleProblems(undefined), []);
@@ -129,7 +134,8 @@ test('presets are style values; Duplicate writes them out; a template copy keeps
   assert.doesNotMatch(read('src/site/widgets/list/presets.js'), /\blook:|shapeOf/);
   assert.equal(PRESET_STYLES['preset:panel'].textOverPhoto, 'bottom');
   const card = cloneTemplate(base, 'people', 'preset:card');
-  assert.deepEqual(card.style, presetStyle('preset:card'));
+  assert.deepEqual(card.style, gridStyle(presetStyle('preset:card')));
+  for (const k of GRID_STYLE_KEYS) assert.equal(card.style[k], undefined, k);
   assert.deepEqual(checkContent(T, card), []);
   const again = cloneTemplate(
     { ...base, templates: { 't-ab12': tpl({ radius: 8 }) } },

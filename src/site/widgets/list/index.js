@@ -64,8 +64,8 @@ import {
 import { isTemplateId } from '../../files.js';
 import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from './handmade.js';
 import { presetStyle, styleMarkup } from './item-style.js';
-import { childClass, sideBySideHtml } from './side-by-side.js';
-import { detailsAt, opensHtml, toggleHtml } from './opens.js';
+import { itemGridHtml } from './item-grid-render.js';
+import { detailsOf, nameOf, opensHtml, toggleHtml } from './details.js';
 import { flatWidgets, innerItems, innerKeys } from './nested.js';
 import { CAROUSEL, carouselHtml, carouselOf, carouselProblems } from './carousel.js';
 
@@ -101,8 +101,8 @@ const GAPS = ['s', 'm', 'l'];
 /** One widget of an item's template, filled from `item` (scope); '' when it is left out. */
 function itemWidget(w, ctx, scope, { hide, api, cls = '' }) {
   const def = WIDGET_TYPES[w.type];
-  // the +/× of an item that opens (./opens.js)
-  if (w.type === 'toggle') return { html: toggleHtml(w.role), missing: [] };
+  // Summary and details: its +/× (./details.js)
+  if (w.type === 'details') return { html: toggleHtml(w), missing: [] };
   if (w.type === 'list') {
     // an inner List (./nested.js): its items from this item; a third level never renders
     if (api.depth >= 2) {
@@ -376,20 +376,22 @@ export const list = {
       const cr = creditOf(ctx, p);
       return { credit: creditText(cr), creditUrl: cr?.source || '' };
     };
-    // items that open (./opens.js): summary, then the details from the "details" widget on
-    const opens = !!own && isObject(own.opens) && (widget.depth || 1) < 2;
-    const cut = opens ? detailsAt(template) : -1;
+    // Summary and details (./details.js): the template is the summary, the "details" widget
+    // names the details' template (not in an inner List)
+    const dw = own && (widget.depth || 1) < 2 ? detailsOf(own) : null;
+    const detTpl = dw ? templateOf(ctx, dw.config?.template) : null;
+    const opens = !!detTpl;
+    const several = opens && dw.config?.several === true;
+    const detailsTpl = opens ? structuredClone(detTpl.widgets || []) : [];
     const link = opens ? false : own ? own.link !== false : preset.link;
     // the item style (./item-style.js): the template's own, else the preset's
     const look = styleMarkup(own ? own.style : presetStyle(preset.id));
     const liClass = ['li', `li--${shape}`, ...look.cls].join(' ');
     const liStyle = look.vars ? ` style="${esc(look.vars)}"` : '';
-    const photoFirst =
-      !opens &&
-      (own ? own.photoFirst !== false : preset.photoFirst) &&
-      template[0]?.type === 'photo';
+    const photoFirst = !opens && !own && preset.photoFirst && template[0]?.type === 'photo';
     // See all: only From a source (hand-made has no single source page)
     const href = !handmade && source && c.seeAll ? sourcePage(ctx, source) : '';
+    const siteTemplate = !!own; // (`own` below is each item's own properties)
     const missing = new Map(); // name -> how many items have no value for it
     const out = items.map((item, i) => {
       const at = widget.indexOf ? widget.indexOf(item) : i;
@@ -417,31 +419,24 @@ export const list = {
         const hide = filled.config?.missing !== undefined ? hideMissing(filled.config) : listHide;
         return itemWidget(filled, ctx, scope, { hide, api, cls });
       };
-      const ws = template.map((w) => {
-        if (w.type !== 'sideBySide') return one(w);
-        // Side by side (./side-by-side.js): its widgets on one line
-        const kids = (Array.isArray(w.widgets) ? w.widgets : []).map((c) => one(c, childClass(c)));
-        return {
-          html: sideBySideHtml(
-            w,
-            kids.map((k) => k.html),
-          ),
-          missing: kids.flatMap((k) => k.missing),
-        };
-      });
+      const ws = [...template, ...detailsTpl].map((w) => one(w));
       ws.forEach((w) => w.missing.forEach((n) => missing.set(n, (missing.get(n) || 0) + 1)));
-      const parts = ws.map((w) => w.html);
+      const all = ws.map((w) => w.html);
+      const parts = all.slice(0, template.length);
       const [first, ...rest] = parts;
-      // the editor shows the first item open, so its details can be edited
-      const open = opens && cut > 0 && editable && i === 0;
-      const inner =
-        opens && cut > 0
-          ? opensHtml(
-              `${widget.id}-${i + 1}`,
-              parts.slice(0, cut).join(''),
-              parts.slice(cut).join(''),
-              open,
-            )
+      // "open": "first" (and the editor, so its details can be edited): the first item open
+      const open = opens && i === 0 && (editable || dw.config?.open === 'first');
+      // a site template: the item is a grid of its own, as a page's section (./item-grid.js)
+      const inner = opens
+        ? opensHtml(
+            `${widget.id}-${i + 1}`,
+            itemGridHtml(template, parts),
+            itemGridHtml(detailsTpl, all.slice(template.length)),
+            open,
+            nameOf(dw.config?.screenReaderName, numbered),
+          )
+        : siteTemplate
+          ? itemGridHtml(template, parts)
           : photoFirst
             ? `${first}<div class="li__text">${rest.join('')}</div>`
             : `<div class="li__text">${parts.join('')}</div>`;
@@ -465,7 +460,7 @@ export const list = {
           ${href ? html`<a class="btn glass section__cta" href="${esc(href)}"><span>${esc(t(ctx, 'list.seeAll'))}</span> <span aria-hidden="true">→</span></a>` : ''}
         </header>`
       : '';
-    const gridHtml = `<div class="list__items list__items--grid" style="--list-cols:${columns}" data-cols="${columns}"${opens ? ` data-opens="${own.opens.several === true ? 'several' : 'one'}"` : ''}>${out.join('')}</div>`;
+    const gridHtml = `<div class="list__items list__items--grid" style="--list-cols:${columns}" data-cols="${columns}"${opens ? ` data-opens="${several ? 'several' : 'one'}"` : ''}>${out.join('')}</div>`;
     const carousel = c.arrangement === 'carousel' && items.length && !opens;
     if (c.arrangement === 'carousel' && opens)
       warnOnce(
