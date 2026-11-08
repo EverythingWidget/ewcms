@@ -989,6 +989,9 @@ rule work as anywhere.
   | `config.icon`             | `"plus"` \| `"none"`                     | **Icon**: + / × (it turns into × when open), or none            |
   | `config.screenReaderName` | parts (left out: what the summary shows) | **Screen reader name**                                          |
   | `config.open`             | `"none"` \| `"first"`                    | **First item open**                                             |
+  - Its place is a widget's: `layout`, `layer`, and `size` (`auto`, `aspect`, `rows`): a Rows
+    +/× (`"size": "rows"`, `layout.base.rows`) makes every item at least that tall (a project
+    row's height).
   - Items start closed (unless `open: "first"`); `#<slug>` in the page URL opens that item.
   - The summary is the item's button (`role="button"`, `tabindex="0"`, `aria-expanded`,
     `aria-controls`, `aria-label` from `screenReaderName`); the details a `region` labelled by

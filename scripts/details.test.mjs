@@ -195,6 +195,17 @@ test('the validator: its settings, one per template, not a link, no button in th
   assert.match(p(tpl({ link: true })), /can't also be a link/);
   const { link: _l, ...noLink } = tpl(); // eslint-disable-line no-unused-vars
   assert.match(p(noLink), /can't also be a link/);
+  // its place has a height as any widget's: Rows makes the item at least that tall
+  assert.deepEqual(
+    problems(
+      tpl({}, [
+        ...summary,
+        { ...dw(), size: 'rows', layout: { base: { col: 116, span: 5, row: 1, rows: 13 } } },
+      ]),
+    ),
+    [],
+  );
+  assert.match(p(tpl({}, [...summary, { ...dw(), size: 'tall' }])), /size must be/);
   assert.match(p(tpl({ config: { several: 'yes' } })), /config.several must be true or false/);
   assert.match(p(tpl({ config: { icon: 'x' } })), /config.icon must be plus or none/);
   assert.match(p(tpl({ config: { open: 'all' } })), /config.open must be none or first/);

@@ -778,12 +778,17 @@ function checkTemplateWidget(w, at) {
     out.push(...detailsWidgetProblems(w, at));
     if (!isId(w.id, 'w')) out.push(`${at}: "id" must be a widget id like "w-7qpa"`);
     out.push(...checkWidgetLayout(w).map((p) => `${at}: ${p}`));
+    // its place has a height as any widget's (Rows: an item at least that tall)
+    if (w.size !== undefined && !SIZES.includes(w.size))
+      out.push(`${at}.size must be ${SIZES.join(', ')}`);
+    if ((w.size === 'aspect' || w.aspect !== undefined) && !isRatio(w.aspect))
+      out.push(`${at}.aspect must be a ratio like "4:5"`);
     const extra = Object.keys(w).filter(
-      (k) => !['id', 'type', 'role', 'layout', 'layer', 'config'].includes(k),
+      (k) => !['id', 'type', 'role', 'layout', 'layer', 'size', 'aspect', 'config'].includes(k),
     );
     if (extra.length)
       out.push(
-        `${at}: Summary and details has only id, type, role, layout, layer and config (not ${extra.join(', ')})`,
+        `${at}: Summary and details has only id, type, role, layout, layer, size, aspect and config (not ${extra.join(', ')})`,
       );
     return out;
   }
