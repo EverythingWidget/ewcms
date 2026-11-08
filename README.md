@@ -876,6 +876,39 @@ rule work as anywhere.
 - **{number}**: every List item has `number`, its place in the List as shown (after any match):
   "01", "02" … "99", then "100". An item's own `number` property wins. In the template editor it is
   **Number (01, 02 …)** among the item's properties. Inner Lists use the same name.
+- **{back}**: every List item has `back`, the page around it (a `[param]` page's parent), else
+  the page of all of its source (as the Album's back link). An item's own `back` wins. In the
+  template editor: **Back (the page around it)**; bind a button's link to it
+  (`"config": { "link": [{ "property": "back" }] }`, label "← People").
+- **{credit}, {creditUrl}**: an item showing a photo (its template's first photo's property)
+  gets that photo's credit from `photos.json` ("Photo: Name / Unsplash") and its `source` link.
+  An item's own wins.
+- **Arrangement Carousel** (`config.arrangement`: `"grid"` default | `"carousel"`,
+  `src/site/widgets/list/carousel.js`, `carousel-client.js`): the items one at a time in a fixed
+  slide box. Layout tab, and an inner List's rows in the template editor; the rows are always
+  shown and disabled with Grid (picking Grid drops them):
+
+  | key          | values (default first)                     | row                                                                          |
+  | ------------ | ------------------------------------------ | ---------------------------------------------------------------------------- |
+  | `counter`    | `true` \| `false`                          | **Counter** "01 / 08"                                                        |
+  | `thumbnails` | `"photos"` \| `"numbers"` \| `"none"`      | **Thumbnails**                                                               |
+  | `arrows`     | `true` \| `false`                          | **Arrows**                                                                   |
+  | `credit`     | `true` \| `false`                          | **Credit** (the slide's {credit}; empty: hidden)                             |
+  | `slideRatio` | `"auto"` \| `"4/5"` \| `"3/2"` \| `"16/9"` | **Slide ratio** (auto: the tallest photo's, so the box never changes)        |
+  | `alsoGrid`   | `false` \| `true`                          | **Also as a grid**: a Carousel / Grid switch (the grid uses columns and gap) |
+  | `deepLink`   | `false` \| `true`                          | **Open slide from #n**: `#3` opens slide 3; moving writes it                 |
+
+  Accessibility: a region with `aria-roledescription="carousel"` and a label (the heading);
+  each slide `aria-label="3 of 8"`, the ones not shown `inert`; arrows and thumbnails are
+  buttons, the current thumbnail `aria-current`; the counter `aria-live="polite"`. Keys only
+  while the carousel has focus (it is focusable): ← → one slide, Home / End, G the grid (with
+  alsoGrid). Swipe and a sideways wheel (one step per gesture) too. Reduced motion: no fade.
+  No shift: the slide box is fixed, the bar's rows are reserved, both views are rendered.
+  Checks: the values above; carousel keys with Grid are refused; one deep-linked List per page;
+  no carousel inside a carousel; a template whose items open can't be a carousel;
+  `thumbnails: "photos"` with no photo in the template warns (numbers show). The Album widget
+  stays for now.
+
 - **Side by side** (`sideBySide`, `src/site/widgets/list/side-by-side.js`): in an item template
   only, a group whose widgets sit on one line. **Add side by side** adds one ({number}, then a
   property that fills the space).
@@ -920,7 +953,8 @@ rule work as anywhere.
   | a photo's `config.width` | `s` 64 px, `m` 96 px, `l` 160 px (else its share) | **Photo width**: Small / Medium / Large                                                            |
 
   Rules (`ewcms check`, Save; the editor disables what doesn't fit): 2–6 widgets, each a text,
-  photo or button; no Side by side inside one; no List in one (it needs the whole width); `grow`
+  photo, button, toggle or List (an inner List, e.g. a carousel beside the item's text); no Side
+  by side inside one; `grow`
   and a photo's `width` only inside one. Widths come from the content and a fixed gap: nothing
   is measured, so an item never reflows. It is not a page widget.
 

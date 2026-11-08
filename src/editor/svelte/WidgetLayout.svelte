@@ -20,6 +20,7 @@
   import { fillOf, placeOfBox, placementOf, placesOf } from '../../site/layout/place.js';
   import { scaledToFit } from '../../site/layout/type.js';
   import Field from './Field.svelte';
+  import { CAROUSEL, withArrangement } from '../../site/widgets/list/carousel.js';
   import {
     boxLabels,
     layoutOptions,
@@ -71,8 +72,20 @@
   // its widget settings in this tab (a List's arrangement, columns, gap): choices, as in Content
   const options = $derived(layoutOptions(widget.type));
   const optionPtr = (c) => `/sections/${at}/widgets/${j}/config/${c.key}`;
+  // a setting's default when the widget leaves it out (a List's carousel ones: carousel.js)
+  const listDefault = (c) => (widget.type === 'list' ? CAROUSEL[c.key]?.[0] : undefined);
   const setOption = (c, v) =>
-    live.store.set(file, optionPtr(c), v, { source: 'panel', structure: true });
+    widget.type === 'list' && c.key === 'arrangement'
+      ? live.store.set(
+          file,
+          optionPtr(c).replace(/\/arrangement$/, ''),
+          withArrangement(widget.config, v),
+          {
+            source: 'panel',
+            structure: true,
+          },
+        )
+      : live.store.set(file, optionPtr(c), v, { source: 'panel', structure: true });
   // Scale to fit (off by default): its hint has two lines' room, so nothing moves when it changes
   const isScaled = $derived(scaledToFit(widget));
 
@@ -143,10 +156,13 @@
         <Field
           edit="{file}#{optionPtr(c)}"
           label={c.label}
-          type="select"
+          type={c.type === 'boolean' ? 'boolean' : 'select'}
           half={c.width === 'half'}
-          value={widget.config?.[c.key] ?? ''}
+          value={c.type === 'boolean'
+            ? (widget.config?.[c.key] ?? listDefault(c)) === true
+            : (widget.config?.[c.key] ?? listDefault(c) ?? '')}
           options={c.options ?? []}
+          disabled={!!c.disabledWhen?.(widget.config)}
           changed={live.changed(file, optionPtr(c))}
           onvalue={(v) => setOption(c, v)}
         />

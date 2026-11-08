@@ -28,6 +28,8 @@
   import { PRESETS } from '../../site/widgets/list/presets.js';
   import { innerChoice, innerTemplates } from '../../site/widgets/list/nested.js';
   import { SBS, SBS_CHILDREN } from '../../site/widgets/list/side-by-side.js';
+  import { CAROUSEL, CAROUSEL_KEYS, withArrangement } from '../../site/widgets/list/carousel.js';
+  import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import {
     ITEMS_FROM,
     innerSourceFor,
@@ -61,12 +63,17 @@
   const schema = $derived(from ? schemaOf(live.content, from) : null);
   const own = $derived((schema?.properties || []).map((p) => p.key));
   const used = $derived(templateProperties(widgets));
-  // {number}: every item's place in its List (01, 02 …)
+  // {number}: every item's place in its List (01, 02 …); {back}: the page around it (a
+  // [param] page's), else the source's page; an item's own property of that name wins
+  const EXTRA = [
+    { value: 'number', label: 'Number (01, 02 …)' },
+    { value: 'back', label: 'Back (the page around it)' },
+  ];
   const binds = $derived([
     ...[...new Set([...own, ...used])]
-      .filter((k) => k !== 'number' || own.includes('number'))
+      .filter((k) => !EXTRA.some((x) => x.value === k) || own.includes(k))
       .map((k) => ({ value: k, label: k })),
-    ...(own.includes('number') ? [] : [{ value: 'number', label: 'Number (01, 02 …)' }]),
+    ...EXTRA.filter((x) => !own.includes(x.value)),
   ]);
   const names = $derived(new Set(binds.map((b) => b.value)));
 
@@ -222,6 +229,10 @@
           : '';
   // a widget into the Side by side at `b`
   const addIn = (b, type) => set(`${b}/widgets`, [...(wAt(b).widgets || []), fresh(type)], true);
+  // an inner List's Arrangement and Carousel rows (the List's own definitions)
+  const LIST_CONFIG = WIDGET_TYPES.list.config;
+  const ARRANGE = LIST_CONFIG.find((c) => c.key === 'arrangement').options;
+  const CAR_ROWS = LIST_CONFIG.filter((c) => CAROUSEL_KEYS.includes(c.key));
   const SBS_TYPES = STACK_TYPES.filter(([t]) => SBS_CHILDREN.includes(t));
   const SBS_ALIGN = [
     ['top', 'Top'],
@@ -417,6 +428,30 @@
         options={GAPS}
         onvalue={(v) => set(`${b}/config/gap`, v)}
       />
+    </div>
+    <!-- Arrangement, and the Carousel's settings: always shown, disabled with Grid -->
+    <Field
+      edit={`${file}#${b}/config/arrangement`}
+      label="Arrangement"
+      type="select"
+      value={w.config?.arrangement || 'grid'}
+      options={ARRANGE}
+      onvalue={(v) => set(`${b}/config`, withArrangement(w.config, v), true)}
+    />
+    <div class="tp__pair">
+      {#each CAR_ROWS as c (c.key)}
+        <Field
+          edit={`${file}#${b}/config/${c.key}`}
+          label={c.label}
+          type={c.type === 'boolean' ? 'boolean' : 'select'}
+          value={c.type === 'boolean'
+            ? (w.config?.[c.key] ?? CAROUSEL[c.key][0]) === true
+            : (w.config?.[c.key] ?? CAROUSEL[c.key][0])}
+          options={c.options ?? []}
+          disabled={w.config?.arrangement !== 'carousel'}
+          onvalue={(v) => set(`${b}/config/${c.key}`, v)}
+        />
+      {/each}
     </div>
   {:else if w.type === 'sideBySide'}
     <div class="tp__sbs">

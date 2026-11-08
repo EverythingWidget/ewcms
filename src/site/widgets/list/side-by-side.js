@@ -13,7 +13,7 @@
  * a photo's config.width    s | m | l: 64 | 96 | 160 px wide (else as wide as its share)
  *
  * Only in item templates, one level (no Side by side in one), 2–6 widgets: text, photo,
- * button or toggle (a List needs the whole width). Widths come from the content and a fixed gap: an item
+ * button, toggle or List (an inner List, e.g. a carousel beside the item's text). Widths come from the content and a fixed gap: an item
  * never reflows on hover or as it loads.
  */
 import { isObject } from '../../is.js';
@@ -24,7 +24,7 @@ export const SBS = {
   phone: ['wrap', 'stack', 'keep'],
 };
 export const SBS_DEFAULTS = { align: 'center', spacing: 16, phone: 'wrap' };
-export const SBS_CHILDREN = ['text', 'photo', 'button', 'toggle'];
+export const SBS_CHILDREN = ['text', 'photo', 'button', 'toggle', 'list'];
 export const PHOTO_WIDTHS = { s: 64, m: 96, l: 160 };
 
 const pick = (key, v) => (SBS[key].includes(v) ? v : SBS_DEFAULTS[key]);
@@ -65,8 +65,6 @@ export function sideBySideProblems(w, at, checkChild) {
     if (!isObject(k)) return out.push(`${here} must be an object`);
     if (k.type === 'sideBySide')
       return out.push(`${here}: no Side by side inside a Side by side (one level)`);
-    if (k.type === 'list')
-      return out.push(`${here}: no List in a Side by side (a List needs the whole width)`);
     if (!SBS_CHILDREN.includes(k.type))
       return out.push(`${here}: a Side by side holds text, photo, button or toggle widgets`);
     if (k.grow !== undefined && k.grow !== true) out.push(`${here}.grow: true, or left out`);

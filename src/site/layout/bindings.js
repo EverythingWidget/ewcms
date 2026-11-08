@@ -24,12 +24,12 @@
  * setting type.
  */
 import { schemaOf } from '../schemas.js';
-import { contentPath, pageFile, templateIdOf } from '../files.js';
+import { contentPath, isTemplateId, pageFile, templateIdOf } from '../files.js';
 import { isObject } from '../is.js';
 import { eachWidget } from './ids.js';
 import { MODES, sourceOf } from './source.js';
 import { BIND_TYPES, TEXT_TYPES } from '../property-types.js';
-import { nestingProblems } from '../widgets/list/nested.js';
+import { flatWidgets, holdsCarousel, nestingProblems } from '../widgets/list/nested.js';
 import { opensWarnings } from '../widgets/list/opens.js';
 import {
   ITEMS,
@@ -195,6 +195,7 @@ export function bindingProblems(content, { types, files = null }) {
   for (const [id, page] of Object.entries(content?.pages || {})) {
     const file = pageFile(id);
     if (files && !files.has(file)) continue;
+    const deep = { n: 0 }; // deep-linked Lists on this page (one at most)
     for (const [widget, , at, j] of eachWidget(page?.sections)) {
       const t = types[widget?.type];
       if (!t || !isObject(widget)) continue;
@@ -217,6 +218,7 @@ export function bindingProblems(content, { types, files = null }) {
         if (s.mode === 'item' && !list.some((it) => it?.id === s.id))
           problem('warn', `source: "${s.id}" is not in ${s.from}: its bound settings are empty`);
       }
+      if (widget.type === 'list') carouselChecks(content, widget, problem, deep);
       const uses = propertyPartsOf(widget, t);
       const props = s ? schemaOf(content, s.from)?.properties || [] : [];
       for (const u of uses) {
@@ -247,7 +249,42 @@ export function bindingProblems(content, { types, files = null }) {
     }
   }
   // nested Lists (widgets/list/nested.js): loops and a third level, across the templates
-  if (!files || [...files].some((f) => templateIdOf(f)))
+  if (!files || [...files].some((f) => templateIdOf(f))) {
     out.push(...nestingProblems(content?.templates), ...opensWarnings(content?.templates));
+    for (const [id, tpl] of Object.entries(content?.templates || {}))
+      for (const w of flatWidgets(tpl))
+        if (w?.type === 'list')
+          carouselChecks(content, w, (level, msg) =>
+            out.push({ level, message: `templates/${id}.json: ${msg}` }),
+          );
+  }
   return out;
+}
+
+/** A List shown as a carousel (widgets/list/carousel.js): what its template allows. */
+function carouselChecks(content, widget, problem, deep = null) {
+  const c = widget.config;
+  if (c?.arrangement !== 'carousel') return;
+  if (deep && c.deepLink === true && ++deep.n === 2)
+    problem(
+      'error',
+      'deepLink: one List per page opens a slide from #n (another one already does)',
+    );
+  const tpl = isTemplateId(c.template) ? content?.templates?.[c.template] : null;
+  if (!tpl) return;
+  if (tpl.opens !== undefined)
+    problem(
+      'error',
+      `config.template: a carousel can't use items that open (${tpl.label || c.template} opens)`,
+    );
+  if (holdsCarousel(tpl))
+    problem(
+      'error',
+      `config.template: no carousel inside a carousel (${tpl.label || c.template} holds one)`,
+    );
+  if ((c.thumbnails ?? 'photos') === 'photos' && !flatWidgets(tpl).some((w) => w?.type === 'photo'))
+    problem(
+      'warn',
+      `thumbnails: "photos" but ${tpl.label || c.template} has no photo: its thumbnails show numbers`,
+    );
 }

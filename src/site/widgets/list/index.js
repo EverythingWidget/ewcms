@@ -33,7 +33,16 @@
  * part shows how many (the A1 rule: an item's own "items" property wins; ../../layout/parts.js).
  * No items: the List's empty state, never nothing.
  */
-import { html, esc, editable, itemHref, pad, warnOnce } from '../../helpers.js';
+import {
+  html,
+  esc,
+  editable,
+  itemHref,
+  pad,
+  warnOnce,
+  creditOf,
+  creditText,
+} from '../../helpers.js';
 import { contentPath } from '../../files.js';
 import { isObject } from '../../is.js';
 import { t } from '../../strings.js';
@@ -57,7 +66,34 @@ import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from 
 import { presetStyle, styleMarkup } from './item-style.js';
 import { childClass, sideBySideHtml } from './side-by-side.js';
 import { detailsAt, opensHtml, toggleHtml } from './opens.js';
-import { innerItems, innerKeys } from './nested.js';
+import { flatWidgets, innerItems, innerKeys } from './nested.js';
+import { CAROUSEL, carouselHtml, carouselOf, carouselProblems } from './carousel.js';
+
+// the Carousel settings' rows (Layout tab): always shown, disabled unless Carousel
+const onlyCarousel = (config) => config?.arrangement !== 'carousel';
+const CAROUSEL_ROWS = [
+  { key: 'counter', label: 'Counter', type: 'boolean' },
+  {
+    key: 'thumbnails',
+    label: 'Thumbnails',
+    type: 'select',
+    options: [
+      ['photos', 'Photos'],
+      ['numbers', 'Numbers'],
+      ['none', 'None'],
+    ],
+  },
+  { key: 'arrows', label: 'Arrows', type: 'boolean' },
+  { key: 'credit', label: 'Credit', type: 'boolean' },
+  {
+    key: 'slideRatio',
+    label: 'Slide ratio',
+    type: 'select',
+    options: CAROUSEL.slideRatio.map((r) => [r, r === 'auto' ? 'Auto (tallest photo)' : r]),
+  },
+  { key: 'alsoGrid', label: 'Also as a grid', type: 'boolean' },
+  { key: 'deepLink', label: 'Open slide from #n', type: 'boolean' },
+].map((r) => ({ ...r, tab: 'layout', disabledWhen: onlyCarousel }));
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
 const GAPS = ['s', 'm', 'l'];
@@ -201,10 +237,12 @@ export const list = {
       label: 'Arrangement',
       type: 'select',
       tab: 'layout',
-      // Carousel comes later: not offered yet (disabled would need Field support for a third
-      // option state; Grid is the only choice until then)
-      options: [['grid', 'Grid']],
+      options: [
+        ['grid', 'Grid'],
+        ['carousel', 'Carousel'],
+      ],
     },
+    ...CAROUSEL_ROWS,
     {
       key: 'columns',
       label: 'Columns',
@@ -243,8 +281,9 @@ export const list = {
     const out = [];
     if (widget.config?.arrangement === 'rows')
       out.push(
-        'config.arrangement "rows" is gone: write "columns": "1" (Arrangement is only Grid; Carousel comes later)',
+        'config.arrangement "rows" is gone: write "columns": "1" (Arrangement: "grid" or "carousel")',
       );
+    out.push(...carouselProblems(widget.config));
     if (
       widget.config?.handmade !== undefined &&
       widget.config.handmade !== true &&
@@ -308,7 +347,12 @@ export const list = {
         ? ['title', 'photo', 'unit', 'count', 'source']
         : widget.keys || keysOf(ctx, source) || []),
       'number',
+      'back',
+      'credit',
+      'creditUrl',
     ]);
+    // {back}: the page around this one (a [param] page's), else the page of all of the source
+    const back = ctx.route?.parent ?? (source ? sourcePage(ctx, source) : '') ?? '';
     const shape = own ? 'template' : preset.id.slice('preset:'.length);
     const sep = t(ctx, 'list.sep');
     // the template, once per List: its widgets, and whether its photo sits apart from the text
@@ -321,6 +365,17 @@ export const list = {
           handmade: handmade || !!widget.keys,
           properties: c.properties,
         });
+    // the photo an item shows: its template's first photo's property (its {credit} is that one's)
+    const photoKey =
+      flatWidgets({ widgets: template }).find((w) => w?.type === 'photo')?.src?.[0]?.property ||
+      'photo';
+    const photoOfItem = (o) => (typeof o?.[photoKey] === 'string' ? o[photoKey] : undefined);
+    const creditsOf = (o) => {
+      const p = photoOfItem(o);
+      if (!p) return {};
+      const cr = creditOf(ctx, p);
+      return { credit: creditText(cr), creditUrl: cr?.source || '' };
+    };
     // items that open (./opens.js): summary, then the details from the "details" widget on
     const opens = !!own && isObject(own.opens) && (widget.depth || 1) < 2;
     const cut = opens ? detailsAt(template) : -1;
@@ -342,7 +397,8 @@ export const list = {
       const handmadeHref = handmade ? item.href || '' : '';
       // parent: an inner List's outer item ({ of: "parent" } parts, ./nested.js)
       const own = isObject(item) ? item : {};
-      const numbered = own.number === undefined ? { ...own, number: pad(i + 1) } : own;
+      // {number}, {back}, a photo's {credit} / {creditUrl}: an item's own property wins
+      const numbered = { number: pad(i + 1), back: back || '', ...creditsOf(own), ...own };
       const scope = { item: numbered, keys, sources: ctx.sources, items, parent: widget.parent };
       const api = {
         id: widget.id,
@@ -409,10 +465,32 @@ export const list = {
           ${href ? html`<a class="btn glass section__cta" href="${esc(href)}"><span>${esc(t(ctx, 'list.seeAll'))}</span> <span aria-hidden="true">→</span></a>` : ''}
         </header>`
       : '';
-    const body = items.length
-      ? `<div class="list__items list__items--grid" style="--list-cols:${columns}" data-cols="${columns}"${opens ? ` data-opens="${own.opens.several === true ? 'several' : 'one'}"` : ''}>${out.join('')}</div>`
-      : `<p class="list__empty label muted" data-list-empty>${esc(t(ctx, 'list.empty'))}</p>`;
-    return `<div class="list list--${shape} list--gap-${gap}" data-arrangement="grid" data-cols="${columns}">${head}${body}</div>`;
+    const gridHtml = `<div class="list__items list__items--grid" style="--list-cols:${columns}" data-cols="${columns}"${opens ? ` data-opens="${own.opens.several === true ? 'several' : 'one'}"` : ''}>${out.join('')}</div>`;
+    const carousel = c.arrangement === 'carousel' && items.length && !opens;
+    if (c.arrangement === 'carousel' && opens)
+      warnOnce(
+        `${contentPath(widget.file)}: List ${widget.id}: a template whose items open can't be a carousel: it shows as a grid`,
+        'layout',
+      );
+    const set = carouselOf(c);
+    const body = !items.length
+      ? `<p class="list__empty label muted" data-list-empty>${esc(t(ctx, 'list.empty'))}</p>`
+      : carousel
+        ? carouselHtml(ctx, {
+            id: widget.id,
+            label: s.heading || t(ctx, 'carousel.carousel'),
+            slides: out,
+            items: items.map((it) => {
+              const o = isObject(it) ? it : {};
+              const own = { ...creditsOf(o), ...o };
+              return { photo: photoOfItem(o), credit: own.credit, creditUrl: own.creditUrl };
+            }),
+            grid: set.alsoGrid ? gridHtml : '',
+            set,
+            t: (k, v) => t(ctx, k, v),
+          })
+        : gridHtml;
+    return `<div class="list list--${shape} list--gap-${gap}" data-arrangement="${carousel ? 'carousel' : 'grid'}" data-cols="${columns}">${head}${body}</div>`;
   },
 };
 

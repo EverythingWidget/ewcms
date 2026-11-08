@@ -211,16 +211,27 @@ test('Grid; columns and gap; See all; Row preset defaults to 1 column', () => {
   assert.match(
     checkContent('pages/x/index.json', {
       ...page,
-      sections: [newSection(ids, [{ ...w, config: { ...w.config, arrangement: 'carousel' } }])],
+      sections: [newSection(ids, [{ ...w, config: { ...w.config, arrangement: 'spinner' } }])],
     }).join('; '),
-    /config\.arrangement.*one of grid/,
+    /config\.arrangement.*(one of grid|"grid" or "carousel")/,
   );
 });
 
 test('the pop-up: Arrangement, Columns, Gap in Layout; Content has Preset and When a value is missing', () => {
   assert.deepEqual(
     layoutOptions('list').map((c) => c.key),
-    ['arrangement', 'columns', 'gap'],
+    [
+      'arrangement',
+      'counter',
+      'thumbnails',
+      'arrows',
+      'credit',
+      'slideRatio',
+      'alsoGrid',
+      'deepLink',
+      'columns',
+      'gap',
+    ],
   );
   assert.deepEqual(layoutParts('list'), ['options', 'size', 'layer', 'link']);
   assert.ok(!layoutParts('button').includes('missing'));
@@ -237,9 +248,10 @@ test('the pop-up: Arrangement, Columns, Gap in Layout; Content has Preset and Wh
   assert.ok(content.includes('handmade'));
   assert.ok(content.includes('items'));
   assert.equal(WIDGET_TYPES.list.handmade, true);
-  // Arrangement: Grid only (Carousel later)
+  // Arrangement: Grid or Carousel
   assert.deepEqual(WIDGET_TYPES.list.config.find((c) => c.key === 'arrangement').options, [
     ['grid', 'Grid'],
+    ['carousel', 'Carousel'],
   ]);
   // other types: no options row
   assert.ok(!layoutParts('grid').includes('options'));

@@ -141,9 +141,10 @@ test('the validator: one level, 2–6 widgets, text/photo/button only, one grow,
     p(row([row([txt('a'), txt('b')]), txt('title')])),
     /no Side by side inside a Side by side/,
   );
-  assert.match(
+  // a List may sit in a Side by side (step 11: a carousel beside the item's text)
+  assert.equal(
     p(row([{ type: 'list', source: { mode: 'property', property: 'photos' } }, txt('title')])),
-    /no List in a Side by side/,
+    '',
   );
   assert.match(
     p(row([txt('a', 'label', { grow: true }), txt('b', 'label', { grow: true })])),

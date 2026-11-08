@@ -7,6 +7,7 @@
  * unless data-opens="several"), Esc closes the open one and gives its summary focus back,
  * and "#<slug>" opens that item on load.
  */
+import { carouselClient } from './carousel-client.js';
 
 /**
  * The index to move to from `at` for key `key` in a grid of `cols` columns and `length`
@@ -53,8 +54,10 @@ export function opensKey(key, onSummary, isOpen) {
 }
 
 export default function listClient(el) {
+  // carousels (./carousel-client.js), an inner List's too
+  const cars = [...el.querySelectorAll('[data-carousel]')].map(carouselClient);
   const list = el.querySelector('.list__items');
-  if (!list) return undefined;
+  if (!list) return cars.length ? () => cars.forEach((f) => f()) : undefined;
   // its items' links, or their summaries (items that open)
   const links = () => [
     ...list.querySelectorAll(':scope > a.li, :scope > .li > .li__opens > .li__summary'),
@@ -99,6 +102,7 @@ export default function listClient(el) {
   }
   list.addEventListener('keydown', onkey);
   return () => {
+    cars.forEach((f) => f());
     list.removeEventListener('keydown', onkey);
     list.removeEventListener('click', onclick);
     list.removeEventListener('keydown', onopenkey);

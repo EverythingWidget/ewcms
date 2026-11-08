@@ -406,3 +406,237 @@ a.li:not(.li--hover-none):hover .li__title .ts {
     transition: none;
   }
 }
+
+// ---- Arrangement Carousel (./carousel.js, ./carousel-client.js): a fixed slide box (its
+// ratio: --car-ratio), the bar's rows reserved (counter, credit, thumbnails), so moving and
+// switching to the grid shift nothing around it
+.car {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  border-radius: 4px;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--fg);
+  }
+}
+
+.car__stage {
+  position: relative;
+  aspect-ratio: var(--car-ratio, 4 / 5);
+  max-height: calc(100svh - var(--nav-h, 0px) - 160px);
+  width: 100%;
+  margin-inline: auto;
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &:hover .car__arrow {
+    opacity: 1;
+  }
+}
+
+.car__slide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.6s var(--ease-out, ease),
+    visibility 0s 0.6s;
+
+  &.is-active {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.6s var(--ease-out, ease);
+  }
+
+  // a slide's item fills the box; its photo fits in it
+  > .li {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .li__photo,
+  .li__photo .photo,
+  .li__photo figure {
+    height: 100%;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+  }
+}
+
+.car__arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-top: -24px;
+  font-size: 16px;
+  opacity: 0;
+  transition: opacity 0.4s;
+
+  &--prev {
+    left: 16px;
+  }
+
+  &--next {
+    right: 16px;
+  }
+
+  &:focus-visible {
+    opacity: 1;
+  }
+}
+
+.car__bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: 16px auto;
+  align-items: end;
+  gap: 8px 24px;
+}
+
+.car__counter {
+  grid-row: 1 / 3;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--f-display);
+  font-size: 48px;
+  line-height: 48px;
+  font-variant-numeric: tabular-nums;
+
+  > span:not(.car__current) {
+    font-size: 20px;
+    color: var(--muted);
+  }
+}
+
+.car__credit {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  min-height: 16px;
+  line-height: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car__thumbs {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+  display: flex;
+  gap: 8px;
+  max-width: 100%;
+  margin: 0;
+  padding: 4px;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.car__thumb {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 56px;
+  height: 68px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 4px;
+  opacity: 0.4;
+  transition:
+    opacity 0.4s,
+    box-shadow 0.4s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &.is-active {
+    opacity: 1;
+    box-shadow: 0 0 0 1px var(--bg), 0 0 0 2px var(--fg);
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.car__num {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 1;
+  font-size: 9px;
+  line-height: 12px;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 80%);
+}
+
+.car__thumbs--numbers .car__thumb {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+
+  .car__num {
+    position: static;
+    font-size: 12px;
+    text-shadow: none;
+  }
+}
+
+.car__views {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+
+  > button {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    opacity: 0.6;
+
+    &.is-active {
+      opacity: 1;
+      box-shadow: inset 0 0 0 1px var(--fg);
+    }
+  }
+}
+
+.car[data-view='grid'] .car__bar > :not(.car__views) {
+  visibility: hidden;
+}
+
+.car__grid[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .car__slide,
+  .car__slide.is-active {
+    transition: none;
+  }
+}

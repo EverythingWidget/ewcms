@@ -33,6 +33,17 @@ export const CORE_STRINGS = Object.freeze({
     slider: 'Slider',
     grid: 'Grid',
   },
+  // the List's Carousel arrangement (widgets/list/carousel.js)
+  carousel: {
+    carousel: 'Carousel',
+    slide: 'Slide',
+    of: '{n} of {total}',
+    prev: 'Previous slide',
+    next: 'Next slide',
+    show: 'Show slide {n}',
+    view: 'View mode',
+    grid: 'Grid',
+  },
   projects: { visit: 'Visit' },
   list: { empty: 'Nothing here yet.', open: 'View', seeAll: 'See all', sep: ' · ' },
   // the editor's hint and tag on a widget whose every property is empty (./layout/missing.js)

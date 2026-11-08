@@ -187,6 +187,7 @@
           type="checkbox"
           class="switch"
           checked={!!value}
+          {disabled}
           {onfocus}
           onchange={(e) => onvalue(e.currentTarget.checked)}
         />

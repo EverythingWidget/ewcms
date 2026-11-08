@@ -96,13 +96,22 @@ export function innerSourceProblems(src, at) {
 
 /** The templates a template's inner Lists use (their config.template "t-…"). */
 export const innerTemplates = (tpl) =>
-  (Array.isArray(tpl?.widgets) ? tpl.widgets : [])
+  flatWidgets(tpl)
     .filter((w) => w?.type === 'list' && isTemplateId(w.config?.template))
     .map((w) => w.config.template);
 
 /** Does a template hold a List? */
-export const holdsList = (tpl) =>
-  (Array.isArray(tpl?.widgets) ? tpl.widgets : []).some((w) => w?.type === 'list');
+export const holdsList = (tpl) => flatWidgets(tpl).some((w) => w?.type === 'list');
+
+/** A template's widgets, a Side by side's own widgets in its place (it may hold a List). */
+export const flatWidgets = (tpl) =>
+  (Array.isArray(tpl?.widgets) ? tpl.widgets : []).flatMap((w) =>
+    w?.type === 'sideBySide' && Array.isArray(w.widgets) ? w.widgets : [w],
+  );
+
+/** Does a template hold a List shown as a carousel? (no carousel inside a carousel) */
+export const holdsCarousel = (tpl) =>
+  flatWidgets(tpl).some((w) => w?.type === 'list' && w.config?.arrangement === 'carousel');
 
 const labelOf = (templates, id) => templates?.[id]?.label || id;
 

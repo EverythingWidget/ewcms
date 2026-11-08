@@ -11,6 +11,7 @@
  */
 import { PHOTO_WIDTHS, sideBySideProblems } from './widgets/list/side-by-side.js';
 import { opensProblems } from './widgets/list/opens.js';
+import { CAROUSEL_KEYS, carouselProblems } from './widgets/list/carousel.js';
 import { AREA_KEYS, storesRows } from './layout/grid.js';
 import { storedDefaults } from './defaults.js';
 import {
@@ -750,9 +751,13 @@ function checkTemplateWidget(w, at, inside = false) {
     const tp = w.config?.template;
     if (tp !== undefined && !PRESET_FROM.includes(tp) && !isTemplateId(tp))
       out.push(`${at}.config.template must be a preset or a template id ("t-…")`);
+    const allowed = ['template', 'columns', 'gap', 'properties', 'arrangement', ...CAROUSEL_KEYS];
     for (const k of Object.keys(w.config || {}))
-      if (!['template', 'columns', 'gap', 'properties'].includes(k))
-        out.push(`${at}.config.${k} is not an inner List setting (template, columns, gap)`);
+      if (!allowed.includes(k))
+        out.push(
+          `${at}.config.${k} is not an inner List setting (template, columns, gap, arrangement and the carousel's)`,
+        );
+    out.push(...carouselProblems(w.config, `${at}.config`));
   } else if (w.source !== undefined)
     out.push(`${at}: no "source" in a template: the List gives each copy its item`);
   for (const k of ['id', 'layout', 'z'])
