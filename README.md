@@ -819,7 +819,7 @@ rule work as anywhere.
     "version": 1,
     "kind": "template",
     "label": "People card",
-    "from": "preset:card",
+    "basedOn": "preset:card",
     "link": true,
     "photoFirst": true,
     "widgets": [
@@ -841,7 +841,7 @@ rule work as anywhere.
   picked template, into a new `t-` file (the dev server's `POST /__editor/templates`: Save
   never creates files) and points the List at it, saving that switch at once (unless the page has
   other unsaved edits: then it stays unsaved and a note says "Saved as template t-…"). A copied
-  facts line keeps `"join": " · "`: the separator goes only between facts with a value; `from` keeps where it came from and gives
+  facts line keeps `"join": " · "`: the separator goes only between facts with a value; `basedOn` keeps the preset or template it was copied from and gives
   the template its preset's look (`li--card`, columns). `role` names a widget's place in that
   look (`.li__<role>`); a button's `"itemLink": true` opens the item's page; `link` makes the
   whole item a link, `photoFirst` sets a leading photo apart. A template's optional top-level
@@ -857,7 +857,8 @@ rule work as anywhere.
   picked, its place always kept) jumps to it. The preview (the dev server's
   `/__template/<id>/`, never built) shows the template as a List of one sample item: the first
   item of its `source`, else a hand-made sample. Two tabs:
-  - **Widgets**: its name, then the vertical stack: drag a widget's grip (or Alt+↑/↓) to reorder,
+  - **Widgets**: its name, **Link: whole item opens the item's page** (`link`) and **Photo
+    first: a leading photo set apart** (`photoFirst`), then the vertical stack: drag a widget's grip (or Alt+↑/↓) to reorder,
     × removes it, **Add text / Add photo / Add button** adds one. Each widget has its **Role**
     (`.li__<role>`); a Text its lines (style + text), a Photo its photo, a Button its label and
     **Opens the item's page** (`itemLink`). Every value takes `{property}` chips: type `{name}`

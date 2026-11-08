@@ -30,7 +30,7 @@ const card = (more = {}) => ({
   version: 1,
   kind: 'template',
   label: 'People card',
-  from: 'preset:card',
+  basedOn: 'preset:card',
   link: true,
   photoFirst: true,
   widgets: [
@@ -81,6 +81,14 @@ test('the preview: one List of the first item of its source, else a hand-made sa
   assert.equal(templatePreview(base, 'about'), null);
   // the content given isn't changed (the page is the preview's own)
   assert.equal(from.pages.__template, undefined);
+});
+
+test('"basedOn" names what it was copied from; "from" is no template key', () => {
+  assert.match(
+    checkContent(T, { ...card(), basedOn: undefined, from: 'preset:card' }).join(),
+    /"from" is not a template key/,
+  );
+  assert.equal(cloneTemplate(base, 'people', 'preset:card').basedOn, 'preset:card');
 });
 
 test('"source" (where its sample comes from) is a template key; Duplicate records it', () => {
@@ -154,6 +162,11 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   const panel = read('src/editor/svelte/TemplatePanel.svelte');
   assert.match(panel, /\['widgets', 'Widgets'\],\s*\['properties', 'Properties'\]/);
   assert.match(panel, /<ListField/);
+  // the template's own settings, always shown (no shift)
+  assert.match(panel, /label="Link: whole item opens the item’s page"/);
+  assert.match(panel, /label="Photo first: a leading photo set apart"/);
+  assert.match(panel, /set\('\/link', v\)/);
+  assert.match(panel, /set\('\/photoFirst', v\)/);
   assert.match(panel, /formats/);
   assert.match(panel, /renameProperty\(widgets, old, to\)/);
   assert.doesNotMatch(panel, /(label|help|title|placeholder)="[^"]*\bfield/i);

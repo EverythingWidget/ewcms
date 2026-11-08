@@ -39,7 +39,7 @@ const card = (more = {}) => ({
   version: 1,
   kind: 'template',
   label: 'People card',
-  from: 'preset:card',
+  basedOn: 'preset:card',
   link: true,
   photoFirst: true,
   widgets: [
@@ -68,7 +68,7 @@ test('a valid template passes; an invalid one is rejected with a clear message',
   const msg = (d) => checkContent(T, d).join('; ');
   assert.match(msg(card({ kind: 'page' })), /"kind" must be "template"/);
   assert.match(msg(card({ label: '' })), /"label" must be a text/);
-  assert.match(msg(card({ from: 'preset:huge' })), /"from" must be a preset/);
+  assert.match(msg(card({ basedOn: 'preset:huge' })), /"basedOn" must be a preset/);
   assert.match(msg(card({ widgets: [] })), /"widgets" must be a list of widgets/);
   assert.match(msg(card({ extra: 1 })), /"extra" is not a template key/);
   // only the registry's widgets
@@ -87,9 +87,9 @@ test('a valid template passes; an invalid one is rejected with a clear message',
   );
 });
 
-test('Duplicate preset: the clone is the preset as it shows now, and keeps "from"', () => {
+test('Duplicate preset: the clone is the preset as it shows now, and keeps "basedOn"', () => {
   const tpl = cloneTemplate(base, 'people', 'preset:card', { properties: { photo: 'cover' } });
-  assert.equal(tpl.from, 'preset:card');
+  assert.equal(tpl.basedOn, 'preset:card');
   assert.equal(tpl.kind, 'template');
   assert.equal(tpl.label, 'Card copy');
   assert.deepEqual(checkContent(T, tpl), []);
@@ -103,7 +103,7 @@ test('Duplicate preset: the clone is the preset as it shows now, and keeps "from
   assert.ok(tpl.widgets.every((w) => !('facts' in w) && !('handmadeCount' in w)));
   // a clone of a template keeps that template's id as its from
   const again = cloneTemplate(withTemplate(card()), 'people', 't-ab12');
-  assert.equal(again.from, 't-ab12');
+  assert.equal(again.basedOn, 't-ab12');
   assert.deepEqual(again.widgets, card().widgets);
   // a hand-made Panel's count is its {count} {unit}
   const panel = cloneTemplate(base, '', 'preset:panel', { handmade: true });
@@ -124,7 +124,7 @@ test('a List with config.template "t-…" renders the template, from a source an
     people.map((p) => p.title),
   );
   assert.ok(items[0].querySelector('.li__photo img'));
-  // its look is its "from" preset's
+  // its look is its "basedOn" preset's
   assert.ok(items[0].classList.contains('li--card'));
   assert.ok(!seen.some((w) => /missing/.test(w)), seen.join());
   // no mapping rows for a template (it names its properties itself)
@@ -195,7 +195,7 @@ test('templatesOp: a new t- file next to the language folder, loaded again on re
     assert.ok(file in readContentDir(root));
     assert.ok(editableFiles(root).has(file));
     const again = loadContent(root);
-    assert.equal(again.templates[id].from, 'preset:card');
+    assert.equal(again.templates[id].basedOn, 'preset:card');
     const { el } = list({ template: id }, {}, again);
     assert.equal(el.querySelectorAll('[data-list-item]').length, people.length);
     // a bad one is not written

@@ -238,7 +238,7 @@ export function presetWidgets(
 /**
  * A preset (or a site template) copied into a new item template (content/templates/t-….json):
  * its widgets as plain widgets with {property} parts, for the List's source as it shows now (its
- * mapping applied, facts joined with `sep`, a hand-made Panel's count as {count} {unit}). `from`
+ * mapping applied, facts joined with `sep`, a hand-made Panel's count as {count} {unit}). `basedOn`
  * keeps where it came from; link and photoFirst are the preset's. A template's own widgets are
  * copied as they are.
  */
@@ -254,7 +254,7 @@ export function cloneTemplate(
       version: 1,
       kind: 'template',
       label: label || `${own.label || id} copy`,
-      from: id,
+      basedOn: id,
       ...(own.source || (!handmade && source) ? { source: own.source || source } : {}),
       link: own.link !== false,
       photoFirst: own.photoFirst !== false,
@@ -281,7 +281,7 @@ export function cloneTemplate(
     version: 1,
     kind: 'template',
     label: label || `${preset.label} copy`,
-    from: preset.id,
+    basedOn: preset.id,
     ...(!handmade && source ? { source } : {}),
     link: preset.link,
     photoFirst: preset.photoFirst,
@@ -294,7 +294,7 @@ export const templateOf = (ctx, id) =>
   (typeof id === 'string' && id.startsWith('t-') && ctx?.templates?.[id]) || null;
 
 /**
- * The preset whose look (li--<shape>, columns) a template has: its `from`, followed through
+ * The preset whose look (li--<shape>, columns) a template has: its `basedOn`, followed through
  * templates; Card when it names none.
  */
 export function shapeOf(ctx, id, seen = new Set()) {
@@ -302,5 +302,5 @@ export function shapeOf(ctx, id, seen = new Set()) {
   if (!own) return presetOf(id);
   if (seen.has(id)) return PRESETS[0];
   seen.add(id);
-  return shapeOf(ctx, own.from, seen);
+  return shapeOf(ctx, own.basedOn, seen);
 }

@@ -2,7 +2,7 @@
   An item template open (Pages > Site > Templates: ui.target { kind: 'item-template', id }):
   its file content/templates/<id>.json edited like a page, the preview its List of one sample
   item (src/site/widgets/list/template-preview.js). Two tabs:
-    Widgets     its name, then the vertical stack of widgets (ListField: drag the grip or
+    Widgets     its name, Link (the whole item opens its page) and Photo first, then the vertical stack of widgets (ListField: drag the grip or
                 Alt+↑/↓ to reorder, × removes, Add Text / Photo / Button): each widget's role
                 (its .li__<role> class) and settings, its values with {property} chips
                 (Field.svelte formats: type {name}, or pick one).
@@ -110,6 +110,22 @@
       help="Its name in a List’s Template picker"
       changed={live.changed(file, '/label')}
       onvalue={(v) => set('/label', v)}
+    />
+    <Field
+      edit={`${file}#/link`}
+      label="Link: whole item opens the item’s page"
+      type="boolean"
+      value={tpl.link !== false}
+      changed={live.changed(file, '/link')}
+      onvalue={(v) => set('/link', v)}
+    />
+    <Field
+      edit={`${file}#/photoFirst`}
+      label="Photo first: a leading photo set apart"
+      type="boolean"
+      value={tpl.photoFirst !== false}
+      changed={live.changed(file, '/photoFirst')}
+      onvalue={(v) => set('/photoFirst', v)}
     />
     <p class="hint small tp__sample">
       {from
