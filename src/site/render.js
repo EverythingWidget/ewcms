@@ -31,25 +31,40 @@ export const bindingChecks = (content) => bindingProblems(content, { types: WIDG
 /** Widgets whose animation isn't in the library (or can't play on a widget): messages. */
 export const motionChecks = (content) => motionProblems(content);
 
+/** An empty placeholder when the site has no pages (and no 404) to show. */
+export const EMPTY_ROUTE = {
+  id: 'home',
+  path: '/',
+  page: 'page',
+  title: '',
+  noindex: true,
+};
+
 /**
  * { head, body, lang, themeColor } of a route; lang: <html lang>, themeColor: its meta
  * theme-color (site.json themeColor; empty: the shell's own).
- * editable: render the editor's markers (the dev server), see setEditable in helpers.js. */
+ * editable: render the editor's markers (the dev server), see setEditable in helpers.js.
+ * No route (a site with no pages yet, and no 404): the empty placeholder, no crash. */
 export function renderRoute(route, content, { editable = false, unbuilt = false } = {}) {
   setEditable(editable);
-  const ctx = contextOf(route, content, unbuilt);
+  // no matching page and no 404 page: an empty placeholder (dev: a site with no pages yet)
+  route ||= EMPTY_ROUTE;
+  // settings/site.json may still be missing on a brand-new site; the header reads site.name
+  const site = content.site || { name: '', title: '', url: '', accent: '', lang: 'en' };
+  const shown = content.site ? content : { ...content, site };
+  const ctx = contextOf(route, shown, unbuilt);
   const file = pageFile(route.id);
-  const page = content.pages[route.id];
+  const page = shown.pages?.[route.id];
   const view =
     renderBackdrop(ctx, page?.backdrop) + renderSections(ctx, route, file, page?.sections);
-  const accent = route.album ? accentOf(ctx, route.album) : content.site.accent;
+  const accent = route.album ? accentOf(ctx, route.album) : site.accent || '';
   const html = body(ctx, route, accent, view, file);
   anchorClashes(route, page?.sections, html);
   return {
     head: head(ctx, route, accent),
     body: html,
-    lang: content.site.lang || 'en',
-    themeColor: content.site.themeColor || '',
+    lang: site.lang || 'en',
+    themeColor: site.themeColor || '',
   };
 }
 
