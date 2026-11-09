@@ -87,16 +87,12 @@
     {:else if name === 'hero'}<b class="sc s1"></b><b class="sc s2"></b><b class="sc s3"></b><b
         class="w70 h12 mid"
       ></b>
-    {:else if name === 'grid'}<span class="g g3"
-        >{#each Array(6) as _, i (i)}<b></b>{/each}</span
-      >
     {:else if name === 'albums'}<span class="g g3"
         >{#each Array(3) as _, i (i)}<b></b>{/each}</span
       >
     {:else if name === 'list'}<span class="g g3"
         >{#each Array(3) as _, i (i)}<b></b>{/each}</span
       ><b class="w40 h4"></b>
-    {:else if name === 'projects'}{#each Array(4) as _, i (i)}<b class="w90 h8"></b>{/each}
     {:else}<b class="w70 h8"></b><b class="w50 h4"></b>
     {/if}
   </span>

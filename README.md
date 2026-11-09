@@ -810,7 +810,7 @@ rule work as anywhere.
   **Plain** (photo, title, long text, a View button), **Panel** (a big photo with its title and
   photo count over it: the Photography panels, a hand-made List; the old Photo panels widget
   (`panels`) is gone and content that still has one is rejected with a pointer to List), **Row** (a small photo, the title, the facts on the right:
-  Project list), **Photo** (`preset:photo`, a photo only: no text, no box, no link; four
+  project rows), **Photo** (`preset:photo`, a photo only: no text, no box, no link; four
   columns: a photo grid, an inner List of an item's photos). Each preset is a column of widgets; its facts are the source's `list`
   properties (`·` between them) and Panel's count is the plain `{photos}` (how many).
 - **Item templates** (`content/templates/t-<id>.json`, step 7): site-wide (every language
@@ -1146,7 +1146,7 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
   (`layoutOptions()` in `src/editor/widget-layout.js`), the rest in Content. The pickers and
   - Property offer `{items}` under **Count of this List** on a List
     (`src/editor/property-groups.js`).
-- Album cards, Photo grid and Project list are unchanged.
+- Album cards remain; Photo grid and Project list are gone (use a List with a template).
 
 ### Menu
 

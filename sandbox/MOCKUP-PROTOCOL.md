@@ -168,7 +168,7 @@ link colour, eye, Duplicate, Delete; no grip, no order). Put it in a `<ul>`.
 - `samplePage.states`: 0 "Work" (grid, button) · 1 "Contact" hidden (button) · 2 unnamed, no widgets
 - `SECTIONS`: the six-section home page · `PAGES`: the page menu items · `FILE`: `'pages/index.json'`
 - `widget(id, type, title?)` builds a widget; `labelOf(widget)` its editor name. Widget types:
-  `hero`, `intro` ("Statement"), `grid` ("Photo grid"), `button`, `albums`, `projects` ("Project list"), …
+  `hero`, `intro` ("Statement"), `button`, `albums`, `list`, …
   (`src/site/widgets/index.js`).
 
 Own data: `sampleLive([{ id: 's-1', name: 'Work', enabled: false, widgets: [widget('b-1', 'grid', 'People')] }])`.

@@ -250,9 +250,17 @@ test('validation: redirects.json', () => {
 test('"See all" links go to the page that shows the source, wherever it is', async () => {
   const { sourcePage } = await import('../src/site/widgets/data.js');
   const pages = {
-    home: page('pg-home', { type: 'grid', source: { mode: 'all', from: 'people' } }),
+    home: page('pg-home', {
+      type: 'list',
+      source: { mode: 'all', from: 'people' },
+      config: { template: 'preset:card', columns: '3' },
+    }),
     'models/[person]': paramPage('models/[person]', 'people'),
-    work: page('pg-work', { type: 'projects', source: { mode: 'all', from: 'projects' } }),
+    work: page('pg-work', {
+      type: 'list',
+      source: { mode: 'all', from: 'projects' },
+      config: { template: 'preset:row', columns: '1' },
+    }),
   };
   assert.equal(sourcePage({ pages }, 'people'), '/models/');
   assert.equal(sourcePage({ pages }, 'projects'), '/work/');

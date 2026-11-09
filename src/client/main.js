@@ -18,7 +18,6 @@ import { initMenu, updateActiveNav } from './ui/menu.js';
 import { initClock, updateClocks } from './ui/clock.js';
 import { applyAccent } from './theme.js';
 import { album } from './modules/album.js';
-import { projects } from './modules/projects.js';
 import { cards, photoFade } from './modules/misc.js';
 import { contactForms } from './modules/form.js';
 import { watchRows } from './modules/rows.js';
@@ -40,17 +39,8 @@ const widgetModule =
   };
 const siteModules = [{ type: 'list', init: listClient }, ...siteWidgets].map(widgetModule);
 
-const pageModules = [
-  photoFade,
-  album,
-  projects,
-  cards,
-  contactForms,
-  anchors,
-  fitText,
-  ...siteModules,
-];
-// the footer's widgets: the modules of widgets it can have (no album, project list or anchors:
+const pageModules = [photoFade, album, cards, contactForms, anchors, fitText, ...siteModules];
+// the footer's widgets: the modules of widgets it can have (no album or anchors:
 // those are the page's, once)
 const footerModules = [photoFade, cards, contactForms, fitText, ...siteModules];
 // Editor hooks (see connectEditor below); always empty on the public site.

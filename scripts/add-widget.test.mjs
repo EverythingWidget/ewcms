@@ -54,11 +54,10 @@ test('added text, button, form, lists: Auto (no rows); photo and hero as before'
   const store = createStore();
   store.load({ [FT]: { version: 1, kind: 'page', id: 'pg-t047', sections: [] } });
   addSection(store, FT, 'text');
-  for (const t of ['button', 'form', 'projects', 'albums', 'photo', 'hero'])
-    addWidget(store, FT, 0, t);
+  for (const t of ['button', 'form', 'albums', 'list', 'photo', 'hero']) addWidget(store, FT, 0, t);
   const ws = store.current[FT].sections[0].widgets;
   const by = Object.fromEntries(ws.map((w) => [w.type, w]));
-  for (const t of ['text', 'button', 'form', 'projects', 'albums']) {
+  for (const t of ['text', 'button', 'form', 'list', 'albums']) {
     assert.equal(by[t].size, undefined, t);
     assert.equal(by[t].layout.base.rows, undefined, t);
   }

@@ -18,7 +18,7 @@
  *   Card   photo on top, title, facts (Album cards, the places' cards)
  *   Plain  photo, title, body, a button to the item's page; no box
  *   Panel  a big photo, title and count over it (photo tiles, Photo panels)
- *   Row    a small photo left, title and facts right (Project list)
+ *   Row    a small photo left, title and facts right (project rows)
  *   Photo  a photo only: no text, no box (a photo grid, an inner List of an item's photos)
  */
 import { gridStyle, stackToGrid } from './item-grid.js';

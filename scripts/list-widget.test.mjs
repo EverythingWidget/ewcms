@@ -696,6 +696,25 @@ test('resolveHandmadeItem: every key always present, empty when missing', () => 
   assert.deepEqual(Object.keys(shown.items[0]).sort(), keys);
 });
 
+test('Photo grid and Project list are gone: rejected, pointing to List', () => {
+  assert.equal(WIDGET_TYPES.grid, undefined);
+  assert.equal(WIDGET_TYPES.projects, undefined);
+  const page = (type) => ({
+    version: 1,
+    kind: 'page',
+    id: 'pg-old',
+    sections: [{ id: 's-old', widgets: [{ id: 'w-old', type }] }],
+  });
+  assert.match(
+    checkContent('pages/x/index.json', page('grid')).join('; '),
+    /Photo grid \("grid"\) is gone: use a List/,
+  );
+  assert.match(
+    checkContent('pages/x/index.json', page('projects')).join('; '),
+    /Project list \("projects"\) is gone: use a List/,
+  );
+});
+
 test('Photo panels is gone: a "panels" widget is rejected, pointing to List', () => {
   assert.equal(WIDGET_TYPES.panels, undefined);
   const page = {

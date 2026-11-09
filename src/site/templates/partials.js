@@ -3,11 +3,9 @@ import {
   esc,
   img,
   pad,
-  extAttrs,
   coverOf,
   photosOf,
   ed,
-  lines,
   itemHref,
   firstPhotos,
   sizes,
@@ -55,50 +53,4 @@ export const albumCard = (ctx, kind, album, { landscape = false, index = 0 } = {
       ${album.placeholder ? html`<span class="tag">${esc(t(ctx, 'tag.placeholder'))}</span>` : ''}
     </div>
   </a>`;
-};
-
-/** Editorial index list of projects with a hover photo preview (anchored to the row) + click-to-expand details. */
-export const projectList = (
-  ctx,
-  projects,
-  { id = 'projects', source = 'projects', headingLevel = 3, indexOf = (p, i) => i } = {},
-) => {
-  const PROJECTS = sourceFile(source);
-  const h = `h${headingLevel}`;
-  return html` <div class="plist" data-project-list="${id}">
-      ${projects.map((p, i) => {
-        const at = indexOf(p, i); // its index in the source (the list can be filtered)
-        return html`
-    <article class="prow" id="${esc(p.slug)}" data-prow data-preview-index="${i}">
-      <button class="prow__head" type="button" aria-expanded="false" aria-controls="prow-${esc(p.slug)}">
-        <span class="prow__num">${pad(i + 1)}</span>
-        <${h} class="prow__title"${ed(PROJECTS, ['items', at, 'title'])}>${esc(p.title)}</${h}>
-        <span class="prow__kind"${ed(PROJECTS, ['items', at, 'type'])}>${esc(p.type)}</span>
-        <span class="prow__year"${ed(PROJECTS, ['items', at, 'year'], 'number')}>${esc(p.year)}</span>
-        <span class="prow__icon" aria-hidden="true"><i></i><i></i></span>
-      </button>
-      <div class="prow__body" id="prow-${esc(p.slug)}" hidden>
-        <div class="prow__inner">
-          <div class="prow__media">${p.photo ? img(ctx, p.photo, { sizes: sizes('100vw', '30vw'), attrs: ed(PROJECTS, ['items', at, 'photo'], 'photo') }) : ''}</div>
-          <div class="prow__text">
-            <p${ed(PROJECTS, ['items', at, 'body'], 'multiline')}>${lines(p.body)}</p>
-            ${p.placeholder ? html`<span class="tag">${esc(t(ctx, 'tag.placeholder'))}</span>` : ''}
-            ${p.url ? html`<a class="btn glass" href="${esc(p.url)}"${extAttrs(p.url)}><span${ed(PROJECTS, ['items', at, 'linkLabel'])}>${esc(p.linkLabel || t(ctx, 'projects.visit'))}</span> <span class="arrow-ne" aria-hidden="true">↗</span></a>` : ''}
-          </div>
-        </div>
-      </div>
-    </article>`;
-      })}
-    </div>
-    <div
-      class="preview"
-      data-portal
-      data-anim="projects.preview"
-      data-preview-for="${id}"
-      aria-hidden="true"
-    >
-      <div class="preview__frame">
-        ${projects.map((p, i) => (p.photo ? img(ctx, p.photo, { decorative: true, sizes: '360px', attrs: ed(PROJECTS, ['items', indexOf(p, i), 'photo'], 'photo') }) : '<img alt="" />'))}
-      </div>
-    </div>`;
 };

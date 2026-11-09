@@ -102,7 +102,7 @@ test("a widget whose source or item is cleared (the editor's ✕) still renders,
 });
 
 test('a list widget without a source: its head without a link, no items (not a default list)', () => {
-  for (const type of ['grid', 'projects', 'albums']) {
+  for (const type of ['albums', 'list']) {
     const ids = new Set();
     const widget = newWidget(type, ids);
     delete widget.source; // None
@@ -245,7 +245,8 @@ test('validation: the layout, then each widget against its type', () => {
     /"body\.0\.style" must be one of title[\s\S]*"body\.0\.text\.0\.marks" must/,
   );
   assert.equal(WIDGET_TYPES.about, undefined); // the Bio widget is gone (v0.1.17)
-  assert.match(one({ type: 'grid', config: { layout: 'wild' } })[0], /one of staggered, even/);
+  assert.match(one({ type: 'grid' })[0], /Photo grid \("grid"\) is gone/);
+  assert.match(one({ type: 'projects' })[0], /Project list \("projects"\) is gone/);
   assert.match(one({ type: 'text', config: { enabled: 1 } })[0], /true or false/);
   const twice = section([widget('text'), widget('text')]);
   twice.widgets[1].id = twice.widgets[0].id;
@@ -256,14 +257,24 @@ test('anchors: a named section renders its id; a clash with another id on the pa
   const projects = routes.find((r) => r.path === '/projects/');
   const data = structuredClone(content);
   const list = data.pages[projects.id].sections;
-  list[0].name = 'Film scan rig'; // a project row's id (its slug) on this page
+  list[0].name = 'Contact w-cfrm'; // slug "contact-w-cfrm": the form's id below
   list[1].name = 'All work';
+  list[0].widgets.push({
+    id: 'w-cfrm',
+    type: 'form',
+    title: 'Hi',
+    fields: [
+      { name: 'email', type: 'email', label: 'Email', required: true },
+      { name: 'message', type: 'textarea', label: 'Message', required: true },
+    ],
+  });
   const [{ body }, seen] = warnings(() => render.renderRoute(projects, data));
-  assert.match(body, /<section id="film-scan-rig" class="sec"/);
+  assert.match(body, /<section id="contact-w-cfrm" class="sec"/);
   assert.match(body, /<section id="all-work" class="sec"/);
+  assert.match(body, /<form class="cform" id="contact-w-cfrm"/);
   assert.match(
     seen.join('\n'),
-    /\[anchors\] \/projects\/: section "Film scan rig" \(#film-scan-rig\) shares its id/,
+    /\[anchors\] \/projects\/: section "Contact w-cfrm" \(#contact-w-cfrm\) shares its id/,
   );
   assert.doesNotMatch(seen.join('\n'), /all-work/);
 });

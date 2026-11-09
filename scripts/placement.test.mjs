@@ -36,7 +36,7 @@ test('placement per type: button 3 x 3 with Fit | Fill, text one column, photo m
     ['top', 'center', 'bottom'],
   );
   assert.equal(placementOf('photo').media, true);
-  assert.equal(placementOf('grid'), null);
+  assert.equal(placementOf('albums'), null);
 });
 
 test('defaults render as before: no class, no variables', () => {
@@ -84,7 +84,7 @@ test('align and checks', () => {
   assert.equal(checkPlacement(w('button', { box: 'hug' })).length, 1);
   assert.equal(checkPlacement(w('text', { box: 'fill' })).length, 1);
   assert.equal(checkPlacement(w('text', { place: 'left top' })).length, 1);
-  assert.equal(checkPlacement(w('grid', { place: 'center' })).length, 1);
+  assert.equal(checkPlacement(w('albums', { place: 'center' })).length, 1);
 });
 
 test('stylesheet and the editor form', () => {

@@ -41,8 +41,6 @@ test('each type: what its Layout tab shows (its definition)', () => {
     hero: ['size', 'layer', 'link'],
     album: ['size', 'layer', 'link'],
     albums: ['size', 'layer', 'link'],
-    grid: ['size', 'layer', 'link'],
-    projects: ['size', 'layer', 'link'],
     form: ['size', 'layer', 'link'],
     list: ['options', 'size', 'layer', 'link'],
   };

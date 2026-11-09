@@ -55,9 +55,7 @@ import photo from './photo/index.js';
 import button from './button/index.js';
 import form from './form/index.js';
 import hero from './hero/index.js';
-import grid from './grid/index.js';
 import albums from './albums/index.js';
-import projects from './projects/index.js';
 import album from './album/index.js';
 import list from './list/index.js';
 
@@ -68,9 +66,7 @@ export const BUILTIN_WIDGETS = Object.freeze([
   button,
   form,
   hero,
-  grid,
   albums,
-  projects,
   album,
   list,
 ]);
@@ -82,6 +78,9 @@ export const BUILTIN_WIDGETS = Object.freeze([
 export const RETIRED_WIDGETS = Object.freeze({
   panels:
     'Photo panels ("panels") is gone: use a List ("list") with "config": { "handmade": true, "template": "preset:panel", "columns": "2", "items": [{ "title", "source", "unit" }] }',
+  grid: 'Photo grid ("grid") is gone: use a List ("list") with a template (Album card: "t-acrp" / "t-acrl", or a preset)',
+  projects:
+    'Project list ("projects") is gone: use a List ("list") with "config": { "template": "t-prow", "columns": "1" } (or a row preset)',
 });
 
 /**
