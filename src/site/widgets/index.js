@@ -7,8 +7,8 @@
  * are the folders here, always on; a site adds its own in site.config.mjs `widgets`
  * (scripts/site-widgets.mjs loads them; the browser gets them from virtual:site-widgets). Widgets sit in the sections of a page (src/site/layout/index.js places them):
  *
- *   { "id": "w-k3x9", "type": "grid", "label": "People", "title": "Models",
- *     "source": { "mode": "all", "from": "people" },
+ *   { "id": "w-k3x9", "type": "list", "label": "People", "heading": "Models",
+ *     "source": { "mode": "all", "from": "people" }, "config": { "template": "preset:card" },
  *     "layout": { "base": { "col": 1, "span": 120, "row": 1 } } }
  *
  * The widget's own content (texts, photos) sits next to its type, the items it shows under
