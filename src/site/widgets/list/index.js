@@ -19,7 +19,7 @@
  * handmade     true: items come from config.items (Hand-made); omit/false: from the source
  * items        hand-made entries [{ title, photo?, link?, source?, unit? }]; kept when switching
  *              back to From a source (and source is kept when switching to Hand-made)
- * arrangement  Grid (columns). Carousel comes later (not offered yet).
+ * arrangement  Grid | Carousel (Layout tab: a button group).
  * columns      "1"–"6" (two on a tablet, one on a phone). Row preset defaults to "1", others "3".
  * gap          between the items: s | m | l
  * properties   mapping { role: property } (title, photo, body): { "photo": "cover" }; a role
@@ -237,14 +237,14 @@ export const list = {
     {
       key: 'arrangement',
       label: 'Arrangement',
-      type: 'select',
+      type: 'seg',
       tab: 'layout',
+      default: 'grid',
       options: [
         ['grid', 'Grid'],
         ['carousel', 'Carousel'],
       ],
     },
-    ...CAROUSEL_ROWS,
     {
       key: 'columns',
       label: 'Columns',
@@ -272,6 +272,7 @@ export const list = {
         ['l', 'L'],
       ],
     },
+    ...CAROUSEL_ROWS,
   ],
   defaults: {
     heading: '',

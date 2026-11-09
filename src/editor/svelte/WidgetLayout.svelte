@@ -159,7 +159,7 @@
         <Field
           edit="{file}#{optionPtr(c)}"
           label={c.label}
-          type={c.type === 'boolean' ? 'boolean' : 'select'}
+          type={c.type === 'boolean' || c.type === 'seg' ? c.type : 'select'}
           half={c.width === 'half'}
           value={c.type === 'boolean'
             ? (widget.config?.[c.key] ?? listDefault(c)) === true

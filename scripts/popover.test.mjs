@@ -55,7 +55,8 @@ test('surfaces: one mixin derives the role colours, solid, from --surface', () =
   const mix = read('src/editor/styles/_mixins.scss');
   const s = mix.match(/@mixin surface\([\s\S]*?\n\}/)[0];
   for (const [role, n] of [
-    ['field-bg', 7],
+    ['field-bg', 12],
+    ['field-bg-dim', 7],
     ['field-tile', 12],
     ['field-hover', 23],
     ['focus-line', 60],

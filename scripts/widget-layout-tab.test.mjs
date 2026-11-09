@@ -42,7 +42,7 @@ test('each type: what its Layout tab shows (its definition)', () => {
     album: ['size', 'layer', 'link'],
     albums: ['size', 'layer', 'link'],
     form: ['size', 'layer', 'link'],
-    list: ['options', 'size', 'layer', 'link'],
+    list: ['size', 'layer', 'link', 'options'],
   };
   assert.deepEqual(Object.keys(WIDGET_TYPES).sort(), Object.keys(want).sort());
   for (const [type, parts] of Object.entries(want))

@@ -48,8 +48,9 @@
 // A surface (a card, a pop-up, a popover): it sets its colour, and from it, on itself, the role
 // colours its controls read (solid colours, mixed over it; var() resolves where declared, so
 // each surface declares them, a nested one again):
-//   --field-bg     inputs, selects, segmented controls, button groups, cards as inputs: 7% white
-//   --field-tile   a tile on a field (a photo's, a source card's): 12%
+//   --field-bg     inputs, selects, segmented controls, button groups, cards as inputs: 12% white
+//   --field-tile   a tile on a field (a photo's, a source card's): 12% (same mix as --field-bg for now)
+//   --field-bg-dim the old 7% fill: disabled fields keep this so they still read as dimmed
 //   --field-hover  a hovered button's wash: 23% (a 17% white wash over a field)
 //   --text-quiet   labels, placeholders, icons at rest: 35%
 //   --text-strong  hovered text and icons, names
@@ -63,7 +64,8 @@
     --surface-head: #{$head};
   }
 
-  --field-bg: color-mix(in srgb, var(--white) 7%, var(--surface));
+  --field-bg: color-mix(in srgb, var(--white) 12%, var(--surface));
+  --field-bg-dim: color-mix(in srgb, var(--white) 7%, var(--surface));
   --field-tile: color-mix(in srgb, var(--white) 12%, var(--surface));
   --field-hover: color-mix(in srgb, var(--white) 23%, var(--surface));
   --text-quiet: color-mix(in srgb, var(--white) #{$quiet}, var(--surface));

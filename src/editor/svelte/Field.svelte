@@ -355,6 +355,8 @@
   // a setting that can't be used now (a List's Columns in Rows): greyed out, same size
   .tf.is-disabled {
     opacity: var(--o-disabled);
+    // keep the pre-brighten fill so disabled fields still read as dimmer than enabled ones
+    --field-bg: var(--field-bg-dim);
   }
 
   // with a picker the label gives up the room first

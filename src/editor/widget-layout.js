@@ -43,20 +43,21 @@ export const MISSING_OPTIONS = [
 ];
 
 /**
- * What a type's Layout tab shows, in order: 'options' (its widget settings with `tab:
- * 'layout'`, a List's arrangement, columns and gap), 'size' (Auto / Rows / Aspect, unless its
- * definition says `size: false`), 'layer', 'link' (what it follows), 'box' (its content box),
- * 'placement', 'scale' (Scale to fit): from its definition. (When a value is missing lives on
- * the Content tab.)
+ * What a type's Layout tab shows, in order: 'size' (Auto / Rows / Aspect, unless its
+ * definition says `size: false`), 'layer', 'link' (what it follows), then 'options' (its
+ * widget settings with `tab: 'layout'`, a List's arrangement, columns and gap), 'box',
+ * 'placement', 'scale' (Scale to fit): from its definition. (When a value is missing lives
+ * on the Content tab.)
  */
 export function layoutParts(type) {
   const def = typeof type === 'string' ? WIDGET_TYPES[type] : type;
   const p = placementOf(def);
+  // size + layer (+ Follows) before a widget's own layout options (a List's Arrangement, …)
   return [
-    ...(layoutOptions(def).length ? ['options'] : []),
     ...(def?.size === false ? [] : ['size']),
     'layer',
     'link',
+    ...(layoutOptions(def).length ? ['options'] : []),
     ...(p?.box ? ['box'] : []),
     ...(p ? ['placement'] : []),
     ...(hasScaleToFit(def) ? ['scale'] : []),

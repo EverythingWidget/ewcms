@@ -13,7 +13,7 @@ test('the pop-up: rows icon, name, Locate, ×; the section settings; 380px, grey
   assert.match(pop, /fa-xmark/);
   assert.match(pop, /<SectionSettings \{live\} \{bridge\} \{file\} \{at\} \{sections\} \/>/);
   assert.match(pop, /width: 380px;/);
-  // a surface on the cards' grey, its head 9% lighter; fields and quiet text from it (7%: #303030,
+  // a surface on the cards' grey, its head 9% lighter; fields and quiet text from it (12%: #3c3c3c,
   // 35%: #6f6f6f), the picked option light with black text (_mixins.scss surface())
   assert.match(
     pop,

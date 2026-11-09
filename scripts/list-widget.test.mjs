@@ -222,6 +222,8 @@ test('the pop-up: Arrangement, Columns, Gap in Layout; Content has Preset and Wh
     layoutOptions('list').map((c) => c.key),
     [
       'arrangement',
+      'columns',
+      'gap',
       'counter',
       'thumbnails',
       'arrows',
@@ -229,13 +231,11 @@ test('the pop-up: Arrangement, Columns, Gap in Layout; Content has Preset and Wh
       'slideRatio',
       'alsoGrid',
       'deepLink',
-      'columns',
-      'gap',
     ],
   );
-  assert.deepEqual(layoutParts('list'), ['options', 'size', 'layer', 'link']);
+  assert.deepEqual(layoutParts('list'), ['size', 'layer', 'link', 'options']);
   assert.ok(!layoutParts('button').includes('missing'));
-  assert.ok(!layoutParts('grid').includes('missing'));
+  assert.ok(!layoutParts('button').includes('options'));
   assert.deepEqual(MISSING_OPTIONS, [
     ['hide', 'Hide'],
     ['show', 'Show empty'],
@@ -249,12 +249,13 @@ test('the pop-up: Arrangement, Columns, Gap in Layout; Content has Preset and Wh
   assert.ok(content.includes('items'));
   assert.equal(WIDGET_TYPES.list.handmade, true);
   // Arrangement: Grid or Carousel
+  assert.equal(WIDGET_TYPES.list.config.find((c) => c.key === 'arrangement').type, 'seg');
   assert.deepEqual(WIDGET_TYPES.list.config.find((c) => c.key === 'arrangement').options, [
     ['grid', 'Grid'],
     ['carousel', 'Carousel'],
   ]);
   // other types: no options row
-  assert.ok(!layoutParts('grid').includes('options'));
+  assert.ok(!layoutParts('hero').includes('options'));
   // Content tab (GroupFields): When a value is missing on every widget
   const gf = readFileSync(
     new URL('../src/editor/svelte/GroupFields.svelte', import.meta.url),
