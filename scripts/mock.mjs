@@ -139,7 +139,7 @@ try {
     width: 1200,
     height: 1600,
     deviceScaleFactor: 2,
-    phone: false,
+    mobile: false,
   });
   const q = new URLSearchParams({ mock: names.join(','), shot: '1' });
   if (opt.width) q.set('width', String(opt.width));
