@@ -124,11 +124,13 @@
   @use '../styles/mixins' as *;
 
   // borderless: a surface (the widgets' card colour, its header a touch of the accent; its
-  // controls' role colours: _mixins.scss surface()), a soft white ring and a deep shadow; over the preview
+  // controls' role colours: _mixins.scss surface()), quiet text at 45% (as the panel and section
+  // card: about #787f7e on --teal-950), a soft white ring and a deep shadow; over the preview
   .wpop {
     @include surface(
       var(--c-widget-card),
-      color-mix(in srgb, var(--c-widget-accent) 9%, var(--c-widget-card))
+      color-mix(in srgb, var(--c-widget-accent) 9%, var(--c-widget-card)),
+      $quiet: 45%
     );
     position: fixed;
     z-index: 40;
