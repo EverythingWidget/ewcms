@@ -305,7 +305,7 @@
       {nameOf}
       onpick={(v) => set(v ? { mode: 'item', from: v.source, id: v.id } : undefined)}
     />
-  {:else if source}
+  {:else if !handmade && source}
     <ItemPicker
       store={live.store}
       mode="source"
