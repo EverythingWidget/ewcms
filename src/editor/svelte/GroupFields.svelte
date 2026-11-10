@@ -123,8 +123,8 @@
   const fields = $derived(g.fields.filter((f) => f.type !== 'rich'));
   // the widget settings shown: a source, a choice, a switch, a link (in the config's order);
   // not the ones its definition puts in the Layout tab (`tab: 'layout'`: WidgetLayout.svelte)
-  // List hand-made: handmade + items are edited in ListLead (not here); seeAll stays but is
-  // disabled when Hand-made (no layout shift)
+  // List Custom (hand-made): handmade + items are edited in ListLead (not here); seeAll stays but is
+  // disabled when Custom (no layout shift)
   const handmade = $derived.by(() => {
     live.version;
     if (!g.widget) return false;

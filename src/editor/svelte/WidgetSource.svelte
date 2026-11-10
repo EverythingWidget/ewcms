@@ -1,7 +1,8 @@
 <!--
   A widget's source, first in its Content tab (WidgetInspector.svelte; src/site/layout/source.js):
-    Source       Item / All (a list widget) · From URL · None, one segmented row; From URL only on
-                 a [param] page (greyed elsewhere, its tooltip says why)
+    Source       Item / All (a list widget) · From URL · None · Custom (a List: the old Hand-made
+                 mode), one segmented row; From URL only on a [param] page (greyed elsewhere, its
+                 tooltip says why). The Source label sits in the parent when provided (ListLead).
     the item     Item: the item selector (ItemPicker.svelte, an item); All and From URL: its
                  source (the same selector, a list)
     Match the address
@@ -32,7 +33,7 @@
 
   // g: the widget's group; base: its pointer; list: a list widget (All instead of Item); shown:
   // what it shows on the page in the preview (widgetItems)
-  let { g, live, base, list = false, shown, sourceIds, onsource } = $props();
+  let { g, live, base, list = false, shown, sourceIds, onsource, handmade = false, oncustom = null } = $props();
 
   const NO_PARAMS = 'This page’s address has no params to match';
   const ANY_WHY =
@@ -49,11 +50,12 @@
     const v = live.get(g.file, `${base}/source`);
     return sourceOf({ source: v }) ? structuredClone(v) : null;
   });
-  const mode = $derived(source?.mode ?? 'none');
+  const mode = $derived(handmade ? 'custom' : (source?.mode ?? 'none'));
   const MODES = $derived([
     ['url', 'From URL'],
     list ? ['all', 'All'] : ['item', 'Item'],
     ['none', 'None'],
+    ...(oncustom ? [['custom', 'Custom']] : []),
   ]);
   const schema = $derived.by(() => {
     live.version;
@@ -96,15 +98,30 @@
     });
   const firstFrom = () =>
     source?.from || sourceIds.find((id) => itemsOf(id).length) || sourceIds[0] || '';
+  const clearHandmade = () =>
+    live.store.set(g.file, `${base}/config/handmade`, undefined, {
+      key: `config:${g.file}${base}/config/handmade`,
+      source: 'panel',
+      structure: true,
+    });
   function pickMode(m) {
     if (m === mode) return;
-    const from = firstFrom();
-    if (m === 'none') return toNone();
-    if (m === 'all') return set({ mode: 'all', from });
-    if (m === 'url') return set(urlSource(live.content, from, params));
-    // Item: the one it shows now, else the source's first
-    const it = shown?.item ?? itemsOf(from).find((i) => typeof i?.id === 'string');
-    if (it) set({ mode: 'item', from, id: it.id });
+    if (m === 'custom') {
+      oncustom?.();
+      return;
+    }
+    const apply = () => {
+      const from = firstFrom();
+      if (m === 'none') return toNone();
+      if (m === 'all') return set({ mode: 'all', from });
+      if (m === 'url') return set(urlSource(live.content, from, params));
+      // Item: the one it shows now, else the source's first
+      const it = shown?.item ?? itemsOf(from).find((i) => typeof i?.id === 'string');
+      if (it) set({ mode: 'item', from, id: it.id });
+    };
+    // leaving Custom: clear handmade with the source mode, one undo step
+    if (handmade) live.store.batch(() => (clearHandmade(), apply()), { source: 'panel' });
+    else apply();
   }
   /**
    * None: the widget's own texts. A setting that showed the item's value keeps it as its own text
@@ -221,7 +238,7 @@
 
   // ---- what it shows
   const showsLine = $derived.by(() => {
-    if (!source) return null;
+    if (handmade || !source) return null;
     const n = shown?.items.length ?? 0;
     const first = shown?.item;
     if (!n)
@@ -251,13 +268,16 @@
 </script>
 
 <div class="bs" bind:this={el}>
-  <div class="tf">
-    <span class="tf__label"
-      >Source<InfoHelp label="About Source"
-        ><b>Source</b>: where this widget gets its items, a list from Sources. <b>All</b> shows
-        every item, <b>From URL</b> only the item of the page you are on.</InfoHelp
-      ></span
-    >
+  <div class={['tf', oncustom && 'is-seg-only']}>
+    {#if !oncustom}
+      <span class="tf__label"
+        >Source<InfoHelp label="About Source"
+          ><b>Source</b>: where this widget gets its items, a list from Sources. <b>All</b> shows
+          every item, <b>From URL</b> only the item of the page you are on, <b>Custom</b> items you
+          add by hand.</InfoHelp
+        ></span
+      >
+    {/if}
     <div class="seg" role="radiogroup" aria-label="Source">
       {#each MODES as [m, label] (m)}
         {@const off = m === 'url' && !params.length}
@@ -274,7 +294,7 @@
     </div>
   </div>
 
-  {#if mode === 'item'}
+  {#if !handmade && mode === 'item'}
     <ItemPicker
       store={live.store}
       value={{ source: source.from, id: source.id }}
@@ -378,6 +398,10 @@
 
     .tf__label {
       margin-bottom: var(--space-2);
+    }
+
+    .tf.is-seg-only .tf__label {
+      margin-bottom: 0;
     }
   }
 

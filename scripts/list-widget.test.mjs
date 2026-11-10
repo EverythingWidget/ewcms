@@ -636,23 +636,32 @@ test('hand-made validation; mode switch keeps unused data (shape allows both)', 
   assert.match(checkContent('pages/x/index.json', bad).join('; '), /config\.items\.0\.title/);
 });
 
-test('ListLead: From a source / Hand-made switch, dual panes, seeAll disabled when handmade', () => {
+test('ListLead: Source Custom is handmade, no Items switch, seeAll disabled when handmade', () => {
   const lead = readFileSync(
     new URL('../src/editor/svelte/ListLead.svelte', import.meta.url),
     'utf8',
   );
-  assert.match(lead, /From a source/);
-  assert.match(lead, /Hand-made/);
+  // the Items mode switch is gone (wording may still appear in the file comment)
+  assert.doesNotMatch(lead, /tf__label">Items</);
+  assert.doesNotMatch(lead, />From a source</);
+  assert.doesNotMatch(lead, />Hand-made</);
   assert.match(lead, /config\/handmade/);
   assert.match(lead, /config\/items/);
-  assert.match(lead, /ll__pane/);
-  assert.match(lead, /visibility: hidden/);
+  assert.doesNotMatch(lead, /ll__pane/);
   assert.match(lead, /ListField/);
   assert.match(lead, /WidgetSource/);
-  // segment keeps "Items"; ListField has no second title
-  assert.match(lead, /tf__label">Items</);
+  assert.match(lead, /oncustom/);
+  assert.match(lead, /ll__actions/);
+  assert.match(lead, /ll__source-head/);
+  // ListField has no second title; Add lives on the Source row when Custom
   assert.match(lead, /label=""/);
   assert.match(lead, /ariaLabel="Items"/);
+  assert.match(lead, /hideAdd/);
+  const srcUi = readFileSync(
+    new URL('../src/editor/svelte/WidgetSource.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.match(srcUi, /\['custom', 'Custom'\]/);
   const gf = readFileSync(
     new URL('../src/editor/svelte/GroupFields.svelte', import.meta.url),
     'utf8',
@@ -868,7 +877,7 @@ test('mapping rows: every slot laid out, unused ones hidden (no layout shift)', 
   assert.match(lead, /const MAP_SLOTS = 3/);
   assert.match(lead, /\{#each slots as row, i \(i\)\}/);
   assert.match(lead, /'ll__maprow', !row && 'is-hidden'/);
-  assert.match(lead, /\.ll__maprow\.is-hidden,\s*\.ll__pane\.is-hidden \{\s*visibility: hidden;/);
+  assert.match(lead, /\.ll__maprow\.is-hidden \{\s*visibility: hidden;/);
   assert.match(lead, /data-mapping-none/);
   assert.match(lead, /config\/properties/);
   assert.doesNotMatch(lead, /config\/fields|Template needs/);

@@ -265,8 +265,9 @@ test('the panel: a Template picker and Duplicate preset, in both modes, no shift
   assert.match(lead, /Saved as template \$\{res\.id\}/);
   assert.match(lead, /'ll__note', !note && 'is-hidden'/);
   assert.match(lead, /templatesOp\(\{ op: 'add'/);
-  // outside the two panes: the same row whichever mode
-  assert.ok(lead.indexOf('data-template-picker') < lead.indexOf('class="ll__body"'));
+  // the template picker is above Source / Custom, shared by both modes
+  assert.ok(lead.indexOf('data-template-picker') < lead.indexOf('ll__source-head'));
+  assert.match(lead, /class="ll__actions"/);
   // the generic settings leave it to ListLead
   assert.equal(WIDGET_TYPES.list.config.find((c) => c.key === 'template').lead, true);
   assert.match(read('src/editor/svelte/GroupFields.svelte'), /!c\.lead &&/);

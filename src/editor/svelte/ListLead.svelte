@@ -1,19 +1,18 @@
 <!--
-  A List widget's Content lead (WidgetInspector.svelte): From a source | Hand-made, then either
-  the source picker (WidgetSource.svelte) or the hand-made items (ListField on config.items).
-  Both panes stay in one grid cell (visibility:hidden / inert) so switching does not shift layout.
-  Switching modes only flips config.handmade; source and config.items are kept for switching back.
-  From a source: the type's property mapping rows under the source (type.mapping, the List's
-  config.properties: a row per role the preset uses, "Photo" → a property, prefilled with the
-  automatic choice; "No photo property in People" when the source has none). MAP_SLOTS rows
-  always laid out, the ones the preset doesn't use visibility:hidden / inert: no shift.
+  A List widget's Content lead (WidgetInspector.svelte): Template, then Source
+  (From URL | All | None | Custom). Custom is the old Hand-made mode: it only flips
+  config.handmade; source and config.items are kept for switching back. From a source:
+  WidgetSource.svelte plus the type's property mapping (config.properties). Custom:
+  ListField on config.items. Only the active pane is in the flow (the other is unmounted)
+  so the pop-up is content-height. MAP_SLOTS rows always laid out in the source pane, unused
+  ones visibility:hidden / inert: no shift when the template's roles change.
   Template (config.template, both modes): the presets, then the site's templates
-  (content/templates/t-….json); Duplicate (a preset) / Duplicate template copies the one picked
-  into a new template file (POST /__editor/templates, kept in the store at once) and points the
-  List at it. That switch is saved at once when the page had no other unsaved edits (so nothing
-  is left pending); otherwise it stays an unsaved edit next to them (Save never writes edits the
-  user didn't ask to save) and the note under the row says "Saved as template t-…". The button
-  keeps the longer label's width and the note line is always laid out: no shift.
+  (content/templates/t-….json); Duplicate template / Edit template sit on their own row
+  under the full-width selector. Duplicate copies the one picked into a new template file
+  (POST /__editor/templates, kept in the store at once) and points the List at it. That
+  switch is saved at once when the page had no other unsaved edits; otherwise it stays an
+  unsaved edit and the note under the row says "Saved as template t-…". The note line is
+  always laid out: no shift.
 -->
 <script>
   import WidgetSource from './WidgetSource.svelte';
@@ -251,26 +250,6 @@
 {/snippet}
 
 <div class="ll">
-  <div class="tf">
-    <span class="tf__label">Items</span>
-    <div class="seg" role="radiogroup" aria-label="Items">
-      <button
-        type="button"
-        role="radio"
-        aria-checked={!handmade}
-        class={['seg__btn', !handmade && 'is-active']}
-        onclick={() => setHandmade(false)}>From a source</button
-      >
-      <button
-        type="button"
-        role="radio"
-        aria-checked={handmade}
-        class={['seg__btn', handmade && 'is-active']}
-        onclick={() => setHandmade(true)}>Hand-made</button
-      >
-    </div>
-  </div>
-
   <!-- the item template: both modes use the same ones -->
   <div class="ll__template" data-template-picker>
     <Field
@@ -285,83 +264,99 @@
         setTemplate(v);
       }}
     />
-    <Button
-      size="small"
-      icon="clone"
-      title="Copy this template into a new one of the site's (content/templates)"
-      disabled={duplicating}
-      onclick={duplicate}
-      data-duplicate
-      ><span class="ll__dup"
-        ><span class={[isOwnTemplate && 'is-hidden']}>Duplicate</span><span
-          class={[!isOwnTemplate && 'is-hidden']}>Duplicate template</span
-        ></span
-      ></Button
-    >
-    <!-- always laid out (no shift): hidden while a preset is picked -->
-    <span class={['ll__edit', !isOwnTemplate && 'is-hidden']} aria-hidden={!isOwnTemplate}>
+    <div class="ll__actions">
       <Button
         size="small"
-        icon="pen"
-        title="Open this template in the template editor (Pages > Site > Templates)"
-        disabled={!isOwnTemplate}
-        onclick={() => ui.openTemplate?.(templateId)}
-        data-edit-template>Edit template</Button
+        icon="clone"
+        title="Copy this template into a new one of the site's (content/templates)"
+        disabled={duplicating}
+        onclick={duplicate}
+        data-duplicate
+        ><span class="ll__dup"
+          ><span class={[isOwnTemplate && 'is-hidden']}>Duplicate</span><span
+            class={[!isOwnTemplate && 'is-hidden']}>Duplicate template</span
+          ></span
+        ></Button
       >
-    </span>
+      <!-- always laid out (no shift): hidden while a preset is picked -->
+      <span class={['ll__edit', !isOwnTemplate && 'is-hidden']} aria-hidden={!isOwnTemplate}>
+        <Button
+          size="small"
+          icon="pen"
+          title="Open this template in the template editor (Pages > Site > Templates)"
+          disabled={!isOwnTemplate}
+          onclick={() => ui.openTemplate?.(templateId)}
+          data-edit-template>Edit template</Button
+        >
+      </span>
+    </div>
     <p class={['ll__note', !note && 'is-hidden']} data-template-note aria-live="polite">
       {note || ' '}
     </p>
   </div>
 
-  <!-- both panes always mounted: same height cell, no shift on a switch -->
-  <div class="ll__body">
-    <div class={['ll__pane', handmade && 'is-hidden']} inert={handmade || undefined}>
-      <WidgetSource {g} {live} {base} {list} {shown} {sourceIds} {onsource} />
-      {#if WIDGET_TYPES[g.type]?.mapping}
-        <div class="ll__map" data-mapping>
-          {#each slots as row, i (i)}
-            <div
-              class={['ll__maprow', !row && 'is-hidden']}
-              inert={!row || undefined}
-              data-mapping-row={row?.role || undefined}
-            >
-              {#if row?.none}
-                <div class="tf">
-                  <span class="tf__label">{row.label}</span>
-                  <p class="ll__none" data-mapping-none>{row.none}</p>
-                </div>
-              {:else if row}
-                <Field
-                  edit={`${g.file}#${propsPtr}/${row.role}`}
-                  label={row.label}
-                  type="select"
-                  value={row.value}
-                  options={row.value ? row.options : [['', 'Pick a property'], ...row.options]}
-                  changed={live.changed(g.file, `${propsPtr}/${row.role}`)}
-                  onvalue={(v) => setMapping(row.role, v === row.auto ? '' : v)}
-                />
-              {/if}
-            </div>
-          {/each}
-        </div>
-      {/if}
-    </div>
-    <div class={['ll__pane', !handmade && 'is-hidden']} inert={!handmade || undefined}>
-      <ListField
-        label=""
-        ariaLabel="Items"
-        items={itemsField.items}
-        name={(fields, i) => itemName(fields, i)}
-        addLabel="Add"
-        onmove={moveItem}
-        onremove={removeItem}
-        onadd={addItem}
-      >
-        {#snippet item(fields)}{@render itemFields(fields)}{/snippet}
-      </ListField>
-    </div>
+  <div class="ll__source-head">
+    <span class="tf__label">Source</span>
+    {#if handmade}
+      <Button size="small" icon="plus" onclick={addItem}>Add</Button>
+    {/if}
   </div>
+  <WidgetSource
+    {g}
+    {live}
+    {base}
+    {list}
+    {shown}
+    {sourceIds}
+    {onsource}
+    {handmade}
+    oncustom={() => setHandmade(true)}
+  />
+
+  {#if !handmade}
+    {#if WIDGET_TYPES[g.type]?.mapping}
+      <div class="ll__map" data-mapping>
+        {#each slots as row, i (i)}
+          <div
+            class={['ll__maprow', !row && 'is-hidden']}
+            inert={!row || undefined}
+            data-mapping-row={row?.role || undefined}
+          >
+            {#if row?.none}
+              <div class="tf">
+                <span class="tf__label">{row.label}</span>
+                <p class="ll__none" data-mapping-none>{row.none}</p>
+              </div>
+            {:else if row}
+              <Field
+                edit={`${g.file}#${propsPtr}/${row.role}`}
+                label={row.label}
+                type="select"
+                value={row.value}
+                options={row.value ? row.options : [['', 'Pick a property'], ...row.options]}
+                changed={live.changed(g.file, `${propsPtr}/${row.role}`)}
+                onvalue={(v) => setMapping(row.role, v === row.auto ? '' : v)}
+              />
+            {/if}
+          </div>
+        {/each}
+      </div>
+    {/if}
+  {:else}
+    <ListField
+      label=""
+      ariaLabel="Items"
+      items={itemsField.items}
+      name={(fields, i) => itemName(fields, i)}
+      addLabel="Add"
+      hideAdd
+      onmove={moveItem}
+      onremove={removeItem}
+      onadd={addItem}
+    >
+      {#snippet item(fields)}{@render itemFields(fields)}{/snippet}
+    </ListField>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -373,10 +368,18 @@
   }
 
   .ll__template {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    gap: var(--gap-rows);
-    align-items: end;
+    @include stack(var(--gap-rows));
+    min-width: 0;
+  }
+
+  .ll__actions {
+    @include row(var(--space-2));
+    flex-wrap: wrap;
+  }
+
+  .ll__source-head {
+    @include row(var(--space-2));
+    justify-content: space-between;
   }
 
   // both labels in one cell: the button keeps the longer one's width
@@ -389,7 +392,6 @@
   }
 
   .ll__note {
-    grid-column: 1 / -1;
     min-height: 16px;
     margin: 0;
     color: var(--c-text-muted);
@@ -401,20 +403,9 @@
     visibility: hidden;
   }
 
-  .ll__body {
-    display: grid;
-    min-width: 0;
-  }
-
-  .ll__pane {
-    grid-area: 1 / 1;
-    min-width: 0;
-  }
-
   // the mapping rows: every slot laid out (space reserved), unused ones hidden
   .ll__map {
     @include stack(var(--gap-fields));
-    margin-top: var(--gap-fields);
   }
 
   .ll__none {
@@ -426,8 +417,7 @@
     min-height: var(--map-row, 56px);
   }
 
-  .ll__maprow.is-hidden,
-  .ll__pane.is-hidden {
+  .ll__maprow.is-hidden {
     visibility: hidden;
   }
 </style>

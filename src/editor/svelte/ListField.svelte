@@ -10,6 +10,7 @@
     items     the list
     name      (item, i) → an item's name (default "<label> <n>")
     addLabel  the Add button's text
+    hideAdd   true: no Add at the end (the parent shows it, e.g. on the Source row)
     onmove(from, to), onremove(i), onadd()
     item      snippet (item, i): the item's fields
 -->
@@ -24,6 +25,7 @@
     items = [],
     name = (_, i) => `${label} ${i + 1}`,
     addLabel = 'Add',
+    hideAdd = false,
     onmove,
     onremove,
     onadd,
@@ -89,7 +91,9 @@
       </div>
     {/each}
   </div>
-  <Button size="small" icon="plus" onclick={onadd}>{addLabel}</Button>
+  {#if !hideAdd}
+    <Button size="small" icon="plus" onclick={onadd}>{addLabel}</Button>
+  {/if}
 </div>
 
 <style lang="scss">
