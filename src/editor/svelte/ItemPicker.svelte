@@ -167,7 +167,6 @@
     {/if}
     <Button
       size="small"
-      variant={card ? 'primary' : 'default'}
       tabindex="-1"
       onclick={(e) => (e.stopPropagation(), open())}>{card ? 'Change' : 'Choose'}</Button
     >
