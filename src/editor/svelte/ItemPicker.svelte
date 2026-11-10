@@ -267,12 +267,12 @@
     min-width: 0;
     padding: var(--space-2);
     border-radius: var(--radius-md);
-    background: var(--field-bg);
+    background: var(--field-bg-dim);
     box-shadow: inset 0 0 0 1px var(--c-line);
     cursor: pointer;
 
     &:hover {
-      background: var(--field-tile);
+      background: var(--field-bg);
     }
   }
 

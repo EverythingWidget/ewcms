@@ -1,15 +1,15 @@
 <!--
-  The editor's button: a pill after the footer's Save / Publish, or a round icon button.
+  The editor's button: a filled control after the footer's Save / Publish, or an icon button.
     variant   'default' | 'primary' (the main action, light) | 'danger' (red: Delete, Discard)
               | 'file' (a file name as written, e.g. people.json: not uppercase, 24px)
-    size      'default' (40px; icon only 32px) | 'small' (32px; icon only 24px, unfilled)
+    size      'default' (40px; icon only 32px) | 'small' (32px; icon only also 32×32)
     icon      Font Awesome name without the prefix, e.g. 'trash'
-    iconOnly  just the icon, quiet: a utility (Grid, the phone view, undo / redo, close): no
-              background, a little dim, brighter on hover; with aria-pressed it is a toggle,
-              --c-accent while on. label is its aria-label and title
+    iconOnly  just the icon, a utility (Grid, the phone view, undo / redo, close): filled like
+              the text buttons; with aria-pressed it is a toggle, --c-accent while on. label is
+              its aria-label and title
     label     the text when there are no children
   Also disabled, type ('button'), title, onclick; anything else (aria-*, data-*, attachments)
-  goes on the element. Hover only brightens the background; nothing moves.
+  goes on the element. Hover / press change the fill only; nothing moves.
 -->
 <script>
   let {
@@ -61,13 +61,13 @@
     gap: var(--space-2);
     padding: var(--space-3) 20px;
     border: 0;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-md);
     cursor: pointer;
     color: var(--c-text);
-    background: var(--c-control);
+    background: var(--field-bg);
     box-shadow:
-      inset 0 1px 0 var(--white-a12),
-      inset 0 0 0 1px var(--c-line);
+      inset 0 1px 0 var(--white-a08),
+      inset 0 0 0 1px var(--white-a04);
     font-size: var(--fs-sm);
     line-height: 16px; // 12 + 16 + 12 = 40px
     letter-spacing: 0.06em;
@@ -75,10 +75,22 @@
     font-weight: 500;
     white-space: nowrap;
     text-decoration: none;
-    transition: background 0.2s;
+    transition:
+      background 0.2s,
+      color 0.2s,
+      box-shadow 0.2s;
 
     &:hover:not(:disabled, [aria-disabled]) {
-      background: var(--c-control-hover);
+      background: var(--field-hover);
+    }
+
+    &:active:not(:disabled, [aria-disabled]) {
+      background: var(--selected-bg);
+      color: var(--selected-fg);
+      box-shadow:
+        0 0 0 1px var(--white-a40),
+        0 0 8px var(--white-a40),
+        0 0 14px color-mix(in srgb, var(--selected-bg) 55%, transparent);
     }
 
     &:disabled,
@@ -89,6 +101,7 @@
   }
 
   .btn--small {
+    height: 32px;
     padding: var(--space-2) var(--space-4); // 32px
   }
 
@@ -100,6 +113,15 @@
     &:hover:not(:disabled, [aria-disabled]) {
       background: var(--c-text-strong);
     }
+
+    &:active:not(:disabled, [aria-disabled]) {
+      background: var(--c-text-strong);
+      color: var(--c-on-light);
+      box-shadow:
+        0 0 0 1px var(--white-a40),
+        0 0 8px var(--white-a40),
+        0 0 14px color-mix(in srgb, var(--selected-bg) 55%, transparent);
+    }
   }
 
   .btn--danger {
@@ -110,6 +132,15 @@
     &:hover:not(:disabled, [aria-disabled]) {
       background: var(--c-danger-hover);
     }
+
+    &:active:not(:disabled, [aria-disabled]) {
+      background: var(--c-danger-hover);
+      color: var(--c-on-danger);
+      box-shadow:
+        0 0 0 1px var(--white-a40),
+        0 0 8px var(--white-a40),
+        0 0 14px color-mix(in srgb, var(--selected-bg) 55%, transparent);
+    }
   }
 
   // a file name: as written, 24px
@@ -119,44 +150,42 @@
     text-transform: none;
   }
 
-  // just the icon: a quiet utility, no pill; a toggle (aria-pressed) is the accent while on
+  // just the icon: a square filled utility; a toggle (aria-pressed) is the accent while on
   .btn--icon {
     width: 32px;
     height: var(--size-control);
     padding: 0;
     font-size: var(--fs-lg);
-    color: var(--c-text-muted);
-    background: none;
-    box-shadow: none;
-    transition: color 0.2s;
+    color: var(--text-quiet);
 
     &:hover:not(:disabled, [aria-disabled]) {
-      color: var(--c-text);
-      background: none;
+      color: var(--text-strong);
+      background: var(--field-hover);
     }
 
+    &:active:not(:disabled, [aria-disabled]) {
+      color: var(--selected-fg);
+    }
+
+    // a toggle stays the accent while on (not the light pressed fill)
     &[aria-pressed='true'],
-    &[aria-pressed='true']:hover:not(:disabled, [aria-disabled]) {
+    &[aria-pressed='true']:hover:not(:disabled, [aria-disabled]),
+    &[aria-pressed='true']:active:not(:disabled, [aria-disabled]) {
       color: var(--c-accent);
+      background: var(--field-bg);
+      box-shadow:
+        inset 0 1px 0 var(--white-a08),
+        inset 0 0 0 1px var(--white-a04);
+    }
+
+    &[aria-pressed='true']:hover:not(:disabled, [aria-disabled]) {
+      background: var(--field-hover);
     }
   }
 
-  // small and round: unfilled until hover (in rows: edit, reset, remove, move, replay)
   .btn--icon.btn--small {
-    width: 24px;
-    height: 24px;
-    @include muted;
-    background: none;
-    box-shadow: none;
-
-    &:hover:not(:disabled, [aria-disabled]) {
-      color: var(--c-text);
-      background: var(--c-control-hover);
-    }
-
-    &[aria-pressed='true'] {
-      color: var(--c-accent);
-    }
+    width: 32px;
+    height: 32px;
   }
 
   // last: the focus ring wins over every variant's shadow

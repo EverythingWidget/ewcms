@@ -19,9 +19,12 @@ test('the photo field in the pop-up: its fill, a 12% thumb, 35% text and icons, 
   assert.match(f, /background: var\(--field-tile\);/);
   const p = read('WidgetPopup.svelte');
   assert.match(p, /@include surface\(/);
+  // card / photo buttons use Button.svelte: field-bg fill, field-hover on hover
+  const b = read('Button.svelte');
+  assert.match(b, /background: var\(--field-bg\);/);
   assert.match(
-    p,
-    /:global\(\.photo \.btn--icon:hover:not\(:disabled\)\),\s*:global\(\.sc \.btn:hover\) \{\s*background: var\(--field-hover\);/,
+    b,
+    /&:hover:not\(:disabled, \[aria-disabled\]\) \{\s*background: var\(--field-hover\);/,
   );
 });
 

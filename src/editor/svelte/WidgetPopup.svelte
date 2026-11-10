@@ -216,7 +216,7 @@
 
   // inside it: the controls read the role colours (surface() above); left here, what is the
   // pop-up's own shape: the tabs stay put (48px) while the body scrolls, the layer buttons one
-  // joined group (40px each), and the icon buttons on a card (Button.svelte's look) quiet
+  // joined group (40px each); card buttons use Button.svelte's filled look
   .wpop .wpop__body {
     :global(.card__tabs) {
       position: sticky;
@@ -241,24 +241,6 @@
       border-radius: 0;
     }
 
-    // the pen and a photo's icons: quiet icon buttons; Change: a tile with white text, no pill
-    :global(.sc .btn--icon),
-    :global(.photo .btn--icon) {
-      background: none;
-      box-shadow: none;
-      color: var(--text-quiet);
-    }
-
-    :global(.sc .btn:not(.btn--icon)) {
-      background: var(--field-tile);
-      box-shadow: none;
-      color: var(--text-strong);
-    }
-
-    :global(.photo .btn--icon:hover:not(:disabled)),
-    :global(.sc .btn:hover) {
-      background: var(--field-hover);
-      color: var(--text-strong);
-    }
+    // card / photo buttons keep Button.svelte's filled look (field-bg, 8px corners)
   }
 </style>
