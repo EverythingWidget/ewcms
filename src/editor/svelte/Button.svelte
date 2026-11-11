@@ -7,6 +7,9 @@
     iconOnly  just the icon, a utility (Grid, the phone view, undo / redo, close): no fill or
               shadow at rest, quiet colour; with aria-pressed it is a toggle, --c-accent while
               on, still no fill. label is its aria-label and title
+    square    a 32×32 icon-only square that keeps the default button's fill and inset ring
+              (as Save): hover --field-hover, the same light pressed glow. label is its
+              aria-label and title, like iconOnly. iconOnly itself stays bare
     label     the text when there are no children
   Also disabled, type ('button'), title, onclick; anything else (aria-*, data-*, attachments)
   goes on the element. Hover / press change colour and fill; nothing moves.
@@ -17,6 +20,7 @@
     size = 'default',
     icon = '',
     iconOnly = false,
+    square = false,
     label = '',
     disabled = false,
     type = 'button',
@@ -30,14 +34,15 @@
     'btn',
     size === 'small' && 'btn--small',
     variant !== 'default' && `btn--${variant}`,
-    iconOnly && 'btn--icon',
+    iconOnly && !square && 'btn--icon',
+    square && 'btn--square',
   ]);
-  const name = $derived(iconOnly ? label : undefined);
+  const name = $derived(iconOnly || square ? label : undefined);
 </script>
 
 {#snippet content()}
   {#if icon}<i class="fa-solid fa-{icon}" aria-hidden="true"></i>{/if}
-  {#if !iconOnly}{#if children}{@render children()}{:else}{label}{/if}{/if}
+  {#if !iconOnly && !square}{#if children}{@render children()}{:else}{label}{/if}{/if}
 {/snippet}
 
 <button
@@ -189,6 +194,14 @@
   .btn--icon.btn--small {
     width: 32px;
     height: 32px;
+  }
+
+  // 32×32 icon-only square: keeps the default fill and inset ring (hover / pressed as .btn)
+  .btn--square {
+    width: 32px;
+    height: var(--size-control);
+    padding: 0;
+    font-size: var(--fs-lg);
   }
 
   // last: the focus ring wins over every variant's shadow (icon specificity included)

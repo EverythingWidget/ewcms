@@ -67,3 +67,16 @@ test('half fields shrink inside the pop-up: .fields items and inputs have min-wi
   assert.match(lf, /\.lf \{[\s\S]*?min-width: 0;/);
   assert.match(lf, /\.lf__item \{[\s\S]*?min-width: 0;/);
 });
+
+test('Button square: 32×32, keeps the default fill and ring; iconOnly stays bare', () => {
+  const b = read('Button.svelte');
+  assert.match(b, /square = false/);
+  assert.match(b, /iconOnly && !square && 'btn--icon'/);
+  assert.match(b, /square && 'btn--square'/);
+  assert.match(b, /iconOnly \|\| square \? label/);
+  assert.match(b, /\.btn--square \{[^}]*width: 32px;[^}]*height: var\(--size-control\);/);
+  assert.doesNotMatch(b.split('.btn--square')[1].split('.btn--')[0], /background:|box-shadow:/);
+  // iconOnly stays the bare utility
+  assert.match(b, /\.btn--icon \{[^}]*background: none;/);
+});
+
