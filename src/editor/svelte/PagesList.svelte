@@ -54,16 +54,13 @@
   } from '../lib/page-tree.js';
   import { plural } from '../lib/format.js';
   import { swapView } from '../lib/slide.js';
+  import { SITE_PARTS } from '../lib/site-parts.js';
 
   // live: reactive store (live.svelte.js); actions: pickTarget, pagesOp (main.js)
   let { live, actions } = $props();
 
   const GONE = '(gone)';
   const FULL = 'Only one [param] page per folder: it has one';
-  const SITE_PARTS = [
-    { id: 'header', title: 'Header', sub: 'The menu and its labels' },
-    { id: 'footer', title: 'Footer', sub: 'Its sections and widgets' },
-  ];
   // the item templates (content/templates/t-….json, main.js templateEntries): site parts too
   const templates = $derived(
     ui.pages

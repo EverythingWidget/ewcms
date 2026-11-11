@@ -1591,9 +1591,11 @@ loads pages with `?draft=…`) always gets the site, so the editor never opens i
 
 Layout: the real site in a same-origin iframe, with a glass side panel. The page (or site part)
 being edited is named over its page tabs (`PageHead.svelte`), a column on
-the panel's 12px edges: **Back to pages** (back to the pages list in the **Pages** tab; its arrow where the
-list's ← is), its title, its path (a path part: that folder; a site part: its title only; a
-`[param]/` part, its slash too, in the widget accent). A `[param]` page has a **Preview** line
+the panel's 12px edges: a 32×32 filled square ← (**Back to pages**: back to the pages list in
+the **Pages** tab), beside a two-line title: its name, then its address (a path part: that
+folder; a `[param]/` part, its slash too, in the widget accent; an item template: "Templates";
+Header: "The menu and its labels"; Footer: "Its sections and widgets" — the pages list's
+lines, `src/editor/lib/site-parts.js`). A `[param]` page has a **Preview** line
 under it, its values in the widget accent (`Preview noor-vermeer / 2018 ▾`): the page of it the
 preview and every tab show. It opens the item selector (`PreviewPicker.svelte`), one step per
 param, each listing only the values under the ones picked before it (`[year]` after

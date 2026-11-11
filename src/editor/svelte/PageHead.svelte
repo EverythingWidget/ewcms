@@ -1,9 +1,10 @@
 <!--
   The page or site part being edited, over its page tabs (the pages list takes
   its place while it is open: PagesList.svelte; its ← on the same spot):
-    ← Back to pages
-    Title
-    / photography/ people/          (a site part: its title only)
+    ← (a 32×32 filled square Button)  Title
+                                      / photography/ people/   (a page: its address, clickable crumbs)
+                                      Templates                (an item template)
+                                      The menu and its labels  (Header / Footer: the pages list's line)
     Preview noor-vermeer / 2018 ▾   (a [param] page: the page of it the preview shows)
     ⚠ No pages are built: …        (only when its main widget can't decide its pages)
   Back to pages opens the pages list (in the Pages tab) where the page was opened (its
@@ -15,9 +16,11 @@
 -->
 <script>
   import { ui, closeSectionPopup, showWidget } from './ui.svelte.js';
+  import Button from './Button.svelte';
   import PreviewPicker from './PreviewPicker.svelte';
   import { parentId, pathOfId } from '../../site/routes.js';
   import { crumbsOf, pageIds, titleOf } from '../lib/page-tree.js';
+  import { SITE_PARTS } from '../lib/site-parts.js';
   import { isParam, pageFile, paramsOf } from '../../site/files.js';
   import { mainProblem } from '../../site/layout/source.js';
 
@@ -41,6 +44,12 @@
   });
   // a [param] page: its menu entry's name ("People item"), not "[person]"
   const title = $derived(id && !t.template ? titleOf(files, id) : t?.title || '');
+  // a page: its address is the crumbs, below; a template or site part: the pages list's line
+  const sub = $derived(
+    t?.kind === 'item-template'
+      ? 'Templates'
+      : (SITE_PARTS.find((p) => p.id === t?.id)?.sub ?? ''),
+  );
 
   // ←: the level it was opened from (its own folder or the one it is in), else the latter
   const backTo = () => {
@@ -74,28 +83,32 @@
 </script>
 
 <div class="ph">
-  <button type="button" class="ph__back" onclick={() => list()}
-    ><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Back to pages</button
-  >
-  <h2 class="ph__title">{title}</h2>
-  {#if crumbs.length}
-    <nav class="ph__path" aria-label="Where it is">
-      {#each crumbs as c, i (i)}
-        {#if c.level === null}
-          <span
-            class={['ph__crumb', 'is-current', isParamCrumb(c) && 'is-param']}
-            aria-current="page">{c.label}</span
-          >
-        {:else}
-          <button
-            type="button"
-            class={['ph__crumb', isParamCrumb(c) && 'is-param']}
-            onclick={() => list(c.level)}>{c.label}</button
-          >
-        {/if}
-      {/each}
-    </nav>
-  {/if}
+  <div class="ph__head">
+    <Button icon="arrow-left" square label="Back to pages" onclick={() => list()} />
+    <div class="ph__main">
+      <h2 class="ph__title">{title}</h2>
+      {#if crumbs.length}
+        <nav class="ph__path" aria-label="Where it is">
+          {#each crumbs as c, i (i)}
+            {#if c.level === null}
+              <span
+                class={['ph__crumb', 'is-current', isParamCrumb(c) && 'is-param']}
+                aria-current="page">{c.label}</span
+              >
+            {:else}
+              <button
+                type="button"
+                class={['ph__crumb', isParamCrumb(c) && 'is-param']}
+                onclick={() => list(c.level)}>{c.label}</button
+              >
+            {/if}
+          {/each}
+        </nav>
+      {:else if sub}
+        <span class="ph__sub">{sub}</span>
+      {/if}
+    </div>
+  </div>
   {#if template}
     <button
       type="button"
@@ -136,38 +149,25 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  // a column on the panel's 12px edges: the back button (its arrow on the edge), title, path
+  // 12px sides and top, 8px under the title block to the tabs (or the body)
   .ph {
     @include stack(0);
     flex: none;
-    padding: var(--space-3) var(--space-3) 0;
+    padding: var(--space-3) var(--space-3) var(--space-2);
   }
 
-  // text-style: no fill, no inline padding, muted until hovered; 32px tall (the list's ←)
-  .ph__back {
+  // the filled square ← beside the two-line title (8px gap)
+  .ph__head {
     @include row(var(--space-2));
-    align-self: start;
-    height: var(--size-control);
-    padding: 0;
-    border: 0;
-    border-radius: var(--radius-sm);
-    background: none;
-    color: var(--c-text-muted);
-    font: inherit;
-    font-size: var(--fs-sm);
-    font-weight: 500;
-    letter-spacing: 0.06em; // a button's label
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: color 0.2s;
+    align-items: center;
+    min-width: 0;
+  }
 
-    &:hover {
-      color: var(--c-text);
-    }
-
-    &:focus-visible {
-      @include focus-ring;
-    }
+  .ph__main {
+    display: grid;
+    min-width: 0;
+    font-size: var(--fs-base);
+    line-height: 20px;
   }
 
   .ph__title {
@@ -177,6 +177,11 @@
     font-size: var(--fs-base);
     font-weight: 500;
     line-height: 20px;
+  }
+
+  .ph__sub {
+    @include ellipsis;
+    color: var(--c-text-muted);
   }
 
   // one line: the parts shrink (ellipsis), the page's own last
