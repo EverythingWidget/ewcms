@@ -184,6 +184,20 @@
     &.is-danger {
       border-color: var(--c-danger);
     }
+
+    // the bar's fill would otherwise paint over the rounded corners and this 1px ring
+    // (selected / hover / danger). On top of the sticky bar; clicks pass through.
+    // overflow: hidden is off: it would clip focus rings, a lifted widget row, and break sticky.
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      z-index: 2;
+      pointer-events: none;
+      border: 1px solid transparent;
+      border-color: inherit;
+      border-radius: inherit;
+    }
   }
 
   // the toggle, then on the right whatever the `bar` snippet adds; every item is 20px tall
@@ -200,6 +214,9 @@
     text-transform: uppercase;
     color: var(--c-text-dim);
     background: inherit;
+    // inside the card's top corners so the fill doesn't square over the ring
+    border-start-start-radius: var(--radius-lg);
+    border-start-end-radius: var(--radius-lg);
 
     > :global(*) {
       flex: none;
