@@ -256,14 +256,12 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  // 40px (8 + 24 + 8) in both states; 12px edges as the body's; borderless: its own shade
-  // (--c-panel-bar), no line under it
+  // 40px (8 + 24 + 8) in both states; 12px edges as the body's; sits on the panel, no shade
   .stb {
     @include row(var(--space-1));
     flex: none;
     height: 40px;
     padding: 0 var(--space-3);
-    background: var(--c-panel-bar); // borderless: a shade, no line under it
   }
 
   // the selected widgets' count, in the widgets' accent, as the hint's type

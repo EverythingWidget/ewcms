@@ -4,12 +4,12 @@
               | 'file' (a file name as written, e.g. people.json: not uppercase, 24px)
     size      'default' (40px; icon only 32px) | 'small' (32px; icon only also 32×32)
     icon      Font Awesome name without the prefix, e.g. 'trash'
-    iconOnly  just the icon, a utility (Grid, the phone view, undo / redo, close): filled like
-              the text buttons; with aria-pressed it is a toggle, --c-accent while on. label is
-              its aria-label and title
+    iconOnly  just the icon, a utility (Grid, the phone view, undo / redo, close): no fill or
+              shadow at rest, quiet colour; with aria-pressed it is a toggle, --c-accent while
+              on, still no fill. label is its aria-label and title
     label     the text when there are no children
   Also disabled, type ('button'), title, onclick; anything else (aria-*, data-*, attachments)
-  goes on the element. Hover / press change the fill only; nothing moves.
+  goes on the element. Hover / press change colour and fill; nothing moves.
 -->
 <script>
   let {
@@ -150,36 +150,39 @@
     text-transform: none;
   }
 
-  // just the icon: a square filled utility; a toggle (aria-pressed) is the accent while on
+  // just the icon: a 32×32 square, no fill; a toggle (aria-pressed) is the accent while on
   .btn--icon {
     width: 32px;
     height: var(--size-control);
     padding: 0;
     font-size: var(--fs-lg);
     color: var(--text-quiet);
+    background: none;
+    box-shadow: none;
 
     &:hover:not(:disabled, [aria-disabled]) {
       color: var(--text-strong);
-      background: var(--field-hover);
+      background: none;
+      box-shadow: none;
     }
 
+    // light icon + the default button's whitish glow; no solid fill (nothing moves)
     &:active:not(:disabled, [aria-disabled]) {
-      color: var(--selected-fg);
+      color: var(--selected-bg);
+      background: none;
+      box-shadow:
+        0 0 0 1px var(--white-a40),
+        0 0 8px var(--white-a40),
+        0 0 14px color-mix(in srgb, var(--selected-bg) 55%, transparent);
     }
 
-    // a toggle stays the accent while on (not the light pressed fill)
+    // a toggle stays the accent while on, still no fill
     &[aria-pressed='true'],
     &[aria-pressed='true']:hover:not(:disabled, [aria-disabled]),
     &[aria-pressed='true']:active:not(:disabled, [aria-disabled]) {
       color: var(--c-accent);
-      background: var(--field-bg);
-      box-shadow:
-        inset 0 1px 0 var(--white-a08),
-        inset 0 0 0 1px var(--white-a04);
-    }
-
-    &[aria-pressed='true']:hover:not(:disabled, [aria-disabled]) {
-      background: var(--field-hover);
+      background: none;
+      box-shadow: none;
     }
   }
 
@@ -188,8 +191,9 @@
     height: 32px;
   }
 
-  // last: the focus ring wins over every variant's shadow
-  .btn:focus-visible {
+  // last: the focus ring wins over every variant's shadow (icon specificity included)
+  .btn:focus-visible,
+  .btn--icon:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring);
   }
