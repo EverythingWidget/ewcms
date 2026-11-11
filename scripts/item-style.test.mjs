@@ -173,9 +173,6 @@ test('the Style tab: Theme first and never saved, the agreed labels, Space betwe
     assert.equal(r.parse(''), undefined, r.key);
   }
   assert.equal(STYLE_ROWS.find((r) => r.key === 'radius').parse('8'), 8);
-  const panel = read('src/editor/svelte/TemplatePanel.svelte');
-  assert.match(panel, /\['style', 'Style'\]/);
-  assert.match(panel, /if \(v === undefined\) delete next\[key\]/);
   assert.equal(WIDGET_TYPES.list.config.find((c) => c.key === 'gap').label, 'Space between items');
 });
 

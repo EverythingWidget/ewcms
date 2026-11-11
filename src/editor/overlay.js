@@ -203,7 +203,17 @@ export function createOverlay({
   const arranging = () => clicks() === 'arrange';
   const shown = () => doc && arranging();
   const isPhone = () => win.innerWidth <= PHONE_W;
-  const widgetEl = (id) => (id ? doc.querySelector(`[data-widget="${CSS.escape(id)}"]`) : null);
+  const widgetEl = (id) => {
+    if (!id || !doc) return null;
+    return (
+      doc.querySelector(`[data-widget="${CSS.escape(id)}"]`) ||
+      doc.querySelector(`[data-tw="${CSS.escape(id)}"]`)
+    );
+  };
+  /** A template widget in the preview (.sec--item > .wgt[data-tw]), only while a template is open. */
+  const templateEl = (e) =>
+    ui.target?.kind === 'item-template' ? e.target.closest?.('[data-tw]') : null;
+
   const secOf = (el) => el?.closest('[data-sec]');
   /** Is a section editable now: the footer's while it is open, the page's while no site part is. */
   const live = (sec) =>
@@ -1203,6 +1213,17 @@ export function createOverlay({
     if (e.target.id === '__ed-layout') return; // the overlay's own (its shadow root handles it)
     if (!arranging() || e.button !== 0 || e.altKey || editing(e.target)) return;
     selectLink(null);
+    const tw = templateEl(e);
+    if (tw) {
+      // select only: drag / resize write-back is not wired for template widgets (no /sections)
+      e.preventDefault();
+      e.stopPropagation();
+      if (doc.activeElement?.isContentEditable) doc.activeElement.blur();
+      const id = tw.dataset.tw;
+      setAnchor(id);
+      onpick(id);
+      return;
+    }
     const mod = e.ctrlKey || e.metaKey;
     const ids = selectedIds(ui);
     const top = e.target.closest?.('[data-widget]');
@@ -1245,7 +1266,8 @@ export function createOverlay({
   function ondblclick(e) {
     if (!arranging() || e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     if (editing(e.target)) return;
-    const id = e.target.closest?.('[data-widget]')?.dataset.widget;
+    const tw = templateEl(e);
+    const id = tw?.dataset.tw || e.target.closest?.('[data-widget]')?.dataset.widget;
     if (id) onopen?.(id);
   }
   const swallow = (e) => {

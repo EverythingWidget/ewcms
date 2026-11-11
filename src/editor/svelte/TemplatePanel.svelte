@@ -2,34 +2,29 @@
   An item template open (Pages > Site > Templates: ui.target { kind: 'item-template', id }):
   its file content/templates/<id>.json edited like a page, the preview its List of one sample
   item (src/site/widgets/list/template-preview.js). Two tabs:
-    Widgets     its name and Link (the whole item opens its page), then its widgets, each placed on the template's 120-column grid as a page widget is (TemplateGridRows.svelte) (ListField: drag the grip or
-                Alt+↑/↓ to reorder, × removes, Add Text / Photo / Button): each widget's role
-                (its .li__<role> class) and settings, its values with {property} chips
-                (Field.svelte formats: type {name}, or pick one).
-    Style       the item style (src/site/widgets/list/item-style.js): one picker per key,
-                Theme first (the key left out of the file)
-    Properties  every property the template binds, renamed in one go: each {old} part in its
-                widgets becomes {new} (lib/item-template.js renameProperty). Replaces the List's
-                mapping for templates (a List using a template has no Properties rows).
+    Widgets     the always-selected section card (SectionCard.svelte) of its widgets, with
+                WidgetRow rows and Add widget (SectionToolbar, add only). A row selects that
+                widget in the preview and vice versa; its settings (role, binds, …) are under
+                the card while it is selected. Placement is on the preview grid.
+    Settings    its Name (as in a List’s Template picker), Whole item clickable (the whole
+                item opens the item’s page), and the preview line.
   Templates are site-wide (no language): every List using one shows the edit on Save.
 -->
 <script>
-  import { ui } from './ui.svelte.js';
+  import { ui, selectWidgets } from './ui.svelte.js';
   import Field from './Field.svelte';
-  import ListField from './ListField.svelte';
   import Button from './Button.svelte';
   import Tabs from './Tabs.svelte';
+  import SectionCard from './SectionCard.svelte';
+  import SectionToolbar from './SectionToolbar.svelte';
+  import WidgetsModal from './WidgetsModal.svelte';
   import { sourceIds as sourceIdsOf, templateFile } from '../../site/files.js';
   import { LINE_STYLES } from '../../site/text.js';
   import { schemaOf } from '../../site/schemas.js';
   import { sampleSource } from '../../site/widgets/list/template-preview.js';
-  import { STYLE_ROWS } from '../lib/item-style-rows.js';
-  import { isObject } from '../../site/is.js';
   import { PRESETS } from '../../site/widgets/list/presets.js';
   import { innerChoice, innerTemplates } from '../../site/widgets/list/nested.js';
-  import TemplateGridRows from './TemplateGridRows.svelte';
   import { MIN_TEXT_PX, sizeLine, textSizes } from '../lib/small-text.js';
-  import { GRID_STYLE_KEYS } from '../../site/widgets/list/item-grid.js';
   import { CAROUSEL, CAROUSEL_KEYS, withArrangement } from '../../site/widgets/list/carousel.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import {
@@ -44,9 +39,7 @@
     needsValue,
     TEMPLATE_MISSING,
     addAt,
-    renameProperty,
     runsOf,
-    stackName,
     templateProperties,
   } from '../lib/item-template.js';
 
@@ -163,23 +156,12 @@
 
   const TABS = [
     ['widgets', 'Widgets'],
-    ['properties', 'Properties'],
-    ['style', 'Style'],
+    ['settings', 'Settings'],
   ];
   const tab = $derived.by(() => {
     const v = ui.sections[`tpltab:${id}`];
     return TABS.some(([t]) => t === v) ? v : 'widgets';
   });
-  const style = $derived(isObject(tpl?.style) ? tpl.style : {});
-  // a row picked Theme: its key removed (never saved); the last one: no "style" at all
-  function setStyle(key, raw) {
-    const v = STYLE_ROWS.find((r) => r.key === key).parse(raw);
-    const next = { ...style };
-    if (v === undefined) delete next[key];
-    else next[key] = v;
-    set('/style', Object.keys(next).length ? next : undefined, true);
-  }
-
   const set = (ptr, value, structure = false) =>
     live.store.set(file, ptr, value, { source: 'panel', structure });
   const setWidgets = (next) => set('/widgets', next, true);
@@ -216,7 +198,10 @@
     );
   const add = (type) => {
     if (type === 'details') set('/link', false);
-    setWidgets(addAt(widgets, fresh(type)));
+    const next = addAt(widgets, fresh(type));
+    setWidgets(next);
+    const id = next[next.length - 1]?.id;
+    if (id) selectWidgets([id]);
   };
   // ---- Summary and details (src/site/widgets/list/details.js): one per template; the item
   // is then the summary's button, not a link
@@ -241,13 +226,32 @@
   const LIST_CONFIG = WIDGET_TYPES.list.config;
   const ARRANGE = LIST_CONFIG.find((c) => c.key === 'arrangement').options;
   const CAR_ROWS = LIST_CONFIG.filter((c) => CAROUSEL_KEYS.includes(c.key));
-  // ---- Properties: a rename commits on Enter or leaving the box (not per letter)
-  let drafts = $state({});
-  function rename(old, next) {
-    const to = String(next || '').trim();
-    delete drafts[old];
-    if (!to || to === old) return;
-    setWidgets(renameProperty(widgets, old, to));
+  const card = $derived({
+    id: 's-tpl',
+    name: (typeof tpl?.label === 'string' && tpl.label.trim()) || '',
+    // title from role so WidgetRow shows Type / role (nameOf reads title, not role)
+    widgets: widgets.map((w) => (w?.role && !w.title ? { ...w, title: w.role } : w)),
+  });
+  const selectedAt = $derived(widgets.findIndex((w) => w?.id && w.id === ui.widget));
+  const selected = $derived(selectedAt >= 0 ? widgets[selectedAt] : null);
+  let widgetsModal = $state();
+  const typeTiles = $derived(
+    STACK_TYPES.filter(([type]) => !(type === 'list' && outer) && !(type === 'details' && detailsOff)).map(
+      ([type]) => {
+        const d = WIDGET_TYPES[type] || {};
+        return {
+          value: type,
+          label: d.label || type,
+          icon: d.icon,
+          line: d.line,
+          sketch: d.sketch,
+        };
+      },
+    ),
+  );
+  function pickAdd(type) {
+    if ((type === 'list' && outer) || (type === 'details' && detailsOff)) return;
+    add(type);
   }
 </script>
 
@@ -529,10 +533,45 @@
   label="Template"
   class="page-tabs"
 />
+{#if tab === 'widgets' && tpl}
+  <SectionToolbar addOnly {live} {file} onadd={() => widgetsModal?.open(0)} />
+{/if}
 <section class="ed-body tp" data-template-panel={id}>
   {#if !tpl}
     <p class="hint">No template {id} (content/templates/{id}.json)</p>
   {:else if tab === 'widgets'}
+    {#if outer}
+      <p class="hint small">
+        This template is shown inside another List: a list here would be a third level
+      </p>
+    {/if}
+    <SectionCard
+      {live}
+      {file}
+      at={0}
+      section={card}
+      selected
+      onselect={() => {}}
+      onsection={() => {}}
+      onopen={(wid) => selectWidgets([wid])}
+      onreorder={(from, to) => setWidgets(moveStack(widgets, from, to))}
+      changed={live.changed(file, '/widgets')}
+    />
+    {#if selected && selectedAt >= 0}
+      <p
+        class="hint small tp__size"
+        class:tp__size--warn={sizes[selected.id] < MIN_TEXT_PX}
+        data-text-size={selected.id}
+      >
+        {sizeLine(sizes[selected.id]) || 'No text in the preview'}
+      </p>
+      {@render editW(selected, `/widgets/${selectedAt}`)}
+      <Button size="small" icon="trash" onclick={() => {
+        setWidgets(removeWidget(widgets, selectedAt));
+        selectWidgets([]);
+      }}>Remove widget</Button>
+    {/if}
+  {:else if tab === 'settings'}
     <Field
       edit={`${file}#/label`}
       label="Name"
@@ -543,11 +582,13 @@
     />
     <Field
       edit={`${file}#/link`}
-      label="Link: whole item opens the item’s page"
+      label="Whole item clickable"
       type="boolean"
       value={!hasDetails && tpl.link !== false}
       disabled={hasDetails}
-      help={hasDetails ? 'An item that opens can’t also be a link' : ''}
+      help={hasDetails
+        ? 'An item that opens can’t also be a link'
+        : 'The whole item opens the item’s page.'}
       changed={live.changed(file, '/link')}
       onvalue={(v) => set('/link', v)}
     />
@@ -556,87 +597,9 @@
         ? `Preview: the first item of ${schema?.label || from}`
         : 'Preview: a hand-made sample item (no source)'}
     </p>
-    <ListField
-      label="Widgets"
-      items={widgets}
-      name={(w) => stackName(w)}
-      addLabel="Add text"
-      onmove={(a, b) => setWidgets(moveStack(widgets, a, b))}
-      onremove={(i) => setWidgets(removeWidget(widgets, i))}
-      onadd={() => add('text')}
-    >
-      {#snippet item(w, i)}
-        <!-- its place on the template's grid (as a page widget's) -->
-        <TemplateGridRows {file} b={`/widgets/${i}`} {w} {widgets} {set} />
-        <!-- its text size in the preview: always one line (no shift), a warning under 11 px -->
-        <p
-          class="hint small tp__size"
-          class:tp__size--warn={sizes[w.id] < MIN_TEXT_PX}
-          data-text-size={w.id}
-        >
-          {sizeLine(sizes[w.id]) || 'No text in the preview'}
-        </p>
-        {@render editW(w, `/widgets/${i}`)}
-      {/snippet}
-    </ListField>
-    <div class="tp__add" role="group" aria-label="Add a widget">
-      {#each STACK_TYPES.filter(([t]) => t !== 'text') as [t, label] (t)}
-        <Button
-          size="small"
-          icon="plus"
-          disabled={(t === 'list' && !!outer) || (t === 'details' && !!detailsOff)}
-          title={t === 'list' && outer
-            ? 'This template is shown inside another List: a list here would be a third level'
-            : t === 'details' && detailsOff
-              ? detailsOff
-              : undefined}
-          onclick={() => add(t)}>Add {label.toLowerCase()}</Button
-        >
-      {/each}
-    </div>
-  {:else if tab === 'style'}
-    <p class="hint small">How each item looks. Theme: the site theme’s value.</p>
-    <div class="tp__style" data-template-style>
-      {#each STYLE_ROWS.filter((r) => !GRID_STYLE_KEYS.includes(r.key)) as r (r.key)}
-        <Field
-          edit={`${file}#/style/${r.key}`}
-          label={r.label}
-          type="select"
-          half
-          value={style[r.key] === undefined ? '' : String(style[r.key])}
-          options={r.options}
-          changed={live.changed(file, `/style/${r.key}`)}
-          onvalue={(v) => setStyle(r.key, v)}
-        />
-      {/each}
-    </div>
-  {:else}
-    <p class="hint small">
-      The properties its widgets show. A new name changes every chip of it in this template{from
-        ? `; ${schema?.label || from} has: ${own.join(', ')}`
-        : ''}.
-    </p>
-    {#if !used.length}<p class="hint">No properties in this template yet</p>{/if}
-    <div class="tp__props" data-template-properties>
-      {#each used as name (name)}
-        <label class="tp__prop">
-          <span class="tf__label">{name}</span>
-          <input
-            class="tf__input"
-            value={drafts[name] ?? name}
-            aria-label="Rename the property {name}"
-            oninput={(e) => (drafts[name] = e.currentTarget.value)}
-            onchange={(e) => rename(name, e.currentTarget.value)}
-            onkeydown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-          />
-          <span class={['tp__state', from && !own.includes(drafts[name] ?? name) && 'is-warn']}>
-            {from && !own.includes(drafts[name] ?? name) ? `Not in ${schema?.label || from}` : ''}
-          </span>
-        </label>
-      {/each}
-    </div>
   {/if}
 </section>
+<WidgetsModal bind:this={widgetsModal} types={typeTiles} onpick={(type) => pickAdd(type)} />
 
 <style lang="scss">
   @use '../styles/mixins' as *;
@@ -687,41 +650,5 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-2);
-  }
-
-  .tp__add {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-  }
-
-  .tp__style {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--gap-rows) var(--space-2);
-  }
-
-  .tp__props {
-    @include stack(var(--space-2));
-  }
-
-  .tp__prop {
-    display: grid;
-    grid-template-columns: 96px minmax(0, 1fr);
-    gap: var(--space-1) var(--space-2);
-    align-items: center;
-  }
-
-  // reserved: the line is there with or without a warning (no shift)
-  .tp__state {
-    grid-column: 2;
-    min-height: 16px;
-    font-size: var(--fs-base);
-    line-height: 16px;
-    color: var(--c-text-muted);
-
-    &.is-warn {
-      color: var(--c-warning);
-    }
   }
 </style>

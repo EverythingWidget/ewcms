@@ -10,6 +10,9 @@
     live, file, at (its index), peek (hovered in the preview)
     selected, onselect, onsection (its settings), onopen(widgetId)
     changed    overrides the changed dot (the mock kit)
+    section    optional: use this section ({ id, name, widgets }) instead of file.sections[at]
+               (the template editor: its widgets live at the file's root)
+    onreorder  optional: (from, to) when a row is dragged; the default moves a page widget
 -->
 <script>
   import { ui, selectWidgets, reveal, setAnchor, hotWidget } from './ui.svelte.js';
@@ -29,11 +32,13 @@
     onselect,
     onsection,
     onopen,
+    section: sectionProp,
+    onreorder,
   } = $props();
 
   const s = $derived.by(() => {
     live.version;
-    return live.current(file)?.sections?.[at] || {};
+    return sectionProp ?? (live.current(file)?.sections?.[at] || {});
   });
   const name = $derived((typeof s.name === 'string' && s.name.trim()) || '');
   const title = $derived(name || `Section ${at + 1}`);
@@ -51,7 +56,8 @@
     shape: () => widgets.map((widget) => widget.id).join(','),
     ondrop: (d) => {
       if (widgets[d.j]?.id !== d.id) return;
-      moveWidget(live.store, file, at, d.j, d.over.to);
+      if (onreorder) onreorder(d.j, d.over.to);
+      else moveWidget(live.store, file, at, d.j, d.over.to);
     },
     grabbing: true,
     edgeScroll: true,
@@ -88,7 +94,7 @@
   id={s.id}
   {title}
   off={!on}
-  changed={changed ?? live.changed(file, `/sections/${at}`)}
+  changed={changed ?? live.changed(file, sectionProp ? '/widgets' : `/sections/${at}`)}
   class={peek && !selected ? 'is-peek' : ''}
   foot={n ? list : undefined}
   {selected}

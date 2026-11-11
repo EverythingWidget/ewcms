@@ -871,24 +871,27 @@ rule work as anywhere.
   picked, its place always kept) jumps to it. The preview (the dev server's
   `/__template/<id>/`, never built) shows the template as a List of one sample item: the first
   item of its `source`, else a hand-made sample. Two tabs:
-  - **Widgets**: its name, **Link: whole item opens the item's page** (`link`), then its
-    widgets: drag a widget's grip (or Alt+↑/↓) to reorder, × removes it (a widget that followed
-    it follows what it followed), **Add text / Add photo / Add button / Add list / Add summary
-    and details** adds one (full width, following the last widget). Each widget has its place on
-    the grid (`TemplateGridRows.svelte`): **Column**, **Columns**, **Row** (off while it
-    follows another), **Height** (Auto / Aspect / Rows), **Ratio**, **Rows**, **Follows**,
-    **Rows between**, **Layer**, **Own phone layout** (off: the desktop layout, scaled down)
-    and its **Phone column / columns / row**; under them one line with its text's size in the
-    preview ("Text 14 px here"; under 11 px a warning: "under 11 px, hard to read"; text has no
-    minimum size, `src/editor/lib/small-text.js`; switch the preview to a phone to check the
-    phone size); then its **Role**
-    (`.li__<role>`); a Text its lines (style + text), a Photo its photo, a Button its label and
-    **Opens the item's page** (`itemLink`). A line's bold, italic and links stay through an edit (typed text takes the marks of the text before it). Every value takes `{property}` chips: type `{name}`
-    or pick one from the source's properties.
-  - **Properties**: every property the template binds, one box each; a new name (Enter or
-    leaving the box) changes every `{old}` bind in the template to `{new}`, one undo step. A
-    name the sample's source doesn't have says "Not in <Source>". This replaces mapping for
-    templates.
+  - **Widgets**: an always-selected section card of its widgets (`SectionCard.svelte`; not
+    collapsible; no section gear, height/width, move, delete, hide/duplicate, locator or
+    curtain). Drag a row's grip to reorder (a widget that followed a removed one follows what
+    it followed). **Add widget** (`SectionToolbar`, add only) opens the widget picker for the
+    types a template can hold (text, photo, button, list, summary and details; a new one is
+    full width, following the last widget). Click a row to select that widget in the preview,
+    and click it in the preview to select the row. While a widget is selected, the card is
+    followed by one line with its text's size in the preview ("Text 14 px here"; under 11 px a
+    warning: "under 11 px, hard to read"; text has no minimum size, `src/editor/lib/small-text.js`;
+    switch the preview to a phone to check the phone size), then its **Role** (`.li__<role>`);
+    a Text its lines (style + text), a Photo its photo, a Button its label and **Opens the
+    item's page** (`itemLink`), and **Remove widget**. A line's bold, italic and links stay
+    through an edit (typed text takes the marks of the text before it). Every value takes
+    `{property}` chips: type `{name}` or pick one from the source's properties. Placement and
+    sizing are meant to happen on the preview grid, as a page widget's; click-to-select is
+    wired (`data-tw`); drag, resize and write-back are not yet (template widgets live at
+    `/widgets`, not `/sections`, and use `layer` rather than `z`).
+  - **Settings**: **Name** (its name in a List's Template picker), **Whole item clickable**
+    (the whole item opens the item's page; `link`; off when the template has Summary and
+    details), and the preview line ("Preview: the first item of <source>", or a hand-made
+    sample when it has no source).
 
   **Save** writes the template file (validated as above); every List using it shows the change.
   Templates are site-wide, shared by every language.

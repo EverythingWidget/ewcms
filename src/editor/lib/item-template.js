@@ -57,13 +57,6 @@ export function templateProperties(widgets) {
   });
   return out;
 }
-
-/** The widgets with every {from} part bound to `to` instead (its format kept). */
-export const renameProperty = (widgets, from, to) =>
-  !to || from === to
-    ? widgets
-    : walk(widgets, (p) => (p.property === from ? { ...p, property: to } : p));
-
 /** A text field's value (PartsInput: a string or parts) as a text line's runs. */
 export const runsOf = (v) => (Array.isArray(v) ? v : typeof v === 'string' && v ? [{ t: v }] : []);
 

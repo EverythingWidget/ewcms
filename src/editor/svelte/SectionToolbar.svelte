@@ -20,6 +20,7 @@
     [ Button                gear  locate  eye  copy  trash ]
   gear: its pop-up (as a double click on it, ui.popup). Its layer: in the pop-up, keys [ ].
     live, file, bridge, onsection(id), onadd(at)
+    addOnly    only the Add widget control (a template: no section gear, move, delete, or ⋯)
 -->
 <script>
   import Button from './Button.svelte';
@@ -37,7 +38,7 @@
     toggleSection,
   } from '../layout-ops.js';
 
-  let { live, file, bridge, onsection, onadd } = $props();
+  let { live, file, bridge, onsection, onadd, addOnly = false } = $props();
 
   const sections = $derived.by(() => {
     live.version;
@@ -105,7 +106,17 @@
   role="toolbar"
   aria-label={group ? 'Selected widgets' : many.length > 1 ? 'Selected sections' : 'Section'}
 >
-  {#if many.length > 1 && !group}
+  {#if addOnly}
+    <button
+      type="button"
+      class="stb__add"
+      aria-haspopup="dialog"
+      aria-label="Add widget"
+      onclick={() => onadd(0)}
+    >
+      <i class="fa-solid fa-plus" aria-hidden="true"></i>Add widget
+    </button>
+  {:else if many.length > 1 && !group}
     <p class="stb__count">{many.length} sections</p>
     <span class="stb__gap"></span>
     <Button

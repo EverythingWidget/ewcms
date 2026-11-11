@@ -20,7 +20,6 @@ import {
   addAt,
   removeWidget,
   newStackWidget,
-  renameProperty,
   runsOf,
   stackName,
   templateProperties,
@@ -137,29 +136,16 @@ test('the stack: add, remove, reorder; every new widget passes the validator', (
   assert.deepEqual(runsOf([{ property: 'x' }]), [{ property: 'x' }]);
 });
 
-test('Properties: the binds listed once, a rename changes every bind of it', () => {
+test('the binds a template uses are listed once, first use first', () => {
   const w = card().widgets;
   assert.deepEqual(templateProperties(w), ['cover', 'title', 'location']);
-  const next = renameProperty(w, 'title', 'name');
-  assert.deepEqual(templateProperties(next), ['cover', 'name', 'location']);
-  assert.deepEqual(next[2].body[0].text, [
-    { property: 'location' },
-    { t: ' · ' },
-    { property: 'name' },
-  ]);
-  // the rest as it was, the input untouched
-  assert.equal(next[2].join, ' · ');
-  assert.deepEqual(templateProperties(w), ['cover', 'title', 'location']);
-  // a format kept; an empty or same name changes nothing
+  // a format is just a bind (no property rename in the editor)
   const f = [
     { type: 'text', body: [{ style: 'label', text: [{ property: 'd', format: 'year' }] }] },
   ];
-  assert.deepEqual(renameProperty(f, 'd', 'date')[0].body[0].text, [
-    { property: 'date', format: 'year' },
-  ]);
-  assert.equal(renameProperty(w, 'title', ''), w);
-  assert.equal(renameProperty(w, 'title', 'title'), w);
-  assert.deepEqual(checkContent(T, card({ widgets: next })), []);
+  assert.deepEqual(templateProperties(f), ['d']);
+  assert.equal(fs.existsSync(new URL('../src/editor/lib/item-template.js', import.meta.url)), true);
+  assert.doesNotMatch(read('src/editor/lib/item-template.js'), /renameProperty/);
 });
 
 test('the editor: a Templates group under Site, its own target, Edit template, no shift', () => {
@@ -174,41 +160,28 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   const main = read('src/editor/main.js');
   assert.match(main, /kind: 'item-template'/);
   assert.match(main, /item\.kind === 'item-template'\) return void bridge\.navigate\(item\.path\)/);
-  // the panel: Widgets and Properties tabs, chips (formats) on each bound value
+  // the panel: Widgets and Settings tabs, chips (formats) on each bound value
   const panel = read('src/editor/svelte/TemplatePanel.svelte');
-  assert.match(panel, /\['widgets', 'Widgets'\],\s*\['properties', 'Properties'\]/);
-  assert.match(panel, /<ListField/);
-  // the template's own settings, always shown (no shift)
-  assert.match(panel, /label="Link: whole item opens the item’s page"/);
+  assert.match(panel, /\['widgets', 'Widgets'\],\s*\['settings', 'Settings'\]/);
+  assert.doesNotMatch(panel, /'properties'|Style tab|<ListField|<TemplateGridRows/);
+  assert.match(panel, /<SectionCard/);
+  assert.match(panel, /<SectionToolbar addOnly/);
+  assert.match(panel, /<WidgetsModal/);
+  // Settings: Name, Whole item clickable, the preview line (not on Widgets)
+  assert.match(panel, /label="Whole item clickable"/);
+  assert.match(panel, /The whole item opens the item’s page/);
+  assert.match(panel, /Its name in a List’s Template picker/);
+  assert.match(panel, /Preview: the first item of /);
   assert.doesNotMatch(panel, /Photo first|photoFirst/);
   assert.match(panel, /set\('\/link', v\)/);
-  // each widget's place on the template's grid, as a page widget's
-  assert.match(
-    panel,
-    /<TemplateGridRows \{file\} b=\{`\/widgets\/\$\{i\}`\} \{w\} \{widgets\} \{set\} \/>/,
-  );
-  const rows = read('src/editor/svelte/TemplateGridRows.svelte');
-  for (const l of [
-    'Column',
-    'Columns',
-    'Row',
-    'Height',
-    'Ratio',
-    'Rows',
-    'Follows',
-    'Rows between',
-    'Layer',
-    'Own phone layout',
-    'Phone column',
-    'Phone columns',
-    'Phone row',
-  ])
-    assert.match(rows, new RegExp(`label="${l}"`), l);
-  assert.match(rows, /Off: the desktop layout, scaled down/);
-  assert.doesNotMatch(panel + rows, /Side by side|Fill the space|Photo width|On a phone/);
+  assert.match(panel, /tab === 'settings'/);
   assert.match(panel, /formats/);
-  assert.match(panel, /renameProperty\(widgets, old, to\)/);
+  assert.doesNotMatch(panel, /renameProperty/);
   assert.doesNotMatch(panel, /(label|help|title|placeholder)="[^"]*\bfield/i);
+  assert.equal(
+    fs.existsSync(new URL('../src/editor/svelte/TemplateGridRows.svelte', import.meta.url)),
+    false,
+  );
   assert.match(
     read('src/editor/svelte/ContentPanel.svelte'),
     /<TemplatePanel \{live\} \{bridge\} \/>/,
@@ -287,3 +260,18 @@ test('text under 11 px: a warning line under the widget in the template editor (
   assert.ok(panel.includes('data-text-size') && panel.includes('tp__size--warn'));
   assert.match(panel, /\.tp__size \{[^}]*height: 16px/); // one line always: no shift
 });
+
+test('the template panel hides what a template section does not have', () => {
+  const card = read('src/editor/svelte/SectionCard.svelte');
+  assert.match(card, /section: sectionProp/);
+  assert.match(card, /onreorder/);
+  const bar = read('src/editor/svelte/SectionToolbar.svelte');
+  assert.match(bar, /addOnly = false/);
+  assert.match(bar, /{#if addOnly}/);
+  const overlay = read('src/editor/overlay.js');
+  assert.match(overlay, /data-tw="\$\{CSS\.escape\(id\)\}"/);
+  assert.match(overlay, /ui\.target\?\.kind === 'item-template'/);
+  assert.match(overlay, /onpick\(id\);\s+return;/);
+  assert.doesNotMatch(overlay, /start\(e, tw\)/);
+});
+
