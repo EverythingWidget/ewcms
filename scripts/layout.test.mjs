@@ -117,7 +117,7 @@ test('render: sections are grids, widgets carry their area; off is hidden', () =
       widget('text', {
         body: lines('One'),
         layout: { base: { col: 3, span: 10, row: 2, rows: 4 } },
-        z: 2,
+        layer: 2,
       }),
     ]),
     section([widget('text', { body: lines('Two'), config: { enabled: false } })], {
@@ -238,7 +238,8 @@ test('validation: the layout, then each widget against its type', () => {
     one({ type: 'text', layout: { base: { col: 0, span: 1, row: 1 } } })[0],
     /layout.base.col/,
   );
-  assert.match(one({ type: 'text', z: 1.5 })[0], /"z" must be a whole number/);
+  assert.match(one({ type: 'text', layer: 1.5 })[0], /"layer" must be a whole number/);
+  assert.match(one({ type: 'text', z: 2 }).join(), /"z" is "layer" now/);
   assert.match(one({ type: 'text', body: 3 })[0], /\(Text\): "body" must be a list of lines/);
   assert.match(
     one({ type: 'text', body: [{ style: 'huge', text: [{ t: 'x', marks: ['u'] }] }] }).join(),
@@ -329,9 +330,10 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   placeWidget(store, F, 0, 1, { col: 13, span: 12, row: 40, rows: 4 });
   assert.equal(rowsOf(sections()[0]), 43); // grown in the same step
   layerWidget(store, F, 0, 1, 1);
-  assert.equal(sections()[0].widgets[1].z, 1);
-  layerWidget(store, F, 0, 1, -1);
+  assert.equal(sections()[0].widgets[1].layer, 1);
   assert.equal(sections()[0].widgets[1].z, undefined);
+  layerWidget(store, F, 0, 1, -1);
+  assert.equal(sections()[0].widgets[1].layer, undefined);
   setSection(store, F, 1, { height: 'half', name: 'Our people' });
   assert.deepEqual([sections()[1].height, sections()[1].name], ['half', 'Our people']);
   assert.deepEqual(checkContent(F, store.current[F]), []);

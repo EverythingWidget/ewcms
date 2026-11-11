@@ -1,7 +1,7 @@
 // List step 10: nested Lists (two levels; src/site/widgets/list/nested.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { onGrid } from './grid-helper.mjs';
+import { onGrid, template } from './grid-helper.mjs';
 import { gridStyle } from '../src/site/widgets/list/item-grid.js';
 import fs from 'node:fs';
 import { parseHTML } from 'linkedom';
@@ -28,13 +28,7 @@ import { SITE_A } from '../test/fixtures/index.mjs';
 const base = loadContent(SITE_A);
 const people = base.sources.people;
 const read = (f) => fs.readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
-const tpl = (label, widgets, more = {}) => ({
-  version: 1,
-  kind: 'template',
-  label,
-  widgets: onGrid(widgets),
-  ...more,
-});
+const tpl = (name, widgets, more = {}) => template({ name, widgets: onGrid(widgets), ...more });
 const title = {
   type: 'text',
   role: 'title',
@@ -44,7 +38,7 @@ const inner = (source, template = 't-ph00', more = {}) => ({
   type: 'list',
   role: 'photos',
   source,
-  config: { template, columns: '4', gap: 's' },
+  config: { template, columns: '4', gap: 1 },
   ...more,
 });
 const photoTpl = tpl('Photo', [
@@ -122,14 +116,14 @@ test('an inner template reads the outer item: {parent: title} and {number}', () 
 test('preset:photo: a photo only, its style spelled out, and Duplicate copies it', () => {
   assert.deepEqual(presetOf('preset:photo').roles, ['photo']);
   const copy = cloneTemplate(base, 'people', 'preset:photo', { properties: { photo: 'cover' } });
-  assert.equal(copy.label, 'Photo copy');
+  assert.equal(copy.name, 'Photo copy');
   assert.equal(copy.basedOn, 'preset:photo');
   // its style without the keys the template grid took over; the photo's ratio is its size
   assert.deepEqual(copy.style, gridStyle(PRESET_STYLES['preset:photo']));
-  assert.equal(copy.widgets[0].size, 'aspect');
-  assert.equal(copy.widgets[0].aspect, '4:5');
+  assert.equal(copy.sections[0].widgets[0].size, 'aspect');
+  assert.equal(copy.sections[0].widgets[0].aspect, '4:5');
   assert.deepEqual(
-    copy.widgets.map((w) => w.type),
+    copy.sections[0].widgets.map((w) => w.type),
     ['photo'],
   );
   assert.deepEqual(styleProblems(copy.style), []);
@@ -204,6 +198,15 @@ test('the validator: inner sources only in templates; the shapes; a page keeps i
     ).join(),
     /config\.limit is not an inner List setting/,
   );
+  // its gap: a whole number of cells (the item's grid it sits on)
+  const gap = (g) =>
+    checkContent(
+      T,
+      tpl('P', [inner({ mode: 'all', from: 'people' }, 'preset:card', { config: { gap: g } })]),
+    ).join();
+  assert.equal(gap(2), '');
+  assert.match(gap('m'), /config\.gap must be a whole number of cells/);
+  assert.match(gap(-1), /config\.gap must be a whole number of cells/);
   // on a page: property / match are not a source form there
   const page = {
     version: 1,

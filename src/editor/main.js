@@ -294,7 +294,7 @@ function templateEntries(files) {
     .map((id) => ({
       kind: 'item-template',
       id,
-      title: files[templateFile(id)]?.label || id,
+      title: files[templateFile(id)]?.name || id,
       path: templatePreviewPath(id),
     }));
 }
@@ -744,7 +744,7 @@ store.on(({ files, source: src, structure }) => {
       refresh: (structure && files.some((f) => !inPlace.includes(f))) || files.some(templateIdOf),
       sources: files.some((f) => sourceIdOf(f) || schemaIdOf(f)),
     });
-  // a template's label: its row in the pages list
+  // a template's name: its row in the pages list
   if (files.some(templateIdOf)) updatePages();
   // After a save the files on disk caught up with us: nothing changes in the preview.
   if (src === 'saved') return;

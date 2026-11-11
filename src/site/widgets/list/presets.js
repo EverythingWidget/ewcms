@@ -21,7 +21,7 @@
  *   Row    a small photo left, title and facts right (project rows)
  *   Photo  a photo only: no text, no box (a photo grid, an inner List of an item's photos)
  */
-import { gridStyle, stackToGrid } from './item-grid.js';
+import { gridStyle, itemSection, stackToGrid } from './item-grid.js';
 import { newId } from '../../layout/ids.js';
 import { schemaOf } from '../../schemas.js';
 import { isObject } from '../../is.js';
@@ -252,7 +252,7 @@ export function presetWidgets(
  * A preset (or a site template) copied into a new item template (content/templates/t-….json):
  * its widgets as plain widgets with {property} parts, for the List's source as it shows now (its
  * mapping applied, facts joined with `sep`, a hand-made Panel's count as {count} {unit}). `basedOn`
- * keeps where it came from; link and photoFirst are the preset's. A template's own widgets are
+ * keeps where it came from; clickable is the preset's link. A template's own section is
  * copied as they are.
  */
 export function cloneTemplate(
@@ -262,19 +262,25 @@ export function cloneTemplate(
   { handmade = false, properties, open = 'View', sep = ' · ', label } = {},
 ) {
   const own = templateOf(ctx, id);
-  if (own)
+  if (own) {
+    const from = own.preview?.from || (!handmade && source) || '';
+    const preview = {
+      ...(from ? { from } : {}),
+      ...(own.preview?.columns ? { columns: own.preview.columns } : {}),
+    };
     return {
       version: 1,
       kind: 'template',
-      label: label || `${own.label || id} copy`,
+      name: label || `${own.name || id} copy`,
       basedOn: id,
-      ...(own.source || (!handmade && source) ? { source: own.source || source } : {}),
-      link: own.link !== false,
+      clickable: own.clickable !== false,
+      ...(Object.keys(preview).length ? { preview } : {}),
       ...(isObject(own.style) && Object.keys(own.style).length
         ? { style: structuredClone(own.style) }
         : {}),
-      widgets: structuredClone(own.widgets),
+      sections: [{ ...structuredClone(itemSection(own) || {}), id: newId('s') }],
     };
+  }
   const preset = presetOf(id);
   const taken = new Set();
   const widgets = presetWidgets(preset.id, ctx, source, { open, handmade, properties }).map((w) => {
@@ -296,13 +302,18 @@ export function cloneTemplate(
   return {
     version: 1,
     kind: 'template',
-    label: label || `${preset.label} copy`,
+    name: label || `${preset.label} copy`,
     basedOn: preset.id,
-    ...(!handmade && source ? { source } : {}),
-    link: preset.link,
+    clickable: preset.link,
+    ...(!handmade && source ? { preview: { from: source } } : {}),
     style: gridStyle(presetStyle(preset.id)),
-    // the preset's stack on the template grid (./item-grid.js)
-    widgets: stackToGrid(widgets, presetStyle(preset.id), () => newId('w', taken)),
+    // the preset's stack on the template grid (./item-grid.js): its one section
+    sections: [
+      {
+        id: newId('s', taken),
+        widgets: stackToGrid(widgets, presetStyle(preset.id), () => newId('w', taken)),
+      },
+    ],
   };
 }
 

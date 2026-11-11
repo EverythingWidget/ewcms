@@ -183,14 +183,25 @@ test('{items}: the List’s own items, how many; an item property of that name w
 });
 
 test('Grid; columns and gap; See all; Row preset defaults to 1 column', () => {
-  const grid = list(
-    { arrangement: 'grid', columns: '4', gap: 'l', seeAll: true },
-    { heading: 'P' },
-  );
+  const grid = list({ arrangement: 'grid', columns: '4', gap: 3, seeAll: true }, { heading: 'P' });
   const items = grid.el.querySelector('.list__items');
   assert.ok(items.classList.contains('list__items--grid'));
   assert.equal(items.getAttribute('data-cols'), '4');
-  assert.ok(grid.el.querySelector('.list').classList.contains('list--gap-l'));
+  // the gap: a whole number of the page's cells (--list-gap; the CSS: calc(n * var(--cell)))
+  assert.match(items.getAttribute('style'), /--list-gap:3(;|$)/);
+  assert.ok(![...grid.el.querySelector('.list').classList].some((c) => c.startsWith('list--gap')));
+  const flush = list({ columns: '4' }).el.querySelector('.list__items');
+  assert.doesNotMatch(flush.getAttribute('style'), /--list-gap/); // 0, the default: side by side
+  const gw = { ...newWidget('list', new Set()), id: 'w-gap1' };
+  const check = (gap) => WIDGET_TYPES.list.check({ ...gw, config: { ...gw.config, gap } }).join();
+  assert.equal(check(0), '');
+  assert.equal(check(6), '');
+  for (const bad of ['m', 's', 1.5, -1, 25])
+    assert.match(check(bad), /config\.gap must be a whole number of cells/, String(bad));
+  assert.equal(gw.config.gap, undefined, 'a new List: no gap (0)');
+  const css = readFileSync(new URL('../src/site/widgets/list/style.scss', import.meta.url), 'utf8');
+  assert.match(css, /gap: calc\(var\(--list-gap, 0\) \* var\(--cell, 0px\)\)/);
+  assert.doesNotMatch(css, /--gap-[sml]|list--gap/);
   assert.ok(grid.el.querySelector('.list__head .section__cta[href]'));
   // no heading: no head
   assert.equal(list({ columns: '1' }).el.querySelector('.list__head'), null);

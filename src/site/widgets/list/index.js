@@ -5,7 +5,7 @@
  *
  *   { "type": "list", "heading": "People", "source": { "mode": "all", "from": "people" },
  *     "config": { "template": "preset:card", "arrangement": "grid", "columns": "3",
- *                 "gap": "m", "seeAll": true } }
+ *                 "gap": 2, "seeAll": true } }
  *
  *   Hand-made (Photography-style panels by hand):
  *   { "type": "list", "config": { "handmade": true, "template": "preset:panel", "columns": "2",
@@ -21,7 +21,9 @@
  *              back to From a source (and source is kept when switching to Hand-made)
  * arrangement  Grid | Carousel (Layout tab: a button group).
  * columns      "1"–"6" (two on a tablet, one on a phone). Row preset defaults to "1", others "3".
- * gap          between the items: s | m | l
+ * gap          between the items: a whole number of the page's cells (the grid the List sits
+ *              on: --cell), 0 (default) the items side by side; the space inside an item is its
+ *              template's
  * properties   mapping { role: property } (title, photo, body): { "photo": "cover" }; a role
  *              left out shows the property of its own name (when its type fits), else nothing
  * seeAll       a link to the source's page after the heading (From a source only; ignored when handmade)
@@ -65,8 +67,9 @@ import { isTemplateId } from '../../files.js';
 import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from './handmade.js';
 import { presetStyle, styleMarkup } from './item-style.js';
 import { itemGridHtml } from './item-grid-render.js';
+import { itemSection, itemWidgets } from './item-grid.js';
 import { detailsOf, nameOf, opensHtml, toggleHtml } from './details.js';
-import { flatWidgets, innerItems, innerKeys } from './nested.js';
+import { innerItems, innerKeys } from './nested.js';
 import { CAROUSEL, carouselHtml, carouselOf, carouselProblems } from './carousel.js';
 
 // the Carousel settings' rows (Layout tab): always shown, disabled unless Carousel
@@ -96,7 +99,15 @@ const CAROUSEL_ROWS = [
 ].map((r) => ({ ...r, tab: 'layout', disabledWhen: onlyCarousel }));
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
-const GAPS = ['s', 'm', 'l'];
+/** The most cells between a List's items (config.gap). */
+export const MAX_GAP = 24;
+/** A List's gap in cells (config.gap): a whole number from 0, else 0. */
+export const gapOf = (c) => (Number.isInteger(c?.gap) && c.gap >= 0 ? Math.min(c.gap, MAX_GAP) : 0);
+/** What is wrong with a List's config.gap, '' when nothing (left out: 0). */
+export const gapProblem = (gap) =>
+  gap === undefined || (Number.isInteger(gap) && gap >= 0 && gap <= MAX_GAP)
+    ? ''
+    : `config.gap must be a whole number of cells from 0 to ${MAX_GAP} (0: the items side by side)`;
 /** A phone's columns (config.phoneColumns; left out: 1). */
 const PHONE_COLUMNS = ['1', '2', '3'];
 
@@ -263,14 +274,12 @@ export const list = {
     {
       key: 'gap',
       label: 'Space between items',
-      type: 'select',
+      type: 'number',
       tab: 'layout',
       width: 'half',
-      options: [
-        ['s', 'S'],
-        ['m', 'M'],
-        ['l', 'L'],
-      ],
+      // a whole number of the page's cells (0: side by side; WidgetLayout.svelte)
+      min: 0,
+      max: MAX_GAP,
     },
     ...CAROUSEL_ROWS,
   ],
@@ -281,7 +290,6 @@ export const list = {
       template: 'preset:card',
       arrangement: 'grid',
       columns: '3',
-      gap: 'm',
       seeAll: false,
     },
     motion: { animation: 'grid-reveal' },
@@ -294,6 +302,8 @@ export const list = {
         'config.arrangement "rows" is gone: write "columns": "1" (Arrangement: "grid" or "carousel")',
       );
     out.push(...carouselProblems(widget.config));
+    const gp = gapProblem(widget.config?.gap);
+    if (gp) out.push(gp);
     if (
       widget.config?.handmade !== undefined &&
       widget.config.handmade !== true &&
@@ -345,7 +355,7 @@ export const list = {
     // default and the item class are Card's then
     const preset = presetOf(own ? 'preset:card' : c.template);
     const columns = COLUMNS.includes(String(c.columns)) ? String(c.columns) : preset.columns || '3';
-    const gap = GAPS.includes(c.gap) ? c.gap : 'm';
+    const gap = gapOf(c);
     const phoneCols = PHONE_COLUMNS.includes(String(c.phoneColumns)) ? String(c.phoneColumns) : '';
     // this List's choice; each item widget may override (hideMissing on its own config)
     const listHide = hideMissing(c);
@@ -366,10 +376,10 @@ export const list = {
     const back = ctx.route?.parent ?? (source ? sourcePage(ctx, source) : '') ?? '';
     const shape = own ? 'template' : preset.id.slice('preset:'.length);
     const sep = t(ctx, 'list.sep');
-    // the template, once per List: its widgets, and whether its photo sits apart from the text
-    // the template, once per List: its widgets, and whether its photo sits apart from the text
+    // the template, once per List: its widgets (a site template's: its one section's), and
+    // whether its photo sits apart from the text
     const template = own
-      ? structuredClone(own.widgets)
+      ? structuredClone(itemWidgets(own))
       : presetWidgets(preset.id, ctx, source, {
           open: t(ctx, 'list.open'),
           // an inner List on a property ({ photo, title, index } items): named as hand-made
@@ -377,9 +387,7 @@ export const list = {
           properties: c.properties,
         });
     // the photo an item shows: its template's first photo's property (its {credit} is that one's)
-    const photoKey =
-      flatWidgets({ widgets: template }).find((w) => w?.type === 'photo')?.src?.[0]?.property ||
-      'photo';
+    const photoKey = template.find((w) => w?.type === 'photo')?.src?.[0]?.property || 'photo';
     const photoOfItem = (o) => (typeof o?.[photoKey] === 'string' ? o[photoKey] : undefined);
     const creditsOf = (o) => {
       const p = photoOfItem(o);
@@ -393,8 +401,8 @@ export const list = {
     const detTpl = dw ? templateOf(ctx, dw.config?.template) : null;
     const opens = !!detTpl;
     const several = opens && dw.config?.several === true;
-    const detailsTpl = opens ? structuredClone(detTpl.widgets || []) : [];
-    const link = opens ? false : own ? own.link !== false : preset.link;
+    const detailsTpl = opens ? structuredClone(itemWidgets(detTpl)) : [];
+    const link = opens ? false : own ? own.clickable !== false : preset.link;
     // the item style (./item-style.js): the template's own, else the preset's
     const look = styleMarkup(own ? own.style : presetStyle(preset.id));
     const liClass = ['li', `li--${shape}`, ...look.cls].join(' ');
@@ -403,6 +411,9 @@ export const list = {
     // See all: only From a source (hand-made has no single source page)
     const href = !handmade && source && c.seeAll ? sourcePage(ctx, source) : '';
     const siteTemplate = !!own; // (`own` below is each item's own properties)
+    // its one section (./item-grid.js): an item's height (fit, or custom: at least its rows)
+    const itemSec = own ? itemSection(own) : null;
+    const detailsSec = detTpl ? itemSection(detTpl) : null;
     const missing = new Map(); // name -> how many items have no value for it
     const out = items.map((item, i) => {
       const at = widget.indexOf ? widget.indexOf(item) : i;
@@ -441,13 +452,13 @@ export const list = {
       const inner = opens
         ? opensHtml(
             `${widget.id}-${i + 1}`,
-            itemGridHtml(template, parts),
-            itemGridHtml(detailsTpl, all.slice(template.length)),
+            itemGridHtml(template, parts, itemSec),
+            itemGridHtml(detailsTpl, all.slice(template.length), detailsSec),
             open,
             nameOf(dw.config?.screenReaderName, numbered),
           )
         : siteTemplate
-          ? itemGridHtml(template, parts)
+          ? itemGridHtml(template, parts, itemSec)
           : photoFirst
             ? `${first}<div class="li__text">${rest.join('')}</div>`
             : `<div class="li__text">${parts.join('')}</div>`;
@@ -471,7 +482,7 @@ export const list = {
           ${href ? html`<a class="btn glass section__cta" href="${esc(href)}"><span>${esc(t(ctx, 'list.seeAll'))}</span> <span aria-hidden="true">→</span></a>` : ''}
         </header>`
       : '';
-    const gridHtml = `<div class="list__items list__items--grid" style="--list-cols:${columns}${phoneCols ? `;--list-mcols:${phoneCols}` : ''}" data-cols="${columns}"${opens ? ` data-opens="${several ? 'several' : 'one'}"` : ''}>${out.join('')}</div>`;
+    const gridHtml = `<div class="list__items list__items--grid" style="--list-cols:${columns}${gap ? `;--list-gap:${gap}` : ''}${phoneCols ? `;--list-mcols:${phoneCols}` : ''}" data-cols="${columns}"${opens ? ` data-opens="${several ? 'several' : 'one'}"` : ''}>${out.join('')}</div>`;
     const carousel = c.arrangement === 'carousel' && items.length && !opens;
     if (c.arrangement === 'carousel' && opens)
       warnOnce(
@@ -496,7 +507,7 @@ export const list = {
             t: (k, v) => t(ctx, k, v),
           })
         : gridHtml;
-    return `<div class="list list--${shape} list--gap-${gap}" data-arrangement="${carousel ? 'carousel' : 'grid'}" data-cols="${columns}">${head}${body}</div>`;
+    return `<div class="list list--${shape}" data-arrangement="${carousel ? 'carousel' : 'grid'}" data-cols="${columns}">${head}${body}</div>`;
   },
 };
 

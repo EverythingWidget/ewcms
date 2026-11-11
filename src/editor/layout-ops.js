@@ -461,17 +461,17 @@ export function linkWidget(store, file, at, j, to, gap = 0, { phone = false, row
 export function layerWidget(store, file, at, j, dir) {
   const section = listOf(store, file)[at];
   const widget = section.widgets[j];
-  const zOf = (widget) => (Number.isInteger(widget?.z) ? widget.z : 0);
+  const layerOf = (widget) => (Number.isInteger(widget?.layer) ? widget.layer : 0);
   // 'front' / 'back': over / under every other widget of its section; a number: a step
-  const others = section.widgets.filter((w) => w !== widget).map(zOf);
-  const z =
+  const others = section.widgets.filter((w) => w !== widget).map(layerOf);
+  const layer =
     dir === 'front'
-      ? Math.max(zOf(widget), others.length ? Math.max(...others) + 1 : 0)
+      ? Math.max(layerOf(widget), others.length ? Math.max(...others) + 1 : 0)
       : dir === 'back'
-        ? Math.min(zOf(widget), others.length ? Math.min(...others) - 1 : 0)
-        : zOf(widget) + dir;
-  if (z) widget.z = z;
-  else delete widget.z;
+        ? Math.min(layerOf(widget), others.length ? Math.min(...others) - 1 : 0)
+        : layerOf(widget) + dir;
+  if (layer) widget.layer = layer;
+  else delete widget.layer;
   return writeSection(store, file, at, section);
 }
 
@@ -637,9 +637,9 @@ export function layerWidgets(store, file, at, ids, dir) {
   if (!js.length) return false;
   for (const j of js) {
     const widget = section.widgets[j];
-    const z = (Number.isInteger(widget.z) ? widget.z : 0) + dir;
-    if (z) widget.z = z;
-    else delete widget.z;
+    const layer = (Number.isInteger(widget.layer) ? widget.layer : 0) + dir;
+    if (layer) widget.layer = layer;
+    else delete widget.layer;
   }
   return writeSection(store, file, at, section);
 }

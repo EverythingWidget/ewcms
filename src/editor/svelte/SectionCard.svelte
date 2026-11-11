@@ -10,8 +10,8 @@
     live, file, at (its index), peek (hovered in the preview)
     selected, onselect, onsection (its settings), onopen(widgetId)
     changed    overrides the changed dot (the mock kit)
-    section    optional: use this section ({ id, name, widgets }) instead of file.sections[at]
-               (the template editor: its widgets live at the file's root)
+    section    optional: show this section ({ id, name, widgets }) instead of file.sections[at]
+               (the template editor: its one section, its rows titled by their roles)
     onreorder  optional: (from, to) when a row is dragged; the default moves a page widget
 -->
 <script>
@@ -48,7 +48,7 @@
 
   // Reorder by drag (its grip; list-drag.svelte.js, as the cards had it before 6b47b06): only within this
   // section (its own list is the only one, so a drop elsewhere moves nothing). The order is the
-  // widgets' array = DOM order (paint order at the same layer, z); their grid areas stay. A drag
+  // widgets' array = DOM order (paint order at the same layer); their grid areas stay. A drag
   // is no click: the card's selection doesn't change. One undo step; the preview re-renders.
   let listEl = $state();
   const ld = listDrag({
@@ -94,7 +94,7 @@
   id={s.id}
   {title}
   off={!on}
-  changed={changed ?? live.changed(file, sectionProp ? '/widgets' : `/sections/${at}`)}
+  changed={changed ?? live.changed(file, `/sections/${at}`)}
   class={peek && !selected ? 'is-peek' : ''}
   foot={n ? list : undefined}
   {selected}

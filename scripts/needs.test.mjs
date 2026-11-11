@@ -2,7 +2,7 @@
 // and on pages; a button hides on an empty link or label; false is empty for hiding.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { onGrid } from './grid-helper.mjs';
+import { onGrid, template } from './grid-helper.mjs';
 import fs from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { warnings } from './test-layout.mjs';
@@ -39,14 +39,13 @@ const tag = {
   config: { needs: ['placeholder'] },
 };
 const title = { type: 'text', role: 'title', body: [{ style: 'heading', text: P('title') }] };
-const tpl = (widgets) => ({
-  version: 1,
-  kind: 'template',
-  label: 'Row',
-  source: 'projects',
-  link: false,
-  widgets: onGrid(widgets),
-});
+const tpl = (widgets) =>
+  template({
+    name: 'Row',
+    preview: { from: 'projects' },
+    clickable: false,
+    widgets: onGrid(widgets),
+  });
 
 function render(t, listConfig = {}) {
   const ctx0 = {
@@ -164,7 +163,7 @@ test('validator: missing, needs, toggle / Side by side, the href bug', () => {
 
 test('warning: a summary that can be empty', () => {
   const dw = (icon) => ({ type: 'details', config: { template: 't-more', icon } });
-  const opens = (summary) => ({ ...tpl(summary), link: false });
+  const opens = (summary) => ({ ...tpl(summary), clickable: false });
   const warn = (t) =>
     bindingProblems({ ...base, templates: { 't-need': t } }, { types: WIDGET_TYPES }).filter((x) =>
       /summary can be empty/.test(x.message),

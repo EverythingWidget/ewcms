@@ -1,7 +1,7 @@
 // List step 8: the template editor (Pages > Site > Templates, content/templates/t-….json).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { onGrid } from './grid-helper.mjs';
+import { onGrid, template } from './grid-helper.mjs';
 import fs from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { loadContent } from './content.mjs';
@@ -13,6 +13,7 @@ import {
   templatePreview,
   templatePreviewPath,
   sampleSource,
+  previewColumns,
 } from '../src/site/widgets/list/template-preview.js';
 import {
   keepMarks,
@@ -29,12 +30,11 @@ import { SITE_A } from '../test/fixtures/index.mjs';
 
 const base = loadContent(SITE_A);
 const T = 'templates/t-ab12.json';
-const card = (more = {}) => ({
-  version: 1,
-  kind: 'template',
-  label: 'People card',
+const card = (more = {}) =>
+  template({
+  name: 'People card',
   basedOn: 'preset:card',
-  link: true,
+  clickable: true,
   widgets: onGrid([
     { type: 'photo', role: 'photo', src: [{ property: 'cover' }] },
     { type: 'text', role: 'title', body: [{ style: 'heading', text: [{ property: 'title' }] }] },
@@ -64,7 +64,7 @@ test('the preview address: /__template/<id>/ for a template id only', () => {
 
 test('the preview: one List of the first item of its source, else a hand-made sample', () => {
   const name = base.sources.people[0].title || base.sources.people[0].name;
-  const from = withTemplate(card({ source: 'people' }));
+  const from = withTemplate(card({ preview: { from: 'people' } }));
   assert.equal(sampleSource(from, from.templates['t-ab12']), 'people');
   const { route, content } = templatePreview(from, 't-ab12');
   assert.equal(route.path, '/__template/t-ab12/');
@@ -73,7 +73,7 @@ test('the preview: one List of the first item of its source, else a hand-made sa
   assert.equal(items.length, 1);
   if (name) assert.match(items[0].textContent, new RegExp(String(name).slice(0, 6)));
   // no source (or one without items): the hand-made sample
-  for (const tpl of [card(), card({ source: 'nope' })]) {
+  for (const tpl of [card(), card({ preview: { from: 'nope' } })]) {
     const p = templatePreview(withTemplate(tpl), 't-ab12');
     const html = renderRoute(p.route, p.content, { editable: true }).body;
     assert.match(html, /Sample item/);
@@ -83,6 +83,16 @@ test('the preview: one List of the first item of its source, else a hand-made sa
   assert.equal(templatePreview(base, 'about'), null);
   // the content given isn't changed (the page is the preview's own)
   assert.equal(from.pages.__template, undefined);
+  // its columns: the item as wide as in a List of that many (1 when left out)
+  assert.equal(previewColumns(card()), 1);
+  assert.equal(previewColumns(card({ preview: { columns: 6 } })), 6);
+  assert.equal(previewColumns(card({ preview: { columns: 9 } })), 1);
+  for (const n of [1, 6]) {
+    const p = templatePreview(withTemplate(card({ preview: { from: 'people', columns: n } })), 't-ab12');
+    const html = renderRoute(p.route, p.content, { editable: true }).body;
+    assert.match(html, new RegExp(`--list-cols:${n}[;"]`));
+    assert.equal(parseHTML(`<body>${html}`).document.querySelectorAll('.li').length, 1);
+  }
 });
 
 test('"basedOn" names what it was copied from; "from" is no template key', () => {
@@ -93,18 +103,25 @@ test('"basedOn" names what it was copied from; "from" is no template key', () =>
   assert.equal(cloneTemplate(base, 'people', 'preset:card').basedOn, 'preset:card');
 });
 
-test('"source" (where its sample comes from) is a template key; Duplicate records it', () => {
-  assert.deepEqual(checkContent(T, card({ source: 'people' })), []);
-  assert.match(checkContent(T, card({ source: 3 })).join(), /"source" must be a source name/);
-  assert.equal(cloneTemplate(base, 'people', 'preset:card').source, 'people');
-  assert.equal(cloneTemplate(base, '', 'preset:panel', { handmade: true }).source, undefined);
-  // a copy of a template keeps its source
-  const again = cloneTemplate(withTemplate(card({ source: 'people' })), '', 't-ab12');
-  assert.equal(again.source, 'people');
+test('"preview.from" (where its sample comes from) and its columns; Duplicate records them', () => {
+  assert.deepEqual(checkContent(T, card({ preview: { from: 'people' } })), []);
+  assert.match(
+    checkContent(T, card({ preview: { from: 3 } })).join(),
+    /"preview\.from" must be a source name/,
+  );
+  assert.deepEqual(cloneTemplate(base, 'people', 'preset:card').preview, { from: 'people' });
+  assert.equal(cloneTemplate(base, '', 'preset:panel', { handmade: true }).preview, undefined);
+  // a copy of a template keeps its preview
+  const again = cloneTemplate(
+    withTemplate(card({ preview: { from: 'people', columns: 4 } })),
+    '',
+    't-ab12',
+  );
+  assert.deepEqual(again.preview, { from: 'people', columns: 4 });
 });
 
 test('the stack: add, remove, reorder; every new widget passes the validator', () => {
-  const w = card().widgets;
+  const w = card().sections[0].widgets;
   assert.deepEqual(
     moveStack(w, 0, 2).map((x) => x.role),
     ['title', 'facts', 'photo'],
@@ -113,7 +130,7 @@ test('the stack: add, remove, reorder; every new widget passes the validator', (
     // Add: on the grid, its own id, full width, following the last widget
     const next = card({ widgets: addAt(w, newStackWidget(type, 'title')) });
     assert.deepEqual(checkContent(T, next), [], type);
-    const added = next.widgets.at(-1);
+    const added = next.sections[0].widgets.at(-1);
     assert.match(added.id, /^w-[a-z0-9]{4}$/);
     assert.deepEqual(added.layout.base, {
       col: 1,
@@ -137,7 +154,7 @@ test('the stack: add, remove, reorder; every new widget passes the validator', (
 });
 
 test('the binds a template uses are listed once, first use first', () => {
-  const w = card().widgets;
+  const w = card().sections[0].widgets;
   assert.deepEqual(templateProperties(w), ['cover', 'title', 'location']);
   // a format is just a bind (no property rename in the editor)
   const f = [
@@ -173,7 +190,12 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   assert.match(panel, /Its name in a List’s Template picker/);
   assert.match(panel, /Preview: the first item of /);
   assert.doesNotMatch(panel, /Photo first|photoFirst/);
-  assert.match(panel, /set\('\/link', v\)/);
+  assert.match(panel, /set\('\/clickable', v\)/);
+  assert.match(panel, /set\('\/name', v\)/);
+  // Columns: the preview's (preview.columns), a segmented 1–6, never a List's
+  assert.match(panel, /label="Columns"\s+type="seg"/);
+  assert.match(panel, /edit=\{`\$\{file\}#\/preview\/columns`\}/);
+  assert.match(panel, /setWidgets = \(next\) => set\(ITEM_WIDGETS, next, true\)/);
   assert.match(panel, /tab === 'settings'/);
   assert.match(panel, /formats/);
   assert.doesNotMatch(panel, /renameProperty/);
@@ -275,3 +297,35 @@ test('the template panel hides what a template section does not have', () => {
   assert.doesNotMatch(overlay, /start\(e, tw\)/);
 });
 
+
+test('a template is one section: the editor edits its file, its widgets at /sections/0/widgets', async () => {
+  const { targetFile } = await import('../src/editor/layout-sync.js');
+  assert.equal(targetFile({ kind: 'item-template', id: 't-ab12' }, null), T);
+  assert.equal(targetFile({ kind: 'part', id: 'header' }, null), '');
+  const { ITEM_WIDGETS, itemSection, itemWidgets } = await import(
+    '../src/site/widgets/list/item-grid.js'
+  );
+  assert.equal(ITEM_WIDGETS, '/sections/0/widgets');
+  assert.equal(itemSection(card()).id, 's-item');
+  assert.equal(itemWidgets(card()).length, 3);
+  assert.deepEqual(itemWidgets({ widgets: [{ type: 'text' }] }), []); // the old shape: none
+  assert.doesNotMatch(read('src/site/widgets/list/item-grid.js'), /asPageWidget/);
+});
+
+test("an item: its section's custom height and its widgets' layer, as a page section's", () => {
+  const tpl = card({
+    section: { height: 'custom', rows: { min: 300 } },
+    preview: { from: 'people' },
+  });
+  tpl.sections[0].widgets[1].layer = 2;
+  assert.deepEqual(checkContent(T, tpl), []);
+  const p = templatePreview(withTemplate(tpl), 't-ab12');
+  const html = renderRoute(p.route, p.content, { editable: true }).body;
+  const { document } = parseHTML(`<body>${html}`);
+  const sec = document.querySelector('.sec--item');
+  assert.match(sec.getAttribute('style'), /--rows:300;--mrows:150;--minrows:300;--mminrows:150/);
+  assert.match(document.querySelector('[data-tw="w-g002"]').getAttribute('style'), /--z:2/);
+  // fit (left out): its rows, no minimum
+  const fit = templatePreview(withTemplate(card()), 't-ab12');
+  assert.doesNotMatch(renderRoute(fit.route, fit.content, { editable: true }).body, /--minrows/);
+});

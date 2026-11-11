@@ -1,8 +1,9 @@
 /**
- * Item templates on the page grid (step I): a template's widgets are laid out exactly as a
- * section's (../../layout/index.js): 120 square columns, each widget at its
- * `layout.base { col, span, row, rows?, link? }`, size auto / aspect / rows, and a phone area of
- * its own in `layout.phone` (60 columns). Each item is a section of its own:
+ * Item templates on the page grid (step I): a template is one section (its file's
+ * `sections: [ { id, height?, rows?, widgets } ]`, exactly one), laid out exactly as a page's
+ * (../../layout/index.js): 120 square columns, each widget at its
+ * `layout.base { col, span, row, rows?, link? }`, size auto / aspect / rows, its `layer`, and a
+ * phone area of its own in `layout.phone` (60 columns). Each item is a section of its own:
  *
  *   <div class="sec sec--item" style="--rows;--mrows">  <div class="wgt …" data-tw="w-…">…
  *
@@ -10,18 +11,27 @@
  * template designed at 120 columns scales linearly with its item (a List of 4: each item the
  * same design at 30 columns' width); an Auto widget grows with its content and the widgets
  * linked below it move down. Items in one line of the List take the tallest one's height.
- * On a phone: a widget's own phone area, else its desktop area halved (the desktop layout
- * scaled down; not the page's default stack). Template widgets differ from a page's only in
- * `layer` (a page widget's `z`). Hide (When a value is missing) does what it does on a page:
- * the widget is left out, its rows stay where they are.
+ * Its section's height is "fit" (its content) or "custom" (at least `rows.min` rows; on a
+ * phone half as many, rounded up). On a phone: a widget's own phone area, else its desktop
+ * area halved (the desktop layout scaled down; not the page's default stack). Hide (When a
+ * value is missing) does what it does on a page: the widget is left out, its rows stay where
+ * they are.
  */
 
-/** A template widget as the page grid reads it (`layer` is a page widget's `z`). */
-export const asPageWidget = (w) => {
-  if (!w || typeof w !== 'object') return w;
-  const { layer, ...rest } = w;
-  return Number.isInteger(layer) ? { ...rest, z: layer } : rest;
+/** A template's one section ({ id, height?, rows?, widgets }), or null. */
+export const itemSection = (tpl) =>
+  Array.isArray(tpl?.sections) && tpl.sections[0] && typeof tpl.sections[0] === 'object'
+    ? tpl.sections[0]
+    : null;
+
+/** A template's widgets (its one section's), [] when it has none. */
+export const itemWidgets = (tpl) => {
+  const w = itemSection(tpl)?.widgets;
+  return Array.isArray(w) ? w : [];
 };
+
+/** Where a template's widgets are in its file: "/sections/0/widgets". */
+export const ITEM_WIDGETS = '/sections/0/widgets';
 
 /** The item style keys the grid took over (a preset keeps them; a site template can't have them). */
 export const GRID_STYLE_KEYS = [

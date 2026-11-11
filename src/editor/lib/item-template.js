@@ -26,7 +26,7 @@ export function newStackWidget(type, property = 'title', open = 'View', listProp
       type: 'list',
       role: 'list',
       source: { mode: 'property', property: listProperty },
-      config: { template: 'preset:card', columns: '4', gap: 's' },
+      config: { template: 'preset:card', columns: '4', gap: 1 },
     };
   // Summary and details (src/site/widgets/list/details.js): its +/×; the details' template is
   // picked next

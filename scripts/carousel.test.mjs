@@ -25,45 +25,45 @@ import {
 import { creditText } from '../src/site/helpers.js';
 import { sourcePage } from '../src/site/widgets/data.js';
 import { SITE_A } from '../test/fixtures/index.mjs';
+import { template } from './grid-helper.mjs';
 
 const base = loadContent(SITE_A);
 const noor = base.sources.people[0];
 
 // a person-page template: {back}, the title, the photos as a carousel beside the body
-const personTpl = (inner = {}) => ({
-  version: 1,
-  kind: 'template',
-  label: 'Person',
-  source: 'people',
-  link: false,
-  // on the template grid: the back button on top, the title left (columns 1–40), the
-  // carousel beside it (41–120), both following the button
-  widgets: [
-    {
-      id: 'w-back',
-      type: 'button',
-      role: 'back',
-      label: [{ t: '← People' }],
-      config: { link: [{ property: 'back' }] },
-      layout: { base: { col: 1, span: 40, row: 1 } },
-    },
-    {
-      id: 'w-titl',
-      type: 'text',
-      role: 'title',
-      body: [{ style: 'heading', text: [{ property: 'title' }] }],
-      layout: { base: { col: 1, span: 36, row: 1, link: { to: 'w-back', gap: 4 } } },
-    },
-    {
-      id: 'w-phot',
-      type: 'list',
-      role: 'photos',
-      source: { mode: 'property', property: 'photos' },
-      config: { template: 'preset:photo', arrangement: 'carousel', ...inner },
-      layout: { base: { col: 41, span: 80, row: 1, link: { to: 'w-back', gap: 4 } } },
-    },
-  ],
-});
+const personTpl = (inner = {}) =>
+  template({
+    name: 'Person',
+    preview: { from: 'people' },
+    clickable: false,
+    // on the template grid: the back button on top, the title left (columns 1–40), the
+    // carousel beside it (41–120), both following the button
+    widgets: [
+      {
+        id: 'w-back',
+        type: 'button',
+        role: 'back',
+        label: [{ t: '← People' }],
+        config: { link: [{ property: 'back' }] },
+        layout: { base: { col: 1, span: 40, row: 1 } },
+      },
+      {
+        id: 'w-titl',
+        type: 'text',
+        role: 'title',
+        body: [{ style: 'heading', text: [{ property: 'title' }] }],
+        layout: { base: { col: 1, span: 36, row: 1, link: { to: 'w-back', gap: 4 } } },
+      },
+      {
+        id: 'w-phot',
+        type: 'list',
+        role: 'photos',
+        source: { mode: 'property', property: 'photos' },
+        config: { template: 'preset:photo', arrangement: 'carousel', ...inner },
+        layout: { base: { col: 41, span: 80, row: 1, link: { to: 'w-back', gap: 4 } } },
+      },
+    ],
+  });
 
 let n = 0;
 function render({
@@ -287,9 +287,9 @@ test('checks: values, carousel keys refused with Grid, opens, nesting, thumbnail
   );
   assert.match(carouselProblems({ counter: true }).join(), /a Carousel setting/);
   // Grid drops the carousel settings
-  assert.deepEqual(withArrangement({ arrangement: 'carousel', counter: false, gap: 's' }, 'grid'), {
+  assert.deepEqual(withArrangement({ arrangement: 'carousel', counter: false, gap: 1 }, 'grid'), {
     arrangement: 'grid',
-    gap: 's',
+    gap: 1,
   });
   // an inner List takes them too
   assert.match(
@@ -314,19 +314,19 @@ test('checks: values, carousel keys refused with Grid, opens, nesting, thumbnail
     ),
   );
   // a template that opens (Summary and details)
-  const opens = {
-    ...personTpl(),
-    link: false,
+  const opens = template({
+    name: 'Opens',
+    clickable: false,
     widgets: [{ id: 'w-dets', type: 'details', config: { template: 't-pers' } }],
-  };
+  });
   assert.ok(
     probs({ 't-open': opens }, list('t-open')).some((m) => /can't use items that open/.test(m)),
   );
   // thumbnails photos without a photo: a warning
-  const noPhoto = {
-    ...personTpl(),
+  const noPhoto = template({
+    name: 'No photo',
     widgets: [{ type: 'text', body: [{ style: 'label', text: [{ property: 'title' }] }] }],
-  };
+  });
   const out = bindingProblems(
     {
       ...base,

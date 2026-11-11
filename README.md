@@ -389,7 +389,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
       "size": "aspect",
       "aspect": "4:5",
       "layout": { "base": { "col": 61, "span": 60, "row": 4, "rows": 20 } },
-      "z": 1
+      "layer": 1
     },
     {
       "id": "w-c4pt",
@@ -465,8 +465,8 @@ every section is a grid of **widgets** (`src/site/layout/`):
   project row's slug, say) is a build warning (`[anchors]`). Without a name: no id.
 - **A page** has no grid setting: the page grid is always 120 columns (a `grid` key is
   refused).
-- **A widget:** its `type` and content (below), `layout` (below), `z` (its layer when widgets
-  overlap), `size`, `scale` (Text widgets: Scale to fit, below) and an optional `motion`
+- **A widget:** its `type` and content (below), `layout` (below), `layer` (a whole number:
+  its layer when widgets overlap, higher in front; the **Layer** buttons; `z` is refused), `size`, `scale` (Text widgets: Scale to fit, below) and an optional `motion`
   (`{ "animation": "fade-scrub", "start": "top 70%" }`: an animation from the library plus its own
   timing, see Animations).
 - **Size** (`size`): `auto` (**default**: as tall as its content), `aspect` (its width, from its
@@ -490,7 +490,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   breakpoint); the theme's `--header-h` before that. A theme's first-section widgets (hero,
   album) no longer add the header's height themselves. Other sections are unchanged.
 - **Free widgets and links** (`src/site/layout/links.js`): widgets are **free**: each stays at
-  the row it was placed on whatever the widgets above it do, and widgets may overlap (`z` orders
+  the row it was placed on whatever the widgets above it do, and widgets may overlap (`layer` orders
   them). A widget can **follow** another widget of its section instead,
   `layout.base.link`, `{ "to": "w-2fq0", "gap": 1 }`: its top is that widget's bottom plus `gap` cells
   (negative: they overlap, e.g. a caption over a photo's bottom edge), so when the leader grows
@@ -800,7 +800,7 @@ rule work as anywhere.
     "template": "preset:card",
     "arrangement": "grid",
     "columns": "3",
-    "gap": "m",
+    "gap": 2,
     "seeAll": true
   }
 }
@@ -822,31 +822,48 @@ rule work as anywhere.
   {
     "version": 1,
     "kind": "template",
-    "label": "People card",
+    "name": "People card",
     "basedOn": "preset:card",
-    "link": true,
-    "widgets": [
+    "clickable": true,
+    "preview": { "from": "people", "columns": 3 },
+    "sections": [
       {
-        "id": "w-phot",
-        "type": "photo",
-        "role": "photo",
-        "src": [{ "property": "cover" }],
-        "size": "aspect",
-        "aspect": "4:5",
-        "layout": { "base": { "col": 1, "span": 120, "row": 1, "rows": 150 } }
-      },
-      {
-        "id": "w-titl",
-        "type": "text",
-        "role": "title",
-        "body": [{ "style": "heading", "text": [{ "property": "title" }] }],
-        "layout": {
-          "base": { "col": 1, "span": 120, "row": 1, "link": { "to": "w-phot", "gap": 2 } }
-        }
+        "id": "s-card",
+        "widgets": [
+          {
+            "id": "w-phot",
+            "type": "photo",
+            "role": "photo",
+            "src": [{ "property": "cover" }],
+            "size": "aspect",
+            "aspect": "4:5",
+            "layout": { "base": { "col": 1, "span": 120, "row": 1, "rows": 150 } }
+          },
+          {
+            "id": "w-titl",
+            "type": "text",
+            "role": "title",
+            "body": [{ "style": "heading", "text": [{ "property": "title" }] }],
+            "layout": {
+              "base": { "col": 1, "span": 120, "row": 1, "link": { "to": "w-phot", "gap": 2 } }
+            }
+          }
+        ]
       }
     ]
   }
   ```
+
+  A template is **one section**, exactly (`sections` holds one): its widgets at
+  `/sections/0/widgets`, as a page section's, so every editor path a page uses works for it.
+  That section has only `id`, `height` (`"fit"`, the default: its content; or `"custom"` with
+  `rows.min`: every item at least that many rows, on a phone half as many) and `widgets`; a
+  page section's screen heights (`third`, `half`, `full`), `width`, `enabled` and phone height
+  are refused (the List places and sizes the item). Top level: `name` (its name in the Template
+  picker; the editor's **Name**), `clickable` (`false`: the item is no link to its page; left
+  out: true; **Whole item clickable**), `preview` (the template editor's only: `from`, the
+  source its sample item comes from, and `columns`, 1–6, the item as wide as in a List of that
+  many columns; it never changes a List), `basedOn` and `style`.
 
   A List picks one with `config.template: "t-<id>"` (the **Template** picker in the Content
   tab lists the presets, then the site's templates); without `config.template` it shows its
@@ -857,9 +874,9 @@ rule work as anywhere.
   never creates files) and points the List at it, saving that switch at once (unless the page has
   other unsaved edits: then it stays unsaved and a note says "Saved as template t-…"). A copied
   facts line keeps `"join": " · "`: the separator goes only between facts with a value; `basedOn` notes the preset or template it was copied from (only a note). `role` names a widget's place in the
-  item (`.li__<role>`); a button's `"itemLink": true` opens the item's page; `link` makes the
-  whole item a link. A template's optional top-level
-  `"source": "<source>"` (Duplicate records the List's) only names where the template editor's
+  item (`.li__<role>`); a button's `"itemLink": true` opens the item's page; `clickable` makes the
+  whole item a link. A template's optional
+  `"preview": { "from": "<source>" }` (Duplicate records the List's) only names where the template editor's
   sample item comes from; its widgets have no `source` (the List gives each copy its item), no
   List inside it yet (nested Lists come later); `ewcms check` and Save
   reject anything else with a message. A List pointing at a missing template warns and shows
@@ -870,7 +887,8 @@ rule work as anywhere.
   and **Edit template** (next to the List's Template picker, shown only while a template is
   picked, its place always kept) jumps to it. The preview (the dev server's
   `/__template/<id>/`, never built) shows the template as a List of one sample item: the first
-  item of its `source`, else a hand-made sample. Two tabs:
+  item of its `preview.from`, else a hand-made sample, in a List of its `preview.columns`
+  (left out: 1), so the item is as wide as there. Two tabs:
   - **Widgets**: an always-selected section card of its widgets (`SectionCard.svelte`; not
     collapsible; no section gear, height/width, move, delete, hide/duplicate, locator or
     curtain). Drag a row's grip to reorder (a widget that followed a removed one follows what
@@ -886,12 +904,15 @@ rule work as anywhere.
     through an edit (typed text takes the marks of the text before it). Every value takes
     `{property}` chips: type `{name}` or pick one from the source's properties. Placement and
     sizing are meant to happen on the preview grid, as a page widget's; click-to-select is
-    wired (`data-tw`); drag, resize and write-back are not yet (template widgets live at
-    `/widgets`, not `/sections`, and use `layer` rather than `z`).
-  - **Settings**: **Name** (its name in a List's Template picker), **Whole item clickable**
-    (the whole item opens the item's page; `link`; off when the template has Summary and
-    details), and the preview line ("Preview: the first item of <source>", or a hand-made
-    sample when it has no source).
+    wired (`data-tw`); drag and resize are not yet. The editor edits the template's own file
+    (`targetFile`), its widgets at `/sections/0/widgets` as a page's, with `layer` as a page
+    widget's.
+  - **Settings**: **Name** (`name`, its name in a List's Template picker), **Whole item
+    clickable** (`clickable`: the whole item opens the item's page; off when the template has
+    Summary and details), **Columns** (`preview.columns`, 1–6: the preview shows the item as
+    wide as in a List of that many columns; the preview's only, never a List's), and the
+    preview line ("Preview: the first item of <source>", or a hand-made sample when it has no
+    source).
 
   **Save** writes the template file (validated as above); every List using it shows the change.
   Templates are site-wide, shared by every language.
@@ -937,7 +958,8 @@ rule work as anywhere.
   and its widgets are placed as page widgets are, with the same keys and the same mechanism
   (`src/client/modules/rows.js` flows it with the page; `data-tw` names a widget): `id`,
   `layout.base` (`col`, `span`, `row`, `rows`, `link: { to, gap }`), `layout.phone`, `size`
-  (`auto` default, `aspect` + `aspect`, `rows`) and `layer` (a page widget's `z`).
+  (`auto` default, `aspect` + `aspect`, `rows`) and `layer`. Its height is its section's
+  (`fit`, or `custom` with `rows.min`).
   - **Auto height**, as on a page: a text grows with its content and pushes the widgets that
     follow it (`link`) down; widgets on the same grid line take the tallest one's height; an
     inner List grows too. Nothing is cut: no fixed size, no ellipsis.
@@ -1005,7 +1027,7 @@ rule work as anywhere.
     transition.
   - Template editor: **Add summary and details** (once per template; it turns Link off), its
     rows above. The preview shows the first item open.
-  - Rules (`ewcms check`, Save): one per template; not with Link (`"link": false`; a button in
+  - Rules (`ewcms check`, Save): one per template; not with Link (`"clickable": false`; a button in
     the details can link); no button in the summary; the details' template exists and has no
     Summary and details of its own; not in an inner List's template, nor a carousel's.
 
@@ -1024,7 +1046,7 @@ rule work as anywhere.
     "type": "list",
     "role": "photos",
     "source": { "mode": "property", "property": "photos" },
-    "config": { "template": "preset:photo", "columns": "4", "gap": "s" }
+    "config": { "template": "preset:photo", "columns": "4", "gap": 1 }
   }
   ```
 
@@ -1112,7 +1134,13 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
 
 - **Arrangement** (Layout tab): **Grid** only for now (`columns` `"1"`–`"6"`; 2 on a tablet, 1 on
   a phone). Carousel comes later (not offered yet). Arrow keys, Home and End move between the
-  items in every column count. **Space between items** (`gap`) S / M / L. (The old Arrangement **Rows** is gone: write
+  items in every column count. **Space between items** (`gap`): a whole number of cells of the
+  grid the List sits on (a page's: its section's `--cell`; an inner List's: its item's), 0 to
+  24, rendered as `gap: calc(n * var(--cell))`; 0, the default (left out), puts the items side
+  by side (the space inside an item is its template's). The item's own cell
+  (`100cqw / 120`) is set inside it, so the items of a List of 6 with a gap of 2 are each
+  (120 − 5 × 2) / 6 page cells wide: a template scales to any width. The Carousel's
+  **Also as a grid** uses the same gap. (The old Arrangement **Rows** is gone: write
   `"columns": "1"`.)
 - **Phone columns** (`config.phoneColumns`: `"1"` default \| `"2"` \| `"3"`): the Columns row
   per layout. In the editor's phone view the Columns row shows **Phone columns** in its place

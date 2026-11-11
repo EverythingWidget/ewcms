@@ -279,16 +279,16 @@ function carouselChecks(content, widget, problem, deep = null) {
   if (detailsOf(tpl))
     problem(
       'error',
-      `config.template: a carousel can't use items that open (${tpl.label || c.template} opens)`,
+      `config.template: a carousel can't use items that open (${tpl.name || c.template} opens)`,
     );
   if (holdsCarousel(tpl))
     problem(
       'error',
-      `config.template: no carousel inside a carousel (${tpl.label || c.template} holds one)`,
+      `config.template: no carousel inside a carousel (${tpl.name || c.template} holds one)`,
     );
   if ((c.thumbnails ?? 'photos') === 'photos' && !flatWidgets(tpl).some((w) => w?.type === 'photo'))
     problem(
       'warn',
-      `thumbnails: "photos" but ${tpl.label || c.template} has no photo: its thumbnails show numbers`,
+      `thumbnails: "photos" but ${tpl.name || c.template} has no photo: its thumbnails show numbers`,
     );
 }

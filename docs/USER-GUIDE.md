@@ -60,7 +60,8 @@ A page is a stack of **sections**; each holds **widgets** (text, photo, button, 
   tab, Preset; each is a column of widgets). **From a source** (All / From URL) or **Hand-made**
   (you add the items: title, photo, link, an optional pointed source, and unit). Hand-made Panel
   items can point at a source so the count and cover come from that list. In the Layout tab:
-  **Grid** (1–6 columns; Row defaults to 1) and the gap. Carousel comes later. **When a value is
+  **Grid** (1–6 columns; Row defaults to 1) and the space between items, in grid cells (0: side
+  by side). Carousel comes later. **When a value is
   missing** (every widget's Content tab): **Hide** leaves it out of the page; **Show empty**
   keeps the space. A List's items follow the List's choice unless set. `{items}` in its heading
   (under **Count of this List** in the picker) is how many items it shows.

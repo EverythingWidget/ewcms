@@ -14,6 +14,7 @@ import listClient, { setOpen, opensKey } from '../src/site/widgets/list/client.j
 import { addAt, newStackWidget } from '../src/editor/lib/item-template.js';
 import { WIDGET_TYPES } from '../src/site/widgets/index.js';
 import { SITE_A } from '../test/fixtures/index.mjs';
+import { template } from './grid-helper.mjs';
 
 const base = loadContent(SITE_A);
 const projects = base.sources.projects;
@@ -40,26 +41,22 @@ const summary = [
 ];
 const tpl = (more = {}, widgets = [...summary, dw(more.config)]) => {
   const { config: _c, ...rest } = more; // eslint-disable-line no-unused-vars
-  return {
-    version: 1,
-    kind: 'template',
-    label: 'Project row',
-    source: 'projects',
-    link: false,
+  return template({
+    name: 'Project row',
+    preview: { from: 'projects' },
+    clickable: false,
     widgets,
     ...rest,
-  };
+  });
 };
-const more = {
-  version: 1,
-  kind: 'template',
-  label: 'Project details',
-  source: 'projects',
+const more = template({
+  name: 'Project details',
+  preview: { from: 'projects' },
   widgets: [
     { type: 'photo', role: 'photo', src: [{ property: 'photo' }], ...at('w-pho0', 13, 50) },
     { ...txt('body', 'paragraph'), ...at('w-bod0', 68, 52) },
   ],
-};
+});
 const problems = (t) => checkContent('templates/t-prow.json', t);
 
 let n = 0;
@@ -192,8 +189,8 @@ test('screen reader name, no icon, first open', () => {
 test('the validator: its settings, one per template, not a link, no button in the summary; what replaced opens, toggle and details: true', () => {
   const p = (t) => problems(t).join(' | ');
   assert.deepEqual(problems(tpl()), []);
-  assert.match(p(tpl({ link: true })), /can't also be a link/);
-  const { link: _l, ...noLink } = tpl(); // eslint-disable-line no-unused-vars
+  assert.match(p(tpl({ clickable: true })), /can't also be a link/);
+  const { clickable: _l, ...noLink } = tpl(); // eslint-disable-line no-unused-vars
   assert.match(p(noLink), /can't also be a link/);
   // its place has a height as any widget's: Rows makes the item at least that tall
   assert.deepEqual(
@@ -242,10 +239,8 @@ test('the validator: its settings, one per template, not a link, no button in th
 });
 
 test('not in an inner List: check and the editor', () => {
-  const outer = {
-    version: 1,
-    kind: 'template',
-    label: 'Outer',
+  const outer = template({
+    name: 'Outer',
     widgets: [
       txt('title'),
       {
@@ -255,7 +250,7 @@ test('not in an inner List: check and the editor', () => {
         config: { template: 't-prow' },
       },
     ],
-  };
+  });
   const templates = { 't-prow': tpl(), 't-pmor': more, 't-outr': outer };
   const msgs = bindingProblems({ ...base, templates }, { types: WIDGET_TYPES }).map(
     (x) => x.message,

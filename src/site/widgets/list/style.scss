@@ -1,5 +1,5 @@
 // The List widget's look (./index.js): Arrangement Grid (columns 1–6; rows here means the
-// lines of that grid), the space between its items, and each item's style (./item-style.js:
+// lines of that grid), the space between its items (page cells), and each item's style (./item-style.js:
 // the template's or the preset's, as --item-* overrides and li--<style> classes; no rule
 // here names a preset). Items read the theme's --item-*
 // tokens (theme-default/styles/_tokens.scss), so a theme restyles every List at once. Bundled
@@ -7,18 +7,8 @@
 @use '../../../client/styles/tokens' as *;
 
 .list {
-  --list-gap: var(--gap);
-
   display: grid;
   gap: var(--item-pad-l);
-
-  &--gap-s {
-    --list-gap: var(--item-gap);
-  }
-
-  &--gap-l {
-    --list-gap: calc(var(--gap) * 3);
-  }
 }
 
 // the head: its title and See all on one row
@@ -26,9 +16,12 @@
   margin: 0;
 }
 
+// the space between the items: config.gap, a whole number of the cells of the grid the List
+// sits on (inline --list-gap; 0, the default: side by side). An item's own --cell (.sec--item)
+// is set inside it, so this is the page's
 .list__items {
   display: grid;
-  gap: var(--list-gap);
+  gap: calc(var(--list-gap, 0) * var(--cell, 0px));
   align-items: start;
 
   &--grid {

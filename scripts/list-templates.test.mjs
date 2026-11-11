@@ -1,7 +1,7 @@
 // List step 7: site-wide item templates (content/templates/t-….json, config.template "t-…").
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { onGrid } from './grid-helper.mjs';
+import { onGrid, template } from './grid-helper.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -36,19 +36,18 @@ function list(config = {}, more = {}, content = base) {
 }
 const texts = (root, sel) => [...root.querySelectorAll(sel)].map((e) => e.textContent.trim());
 const T = 'templates/t-ab12.json';
-const card = (more = {}) => ({
-  version: 1,
-  kind: 'template',
-  label: 'People card',
-  basedOn: 'preset:card',
-  link: true,
-  widgets: onGrid([
-    { type: 'photo', role: 'photo', src: [{ property: 'cover' }] },
-    { type: 'text', role: 'title', body: [{ style: 'heading', text: [{ property: 'title' }] }] },
-    { type: 'text', body: [{ style: 'label', text: [{ property: 'location' }] }] },
-  ]),
-  ...more,
-});
+const card = (more = {}) =>
+  template({
+    name: 'People card',
+    basedOn: 'preset:card',
+    clickable: true,
+    widgets: onGrid([
+      { type: 'photo', role: 'photo', src: [{ property: 'cover' }] },
+      { type: 'text', role: 'title', body: [{ style: 'heading', text: [{ property: 'title' }] }] },
+      { type: 'text', body: [{ style: 'label', text: [{ property: 'location' }] }] },
+    ]),
+    ...more,
+  });
 const withTemplate = (tpl, id = 't-ab12') => ({
   ...base,
   templates: { ...base.templates, [id]: tpl },
@@ -67,9 +66,53 @@ test('a valid template passes; an invalid one is rejected with a clear message',
   assert.deepEqual(checkContent(T, card()), []);
   const msg = (d) => checkContent(T, d).join('; ');
   assert.match(msg(card({ kind: 'page' })), /"kind" must be "template"/);
-  assert.match(msg(card({ label: '' })), /"label" must be a text/);
+  assert.match(msg(card({ name: '' })), /"name" must be a text/);
   assert.match(msg(card({ basedOn: 'preset:huge' })), /"basedOn" must be a preset/);
-  assert.match(msg(card({ widgets: onGrid([]) })), /"widgets" must be a list of widgets/);
+  assert.match(
+    msg(card({ widgets: onGrid([]) })),
+    /sections\.0\.widgets must be a list of widgets/,
+  );
+  // one section, exactly; its height fit or custom (rows.min), nothing a page section's else
+  const one = card();
+  assert.match(msg({ ...one, sections: [] }), /exactly one section/);
+  assert.match(
+    msg({ ...one, sections: [...one.sections, { ...one.sections[0], id: 's-twoo' }] }),
+    /exactly one section/,
+  );
+  assert.match(msg({ ...one, widgets: [] }), /"widgets" is not a template key/);
+  for (const k of ['label', 'link', 'source'])
+    assert.match(msg({ ...one, [k]: 'x' }), new RegExp(`"${k}" is not a template key`));
+  assert.deepEqual(checkContent(T, card({ section: { height: 'fit' } })), []);
+  assert.deepEqual(checkContent(T, card({ section: { height: 'custom', rows: { min: 40 } } })), []);
+  assert.match(msg(card({ section: { height: 'half' } })), /height must be "fit" or "custom"/);
+  assert.match(msg(card({ section: { height: 'custom' } })), /rows\.min must be a whole number/);
+  assert.match(
+    msg(card({ section: { rows: { min: 4 } } })),
+    /left out unless the height is "custom"/,
+  );
+  for (const [k, v] of [
+    ['width', 'full'],
+    ['enabled', false],
+    ['phone', { height: 'full' }],
+    ['name', 'X'],
+  ])
+    assert.match(
+      msg(card({ section: { [k]: v } })),
+      new RegExp(`sections\\.0\\.${k}: a template's section has only`),
+    );
+  // the preview: its source and its columns (1–6)
+  assert.deepEqual(checkContent(T, card({ preview: { from: 'people', columns: 6 } })), []);
+  assert.match(
+    msg(card({ preview: { columns: 7 } })),
+    /"preview\.columns" must be a whole number from 1 to 6/,
+  );
+  assert.match(msg(card({ preview: { columns: '3' } })), /"preview\.columns"/);
+  assert.match(
+    msg(card({ preview: { from: 'People!' } })),
+    /"preview\.from" must be a source name/,
+  );
+  assert.match(msg(card({ preview: { size: 1 } })), /"preview\.size" is not a preview key/);
+  assert.match(msg(card({ clickable: 'yes' })), /"clickable" must be true or false/);
   assert.match(msg(card({ extra: 1 })), /"extra" is not a template key/);
   // only the registry's widgets
   assert.match(
@@ -87,13 +130,17 @@ test('a valid template passes; an invalid one is rejected with a clear message',
   );
   assert.match(
     msg(card({ widgets: [{ type: 'list' }] })),
-    /widgets\.0\.source must be \{ "mode": "property"/,
+    /sections\.0\.widgets\.0\.source must be \{ "mode": "property"/,
   );
-  // on the grid, as a page widget: an id, a layout; its layer is "layer" (not "z")
+  // on the grid, as a page widget: an id, a layout; its layer is "layer" (as a page widget's)
   assert.match(msg(card({ widgets: [{ type: 'text' }] })), /widgets\.0: "id" must be a widget id/);
   assert.match(
     msg(card({ widgets: [{ type: 'text', id: 'w-aaaa', z: 2 }] })),
-    /"z" is a page widget's: a template's is "layer"/,
+    /"z" is "layer" now/,
+  );
+  assert.deepEqual(
+    checkContent(T, card({ widgets: [{ type: 'text', id: 'w-aaaa', layer: 2 }] })),
+    [],
   );
   assert.match(
     msg(
@@ -131,23 +178,26 @@ test('Duplicate preset: the clone is the preset as it shows now, and keeps "base
   const tpl = cloneTemplate(base, 'people', 'preset:card', { properties: { photo: 'cover' } });
   assert.equal(tpl.basedOn, 'preset:card');
   assert.equal(tpl.kind, 'template');
-  assert.equal(tpl.label, 'Card copy');
+  assert.equal(tpl.name, 'Card copy');
+  assert.equal(tpl.sections.length, 1);
+  assert.deepEqual(tpl.preview, { from: 'people' });
   assert.deepEqual(checkContent(T, tpl), []);
   // the same widgets as the preset, markers resolved into plain {property} parts
   const preset = presetWidgets('preset:card', base, 'people', { properties: { photo: 'cover' } });
   assert.deepEqual(
-    tpl.widgets.map((w) => w.type),
+    tpl.sections[0].widgets.map((w) => w.type),
     preset.map((w) => w.type),
   );
-  assert.deepEqual(tpl.widgets[0].src, [{ property: 'cover' }]);
-  assert.ok(tpl.widgets.every((w) => !('facts' in w) && !('handmadeCount' in w)));
+  assert.deepEqual(tpl.sections[0].widgets[0].src, [{ property: 'cover' }]);
+  assert.ok(tpl.sections[0].widgets.every((w) => !('facts' in w) && !('handmadeCount' in w)));
   // a clone of a template keeps that template's id as its from
   const again = cloneTemplate(withTemplate(card()), 'people', 't-ab12');
   assert.equal(again.basedOn, 't-ab12');
-  assert.deepEqual(again.widgets, card().widgets);
+  assert.deepEqual(again.sections[0].widgets, card().sections[0].widgets);
+  assert.notEqual(again.sections[0].id, card().sections[0].id, 'its section: an id of its own');
   // a hand-made Panel's count is its {count} {unit}
   const panel = cloneTemplate(base, '', 'preset:panel', { handmade: true });
-  assert.deepEqual(panel.widgets.at(-1).body[0].text, [
+  assert.deepEqual(panel.sections[0].widgets.at(-1).body[0].text, [
     { property: 'count' },
     { t: ' ' },
     { property: 'unit' },
@@ -242,7 +292,10 @@ test('templatesOp: a new t- file next to the language folder, loaded again on re
     const { el } = list({ template: id }, {}, again);
     assert.equal(el.querySelectorAll('[data-list-item]').length, people.length);
     // a bad one is not written
-    const bad = templatesOp(root, { op: 'add', data: { ...data, widgets: [{ type: 'list' }] } });
+    const bad = templatesOp(root, {
+      op: 'add',
+      data: { ...data, sections: [{ id: 's-badd', widgets: [{ type: 'list' }] }] },
+    });
     assert.equal(bad.status, 400);
     assert.match(bad.body.error, /Not added/);
   } finally {
@@ -275,7 +328,7 @@ test('the panel: a Template picker and Duplicate preset, in both modes, no shift
 
 test('a copied facts line drops the separator of an empty fact at render', () => {
   const tpl = cloneTemplate(base, 'people', 'preset:card', { properties: { photo: 'cover' } });
-  const facts = tpl.widgets.find((w) => w.role === 'facts');
+  const facts = tpl.sections[0].widgets.find((w) => w.role === 'facts');
   assert.equal(facts.join, ' · ');
   assert.deepEqual(checkContent(T, tpl), []);
   // one person without a role: "Amsterdam", not " · Amsterdam"
@@ -289,7 +342,10 @@ test('a copied facts line drops the separator of an empty fact at render', () =>
   assert.equal(lines[0], people[0].location);
   assert.equal(lines[1], `${people[1].role} · ${people[1].location}`);
   assert.match(
-    checkContent(T, { ...tpl, widgets: [{ type: 'photo', join: ' · ' }] }).join(),
+    checkContent(T, {
+      ...tpl,
+      sections: [{ ...tpl.sections[0], widgets: [{ type: 'photo', join: ' · ' }] }],
+    }).join(),
     /join: only a text/,
   );
 });

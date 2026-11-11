@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { GRID_STYLE_KEYS, gridStyle } from '../src/site/widgets/list/item-grid.js';
-import { onGrid } from './grid-helper.mjs';
+import { onGrid, template } from './grid-helper.mjs';
 import fs from 'node:fs';
 import * as sass from 'sass';
 import { loadContent } from './content.mjs';
@@ -21,16 +21,15 @@ import { SITE_A } from '../test/fixtures/index.mjs';
 
 const base = loadContent(SITE_A);
 const T = 'templates/t-ab12.json';
-const tpl = (style) => ({
-  version: 1,
-  kind: 'template',
-  label: 'People card',
-  basedOn: 'preset:card',
-  ...(style === undefined ? {} : { style }),
-  widgets: onGrid([
-    { type: 'text', role: 'title', body: [{ style: 'heading', text: [{ property: 'title' }] }] },
-  ]),
-});
+const tpl = (style) =>
+  template({
+    name: 'People card',
+    basedOn: 'preset:card',
+    ...(style === undefined ? {} : { style }),
+    widgets: onGrid([
+      { type: 'text', role: 'title', body: [{ style: 'heading', text: [{ property: 'title' }] }] },
+    ]),
+  });
 const read = (f) => fs.readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 
 test('the keys and their values: sizes on the 4px grid, Fill / Fit, Border as a ring', () => {

@@ -47,7 +47,7 @@
  *            top `gap` cells below that widget's bottom (negative: overlapping); without one it
  *            is free, at its row whatever the widgets above do (./links.js)
  *   scale    optional { on, adjust }: a text widget's text in cells (./type.js)
- *   z        its layer when widgets overlap (higher is in front)
+ *   layer    its layer when widgets overlap (higher is in front; the Layer buttons)
  *   motion   optional { animation, ...timing }: its animation from the library and its own timing
  *            (./motion.js)
  *   item     optional { source, slug }: the source item its bound settings show (./bindings.js;
@@ -259,7 +259,7 @@ export function widgetVars(widget, widgets) {
   const ratio = sizeOf(widget) === 'aspect' ? ratioOf(widget?.aspect) : null;
   return (
     `--c:${p.col};--s:${p.span};--r:${p.row};--rs:${p.rows}` +
-    (Number.isInteger(widget?.z) && widget.z !== 0 ? `;--z:${widget.z}` : '') +
+    (Number.isInteger(widget?.layer) && widget.layer !== 0 ? `;--z:${widget.layer}` : '') +
     (ratio ? `;--ar:${ratio[0]} / ${ratio[1]}` : '') +
     placeVars(widget) +
     `;--mc:${m.col};--ms:${m.span};--mr:${m.row};--mrs:${m.rows}`

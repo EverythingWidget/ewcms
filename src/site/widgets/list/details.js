@@ -22,19 +22,19 @@
  * motion: no transition. Behaviour: ./client.js.
  *
  * Rules (validate.js, layout/bindings.js): one per template; the template is not a link
- * ("link": false); no button in the summary (a button in a button); the details' template
+ * ("clickable": false); no button in the summary (a button in a button); the details' template
  * exists and holds no "details" of its own; not in an inner List's template.
  */
 import { isObject } from '../../is.js';
 import { isTemplateId } from '../../files.js';
+import { itemWidgets } from './item-grid.js';
 
 export const DETAILS_KEYS = ['template', 'several', 'icon', 'screenReaderName', 'open'];
 export const ICONS = ['plus', 'none'];
 export const OPENS = ['none', 'first'];
 
 /** The template's "details" widget, or null. */
-export const detailsOf = (tpl) =>
-  (Array.isArray(tpl?.widgets) ? tpl.widgets : []).find((w) => w?.type === 'details') || null;
+export const detailsOf = (tpl) => itemWidgets(tpl).find((w) => w?.type === 'details') || null;
 
 /** The +/× markup: two bars, a + that turns into × when open (CSS); '' for icon "none". */
 export const toggleHtml = (w) =>
@@ -106,17 +106,19 @@ export function detailsWidgetProblems(w, at) {
 /** Problems of one template with a "details" widget ([] when fine). */
 export function detailsProblems(d) {
   const out = [];
-  const ws = Array.isArray(d.widgets) ? d.widgets : [];
+  const ws = itemWidgets(d);
   const at = ws.flatMap((w, i) => (w?.type === 'details' ? [i] : []));
   if (!at.length) return out;
   if (at.length > 1) out.push('One "details" widget per template');
-  if (d.link !== false)
+  if (d.clickable !== false)
     out.push(
-      'An item with Summary and details can\'t also be a link: set "link": false (a button in its details can link)',
+      'An item with Summary and details can\'t also be a link: set "clickable": false (a button in its details can link)',
     );
   ws.forEach((w, i) => {
     if (w?.type === 'button')
-      out.push(`widgets.${i}: no button in the summary (the summary is the item's button)`);
+      out.push(
+        `sections.0.widgets.${i}: no button in the summary (the summary is the item's button)`,
+      );
   });
   return out;
 }
@@ -145,7 +147,7 @@ export function detailsWarnings(templates = {}) {
   for (const [id, tpl] of Object.entries(templates || {})) {
     const dw = detailsOf(tpl);
     if (!dw || !isTemplateId(dw.config?.template)) continue;
-    if (tpl.widgets.every(canHide))
+    if (itemWidgets(tpl).every(canHide))
       out.push({
         level: 'warning',
         message: `templates/${id}.json: Its summary can be empty: an item could have nothing to click (every summary widget can be hidden; the +/× icon, or a widget set to Show empty, keeps it)`,

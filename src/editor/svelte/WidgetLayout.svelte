@@ -75,18 +75,29 @@
   // a setting's default when the widget leaves it out (a List's carousel ones: carousel.js)
   const listDefault = (c) =>
     c.default ?? (widget.type === 'list' ? CAROUSEL[c.key]?.[0] : undefined);
+  // a number setting (a List's gap in cells): a whole number in its range; its default left out
+  const wholeIn = (c, v) => {
+    if (typeof v !== 'number' || !Number.isFinite(v)) return undefined;
+    const n = Math.min(c.max ?? Infinity, Math.max(c.min ?? 0, Math.round(v)));
+    return n === (c.default ?? 0) ? undefined : n;
+  };
   const setOption = (c, v) =>
-    widget.type === 'list' && c.key === 'arrangement'
-      ? live.store.set(
-          file,
-          optionPtr(c).replace(/\/arrangement$/, ''),
-          withArrangement(widget.config, v),
-          {
-            source: 'panel',
-            structure: true,
-          },
-        )
-      : live.store.set(file, optionPtr(c), v, { source: 'panel', structure: true });
+    c.type === 'number'
+      ? live.store.set(file, optionPtr(c), wholeIn(c, v), {
+          source: 'panel',
+          key: `layout:${file}#${optionPtr(c)}`,
+        })
+      : widget.type === 'list' && c.key === 'arrangement'
+        ? live.store.set(
+            file,
+            optionPtr(c).replace(/\/arrangement$/, ''),
+            withArrangement(widget.config, v),
+            {
+              source: 'panel',
+              structure: true,
+            },
+          )
+        : live.store.set(file, optionPtr(c), v, { source: 'panel', structure: true });
   // Scale to fit (off by default): its hint has two lines' room, so nothing moves when it changes
   const isScaled = $derived(scaledToFit(widget));
 
@@ -159,11 +170,11 @@
         <Field
           edit="{file}#{optionPtr(c)}"
           label={c.label}
-          type={c.type === 'boolean' || c.type === 'seg' ? c.type : 'select'}
+          type={['boolean', 'seg', 'number'].includes(c.type) ? c.type : 'select'}
           half={c.width === 'half'}
           value={c.type === 'boolean'
             ? (widget.config?.[c.key] ?? listDefault(c)) === true
-            : (widget.config?.[c.key] ?? listDefault(c) ?? '')}
+            : (widget.config?.[c.key] ?? listDefault(c) ?? (c.type === 'number' ? 0 : ''))}
           options={c.options ?? []}
           disabled={!!c.disabledWhen?.(widget.config)}
           changed={live.changed(file, optionPtr(c))}

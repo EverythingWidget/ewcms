@@ -1,8 +1,10 @@
 /**
  * The template editor's preview (dev only): an item template (content/templates/t-….json)
  * rendered as one List of one sample item on a page of its own, at /__template/<id>/.
- * The sample: the first item of the source the template came from (its "source"), else a
- * hand-made sample item. Never built: the dev middleware alone serves it.
+ * The sample: the first item of the template's "preview.from" source, else a hand-made
+ * sample item. The List has the template's "preview.columns" (1–6; left out: 1), so the item
+ * is as wide as in a List of that many columns (the preview's only: a List keeps its own).
+ * Never built: the dev middleware alone serves it.
  */
 import { isTemplateId } from '../../files.js';
 
@@ -17,9 +19,15 @@ export function templateOfPath(pathname = '') {
 /** The synthetic page's id (its file: pages/__template/index.json, never written). */
 export const PREVIEW_PAGE = '__template';
 
-/** The sample item's source: the template's own, when it has items; '' for a hand-made one. */
+/** The columns a template is previewed in (its preview.columns, 1–6; left out: 1). */
+export const previewColumns = (tpl) => {
+  const n = tpl?.preview?.columns;
+  return Number.isInteger(n) && n >= 1 && n <= 6 ? n : 1;
+};
+
+/** The sample item's source: the template's preview.from, when it has items; '' for a hand-made one. */
 export function sampleSource(content, tpl) {
-  const from = typeof tpl?.source === 'string' ? tpl.source : '';
+  const from = typeof tpl?.preview?.from === 'string' ? tpl.preview.from : '';
   const list = from && content?.sources?.[from];
   return Array.isArray(list) && list.some((it) => typeof it?.id === 'string') ? from : '';
 }
@@ -42,13 +50,13 @@ export function templatePreview(content, id) {
     ...(from ? { source: { mode: 'item', from, id: first.id } } : {}),
     config: {
       template: id,
-      columns: '1',
+      columns: String(previewColumns(tpl)),
       ...(from ? {} : { handmade: true, items: [{ ...SAMPLE_ITEM }] }),
     },
   };
   const page = {
     id: 'pg-tplp',
-    title: tpl.label || id,
+    title: tpl.name || id,
     sections: [{ id: 's-tplp', widgets: [list] }],
   };
   const route = {
@@ -56,7 +64,7 @@ export function templatePreview(content, id) {
     id: PREVIEW_PAGE,
     pid: 'pg-tplp',
     page: PREVIEW_PAGE,
-    title: tpl.label || id,
+    title: tpl.name || id,
     description: '',
     noindex: true,
   };

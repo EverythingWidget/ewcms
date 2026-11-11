@@ -12,7 +12,7 @@
  *     "layout": { "base": { "col": 1, "span": 120, "row": 1 } } }
  *
  * The widget's own content (texts, photos) sits next to its type, the items it shows under
- * "source" (../layout/source.js); how it works (its look, on/off) is under "config"; where it sits is the layout's (id, layout, z,
+ * "source" (../layout/source.js); how it works (its look, on/off) is under "config"; where it sits is the layout's (id, layout, layer,
  * size: layout keys, never a setting's key). A type:
  *
  *   type      its name in the content
@@ -139,7 +139,7 @@ export const isCustomWidget = (type) => !!WIDGET_TYPES[type] && !BUILTIN.has(typ
  */
 export function kindOf(widget) {
   // eslint-disable-next-line no-unused-vars
-  const { layout, z, size, aspect, motion, scale, config, ...rest } = widget || {};
+  const { layout, layer, size, aspect, motion, scale, config, ...rest } = widget || {};
   const { enabled, ...settings } = config || {}; // eslint-disable-line no-unused-vars
   return JSON.stringify([rest, settings]);
 }

@@ -155,7 +155,7 @@
   const templateOptions = $derived.by(() => {
     live.version;
     const own = Object.entries(live.content?.templates || {})
-      .map(([id, tpl]) => [id, tpl?.label || id])
+      .map(([id, tpl]) => [id, tpl?.name || id])
       .sort((a, b) => a[1].localeCompare(b[1]));
     return [...PRESETS.map((p) => [p.id, p.label]), ...own];
   });
@@ -193,7 +193,7 @@
         const sent = { [g.file]: structuredClone(live.store.current[g.file]) };
         await saveDev(sent);
         live.store.markSaved([g.file], sent);
-        toast(`Template “${res.data.label}” added and used (content/templates/${res.id}.json)`);
+        toast(`Template “${res.data.name}” added and used (content/templates/${res.id}.json)`);
       }
     } catch (err) {
       toast(err.message, { kind: 'error' });

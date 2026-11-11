@@ -7,8 +7,11 @@
                 widget in the preview and vice versa; its settings (role, binds, …) are under
                 the card while it is selected. Placement is on the preview grid.
     Settings    its Name (as in a List’s Template picker), Whole item clickable (the whole
-                item opens the item’s page), and the preview line.
-  Templates are site-wide (no language): every List using one shows the edit on Save.
+                item opens the item’s page), Columns (the preview’s: the item as wide as in
+                a List of 1–6 columns; preview.columns, never a List’s), and the preview line.
+  The file is one section (src/site/widgets/list/item-grid.js): its widgets at
+  /sections/0/widgets, as a page section’s. Templates are site-wide (no language): every List
+  using one shows the edit on Save.
 -->
 <script>
   import { ui, selectWidgets } from './ui.svelte.js';
@@ -21,7 +24,9 @@
   import { sourceIds as sourceIdsOf, templateFile } from '../../site/files.js';
   import { LINE_STYLES } from '../../site/text.js';
   import { schemaOf } from '../../site/schemas.js';
-  import { sampleSource } from '../../site/widgets/list/template-preview.js';
+  import { previewColumns, sampleSource } from '../../site/widgets/list/template-preview.js';
+  import { ITEM_WIDGETS, itemSection } from '../../site/widgets/list/item-grid.js';
+  import { MAX_GAP } from '../../site/widgets/list/index.js';
   import { PRESETS } from '../../site/widgets/list/presets.js';
   import { innerChoice, innerTemplates } from '../../site/widgets/list/nested.js';
   import { MIN_TEXT_PX, sizeLine, textSizes } from '../lib/small-text.js';
@@ -61,7 +66,8 @@
     live.version;
     return live.current(file) || null;
   });
-  const widgets = $derived(Array.isArray(tpl?.widgets) ? tpl.widgets : []);
+  const section = $derived(itemSection(tpl));
+  const widgets = $derived(Array.isArray(section?.widgets) ? section.widgets : []);
   // the sample's source: its properties are the chips' names and the binds offered
   const from = $derived(sampleSource(live.content, tpl));
   const schema = $derived(from ? schemaOf(live.content, from) : null);
@@ -116,19 +122,27 @@
       .filter(([t]) => t !== id && innerChoice(templates, id, t) !== 'loop')
       .map(([t, tp]) =>
         innerChoice(templates, id, t) === 'deep'
-          ? [t, tp.label || t, { disabled: true, hint: 'It holds a list: a third level' }]
+          ? [t, tp.name || t, { disabled: true, hint: 'It holds a list: a third level' }]
           : innerChoice(templates, id, t) === 'opens'
-            ? [t, tp.label || t, { disabled: true, hint: 'Its items open: not inside a List' }]
-            : [t, tp.label || t],
+            ? [t, tp.name || t, { disabled: true, hint: 'Its items open: not inside a List' }]
+            : [t, tp.name || t],
       ),
   ]);
   const COLUMNS = ['1', '2', '3', '4', '5', '6'].map((n) => [n, n]);
-  const GAPS = [
-    ['s', 'S'],
-    ['m', 'M'],
-    ['l', 'L'],
-  ];
-  // a widget by its pointer: "/widgets/2"
+  // an inner List's gap: a whole number of cells (the item's: the grid it sits on), 0 left out
+  const setGap = (b, v) => {
+    if (typeof v !== 'number' || !Number.isFinite(v)) return;
+    const n = Math.min(MAX_GAP, Math.max(0, Math.round(v)));
+    set(`${b}/config/gap`, n || undefined);
+  };
+  // the preview's columns (preview.columns: 1, the default, left out; an empty preview too)
+  const setColumns = (v) => {
+    const n = Number(v);
+    const { columns: _c, ...rest } = tpl?.preview || {}; // eslint-disable-line no-unused-vars
+    const next = n > 1 ? { ...rest, columns: n } : rest;
+    set('/preview', Object.keys(next).length ? next : undefined, true);
+  };
+  // a widget by its pointer: "/sections/0/widgets/2"
   const wAt = (b) =>
     b
       .split('/')
@@ -162,7 +176,7 @@
   });
   const set = (ptr, value, structure = false) =>
     live.store.set(file, ptr, value, { source: 'panel', structure });
-  const setWidgets = (next) => set('/widgets', next, true);
+  const setWidgets = (next) => set(ITEM_WIDGETS, next, true);
   const STYLES = LINE_STYLES.map(([v, l]) => [v, l]);
 
   function setLine(b, j, key, value) {
@@ -195,7 +209,7 @@
       listProps[0]?.[0] || 'photos',
     );
   const add = (type) => {
-    if (type === 'details') set('/link', false);
+    if (type === 'details') set('/clickable', false);
     const next = addAt(widgets, fresh(type));
     setWidgets(next);
     const id = next[next.length - 1]?.id;
@@ -215,9 +229,9 @@
     Object.entries(templates)
       .filter(([t]) => t !== id)
       .map(([t, tp]) =>
-        tp?.widgets?.some?.((w) => w?.type === 'details')
-          ? [t, tp.label || t, { disabled: true, hint: 'It has Summary and details of its own' }]
-          : [t, tp.label || t],
+        itemSection(tp)?.widgets?.some?.((w) => w?.type === 'details')
+          ? [t, tp.name || t, { disabled: true, hint: 'It has Summary and details of its own' }]
+          : [t, tp.name || t],
       ),
   );
   // an inner List's Arrangement and Carousel rows (the List's own definitions)
@@ -225,8 +239,8 @@
   const ARRANGE = LIST_CONFIG.find((c) => c.key === 'arrangement').options;
   const CAR_ROWS = LIST_CONFIG.filter((c) => CAROUSEL_KEYS.includes(c.key));
   const card = $derived({
-    id: 's-tpl',
-    name: (typeof tpl?.label === 'string' && tpl.label.trim()) || '',
+    id: section?.id || 's-tpl',
+    name: (typeof tpl?.name === 'string' && tpl.name.trim()) || '',
     // title from role so WidgetRow shows Type / role (nameOf reads title, not role)
     widgets: widgets.map((w) => (w?.role && !w.title ? { ...w, title: w.role } : w)),
   });
@@ -399,10 +413,9 @@
       <Field
         edit={`${file}#${b}/config/gap`}
         label="Space between items"
-        type="select"
-        value={w.config?.gap || 'm'}
-        options={GAPS}
-        onvalue={(v) => set(`${b}/config/gap`, v)}
+        type="number"
+        value={w.config?.gap ?? 0}
+        onvalue={(v) => setGap(b, v)}
       />
     </div>
     <!-- Arrangement, and the Carousel's settings: always shown, disabled with Grid -->
@@ -539,7 +552,7 @@
       onsection={() => {}}
       onopen={(wid) => selectWidgets([wid])}
       onreorder={(from, to) => setWidgets(moveStack(widgets, from, to))}
-      changed={live.changed(file, '/widgets')}
+      changed={live.changed(file, ITEM_WIDGETS)}
     />
     {#if selected && selectedAt >= 0}
       <p
@@ -549,7 +562,7 @@
       >
         {sizeLine(sizes[selected.id]) || 'No text in the preview'}
       </p>
-      {@render editW(selected, `/widgets/${selectedAt}`)}
+      {@render editW(selected, `${ITEM_WIDGETS}/${selectedAt}`)}
       <Button size="small" icon="trash" onclick={() => {
         setWidgets(removeWidget(widgets, selectedAt));
         selectWidgets([]);
@@ -557,24 +570,34 @@
     {/if}
   {:else if tab === 'settings'}
     <Field
-      edit={`${file}#/label`}
+      edit={`${file}#/name`}
       label="Name"
-      value={tpl.label}
+      value={tpl.name}
       help="Its name in a List’s Template picker"
-      changed={live.changed(file, '/label')}
-      onvalue={(v) => set('/label', v)}
+      changed={live.changed(file, '/name')}
+      onvalue={(v) => set('/name', v)}
     />
     <Field
-      edit={`${file}#/link`}
+      edit={`${file}#/clickable`}
       label="Whole item clickable"
       type="boolean"
-      value={!hasDetails && tpl.link !== false}
+      value={!hasDetails && tpl.clickable !== false}
       disabled={hasDetails}
       help={hasDetails
         ? 'An item that opens can’t also be a link'
         : 'The whole item opens the item’s page.'}
-      changed={live.changed(file, '/link')}
-      onvalue={(v) => set('/link', v)}
+      changed={live.changed(file, '/clickable')}
+      onvalue={(v) => set('/clickable', v)}
+    />
+    <Field
+      edit={`${file}#/preview/columns`}
+      label="Columns"
+      type="seg"
+      value={String(previewColumns(tpl))}
+      options={COLUMNS}
+      help="Preview only: the item as wide as in a List of this many columns"
+      changed={live.changed(file, '/preview/columns')}
+      onvalue={setColumns}
     />
     <p class="hint small tp__sample">
       {from

@@ -9,7 +9,6 @@
  * A source's items against its schema (required properties, types, photos) are checked by
  * checkItems (src/site/schemas.js): that needs the schema and the photos, not one file.
  */
-import { asPageWidget } from './widgets/list/item-grid.js';
 import { detailsProblems, detailsWidgetProblems } from './widgets/list/details.js';
 import { CAROUSEL_KEYS, carouselProblems } from './widgets/list/carousel.js';
 import { AREA_KEYS, storesRows } from './layout/grid.js';
@@ -61,6 +60,7 @@ import { FORMAT_TYPES, storedAs } from './property-types.js';
 import { isObject } from './is.js';
 import { styleProblems } from './widgets/list/item-style.js';
 import { innerSourceProblems } from './widgets/list/nested.js';
+import { gapProblem } from './widgets/list/index.js';
 
 const typeOf = (v) =>
   v === null
@@ -292,7 +292,7 @@ function checkSections(sections) {
   return out;
 }
 
-const CONFIG_TYPES = { boolean: 'boolean' }; // the other config types are strings
+const CONFIG_TYPES = { boolean: 'boolean', number: 'number' }; // the other config types are strings
 const whole = (v, min) => Number.isInteger(v) && v >= min;
 
 /**
@@ -449,7 +449,8 @@ function checkWidget(widget, where) {
     });
   if ((widget.size === 'aspect' || widget.aspect !== undefined) && !isRatio(widget.aspect))
     bad('aspect', 'a ratio like "4:5"');
-  if (widget.z !== undefined && !Number.isInteger(widget.z)) bad('z', 'a whole number');
+  if (widget.layer !== undefined && !Number.isInteger(widget.layer)) bad('layer', 'a whole number');
+  if (widget.z !== undefined) out.push(`${name}: "z" is "layer" now (its Layer)`);
   out.push(...checkScale(widget).map((p) => `${name}: ${p}`));
   out.push(...checkPlacement(widget).map((p) => `${name}: ${p}`));
   if (widget.motion !== undefined)
@@ -655,28 +656,33 @@ const PRESET_FROM = ['preset:card', 'preset:plain', 'preset:panel', 'preset:row'
 const ROLE = /^[a-z][a-z0-9-]*$/;
 
 /**
- * An item template (content/templates/t-….json): { kind: "template", label, basedOn?, source?,
- * link?, photoFirst?, style?, widgets: [...] } (style: the item style, widgets/list/item-style.js) (source: the source it came from, the template
- * editor's sample item), its widgets a vertical stack of the registry's widgets whose
- * values are {property} parts. No List inside one yet (nested Lists come later), no "source"
- * (the List gives each copy its item), and none of a page widget's place (id, layout).
+ * An item template (content/templates/t-….json):
+ *   { kind: "template", name, basedOn?, clickable?, preview?: { from?, columns? }, style?,
+ *     sections: [ { id, height?, rows?, widgets: [...] } ] }
+ * name: its name in a List's Template picker; clickable: false, the item is no link to its
+ * page (left out: true); preview: the template editor's sample item (from: the source it
+ * comes from) and the columns of the List it is previewed in (1–6); style: the item style
+ * (widgets/list/item-style.js). Exactly one section (widgets/list/item-grid.js): its widgets
+ * on the page grid, as a page section's, their values {property} parts; its height "fit" (left
+ * out) or "custom" with rows.min. No "source" on a widget but an inner List's (the List gives
+ * each copy its item).
  */
 export function checkItemTemplate(d) {
   const out = [];
   if (d.kind !== 'template') out.push('"kind" must be "template"');
-  if (typeof d.label !== 'string' || !d.label.trim())
-    out.push('"label" must be a text (its name in the List\'s Template picker)');
+  if (typeof d.name !== 'string' || !d.name.trim())
+    out.push('"name" must be a text (its name in the List\'s Template picker)');
   if (d.basedOn !== undefined && !PRESET_FROM.includes(d.basedOn) && !isTemplateId(d.basedOn))
     out.push(`"basedOn" must be a preset (${PRESET_FROM.join(', ')}) or a template id ("t-…")`);
-  if (d.link !== undefined && typeof d.link !== 'boolean') out.push('"link" must be true or false');
+  if (d.clickable !== undefined && typeof d.clickable !== 'boolean')
+    out.push('"clickable" must be true or false');
+  out.push(...previewProblems(d.preview));
   // retired by the template grid (step I): what replaced each
   for (const [k, msg] of Object.entries(RETIRED_TEMPLATE_KEYS))
     if (d[k] !== undefined) out.push(`"${k}" is gone: ${msg}`);
   if (isObject(d.style))
     for (const [k, msg] of Object.entries(RETIRED_STYLE_KEYS))
       if (d.style[k] !== undefined) out.push(`"style.${k}" is gone: ${msg}`);
-  if (d.source !== undefined && (typeof d.source !== 'string' || !ROLE.test(d.source)))
-    out.push('"source" must be a source name (the source its sample item comes from)');
   out.push(
     ...styleProblems(
       isObject(d.style)
@@ -686,29 +692,82 @@ export function checkItemTemplate(d) {
   );
   const known = [
     'kind',
-    'label',
+    'name',
     'basedOn',
-    'source',
-    'link',
+    'clickable',
+    'preview',
     ...Object.keys(RETIRED_TEMPLATE_KEYS),
     'style',
-    'widgets',
+    'sections',
   ];
   for (const k of Object.keys(d))
     if (!known.includes(k)) out.push(`"${k}" is not a template key (${known.join(', ')})`);
-  if (!Array.isArray(d.widgets) || !d.widgets.length) {
-    out.push('"widgets" must be a list of widgets (top to bottom)');
+  if (!Array.isArray(d.sections) || d.sections.length !== 1 || !isObject(d.sections[0])) {
+    out.push('"sections" must be a list of exactly one section ({ id, widgets })');
     return out;
   }
-  d.widgets.forEach((w, i) => out.push(...checkTemplateWidget(w, `widgets.${i}`)));
+  const s = d.sections[0];
+  out.push(...itemSectionProblems(s));
+  if (!Array.isArray(s.widgets) || !s.widgets.length) {
+    out.push('sections.0.widgets must be a list of widgets');
+    return out;
+  }
+  s.widgets.forEach((w, i) => out.push(...checkTemplateWidget(w, `sections.0.widgets.${i}`)));
   // the grid (widgets/list/item-grid.js): ids unique, links to a widget of the template, no loops
-  const ws = d.widgets.filter(isObject).map(asPageWidget);
+  const ws = s.widgets.filter(isObject);
   out.push(...linkProblems(ws));
-  const seen = new Set();
+  const seen = new Set([s.id]);
   for (const w of ws)
     if (typeof w.id === 'string' && seen.has(w.id)) out.push(`the id "${w.id}" is used twice`);
     else seen.add(w.id);
   out.push(...detailsProblems(d));
+  return out;
+}
+
+/** The most columns a template is previewed in (a List's most). */
+const PREVIEW_COLUMNS = 6;
+
+/** A template's "preview": { from?: a source, columns?: 1–6 } (the template editor's only). */
+function previewProblems(p) {
+  if (p === undefined) return [];
+  if (!isObject(p)) return ['"preview" must be an object { from?, columns? }'];
+  const out = [];
+  for (const k of Object.keys(p))
+    if (k !== 'from' && k !== 'columns')
+      out.push(`"preview.${k}" is not a preview key (from, columns)`);
+  if (p.from !== undefined && (typeof p.from !== 'string' || !ROLE.test(p.from)))
+    out.push('"preview.from" must be a source name (the source its sample item comes from)');
+  if (
+    p.columns !== undefined &&
+    !(Number.isInteger(p.columns) && p.columns >= 1 && p.columns <= PREVIEW_COLUMNS)
+  )
+    out.push(`"preview.columns" must be a whole number from 1 to ${PREVIEW_COLUMNS}`);
+  return out;
+}
+
+/**
+ * A template's one section: an id, its height "fit" (left out) or "custom" with rows.min (an
+ * item at least that tall); none of a page section's screen heights, width, on/off or phone
+ * height (the List places and sizes the item).
+ */
+function itemSectionProblems(s) {
+  const out = [];
+  const at = 'sections.0';
+  if (!isId(s.id, 's')) out.push(`${at}.id must be a section id like "s-k3x9"`);
+  for (const k of Object.keys(s))
+    if (!['id', 'height', 'rows', 'widgets'].includes(k))
+      out.push(
+        `${at}.${k}: a template's section has only id, height ("fit" or "custom"), rows and widgets (the List places and sizes the item)`,
+      );
+  if (s.height !== undefined && s.height !== 'fit' && s.height !== 'custom')
+    out.push(`${at}.height must be "fit" or "custom" (an item has no screen height)`);
+  const min = s.rows?.min;
+  if (s.rows !== undefined && (!isObject(s.rows) || Object.keys(s.rows).some((k) => k !== 'min')))
+    out.push(`${at}.rows must be an object { min } (a custom height's rows)`);
+  else if (s.height === 'custom' && !(whole(min, 1) && min <= MAX_MIN_ROWS))
+    out.push(`${at}.rows.min must be a whole number of rows from 1 to ${MAX_MIN_ROWS}`);
+  else if (s.rows !== undefined && s.height !== 'custom')
+    out.push(`${at}.rows: left out unless the height is "custom"`);
   return out;
 }
 
@@ -824,11 +883,13 @@ function checkTemplateWidget(w, at) {
           `${at}.config.${k} is not an inner List setting (template, columns, gap, arrangement and the carousel's)`,
         );
     out.push(...carouselProblems(w.config, `${at}.config`));
+    const gp = gapProblem(w.config?.gap);
+    if (gp) out.push(`${at}.${gp}`);
   } else if (w.source !== undefined)
     out.push(`${at}: no "source" in a template: the List gives each copy its item`);
-  // on the grid, as a page's widget (layout, size, aspect; its layer is "layer", not "z")
+  // on the grid, as a page's widget (layout, size, aspect, layer)
   if (!isId(w.id, 'w')) out.push(`${at}: "id" must be a widget id like "w-7qpa"`);
-  if (w.z !== undefined) out.push(`${at}: "z" is a page widget's: a template's is "layer"`);
+  if (w.z !== undefined) out.push(`${at}: "z" is "layer" now (its Layer)`);
   if (w.layer !== undefined && !Number.isInteger(w.layer))
     out.push(`${at}.layer must be a whole number`);
   out.push(...checkWidgetLayout(w).map((p) => `${at}: ${p}`));

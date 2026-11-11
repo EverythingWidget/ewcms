@@ -20,6 +20,7 @@ import {
   sectionVars,
 } from '../site/layout/index.js';
 import { kindOf } from '../site/widgets/index.js';
+import { templateFile } from '../site/files.js';
 
 /**
  * A widget's motion attributes as the site renders them:
@@ -51,14 +52,18 @@ export const previewFile = (doc) => pageView(doc)?.dataset.pageFile || '';
 
 /**
  * The file the editor edits for `target` (ui.target): the page's in the preview, the
- * footer's for the Footer, '' for the Header (no sections; or no preview yet).
+ * footer's for the Footer, an item template's own (content/templates/t-….json: one section,
+ * so its widgets are at /sections/0/widgets as a page's), '' for the Header (no sections;
+ * or no preview yet).
  */
 export const targetFile = (target, doc) =>
   target?.kind === 'page'
     ? previewFile(doc)
-    : target?.id === 'footer'
-      ? footerOf(doc)?.dataset.pageFile || ''
-      : '';
+    : target?.kind === 'item-template'
+      ? templateFile(target.id)
+      : target?.id === 'footer'
+        ? footerOf(doc)?.dataset.pageFile || ''
+        : '';
 
 /**
  * Open one site part in the preview ('header' | 'footer', or none: ''), lock the other: open,

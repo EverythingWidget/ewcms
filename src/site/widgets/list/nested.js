@@ -14,6 +14,7 @@
 import { isObject } from '../../is.js';
 import { isTemplateId } from '../../files.js';
 import { detailsOf } from './details.js';
+import { itemWidgets } from './item-grid.js';
 
 export const INNER_MODES = ['property', 'match', 'all', 'item'];
 const NAME = /^[\w-]+$/;
@@ -105,13 +106,13 @@ export const innerTemplates = (tpl) =>
 export const holdsList = (tpl) => flatWidgets(tpl).some((w) => w?.type === 'list');
 
 /** A template's widgets (all on its grid: none holds others). */
-export const flatWidgets = (tpl) => (Array.isArray(tpl?.widgets) ? tpl.widgets : []);
+export const flatWidgets = (tpl) => itemWidgets(tpl);
 
 /** Does a template hold a List shown as a carousel? (no carousel inside a carousel) */
 export const holdsCarousel = (tpl) =>
   flatWidgets(tpl).some((w) => w?.type === 'list' && w.config?.arrangement === 'carousel');
 
-const labelOf = (templates, id) => templates?.[id]?.label || id;
+const labelOf = (templates, id) => templates?.[id]?.name || id;
 
 /**
  * Across every template (content.templates): loops (a template its inner List leads back to)
@@ -154,7 +155,10 @@ export function innerChoice(templates, id, inner) {
   if (
     nestingProblems({
       ...templates,
-      [id]: { ...templates?.[id], widgets: [{ type: 'list', config: { template: inner } }] },
+      [id]: {
+        ...templates?.[id],
+        sections: [{ id: 's-tryy', widgets: [{ type: 'list', config: { template: inner } }] }],
+      },
     }).some(
       (p) => p.message.startsWith(`templates/${id}.json:`) && /already contains it/.test(p.message),
     )
