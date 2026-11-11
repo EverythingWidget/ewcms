@@ -712,7 +712,7 @@ export function checkItemTemplate(d) {
   return out;
 }
 
-/** "Also needs" (config.needs, ./layout/missing.js): a list of property names; null when fine. */
+/** config.needs (./layout/missing.js): a list of property names; null when fine. */
 function needsProblem(v) {
   if (v === undefined) return null;
   if (!Array.isArray(v) || !v.every((k) => typeof k === 'string' && NAME.test(k)))
@@ -720,13 +720,13 @@ function needsProblem(v) {
   return null;
 }
 
-/** A template widget's When a value is missing and Also needs (in a template: left out = As the List). */
+/** A template widget's When a value is missing (left out = Inherit) and config.needs. */
 function missingProblems(w, at) {
   const out = [];
   if (!isObject(w.config)) return out;
   const { missing, needs } = w.config;
   if (missing !== undefined && missing !== 'hide' && missing !== 'show')
-    out.push(`${at}.config.missing must be "hide" or "show" (left out: as the List)`);
+    out.push(`${at}.config.missing must be "hide" or "show" (left out: Inherit)`);
   const np = needsProblem(needs);
   if (np) out.push(`${at}.config.needs must be ${np}`);
   return out;

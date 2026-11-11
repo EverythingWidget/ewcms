@@ -35,8 +35,6 @@
     moveStack,
     removeWidget,
     newStackWidget,
-    needsFrom,
-    needsValue,
     TEMPLATE_MISSING,
     addAt,
     runsOf,
@@ -265,29 +263,15 @@
     onvalue={(v) => setRole(b, v)}
   />
   {#if ['text', 'photo', 'button'].includes(w.type)}
-    <!-- When a value is missing / Also needs (src/site/layout/missing.js): always both rows -->
-    <div class="tp__pair">
-      <Field
-        edit={`${file}#${b}/config/missing`}
-        label="When a value is missing"
-        type="select"
-        value={w.config?.missing || ''}
-        options={TEMPLATE_MISSING}
-        onvalue={(v) => set(`${b}/config/missing`, v || undefined, true)}
-      />
-      <Field
-        edit={`${file}#${b}/config/needs`}
-        label="Also needs"
-        value={needsValue(w.config?.needs)}
-        binds={allBinds}
-        {names}
-        formats
-        {from}
-        disabled={w.config?.missing === 'show'}
-        help="Hidden when one of these is empty, too"
-        onvalue={(v) => set(`${b}/config/needs`, needsFrom(v), true)}
-      />
-    </div>
+    <!-- When a value is missing (src/site/layout/missing.js): one full row; Inherit is left out -->
+    <Field
+      edit={`${file}#${b}/config/missing`}
+      label="When a value is missing"
+      type="select"
+      value={w.config?.missing || ''}
+      options={TEMPLATE_MISSING}
+      onvalue={(v) => set(`${b}/config/missing`, v || undefined, true)}
+    />
   {/if}
   {#if w.type === 'text'}
     {#each w.body || [] as l, j (j)}

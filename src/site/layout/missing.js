@@ -9,7 +9,7 @@
  * List's choice unless they set their own (hideMissing).
  *
  * Hide also leaves a widget out when (feature 3):
- *   - one of `config.needs` (property names: "Also needs") is empty: a fixed "Placeholder" tag
+ *   - one of `config.needs` (property names) is empty: a fixed "Placeholder" tag
  *     with needs ["placeholder"] shows only on the items that are placeholders;
  *   - a button's link or its label comes out empty (never an empty button, or one to "/").
  * For hiding, false is empty too (a boolean property that is off).
@@ -39,7 +39,7 @@ const comesOutEmpty = (v, scope) =>
       v.length > 0 &&
       v.every((p) => (isPropertyPart(p) ? emptyPart(p, scope) : !String(p?.t ?? '').trim()));
 
-/** The widget's "Also needs" (config.needs): its property names. */
+/** The widget's config.needs: its property names (still honoured if present in content). */
 export const needsOf = (widget) =>
   Array.isArray(widget?.config?.needs)
     ? widget.config.needs.filter((k) => typeof k === 'string' && k)

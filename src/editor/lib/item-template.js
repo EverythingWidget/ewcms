@@ -184,28 +184,9 @@ export function removeWidget(widgets, i) {
     });
 }
 
-/**
- * "Also needs" (config.needs, src/site/layout/missing.js) as a chips box's value and back: the
- * property names its {name} chips hold (typed text is dropped); none: undefined (left out).
- */
-export const needsValue = (needs) =>
-  (Array.isArray(needs) ? needs : []).flatMap((k, i) =>
-    i ? [{ t: ' ' }, { property: k }] : [{ property: k }],
-  );
-export function needsFrom(v) {
-  const names = [
-    ...new Set(
-      runsOf(v)
-        .filter(isPropertyPart)
-        .map((p) => p.property),
-    ),
-  ];
-  return names.length ? names : undefined;
-}
-
-/** A template widget's "When a value is missing" options: As the List (left out), Hide, Show empty. */
+/** A template widget's "When a value is missing" options: Inherit (left out), Hide, Show empty. */
 export const TEMPLATE_MISSING = [
-  ['', 'As the List'],
+  ['', 'Inherit'],
   ['hide', 'Hide'],
   ['show', 'Show empty'],
 ];

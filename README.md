@@ -1123,16 +1123,17 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
   so neighbours line up. A List's item widgets inherit the List's choice unless they set their
   own. The build warns once per List; the editor dims the widget and tags it **Hidden on the
   page** or **Empty on the page**.
-  - **Also needs** (`config.needs`, a list of property names, picked as chips): with Hide the
-    widget is also left out when one of them is empty. A fixed "Placeholder" tag with
+  - `config.needs` (a list of property names) is still honoured if already in content: with Hide
+    the widget is also left out when one of them is empty. A fixed "Placeholder" tag with
     `"needs": ["placeholder"]` shows only on placeholder items. The editor's hint says
-    "Needs {placeholder}" (its own values: "No value for {url}").
+    "Needs {placeholder}" (its own values: "No value for {url}"). It is not offered in the
+    editor (no migrations: existing values stay).
   - A **button** is left out when its link or its label comes out empty (never an empty button,
     or one to "/"): label `{linkLabel}`, link `[{ "property": "url" }]` shows only when both are
     set. A property goes in the link itself: `{ "href": [{ "property": "url" }] }` is refused.
   - For hiding, `false` is empty too (a boolean property that is off).
-  - In an item template each text, photo and button has both rows; **When a value is missing**
-    offers **As the List** (the key left out), Hide, Show empty. Not on Summary and details.
+  - In an item template each text, photo and button has **When a value is missing**, offering
+    **Inherit** (the key left out), Hide, Show empty. Not on Summary and details.
   - Hidden widgets stay in the editor's preview, dimmed and as big as they are (no shift).
   - `ewcms check` warns when every summary widget of an item that opens can be hidden ("Its
     summary can be empty"); the +/× icon, or a widget set to Show empty, keeps it.

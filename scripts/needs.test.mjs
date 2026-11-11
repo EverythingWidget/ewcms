@@ -1,4 +1,4 @@
-// Feature 3: When a value is missing + Also needs (src/site/layout/missing.js) in templates
+// Feature 3: When a value is missing + config.needs (src/site/layout/missing.js) in templates
 // and on pages; a button hides on an empty link or label; false is empty for hiding.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -13,7 +13,7 @@ import { checkContent } from '../src/site/validate.js';
 import { bindingProblems } from '../src/site/layout/bindings.js';
 import { WIDGET_TYPES } from '../src/site/widgets/index.js';
 import { goneOf, missingState } from '../src/site/layout/missing.js';
-import { needsFrom, needsValue, TEMPLATE_MISSING } from '../src/editor/lib/item-template.js';
+import { TEMPLATE_MISSING } from '../src/editor/lib/item-template.js';
 import { SITE_A } from '../test/fixtures/index.mjs';
 
 const base = loadContent(SITE_A);
@@ -86,7 +86,7 @@ test('the Visit button: shown only with both {url} and {linkLabel}', () => {
   assert.deepEqual(shown(fixed, 'visit'), [true, true, false]);
 });
 
-test('Also needs: the Placeholder tag on placeholder items only (false is empty for hiding)', () => {
+test('config.needs: the Placeholder tag on placeholder items only (false is empty for hiding)', () => {
   const t = tpl([title, tag]);
   assert.deepEqual(checkContent('templates/t-need.json', t), []);
   const { items: lis } = render(t);
@@ -94,7 +94,7 @@ test('Also needs: the Placeholder tag on placeholder items only (false is empty 
   // Show empty keeps it
   const keep = render(tpl([title, { ...tag, config: { ...tag.config, missing: 'show' } }])).items;
   assert.deepEqual(shown(keep, 'tag'), [true, true, true]);
-  // the List's Show empty: As the List follows it
+  // the List's Show empty: Inherit follows it
   assert.deepEqual(shown(render(t, { missing: 'show' }).items, 'tag'), [true, true, true]);
 });
 
@@ -116,7 +116,7 @@ test('the editor preview: dimmed, same size, with "Needs {placeholder}" / "No va
   assert.equal(goneOf(tag, WIDGET_TYPES.text, { item: items[0] }).all, false);
 });
 
-test('pages: Also needs on a page widget', () => {
+test('pages: config.needs on a page widget', () => {
   const ctx = { ...base };
   const w = {
     type: 'text',
@@ -175,19 +175,18 @@ test('warning: a summary that can be empty', () => {
   assert.equal(warn(opens([{ ...title, config: { missing: 'show' } }, dw('none')])).length, 0);
 });
 
-test('editor: As the List, Also needs as chips and back; the rows in the template editor', () => {
-  assert.deepEqual(TEMPLATE_MISSING[0], ['', 'As the List']);
-  assert.deepEqual(needsValue(['a', 'b']), [{ property: 'a' }, { t: ' ' }, { property: 'b' }]);
-  assert.deepEqual(needsFrom([{ property: 'a' }, { t: ' x ' }, { property: 'a' }]), ['a']);
-  assert.equal(needsFrom('typed'), undefined);
+test('editor: Inherit is the left-out missing option; Also needs is not in the panel', () => {
+  assert.deepEqual(TEMPLATE_MISSING[0], ['', 'Inherit']);
+  assert.deepEqual(TEMPLATE_MISSING[1], ['hide', 'Hide']);
+  assert.deepEqual(TEMPLATE_MISSING[2], ['show', 'Show empty']);
   const panel = read('src/editor/svelte/TemplatePanel.svelte');
-  for (const l of [
-    'When a value is missing',
-    'Also needs',
-    'Hidden when one of these is empty, too',
-  ])
-    assert.ok(panel.includes(l), l);
-  assert.ok(read('src/editor/svelte/GroupFields.svelte').includes('Also needs'));
+  assert.match(panel, /label="When a value is missing"/);
+  assert.match(panel, /options=\{TEMPLATE_MISSING\}/);
+  assert.doesNotMatch(panel, /Also needs|needsValue|needsFrom|config\/needs/);
+  const gf = read('src/editor/svelte/GroupFields.svelte');
+  assert.match(gf, /When a value is missing/);
+  assert.doesNotMatch(gf, /Also needs|needsValue|needsFrom|needsPtr/);
+  assert.doesNotMatch(read('src/editor/lib/item-template.js'), /needsValue|needsFrom/);
 });
 
 test('a text line with no property shows its text in the chips box (was empty)', async () => {
