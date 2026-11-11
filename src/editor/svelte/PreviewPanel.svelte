@@ -6,7 +6,7 @@
 <script>
   import Button from './Button.svelte';
   import PubFiles from './PubFiles.svelte';
-  import Section from './Section.svelte';
+  import Collapsible from './Collapsible.svelte';
   import { ui } from './ui.svelte.js';
   import { labelFor } from './content-groups.js';
   import { compile } from '../lib/pointer.js';
@@ -104,7 +104,7 @@
   <section class="grp">
     <h4 class="grp__title">Unsaved changes{files.length ? '' : ': none'}</h4>
     {#each files as f (f.name)}
-      <Section title="content/{f.name}" class="chg">
+      <Collapsible title="content/{f.name}" class="chg">
         {#snippet bar()}<span class="muted">{f.changes.length}</span>{/snippet}
         {@render discardButton(f.name, `Discard ${plural(f.changes.length, 'change')}?`)}
         <ul class="chg__list">
@@ -117,7 +117,7 @@
             </li>
           {/each}
         </ul>
-      </Section>
+      </Collapsible>
     {/each}
     {#if files.length}
       {@render discardButton('all', `Discard all ${plural(live.changes, 'unsaved change')}?`)}

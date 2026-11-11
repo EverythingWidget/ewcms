@@ -14,7 +14,7 @@
 <script>
   import Field from './Field.svelte';
   import RedirectSettings from './RedirectSettings.svelte';
-  import Section from './Section.svelte';
+  import Collapsible from './Collapsible.svelte';
   import Select from './Select.svelte';
   import EntranceCurtain from './EntranceCurtain.svelte';
   import MotionSettings from './MotionSettings.svelte';
@@ -95,7 +95,7 @@
 <section class="ed-body">
   <MotionSettings {live} {bridge} {gsap} />
 
-  <Section key="settings:site" title="Name & Details">
+  <Collapsible key="settings:site" title="Name & Details">
     <p class="hint">
       Used on every page: the clock and search engines' details about you. The preview shows them
       after Save.
@@ -110,9 +110,9 @@
         onvalue={(value) => set(key, value)}
       />
     {/each}
-  </Section>
+  </Collapsible>
 
-  <Section key="settings:seo" title="SEO">
+  <Collapsible key="settings:seo" title="SEO">
     <p class="hint">
       What search engines and share cards show. Pages can set their own in Nav > SEO; these are the
       defaults.
@@ -139,9 +139,9 @@
         onchange={(value) => set('robots', value)}
       />
     </div>
-  </Section>
+  </Collapsible>
 
-  <Section key="settings:forms" title="Forms">
+  <Collapsible key="settings:forms" title="Forms">
     <p class="hint">
       Where contact forms send (a form can pick its own in Content). The Cloudflare function emails
       through Resend with the keys set in the Cloudflare Pages project, never here (see the README,
@@ -175,9 +175,9 @@
       Email link: the visitor's mail app, to the site email ({live.get(SITE, '/email') ||
         'not set'}).
     </p>
-  </Section>
+  </Collapsible>
 
-  <Section key="settings:layout" title="Layout">
+  <Collapsible key="settings:layout" title="Layout">
     <p class="hint">
       How wide a contained section is: columns of the {COLS}-column grid ({CONTAINED_MIN}–{COLS};
       {CONTAINED} by default), centred and never nearer the edges than the side margins. Its widgets keep
@@ -198,9 +198,9 @@
         <li><span>{w}</span><strong>{Math.round(containedWidth(w, contained))} px</strong></li>
       {/each}
     </ul>
-  </Section>
+  </Collapsible>
 
-  <Section key="settings:type" title="Typography">
+  <Collapsible key="settings:type" title="Typography">
     <p class="hint">
       The text styles of a Fit width line (a text widget's toolbar › Fit width), in cells of the
       {COLS}-column grid (~11px at 1440px wide; on phones half a {MCOLS}-column cell), so the text
@@ -222,11 +222,11 @@
         {/each}
       </div>
     {/each}
-  </Section>
+  </Collapsible>
 
   <RedirectSettings {live} />
 
-  <Section key="settings:media" title="Photos">
+  <Collapsible key="settings:media" title="Photos">
     <p class="hint">
       Photos you upload in the editor go to Cloudflare R2 (keys in .env.local, see the README). The
       content stores their key (photos/…); the site shows them from this address. Photos in media/
@@ -240,14 +240,14 @@
       changed={live.changed(SITE, '/mediaUrl')}
       onvalue={(value) => set('mediaUrl', value.trim())}
     />
-  </Section>
+  </Collapsible>
 
   {#if gsap}
     <!-- one Page entrance section: the curtain, then the page fade (no curtain, or behind it) -->
-    <Section class="entrance" key="settings:entrance" id="page-entrance" title="Page entrance">
+    <Collapsible class="entrance" key="settings:entrance" id="page-entrance" title="Page entrance">
       <EntranceCurtain {live} {bridge} {gsap} />
       <EntranceFade {live} {gsap} />
-    </Section>
+    </Collapsible>
   {:else}
     <p class="hint">Waiting for the preview…</p>
   {/if}

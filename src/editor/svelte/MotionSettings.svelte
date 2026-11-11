@@ -10,7 +10,7 @@
 <script>
   import AnimLibrary from './AnimLibrary.svelte';
   import Field from './Field.svelte';
-  import Section from './Section.svelte';
+  import Collapsible from './Collapsible.svelte';
   import { ui } from './ui.svelte.js';
   import { motionSections } from './page-motion.js';
   import { targetFile } from '../layout-sync.js';
@@ -60,7 +60,7 @@
   }
 </script>
 
-<Section key="settings:motion" title="Motion">
+<Collapsible key="settings:motion" title="Motion">
   <p class="hint">Used on every page: the default timing and the animations every widget can use</p>
   {#each FIELDS as [key, label, placeholder] (key)}
     <Field
@@ -75,4 +75,4 @@
   {#if gsap}
     <AnimLibrary {live} {bridge} {cfg} {items} {sections} {gsap} />
   {/if}
-</Section>
+</Collapsible>

@@ -14,7 +14,7 @@
 <script>
   import { ui, selectWidgets, reveal, setAnchor, hotWidget } from './ui.svelte.js';
   import { range, selectedIds, toggle } from '../multi-select.js';
-  import Section from './Section.svelte';
+  import Collapsible from './Collapsible.svelte';
   import WidgetRow from './WidgetRow.svelte';
   import { listDrag, rowsOf } from './list-drag.svelte.js';
   import { moveWidget } from '../layout-ops.js';
@@ -84,7 +84,7 @@
   }
 </script>
 
-<Section
+<Collapsible
   id={s.id}
   {title}
   off={!on}
@@ -94,7 +94,7 @@
   {selected}
   {onselect}
   onenter={onsection}
-></Section>
+></Collapsible>
 
 {#snippet list()}
   <ul class="widgets" aria-label="Widgets of {title}" bind:this={listEl}>
@@ -120,7 +120,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  // ---- the card (Section.svelte, data-card): 12px inside on the sides (its bar and foot), the
+  // ---- the card (Collapsible.svelte, data-card): 12px inside on the sides (its bar and foot), the
   // widgets 8px under the title row; the title on one line
   :global(.sec[data-card] > .sec__bar) {
     padding-inline: var(--space-3);

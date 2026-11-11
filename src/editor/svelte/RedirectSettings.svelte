@@ -9,7 +9,7 @@
 <script>
   import Field from './Field.svelte';
   import ListField from './ListField.svelte';
-  import Section from './Section.svelte';
+  import Collapsible from './Collapsible.svelte';
   import Select from './Select.svelte';
   import { REDIRECTS } from '../../site/files.js';
   import { isExternal } from '../../site/helpers.js';
@@ -58,7 +58,7 @@
   const setTo = (i, value) => setKey(i, 'to', value === EXTERNAL ? 'https://' : value);
 </script>
 
-<Section key="settings:redirects" title="Redirects" open={false}>
+<Collapsible key="settings:redirects" title="Redirects" open={false}>
   <p class="hint">
     Old addresses that send visitors on (dist/_redirects, for Cloudflare Pages). Renaming or
     deleting a page and changing an item's slug add them by themselves. /old/:slug/ stands for every
@@ -113,7 +113,7 @@
   {#each warnings as w (w)}
     <p class="hint small redir__warn">{w}</p>
   {/each}
-</Section>
+</Collapsible>
 
 <style lang="scss">
   .redir__warn {

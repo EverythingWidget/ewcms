@@ -13,7 +13,7 @@
 <script>
   import AnimEditor from './AnimEditor.svelte';
   import WidgetMotion from './WidgetMotion.svelte';
-  import Section from './Section.svelte';
+  import Collapsible from './Collapsible.svelte';
   import { ui, pickElement, selectAnim, hoverElement } from './ui.svelte.js';
   import { motionSections } from './page-motion.js';
   import { ANIMATIONS } from '../../site/files.js';
@@ -99,7 +99,7 @@
       click through to links.
     </p>
     {#each sections as s (s.id)}
-      <Section key="motion:{s.id}" title="Section {s.at + 1}" name={s.name}>
+      <Collapsible key="motion:{s.id}" title="Section {s.at + 1}" name={s.name}>
         <ol class="list">
           {#each s.widgets as widget (widget.id)}
             <li>
@@ -140,15 +140,15 @@
             </li>
           {/each}
         </ol>
-      </Section>
+      </Collapsible>
     {/each}
     {#if outside.length}
-      <Section key="motion:elements" title="Outside the widgets" name="Fixed elements">
+      <Collapsible key="motion:elements" title="Outside the widgets" name="Fixed elements">
         {#snippet bar()}<span class="mlist__count">{outside.length}</span>{/snippet}
         <ol class="list">
           {#each outside as it (it.el)}{@render element(it)}{/each}
         </ol>
-      </Section>
+      </Collapsible>
     {/if}
   </div>
 {/if}

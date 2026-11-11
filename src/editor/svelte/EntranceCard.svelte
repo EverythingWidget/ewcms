@@ -1,13 +1,13 @@
 <!--
   A page's Page motion tab (PageMotionPanel.svelte), after Scroll backdrop: the Page entrance card (how visitors arrive at this page), a
-  section card (Section.svelte) whose second line sums it up ("Curtain: site default" or
+  section card (Collapsible.svelte) whose second line sums it up ("Curtain: site default" or
   "Curtain: off (page fade)"). Inside it, the page's curtain (EntrancePageCurtain.svelte).
   The page's backdrop is its own card just above (ScrollBackdropCard.svelte).
     live  reactive store; onsettings  open Site Settings at its Page entrance section
 -->
 <script>
   import EntrancePageCurtain from './EntrancePageCurtain.svelte';
-  import Section from './Section.svelte';
+  import Collapsible from './Collapsible.svelte';
   import { ui } from './ui.svelte.js';
   import { splitEdit } from '../../site/helpers.js';
   import { curtainMode } from '../../client/anim/curtain.js';
@@ -22,11 +22,11 @@
   });
 </script>
 
-<Section
+<Collapsible
   key="motion:entrance"
   title="Page entrance"
   name="Curtain: {curtain === 'off' ? 'off (page fade)' : 'site default'}"
 >
   <p class="hint">How visitors arrive at this page.</p>
   <EntrancePageCurtain {live} {onsettings} />
-</Section>
+</Collapsible>

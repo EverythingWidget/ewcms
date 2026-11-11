@@ -40,13 +40,13 @@ test('Page entrance: one Settings section (curtain, page fade); the page card li
     sp,
     /key="settings:entrance"[\s\S]*?id="page-entrance"[\s\S]*?title="Page entrance"/,
   );
-  assert.match(sp, /<EntranceCurtain[^>]*\/>\s*<EntranceFade[^>]*\/>\s*<\/Section>/);
+  assert.match(sp, /<EntranceCurtain[^>]*\/>\s*<EntranceFade[^>]*\/>\s*<\/Collapsible>/);
   for (const [f, head] of [
     ['EntranceCurtain', 'Curtain'],
     ['EntranceFade', 'Page fade'],
   ]) {
     const s = esrc(`svelte/${f}.svelte`);
-    assert.doesNotMatch(s, /<Section|title="Transition: /);
+    assert.doesNotMatch(s, /<Collapsible|title="Transition: /);
     assert.match(s, new RegExp(`<h3 class="pane__head">${head}</h3>`));
   }
   const pc = esrc('svelte/EntrancePageCurtain.svelte');

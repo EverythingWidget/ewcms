@@ -1,6 +1,6 @@
 <!--
   A page's Page motion tab (PageMotionPanel.svelte), first, before the Page entrance card: the Scroll
-  backdrop card, a section card (Section.svelte) whose second line sums it up ("Scroll
+  backdrop card, a section card (Collapsible.svelte) whose second line sums it up ("Scroll
   backdrop: on"). Inside
   it, the page's backdrop (ScrollBackdrop.svelte: page.backdrop, its photos and how they
   change as the visitor scrolls).
@@ -8,7 +8,7 @@
 -->
 <script>
   import ScrollBackdrop from './ScrollBackdrop.svelte';
-  import Section from './Section.svelte';
+  import Collapsible from './Collapsible.svelte';
   import { isObject } from '../../site/is.js';
 
   let { live, file } = $props();
@@ -23,7 +23,7 @@
   });
 </script>
 
-<Section
+<Collapsible
   key="page:backdrop"
   id="scroll-backdrop"
   title="Scroll backdrop"
@@ -31,4 +31,4 @@
 >
   <p class="hint">The images behind the page's sections that change as the visitor scrolls.</p>
   <ScrollBackdrop {live} {file} />
-</Section>
+</Collapsible>

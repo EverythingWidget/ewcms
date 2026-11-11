@@ -1,5 +1,5 @@
 <!--
-  A collapsible panel section: a bar (a toggle button with the title, the `bar` snippet's
+  A collapsible panel block: a bar (a toggle button with the title, the `bar` snippet's
   controls, then the caret at its right end) and the body, clipped and inert while closed (it stays in the DOM, so a field picked
   in the preview can be found and its section opened). Used by the Content, Motion and Settings
   tabs and the Animations library (with onenter, an always open card a click selects and a

@@ -17,7 +17,7 @@
 <script>
   import Button from './Button.svelte';
   import MotionField from './MotionField.svelte';
-  import Section from './Section.svelte';
+  import Collapsible from './Collapsible.svelte';
   import Select from './Select.svelte';
   import {
     GROUPS,
@@ -119,7 +119,7 @@
 </script>
 
 {#each groups as [title, defs, props] (title)}
-  <Section key="{key}:{title}" {title}>
+  <Collapsible key="{key}:{title}" {title}>
     {#each defs as def (def.label)}
       {#if library}
         <MotionField {def} {gsap} value={each(def, (p) => dig(m.spec, p))} onvalue={setValue}>
@@ -171,5 +171,5 @@
         onchange={(k) => addProp(props, k)}
       />
     {/if}
-  </Section>
+  </Collapsible>
 {/each}
