@@ -3,7 +3,7 @@
  *
  * The site calls window.parent.__siteEditor.connect(api, win) at startup (see
  * src/client/main.js), before it mounts the first page. From then on the editor:
- *  - pushes the edited settings/animations.json into the preview and re-mounts animations,
+ *  - pushes the edited animations.json into the preview and re-mounts animations,
  *  - re-applies edited text to every [data-edit] element whenever a page mounts,
  *  - Arrange clicks ('arrange'; ui.svelte.js previewClicks): a double click turns a [data-edit] element into an inline editor
  *    until it loses focus (a single click picks its widget: overlay.js); a double-clicked

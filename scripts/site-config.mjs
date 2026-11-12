@@ -2,7 +2,8 @@
  * The site's config, site.config.mjs at the site's root, and the paths it resolves to. Node only.
  *
  *   export default {
- *     contentDir: 'content/en',        // pages/, sources/, settings/, strings.json
+ *     contentDir: 'content/en',        // pages/, sources/, strings.json (its parent, the content
+ *                                      // root: templates/, site.json, header.json, ...)
  *     mediaDir: 'media',               // original photos (scripts/photos.mjs reads them)
  *     publicDir: 'public',             // Vite's public folder
  *     publicMediaDir: 'public/media',  // the photos' generated sizes (served as /media/...)
@@ -21,7 +22,8 @@
  * publicMediaDir, generatedDir, manifest, outDir, themeDir: the base theme, the site-theme alias),
  * themeLayerDir and themeLayers (the site's layer folder and files, null and [] without),
  * theme (the base theme's theme.json, the site's merged over it key by key),
- * plus contentRel (contentDir from the root,
+ * plus contentRootDir (the content root: contentDir's parent, the shared files and templates/),
+ * contentRel and contentRootRel (contentDir and contentRootDir from the root,
  * with "/": git paths and messages) and mediaUrl (publicMediaDir as a URL: "/media").
  */
 import fs from 'node:fs';
@@ -76,6 +78,8 @@ export function loadSiteConfig(root = process.cwd()) {
     root,
     config,
     contentDir: abs(config.contentDir),
+    // the content root: the shared files (files.js ROOT_FILES), next to the language folders
+    contentRootDir: path.dirname(abs(config.contentDir)),
     // item templates: site-wide, next to the language folders (content/templates)
     templatesDir: path.join(path.dirname(abs(config.contentDir)), 'templates'),
     mediaDir: abs(config.mediaDir),
@@ -92,6 +96,7 @@ export function loadSiteConfig(root = process.cwd()) {
       ...(layerDir ? readJson(path.join(layerDir, 'theme.json')) : {}),
     },
     contentRel: posix(path.relative(root, abs(config.contentDir))),
+    contentRootRel: posix(path.relative(root, path.dirname(abs(config.contentDir)))) || '.',
     templatesRel: posix(
       path.relative(root, path.join(path.dirname(abs(config.contentDir)), 'templates')),
     ),

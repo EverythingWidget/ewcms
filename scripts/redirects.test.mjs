@@ -6,7 +6,7 @@ import path from 'node:path';
 import { pagesOp } from './editor-server.mjs';
 import { readContentDir } from './content.mjs';
 import { getRoutes } from '../src/site/routes.js';
-import { contentFromFiles } from '../src/site/files.js';
+import { contentFromFiles, isRootFile } from '../src/site/files.js';
 import {
   buildRedirects,
   itemMoves,
@@ -23,12 +23,12 @@ import { read, paramPage } from './test-layout.mjs';
 function site(redirects = []) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'redirects-'));
   const put = (f, data) => {
-    const file = path.join(root, 'content/en', f);
+    const file = path.join(root, isRootFile(f) ? 'content' : 'content/en', f);
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, JSON.stringify(data));
   };
-  put('settings/site.json', { version: 1, name: 'Test', url: 'https://test.example' });
-  put('settings/nav.json', {
+  put('site.json', { version: 1, name: 'Test', url: 'https://test.example' });
+  put('header.json', {
     version: 1,
     header: [
       { label: 'People', page: 'pg-peop', children: [{ label: 'Team', page: 'pg-team' }] },
@@ -36,7 +36,7 @@ function site(redirects = []) {
       { label: 'Noor', item: { source: 'people', id: 'p-noor' } },
     ],
   });
-  put('settings/redirects.json', { version: 1, redirects });
+  put('redirects.json', { version: 1, redirects });
   put(
     'pages/index.json',
     page('pg-home', {
@@ -83,12 +83,12 @@ test('rename: every path of the folder redirects (items by pattern), links follo
   const root = site();
   const r = pagesOp(root, { op: 'rename', id: 'people', name: 'models' });
   assert.equal(r.status, 200, r.body.error);
-  assert.deepEqual(read(root, 'settings/redirects.json').redirects, [
+  assert.deepEqual(read(root, 'redirects.json').redirects, [
     { from: '/people/', to: '/models/' },
     { from: '/people/:person/', to: '/models/:person/' }, // also /people/team/ (one segment)
   ]);
   // links by id (the menus) need nothing; an href path follows
-  const nav = read(root, 'settings/nav.json');
+  const nav = read(root, 'header.json');
   assert.equal(nav.header[0].page, 'pg-peop');
   assert.equal(
     read(root, 'pages/index.json').sections[0].widgets[0].config.link.href,
@@ -99,7 +99,7 @@ test('rename: every path of the folder redirects (items by pattern), links follo
     '/peoples/',
   ); // not a match
   assert.equal(r.body.links, 1);
-  assert.deepEqual(r.body.changed.sort(), ['pages/index.json', 'settings/redirects.json']);
+  assert.deepEqual(r.body.changed.sort(), ['pages/index.json', 'redirects.json']);
 });
 
 test('chain collapse, self-loops and a redirect from a page again', () => {
@@ -109,12 +109,12 @@ test('chain collapse, self-loops and a redirect from a page again', () => {
   ]);
   const first = pagesOp(root, { op: 'rename', id: 'people', name: 'models' });
   assert.deepEqual(first.body.pruned, [{ from: '/models/', to: '/elsewhere/' }]); // a page now
-  const list = read(root, 'settings/redirects.json').redirects;
+  const list = read(root, 'redirects.json').redirects;
   assert.deepEqual(list[0], { from: '/team/', to: '/models/team/', status: 302 }); // no chain
   // back again: /people/ -> /models/ -> /people/ would loop: those go
   const r = pagesOp(root, { op: 'rename', id: 'models', name: 'people' });
   assert.deepEqual(r.body.pruned, []);
-  assert.deepEqual(read(root, 'settings/redirects.json').redirects, [
+  assert.deepEqual(read(root, 'redirects.json').redirects, [
     { from: '/team/', to: '/people/team/', status: 302 },
     { from: '/models/', to: '/people/' },
     { from: '/models/:person/', to: '/people/:person/' },
@@ -131,22 +131,22 @@ test('delete: to the parent (default), to a chosen page, or gone', () => {
   let root = site([{ from: '/crew/', to: '/people/team/' }]);
   let r = pagesOp(root, { op: 'delete', id: 'people/team' });
   assert.equal(r.status, 200, r.body.error);
-  assert.deepEqual(read(root, 'settings/redirects.json').redirects, [
+  assert.deepEqual(read(root, 'redirects.json').redirects, [
     { from: '/crew/', to: '/people/' },
     { from: '/people/team/', to: '/people/' },
   ]);
   // links to it go to the target (a page link: the target's id), without the #hash
   assert.equal(read(root, 'pages/index.json').sections[0].widgets[0].config.link.href, '/people/');
-  assert.equal(read(root, 'settings/nav.json').header[0].children[0].page, 'pg-peop');
+  assert.equal(read(root, 'header.json').header[0].children[0].page, 'pg-peop');
 
   root = site();
   r = pagesOp(root, { op: 'delete', id: 'people/[person]', redirect: '/about/' });
   assert.deepEqual(r.body.removed, ['pages/people/[person]/index.json']);
-  assert.deepEqual(read(root, 'settings/redirects.json').redirects, [
+  assert.deepEqual(read(root, 'redirects.json').redirects, [
     { from: '/people/:person/', to: '/about/' },
   ]);
   // an item link of a deleted [param] page: broken (the build warns), not rewritten
-  assert.deepEqual(read(root, 'settings/nav.json').header[2].item, {
+  assert.deepEqual(read(root, 'header.json').header[2].item, {
     source: 'people',
     id: 'p-noor',
   });
@@ -159,22 +159,19 @@ test('delete: to the parent (default), to a chosen page, or gone', () => {
 
   root = site([{ from: '/crew/', to: '/people/team/' }]);
   r = pagesOp(root, { op: 'delete', id: 'people', redirect: null });
-  assert.deepEqual(read(root, 'settings/redirects.json').redirects, []); // gone: no redirect to it either
-  // links to it stay (the build's link check finds them); its menu items went (nav.json)
+  assert.deepEqual(read(root, 'redirects.json').redirects, []); // gone: no redirect to it either
+  // links to it stay (the build's link check finds them); its menu items went (header.json)
   assert.equal(r.body.broken, 2);
-  assert.equal(JSON.stringify(read(root, 'settings/nav.json')).includes('pg-peop'), false);
+  assert.equal(JSON.stringify(read(root, 'header.json')).includes('pg-peop'), false);
   assert.equal(r.body.links, 0);
 });
 
 test('an item slug change: its page redirects; links by id need nothing', () => {
   const root = site();
   const before = Object.fromEntries(
-    [
-      'settings/site.json',
-      'settings/nav.json',
-      'pages/people/[person]/index.json',
-      'sources/people.json',
-    ].map((f) => [f, read(root, f)]),
+    ['site.json', 'header.json', 'pages/people/[person]/index.json', 'sources/people.json'].map(
+      (f) => [f, read(root, f)],
+    ),
   );
   const after = structuredClone(before);
   after['sources/people.json'].items[0].slug = 'noor-v';
@@ -224,7 +221,7 @@ test('_redirects: one line per path, with and without its slash; build warnings'
 });
 
 test('validation: redirects.json', () => {
-  const R = 'settings/redirects.json';
+  const R = 'redirects.json';
   assert.deepEqual(checkContent(R, { version: 1, redirects: [] }), []);
   assert.deepEqual(checkContent(R, { version: 1, redirects: {} }), [
     '"redirects" must be a list (a JSON array), not an object',
@@ -271,7 +268,7 @@ test('"See all" links go to the page that shows the source, wherever it is', asy
 function nestedSite(redirects) {
   const root = site(redirects);
   const put = (f, data) => {
-    const file = path.join(root, 'content/en', f);
+    const file = path.join(root, isRootFile(f) ? 'content' : 'content/en', f);
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, JSON.stringify(data));
   };
@@ -304,7 +301,7 @@ test('nested [param] pages: a rename moves every level by its pattern', () => {
   const root = nestedSite();
   const r = pagesOp(root, { op: 'rename', id: 'people', name: 'models' });
   assert.equal(r.status, 200, r.body.error);
-  assert.deepEqual(read(root, 'settings/redirects.json').redirects, [
+  assert.deepEqual(read(root, 'redirects.json').redirects, [
     { from: '/people/', to: '/models/' },
     { from: '/people/:person/:year/', to: '/models/:person/:year/' },
     { from: '/people/:person/', to: '/models/:person/' },
@@ -339,7 +336,7 @@ test('nested [param] pages: delete one level, to the same outer item by default'
   assert.equal(r.status, 200, r.body.error);
   assert.deepEqual(r.body.removed, ['pages/people/[person]/[year]/index.json']);
   // one line: each item page goes to its own outer page; links to one follow it
-  assert.deepEqual(read(root, 'settings/redirects.json').redirects, [
+  assert.deepEqual(read(root, 'redirects.json').redirects, [
     { from: '/people/:person/:year/', to: '/people/:person/' },
   ]);
   assert.equal(
@@ -352,19 +349,19 @@ test('nested [param] pages: delete one level, to the same outer item by default'
     pagesOp(gone, { op: 'delete', id: 'people/[person]/[year]', redirect: null }).status,
     200,
   );
-  assert.deepEqual(read(gone, 'settings/redirects.json').redirects, []);
+  assert.deepEqual(read(gone, 'redirects.json').redirects, []);
 });
 
 test('top-level [param] pages: delete to the nearest page (default) or one picked', () => {
   const root = nestedSite();
   assert.equal(pagesOp(root, { op: 'delete', id: 'people/[person]' }).status, 200);
-  assert.deepEqual(read(root, 'settings/redirects.json').redirects, [
+  assert.deepEqual(read(root, 'redirects.json').redirects, [
     { from: '/people/:person/:year/', to: '/people/' },
     { from: '/people/:person/', to: '/people/' },
   ]);
   const again = nestedSite();
   pagesOp(again, { op: 'delete', id: 'people/[person]', redirect: '/about/' });
-  assert.deepEqual(read(again, 'settings/redirects.json').redirects, [
+  assert.deepEqual(read(again, 'redirects.json').redirects, [
     { from: '/people/:person/:year/', to: '/about/' },
     { from: '/people/:person/', to: '/about/' },
   ]);
@@ -402,7 +399,7 @@ test('rename a param: the URLs stay, the levels in it keep matching, redirects f
     { param: 'year', property: 'year' },
   ]);
   assert.deepEqual(urls(), before);
-  assert.deepEqual(read(root, 'settings/redirects.json').redirects, [
+  assert.deepEqual(read(root, 'redirects.json').redirects, [
     { from: '/p/:model/:year/', to: '/people/:model/:year/' },
     { from: '/old/', to: '/about/' },
   ]);

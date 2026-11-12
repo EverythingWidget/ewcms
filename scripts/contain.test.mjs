@@ -43,7 +43,7 @@ test('contained width: validated in site.json, and on the page as --contain', ()
   // the site's own setting doesn't matter: the default (no layout) and a set one
   const { layout: _own, ...plain } = content.site; // eslint-disable-line no-unused-vars
   const site = { ...plain, layout: { containedCols: 121 } };
-  assert.match(checkContent('settings/site.json', site).join('\n'), /layout.containedCols/);
+  assert.match(checkContent('site.json', site).join('\n'), /layout.containedCols/);
   const { routes } = buildRoutes(content);
   const about = routes.find((r) => r.path === '/about/');
   const head = (s) => renderRoute(about, { ...content, site: s }).head;

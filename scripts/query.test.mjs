@@ -109,7 +109,7 @@ test('unmatched: Any and a missing property, per param, in address order', () =>
 /** People and shoots, a [person] and a [person]/[year] page. */
 const site = (inner = {}, files = {}) =>
   contentFromFiles({
-    'settings/site.json': { name: 'S', title: 'S' },
+    'site.json': { name: 'S', title: 'S' },
     'pages/people/index.json': { title: 'People' },
     'pages/people/[person]/index.json': paramPage('people/[person]', 'people'),
     'pages/people/[person]/[year]/index.json': paramPage(

@@ -135,8 +135,8 @@ test('checkItems: required, types, choices, links, dates, photos, slugs', () => 
     'item 1 (Ann): "Kind" must be one of model, band',
     'item 1 (Ann): "Link" must be a link (https://…, /path/ or mailto:…)',
     'item 1 (Ann): "Shot on" must be a date (YYYY-MM-DD)',
-    'item 1 (Ann): "Photo" "missing.jpg" is not a photo in media/ or content/en/settings/photos.json',
-    'item 1 (Ann): "Photos" photo 2 "gone.jpg" is not a photo in media/ or content/en/settings/photos.json',
+    'item 1 (Ann): "Photo" "missing.jpg" is not a photo in media/ or content/photos.json',
+    'item 1 (Ann): "Photos" photo 2 "gone.jpg" is not a photo in media/ or content/photos.json',
     'item 1 (Ann): "Placeholder" must be true or false',
     'item 2: "Name" is required',
     'item 2: another item has the slug "ann"',
@@ -171,12 +171,12 @@ test('checkSources: every source, with its schema or inferred; photos from media
         version: 1,
         items: [{ id: 'p-pppp', name: 'P', photos: ['places/p.jpg'], cover: 'places/p.jpg' }],
       },
-      'settings/photos.json': { version: 1, photos: { 'places/p.jpg': { srcset: [] } } },
+      'photos.json': { version: 1, photos: { 'places/p.jpg': { srcset: [] } } },
     }),
     media: {},
   };
   assert.deepEqual(checkSources(content), [
-    'content/en/sources/people.json: item 1 (A): "Photo" "people/a.jpg" is not a photo in media/ or content/en/settings/photos.json',
+    'content/en/sources/people.json: item 1 (A): "Photo" "people/a.jpg" is not a photo in media/ or content/photos.json',
   ]);
   content.media = { 'people/a.jpg': {} };
   assert.deepEqual(checkSources(content), []);
@@ -192,7 +192,7 @@ test('routes: slug and title from the schema', () => {
     ],
   };
   const c = contentFromFiles({
-    'settings/site.json': { name: 'Site', titleTemplate: '{page} | {site}' },
+    'site.json': { name: 'Site', titleTemplate: '{page} | {site}' },
     'pages/bands/[band]/index.json': paramPage('bands/[band]', 'bands', {}, { section: 'Bands' }),
     'sources/bands.json': {
       version: 1,

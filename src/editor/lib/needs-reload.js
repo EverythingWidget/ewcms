@@ -11,7 +11,7 @@
  *   the site's settings                only when more than its type scale changed (siteKey:
  *                                      "type" is CSS variables the Settings panel puts on the
  *                                      preview's root as it is typed)
- *   the menu (settings/nav.json), the photos' and the UI strings
+ *   the menu (header.json), the photos' and the UI strings
  *   any other file the rule doesn't know (a reload is always right)
  *
  * Never: item templates, the footer, animations, redirects (none of them is a route).
@@ -19,7 +19,7 @@
 import {
   ANIMATIONS,
   FOOTER,
-  NAV,
+  HEADER,
   PHOTOS,
   REDIRECTS,
   SITE,
@@ -36,12 +36,12 @@ import { isObject } from '../../site/is.js';
 /** Files that never reload the preview: rendered in place, or never shown. */
 export const IN_PLACE = [FOOTER, ANIMATIONS, REDIRECTS];
 /** Files that always do: the menu and what every page shows around its sections. */
-export const RELOADS = [NAV, SITE, PHOTOS, STRINGS];
+export const RELOADS = [HEADER, SITE, PHOTOS, STRINGS];
 
 /** A file whose edits change the routes only sometimes (routesKey tells). */
 export const routesFile = (file) => !!(sourceIdOf(file) || schemaIdOf(file) || pageIdOf(file));
 
-/** The sources the menu lists ("items": a source id, at any depth of settings/nav.json). */
+/** The sources the menu lists ("items": a source id, at any depth of header.json). */
 function navSources(nav, out = new Set()) {
   if (Array.isArray(nav)) for (const v of nav) navSources(v, out);
   else if (isObject(nav))
@@ -59,7 +59,7 @@ function navSources(nav, out = new Set()) {
  */
 export function routesKey(files) {
   const content = contentFromFiles(files);
-  const listed = navSources(content.nav);
+  const listed = navSources(content.header);
   return JSON.stringify(
     getRoutes(content, { unbuilt: true }).map((r) => [
       r.path,

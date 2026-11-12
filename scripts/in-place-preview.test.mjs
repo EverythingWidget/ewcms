@@ -12,7 +12,7 @@ import * as render from '../src/site/render.js';
 import {
   ANIMATIONS,
   FOOTER,
-  NAV,
+  HEADER,
   PHOTOS,
   REDIRECTS,
   SITE,
@@ -37,7 +37,7 @@ test('needsReload: the file decides; a source, schema or page only when the rout
   for (const f of [templateFile('t-ab12'), FOOTER, ANIMATIONS, REDIRECTS])
     assert.equal(needsReload([f], { routes: true }), false, f);
   // the menu and what every page shows around its sections: always
-  for (const f of [NAV, SITE, PHOTOS, STRINGS]) assert.equal(needsReload([f]), true, f);
+  for (const f of [HEADER, SITE, PHOTOS, STRINGS]) assert.equal(needsReload([f]), true, f);
   // routes files: as the routes say
   for (const f of [people, schemaFile('people'), pageFile('about'), pageFile('home')]) {
     assert.ok(routesFile(f), f);
@@ -47,7 +47,7 @@ test('needsReload: the file decides; a source, schema or page only when the rout
   // a file the rule doesn't know: a reload is always right
   assert.equal(needsReload(['settings/something-new.json']), true);
   // one of several is enough
-  assert.equal(needsReload([templateFile('t-ab12'), NAV]), true);
+  assert.equal(needsReload([templateFile('t-ab12'), HEADER]), true);
   assert.equal(needsReload([]), false);
 });
 
@@ -92,7 +92,9 @@ test("routesKey: items added, removed or moved, slugs and the menu's names chang
   );
   // ... not when the menu doesn't list the source
   const unlisted = structuredClone(files);
-  unlisted[NAV].header = unlisted[NAV].header.map(({ children: _c, items: _i, ...rest }) => rest);
+  unlisted[HEADER].header = unlisted[HEADER].header.map(
+    ({ children: _c, items: _i, ...rest }) => rest,
+  );
   const before = routesKey(unlisted);
   unlisted[people].items[0].title = 'Noor V.';
   assert.equal(routesKey(unlisted), before);
@@ -222,7 +224,11 @@ test('the editor: in place by default, a reload only by the rule, on Save too', 
     main,
     /if \(moved\) bridge\.navigate\(moved\);\s*else if \(reload && bridge\.path\(\)\) bridge\.reload\(\);/,
   );
-  // menu edits carry no reload flag of their own (the rule covers settings/nav.json)
+  // menu edits carry no reload flag of their own (the rule covers header.json)
   for (const f of ['PagesList', 'AddPageModal', 'HeaderPart'])
-    assert.doesNotMatch(read(`src/editor/svelte/${f}.svelte`), /set\(NAV,[^;]*structure: true/, f);
+    assert.doesNotMatch(
+      read(`src/editor/svelte/${f}.svelte`),
+      /set\(HEADER,[^;]*structure: true/,
+      f,
+    );
 });

@@ -5,7 +5,7 @@
     header      in a folder: the page head's square ← (up one level, Esc) beside the folder
                 path, a quiet "Back to /parent/" under it, and a square + (Add page; off
                 where only a [param] page could go and it has one); at the top: the path and +
-    menu list   one list in the menu's order (nav.json): at the top home and the other pages;
+    menu list   one list in the menu's order (header.json): at the top home and the other pages;
                 in a folder its root row first (locked: its own page, the Own page switch
                 when it has a normal sub page; off: quieter, its first sub page "As /"), then
                 its pages, its [param] page pinned last (a lock)
@@ -34,7 +34,7 @@
   import { ui } from './ui.svelte.js';
   import { toast } from './toasts.svelte.js';
   import { listDrag, rowsOf } from './list-drag.svelte.js';
-  import { NAV, isTemplate, pageFile, templateFile } from '../../site/files.js';
+  import { HEADER, isTemplate, pageFile, templateFile } from '../../site/files.js';
   import { parentId, pathOfId } from '../../site/routes.js';
   import {
     crumbsOf,
@@ -140,7 +140,7 @@
   function setNav(next, what) {
     if (!next)
       return void toast(`Can't move ${what} there: dropdowns go one level deep`, { kind: 'error' });
-    live.store.set(NAV, '/header', next.header, { source: 'panel' });
+    live.store.set(HEADER, '/header', next.header, { source: 'panel' });
   }
   const pidOf = (id) => files[pageFile(id)]?.id;
   function setOwn(on) {
@@ -153,7 +153,7 @@
     shape: () => `${movable.map((r) => r.id)}|${nlMovable.map((r) => r.id)}`,
     ondrop: (d) => {
       if (busy) return; // a move runs: one op at a time
-      const nav = live.current(NAV) || {};
+      const nav = live.current(HEADER) || {};
       const from = (d.at === 0 ? movable : nlMovable)[d.j];
       if (d.over.at === 1) {
         // into Not linked: out of the menu (Not linked has no order: where it lands is its place)
@@ -191,10 +191,10 @@
     const parentPid = level ? pidOf(level) : null;
     if (plan.kind === 'link')
       return setNav(
-        linkAt(live.current(NAV) || {}, row.pid, row.title, parentPid, plan.place),
+        linkAt(live.current(HEADER) || {}, row.pid, row.title, parentPid, plan.place),
         row.title,
       );
-    // moved here and linked in one op on disk (nav.json follows the files)
+    // moved here and linked in one op on disk (header.json follows the files)
     busy = true;
     const res = await actions.pagesOp({
       op: 'move',
@@ -246,7 +246,7 @@
   const heavyOf = (row) => row.template || linksTo(files, row.pid, pageFile(row.id)) > 0;
   // its links outside the menu (the menu's own items are "In the menu")
   const others = (row) =>
-    linksTo(files, row.pid, pageFile(row.id)) - linksTo({ [NAV]: files[NAV] }, row.pid);
+    linksTo(files, row.pid, pageFile(row.id)) - linksTo({ [HEADER]: files[HEADER] }, row.pid);
   async function ask(row) {
     asking = row.id;
     redirectTo = parentPath(row.id);
@@ -276,7 +276,7 @@
   async function remove(row, heavy) {
     const redirect = heavy && redirectTo !== GONE ? redirectTo : null;
     busy = true;
-    // no redirect: its menu item goes with it, on disk (pagesOp: nav.json follows the files)
+    // no redirect: its menu item goes with it, on disk (pagesOp: header.json follows the files)
     await actions.pagesOp({ op: 'delete', id: row.id, redirect });
     busy = false;
     asking = '';

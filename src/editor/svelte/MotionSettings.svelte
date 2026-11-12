@@ -1,5 +1,5 @@
 <!--
-  Site Settings > Motion: what every page's animations share (settings/animations.json).
+  Site Settings > Motion: what every page's animations share (animations.json).
     Default timing  `defaults` { duration, delay, ease }: what an animation plays with when it
                     sets none itself (src/client/anim/engine.js). Empty: GSAP's own (the
                     placeholders), as before there was a setting. Checked by src/site/validate.js.

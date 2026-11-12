@@ -1,12 +1,12 @@
 /**
  * The pages list (PagesList.svelte, the Pages tab): the site's pages one folder at a time,
- * from the content files ({ "pages/index.json": data, …, "settings/nav.json": … }).
+ * from the content files ({ "pages/index.json": data, …, "header.json": … }).
  *
  * A level is a page's folder (its page id; '' is the top, home's folder). It shows:
  *   own        a folder's root row: its own page, always (locked first); off ("ownPage":
  *              false: its URL opens its first sub page, src/site/routes.js) it is still there,
  *              quieter. The top has none: its page is home, a row of the menu like the others
- *   sub        the pages in the folder that are in the menu (nav.json), in the menu's order
+ *   sub        the pages in the folder that are in the menu (header.json), in the menu's order
  *              (at the top home too), then its [param] page (pinned last; a [param] folder
  *              holds only another one)
  *   notLinked  every page not in the menu, the whole site's (filter 'all') or the folder's
@@ -17,12 +17,12 @@
  * and 404: never deleted), movable (it has a grip: not a [param] page, not 404), noindex,
  * asRoot (the folder's URL opens it) }.
  *
- * The menu edits (link, unlink, move) take nav.json's data and return a changed copy (null:
+ * The menu edits (link, unlink, move) take header.json's data and return a changed copy (null:
  * not possible). Items of the menu are { label, page } (hrefs.js); dropdowns go one level deep.
  * Linking is a drag between the two lists (dropOf: link, or move the page into the folder).
  */
 import {
-  NAV,
+  HEADER,
   contentFromFiles,
   isReserved,
   isTemplate,
@@ -92,7 +92,7 @@ export function levelOf(files, level, filter = 'all', routes = null) {
   const ids = pageIds(files);
   // its [param] pages' counts: the pages built (not the editor's unbuilt ones)
   const built = (routes ?? getRoutes(contentFromFiles(files))).filter((r) => !r.unbuilt);
-  const nav = files[NAV] || {};
+  const nav = files[HEADER] || {};
   const order = navOrder(nav);
   const pidOf = (id) => files[pageFile(id)]?.id;
   const linked = (id) => order.includes(pidOf(id));
@@ -217,7 +217,7 @@ export function linksTo(files, pid, own = '') {
   return n;
 }
 
-// ---- the menu (nav.json)
+// ---- the menu (header.json)
 
 /** Where page `pid` is in the menu: { list (header or a children list), index } or null. */
 function findItem(header, pid) {

@@ -45,7 +45,7 @@ test('footer: shipped empty, rendered under every page, outside the view', () =>
     const main = body.indexOf('</main>');
     const foot = body.indexOf('<footer class="site-footer" data-footer');
     assert.ok(main > 0 && foot > main && foot < body.indexOf('id="portal"'), route.path);
-    assert.match(body, /data-page-file="settings\/footer\.json"><\/footer>/);
+    assert.match(body, /data-page-file="footer\.json"><\/footer>/);
     assert.doesNotMatch(body, /Let's make|footer__cta|data-to-top/);
   }
   // public: no editor markers
@@ -66,7 +66,7 @@ test('footer: its sections render on every page, and the editor renders them on 
     const foot = body.slice(body.indexOf('<footer class="site-footer"'));
     assert.match(foot, new RegExp(`data-sec="${s.id}"`));
     assert.match(foot, /Say hello/);
-    assert.match(foot, /data-edit="settings\/footer\.json#\/sections\/0\/widgets\/0\/body"/);
+    assert.match(foot, /data-edit="footer\.json#\/sections\/0\/widgets\/0\/body"/);
   }
   for (const path of ['/', '/about/']) {
     const r = renderOp(render, SITE_A, {}, { path, file: FOOTER, data, ids: [s.id] });

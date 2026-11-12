@@ -50,7 +50,7 @@ export function renderRoute(route, content, { editable = false, unbuilt = false 
   setEditable(editable);
   // no matching page and no 404 page: an empty placeholder (dev: a site with no pages yet)
   route ||= EMPTY_ROUTE;
-  // settings/site.json may still be missing on a brand-new site; the header reads site.name
+  // site.json may still be missing on a brand-new site; the header reads site.name
   const site = content.site || { name: '', title: '', url: '', accent: '', lang: 'en' };
   const shown = content.site ? content : { ...content, site };
   const ctx = contextOf(route, shown, unbuilt);

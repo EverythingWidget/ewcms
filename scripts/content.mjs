@@ -3,10 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   FOLDERS,
-  ROOT_FILES,
+  LANG_FILES,
   TEMPLATES,
+  ROOT_FILES,
   contentFromFiles,
   isContentFile,
+  isRootFile,
   templateIdOf,
 } from '../src/site/files.js';
 import { assertContent, parseContent } from '../src/site/validate.js';
@@ -17,7 +19,7 @@ const read = (file, fallback) =>
   fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : fallback;
 
 /**
- * One content file ("settings/site.json"), parsed and (unless check is false) checked: a
+ * One content file ("site.json"), parsed and (unless check is false) checked: a
  * mistake throws an error that names the file (and the line, for broken JSON).
  */
 export function readContentFile(root, file, { check = true } = {}) {
@@ -27,14 +29,29 @@ export function readContentFile(root, file, { check = true } = {}) {
 }
 
 /**
- * A content file's path on disk: under the content folder, a template ("templates/t-….json")
- * in the site-wide templates folder next to it (content/templates).
+ * A content file's path on disk: under the language folder (content/en), the shared files
+ * ("site.json", ROOT_FILES) and the templates ("templates/t-….json") at the content root
+ * next to it (content/site.json, content/templates/).
  */
 export function contentFilePath(root, file) {
   const site = loadSiteConfig(root);
-  return templateIdOf(file)
-    ? path.join(site.templatesDir, file.slice(TEMPLATES.length + 1))
+  return isRootFile(file) || templateIdOf(file)
+    ? path.join(site.contentRootDir, file)
     : path.join(site.contentDir, file);
+}
+
+/**
+ * The language folder's settings/ is from before the shared files moved to the content root:
+ * an error that says where they go (no migration: move them).
+ */
+export function assertNoSettingsFolder(root) {
+  const site = loadSiteConfig(root);
+  const old = path.join(site.contentDir, 'settings');
+  if (fs.existsSync(old))
+    throw new Error(
+      `${site.contentRel}/settings/ is no longer read: its files go to ${site.contentRootRel}/ ` +
+        `(${ROOT_FILES.join(', ')}; nav.json is now header.json)`,
+    );
 }
 
 /** The template files on disk ("templates/t-ab12.json"), sorted. */
@@ -73,9 +90,10 @@ export function walkJson(dir) {
   return out.sort();
 }
 
-/** Every content file as { "pages/index.json": data, "pages/people/[person]/index.json": data, ... }. */
+/** Every content file as { "pages/index.json": data, "site.json": data, "pages/people/[person]/index.json": data, ... }. */
 export function readContentDir(root) {
   const dir = loadSiteConfig(root).contentDir;
+  assertNoSettingsFolder(root);
   const files = {};
   for (const folder of FOLDERS) {
     for (const name of walkJson(path.join(dir, folder))) {
@@ -83,8 +101,10 @@ export function readContentDir(root) {
       if (isContentFile(file)) files[file] = readContentFile(root, file);
     }
   }
-  for (const file of ROOT_FILES)
+  for (const file of LANG_FILES)
     if (fs.existsSync(path.join(dir, file))) files[file] = readContentFile(root, file);
+  for (const file of ROOT_FILES)
+    if (fs.existsSync(contentFilePath(root, file))) files[file] = readContentFile(root, file);
   for (const file of templateFiles(root)) files[file] = readContentFile(root, file);
   return files;
 }

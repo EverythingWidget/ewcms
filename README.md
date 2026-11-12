@@ -136,7 +136,8 @@ that change files copy it to a temp folder first.
 ## How it works
 
 **Words** (the editor's and these docs'): **Site Settings** is the editor's second tab (in a
-sentence, site Settings: `content/en/settings/`); **widget settings** are one widget's own
+sentence, site Settings: the shared files at the content root, `content/site.json` and its
+neighbours); **widget settings** are one widget's own
 inputs (its definition's `settings:`, the pop-up's Content and Layout tabs); **section
 settings** are one section's (its gear). Never "the settings" alone. A **source** is a list of
 items; a **property** is one value of an item (`{ "property": "title" }`).
@@ -169,12 +170,17 @@ editor has its own tokens and fonts (`src/editor/styles/_tokens.scss`, `_fonts.s
 ```
 — in a site —
 content/            ← all text, albums, projects, animation config (JSON)
+ site.json          ← shared by every language, next to the language folders: the site's settings,
+ header.json          the menus (the Header), footer.json: the footer's sections (see "Footer"),
+ footer.json          animations.json, photos.json, redirects.json
+ animations.json
+ photos.json
+ redirects.json
+ templates/         ← the List's item templates (t-<id>.json), shared by every language too
  en/                ← one folder per language (only en so far; the site's lang is site.json "lang")
   pages/            ← one folder per page (its URL) with index.json in it (see "Pages and URLs")
   sources/          ← lists that grids pull from (people, places, projects): { version, items: [...] },
                       plus <id>.schema.json: the properties of its items (see "Sources & schemas")
-  settings/         ← site-wide settings (site.json, nav.json, animations.json, photos.json, redirects.json)
-                      and footer.json: the footer's sections (see "Footer")
   strings.json      ← UI text of the templates: the menu's Menu / Close / clock label
 media/              ← source photos (jpg), committed
 theme/              ← the site's layers over ewcms's theme-default/ (tokens.scss, fonts.scss, overrides.scss, theme.json)
@@ -227,7 +233,7 @@ src/
     router.js       ← SPA navigation over the prerendered HTML
     theme.js        ← the accent colour
     scroll.js       ← native scroll and ScrollTrigger
-    anim/engine.js  ← reads content/en/settings/animations.json, wires every [data-anim]
+    anim/engine.js  ← reads content/animations.json, wires every [data-anim]
     anim/types.js   ← animation types (reveal, split, parallax, scatter, …)
     modules/        ← real rows, album slider, project accordion, card hover, misc
     ui/             ← menu (click-only), clock
@@ -272,7 +278,7 @@ tags, and works with JavaScript disabled.
 (prefetched on hover), runs the page-leave transition (a curtain showing the destination's
 name; its text, `curtainText`, lives in the page's file `pages/<page>/index.json` or in the
 item in `sources/`: missing, the page's title; `""`, no label. The curtain's timing is the
-site's alone (settings/animations.json, with the page fade: the editor's Site Settings > Page
+site's alone (animations.json, with the page fade: the editor's Site Settings > Page
 entrance); a page's `transition` is only `{ "curtain": "off" }` (no curtain: a page fade; the
 page's Motion > Page entrance card: Curtain site default / off), on its `[param]/index.json` for every item page; missing: the site's curtain),
 swaps `<main data-router-view>`, updates
@@ -285,20 +291,20 @@ page load.
 Content is split by kind, so a file name never means two things (a page called `site` and the
 site settings can live side by side):
 
-| file                                  | what                                                                                                                                                                                                                                                                                                              |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content/en/settings/nav.json`        | the **menus**: the header (nav pill, dropdowns, phone menu; see "Menu")                                                                                                                                                                                                                                           |
-| `content/en/settings/footer.json`     | the **footer**: `{ version, kind: "part", sections }`, sections and widgets exactly like a page's, under every page (see "Footer")                                                                                                                                                                                |
-| `content/en/strings.json`             | UI text of the templates: the menu button and clock labels (`nav.menu`, `nav.close`, `nav.clock`)                                                                                                                                                                                                                 |
-| `content/en/settings/site.json`       | name, the **SEO defaults** (`title`, `titleTemplate`, `description`, `ogPhoto`, `url`, `robots`, `lang`; see "SEO"), `forms` (where contact forms send, see "Contact form"), socials, email, `timezone` of the clock, `jobTitle` / `country` (structured data on home)                                            |
-| `content/en/settings/animations.json` | **every animation** (see below)                                                                                                                                                                                                                                                                                   |
-| `content/en/pages/index.json`         | home: its `sections` of widgets (the hero first: the big name, its text and the **scattered hero photos**, position `x/y/w` in %, `phone` over them (`{ x?, y?, w? }`, `null`: hidden on phones), `depth`, `layer` back/front), curtain text                                                                      |
-| `content/en/pages/<page>/index.json`  | the other pages: their `sections` of widgets (see "Layout"), curtain text, `meta`: its title, description, share photo, `noindex`, canonical (see "SEO")                                                                                                                                                          |
-| `content/en/sources/people.json`      | models: `id`, `slug`, `title`, role, `body`, location, `accent`, `cover` (the path of one of its photos), `photos[]` (photo paths)                                                                                                                                                                                |
-| `content/en/sources/places.json`      | places, same shape                                                                                                                                                                                                                                                                                                |
-| `content/en/sources/projects.json`    | projects: title, type, year, body, url, photo; `linkOut: true` makes the menus link straight to its `url`                                                                                                                                                                                                         |
-| `content/en/settings/redirects.json`  | **redirects** from old addresses: `[{ "from", "to", "status"? }]` (see "Redirects")                                                                                                                                                                                                                               |
-| `content/en/settings/photos.json`     | the **photo library**: every photo's `alt`, `credit` (`{ name, url?, source?, license? }`) and optional `focal` (`{ x, y }`, 0–100), keyed by media/ path or R2 key (`{ "people/noor-vermeer/01.jpg": { "alt": "…" } }`) and the sizes of photos uploaded to R2; written by the editor's Media window and uploads |
+| file                                 | what                                                                                                                                                                                                                                                                                                              |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `content/header.json`                | the **menus**: the header (nav pill, dropdowns, phone menu; see "Menu")                                                                                                                                                                                                                                           |
+| `content/footer.json`                | the **footer**: `{ version, kind: "part", sections }`, sections and widgets exactly like a page's, under every page (see "Footer")                                                                                                                                                                                |
+| `content/en/strings.json`            | UI text of the templates: the menu button and clock labels (`nav.menu`, `nav.close`, `nav.clock`)                                                                                                                                                                                                                 |
+| `content/site.json`                  | name, the **SEO defaults** (`title`, `titleTemplate`, `description`, `ogPhoto`, `url`, `robots`, `lang`; see "SEO"), `forms` (where contact forms send, see "Contact form"), socials, email, `timezone` of the clock, `jobTitle` / `country` (structured data on home)                                            |
+| `content/animations.json`            | **every animation** (see below)                                                                                                                                                                                                                                                                                   |
+| `content/en/pages/index.json`        | home: its `sections` of widgets (the hero first: the big name, its text and the **scattered hero photos**, position `x/y/w` in %, `phone` over them (`{ x?, y?, w? }`, `null`: hidden on phones), `depth`, `layer` back/front), curtain text                                                                      |
+| `content/en/pages/<page>/index.json` | the other pages: their `sections` of widgets (see "Layout"), curtain text, `meta`: its title, description, share photo, `noindex`, canonical (see "SEO")                                                                                                                                                          |
+| `content/en/sources/people.json`     | models: `id`, `slug`, `title`, role, `body`, location, `accent`, `cover` (the path of one of its photos), `photos[]` (photo paths)                                                                                                                                                                                |
+| `content/en/sources/places.json`     | places, same shape                                                                                                                                                                                                                                                                                                |
+| `content/en/sources/projects.json`   | projects: title, type, year, body, url, photo; `linkOut: true` makes the menus link straight to its `url`                                                                                                                                                                                                         |
+| `content/redirects.json`             | **redirects** from old addresses: `[{ "from", "to", "status"? }]` (see "Redirects")                                                                                                                                                                                                                               |
+| `content/photos.json`                | the **photo library**: every photo's `alt`, `credit` (`{ name, url?, source?, license? }`) and optional `focal` (`{ x, y }`, 0–100), keyed by media/ path or R2 key (`{ "people/noor-vermeer/01.jpg": { "alt": "…" } }`) and the sizes of photos uploaded to R2; written by the editor's Media window and uploads |
 
 | `content/en/pages/photography/people/[person]/index.json` | the people pages: `main` (the id of its main widget, whose source decides which pages exist), then sections and widgets like any page; see "Pages and URLs" and "Widget sources" |
 
@@ -340,7 +346,7 @@ shaped like the widget registry's settings (`src/site/schemas.js`):
 
 **Checks.** Save and `npm run build` check every source against its schema: required values,
 types, choice options, links, dates, valid unique slugs, and photos that exist (in `media/` or
-`content/en/settings/photos.json`). Save writes nothing and shows the problems
+`content/photos.json`). Save writes nothing and shows the problems
 (`content/en/sources/people.json: item 1: "Name" is required`); the build stops with the list.
 
 **No schema?** A source without one still works: its schema is inferred from its items, one
@@ -357,7 +363,7 @@ Source Explorer don't list them. A new source is a new `<id>.json` (with its sch
 > ⚠️ **Placeholder content.** The two people (_Noor Vermeer_, _Daan Okafor_), the two places and
 > the two DIY projects are placeholders (`"placeholder": true`, shown with a "Placeholder" tag).
 > Their photos are free Unsplash photos (Unsplash License); photographer and source URL are
-> each photo's `credit` in `content/en/settings/photos.json` and shown as a credit in the album view. Replace them with
+> each photo's `credit` in `content/photos.json` and shown as a credit in the album view. Replace them with
 > real shoots. The email `hello@eeliyarasta.com` is a placeholder too.
 > Pages of items with `"placeholder": true` get `noindex` and are left out of `sitemap.xml`;
 > remove the flag (or set it to `false`) when the item is real.
@@ -1213,7 +1219,7 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
 
 ### Menu
 
-`content/en/settings/nav.json` holds the menu: `header` (the nav pill, its dropdowns and the
+`content/header.json` holds the menu: `header` (the nav pill, its dropdowns and the
 phone menu). An item is a link (see Links) with a
 label: to a page by its id (`page`), to an item's page (`item`), or anywhere else (`href`,
 opens in a new tab). A page or item that isn't there gives a `[links]` build warning and `#`:
@@ -1229,7 +1235,7 @@ opens in a new tab). A page or item that isn't there gives a `[links]` build war
 
 ### Footer
 
-`content/en/settings/footer.json` is the footer: `{ "version": 1, "kind": "part", "sections": [] }`.
+`content/footer.json` is the footer: `{ "version": 1, "kind": "part", "sections": [] }`.
 Pages and the footer are one document type (`src/site/files.js` `docKindOf`, `docOf`): `"kind"` is
 `"page"` in a page file and `"part"` (a site part: only `sections`) here, and must match the file.
 Its sections are widgets exactly like a page's (the same grid, widgets, phone layout and motion; validated and tidied
@@ -1374,7 +1380,7 @@ Site Settings > Forms; `functions/` is then simply unused.
 
 ### Redirects
 
-`content/en/settings/redirects.json` is a list of `{ "from": "/old/", "to": "/new/", "status": 302 }`
+`content/redirects.json` is a list of `{ "from": "/old/", "to": "/new/", "status": 302 }`
 (`status` 301, moved for good, is the default and left out). `from` is a path, or a pattern for
 item pages (`/old/:person/` -> `/new/:person/`, any number of named placeholders:
 `/old/:person/:year/`); `to` is a page of the site or an `https://` URL.
@@ -1418,7 +1424,7 @@ page's own `meta`. Edited in the editor: Site Settings > SEO (the defaults) and 
 page in the preview; collapsed, below its sections, with a search-result and a share-card
 preview and the 60/160 character counts).
 
-**Site defaults** (`content/en/settings/site.json`):
+**Site defaults** (`content/site.json`):
 
 | key             | what                                                                                               |
 | --------------- | -------------------------------------------------------------------------------------------------- |
@@ -1467,7 +1473,7 @@ generated, so they're git-ignored. Sizes, format and quality are in `scripts/pho
 shared with photos uploaded to R2 (below).
 
 **Alt text and credits belong to the photo**, not to the page using it: one entry per photo in
-`content/en/settings/photos.json` (`alt`, `credit`, `focal`), keyed by its `media/` path or R2
+`content/photos.json` (`alt`, `credit`, `focal`), keyed by its `media/` path or R2
 key, edited in the editor's Media window. Everything else refers to a photo by its path only
 (a source's `photos` is a list of paths, `cover` and `photo` are paths). Every `<img>` takes it from there (`altOf()` / `img()` in
 `src/site/helpers.js`); thumbnails and repeats are `decorative` (`alt=""`). A photo without
@@ -1484,7 +1490,7 @@ same keys, uploads nothing the second time, and is cached forever). The original
 the largest size is the fallback `src`, and the key the content stores (e.g.
 `photos/noor-01-3f9a0c1b2d-1600.webp`). Each tile shows "Uploading N%" then "Resizing…".
 
-Each upload adds an entry to **`content/en/settings/photos.json`**: size, the keys of its widths,
+Each upload adds an entry to **`content/photos.json`**: size, the keys of its widths,
 the blurred placeholder and the accent colour. The build renders `srcset`, `width/height` and
 the placeholder from it, exactly like for `media/` photos, without downloading anything from R2.
 Publish commits it with the content (Save never writes it: uploads, alt text and deletes in the
@@ -1533,7 +1539,7 @@ dot stay on it (docs/THEME-MIGRATION.md).
 ### Animations: one config, one engine
 
 Markup only says **what** an element is: `data-anim="hero.title"`. All the **how** lives in
-`content/en/settings/animations.json`:
+`content/animations.json`:
 
 ```jsonc
 {
@@ -1680,7 +1686,7 @@ widget rows in a section card are teal: `--c-widget-card`, their title line `--c
 just `/`; one line: the parts above shrink with "…", the current one stays whole) and **+** (Add page). Going into a level slides it in from the right, going back from
 the left. Then:
 
-- one list in the menu's order (`nav.json`, the order on the website): at the top **Home** and
+- one list in the menu's order (`header.json`, the order on the website): at the top **Home** and
   the other top pages (Home can move and leave the menu, never be deleted); in a folder its
   **root** row first (its own page, `/`, locked: a lock, no grip), with the **Own page** switch
   at its end when the folder has a normal sub page (off: `"ownPage": false`, see "Pages and
@@ -1722,7 +1728,7 @@ the top; in a `[param]` folder only this kind): a new folder with its `index.jso
 **Delete** asks over the row: one line (the trash, then Cancel) when nothing links to it; a page in
 the menu or linked to gets a panel over the rows below (nothing moves) asking where visitors and
 links should go (its parent page by default, another page, or no redirect: its menu items go
-too, on disk with the folder: nav.json never points at a page that is gone). The address is renamed in the page's SEO tab (**Address**: the whole folder moves). These
+too, on disk with the folder: header.json never points at a page that is gone). The address is renamed in the page's SEO tab (**Address**: the whole folder moves). These
 keep links and redirects up to date (see "Redirects") and say so in a toast. Names are slugs (a-z,
 0-9, dashes); home and 404 can't be renamed or deleted. Adding, renaming, moving and deleting write to disk
 right away through the dev server (`POST /__editor/pages`), one at a time (one asked while
@@ -1816,7 +1822,7 @@ animations and redirects never. Other pages render from the unsaved edits too: t
 /__editor/draft`, cleared on Save), which renders dev pages from them.
 
 **Content › Header** (a site part: the page picker's **Site** group, or click the header in the
-preview) edits `nav.json` and the header's labels (`strings.json` `nav`: the menu and close
+preview) edits `header.json` and the header's labels (`strings.json` `nav`: the menu and close
 buttons, the clock). The menu with its items: label,
 link (a page from the page tree, or External URL with its URL), ↑ / ↓ / Remove, **Add link**,
 and a dropdown: the items of a source, or **Dropdown links** (one level) and the
@@ -1915,8 +1921,8 @@ undo/redo, **Esc** deselects (a dialog first, then the selected link, then the w
 JSON Pointer). Use `ed(file, path, 'multiline')`
 for multi-line text (`\n` ⇄ `<br>`), `'number'` for numbers and `'words'` for text rendered one
 `<span>` per word (the hero name: edited as plain text, re-split into words and re-animated after the edit). Page copy (titles, intros) lives
-in each page's `pages/<page>/index.json`, shared copy (nav) in `settings/site.json`, for this reason. The editor only ever writes
-existing JSON files in `content/en/pages/`, `content/en/sources/` and `content/en/settings/` (the
+in each page's `pages/<page>/index.json`, shared copy (nav) in `site.json`, for this reason. The editor only ever writes
+existing JSON files in `content/en/pages/`, `content/en/sources/`, `content/en/strings.json`, the shared files at `content/` and `content/templates/` (the
 content folder: `site.config.mjs`; the folders: `src/site/files.js`); only the pages list (and Address) creates, moves or deletes files, and only page files.
 These editor markers (`data-edit`, `data-edit-type`, `data-sec`, `data-widget`,
 `data-curtain-edit`) are only rendered by the dev server; `npm run build` leaves them out
@@ -1977,6 +1983,28 @@ Change in its field, see the Media window above). Edit
   Projects, About, Home. Small screens get a full-screen glass menu.
 - Inspiration: Gregor Collienne and Hannah Miles (home hero), Faint Film (album slider/grid),
   House of Yellow (a proper website with sections and a big footer).
+
+## Breaking content changes (next)
+
+The shared files moved out of the language folder: `content/en/settings/` is gone, its files
+sit at the content root, next to `templates/` (they are the same in every language), and
+`nav.json` is `header.json` (the Header). `content/en/` keeps only `pages/`, `sources/` and
+`strings.json`. A leftover `content/en/settings/` is an error (`ewcms check`, the build and the
+editor) that says where its files go. No converter; per site:
+
+```sh
+cd content
+git mv en/settings/site.json site.json
+git mv en/settings/nav.json header.json
+git mv en/settings/footer.json footer.json
+git mv en/settings/animations.json animations.json
+git mv en/settings/photos.json photos.json
+git mv en/settings/redirects.json redirects.json
+```
+
+The files' contents don't change. In the engine: `NAV` is `HEADER` (src/site/files.js), the
+render content's `nav` is `header`, `ROOT_FILES` lists the shared files (the language folder's
+are `LANG_FILES`), and `@site-content` is the content root (`@site-content/animations.json`).
 
 ## Breaking content changes 0.4.0
 

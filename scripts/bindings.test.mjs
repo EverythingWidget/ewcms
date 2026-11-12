@@ -1,3 +1,4 @@
+import { isRootFile } from '../src/site/files.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -332,13 +333,18 @@ test('validation: the shape of bindings and items', () => {
 test('Save refuses bindings that do not fit the schema', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bindings-'));
   for (const f of [
-    'settings/site.json',
-    'settings/animations.json',
+    'site.json',
+    'animations.json',
     'sources/people.json',
     'sources/people.schema.json',
   ]) {
-    fs.mkdirSync(path.dirname(path.join(root, 'content/en', f)), { recursive: true });
-    fs.copyFileSync(path.join(SITE_A, 'content/en', f), path.join(root, 'content/en', f));
+    fs.mkdirSync(path.dirname(path.join(root, isRootFile(f) ? 'content' : 'content/en', f)), {
+      recursive: true,
+    });
+    fs.copyFileSync(
+      path.join(SITE_A, isRootFile(f) ? 'content' : 'content/en', f),
+      path.join(root, isRootFile(f) ? 'content' : 'content/en', f),
+    );
   }
   const F = 'pages/x/index.json';
   fs.mkdirSync(path.join(root, 'content/en/pages/x'), { recursive: true });

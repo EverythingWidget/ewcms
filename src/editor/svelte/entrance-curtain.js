@@ -6,7 +6,7 @@
 import { ANIMATIONS } from '../../site/files.js';
 import { normalizeCurtain, curtainPlan } from '../../client/anim/curtain.js';
 
-/** The global curtain in settings/animations.json. */
+/** The global curtain in animations.json. */
 export const CURTAIN = '/transitions/page/curtain';
 export const TOTAL_MAX = 12;
 const EASE_PTRS = ['/in/ease', '/labelIn/ease', '/labelOut/ease', '/out/ease'];

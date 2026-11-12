@@ -43,7 +43,7 @@ function setAttr(node, name, value) {
   return true;
 }
 
-/** The preview's page view (<main>), and its footer (settings/footer.json's sections). */
+/** The preview's page view (<main>), and its footer (footer.json's sections). */
 export const pageView = (doc) => doc?.querySelector('[data-router-view]') || null;
 export const footerOf = (doc) => doc?.querySelector('[data-footer]') || null;
 

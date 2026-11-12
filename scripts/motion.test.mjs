@@ -100,7 +100,7 @@ test('the library has the scroll animations and every default and page animation
 
 test('save refuses a widget with an unknown animation', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'motion-'));
-  fs.cpSync(path.join(SITE_A, 'content/en'), path.join(root, 'content/en'), { recursive: true });
+  fs.cpSync(path.join(SITE_A, 'content'), path.join(root, 'content'), { recursive: true });
   const F = 'pages/index.json';
   const page = JSON.parse(fs.readFileSync(path.join(SITE_A, 'content/en', F), 'utf8'));
   const wgt = page.sections.flatMap((s) => s.widgets).find((widget) => widget.motion);
@@ -116,7 +116,7 @@ test('save refuses a widget with an unknown animation', () => {
     .flatMap((s) => s.widgets)
     .find((widget) => widget.motion && widget !== wgt);
   delete cfg.animations[used.motion.animation];
-  assert.equal(save(root, { 'settings/animations.json': cfg }).status, 400);
+  assert.equal(save(root, { 'animations.json': cfg }).status, 400);
   wgt.motion = { animation: 'fade-scrub', start: 'top 70%' };
   assert.equal(save(root, { [F]: page }).status, 200);
   fs.rmSync(root, { recursive: true });

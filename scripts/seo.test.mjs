@@ -23,7 +23,7 @@ const media = {
   },
 };
 const content = (files, more = {}) => ({
-  ...contentFromFiles({ 'settings/site.json': { ...site, ...more }, ...files }),
+  ...contentFromFiles({ 'site.json': { ...site, ...more }, ...files }),
   media,
   photos: { 'a/share.jpg': { alt: 'A share' } },
 });
@@ -195,8 +195,7 @@ test('validation: page meta and site defaults', () => {
     }),
     ['meta: "noindex" must be a boolean, not a string'],
   );
-  const s = (more) =>
-    checkContent('settings/site.json', { version: 1, name: 'S', url: 'u', ...more });
+  const s = (more) => checkContent('site.json', { version: 1, name: 'S', url: 'u', ...more });
   assert.deepEqual(s({ robots: 'index', titleTemplate: '{page}', lang: 'en' }), []);
   assert.deepEqual(s({ robots: 'nofollow' }), ['"robots" must be "index" or "noindex"']);
 });

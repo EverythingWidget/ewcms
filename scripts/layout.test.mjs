@@ -1,3 +1,4 @@
+import { isRootFile } from '../src/site/files.js';
 import { flat, lay, warnings } from './test-layout.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -359,9 +360,14 @@ test('ops: sections and widgets added, copied, moved, removed; one undo step eac
   assert.deepEqual(types()[0], 'photo+button');
 
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'layout-'));
-  for (const f of ['settings/site.json', 'settings/animations.json', 'pages/index.json']) {
-    fs.mkdirSync(path.dirname(path.join(root, 'content/en', f)), { recursive: true });
-    fs.copyFileSync(path.join(SITE_A, 'content/en', f), path.join(root, 'content/en', f));
+  for (const f of ['site.json', 'animations.json', 'pages/index.json']) {
+    fs.mkdirSync(path.dirname(path.join(root, isRootFile(f) ? 'content' : 'content/en', f)), {
+      recursive: true,
+    });
+    fs.copyFileSync(
+      path.join(SITE_A, isRootFile(f) ? 'content' : 'content/en', f),
+      path.join(root, isRootFile(f) ? 'content' : 'content/en', f),
+    );
   }
   fs.mkdirSync(path.join(root, 'content/en/pages/test'));
   fs.writeFileSync(

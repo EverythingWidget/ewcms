@@ -1,8 +1,8 @@
 <!--
   Pages > Header, a site part (picked in the page picker's "Site" group, or by clicking the
-  header in the preview): the menu of content/en/settings/nav.json (src/site/templates/header.js:
+  header in the preview): the menu of content/header.json (src/site/templates/header.js:
   the nav pill and the phone menu), then the header's labels (strings.json "nav": the menu
-  and close buttons, the clock). (The footer is page-like: settings/footer.json.)
+  and close buttons, the clock). (The footer is page-like: footer.json.)
   Each item: its label, its link (a page of the site, or an external URL), and a dropdown: links one level deep, or the items of a source. Every change is one undo step;
   the preview renders the menu again.
 -->
@@ -12,7 +12,7 @@
   import ListField from './ListField.svelte';
   import Select from './Select.svelte';
   import { ui } from './ui.svelte.js';
-  import { NAV, STRINGS, sourceIds } from '../../site/files.js';
+  import { HEADER, STRINGS, sourceIds } from '../../site/files.js';
 
   // live: reactive store (live.svelte.js)
   let { live } = $props();
@@ -30,7 +30,7 @@
   });
 
   const listOf = (menu) => {
-    const list = live.get(NAV, `/${menu}`);
+    const list = live.get(HEADER, `/${menu}`);
     return Array.isArray(list) ? list : [];
   };
 
@@ -38,7 +38,7 @@
   function change(menu, fn) {
     const list = structuredClone(listOf(menu));
     fn(list);
-    live.store.set(NAV, `/${menu}`, list, { source: 'panel' });
+    live.store.set(HEADER, `/${menu}`, list, { source: 'panel' });
   }
 
   /** The item at path (indexes: [i] or [i, j] for a dropdown link) in list. */
@@ -89,7 +89,11 @@
   function setText(menu, path, key, value) {
     const ptr = ptrOf(menu, path, key);
     const structure = key === 'href';
-    live.store.set(NAV, ptr, value, { key: `text:${NAV}#${ptr}`, source: 'panel', structure });
+    live.store.set(HEADER, ptr, value, {
+      key: `text:${HEADER}#${ptr}`,
+      source: 'panel',
+      structure,
+    });
   }
 
   const nameOf = (item) => item.label || '(no label)';
@@ -108,17 +112,17 @@
   {@const id = `${uid}-${menu}-${path.join('-')}`}
   {@const ptr = (key) => ptrOf(menu, path, key)}
   <Field
-    edit="{NAV}#{ptr('label')}"
+    edit="{HEADER}#{ptr('label')}"
     label="Label"
     value={entry.label}
-    changed={live.changed(NAV, ptr('label'))}
+    changed={live.changed(HEADER, ptr('label'))}
     onvalue={(v) => setText(menu, path, 'label', v)}
   />
   <LinkField
     {live}
-    edit="{NAV}#{ptr('page')}"
+    edit="{HEADER}#{ptr('page')}"
     value={entry}
-    changed={['page', 'item', 'href'].some((k) => live.changed(NAV, ptr(k)))}
+    changed={['page', 'item', 'href'].some((k) => live.changed(HEADER, ptr(k)))}
     onvalue={(link) => setLink(menu, path, link)}
   />
   {#if menu === 'header' && !entry.children?.length}
@@ -127,16 +131,16 @@
       path.length === 1 ? 'Dropdown: the items of' : 'Lists the items of',
       entry.items ?? '',
       [{ value: '', label: 'None' }, ...sources.map((s) => ({ value: s, label: `${s}.json` }))],
-      live.changed(NAV, ptr('items')),
+      live.changed(HEADER, ptr('items')),
       (v) => setItems(menu, path, v),
     )}
   {/if}
   {#if menu === 'header' && path.length === 1 && (entry.items || entry.children?.length)}
     <Field
-      edit="{NAV}#{ptr('all')}"
+      edit="{HEADER}#{ptr('all')}"
       label="Link to the page at the end of the dropdown (empty: none)"
       value={entry.all ?? ''}
-      changed={live.changed(NAV, ptr('all'))}
+      changed={live.changed(HEADER, ptr('all'))}
       onvalue={(v) => setText(menu, path, 'all', v)}
     />
   {/if}

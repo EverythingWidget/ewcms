@@ -28,7 +28,7 @@
  * ids: an item's link goes to the page it is on).
  *
  * A folder's own page can be turned off ("ownPage": false in its index.json): its URL then
- * redirects (302) to its first sub page, the first one in the menu (nav.json) or else the first
+ * redirects (302) to its first sub page, the first one in the menu (header.json) or else the first
  * in the folder: the route keeps its path for the editor, gets `redirect` (that page's path),
  * links to it go straight there (hrefs.js), and the build writes a redirect instead of the page.
  *
@@ -104,7 +104,7 @@ export const pageTitle = (page) => {
 /** "photography/people" -> "photography", "about" -> "" (home's folder). */
 export const parentId = (id) => (id.includes('/') ? id.slice(0, id.lastIndexOf('/')) : '');
 
-/** The page ids the menu (nav.json "header") links to, in its order (children after their item). */
+/** The page ids the menu (header.json "header") links to, in its order (children after their item). */
 export function navOrder(nav) {
   const out = [];
   const walk = (list) => {
@@ -154,7 +154,7 @@ const byTree = (a, b) => {
  * ("/people/:person/", no item).
  */
 export function buildRoutes(content, { unbuilt = false } = {}) {
-  const { site = {}, pages = {}, sources = {}, nav = {} } = content;
+  const { site = {}, pages = {}, sources = {}, header = {} } = content;
   const warnings = [];
   const siteNoindex = site.robots === 'noindex';
   const ids = Object.keys(pages).sort(byTree);
@@ -201,7 +201,7 @@ export function buildRoutes(content, { unbuilt = false } = {}) {
     });
   }
   // folders without their own page: their first sub page (in the menu's order, else the tree's)
-  const order = navOrder(nav);
+  const order = navOrder(header);
   const rankOf = (pid) => (order.includes(pid) ? order.indexOf(pid) : Infinity);
   for (const r of routes) {
     if (r.template || pages[r.id]?.ownPage !== false) continue;

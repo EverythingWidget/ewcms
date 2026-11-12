@@ -4,7 +4,7 @@
  * production build has no editor and no endpoints.
  *
  *   GET  /__editor/content  → all editable content files, the media manifest's URLs and the
- *                             R2 photos (settings/photos.json)
+ *                             R2 photos (photos.json)
  *   POST /__editor/save     → write content files to disk ({ files: { name: json } }): a draft
  *   POST /__editor/draft    → this tab's unsaved edits ({ files, session }), which its preview's
  *                             pages (?draft=<session>) render from (draftOp); cleared on Save
@@ -12,7 +12,7 @@
  *   GET  /__editor/status   → saved-but-unpublished content files (git status vs HEAD) and
  *                             commits not pushed yet
  *   POST /__editor/upload   → one photo (the raw bytes, its Content-Type, X-Filename): resized,
- *                             stored in Cloudflare R2 and added to settings/photos.json
+ *                             stored in Cloudflare R2 and added to photos.json
  *                             (scripts/r2.mjs), answers { key, photo }; without the R2 keys
  *                             it is saved in media/ and resized there (scripts/local-upload.mjs),
  *                             answers { key, local: true, media }
@@ -26,7 +26,8 @@
  *
  * Every request must come from this machine: loopback socket address, a localhost
  * Host header (widgets DNS rebinding) and, when present, a same-origin Origin header.
- * Only existing JSON files in content/en/pages/, content/en/sources/ and content/en/settings/ can be
+ * Only existing JSON files in content/en/pages/, content/en/sources/, content/en/strings.json,
+ * the shared files at the content root (content/site.json, header.json, ...) and content/templates/ can be
  * read or written (site.config.mjs contentDir, src/site/files.js FOLDERS); Save never creates files: only
  * the pages list does (POST /pages), and only page files under content/en/pages/.
  */
@@ -39,7 +40,7 @@ import { loadSiteConfig, repoUrl } from './site-config.mjs';
 import { countEdits } from '../src/editor/lib/edit-count.js';
 import {
   ANIMATIONS,
-  NAV,
+  HEADER,
   PHOTOS,
   REDIRECTS,
   isContentFile,
@@ -51,6 +52,7 @@ import {
   pageIdOf,
   paramFolder,
   paramsOf,
+  LANG_FILES,
   ROOT_FILES,
   VERSION,
   itemsOf,
@@ -75,6 +77,7 @@ import { photoUses } from '../src/editor/lib/photo-uses.js';
 import {
   loadContent,
   readContentDir,
+  assertNoSettingsFolder,
   contentFilePath,
   templateFiles,
   readContentFile,
@@ -111,8 +114,13 @@ const HEAD_ROW = 17;
 const contentDirOf = (root) => loadSiteConfig(root).contentDir;
 const contentRel = (root) => loadSiteConfig(root).contentRel;
 
-/** Editable content files that exist on disk, e.g. "pages/index.json" (paths relative to content/). */
+/** A content file's path from the site's root with "/" ("content/header.json"): git paths. */
+const diskRel = (root, file) =>
+  path.relative(root, contentFilePath(root, file)).split(path.sep).join('/');
+
+/** Editable content files that exist on disk, e.g. "pages/index.json", "site.json" (content file names). */
 export function editableFiles(root) {
+  assertNoSettingsFolder(root);
   const files = [];
   for (const folder of FOLDERS) {
     for (const name of walkJson(path.join(contentDirOf(root), folder))) {
@@ -121,8 +129,11 @@ export function editableFiles(root) {
       if (isContentFile(file) && file !== PHOTOS) files.push(file);
     }
   }
-  for (const file of ROOT_FILES)
+  for (const file of LANG_FILES)
     if (fs.existsSync(path.join(contentDirOf(root), file))) files.push(file);
+  // photos.json belongs to the upload, not to the editor's edits
+  for (const file of ROOT_FILES)
+    if (file !== PHOTOS && fs.existsSync(contentFilePath(root, file))) files.push(file);
   files.push(...templateFiles(root));
   return new Set(files);
 }
@@ -180,7 +191,7 @@ const PROTECTED = new Set(['home', '404']); // no rename, move or delete
  *                                       parent page; in a [param] page its pattern, each
  *                                       item page to the same outer item), or go when it is null;
  *                                       menu items of its pages without a page to go to go too
- *                                       (unlinkPage: nav.json and the disk stay one)
+ *                                       (unlinkPage: header.json and the disk stay one)
  *
  * Names must be slugs (a-z, 0-9, dashes); home and 404 can't be renamed or deleted. A [param]
  * folder is never at the root, a folder has at most one, and one can hold only another
@@ -197,7 +208,7 @@ export function pagesOp(
   onWrite = () => {},
 ) {
   const content = contentDirOf(root);
-  const abs = (file) => path.join(content, ...file.split('/'));
+  const abs = (file) => contentFilePath(root, file);
   const dirOf = (pid) => path.join(content, 'pages', ...pid.split('/'));
   const fail = (status, error) => ({ status, body: { error } });
   const done = (body) => ({
@@ -477,7 +488,7 @@ export function pagesOp(
       linkAt(nav || {}, pid, titleOf(before, id), link.parentPid ?? null, link.place ?? null);
     if (link !== undefined) {
       if (!link || typeof link !== 'object') return fail(400, 'Link it where?');
-      if (!linkNav(before[NAV]))
+      if (!linkNav(before[HEADER]))
         return fail(400, "Can't link it there: dropdowns go one level deep");
     }
     const to = join(parent, name);
@@ -492,7 +503,7 @@ export function pagesOp(
     const prefix = `pages/${id}/`;
     const moved = (f) => (f.startsWith(prefix) ? `pages/${to}/${f.slice(prefix.length)}` : f);
     applyPlan(moved);
-    if (link) writeData(NAV, linkNav(readJSON(NAV)));
+    if (link) writeData(HEADER, linkNav(readJSON(HEADER)));
     return done({ id: to, created: inside.map(moved), removed: inside });
   }
 
@@ -503,13 +514,13 @@ export function pagesOp(
   applyPlan((f) => (removed.includes(f) ? null : f));
   // its pages' menu items with no page to go to: out of the menu (their dropdowns move up)
   const unlinked = [...pages].filter(([, to]) => to === null).map(([pid]) => pid);
-  const nav = readJSON(NAV);
+  const nav = readJSON(HEADER);
   if (nav && unlinked.length) {
     const next = unlinked.reduce(unlinkPage, nav);
     if (JSON.stringify(next) !== JSON.stringify(nav)) {
-      writeData(NAV, next);
+      writeData(HEADER, next);
       // not broken links any more: they went
-      for (const pid of unlinked) plan.broken -= linksTo({ [NAV]: nav }, pid);
+      for (const pid of unlinked) plan.broken -= linksTo({ [HEADER]: nav }, pid);
     }
   }
   return done({ id, removed });
@@ -528,7 +539,7 @@ function sourceProblems(root, files) {
   const read = (file) =>
     file in files
       ? files[file]
-      : fs.existsSync(path.join(contentDirOf(root), file))
+      : fs.existsSync(contentFilePath(root, file))
         ? readContentFile(root, file, { check: false })
         : undefined;
   const photos = read(PHOTOS)?.photos || {};
@@ -612,7 +623,7 @@ export function save(root, files, onWrite = () => {}) {
     return { status: 400, body: { error: `Not writable: ${bad.join(', ') || '(nothing)'}` } };
   for (const n of names) files[n] = omitDefaults(n, files[n]);
   const shape = names.flatMap((n) =>
-    checkContent(n, files[n]).map((p) => `${contentRel(root)}/${n}: ${p}`),
+    checkContent(n, files[n]).map((p) => `${diskRel(root, n)}: ${p}`),
   );
   const problems = shape.length
     ? shape
@@ -680,9 +691,7 @@ function readMedia(root) {
 }
 
 const readPhotos = (root) =>
-  fs.existsSync(path.join(contentDirOf(root), PHOTOS))
-    ? readContentFile(root, PHOTOS).photos || {}
-    : {};
+  fs.existsSync(contentFilePath(root, PHOTOS)) ? readContentFile(root, PHOTOS).photos || {} : {};
 
 /**
  * The Media window (src/editor/svelte/MediaModal.svelte): a photo's alt text, or delete it.
@@ -698,7 +707,7 @@ const readPhotos = (root) =>
  * Returns { status, body }; body has the photos and media lists afresh.
  */
 export async function mediaOp(root, env, { op, key, alt, credit } = {}, onWrite = () => {}) {
-  const photosFile = path.join(contentDirOf(root), PHOTOS);
+  const photosFile = contentFilePath(root, PHOTOS);
   const photos = readPhotos(root);
   const manifest = readMediaManifest(root);
   const isR2 = typeof key === 'string' && Array.isArray(photos[key]?.srcset);
@@ -845,7 +854,8 @@ const parseJSON = (text) => {
 
 /**
  * Content files that differ from HEAD (the ones Publish would commit), plus branch and
- * push state. Only content files in the editable folders (src/site/files.js FOLDERS) are looked at.
+ * push state. Only content files (src/site/files.js FOLDERS, LANG_FILES, ROOT_FILES, the
+ * templates) are looked at.
  */
 export async function contentStatus(root) {
   const inside = await git(root, ['rev-parse', '--is-inside-work-tree']);
@@ -860,7 +870,8 @@ export async function contentStatus(root) {
   // Every JSON file in the editable folders, including deleted or new ones.
   const rel = [
     ...FOLDERS.map((d) => `:(glob)${contentRel(root)}/${d}/**/*.json`),
-    ...ROOT_FILES.map((f) => `${contentRel(root)}/${f}`),
+    ...LANG_FILES.map((f) => `${contentRel(root)}/${f}`),
+    ...ROOT_FILES.map((f) => diskRel(root, f)),
     `:(glob)${loadSiteConfig(root).templatesRel}/*.json`,
   ];
 
@@ -876,15 +887,15 @@ export async function contentStatus(root) {
   const entries = st.stdout.split('\0').filter(Boolean);
   const add = (repoPath, status) => {
     const p = repoPath.startsWith(prefix) ? repoPath.slice(prefix.length) : repoPath;
-    const tRel = loadSiteConfig(root).templatesRel;
+    const { templatesRel: tRel, contentRootRel: rRel } = loadSiteConfig(root);
     const name = p.startsWith(`${tRel}/`)
       ? `templates/${p.slice(tRel.length + 1)}`
-      : p.slice(contentRel(root).length + 1);
-    if (
-      isContentFile(name) &&
-      (p === `${contentRel(root)}/${name}` || p === `${tRel}/${name.slice(10)}`)
-    )
-      files.push({ name, path: p, status });
+      : p.startsWith(`${contentRel(root)}/`)
+        ? p.slice(contentRel(root).length + 1)
+        : rRel === '.'
+          ? p
+          : p.slice(rRel.length + 1);
+    if (isContentFile(name) && p === diskRel(root, name)) files.push({ name, path: p, status });
   };
   for (let i = 0; i < entries.length; i++) {
     const code = entries[i].slice(0, 2);
@@ -1176,8 +1187,7 @@ export function editorMiddleware({
 
       if (route === 'POST /save') {
         const { status, body } = save(root, (await readJSON(req)).files, onWrite);
-        if (body.ok)
-          log(`editor saved ${body.written.map((n) => `${contentRel(root)}/${n}`).join(', ')}`);
+        if (body.ok) log(`editor saved ${body.written.map((n) => diskRel(root, n)).join(', ')}`);
         return sendJSON(res, status, body);
       }
 
@@ -1210,7 +1220,7 @@ export function editorMiddleware({
         const { status, body: out } = await uploadPhoto(
           env,
           { name, type, body },
-          { photosFile: path.join(contentDirOf(root), PHOTOS), onWrite },
+          { photosFile: contentFilePath(root, PHOTOS), onWrite },
         );
         if (out.ok)
           log(

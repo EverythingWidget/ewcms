@@ -6,7 +6,7 @@ import { contentFromFiles, isContentFile, pageFile, pageIdOf } from '../src/site
 import { itemHref, slugify } from '../src/site/helpers.js';
 
 const site = { name: 'Site', title: 'Site home', description: 'd' };
-const content = (files) => contentFromFiles({ 'settings/site.json': site, ...files });
+const content = (files) => contentFromFiles({ 'site.json': site, ...files });
 const paths = (c) => buildRoutes(c).routes.map((r) => r.path);
 
 test('folders mirror URLs, in tree order', () => {

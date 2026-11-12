@@ -8,20 +8,20 @@ import { setEditable } from '../src/site/helpers.js';
 import { warnings } from './test-layout.mjs';
 import { SITE_A } from '../test/fixtures/index.mjs';
 
-const NAV = 'settings/nav.json';
+const NAV = 'header.json';
 const base = loadContent(SITE_A);
 const ctxWith = (nav) => {
-  const content = { ...base, nav };
+  const content = { ...base, header: nav };
   return { ...content, routes: buildRoutes(content).routes };
 };
 
 /** Console warnings while fn runs. */
 
-test('nav.json: the shipped menus are valid', () => {
-  assert.deepEqual(checkContent(NAV, base.nav), []);
+test('header.json: the shipped menus are valid', () => {
+  assert.deepEqual(checkContent(NAV, base.header), []);
 });
 
-test('nav.json validation: links, nesting depth; no footer menu', () => {
+test('header.json validation: links, nesting depth; no footer menu', () => {
   const problems = (nav) => checkContent(NAV, { version: 1, ...nav });
   assert.deepEqual(problems({ header: [{ label: 'A', page: 'pg-aaaa' }] }), []);
   assert.deepEqual(
@@ -45,11 +45,11 @@ test('nav.json validation: links, nesting depth; no footer menu', () => {
   assert.match(problems({ header: [both] })[0], /not both/);
   assert.match(
     problems({ footer: [{ label: 'A', page: 'pg-aaaa' }] })[0],
-    /"footer" is gone: the footer is settings\/footer\.json/,
+    /"footer" is gone: the footer is footer\.json/,
   );
 });
 
-test('render: the header and phone menu follow nav.json', () => {
+test('render: the header and phone menu follow header.json', () => {
   const nav = {
     header: [
       {
@@ -106,7 +106,7 @@ test('render: a link to no page warns; labels are marked for the editor', () => 
   assert.match(seen.join('\n'), /"Gone" points at page "pg-gone", which is no page/);
   setEditable(true);
   try {
-    assert.match(header(ctx), /data-edit="settings\/nav\.json#\/header\/0\/label"/);
+    assert.match(header(ctx), /data-edit="header\.json#\/header\/0\/label"/);
   } finally {
     setEditable(false);
   }
@@ -114,7 +114,7 @@ test('render: a link to no page warns; labels are marked for the editor', () => 
 
 test('links: a page by id, an item by id, an href; made into URLs at build time', async () => {
   const { hrefOf, linkProblem } = await import('../src/site/hrefs.js');
-  const ctx = ctxWith(base.nav);
+  const ctx = ctxWith(base.header);
   assert.equal(hrefOf(ctx, { page: 'pg-lyos' }), '/about/');
   assert.equal(
     hrefOf(ctx, { item: { source: 'people', id: 'p-qw7b' } }),

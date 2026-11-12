@@ -9,18 +9,21 @@
  *                               can hold one more [param] folder (see src/site/routes.js)
  *   content/en/sources/<id>.json   lists that grids pull from; the top level is a JSON array
  *   content/en/sources/<id>.schema.json  the properties of that list's items (src/site/schemas.js)
- *   content/en/settings/<id>.json  site-wide settings (site.json, nav.json: the menus,
- *                               animations.json, redirects.json: a list, footer.json: the
- *                               footer, a document like a page's: kind "part"), and photos.json:
+ *   content/<id>.json              shared by every language, next to the language folders (like
+ *                               templates/): site.json, header.json (the menus), footer.json
+ *                               (the footer, a document like a page's: kind "part"),
+ *                               animations.json, redirects.json (a list) and photos.json:
  *                               every photo's alt text (media/ paths and R2 keys) plus the
  *                               sizes of photos uploaded to R2; written by the editor's Media
  *                               window and the upload (not by Save), committed by Publish
+ *   content/en/strings.json        UI text of that language
  *
- * Paths are relative to content/ and are also the keys the editor uses
- * (data-edit="pages/index.json#/hero/title").
+ * Paths are relative to the language folder (content/en/), the shared files' to the content
+ * root (content/), and are also the keys the editor uses (data-edit="pages/index.json#/hero/title",
+ * "header.json#/header/0/label"). A content/en/settings/ folder is from before: an error.
  */
 import { isObject } from './is.js';
-export const FOLDERS = ['pages', 'sources', 'settings'];
+export const FOLDERS = ['pages', 'sources'];
 
 /**
  * The content folder from the site's root ("content/en", site.config.mjs), for the paths in
@@ -43,15 +46,16 @@ export const templateFile = (id) => `${TEMPLATES}/${id}.json`;
 const TEMPLATE_FILE = /^templates\/(t-[a-z0-9]{4,12})\.json$/;
 /** "templates/t-ab12.json" -> "t-ab12" (null for anything else). */
 export const templateIdOf = (file) => TEMPLATE_FILE.exec(file || '')?.[1] ?? null;
-/** A template file's folder from the site's root: the content folder's parent + templates. */
-const templatesRel = () =>
-  `${CONTENT_DIR.includes('/') ? CONTENT_DIR.replace(/\/[^/]+$/, '') : '.'}/${TEMPLATES}`;
+/**
+ * The content root from the site's root ("content"): the language folder's parent, where the
+ * templates and the shared files (ROOT_FILES) sit.
+ */
+export const contentRoot = () =>
+  CONTENT_DIR.includes('/') ? CONTENT_DIR.replace(/\/[^/]+$/, '') : '.';
 
 /** A content file's path from the site's root, for messages: "content/en/pages/index.json". */
 export const contentPath = (file) =>
-  templateIdOf(file)
-    ? `${templatesRel()}/${file.slice(TEMPLATES.length + 1)}`
-    : `${CONTENT_DIR}/${file}`;
+  isRootFile(file) || templateIdOf(file) ? `${contentRoot()}/${file}` : `${CONTENT_DIR}/${file}`;
 /**
  * The shape version of every content file: its first key, "version": 1. A file whose top level
  * is a list or a map keeps it under one key next to it: a source's "items", redirects.json
@@ -62,8 +66,28 @@ export const VERSION = 1;
 /** A source file's list (its "items"); anything else as it is, for the warnings. */
 export const itemsOf = (data) => (isObject(data) && 'items' in data ? data.items : data);
 
-/** Content files at the top of the locale's folder (content/en/strings.json: UI text). */
-export const ROOT_FILES = ['strings.json'];
+/** Content files at the top of the language folder (content/en/strings.json: UI text). */
+export const LANG_FILES = ['strings.json'];
+
+/** A shared (every language's) file at the content root: "site" -> "site.json". */
+const rootFile = (id) => `${id}.json`;
+
+export const SITE = rootFile('site');
+/** The Header part: the menus (templates/header.js). */
+export const HEADER = rootFile('header');
+export const ANIMATIONS = rootFile('animations');
+export const PHOTOS = rootFile('photos');
+export const REDIRECTS = rootFile('redirects');
+/**
+ * The footer: a site part, rendered under every page, outside the view (templates/footer.js).
+ */
+export const FOOTER = rootFile('footer');
+export const STRINGS = 'strings.json';
+
+/** The shared files at the content root (content/site.json, ...), next to templates/. */
+export const ROOT_FILES = [SITE, HEADER, FOOTER, ANIMATIONS, PHOTOS, REDIRECTS];
+/** Is `file` one of them? */
+export const isRootFile = (file) => ROOT_FILES.includes(file);
 
 /**
  * The file of a page by id: "home" -> "pages/index.json", "people" -> "pages/people/index.json",
@@ -72,18 +96,6 @@ export const ROOT_FILES = ['strings.json'];
 export const pageFile = (id) => (id === 'home' ? 'pages/index.json' : `pages/${id}/index.json`);
 export const sourceFile = (id) => `sources/${id}.json`;
 export const schemaFile = (id) => `sources/${id}.schema.json`;
-const settingsFile = (id) => `settings/${id}.json`;
-
-export const SITE = settingsFile('site');
-export const NAV = settingsFile('nav');
-export const ANIMATIONS = settingsFile('animations');
-export const PHOTOS = settingsFile('photos');
-export const REDIRECTS = settingsFile('redirects');
-export const STRINGS = 'strings.json';
-/**
- * The footer: a site part, rendered under every page, outside the view (templates/footer.js).
- */
-export const FOOTER = settingsFile('footer');
 
 /**
  * Documents: the files of sections and widgets, one shape ({ version, kind, sections, ... }).
@@ -156,7 +168,7 @@ const SEG = `(?:${NAME}|\\[${PARAM_NAME}\\])`;
 // the first part is a name: no [param] folder at the root
 const PAGE_FILE = new RegExp(`^pages/(${NAME}(?:/${SEG})*)/index\\.json$`);
 const CONTENT_FILE = new RegExp(
-  `^(?:strings|(?:sources|settings)/${NAME}|sources/${NAME}\\.schema|pages/(?:${NAME}/(?:${SEG}/)*)?index)\\.json$`,
+  `^(?:strings|sources/${NAME}|sources/${NAME}\\.schema|pages/(?:${NAME}/(?:${SEG}/)*)?index)\\.json$`,
   'i',
 );
 
@@ -170,13 +182,14 @@ export const schemaIdOf = (file) => SCHEMA.exec(file || '')?.[1] ?? null;
 
 /**
  * Editable content file name: sources/<name>.json and its sources/<name>.schema.json,
- * settings/<name>.json, and the page files: pages/index.json and pages/<folders>/index.json
+ * strings.json, the shared files (ROOT_FILES), the templates, and the page files: pages/index.json and pages/<folders>/index.json
  * (a folder: a name or a [param]). Nothing else.
  */
-export const isContentFile = (file) => CONTENT_FILE.test(file || '') || !!templateIdOf(file);
+export const isContentFile = (file) =>
+  CONTENT_FILE.test(file || '') || isRootFile(file) || !!templateIdOf(file);
 
 /** Name without the kind folder, for compact labels: "pages/people/index.json" -> "people/index.json". */
-export const baseName = (file) => String(file || '').replace(/^(pages|sources|settings)\//, '');
+export const baseName = (file) => String(file || '').replace(/^(pages|sources)\//, '');
 
 /**
  * Render context from content files keyed by path ({ "pages/index.json": data, ... }).
@@ -194,7 +207,7 @@ export function contentFromFiles(files) {
   const sources = byId(sourceIdOf, itemsOf);
   return {
     site: files[SITE],
-    nav: files[NAV] || {},
+    header: files[HEADER] || {},
     pages: byId(pageIdOf),
     sources,
     schemas: byId(schemaIdOf),

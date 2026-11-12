@@ -27,10 +27,15 @@ test('a site.config.mjs moves the folders: content, manifest, media URL, message
     `export default { contentDir: 'site/nl', generatedDir: 'gen', publicDir: 'static', publicMediaDir: 'static/img', outDir: 'out', repo: { owner: 'o' } };\n`,
   );
   fs.cpSync(path.join(SITE_A, 'content/en'), path.join(root, 'site/nl'), { recursive: true });
+  // the shared files: at the content root, next to the language folder
+  for (const f of ['site.json', 'header.json'])
+    fs.copyFileSync(path.join(SITE_A, 'content', f), path.join(root, 'site', f));
   fs.mkdirSync(path.join(root, 'gen'));
   fs.writeFileSync(path.join(root, 'gen/media.json'), '{"a.jpg":{"width":1}}');
   const site = loadSiteConfig(root);
   assert.equal(site.contentDir, path.join(root, 'site/nl'));
+  assert.equal(site.contentRootDir, path.join(root, 'site'));
+  assert.equal(site.contentRootRel, 'site');
   assert.equal(site.mediaDir, path.join(root, 'media'), 'a key not set keeps its default');
   assert.equal(site.mediaUrl, '/img');
   assert.equal(site.outDir, path.join(root, 'out'));
@@ -38,6 +43,8 @@ test('a site.config.mjs moves the folders: content, manifest, media URL, message
   const content = loadContent(root);
   assert.deepEqual(content.media, { 'a.jpg': { width: 1 } });
   assert.ok(content.pages.home);
+  assert.ok(content.site.name, 'site.json read from the content root');
+  assert.ok(content.header.header.length, 'header.json read from the content root');
   assert.equal(CONTENT_DIR, 'site/nl', 'messages name the configured folder');
   loadContent(SITE_A);
   assert.equal(CONTENT_DIR, 'content/en');

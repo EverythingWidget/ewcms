@@ -128,7 +128,7 @@ export const extAttrs = (url) => (isExternal(url) ? ' target="_blank" rel="noope
  * URL of a photo in the content. `src` is one of:
  *   "people/x/01.jpg"               a file in media/, resized by scripts/photos.mjs: /media/...
  *   "photos/x-3f9a0c1b2d-1600.webp" an object in Cloudflare R2 (uploaded and resized in the
- *                                   editor, scripts/r2.mjs): site.mediaUrl (settings/site.json)
+ *                                   editor, scripts/r2.mjs): site.mediaUrl (site.json)
  *                                   + "/" + key; its other sizes are in ctx.photos
  *   "https://..."                a full URL, as is
  * Files in the media manifest are local; anything else is read from site.mediaUrl, so a photo
@@ -155,7 +155,7 @@ export function warnOnce(msg, tag = 'photos') {
  * Sizes of a photo, the same shape for both kinds: { src, srcset: [{ url, w }], width, height,
  * color, lqip }, or null when there are none (a full URL, or a key missing from photos.json).
  *   media/ photos: the generated manifest (.generated/media.json, scripts/photos.mjs)
- *   R2 photos:     content/en/settings/photos.json (written by the upload), keys made URLs here
+ *   R2 photos:     content/photos.json (written by the upload), keys made URLs here
  */
 export function photoOf(ctx, src) {
   if (!src || isExternal(src)) return null;
@@ -186,7 +186,7 @@ export function photoOf(ctx, src) {
 export const firstPhotos = (i) => ({ priority: i === 0, loading: i < 3 ? 'eager' : 'lazy' });
 
 /**
- * A photo's alt text: it belongs to the photo, in content/en/settings/photos.json ({ alt } per
+ * A photo's alt text: it belongs to the photo, in content/photos.json ({ alt } per
  * media/ path or R2 key), not to the page using it. Missing: '' and a build warning.
  */
 export function altOf(ctx, src) {
@@ -309,7 +309,7 @@ export function accentOf(ctx, album) {
 
 /**
  * Photos of an album: their paths ([] when it has none yet, e.g. a person just added in the
- * editor). Alt text and credits belong to the photo (content/en/settings/photos.json).
+ * editor). Alt text and credits belong to the photo (content/photos.json).
  */
 export const photosOf = (album) =>
   Array.isArray(album?.photos) ? album.photos.filter((p) => typeof p === 'string' && p) : [];

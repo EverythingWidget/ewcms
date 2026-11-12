@@ -1,3 +1,4 @@
+import { isRootFile } from '../src/site/files.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -11,24 +12,25 @@ import { SITE_A } from '../test/fixtures/index.mjs';
 const site = { version: 1, name: 'Site', url: 'https://example.com' };
 const animations = { version: 1, animations: {}, targets: {}, transitions: {} };
 
-/** content/ in a temp dir; files as { "settings/site.json": data or raw text }. */
+/** content/ in a temp dir; files as { "site.json": data or raw text }. */
 function tree(files = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'content-'));
   const all = {
-    'settings/site.json': site,
-    'settings/animations.json': animations,
+    'site.json': site,
+    'animations.json': animations,
     'pages/index.json': { version: 1, kind: 'page', id: 'pg-t041' },
     'sources/people.json': { version: 1, items: [{ name: 'Noor' }] },
     ...files,
   };
   for (const [f, data] of Object.entries(all)) {
-    const file = path.join(root, 'content/en', f);
+    const file = path.join(root, isRootFile(f) ? 'content' : 'content/en', f);
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, typeof data === 'string' ? data : JSON.stringify(data, null, 2));
   }
   return root;
 }
-const read = (root, f) => fs.readFileSync(path.join(root, 'content/en', f), 'utf8');
+const read = (root, f) =>
+  fs.readFileSync(path.join(root, isRootFile(f) ? 'content' : 'content/en', f), 'utf8');
 
 test('broken JSON: the error names the file, line and column', () => {
   assert.throws(
@@ -43,8 +45,8 @@ test('broken JSON: the error names the file, line and column', () => {
 
 test('shapes: the build stops on a wrong shape and names the file', () => {
   assert.throws(
-    () => loadContent(tree({ 'settings/animations.json': [] })),
-    /content\/en\/settings\/animations\.json: must be an object, not an array/,
+    () => loadContent(tree({ 'animations.json': [] })),
+    /content\/animations\.json: must be an object, not an array/,
   );
   assert.throws(
     () => loadContent(tree({ 'strings.json': { version: 1, nav: 'x' } })),
@@ -54,16 +56,58 @@ test('shapes: the build stops on a wrong shape and names the file', () => {
   assert.equal(loadContent(tree()).site.name, 'Site');
 });
 
+test('root files: the shared files load from the content root; a leftover en/settings/ is refused', () => {
+  const root = tree({
+    'header.json': { version: 1, header: [{ label: 'Me', href: 'https://example.com' }] },
+    'footer.json': { version: 1, kind: 'part', sections: [] },
+  });
+  assert.ok(fs.existsSync(path.join(root, 'content/site.json')));
+  assert.ok(!fs.existsSync(path.join(root, 'content/en/site.json')));
+  const content = loadContent(root);
+  assert.equal(content.site.name, 'Site');
+  assert.equal(content.header.header[0].label, 'Me');
+  assert.equal(content.footer.kind, 'part');
+  assert.ok(readContentFiles(root)['header.json'], 'the editor reads it under its name');
+  // the old place: a clear error, not a silently empty site
+  fs.mkdirSync(path.join(root, 'content/en/settings'));
+  fs.writeFileSync(path.join(root, 'content/en/settings/nav.json'), '{ "version": 1 }');
+  const old =
+    /content\/en\/settings\/ is no longer read: its files go to content\/ \(site\.json, header\.json/;
+  assert.throws(() => loadContent(root), old);
+  assert.throws(() => readContentFiles(root), old);
+});
+
+test('save: a shared file is written at the content root, never under en/', () => {
+  const root = tree({ 'redirects.json': { version: 1, redirects: [] } });
+  const r = save(root, {
+    'site.json': { ...site, name: 'Renamed' },
+    'redirects.json': { version: 1, redirects: [{ from: '/old/', to: '/' }] },
+  });
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(root, 'content/site.json'), 'utf8')).name,
+    'Renamed',
+  );
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(root, 'content/redirects.json'), 'utf8')).redirects[0]
+      .from,
+    '/old/',
+  );
+  assert.ok(!fs.existsSync(path.join(root, 'content/en/settings')));
+  assert.ok(!fs.existsSync(path.join(root, 'content/en/site.json')));
+  // the old names are no content files
+  assert.equal(save(root, { 'settings/site.json': site }).status, 400);
+});
+
 test('checkContent per kind', () => {
-  assert.deepEqual(checkContent('settings/site.json', site), []);
-  assert.deepEqual(checkContent('settings/site.json', { version: 1, url: 'u' }), [
+  assert.deepEqual(checkContent('site.json', site), []);
+  assert.deepEqual(checkContent('site.json', { version: 1, url: 'u' }), [
     '"name" must be a string',
   ]);
-  assert.deepEqual(
-    checkContent('settings/animations.json', { version: 1, ...animations, animations: [] }),
-    ['"animations" must be an object'],
-  );
-  assert.deepEqual(checkContent('settings/photos.json', { version: 1, photos: { a: 1 } }), [
+  assert.deepEqual(checkContent('animations.json', { version: 1, ...animations, animations: [] }), [
+    '"animations" must be an object',
+  ]);
+  assert.deepEqual(checkContent('photos.json', { version: 1, photos: { a: 1 } }), [
     'photo "a" must be an object',
   ]);
   assert.deepEqual(checkContent('sources/people.json', { version: 1 }), [
@@ -74,7 +118,7 @@ test('checkContent per kind', () => {
   ]);
   // every file says its shape's version
   assert.deepEqual(checkContent('sources/people.json', []), ['must be an object, not an array']);
-  assert.deepEqual(checkContent('settings/site.json', { name: 'S', url: 'u' }), [
+  assert.deepEqual(checkContent('site.json', { name: 'S', url: 'u' }), [
     '"version" must be 1 (the content\'s shape)',
   ]);
   assert.deepEqual(
@@ -117,10 +161,10 @@ test('save: rejects bad shapes and writes nothing', () => {
   const before = read(root, 'pages/index.json');
   const r = save(root, {
     'pages/index.json': { version: 1, kind: 'page', id: 'pg-t046', title: 'New' },
-    'settings/animations.json': [],
+    'animations.json': [],
   });
   assert.equal(r.status, 400);
-  assert.match(r.body.error, /content\/en\/settings\/animations\.json: must be an object/);
+  assert.match(r.body.error, /content\/animations\.json: must be an object/);
   assert.equal(read(root, 'pages/index.json'), before);
   assert.equal(save(root, { 'settings/nope.json': {} }).status, 400);
   assert.equal(save(root, { '../package.json': {} }).status, 400);
@@ -241,7 +285,7 @@ test('editor markers: only when rendering for the editor (dev), never in the bui
 });
 
 test('photos.json: alt per photo, sizes for R2 photos', () => {
-  const PH = 'settings/photos.json';
+  const PH = 'photos.json';
   assert.deepEqual(
     checkContent(PH, {
       version: 1,
@@ -335,14 +379,14 @@ test('draft: pages render the unsaved edits; only existing, valid files; {} clea
           },
         ],
       },
-      'settings/animations.json': [],
+      'animations.json': [],
       'pages/nope/index.json': {},
     },
     'tab-a',
   );
   assert.equal(r.status, 200);
   assert.deepEqual(r.body.files, ['pages/index.json']);
-  assert.deepEqual(r.body.skipped, ['settings/animations.json', 'pages/nope/index.json']);
+  assert.deepEqual(r.body.skipped, ['animations.json', 'pages/nope/index.json']);
   const home = (session) => loadContent(root, draftsFor(drafts, session)).pages.home;
   assert.equal(home('tab-a').sections[0].widgets[0].text, 'Draft');
   // only that session's preview: no marker, another tab or an unknown one get the saved file

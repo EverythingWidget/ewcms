@@ -20,7 +20,7 @@ import { loadSiteConfig, CONFIG_FILE, DEFAULT_THEME } from './site-config.mjs';
 import { buildPhotos } from './photos.mjs';
 import { checkLinks } from './check-links.mjs';
 import { registerSiteWidgets } from './site-widgets.mjs';
-import { walkJson, loadContent } from './content.mjs';
+import { assertNoSettingsFolder, walkJson, loadContent } from './content.mjs';
 
 const VITE_CONFIGS = ['vite.config.js', 'vite.config.mjs', 'vite.config.ts'];
 
@@ -77,11 +77,29 @@ export async function checkContentOf(root) {
     pathToFileURL(enginePath('src/site/widgets/index.js')).href
   );
   await registerSiteWidgets(root, { register: registerWidgets });
-  const { setContentDir } = await import(pathToFileURL(enginePath('src/site/files.js')).href);
+  const { setContentDir, ROOT_FILES } = await import(
+    pathToFileURL(enginePath('src/site/files.js')).href
+  );
   const { parseContent, checkContent } = await import(
     pathToFileURL(enginePath('src/site/validate.js')).href
   );
   setContentDir(site.contentRel);
+  try {
+    assertNoSettingsFolder(root);
+  } catch (err) {
+    return [err.message];
+  }
+  // the shared files at the content root (content/site.json, header.json, ...)
+  for (const file of ROOT_FILES) {
+    const abs = path.join(site.contentRootDir, file);
+    if (!fs.existsSync(abs)) continue;
+    try {
+      const data = parseContent(fs.readFileSync(abs, 'utf8'), file);
+      problems.push(...checkContent(file, data).map((p) => `${site.contentRootRel}/${file}: ${p}`));
+    } catch (err) {
+      problems.push(err.message);
+    }
+  }
   for (const file of walkJson(site.contentDir)) {
     try {
       const data = parseContent(fs.readFileSync(path.join(site.contentDir, file), 'utf8'), file);
@@ -287,7 +305,7 @@ export async function publishMedia(root) {
   const env = loadEnv('production', root, 'R2_');
   if (r2Config(env).missing) throw new Error(NOT_CONFIGURED);
   const site = loadSiteConfig(root);
-  const photosFile = path.join(site.contentDir, PHOTOS);
+  const photosFile = path.join(site.contentRootDir, PHOTOS);
   const TYPES = {
     jpg: 'jpeg',
     jpeg: 'jpeg',

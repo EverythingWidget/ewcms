@@ -7,7 +7,7 @@ import { DEFAULT_TIMING, defaultsProblems } from '../src/site/layout/motion.js';
 
 const read = (p) => readFileSync(new URL(`../src/${p}`, import.meta.url), 'utf8');
 const anims = JSON.parse(
-  readFileSync(new URL('../templates/content/en/settings/animations.json', import.meta.url)),
+  readFileSync(new URL('../templates/content/animations.json', import.meta.url)),
 );
 const esrc = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
 
@@ -24,11 +24,11 @@ test('defaults: duration, delay, ease, all optional', () => {
 });
 
 test('animations.json: with or without defaults it is valid', () => {
-  assert.deepEqual(checkContent('settings/animations.json', anims), []);
+  assert.deepEqual(checkContent('animations.json', anims), []);
   const withDefaults = { ...anims, defaults: { duration: 0.6, delay: 0, ease: 'power2.out' } };
-  assert.deepEqual(checkContent('settings/animations.json', withDefaults), []);
+  assert.deepEqual(checkContent('animations.json', withDefaults), []);
   const bad = { ...anims, defaults: { duration: 'slow' } };
-  assert.match(checkContent('settings/animations.json', bad).join('\n'), /defaults\.duration/);
+  assert.match(checkContent('animations.json', bad).join('\n'), /defaults\.duration/);
 });
 
 test("the engine starts every spec from the defaults (not the scroll types' ease)", () => {
@@ -127,7 +127,10 @@ test('+ Property: source counts are "Count of a source", not properties; the exp
 test('PageHead: a square back button beside a two-line title, shared site-part lines', () => {
   const head = read('editor/svelte/PageHead.svelte');
   assert.match(head, /<BackHead backLabel="Back to pages"/);
-  assert.match(read('editor/svelte/BackHead.svelte'), /icon="arrow-left" square label=\{backLabel\}/);
+  assert.match(
+    read('editor/svelte/BackHead.svelte'),
+    /icon="arrow-left" square label=\{backLabel\}/,
+  );
   assert.match(head, /kind === 'item-template'\s*\? 'Templates'/);
   assert.match(head, /SITE_PARTS\.find/);
   assert.match(head, /padding: var\(--space-3\) var\(--space-3\) var\(--space-2\)/);
@@ -138,4 +141,3 @@ test('PageHead: a square back button beside a two-line title, shared site-part l
   assert.match(list, /from '\.\.\/lib\/site-parts\.js'/);
   assert.doesNotMatch(list, /const SITE_PARTS/);
 });
-

@@ -23,7 +23,7 @@ import {
 import { LINE_STYLES } from '../src/site/text.js';
 import { checkContent } from '../src/site/validate.js';
 import { needsReload, siteKey } from '../src/editor/lib/needs-reload.js';
-import { NAV, SITE, pageFile } from '../src/site/files.js';
+import { HEADER, SITE, pageFile } from '../src/site/files.js';
 import { renderOp } from './editor-server.mjs';
 import * as render from '../src/site/render.js';
 import { SITE_A } from '../test/fixtures/index.mjs';
@@ -171,7 +171,7 @@ test('needsReload: site.json reloads unless only its type changed (siteKey)', ()
   assert.equal(needsReload([SITE], { site: false }), false);
   assert.equal(needsReload([SITE], { site: true }), true);
   assert.equal(needsReload([SITE]), true); // left out: it did
-  assert.equal(needsReload([SITE, NAV], { site: false }), true);
+  assert.equal(needsReload([SITE, HEADER], { site: false }), true);
   const main = read('src/editor/main.js');
   assert.match(main, /site: dirty\.includes\(SITE\) && siteKey\(store\.base\) !== siteKey/);
 });

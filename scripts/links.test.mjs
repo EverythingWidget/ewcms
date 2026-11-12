@@ -271,7 +271,7 @@ test('fit text: per widget, one boolean; no site typography', () => {
   assert.match(checkScale({ type: 'text', fit: true })[0], /a line's now/);
   // the cell-based "typography" is gone: site.json "type" sizes the styles (type-scale.test.mjs)
   assert.match(
-    checkContent('settings/site.json', { version: 1, name: 'x', url: 'y', typography: {} })[0],
+    checkContent('site.json', { version: 1, name: 'x', url: 'y', typography: {} })[0],
     /"typography" is gone/,
   );
 });

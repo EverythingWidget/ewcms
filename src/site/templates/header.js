@@ -1,6 +1,6 @@
 /**
  * The header (logo, nav pill with click-to-open dropdowns, local time, menu toggle) and the
- * phone menu, both from content/en/settings/nav.json "header": a list of items
+ * phone menu, both from content/header.json "header": a list of items
  *
  *   { "label": "About", "page": "/about/" }                  a page, by its URL
  *   { "label": "Shop", "href": "https://…" }                 any other link (opens in a new tab)
@@ -31,7 +31,7 @@ import {
   warnOnce,
 } from '../helpers.js';
 import { schemaOf } from '../schemas.js';
-import { NAV, STRINGS, contentPath } from '../files.js';
+import { HEADER, STRINGS, contentPath } from '../files.js';
 import { t } from '../strings.js';
 
 const caret =
@@ -40,7 +40,7 @@ const arrowNE = '<span class="arrow-ne" aria-hidden="true">↗</span>';
 
 /** Where a menu item links (a link, src/site/hrefs.js): '#' and a warning when nowhere. */
 export function linkOf(ctx, item) {
-  return hrefOf(ctx, item, `${contentPath(NAV)}: "${item.label}"`) || '#';
+  return hrefOf(ctx, item, `${contentPath(HEADER)}: "${item.label}"`) || '#';
 }
 
 /** The site path a menu item marks as current (data-nav): its page's or item's; '' for an href. */
@@ -52,7 +52,7 @@ function itemsOf(ctx, item) {
   const list = ctx.sources?.[item.items];
   if (!Array.isArray(list)) {
     warnOnce(
-      `${contentPath(NAV)}: "${item.label}" lists source "${item.items}", which is missing`,
+      `${contentPath(HEADER)}: "${item.label}" lists source "${item.items}", which is missing`,
       'nav',
     );
     return { list: [], pages: false };
@@ -109,8 +109,8 @@ const mmLinks = (ctx, items) =>
               >`;
       });
 
-/** A label, marked for the editor: path in nav.json ['header', 0, 'label']. */
-const label = (path, text) => html`<span${ed(NAV, path)}>${esc(text)}</span>`;
+/** A label, marked for the editor: path in header.json ['header', 0, 'label']. */
+const label = (path, text) => html`<span${ed(HEADER, path)}>${esc(text)}</span>`;
 
 /** The <a> attributes of a link: href, a new tab for external ones. */
 const hrefAttrs = (href) => `href="${esc(href)}"${extAttrs(href)}`;
@@ -160,7 +160,7 @@ function navItem(ctx, item, i) {
 /** Persistent header: logo, glass nav pill with click-to-open dropdowns, local time, phone menu toggle. */
 export function header(ctx) {
   const { site } = ctx;
-  const items = Array.isArray(ctx.nav?.header) ? ctx.nav.header : [];
+  const items = Array.isArray(ctx.header?.header) ? ctx.header.header : [];
   return html`
   <header class="header" data-header>
     <a class="header__logo" href="/" aria-label="${esc(t(ctx, 'nav.home', { name: site.name }))}">${esc(site.name)}</a>
@@ -212,7 +212,7 @@ function mmItem(ctx, item, i) {
 /** Full-screen glass menu used on small screens (opens on click only). */
 export function phoneMenu(ctx) {
   const { site } = ctx;
-  const items = Array.isArray(ctx.nav?.header) ? ctx.nav.header : [];
+  const items = Array.isArray(ctx.header?.header) ? ctx.header.header : [];
   return html`
   <div class="mmenu" id="phone-menu" data-phone-menu hidden>
     <div class="mmenu__panel glass">

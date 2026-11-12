@@ -8,7 +8,7 @@
  * So renaming or moving a page, or changing an item's slug, never breaks a link (redirects, the
  * one place paths stay, are for the outside world). A link setting bound to an item's link
  * property ([{ "property" }], layout/parts.js) resolves to that property's text, which is used as the URL.
- * Menu items (nav.json) are links too: { label, page | item | href, ... }.
+ * Menu items (header.json) are links too: { label, page | item | href, ... }.
  */
 import { isId } from './layout/ids.js';
 import { isSlug } from './files.js';

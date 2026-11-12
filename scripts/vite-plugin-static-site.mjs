@@ -6,7 +6,7 @@
  *  build → after Vite bundles the client (index.html → dist/index.html with hashed
  *          JS/CSS), every route is rendered into that shell and written to
  *          dist/<route>/index.html, plus 404.html, sitemap.xml, robots.txt and _redirects
- *          (content/en/settings/redirects.json, src/site/redirects.js).
+ *          (content/redirects.json, src/site/redirects.js).
  *
  * index.html is the shell; it contains two markers: <!--ssr-head--> and <!--ssr-body-->.
  *
@@ -36,7 +36,7 @@ import { contactMiddleware } from './contact-dev.mjs';
 import { pageFile } from '../src/site/files.js';
 import { EDITOR_HTML, legacyRedirect, wantsEditor } from '../src/editor/lib/editor-url.js';
 import { checkSources } from '../src/site/schemas.js';
-import { FOLDERS } from '../src/site/files.js';
+import { FOLDERS, ROOT_FILES } from '../src/site/files.js';
 import { THEME_LAYERS, loadSiteConfig } from './site-config.mjs';
 import { createUpdater } from './update.mjs';
 import { registerSiteWidgets, widgetClientsModule, widgetsModule } from './site-widgets.mjs';
@@ -101,8 +101,9 @@ const fill = (shell, { head, body, lang, themeColor }, theme) =>
 /** The editor's settings, for its browser code: `import editorConfig from 'virtual:editor-config'`. */
 export const EDITOR_CONFIG = 'virtual:editor-config';
 /**
- * Client code imports the content folder's files through this alias (site.config.mjs contentDir):
- * `import config from '@site-content/settings/animations.json'`.
+ * Client code imports the content root's files (the shared ones, next to the language folders:
+ * site.config.mjs contentDir's parent) through this alias:
+ * `import config from '@site-content/animations.json'`.
  */
 export const CONTENT_ALIAS = '@site-content';
 
@@ -187,7 +188,7 @@ export default function staticSite() {
       return {
         resolve: {
           alias: {
-            [CONTENT_ALIAS]: site.contentDir,
+            [CONTENT_ALIAS]: site.contentRootDir,
             // the stylesheets: the core's main.scss uses the theme's, the theme's the core's tokens
             'site-theme': site.themeDir,
             // the site theme's layers over it (tokens, fonts, overrides): writeThemeLayers
@@ -195,8 +196,8 @@ export default function staticSite() {
             'site-core': CORE_STYLES,
           },
         },
-        // the content folder's name, for client messages ("content/en/settings/animations.json")
-        define: { __SITE_CONTENT_DIR__: JSON.stringify(site.contentRel) },
+        // the content root's name, for client messages ("content/animations.json")
+        define: { __SITE_CONTENT_ROOT__: JSON.stringify(site.contentRootRel) },
         // the engine's files (the editor's fonts, Font Awesome's) served even when the engine
         // sits outside the site's workspace (a linked checkout): else 403s in the console
         server: { fs: { allow: engineAllow(c.root || process.cwd()) } },
@@ -230,7 +231,12 @@ export default function staticSite() {
       server.middlewares.use((req, res, next) => widgetsReady.then(() => next(), next));
       // Content and media manifest changes re-render pages (see handleHotUpdate).
       const site = loadSiteConfig(root);
-      server.watcher.add([site.contentDir, site.templatesDir, site.generatedDir]);
+      server.watcher.add([
+        site.contentDir,
+        site.templatesDir,
+        site.generatedDir,
+        ...ROOT_FILES.map((f) => path.join(site.contentRootDir, f)),
+      ]);
       // a theme layer added or deleted: the site-layer stubs follow (Vite then rebuilds the CSS)
       if (site.themeLayerDir) {
         server.watcher.add(site.themeLayerDir);
@@ -346,9 +352,11 @@ export default function staticSite() {
       const rel = path.relative(config.root, file).split(path.sep).join('/');
       // content and media manifest files are data: they re-render pages, never hot-update modules
       const site = loadSiteConfig(config.root);
-      const content = [site.contentDir, site.templatesDir, site.generatedDir].some((d) =>
-        rel.startsWith(`${posixRel(config.root, d)}/`),
-      );
+      const content =
+        [site.contentDir, site.templatesDir, site.generatedDir].some((d) =>
+          rel.startsWith(`${posixRel(config.root, d)}/`),
+        ) ||
+        ROOT_FILES.some((f) => rel === posixRel(config.root, path.join(site.contentRootDir, f)));
       // the engine's templates: src/site in the engine's folder
       const engineRel = posixRel(ENGINE, file);
       const template = engineRel.startsWith('src/site/');

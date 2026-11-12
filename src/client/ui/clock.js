@@ -1,5 +1,5 @@
 /**
- * The site's local time in every [data-clock="<time zone>"] (settings/site.json "timezone",
+ * The site's local time in every [data-clock="<time zone>"] (site.json "timezone",
  * e.g. "Europe/Amsterdam"); no or an unknown zone shows the visitor's own time.
  */
 const formats = new Map();

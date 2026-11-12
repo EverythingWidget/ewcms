@@ -2,9 +2,9 @@
   Site Settings tab: what is the same on every page. First Motion (MotionSettings.svelte: the
   default timing and the Animations library), then where contact forms send (Forms), the site's
   name and details
-  (settings/site.json), its search and share defaults (SEO: titles, description, share photo,
+  (site.json), its search and share defaults (SEO: titles, description, share photo,
   address, robots, language; a page's own are in Nav > SEO), the Page entrance section (the site's curtain
-  and the page fade, settings/animations.json), where uploaded photos are served from (site.json mediaUrl)
+  and the page fade, animations.json), where uploaded photos are served from (site.json mediaUrl)
   and the text styles' sizes (Type: site.json type, px, src/site/layout/type.js; the preview
   follows them as they are typed, and its Preview shows every style: the type specimen,
   site/layout/type-specimen.js, until Close preview or the Pages tab).

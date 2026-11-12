@@ -6,7 +6,7 @@ import { renderRoute, EMPTY_ROUTE } from '../src/site/render.js';
 
 const empty = (site) => ({
   site,
-  nav: {},
+  header: {},
   pages: {},
   sources: {},
   schemas: {},

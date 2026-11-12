@@ -1,5 +1,5 @@
 /**
- * Animation engine: reads content/en/settings/animations.json (the single source of truth)
+ * Animation engine: reads content/animations.json (the single source of truth)
  * and wires every widget with motion ([data-motion], src/site/layout/motion.js) and every
  * [data-anim="<target id>"] element in a view.
  *
@@ -29,7 +29,7 @@
  * The visual editor (src/editor) edits a copy of this JSON, pushes it in with
  * setConfig() and re-mounts; see window.__site in ../main.js.
  */
-import config from '@site-content/settings/animations.json';
+import config from '@site-content/animations.json';
 import { gsap, reducedMotion } from '../lib/env.js';
 import { types } from './types.js';
 import { isObject } from '../../site/is.js';
@@ -77,7 +77,7 @@ const elementOf = (el, id) =>
 export function resolve(id, el) {
   const target = config.targets[id];
   if (!target) {
-    console.warn(`[anim] no target "${id}" in ${__SITE_CONTENT_DIR__}/settings/animations.json`);
+    console.warn(`[anim] no target "${id}" in ${__SITE_CONTENT_ROOT__}/animations.json`);
     return null;
   }
   const key = el?.dataset.animKey;

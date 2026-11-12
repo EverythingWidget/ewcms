@@ -67,7 +67,7 @@ function showBackdrop(view, el = view.querySelector('[data-backdrop]') ?? backdr
   return backdrop(el);
 }
 
-/** The footer (settings/footer.json's sections): under every page, outside the view. */
+/** The footer (footer.json's sections): under every page, outside the view. */
 const footerEl = () => document.querySelector('[data-footer]');
 
 const noop = { revert() {} };

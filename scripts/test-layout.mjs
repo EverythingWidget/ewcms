@@ -4,6 +4,7 @@
  * back (flat) for assertions. And a git environment for tests that run git (testEnv,
  * useTestEnv; see git-env.mjs for why).
  */
+import { isRootFile } from '../src/site/files.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { storesRows } from '../src/site/layout/grid.js';
@@ -74,7 +75,7 @@ export function warnings(fn) {
 
 /** A temp site's content file (content/en/<f>), parsed. */
 export const read = (root, f) =>
-  JSON.parse(fs.readFileSync(path.join(root, 'content/en', f), 'utf8'));
+  JSON.parse(fs.readFileSync(path.join(root, isRootFile(f) ? 'content' : 'content/en', f), 'utf8'));
 
 /**
  * A [param] page's content (src/site/layout/source.js) for page `id` ("people/[person]"): an

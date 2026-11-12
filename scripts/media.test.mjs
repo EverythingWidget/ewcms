@@ -47,7 +47,7 @@ function project() {
     fs.mkdirSync(path.dirname(path.join(root, f)), { recursive: true });
     fs.writeFileSync(path.join(root, f), typeof data === 'string' ? data : JSON.stringify(data));
   };
-  write('content/en/settings/site.json', { version: 1, name: 'S', url: 'https://x.com' });
+  write('content/site.json', { version: 1, name: 'S', url: 'https://x.com' });
   write('content/en/pages/index.json', {
     version: 1,
     kind: 'page',
@@ -62,7 +62,7 @@ function project() {
 
     items: [{ name: 'N', photos: ['photos/used-1600.webp'] }],
   });
-  write('content/en/settings/photos.json', {
+  write('content/photos.json', {
     version: 1,
     photos: {
       'a/used.jpg': { alt: 'Used' },
@@ -89,7 +89,7 @@ function project() {
   return root;
 }
 const photosOf = (root) =>
-  JSON.parse(fs.readFileSync(path.join(root, 'content/en/settings/photos.json'), 'utf8')).photos;
+  JSON.parse(fs.readFileSync(path.join(root, 'content/photos.json'), 'utf8')).photos;
 
 test('photoUses: every place a key is stored, as file + pointer', () => {
   const files = {

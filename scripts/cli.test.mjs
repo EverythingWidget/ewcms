@@ -26,10 +26,24 @@ test('check: the fixture site has no content problems', async () => {
 test('check: a broken content file is named', async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-check-'));
   fs.cpSync(path.join(FIXTURE, 'content'), path.join(root, 'content'), { recursive: true });
-  fs.writeFileSync(path.join(root, 'content', 'en', 'settings', 'site.json'), '{ "version": 1,');
+  fs.writeFileSync(path.join(root, 'content', 'site.json'), '{ "version": 1,');
   const problems = await checkContentOf(root);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /settings\/site\.json/);
+  assert.match(problems[0], /content\/site\.json/);
+});
+
+test('check: a leftover content/en/settings/ folder is an error that says where its files go', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-check-'));
+  fs.cpSync(path.join(FIXTURE, 'content'), path.join(root, 'content'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'content', 'en', 'settings'));
+  fs.renameSync(
+    path.join(root, 'content', 'header.json'),
+    path.join(root, 'content', 'en', 'settings', 'nav.json'),
+  );
+  const problems = await checkContentOf(root);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /content\/en\/settings\/ is no longer read: its files go to content\//);
+  assert.match(problems[0], /nav\.json is now header\.json/);
 });
 
 test('new-site: a site folder that passes check', async () => {
@@ -41,7 +55,7 @@ test('new-site: a site folder that passes check', async () => {
     '.gitignore',
     'functions/api/contact.js',
     'theme/theme.json',
-    'content/en/settings/site.json',
+    'content/site.json',
     'public/favicon.svg',
   ])
     assert.ok(fs.existsSync(path.join(dir, f)), f);

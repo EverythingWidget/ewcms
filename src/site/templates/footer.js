@@ -3,7 +3,7 @@ import { FOOTER } from '../files.js';
 import { renderSections } from '../layout/index.js';
 
 /**
- * The footer: settings/footer.json's sections, on the page grid like a page's, under every
+ * The footer: footer.json's sections, on the page grid like a page's, under every
  * page. Outside the view (layout.js body): page transitions swap the view, not the footer.
  * Empty, it renders nothing visible (the editor gives it a placeholder to click).
  */

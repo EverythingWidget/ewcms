@@ -230,7 +230,7 @@ test('the widget: where it sends, its form, its validation', () => {
     ],
   );
   assert.deepEqual(
-    checkContent('settings/site.json', {
+    checkContent('site.json', {
       version: 1,
       name: 'x',
       url: 'y',

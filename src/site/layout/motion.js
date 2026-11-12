@@ -1,6 +1,6 @@
 /**
  * Widget motion: a widget's `motion` picks an animation of the library
- * (content/en/settings/animations.json, `animations`) and may set its own timing:
+ * (content/animations.json, `animations`) and may set its own timing:
  *
  *   "motion": { "animation": "grid-reveal", "delay": 0.3, "trigger": "load" }
  *

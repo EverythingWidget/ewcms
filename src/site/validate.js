@@ -15,7 +15,7 @@ import { AREA_KEYS, storesRows } from './layout/grid.js';
 import { storedDefaults } from './defaults.js';
 import {
   ANIMATIONS,
-  NAV,
+  HEADER,
   PHOTOS,
   REDIRECTS,
   SITE,
@@ -147,14 +147,14 @@ function checkForms(f) {
 }
 
 /**
- * nav.json: { header: [items] }, item { label, page | item | href, all?, items?, children? }.
+ * header.json: { header: [items] }, item { label, page | item | href, all?, items?, children? }.
  * Items can have one level of children. Whether a page exists needs the routes: the templates
  * warn about that (header.js linkOf).
  */
-function checkNav(d) {
+function checkHeader(d) {
   const out = optional(d, { header: 'array' });
   if (d.footer !== undefined)
-    out.push('"footer" is gone: the footer is settings/footer.json, sections like a page');
+    out.push('"footer" is gone: the footer is footer.json, sections like a page');
   const check = (item, where, { nest }) => {
     if (!isObject(item)) return out.push(`${where} must be an object`);
     const name = `${where}${typeof item.label === 'string' ? ` ("${item.label}")` : ''}`;
@@ -175,7 +175,7 @@ function checkNav(d) {
 }
 
 /**
- * settings/redirects.json (src/site/redirects.js): a list of { from, to, status? }. Whether `to`
+ * redirects.json (src/site/redirects.js): a list of { from, to, status? }. Whether `to`
  * is a page needs the routes: the build warns about that.
  */
 function checkRedirects(d) {
@@ -610,7 +610,7 @@ function checkPhotos(d) {
 }
 
 /**
- * Problems with one content file's data, [] when it's fine. file: "settings/site.json", …
+ * Problems with one content file's data, [] when it's fine. file: "site.json", …
  * Every file is an object with "version": 1 (VERSION, src/site/files.js) first; a source's
  * list is its "items", redirects.json's "redirects", photos.json's map "photos".
  */
@@ -635,13 +635,13 @@ export function checkContent(file, data) {
   if (file === REDIRECTS) return checkRedirects(d.redirects);
   if (file === SITE) return checkSite(d);
   if (file === ANIMATIONS) return checkAnimations(d);
-  if (file === NAV) return checkNav(d);
+  if (file === HEADER) return checkHeader(d);
   if (file === STRINGS)
     return [
       // the groups of UI text (src/site/strings.js CORE_STRINGS): objects of strings
       ...optional(d, Object.fromEntries(Object.keys(CORE_STRINGS).map((g) => [g, 'object']))),
       ...(d.footer !== undefined
-        ? ['"footer" is gone: the footer is settings/footer.json, sections like a page']
+        ? ['"footer" is gone: the footer is footer.json, sections like a page']
         : []),
     ];
   if (file === PHOTOS)

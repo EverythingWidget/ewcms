@@ -27,7 +27,7 @@ export default [
       'sandbox/**/*.{js,svelte}',
       '**/widgets/*/client.js',
     ],
-    languageOptions: { globals: { ...globals.browser, __SITE_CONTENT_DIR__: 'readonly' } },
+    languageOptions: { globals: { ...globals.browser, __SITE_CONTENT_ROOT__: 'readonly' } },
     rules: { 'no-console': ['warn', { allow: ['warn', 'error'] }] },
   },
   // Cloudflare Pages Functions: a worker (fetch, Request, Response, console).

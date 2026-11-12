@@ -1,5 +1,5 @@
 /**
- * Redirects: content/en/settings/redirects.json, a list of { from, to, status? } (status 301, the
+ * Redirects: content/redirects.json, a list of { from, to, status? } (status 301, the
  * default, or 302). `from` is a path of the site ("/old/"), or a pattern for the item pages of
  * a template ("/old/:person/", "/old/:person/:year/"); `to` is a path ("/new/",
  * "/new/:person/") or a URL. The build writes

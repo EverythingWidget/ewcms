@@ -52,8 +52,8 @@ const NAV = {
   ],
 };
 const files = (more = {}) => ({
-  'settings/site.json': { name: 'Site', title: 'Site home' },
-  'settings/nav.json': NAV,
+  'site.json': { name: 'Site', title: 'Site home' },
+  'header.json': NAV,
   'pages/index.json': page('pg-home', 'Home'),
   'pages/404/index.json': page('pg-nf00', 'Not found'),
   'pages/about/index.json': page('pg-abou', 'About'),
@@ -242,7 +242,7 @@ test('404 has no grip, [param] pages neither; home moves (in the menu or Not lin
   );
   // home out of the menu: first in Not linked, still movable
   const nav = unlinkPage(NAV, 'pg-home');
-  const out = levelOf(files({ 'settings/nav.json': nav }), '');
+  const out = levelOf(files({ 'header.json': nav }), '');
   assert.deepEqual(
     out.notLinked.map((r) => [r.title, r.movable]),
     [
@@ -279,7 +279,7 @@ test('drag link / unlink: into the menu at the drop place, out of it; Not linked
   assert.deepEqual(dropOf(f, ph, archive, 9).place, { after: 'pg-peop' });
   assert.equal(dropOf(f, levelOf(f, 'about'), { ...archive, id: 'about/x' }, 0).place, null);
   // out of the menu: unlinkPage; Not linked has no order: the line is its sorted place
-  const after = levelOf(files({ 'settings/nav.json': unlinkPage(NAV, 'pg-abou') }), '');
+  const after = levelOf(files({ 'header.json': unlinkPage(NAV, 'pg-abou') }), '');
   assert.ok(after.notLinked.some((r) => r.id === 'about'));
   assert.equal(sortedAt(levelOf(f, '').notLinked, 'about'), 1); // after 404, before old
   assert.equal(sortedAt(levelOf(f, '').notLinked, 'home'), 0);
