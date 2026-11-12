@@ -16,7 +16,7 @@
 -->
 <script>
   import { ui, closeSectionPopup, showWidget } from './ui.svelte.js';
-  import Button from './Button.svelte';
+  import BackHead from './BackHead.svelte';
   import PreviewPicker from './PreviewPicker.svelte';
   import { parentId, pathOfId } from '../../site/routes.js';
   import { crumbsOf, pageIds, titleOf } from '../lib/page-tree.js';
@@ -83,32 +83,28 @@
 </script>
 
 <div class="ph">
-  <div class="ph__head">
-    <Button icon="arrow-left" square label="Back to pages" onclick={() => list()} />
-    <div class="ph__main">
-      <h2 class="ph__title">{title}</h2>
-      {#if crumbs.length}
-        <nav class="ph__path" aria-label="Where it is">
-          {#each crumbs as c, i (i)}
-            {#if c.level === null}
-              <span
-                class={['ph__crumb', 'is-current', isParamCrumb(c) && 'is-param']}
-                aria-current="page">{c.label}</span
-              >
-            {:else}
-              <button
-                type="button"
-                class={['ph__crumb', isParamCrumb(c) && 'is-param']}
-                onclick={() => list(c.level)}>{c.label}</button
-              >
-            {/if}
-          {/each}
-        </nav>
-      {:else if sub}
-        <span class="ph__sub">{sub}</span>
-      {/if}
-    </div>
-  </div>
+  <BackHead backLabel="Back to pages" {title} onback={() => list()}>
+    {#if crumbs.length}
+      <nav class="ph__path" aria-label="Where it is">
+        {#each crumbs as c, i (i)}
+          {#if c.level === null}
+            <span
+              class={['ph__crumb', 'is-current', isParamCrumb(c) && 'is-param']}
+              aria-current="page">{c.label}</span
+            >
+          {:else}
+            <button
+              type="button"
+              class={['ph__crumb', isParamCrumb(c) && 'is-param']}
+              onclick={() => list(c.level)}>{c.label}</button
+            >
+          {/if}
+        {/each}
+      </nav>
+    {:else if sub}
+      <span class="ph__sub">{sub}</span>
+    {/if}
+  </BackHead>
   {#if template}
     <button
       type="button"
@@ -154,29 +150,6 @@
     @include stack(0);
     flex: none;
     padding: var(--space-3) var(--space-3) var(--space-2);
-  }
-
-  // the filled square ← beside the two-line title (8px gap)
-  .ph__head {
-    @include row(var(--space-2));
-    align-items: center;
-    min-width: 0;
-  }
-
-  .ph__main {
-    display: grid;
-    min-width: 0;
-    font-size: var(--fs-base);
-    line-height: 20px;
-  }
-
-  .ph__title {
-    @include ellipsis;
-    margin: 0;
-    color: var(--c-text-strong);
-    font-size: var(--fs-base);
-    font-weight: 500;
-    line-height: 20px;
   }
 
   .ph__sub {

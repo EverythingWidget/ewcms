@@ -1,27 +1,31 @@
-// The pages list's head in a folder: Return to the parent, then the path.
+// The pages list's head in a folder: the page head's square back, the path, Back to /parent/, a square +.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const src = readFileSync(new URL('../src/editor/svelte/PagesList.svelte', import.meta.url), 'utf8');
+const head = readFileSync(new URL('../src/editor/svelte/BackHead.svelte', import.meta.url), 'utf8');
+const page = readFileSync(new URL('../src/editor/svelte/PageHead.svelte', import.meta.url), 'utf8');
 
-test('in a folder: one Return to button for the parent, its path as it is', () => {
-  assert.doesNotMatch(src, /pl-top__back/);
-  assert.match(src, /class="pl-return"[\s\S]*?onclick=\{\(\) => go\(parentId\(level\)\)\}/);
-  assert.match(
-    src,
-    /Return to\s*<span class="pl-return__path">\{pathOfId\(parentId\(level\)\)\}<\/span>/,
-  );
-  assert.match(src, /\.pl-return__path \{[\s\S]*?text-transform: none;/);
+test('in a folder: BackHead with a square back, the path as the name, Back to the parent, a square +', () => {
+  assert.doesNotMatch(src, /pl-return|Return to/);
+  assert.match(src, /<BackHead/);
+  assert.match(src, /backLabel="Up one level"/);
+  assert.match(src, /backTitle="Up one level \(Esc\)"/);
+  assert.match(src, /title=\{L\.path\}/);
+  assert.match(src, /onback=\{\(\) => go\(parentId\(level\)\)\}/);
+  assert.match(src, /Back to \{shownPath\(parentId\(level\) \|\| 'home'\)\}/);
+  assert.match(src, /icon="plus"\s*square\s*label="Add page"/);
+  // at the top the bare + stays (no folder back)
+  assert.match(src, /\{:else\}[\s\S]*icon="plus"\s*iconOnly\s*label="Add page"/);
 });
 
-test('32px, muted 11px uppercase; hovered: a control-hover fill 8px past each side', () => {
-  const css = src.slice(src.indexOf('  .pl-return {'), src.indexOf('  .pl-return__path {'));
-  assert.match(css, /height: var\(--size-control\);/);
-  assert.match(css, /color: var\(--c-text-muted\);/);
-  assert.match(css, /font-size: var\(--fs-sm\);/);
-  assert.match(css, /text-transform: uppercase;/);
-  assert.match(css, /inset: 0 calc\(-1 \* var\(--space-2\)\);/);
-  assert.match(css, /&:hover::before \{\s*background: var\(--c-control-hover\);/);
-  assert.match(css, /&:hover \{\s*color: var\(--c-text\);/);
+test("BackHead is the page head's square back beside a two-line title, with the arrow icon", () => {
+  assert.match(head, /icon="arrow-left" square label=\{backLabel\}/);
+  assert.match(head, /class="bh__title"/);
+  assert.match(head, /align-items: center/);
+  assert.match(head, /min-height: var\(--size-control\)/);
+  assert.match(page, /<BackHead backLabel="Back to pages"/);
+  // the arrow is Button's icon, same control the page head uses
+  assert.match(head, /<Button icon="arrow-left" square/);
 });

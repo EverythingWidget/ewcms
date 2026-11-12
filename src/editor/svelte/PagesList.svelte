@@ -2,9 +2,9 @@
   Pages (the Nav tab, while ui.pagesWin.open): the site's pages one folder at a time
   (src/editor/lib/page-tree.js), its rows on the pages' card colour (--c-page-card). Another
   level slides in (lib/slide.js): a deeper one from the right, a higher one from the left.
-    header      one 32px row: ← (up one level, Esc; where the page head's back arrow is) | the
-                path, each part goes there ("/" at the top) | + (Add page; off where only a
-                [param] page could go and it has one)
+    header      in a folder: the page head's square ← (up one level, Esc) beside the folder
+                path, a quiet "Back to /parent/" under it, and a square + (Add page; off
+                where only a [param] page could go and it has one); at the top: the path and +
     menu list   one list in the menu's order (nav.json): at the top home and the other pages;
                 in a folder its root row first (locked: its own page, the Own page switch
                 when it has a normal sub page; off: quieter, its first sub page "As /"), then
@@ -28,6 +28,7 @@
 <script>
   import { tick, untrack } from 'svelte';
   import Button from './Button.svelte';
+  import BackHead from './BackHead.svelte';
   import Select from './Select.svelte';
   import AddPageModal from './AddPageModal.svelte';
   import { ui } from './ui.svelte.js';
@@ -521,42 +522,57 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="pl" bind:this={root} {onkeydown}>
-  <!-- in a folder: ← RETURN TO /parent/ (the whole row one button, as Back to pages);
-       then / photography/                    [ + ]   (the top: just / and +) -->
+  <!-- in a folder: the page head's square ←, the path as the name, "Back to /parent/", a
+       square +; at the top: / and the bare + -->
   {#if level}
-    <button
-      type="button"
-      class="pl-return"
-      title="Up one level (Esc)"
-      onclick={() => go(parentId(level))}
-      ><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Return to
-      <span class="pl-return__path">{pathOfId(parentId(level))}</span></button
-    >
+    <div class="pl-folder">
+      <BackHead
+        backLabel="Up one level"
+        backTitle="Up one level (Esc)"
+        title={L.path}
+        onback={() => go(parentId(level))}
+      >
+        <span class="pl-folder__to">Back to {shownPath(parentId(level) || 'home')}</span>
+        {#snippet trailing()}
+          <!-- off: a [param] folder takes only a [param] page, and it has one (the title says so:
+               a disabled button shows none of its own) -->
+          <span class="pl-top__add" title={L.full ? FULL : null}>
+            <Button
+              icon="plus"
+              square
+              label="Add page"
+              title={L.full ? FULL : undefined}
+              disabled={level === '404' || L.full}
+              onclick={() => addModal.open({ level, linked: !isTemplate(level) })}
+            />
+          </span>
+        {/snippet}
+      </BackHead>
+    </div>
+  {:else}
+    <div class="pl-top">
+      <nav class="pl-top__path" aria-label="Where you are">
+        {#each crumbsOf(level) as c, i (c.level)}
+          {#if i === crumbsOf(level).length - 1}
+            <span class="pl-top__crumb is-current" aria-current="location">{c.label}</span>
+          {:else}
+            <button type="button" class="pl-top__crumb" onclick={() => go(c.level)}>{c.label}</button>
+          {/if}
+        {/each}
+      </nav>
+      <span class="pl-top__add" title={L.full ? FULL : null}>
+        <Button
+          size="small"
+          icon="plus"
+          iconOnly
+          label="Add page"
+          title={L.full ? FULL : undefined}
+          disabled={level === '404' || L.full}
+          onclick={() => addModal.open({ level, linked: !isTemplate(level) })}
+        />
+      </span>
+    </div>
   {/if}
-  <div class="pl-top">
-    <nav class="pl-top__path" aria-label="Where you are">
-      {#each crumbsOf(level) as c, i (c.level)}
-        {#if i === crumbsOf(level).length - 1}
-          <span class="pl-top__crumb is-current" aria-current="location">{c.label}</span>
-        {:else}
-          <button type="button" class="pl-top__crumb" onclick={() => go(c.level)}>{c.label}</button>
-        {/if}
-      {/each}
-    </nav>
-    <!-- off: a [param] folder takes only a [param] page, and it has one (the title says so:
-         a disabled button shows none of its own) -->
-    <span class="pl-top__add" title={L.full ? FULL : null}>
-      <Button
-        size="small"
-        icon="plus"
-        iconOnly
-        label="Add page"
-        title={L.full ? FULL : undefined}
-        disabled={level === '404' || L.full}
-        onclick={() => addModal.open({ level, linked: !isTemplate(level) })}
-      />
-    </span>
-  </div>
 
   <ul class="pl-rows" bind:this={subList}>
     {#if L.own}{@render row(L.own)}{/if}
@@ -614,64 +630,22 @@
     align-content: start;
   }
 
-  // [ ← | path | + ]: one 32px row; its ← on the 12px edge where the page head's back arrow is
-  // (PageHead.svelte: switching between them, the arrow stays put)
+  // at the top: [ path | + ], one 32px row
   .pl-top {
     @include row(var(--space-2));
     min-height: var(--size-control);
     margin-bottom: var(--space-1);
   }
 
-  // ← RETURN TO /parent/: the whole row one button, 32px, as PageHead's Back to pages
-  // (muted, 11px, uppercase; the path as it is); hovered: a --c-control-hover fill 8px past
-  // its content each side (drawn outside it: nothing moves), the text --c-text
-  .pl-return {
-    @include row(var(--space-2));
-    position: relative;
-    z-index: 0;
-    width: 100%;
-    height: var(--size-control);
-    padding: 0;
-    border: 0;
-    border-radius: var(--radius-sm);
-    background: none;
-    color: var(--c-text-muted);
-    font: inherit;
-    font-size: var(--fs-sm);
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    text-align: left;
-    cursor: pointer;
-    transition: color 0.2s;
-
-    &::before {
-      content: '';
-      position: absolute;
-      inset: 0 calc(-1 * var(--space-2));
-      z-index: -1;
-      border-radius: var(--radius-md);
-      background: transparent;
-      transition: background 0.2s;
-    }
-
-    &:hover {
-      color: var(--c-text);
-    }
-
-    &:hover::before {
-      background: var(--c-control-hover);
-    }
-
-    &:focus-visible {
-      @include focus-ring;
-    }
+  // in a folder: BackHead (the page head's square ←, the path, "Back to /parent/", a square +);
+  // its ← on the 12px edge where the page head's back arrow is
+  .pl-folder {
+    margin-bottom: var(--space-1);
   }
 
-  .pl-return__path {
+  .pl-folder__to {
     @include ellipsis;
-    min-width: 0;
-    text-transform: none;
+    color: var(--c-text-muted);
   }
 
   // one line, never wrapping (the header stays 32px): the parts above shrink first, cut with
