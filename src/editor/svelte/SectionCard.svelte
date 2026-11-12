@@ -128,27 +128,27 @@
 
   // ---- the card (Collapsible.svelte, data-card): 12px inside on the sides (its bar and foot), the
   // widgets 8px under the title row; the title on one line
-  :global(.sec[data-card] > .sec__bar) {
+  :global(.collapsible[data-card] > .collapsible__bar) {
     padding-inline: var(--space-3);
   }
 
-  :global(.sec[data-card] .sec__foot) {
+  :global(.collapsible[data-card] .collapsible__foot) {
     gap: 0;
     margin-top: 0;
     padding: var(--space-2) var(--space-3) 0;
   }
 
-  :global(.sec[data-card] .sec__toggle--card > span) {
+  :global(.collapsible[data-card] .collapsible__toggle--card > span) {
     @include ellipsis;
   }
 
   // hidden: the title muted (Section's), its widgets dimmed; the buttons follow their own rule
-  :global(.sec[data-card].is-off) .widgets {
+  :global(.collapsible[data-card].is-off) .widgets {
     opacity: var(--o-dim);
   }
 
   // a lifted row is drawn over the card's edge (its clip would cut it otherwise)
-  :global(.sec__clip:has(.is-lifted)) {
+  :global(.collapsible__clip:has(.is-lifted)) {
     overflow: visible;
   }
 

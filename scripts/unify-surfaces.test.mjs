@@ -56,13 +56,13 @@ test("a section card's bar sits inside the ring and the rounded corners", () => 
   // the bar's fill stays inside the card's top radius (same token as the card)
   assert.match(
     s,
-    /\.sec__bar \{[^}]*border-start-start-radius: var\(--radius-lg\);[^}]*border-start-end-radius: var\(--radius-lg\);/s,
+    /\.collapsible__bar \{[^}]*border-start-start-radius: var\(--radius-lg\);[^}]*border-start-end-radius: var\(--radius-lg\);/s,
   );
   // the ring is redrawn on top of the sticky bar; clicks pass through
-  assert.match(s, /\.sec \{[\s\S]*?&::after \{[^}]*border-color: inherit;[^}]*border-radius: inherit;/);
+  assert.match(s, /\.collapsible \{[\s\S]*?&::after \{[^}]*border-color: inherit;[^}]*border-radius: inherit;/);
   assert.match(s, /&::after \{[^}]*pointer-events: none;/);
   // overflow:hidden on the card would clip focus rings and break the sticky bar
-  const secBlock = s.match(/ {2}\.sec \{[\s\S]*?\n {2}\}\n\n {2}\/\/ the toggle/)[0];
+  const secBlock = s.match(/ {2}\.collapsible \{[\s\S]*?\n {2}\}\n\n {2}\/\/ the toggle/)[0];
   const props = secBlock.replace(/\/\/.*$/gm, '');
   assert.doesNotMatch(props, /^\s*overflow:/m);
 });

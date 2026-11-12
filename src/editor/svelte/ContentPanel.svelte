@@ -170,7 +170,7 @@
   // a click on the list's empty space (no card, no control): no section selected
   const CONTROLS = 'a, button, input, select, textarea, label, [contenteditable], [role="menu"]';
   function deselect(e) {
-    if (!ui.selSection || e.target.closest?.(`.sec, ${CONTROLS}`)) return;
+    if (!ui.selSection || e.target.closest?.(`.collapsible, ${CONTROLS}`)) return;
     deselectSections();
   }
 

@@ -226,7 +226,7 @@ kbd {
 .tf.is-changed > .tf__label::before,
 .tf.is-changed .sc__label::before,
 .tf.is-changed .photo__label::before,
-.sec.is-changed > .sec__bar::before,
+.collapsible.is-changed > .collapsible__bar::before,
 .pane__head.is-changed::before,
 :is(.xrow, .mlist__element).is-changed::before {
   @include changed-dot;
@@ -241,7 +241,7 @@ kbd {
   color: var(--c-text);
 }
 
-.sec.is-changed > .sec__bar::before {
+.collapsible.is-changed > .collapsible__bar::before {
   margin: calc((20px - var(--size-changed)) / 2) 0;
 }
 
@@ -876,11 +876,11 @@ dialog.modal__box {
 // a page section's card (SectionsList.svelte), its own 1px border (no size change), white, not
 // the accent (that is a widget's selection): hovered, or its section hovered in the preview
 // (.is-peek), 40%; selected (.is-selected) 70%; a delete confirm's red (.is-danger) wins
-.sec[data-section^='s-']:not(.is-danger, .is-selected):hover,
-.sec[data-section].is-peek {
+.collapsible[data-section^='s-']:not(.is-danger, .is-selected):hover,
+.collapsible[data-section].is-peek {
   border-color: var(--c-line-hover);
 }
 
-.sec[data-section^='s-'].is-selected {
+.collapsible[data-section^='s-'].is-selected {
   border-color: var(--c-line-peek);
 }

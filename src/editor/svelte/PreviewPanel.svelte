@@ -199,7 +199,7 @@
   }
 
   // changes: a Section per file (class chg); file names keep their case
-  :global(.chg .sec__toggle) {
+  :global(.chg .collapsible__toggle) {
     text-transform: none;
     letter-spacing: 0;
   }

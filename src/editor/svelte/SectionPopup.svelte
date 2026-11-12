@@ -35,7 +35,7 @@
   let pos = $state({ left: -9999, top: 0 });
   let dragging = $state(false);
 
-  const cardOf = (id) => document.querySelector(`.sec[data-section="${CSS.escape(id)}"]`);
+  const cardOf = (id) => document.querySelector(`.collapsible[data-section="${CSS.escape(id)}"]`);
   const win = () => ({ vw: innerWidth, vh: innerHeight, h: el?.offsetHeight || 0 });
 
   // placed on open and on a swap (the card's place, or the dragged one)

@@ -59,14 +59,14 @@
     flex-direction: column;
   }
 
-  // drawn hovered (editor.scss .sec:hover; SectionCard.svelte's buttons on hover)
-  .kit-card--hover > :global(.sec:not(.is-selected, .is-danger)) {
+  // drawn hovered (editor.scss .collapsible:hover; SectionCard.svelte's buttons on hover)
+  .kit-card--hover > :global(.collapsible:not(.is-selected, .is-danger)) {
     border-color: var(--c-line-hover);
   }
 
-  .kit-card--hover :global(.sec > .sec__bar .btn),
-  .kit-card--hover :global(.sec .line > *),
-  .kit-card--hover :global(.sec .line .btn),
+  .kit-card--hover :global(.collapsible > .collapsible__bar .btn),
+  .kit-card--hover :global(.collapsible .line > *),
+  .kit-card--hover :global(.collapsible .line .btn),
   .kit-card :global(.brow.kit-hover > .btn) {
     opacity: 1;
   }

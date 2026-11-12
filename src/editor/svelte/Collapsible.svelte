@@ -3,7 +3,7 @@
   controls, then the caret at its right end) and the body, clipped and inert while closed (it stays in the DOM, so a field picked
   in the preview can be found and its section opened). Used by the Content, Motion and Settings
   tabs and the Animations library (with onenter, an always open card a click selects and a
-  double click goes into: the page's section cards; their tools are SectionToolbar.svelte's). .sec is a flex column: bar, body (.sec__body > .sec__clip > .sec__inner).
+  double click goes into: the page's section cards; their tools are SectionToolbar.svelte's). .collapsible is a flex column: bar, body (.collapsible__body > .collapsible__clip > .collapsible__inner).
 
     title     the bar title (small caps)
     name      optional: what it is, on a second line in the accent color
@@ -117,10 +117,10 @@
 
 <section
   class={[
-    'sec',
+    'collapsible',
     off && 'is-off',
     changed && 'is-changed',
-    stack && 'sec--stack',
+    stack && 'collapsible--stack',
     danger ? 'is-danger' : selected && 'is-selected',
     cls,
   ]}
@@ -130,13 +130,13 @@
   ondblclick={onenter && enter}
   onmousedown={onenter && noSelect}
 >
-  <div class="sec__bar">
+  <div class="collapsible__bar">
     {#if onenter}
-      <span class="sec__toggle sec__toggle--card">{@render head()}</span>
+      <span class="collapsible__toggle collapsible__toggle--card">{@render head()}</span>
     {:else}
       <button
         type="button"
-        class="sec__toggle"
+        class="collapsible__toggle"
         aria-expanded={isOpen}
         aria-controls="{uid}-body"
         onclick={toggle}
@@ -149,19 +149,19 @@
       <!-- the caret at the bar's right end: a pointer target (the title is the keyboard's) -->
       <button
         type="button"
-        class={['sec__caret', isOpen && 'is-open']}
+        class={['collapsible__caret', isOpen && 'is-open']}
         tabindex="-1"
         aria-hidden="true"
         onclick={toggle}><i class="fa-solid fa-chevron-right"></i></button
       >
     {/if}
   </div>
-  <div class="sec__body" id="{uid}-body" inert={!isOpen} bind:this={body}>
-    <div class="sec__clip">
-      <div class="sec__inner">
+  <div class="collapsible__body" id="{uid}-body" inert={!isOpen} bind:this={body}>
+    <div class="collapsible__clip">
+      <div class="collapsible__inner">
         {@render children?.()}
       </div>
-      {#if foot}<div class="sec__foot">{@render foot()}</div>{/if}
+      {#if foot}<div class="collapsible__foot">{@render foot()}</div>{/if}
     </div>
   </div>
   {@render over?.()}
@@ -170,7 +170,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  .sec {
+  .collapsible {
     display: flex;
     flex-direction: column;
     padding: var(--space-3) 0; // the sides: the bar's and the inner's (a foot's line is edge to edge)
@@ -202,7 +202,7 @@
 
   // the toggle, then on the right whatever the `bar` snippet adds; every item is 20px tall
   // (a toggle with a name has a second 20px line)
-  .sec__bar {
+  .collapsible__bar {
     display: flex;
     padding-inline: var(--space-2);
     align-items: flex-start;
@@ -225,7 +225,7 @@
 
   // a panel's own sections (not nested ones): the bar stays on top of the scroll area while
   // its section scrolls by, on the panel's color so the fields pass under it
-  :global(.ed-body) > .sec > .sec__bar {
+  :global(.ed-body) > .collapsible > .collapsible__bar {
     position: sticky;
     top: -12px; // the scroll area's top edge, over its padding
     z-index: 1;
@@ -234,7 +234,7 @@
   }
 
   // the title, with the name under it
-  .sec__toggle {
+  .collapsible__toggle {
     flex: 1;
     min-width: 0;
     display: grid;
@@ -259,7 +259,7 @@
     }
 
     // a card's title: plain text (no caret, not a button), its colour never changes
-    &.sec__toggle--card {
+    &.collapsible__toggle--card {
       cursor: default;
 
       &:hover {
@@ -276,7 +276,7 @@
 
   // the caret: the bar's last item, an 8px column at its right end (the bar's 8px inset: the
   // fields' right edge); right closed, down open
-  .sec__caret {
+  .collapsible__caret {
     display: grid;
     place-items: center;
     width: 8px;
@@ -296,7 +296,7 @@
       rotate: 90deg;
     }
 
-    .sec__toggle:hover ~ &,
+    .collapsible__toggle:hover ~ &,
     &:hover {
       color: var(--c-text-strong);
     }
@@ -304,7 +304,7 @@
 
   // the body's row: open 1fr, closed (inert) 0fr; the bar's gap is the inner's padding, so
   // it closes with it
-  .sec__body {
+  .collapsible__body {
     display: grid;
     grid-template-rows: 1fr;
 
@@ -313,20 +313,20 @@
     }
   }
 
-  .sec__clip {
+  .collapsible__clip {
     min-height: 0;
     overflow: hidden;
   }
 
   // its parts a column with gaps (not margins on them: a part keeps its own margins)
-  .sec__inner {
+  .collapsible__inner {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
     padding: var(--space-3) var(--space-2) 0;
   }
 
-  .sec__foot {
+  .collapsible__foot {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
@@ -335,44 +335,44 @@
   }
 
   // no body (a list card: its widgets only): the foot right under the bar
-  .sec__inner:empty {
+  .collapsible__inner:empty {
     display: none;
   }
 
-  .sec__inner:empty + .sec__foot {
+  .collapsible__inner:empty + .collapsible__foot {
     margin-top: 0;
   }
 
   // two rows: the title alone (wraps), then the controls from the left
-  .sec--stack > .sec__bar {
+  .collapsible--stack > .collapsible__bar {
     flex-wrap: wrap;
     row-gap: var(--space-2);
 
-    > .sec__toggle {
+    > .collapsible__toggle {
       flex: 1 0 100%;
     }
   }
 
   // the changed dot first: the title takes the rest of its row
-  .sec--stack.is-changed > .sec__bar > .sec__toggle {
+  .collapsible--stack.is-changed > .collapsible__bar > .collapsible__toggle {
     flex-basis: calc(100% - var(--size-changed) - var(--space-1));
   }
 
   // a card's pen after the title, on its row (the dot's and the pen's room taken off)
-  .sec--stack > .sec__bar > .sec__toggle--card {
+  .collapsible--stack > .collapsible__bar > .collapsible__toggle--card {
     flex-basis: calc(100% - 24px - var(--space-1));
   }
 
-  .sec--stack.is-changed > .sec__bar > .sec__toggle--card {
+  .collapsible--stack.is-changed > .collapsible__bar > .collapsible__toggle--card {
     flex-basis: calc(100% - var(--size-changed) - 24px - var(--space-2));
   }
 
-  .sec.is-off {
-    .sec__toggle {
+  .collapsible.is-off {
+    .collapsible__toggle {
       color: var(--c-text-muted);
     }
 
-    &:not([data-card]) .sec__body {
+    &:not([data-card]) .collapsible__body {
       opacity: var(--o-dim);
     }
   }
