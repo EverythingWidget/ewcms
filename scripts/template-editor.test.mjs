@@ -278,10 +278,6 @@ test('a line edited in the chips box keeps its bold, italic and links', () => {
   assert.deepEqual(cut.at(-1), { t: ' now', link: { href: '/about/' } });
   // no marks before: plain runs
   assert.deepEqual(keepMarks([{ t: 'a' }], [{ t: 'ab' }]), [{ t: 'ab' }]);
-  assert.match(
-    read('src/editor/svelte/TemplateWidgetFields.svelte'),
-    /keepMarks\(line\.text, runsOf\(value\)\)/,
-  );
 });
 
 test('text under 11 px: a warning line under the widget in the template editor (no minimum size)', async () => {
@@ -352,6 +348,54 @@ test('a selected template widget uses the page pop-up and toolbar delete, in pla
   assert.match(render, /w\.config\?\.enabled === false \? ' hidden'/);
   const ops = read('src/editor/layout-ops.js');
   assert.match(ops, /if \(templateIdOf\(file\)\) \{\s*const list = listOf\(store, file\);/);
+});
+
+
+test('a template Text is edited in the preview, like a page Text: no Style/Text in the pop-up', async () => {
+  const fields = read('src/editor/svelte/TemplateWidgetFields.svelte');
+  assert.doesNotMatch(fields, /label="Style"|label="Text"/);
+  assert.doesNotMatch(fields, /body\/0\/style|body\/0\/text|twf__line/);
+  // Role, When a value is missing, and a facts join stay in the pop-up
+  assert.match(fields, /label="Role"/);
+  assert.match(fields, /label="When a value is missing"/);
+  assert.match(fields, /label="Between facts"/);
+
+  const { oneLineBody } = await import('../src/site/text.js');
+  assert.deepEqual(oneLineBody([{ style: 'heading', text: [{ t: 'A' }] }]), [
+    { style: 'heading', text: [{ t: 'A' }] },
+  ]);
+  assert.deepEqual(
+    oneLineBody([
+      { style: 'heading', text: [{ property: 'title' }] },
+      { style: 'paragraph', text: [{ t: 'more' }] },
+    ]),
+    [{ style: 'heading', text: [{ property: 'title' }, { t: ' more' }] }],
+  );
+
+  // the template editor's preview: the Text has data-edit on the template file (rich)
+  const from = withTemplate(card({ preview: { from: 'people' } }));
+  const { route, content } = templatePreview(from, 't-ab12');
+  const { document } = parseHTML(`<body>${renderRoute(route, content, { editable: true }).body}`);
+  const title = document.querySelector('[data-tw] [data-edit-type="rich"]');
+  assert.ok(title, 'template Text has a rich data-edit in the preview');
+  assert.match(title.getAttribute('data-edit'), /^templates\/t-ab12\.json#\/sections\/0\/widgets\/\d+\/body$/);
+  // a List on a page is still one widget (itemEd only when the preview is this template)
+  const list = read('src/site/widgets/list/index.js');
+  assert.match(list, /templateOfPath\(ctx\.route\?\.path/);
+  assert.match(list, /function itemEd\(/);
+  assert.match(list, /ed: itemEd\(editFile, j, filled\)/);
+
+  const bar = read('src/editor/svelte/WidgetToolbar.svelte');
+  assert.match(bar, /data-tw="\$\{CSS\.escape\(id\)\}"/);
+  assert.match(bar, /sampleSource\(live\.content, live\.current\(where\.file\)\)/);
+  assert.match(bar, /tplExtras/);
+  const bridge = read('src/editor/bridge.js');
+  assert.match(bridge, /closest\('\[data-tw\], \[data-widget\]'\)/);
+  assert.match(bridge, /oneLineBody/);
+  assert.match(bridge, /templateIdOf\(rich\.file\)/);
+  const main = read('src/editor/main.js');
+  assert.match(main, /templates: typed \? \[\] : files\.map\(templateIdOf\)/);
+  assert.match(main, /pushDraft\(\{ templates: \[id\] \}\)/);
 });
 
 test('a template is one section: the editor edits its file, its widgets at /sections/0/widgets', async () => {

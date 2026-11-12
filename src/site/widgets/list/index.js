@@ -38,6 +38,8 @@
 import {
   html,
   esc,
+  ed,
+  editRef,
   editable,
   itemHref,
   pad,
@@ -45,12 +47,12 @@ import {
   creditOf,
   creditText,
 } from '../../helpers.js';
-import { contentPath } from '../../files.js';
+import { contentPath, templateFile } from '../../files.js';
 import { isObject } from '../../is.js';
 import { t } from '../../strings.js';
 import { keysOf, resolveWidget } from '../../layout/bindings.js';
 import { hideMissing, missingState } from '../../layout/missing.js';
-import { partEmpty } from '../../layout/parts.js';
+import { isParts, partEmpty } from '../../layout/parts.js';
 import { WIDGET_TYPES } from '../index.js';
 import { sourcePage } from '../data.js';
 import {
@@ -68,6 +70,7 @@ import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from 
 import { presetStyle, styleMarkup } from './item-style.js';
 import { itemGridHtml } from './item-grid-render.js';
 import { itemSection, itemWidgets } from './item-grid.js';
+import { templateOfPath } from './template-preview.js';
 import { detailsOf, nameOf, opensHtml, toggleHtml } from './details.js';
 import { innerItems, innerKeys } from './nested.js';
 import { CAROUSEL, carouselHtml, carouselOf, carouselProblems } from './carousel.js';
@@ -111,6 +114,23 @@ export const gapProblem = (gap) =>
 /** A phone's columns (config.phoneColumns; left out: 1). */
 const PHONE_COLUMNS = ['1', '2', '3'];
 
+
+/**
+ * In the template editor's preview only: the item's widgets edit the template file
+ * (data-edit / data-bound), as a page widget's. A List on a page stays one widget (ed: none).
+ */
+function itemEd(file, j, widget) {
+  if (!file || j < 0) return () => '';
+  return (path, type) => {
+    const keys = [path].flat();
+    const value = keys.reduce((v, k) => v?.[k], widget);
+    const parts = ['sections', 0, 'widgets', j, ...keys];
+    if (!isParts(value)) return ed(file, parts, type);
+    if (!editable) return '';
+    return ` data-bound="${esc(editRef(file, parts))}"`;
+  };
+}
+
 /** One widget of an item's template, filled from `item` (scope); '' when it is left out. */
 function itemWidget(w, ctx, scope, { hide, api, cls = '' }) {
   const def = WIDGET_TYPES[w.type];
@@ -147,7 +167,7 @@ function itemWidget(w, ctx, scope, { hide, api, cls = '' }) {
   const gone = missingState(ctx, w, def, scope, { hide });
   if (gone.skip) return { html: '', missing: gone.missing };
   const data = resolveWidget(w, def, { ...scope, placeholders: editable });
-  const out = def.render(data, ctx, { ...api, scopeItems: scope.items, ed: () => '' });
+  const out = def.render(data, ctx, { ...api, scopeItems: scope.items, ed: api.ed || (() => '') });
   return {
     html: `<div class="li__w${w.role ? ` li__${w.role}` : ''}${cls}"${gone.attr}>${out}</div>`,
     missing: gone.all ? gone.missing : [],
@@ -434,16 +454,28 @@ export const list = {
         parent: widget.parent,
         depth: widget.depth || 1,
       };
-      const one = (w, cls = '') => {
+      // the template being previewed: its own widgets (not a details template, not a List on a page)
+      const previewId = templateOfPath(ctx.route?.path || '');
+      const editFile =
+        editable && previewId && c.template === previewId
+          ? templateFile(previewId)
+          : '';
+      const one = (w, cls = '', j = -1) => {
         // off: not on the public page; in the editor the item grid renders it hidden
         if (w?.config?.enabled === false && !editable) return { html: '', missing: [] };
         const filled = forItem(w, scope, itemHrefLink, sep, { handmade, href: handmadeHref });
         if (!filled) return { html: '', missing: [] };
         // item widgets inherit the List's missing choice unless they set their own
         const hide = filled.config?.missing !== undefined ? hideMissing(filled.config) : listHide;
-        return itemWidget(filled, ctx, scope, { hide, api, cls });
+        return itemWidget(filled, ctx, scope, {
+          hide,
+          api: { ...api, ed: itemEd(editFile, j, filled) },
+          cls,
+        });
       };
-      const ws = [...template, ...detailsTpl].map((w) => one(w));
+      const ws = [...template, ...detailsTpl].map((w, j) =>
+        one(w, '', j < template.length ? j : -1),
+      );
       ws.forEach((w) => w.missing.forEach((n) => missing.set(n, (missing.get(n) || 0) + 1)));
       const all = ws.map((w) => w.html);
       const parts = all.slice(0, template.length);

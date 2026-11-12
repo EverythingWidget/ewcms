@@ -444,6 +444,16 @@ const LEAD_STYLES = new Set(['title', 'heading', 'subheading', 'statement', 'lab
  * the style; at the end of a title, heading, subheading, statement or label the new line is a
  * Paragraph (what follows a heading is text); after a paragraph or small text, the same.
  */
+/** A body kept to one line (a template Text): later lines' runs follow, a space between. */
+export function oneLineBody(body) {
+  const lines = Array.isArray(body) && body.length ? body : [{ style: 'paragraph', text: [] }];
+  if (lines.length <= 1) return lines;
+  const first = clone(lines[0]);
+  const rest = lines.slice(1).flatMap((l) => l?.text || []);
+  first.text = tidyRuns([...(first.text || []), { t: ' ' }, ...rest]);
+  return [first];
+}
+
 export function splitLine(body, pos) {
   const out = clone(body.length ? body : [{ style: 'paragraph', text: [] }]);
   const line = out[pos.line];

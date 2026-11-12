@@ -18,7 +18,7 @@
 import { withDraft } from './source.js';
 import { EDIT_PARAM } from './lib/editor-url.js';
 import { splitEdit, words } from '../site/helpers.js';
-import { ANIMATIONS } from '../site/files.js';
+import { ANIMATIONS, templateIdOf } from '../site/files.js';
 import { photoSrcset, photoUrl } from './svelte/media.svelte.js';
 import { T } from './ui-tokens.js';
 import {
@@ -37,6 +37,7 @@ import {
   linkIn,
   plainLines,
   splitLine,
+  oneLineBody,
   toggleMark,
   unlist,
   autoList,
@@ -437,7 +438,10 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
     },
     /** A widget's edit mode (its toolbar's Edit): its text editable, the caret at its end. */
     editWidget(id) {
-      const el = richOf(doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`));
+      const el = richOf(
+        doc?.querySelector(`[data-tw="${CSS.escape(id)}"]`) ||
+          doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`),
+      );
       if (el) startRich(el);
     },
     focusEdit(edit) {
@@ -517,7 +521,10 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
 
   /** The body typed into the store (no re-render: the preview shows it already). */
   function writeRich(body) {
-    store.set(rich.file, rich.ptr, body, {
+    // a template Text is one line (validate.js): a paste's later lines follow on the same line
+    const next = templateIdOf(rich.file) ? oneLineBody(body) : body;
+    if (next !== body) renderLines(next);
+    store.set(rich.file, rich.ptr, next, {
       key: `text:${rich.edit}`,
       source: rich.el,
       structure: true, // its undo and redo render the section again
@@ -545,7 +552,8 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
       edit,
       file,
       ptr,
-      widget: el.closest('[data-widget]')?.dataset.widget || '',
+      widget:
+        el.closest('[data-tw]')?.dataset.tw || el.closest('[data-widget]')?.dataset.widget || '',
       hold: false,
     };
     el.setAttribute('contenteditable', 'true');
@@ -586,6 +594,15 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
     }
     if (e.key === 'Enter') {
       e.preventDefault();
+      // a template Text is one line: another line is a Text of its own on the grid
+      if (templateIdOf(rich.file)) {
+        const sel = selectionOf(rich.el, win);
+        const body = store.get(rich.file, rich.ptr) || [];
+        if (sel && isCaret(sel) && !lineLength(body[sel.to.line]) && body[sel.to.line]?.list) {
+          bridge.richApply((b) => ({ body: unlist(b, sel.to.line), sel }));
+        }
+        return true;
+      }
       // a selection typed over first (the browser's delete), then the line split
       const s = selectionOf(rich.el, win);
       if (s && !isCaret(s)) doc.execCommand('delete');
@@ -810,9 +827,10 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
         const t = e.target instanceof win.Element ? e.target : null;
         const found = t?.closest('[data-edit], [data-bound]');
         // a widget's text: anywhere on the widget (its own edit mode, as its toolbar's Edit)
+        // a template widget is [data-tw], inside the preview List's [data-widget]
         const hit =
           found?.dataset.editType === 'rich' || !found
-            ? found || richOf(t?.closest('[data-widget]'))
+            ? found || richOf(t?.closest('[data-tw], [data-widget]'))
             : found;
         if (!hit || hit.isContentEditable) return;
         e.preventDefault();

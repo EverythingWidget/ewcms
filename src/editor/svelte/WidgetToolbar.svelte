@@ -29,8 +29,11 @@
   import { schemaFor } from './source-items.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import { countGroups } from '../property-groups.js';
-  import { sourceFile, sourceIds as sourceIdsOf } from '../../site/files.js';
+  import { sourceFile, sourceIds as sourceIdsOf, templateIdOf } from '../../site/files.js';
   import { sourceOf } from '../../site/layout/source.js';
+  import { sampleSource } from '../../site/widgets/list/template-preview.js';
+  import { innerTemplates } from '../../site/widgets/list/nested.js';
+  import { schemaOf } from '../../site/schemas.js';
   import { untrack } from 'svelte';
   import { NEW_ROWS, setWidget } from '../layout-ops.js';
   import { isSafeHref, UNSAFE_HREF } from '../../site/hrefs.js';
@@ -106,7 +109,9 @@
       raf = requestAnimationFrame(tick);
       const doc = bridge.doc;
       const frame = doc?.defaultView?.frameElement;
-      const el = doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`);
+      const el =
+        doc?.querySelector(`[data-tw="${CSS.escape(id)}"]`) ||
+        doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`);
       const stage = frame?.parentElement;
       if (!el || !stage) return void (box = null);
       const r = el.getBoundingClientRect();
@@ -321,7 +326,12 @@
 
   // + Property: the item's properties (the widget's source; a list: its length), and the sources
   // ({people}: how many)
-  const from = $derived(sourceOf(widget)?.from ?? null);
+  const itemTpl = $derived(where ? templateIdOf(where.file) : null);
+  const from = $derived(
+    itemTpl
+      ? sampleSource(live.content, live.current(where.file))
+      : (sourceOf(widget)?.from ?? null),
+  );
   const properties = $derived.by(() => {
     live.version;
     return from
@@ -329,6 +339,29 @@
           [...BIND_TYPES.multiline, 'photos'].includes(f.type),
         )
       : [];
+  });
+  // a template Text also offers {number}, {back}, and an outer item's parent: keys
+  const tplExtras = $derived.by(() => {
+    if (!itemTpl) return [];
+    live.version;
+    const extras = [
+      { value: 'number', label: '{number}', hint: '01, 02 …' },
+      { value: 'back', label: '{back}', hint: 'the page around it' },
+    ];
+    const templates = live.content?.templates || {};
+    const outer = Object.entries(templates).find(([, t]) => innerTemplates(t).includes(itemTpl))?.[0];
+    const parentFrom = outer ? sampleSource(live.content, templates[outer]) : '';
+    const parentKeys = parentFrom
+      ? (schemaOf(live.content, parentFrom)?.properties || []).map((p) => p.key)
+      : [];
+    return [
+      ...extras,
+      ...parentKeys.map((k) => ({
+        value: `parent:${k}`,
+        label: `{parent:${k}}`,
+        hint: `the outer item’s ${k}`,
+      })),
+    ];
   });
   const sources = $derived.by(() => {
     live.version;
@@ -531,12 +564,22 @@
           {#if linkError}<p class="btb__err" role="alert">{linkError}</p>{/if}
         {:else if open === 'property'}
           <span class="btb__grp"
-            >{from ? `A property of ${from}` : 'No source, so no properties'}</span
+            >{from
+              ? `A property of ${from}`
+              : itemTpl
+                ? 'This item'
+                : 'No source, so no properties'}</span
           >
           {#each properties as f (f.key)}
             <button type="button" class="btb__opt" onclick={() => insert({ property: f.key })}
               ><span class="btb__chip">{`{${f.key}}`}</span><span class="btb__hint"
                 >{f.label || f.type}</span
+              ></button
+            >
+          {/each}
+          {#each tplExtras as f (f.value)}
+            <button type="button" class="btb__opt" onclick={() => insert({ property: f.value })}
+              ><span class="btb__chip">{f.label}</span><span class="btb__hint">{f.hint}</span
               ></button
             >
           {/each}

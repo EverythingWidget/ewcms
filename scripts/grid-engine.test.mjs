@@ -137,10 +137,10 @@ test("the template editor: a widget's Content | Layout tabs, its Text one line",
   // both panes in one cell: no shift on a switch
   assert.match(inspector, /\.card__pane \{[^}]*grid-area: 1 \/ 1;/);
   assert.match(inspector, /\.card__pane\.is-hidden \{\s*visibility: hidden;/);
-  // the Line fields are gone: one Style + Text
+  // Style + Text are not in the pop-up: a template Text is edited in the preview, as a page's
   assert.doesNotMatch(fields, /Add line|Remove line|label="Line/);
-  assert.match(fields, /label="Style"/);
-  assert.match(fields, /set\(`\$\{ptr\}\/body`, \[next\]\)/);
+  assert.doesNotMatch(fields, /label="Style"|label="Text"/);
+  assert.doesNotMatch(fields, /body\/0\/style|body\/0\/text/);
   // its rows in the preview: the template's [data-tw] too (a size given keeps its height)
   assert.match(read('src/editor/widget-layout.js'), /\.sec--item > \[data-tw=/);
 });

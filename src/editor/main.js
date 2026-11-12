@@ -673,8 +673,11 @@ bridge.on('textPick', selectText);
 // the Text widget editor (bridge.js, rich.js): its state for the toolbar; an edit ended: its
 // section rendered again (the fields' values, the animations' markup)
 bridge.on('rich', (state) => (ui.rich = state));
-bridge.on('richDone', () => {
+bridge.on('richDone', (edit) => {
   for (const root of syncRoots(bridge.doc)) syncSections({ structure: true }, root);
+  // a template Text: Lists that use it (the template preview too) render once the edit ends
+  const id = templateIdOf(String(edit || '').split('#')[0]);
+  if (id) pushDraft({ templates: [id] });
 });
 // a click on a locked site part opens it (the Header or Footer is the target), one outside locks it
 bridge.on('part', (id, open) => {
@@ -807,22 +810,23 @@ store.on(({ files, source: src, structure }) => {
   const site = files.includes(SITE) && siteMoved();
   // saved: the files on disk caught up (Save reloads when it needs to); from disk: the
   // preview reloads itself (onDiskChange)
+  // a Text widget typed into in place: the preview shows it already (its section renders
+  // again when the edit ends: richDone); an undo or redo while it is edited ends the edit
+  const typed = src?.nodeType === 1 && src.isContentEditable;
   if (src === 'saved' || src === 'rebase') pushDraft();
   else if (files.some((f) => f !== ANIMATIONS))
     pushDraft({
       reload: needsReload(files, { routes, site }),
       // an item template: every List using it renders again (the template editor's preview too)
-      templates: files.map(templateIdOf).filter(Boolean),
-      sources: files.map((f) => sourceIdOf(f) || schemaIdOf(f)).filter(Boolean),
+      // not while its Text is being typed: that would swap the List and end the edit
+      templates: typed ? [] : files.map(templateIdOf).filter(Boolean),
+      sources: typed ? [] : files.map((f) => sourceIdOf(f) || schemaIdOf(f)).filter(Boolean),
     });
   // a template's name: its row in the pages list
   if (files.some(templateIdOf)) updatePages();
   // After a save the files on disk caught up with us: nothing changes in the preview.
   if (src === 'saved') return;
   const textChanged = files.some((f) => f !== ANIMATIONS);
-  // a Text widget typed into in place: the preview shows it already (its section renders
-  // again when the edit ends: richDone); an undo or redo while it is edited ends the edit
-  const typed = src?.nodeType === 1 && src.isContentEditable;
   if ((src === 'undo' || src === 'redo') && bridge.richEditing) bridge.endRich();
   for (const root of roots)
     if (files.includes(root.dataset.pageFile))

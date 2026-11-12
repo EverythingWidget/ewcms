@@ -1,13 +1,14 @@
 <!--
   A template widget's Content fields (in the widget pop-up, WidgetInspector.svelte): Role,
-  When a value is missing, and the type's own (a Text its one line, a Photo, a Button, an
-  inner List, Summary and details). Layout stays WidgetLayout in the inspector. Binds are the
-  sample item's properties, {number}, {back}, and an outer item's parent: keys.
+  When a value is missing, and the type's own (a Photo, a Button, an inner List, Summary and
+  details; a Text's join when it has one). A Text's style and wording are edited in the
+  preview, as a page Text's (the widget toolbar: style, marks, + Property). Layout stays
+  WidgetLayout in the inspector. Binds are the sample item's properties, {number}, {back},
+  and an outer item's parent: keys.
 -->
 <script>
   import Field from './Field.svelte';
   import { sourceIds as sourceIdsOf, templateIdOf } from '../../site/files.js';
-  import { LINE_STYLES } from '../../site/text.js';
   import { schemaOf } from '../../site/schemas.js';
   import { sampleSource } from '../../site/widgets/list/template-preview.js';
   import { ITEM_WIDGETS, itemSection } from '../../site/widgets/list/item-grid.js';
@@ -17,7 +18,6 @@
   import {
     ITEMS_FROM,
     innerSourceFor,
-    keepMarks,
     TEMPLATE_MISSING,
     runsOf,
     templateProperties,
@@ -131,15 +131,6 @@
     where.rules[0] = { ...where.rules[0], [key]: v };
     set(`${ptr}/source/where`, where, true);
   }
-  const STYLES = LINE_STYLES.map(([v, l]) => [v, l]);
-  function setLine(ptr, key, value) {
-    const line = wAt(ptr).body?.[0] || { style: 'paragraph', text: [] };
-    const next = {
-      ...line,
-      [key]: key === 'text' ? keepMarks(line.text, runsOf(value)) : value,
-    };
-    set(`${ptr}/body`, [next]);
-  }
   function setRole(ptr, v) {
     const role = String(v || '')
       .toLowerCase()
@@ -176,27 +167,7 @@
   />
 {/if}
 {#if w.type === 'text'}
-  {@const l = w.body?.[0] || { style: 'paragraph', text: [] }}
-  <div class="twf__line">
-    <Field
-      edit={`${file}#${b}/body/0/style`}
-      label="Style"
-      type="select"
-      value={l.style}
-      options={STYLES}
-      onvalue={(v) => setLine(b, 'style', v)}
-    />
-    <Field
-      edit={`${file}#${b}/body/0/text`}
-      label="Text"
-      value={l.text}
-      binds={allBinds}
-      {names}
-      formats
-      {from}
-      onvalue={(v) => setLine(b, 'text', v)}
-    />
-  </div>
+  <!-- Style + Text: edited in the preview (the page Text's toolbar), not here -->
   {#if w.join !== undefined}
     <Field
       edit={`${file}#${b}/join`}
@@ -367,14 +338,7 @@
     align-content: start;
   }
 
-  .twf__line {
-    display: grid;
-    grid-template-columns: 112px minmax(0, 1fr);
-    gap: var(--space-2);
-    align-items: end;
-  }
-
-  .twf__match {
+.twf__match {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     gap: var(--space-2);
