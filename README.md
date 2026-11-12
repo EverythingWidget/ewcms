@@ -921,7 +921,9 @@ rule work as anywhere.
       rows. Each is one undo step. In the phone preview a drag edits the phone areas (the
       first one gives every widget its desktop area halved as its own; the item's phone rows
       stay its desktop rows halved). Only in the template's own editor: on a page a List is one
-      widget. The editor edits the template's own file (`targetFile`), its widgets at
+      widget. A clickable item (a link, details' summary) takes no pointer in arrange mode
+      (no hover look, nothing follows): its widgets are found by where the pointer is
+      (`lib/template-hit.js`). The editor edits the template's own file (`targetFile`), its widgets at
       `/sections/0/widgets` as a page's, with `layer` as a page widget's.
   - **Settings**: **Name** (`name`, its name in a List's Template picker), **Whole item
     clickable** (`clickable`: the whole item opens the item's page; off when the template has

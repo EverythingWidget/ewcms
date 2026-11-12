@@ -295,7 +295,7 @@ test('the template panel hides what a template section does not have', () => {
   assert.match(overlay, /ui\.target\?\.kind === 'item-template'/);
   // the Grid Engine: its item's own widgets dragged, resized and linked as a page's
   assert.doesNotMatch(overlay, /select only: drag \/ resize write-back is not wired/);
-  assert.match(overlay, /const top = widgetAt\(e\.target\)/);
+  assert.match(overlay, /const top = widgetAt\(hit\)/);
 });
 
 

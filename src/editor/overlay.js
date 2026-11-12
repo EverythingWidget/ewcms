@@ -49,6 +49,7 @@
  * doesn't move under the pointer while the page reflows.
  */
 import { COLS, MAX_MIN_ROWS, MCOLS, makesLoop, sizeOf } from '../site/layout/index.js';
+import { templateHit } from './lib/template-hit.js';
 import { resolveRows } from '../site/layout/flow.js';
 import {
   flowAreas,
@@ -229,6 +230,12 @@ export function createOverlay({
     let n = t?.closest?.('[data-tw]');
     while (n && n.parentElement !== sec) n = n.parentElement?.closest('[data-tw]');
     return n || null;
+  };
+
+  /** The element pointer event `e` is on: a clickable template item's, found by position (./lib/template-hit.js). */
+  const hitOf = (e) => {
+    const sec = tplSec();
+    return sec ? templateHit(e.target, sec, e.clientX, e.clientY, widgetsIn(sec)) : e.target;
   };
 
   const secOf = (el) => {
@@ -1249,11 +1256,12 @@ export function createOverlay({
     const mod = e.ctrlKey || e.metaKey;
     const ids = selectedIds(ui);
     // (a template open: its item's own widgets, dragged as a page's: the Grid Engine)
-    const top = widgetAt(e.target);
+    const hit = hitOf(e);
+    const top = widgetAt(hit);
     const el = selectedUnder(e, mod) || top;
     if (!el) {
       // a section's empty grid: a selection box (Ctrl/Cmd: adds; another section's: refused)
-      const sec = secOf(e.target);
+      const sec = secOf(hit);
       if (sec && live(sec) && widgetsIn(sec).length) {
         if (mod && ids.length && secIdOf(ids[0]) !== secKey(sec))
           return void (e.preventDefault(), e.stopPropagation());
@@ -1289,21 +1297,22 @@ export function createOverlay({
   function ondblclick(e) {
     if (!arranging() || e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     if (editing(e.target)) return;
-    const id = idOf(widgetAt(e.target));
+    const id = idOf(widgetAt(hitOf(e)));
     if (id) onopen?.(id);
   }
   const swallow = (e) => {
     if (!arranging() || e.altKey || editing(e.target)) return;
-    if (e.target.closest?.(tplOpen() ? '[data-tw]' : '[data-widget]')) {
+    if (hitOf(e).closest?.(tplOpen() ? '[data-tw]' : '[data-widget]')) {
       e.preventDefault();
       e.stopPropagation();
     }
   };
   function onpointerover(e) {
     if (e.target.id === '__ed-layout') return; // over its circles: the widget stays hovered
-    hover = arranging() ? widgetAt(e.target) : null;
+    const hit = hitOf(e);
+    hover = arranging() ? widgetAt(hit) : null;
     hotAt(idOf(hover));
-    hoverSec = arranging() ? secOf(e.target) || null : null;
+    hoverSec = arranging() ? secOf(hit) || null : null;
     if (e.target.id !== '__ed-layout') peekAt(arranging() ? secOf(e.target) : null);
   }
 
@@ -1321,6 +1330,20 @@ export function createOverlay({
       doc.addEventListener('click', swallow, true);
       doc.addEventListener('dblclick', ondblclick, true);
       doc.addEventListener('pointerover', onpointerover, true);
+      // a clickable template item's widgets get no pointerover (hitOf): the pointer's move finds them
+      doc.addEventListener(
+        'pointermove',
+        (e) => {
+          if (
+            tplOpen() &&
+            arranging() &&
+            e.target.id !== '__ed-layout' &&
+            widgetAt(hitOf(e)) !== hover
+          )
+            onpointerover(e);
+        },
+        { capture: true, passive: true },
+      );
       doc.documentElement.addEventListener('pointerleave', () => {
         hover = null; // the pointer out of the preview: no widget outlined
         unpeek();

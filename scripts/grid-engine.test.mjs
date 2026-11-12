@@ -162,3 +162,56 @@ test('a reload of the preview: the loop starts again, the text sizes skip a docu
   const gone = { querySelectorAll: () => [{}], defaultView: null };
   assert.deepEqual(textSizes(gone), {});
 });
+
+// A clickable template's item (an <a>, details' summary) takes no pointer in arrange mode
+// (bridge.js turns a widget's links and buttons off): the event lands on its List, and the
+// widget under the pointer is found by position (src/editor/lib/template-hit.js).
+test("a clickable template item's widgets are found by the pointer's position", async () => {
+  const { templateHit } = await import('../src/editor/lib/template-hit.js');
+  const { document } = parseHTML(
+    '<div data-widget="w-tplp"><div class="list__items"><a class="li li--template" href="/x/">' +
+      '<div class="sec sec--item"><div data-tw="w-pho"></div><div data-tw="w-nam"></div>' +
+      '<div data-tw="w-met" style="--z:2"></div><div data-tw="w-gone" hidden></div></div></a></div></div>' +
+      '<header id="hdr"></header>',
+  );
+  const box = (left, top, width, height) => () => ({
+    left,
+    top,
+    width,
+    height,
+    right: left + width,
+    bottom: top + height,
+  });
+  const $ = (s) => document.querySelector(s);
+  const sec = $('.sec--item');
+  sec.getBoundingClientRect = box(100, 0, 300, 600);
+  $('[data-tw="w-pho"]').getBoundingClientRect = box(100, 0, 300, 400);
+  $('[data-tw="w-nam"]').getBoundingClientRect = box(100, 380, 300, 120); // over the photo's foot
+  $('[data-tw="w-met"]').getBoundingClientRect = box(100, 480, 300, 40); // a higher layer
+  $('[data-tw="w-gone"]').getBoundingClientRect = box(100, 0, 300, 600);
+  const ws = [...sec.children];
+  const list = $('.list__items');
+  const id = (el) => el?.dataset?.tw ?? el?.className;
+  // landed on the List around the item: the widget on top under the pointer
+  assert.equal(id(templateHit(list, sec, 200, 100, ws)), 'w-pho');
+  assert.equal(id(templateHit(list, sec, 200, 390, ws)), 'w-nam'); // the later one
+  assert.equal(id(templateHit(list, sec, 200, 490, ws)), 'w-met'); // its layer, over the later
+  // the item's empty grid: the item (a selection box starts there); outside it: the List
+  assert.equal(templateHit(list, sec, 200, 560, ws), sec);
+  assert.equal(templateHit(list, sec, 50, 100, ws), list);
+  // an event inside the item, or on something not around it (a header over it): untouched
+  const pho = $('[data-tw="w-pho"]');
+  assert.equal(templateHit(pho, sec, 200, 450, ws), pho);
+  assert.equal(templateHit($('#hdr'), sec, 200, 100, ws), $('#hdr'));
+  // no template open: the target
+  assert.equal(templateHit(list, null, 200, 100, ws), list);
+  // the overlay uses it for the press, the double click, the hover and the swallowed clicks
+  const ov = read('src/editor/overlay.js');
+  assert.match(ov, /templateHit\(e\.target, sec, e\.clientX, e\.clientY, widgetsIn\(sec\)\)/);
+  assert.match(ov, /const top = widgetAt\(hit\);/);
+  assert.match(ov, /idOf\(widgetAt\(hitOf\(e\)\)\)/);
+  assert.match(ov, /hover = arranging\(\) \? widgetAt\(hit\) : null;/);
+  assert.match(ov, /if \(hitOf\(e\)\.closest\?\./);
+  // a page keeps the rule: a widget's links and buttons take no pointer (no hover look)
+  assert.match(read('src/editor/bridge.js'), /:not\(\.__ed-alt\) \[data-widget\] :is\(a, button/);
+});
