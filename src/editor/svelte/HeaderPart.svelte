@@ -38,7 +38,7 @@
   function change(menu, fn) {
     const list = structuredClone(listOf(menu));
     fn(list);
-    live.store.set(NAV, `/${menu}`, list, { source: 'panel', structure: true });
+    live.store.set(NAV, `/${menu}`, list, { source: 'panel' });
   }
 
   /** The item at path (indexes: [i] or [i, j] for a dropdown link) in list. */

@@ -1794,7 +1794,12 @@ and CSS variables, `src/editor/layout-sync.js`). After a structure edit (a widge
 added, copied, moved or deleted, a setting that changes what a widget shows) the dev server
 renders just the sections it touched from the editor's copy of the page (`POST
 /__editor/render`) and the preview swaps them in and mounts the page again, without a reload.
-Other pages render from the unsaved edits too: the editor sends them to the dev server (`POST
+An item template or a source edited: the sections whose Lists use it (or show its values) are
+rendered again the same way (`src/site/widgets/list/template-uses.js`), the template editor's
+preview too. The preview loads again only for an edit that changes the routes or the menu
+(`src/editor/lib/needs-reload.js`, by file: an item or page added, removed or moved, a slug, a
+name the menu lists; the menu, the site settings, photos and UI strings); templates, the footer,
+animations and redirects never. Other pages render from the unsaved edits too: the editor sends them to the dev server (`POST
 /__editor/draft`, cleared on Save), which renders dev pages from them.
 
 **Content › Header** (a site part: the page picker's **Site** group, or click the header in the
@@ -1913,8 +1918,10 @@ These editor markers (`data-edit`, `data-edit-type`, `data-sec`, `data-widget`,
   `targets` and `transitions`) and writes nothing when one is wrong; files are written to a
   temporary file and renamed, so a crash never leaves half a file.
 - **Save** (**Ctrl/⌘+S**) writes the changed files to `content/en/` on disk. That's a **draft**:
-  the preview (and Preview) shows it, and nothing leaves your machine. Only the preview
-  reloads; the editor keeps its tab, scroll, open groups, selection and undo history.
+  the preview (and Preview) shows it, and nothing leaves your machine. The preview shows the
+  edits already: it reloads only when what was saved changed the routes or the menu (as
+  above), and an item page whose slug moved is shown at its new path; the editor keeps its
+  tab, scroll, open groups, selection and undo history.
 - **Edits outside the editor** (your IDE, a `git checkout`) are picked up too: the preview
   reloads, and the editor takes the files on disk with your unsaved edits on top (a "Changed
   on disk" note; undo history starts over for that change).

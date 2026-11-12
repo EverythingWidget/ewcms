@@ -139,14 +139,11 @@
   function setNav(next, what) {
     if (!next)
       return void toast(`Can't move ${what} there: dropdowns go one level deep`, { kind: 'error' });
-    live.store.set(NAV, '/header', next.header, { source: 'panel', structure: true });
+    live.store.set(NAV, '/header', next.header, { source: 'panel' });
   }
   const pidOf = (id) => files[pageFile(id)]?.id;
   function setOwn(on) {
-    live.store.set(pageFile(level), '/ownPage', on ? undefined : false, {
-      source: 'panel',
-      structure: true,
-    });
+    live.store.set(pageFile(level), '/ownPage', on ? undefined : false, { source: 'panel' });
   }
 
   // ---- drag: in the menu list (its order), between it and Not linked (in or out of the menu)

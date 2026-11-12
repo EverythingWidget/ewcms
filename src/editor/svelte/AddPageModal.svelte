@@ -113,7 +113,7 @@
       const pid = live.current(pageFile(res.id))?.id;
       const parent = level ? live.current(pageFile(level))?.id : null;
       const nav = linkPage(live.current(NAV) || {}, pid, title.trim(), parent);
-      if (pid) live.store.set(NAV, '/header', nav.header, { source: 'panel', structure: true });
+      if (pid) live.store.set(NAV, '/header', nav.header, { source: 'panel' });
     }
     dialog.close();
   }

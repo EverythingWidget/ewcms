@@ -189,10 +189,22 @@ export function syncLayout(doc, store, { structure = false, root = pageView(doc)
   return stale;
 }
 
-/** Put freshly rendered sections ({ id: html }) into the preview, in the file's order. */
+/**
+ * Put freshly rendered sections ({ id: html }) into the preview, in the file's order (a page
+ * that is no file, the template editor's preview: each in place of the one it renders again).
+ */
 export function swapSections(doc, store, html, view = pageView(doc)) {
-  const sections = store.current[view?.dataset.pageFile]?.sections || [];
   const els = sectionsIn(view);
+  const sections = store.current[view?.dataset.pageFile]?.sections;
+  if (!Array.isArray(sections)) {
+    for (const [id, markup] of Object.entries(html)) {
+      const tpl = doc.createElement('template');
+      tpl.innerHTML = markup;
+      const next = tpl.content.firstElementChild;
+      if (next) els.get(id)?.replaceWith(next);
+    }
+    return;
+  }
   let prev = null;
   sections.forEach((s, at) => {
     let el = els.get(s.id);

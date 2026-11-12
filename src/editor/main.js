@@ -98,8 +98,15 @@ import { nudgeStep, selectedIds } from './multi-select.js';
 import { restoreUi, restorePlace } from './svelte/persist.js';
 import { editorHref } from './lib/editor-url.js';
 import editorConfig from 'virtual:editor-config';
-import { setContentDir, templateFile, templateIdOf } from '../site/files.js';
-import { templateOfPath, templatePreviewPath } from '../site/widgets/list/template-preview.js';
+import { contentFromFiles, setContentDir, templateFile, templateIdOf } from '../site/files.js';
+import {
+  PREVIEW_PAGE,
+  templateOfPath,
+  templatePreview,
+  templatePreviewPath,
+} from '../site/widgets/list/template-preview.js';
+import { sectionsUsing } from '../site/widgets/list/template-uses.js';
+import { needsReload, routesFile, routesKey } from './lib/needs-reload.js';
 import { keepUnsaved, restoreUnsaved } from './keep-unsaved.js';
 
 // the site's content folder (site.config.mjs), for the paths the editor shows
@@ -569,17 +576,26 @@ function syncBackdrop() {
 }
 
 /**
- * Sections showing bound values (src/site/layout/bindings.js) rendered again: a source they
- * show was edited (after its draft reached the dev server, see pushDraft).
+ * The preview's sections that show edited item templates or sources rendered again in place
+ * (after their draft reached the dev server, see pushDraft): those whose Lists use the template
+ * (site/widgets/list/template-uses.js; the template editor's preview: its one List), and, for a
+ * source, those that list it or show bound values (src/site/layout/bindings.js).
  */
-function rebind() {
-  for (const root of syncRoots(bridge.doc))
-    renderSections(
-      [...root.querySelectorAll('[data-sec]')]
-        .filter((s) => s.querySelector('[data-bound], [data-property]'))
-        .map((s) => s.dataset.sec),
-      root,
-    );
+function renderUses({ templates = [], sources = [] }) {
+  const content = contentFromFiles(store.current);
+  const tpl = templateOfPath(bridge.path() || '');
+  for (const root of syncRoots(bridge.doc)) {
+    const file = root.dataset.pageFile;
+    // the template editor's preview: its page isn't a file (template-preview.js)
+    const doc =
+      store.current[file] ??
+      (tpl ? templatePreview(content, tpl)?.content.pages[PREVIEW_PAGE] : null);
+    const ids = new Set(sectionsUsing(doc, { templates, sources }, content.templates));
+    if (sources.length)
+      for (const s of root.querySelectorAll('[data-sec]'))
+        if (s.querySelector('[data-bound], [data-property]')) ids.add(s.dataset.sec);
+    renderSections([...ids], root);
+  }
 }
 
 /**
@@ -591,7 +607,7 @@ function renderSections(stale, root = bridge.doc?.querySelector('[data-router-vi
   rendering = rendering.then(async () => {
     const file = root.dataset.pageFile;
     const path = bridge.path();
-    // the preview between two pages (reloading after a structure edit: no window yet) loads
+    // the preview between two pages (reloading: no window yet) loads
     // the drafts itself; nothing to swap (else: "null is not a page of …")
     if (!path || !file || !root.isConnected) return;
     try {
@@ -644,7 +660,7 @@ bridge.on('part', (id, open) => {
   if (!open) return void lockPart();
   pickTarget(ui.pages.find((i) => i.kind === 'part' && i.id === id));
 });
-// After the handlers above: the selection and scroll from before a refresh.
+// After the handlers above: the selection and scroll from before a reload.
 bridge.on('navigate', restorePlace);
 
 // ---------------------------------------------------------------- store events
@@ -695,30 +711,46 @@ function selectionKey(e) {
 document.addEventListener('keydown', selectionKey);
 bridge.on('key', selectionKey);
 // The preview renders the unsaved edits: the dev server gets them after every change
-// (POST /__editor/draft; {} once saved), so pages the preview loads show them. A structure
-// change (a list item added or removed, a menu item moved) renders the preview again right
-// away, at the same scroll and selection; one of the page's own sections only swaps the
-// sections it touched (syncSections).
+// (POST /__editor/draft; {} once saved), so pages the preview loads show them. Everything
+// updates in place: one of the page's own (or the footer's) sections is swapped in
+// (syncSections), the sections showing an edited item template or source are rendered again
+// (renderUses). Only an edit that changes the routes or the menu (lib/needs-reload.js) loads the
+// preview again (bridge.reload), at the same scroll and selection.
 let draftTimer = 0;
-let refreshPending = false;
-let rebindPending = false;
-function pushDraft({ refresh = false, sources = false } = {}) {
-  refreshPending ||= refresh;
-  rebindPending ||= sources;
+let reloadPending = false;
+const usesPending = { templates: new Set(), sources: new Set() };
+function pushDraft({ reload = false, templates = [], sources = [] } = {}) {
+  reloadPending ||= reload;
+  for (const t of templates) usesPending.templates.add(t);
+  for (const s of sources) usesPending.sources.add(s);
   clearTimeout(draftTimer);
   draftTimer = setTimeout(async () => {
-    const reload = refreshPending;
-    const bound = rebindPending;
-    refreshPending = rebindPending = false;
+    const again = reloadPending;
+    const uses = { templates: [...usesPending.templates], sources: [...usesPending.sources] };
+    reloadPending = false;
+    usesPending.templates.clear();
+    usesPending.sources.clear();
     try {
       await source.draft(Object.fromEntries(store.dirtyFiles().map((f) => [f, store.current[f]])));
     } catch (err) {
       toast(`Preview: ${err.message}`, { kind: 'error' });
     }
     if (followTemplate()) return;
-    if (reload && bridge.path()) bridge.reload();
-    else if (bound) rebind();
+    if (again && bridge.path()) bridge.reload();
+    else if (uses.templates.length || uses.sources.length) renderUses(uses);
   }, 250);
+}
+
+/**
+ * Whether the site's routes (lib/needs-reload.js routesKey) changed since they were last
+ * looked at: an item or page added, removed or moved, a slug, a menu's item.
+ */
+let routesSeen = null;
+function routesMoved() {
+  const key = routesKey(store.current);
+  const moved = routesSeen !== null && key !== routesSeen;
+  routesSeen = key;
+  return moved;
 }
 
 /**
@@ -741,12 +773,16 @@ store.on(({ files, source: src, structure }) => {
   const page = previewFile(bridge.doc);
   // the files whose sections the preview swaps in place: the page's and the footer's
   const roots = syncRoots(bridge.doc);
-  const inPlace = roots.map((r) => r.dataset.pageFile);
-  if (files.some((f) => f !== ANIMATIONS))
+  const routes = files.some(routesFile) && routesMoved();
+  // saved: the files on disk caught up (Save reloads when it needs to); from disk: the
+  // preview reloads itself (onDiskChange)
+  if (src === 'saved' || src === 'rebase') pushDraft();
+  else if (files.some((f) => f !== ANIMATIONS))
     pushDraft({
+      reload: needsReload(files, { routes }),
       // an item template: every List using it renders again (the template editor's preview too)
-      refresh: (structure && files.some((f) => !inPlace.includes(f))) || files.some(templateIdOf),
-      sources: files.some((f) => sourceIdOf(f) || schemaIdOf(f)),
+      templates: files.map(templateIdOf).filter(Boolean),
+      sources: files.map((f) => sourceIdOf(f) || schemaIdOf(f)).filter(Boolean),
     });
   // a template's name: its row in the pages list
   if (files.some(templateIdOf)) updatePages();
@@ -811,15 +847,20 @@ async function save({ quiet = false } = {}) {
   try {
     // what is sent is what becomes saved: an edit made while the request runs stays unsaved
     const sent = Object.fromEntries(dirty.map((f) => [f, structuredClone(store.current[f])]));
+    // the preview shows the edits already (in place, or reloaded when they needed it); it loads
+    // again only when what was saved changed the routes or the menu (lib/needs-reload.js)
+    const reload = needsReload(dirty, {
+      routes:
+        dirty.some(routesFile) && routesKey(store.base) !== routesKey({ ...store.base, ...sent }),
+    });
     await source.saveDev(sent);
     store.markSaved(dirty, sent);
     saves++;
-    // Re-render the preview from the saved files (new list items, site settings, a grid's new
-    // source...). Only the preview reloads, at the same scroll and selection; the editor stays.
-    // the preview's item page moved (its slug changed): show it at its new path
+    // the preview's item page moved (its slug changed): show it at its new path; else only
+    // the preview reloads (when it needs to), at the same scroll and selection
     const moved = followed?.moves.get(ui.path);
     if (moved) bridge.navigate(moved);
-    else if (bridge.path()) bridge.reload();
+    else if (reload && bridge.path()) bridge.reload();
     if (!quiet) toast('Saved', { kind: 'ok', files: dirty, note: '(draft, not published)' });
     if (followed) movedToast(followed);
     ui.status = `Saved ${plural(dirty.length, 'file')} · ${new Date().toLocaleTimeString()}`;
@@ -890,6 +931,7 @@ async function boot() {
   }
   store.load(loaded.files);
   const kept = restoreUnsaved(store, sessionStorage);
+  routesSeen = routesKey(store.current); // what the preview's first load shows
   if (kept.length)
     toast('Unsaved edits kept', { files: kept, note: 'the dev server reloaded the editor' });
   ui.status = `Content: ${loaded.from}`;

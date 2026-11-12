@@ -7,9 +7,10 @@
  * Every change is { file, ptr, before, after } (after === undefined removes the value).
  * Rapid changes with the same `key` (typing in one field) coalesce into one undo step, until a
  * pause of a second or seal() (the field lost focus, Enter).
- * A change marked `structure` (a section or list item added or removed, a menu item moved)
- * needs the preview rendered again: listeners get { structure: true } for it, and for its
- * undo and redo.
+ * A change marked `structure` (a section or list item added or removed) has the sections it
+ * touched rendered again (in place, main.js syncSections): listeners get { structure: true }
+ * for it, and for its undo and redo. (Whether the preview loads again is the files' rule:
+ * lib/needs-reload.js.)
  */
 import { get, set, remove } from './lib/pointer.js';
 import { clone, equal, diff, patch } from './lib/diff.js';

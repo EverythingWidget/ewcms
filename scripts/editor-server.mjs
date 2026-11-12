@@ -1099,6 +1099,17 @@ export function renderOp(render, root, drafts, { path: at, file, data, ids, sess
   if (typeof file !== 'string' || !Array.isArray(ids))
     return { status: 400, body: { error: 'No file or ids' } };
   if (typeof at !== 'string' || !at) return { status: 400, body: { error: 'No page path' } };
+  // the template editor's preview (/__template/<id>/): its one List, from the drafts (its page
+  // is no file: no data of its own)
+  const tpl = render.templateOfPath?.(at);
+  if (tpl) {
+    const preview = render.templatePreview(loadContent(root, draftsFor(drafts, session)), tpl);
+    if (!preview || file !== pageFile(preview.route.id))
+      return { status: 400, body: { error: `${at} is not a page of ${file}` } };
+    const page = preview.content.pages[preview.route.id]; // (no page id: docOf can't find it)
+    const html = render.renderRouteSections(preview.route, preview.content, ids, file, page);
+    return { status: 200, body: { ok: true, html } };
+  }
   const problems = checkContent(file, data);
   if (problems.length) return { status: 400, body: { error: problems.join('; ') } };
   const content = loadContent(root, { ...draftsFor(drafts, session), [file]: data });

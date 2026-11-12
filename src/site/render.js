@@ -97,13 +97,19 @@ function contextOf(route, content, unbuilt = false) {
  * The editor's HTML of the sections `ids` of a route's page, by id (the dev server's
  * /__editor/render, so the preview swaps sections without loading the page again). The id
  * BACKDROP ("__backdrop") is the page's backdrop ('' without one, src/site/backdrop.js).
+ * `doc`: the page's data when it is no file (the template editor's preview).
  */
 export { BACKDROP };
 
-export function renderRouteSections(route, content, ids, file = pageFile(route.id)) {
+export function renderRouteSections(
+  route,
+  content,
+  ids,
+  file = pageFile(route.id),
+  doc = docOf(content, file),
+) {
   setEditable(true);
   const ctx = contextOf(route, content, true);
-  const doc = docOf(content, file);
   const list = doc?.sections || [];
   const out = {};
   list.forEach((s, at) => {
