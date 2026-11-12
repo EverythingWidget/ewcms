@@ -1,5 +1,3 @@
-@use 'tokens' as *;
-
 /*
  * The Text widget (src/site/widgets/text/index.js) and its lines' styles (.ts--<style>,
  * src/site/text.js). Their sizes are the type scale (--type-<style>-min, -max, -lh: defaults in
@@ -56,13 +54,6 @@
   font-size: clamp(var(--type-statement-min), 4.3vw, var(--type-statement-max));
   line-height: var(--type-statement-lh);
   letter-spacing: -0.005em;
-  text-indent: 18%;
-  .split-word {
-    text-indent: 0;
-  } // SplitText word wrappers must not inherit the indent
-  @media (max-width: $bp-sm) {
-    text-indent: 0;
-  }
 }
 .ts--paragraph {
   max-width: 64ch;
