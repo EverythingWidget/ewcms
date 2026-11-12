@@ -65,6 +65,7 @@ import {
   contentFromFiles,
   FOLDERS,
 } from '../src/site/files.js';
+import { templateOfPath, templatePreview } from '../src/site/widgets/list/template-preview.js';
 import { checkItems, photoChecker, schemaOf } from '../src/site/schemas.js';
 import { NAMED_VIEWS, getRoutes, pathOfId, titleCase } from '../src/site/routes.js';
 import { MAX_UPLOAD, deletePhoto, r2Config, uploadPhoto, writePhotos } from './r2.mjs';
@@ -1100,10 +1101,12 @@ export function renderOp(render, root, drafts, { path: at, file, data, ids, sess
     return { status: 400, body: { error: 'No file or ids' } };
   if (typeof at !== 'string' || !at) return { status: 400, body: { error: 'No page path' } };
   // the template editor's preview (/__template/<id>/): its one List, from the drafts (its page
-  // is no file: no data of its own)
-  const tpl = render.templateOfPath?.(at);
+  // is no file: no data of its own). Path detection is this module's, not the Vite-loaded
+  // render's: a stale SSR graph can be missing templateOfPath, and checkContent(file,
+  // undefined) would then say "must be an object, not a undefined".
+  const tpl = templateOfPath(at);
   if (tpl) {
-    const preview = render.templatePreview(loadContent(root, draftsFor(drafts, session)), tpl);
+    const preview = templatePreview(loadContent(root, draftsFor(drafts, session)), tpl);
     if (!preview || file !== pageFile(preview.route.id))
       return { status: 400, body: { error: `${at} is not a page of ${file}` } };
     const page = preview.content.pages[preview.route.id]; // (no page id: docOf can't find it)

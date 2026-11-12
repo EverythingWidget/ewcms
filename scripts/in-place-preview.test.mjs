@@ -176,6 +176,17 @@ test("the template editor's preview: its one List rendered again from the drafts
     }).status,
     400,
   );
+  // path detection must not depend on the Vite-loaded render module exporting
+  // templateOfPath (a stale SSR graph after 951af75 left it missing: changing
+  // preview.columns then toasted "Preview: must be an object, not a undefined")
+  const stale = { renderRouteSections: render.renderRouteSections };
+  const viaStale = renderOp(stale, SITE_A, drafts, { path, file, ids: ['s-tplp'], session });
+  assert.equal(viaStale.status, 200, JSON.stringify(viaStale.body));
+  assert.match(viaStale.body.html['s-tplp'], /data-cols="3"/);
+  drafts[session][T] = card({ preview: { from: 'people', columns: 4 } });
+  const cols = renderOp(stale, SITE_A, drafts, { path, file, ids: ['s-tplp'], session });
+  assert.equal(cols.status, 200, JSON.stringify(cols.body));
+  assert.match(cols.body.html['s-tplp'], /data-cols="4"/);
 });
 
 test('swapSections: a page that is no file (the template preview) swaps each section in place', () => {
