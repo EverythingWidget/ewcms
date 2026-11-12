@@ -3,14 +3,13 @@
   its file content/templates/<id>.json edited like a page, the preview its List of one sample
   item (src/site/widgets/list/template-preview.js). Two tabs:
     Widgets     the always-selected section card (SectionCard.svelte) of its widgets, with
-                WidgetRow rows and Add widget (SectionToolbar, add only: a new widget goes on
-                the grid, free, below the others). A row selects that widget in the preview and
-                vice versa; under the card while one is selected, its two tabs, as a page
-                widget's (the last one picked kept for every widget: ../widget-layout.js):
-                Content (role, binds: a Text its one line, style + text; a second line is a
-                Text of its own on the grid) and Layout (WidgetLayout.svelte: its height, what
-                it follows, its layer, the phone's in the phone view; an inner List's
-                arrangement, columns and gap). It is placed and sized on the preview grid: the
+                WidgetRow rows and Add widget (SectionToolbar, add only when no widget is
+                selected: a new widget goes on the grid, free, below the others). A row
+                selects that widget in the preview and vice versa; a selected widget has the
+                same toolbar actions as a page widget (gear, locate, eye, copy, trash) and
+                its settings in the same pop-up (WidgetPopup.svelte: Content and Layout; only
+                the fields that apply to a template, TemplateWidgetFields.svelte). Delete is
+                one undo step, in place. It is placed and sized on the preview grid: the
                 Grid Engine, the overlay's drag, resize and links (../overlay.js).
     Settings    its Name (as in a List’s Template picker), Whole item clickable (the whole
                 item opens the item’s page), and the preview line. Columns (the preview’s:
@@ -21,51 +20,28 @@
   using one shows the edit on Save.
 -->
 <script>
-  import { ui, selectWidgets } from './ui.svelte.js';
+  import { ui, selectWidgets, openPopup } from './ui.svelte.js';
   import Field from './Field.svelte';
-  import Button from './Button.svelte';
   import Tabs from './Tabs.svelte';
   import SectionCard from './SectionCard.svelte';
   import SectionToolbar from './SectionToolbar.svelte';
   import WidgetsModal from './WidgetsModal.svelte';
-  import WidgetLayout from './WidgetLayout.svelte';
-  import { WIDGET_TABS, WIDGET_TAB_KEY, widgetTabOf } from '../widget-layout.js';
-  import { sourceIds as sourceIdsOf, templateFile } from '../../site/files.js';
-  import { LINE_STYLES } from '../../site/text.js';
+  import { templateFile } from '../../site/files.js';
   import { schemaOf } from '../../site/schemas.js';
   import { sampleSource } from '../../site/widgets/list/template-preview.js';
   import { ITEM_WIDGETS, itemSection } from '../../site/widgets/list/item-grid.js';
-  import { PRESETS } from '../../site/widgets/list/presets.js';
-  import { innerChoice, innerTemplates } from '../../site/widgets/list/nested.js';
-  import { MIN_TEXT_PX, sizeLine, textSizes } from '../lib/small-text.js';
+  import { innerTemplates } from '../../site/widgets/list/nested.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import {
-    ITEMS_FROM,
-    innerSourceFor,
     STACK_TYPES,
-    keepMarks,
     moveStack,
-    removeWidget,
     newStackWidget,
-    TEMPLATE_MISSING,
     addAt,
-    runsOf,
     templateProperties,
   } from '../lib/item-template.js';
 
   // live: the reactive store (live.svelte.js)
   let { live, bridge = null } = $props();
-  // each widget's smallest text in the preview (lib/small-text.js): read while the panel is open
-  let sizes = $state({});
-  $effect(() => {
-    const read = () => {
-      const next = textSizes(bridge?.doc);
-      if (JSON.stringify(next) !== JSON.stringify(sizes)) sizes = next;
-    };
-    read();
-    const t = setInterval(read, 700);
-    return () => clearInterval(t);
-  });
 
   const id = $derived(ui.target.id);
   const file = $derived(templateFile(id));
@@ -78,38 +54,11 @@
   // the sample's source: its properties are the chips' names and the binds offered
   const from = $derived(sampleSource(live.content, tpl));
   const schema = $derived(from ? schemaOf(live.content, from) : null);
-  const own = $derived((schema?.properties || []).map((p) => p.key));
   const used = $derived(templateProperties(widgets));
-  // {number}: every item's place in its List (01, 02 …); {back}: the page around it (a
-  // [param] page's), else the source's page; an item's own property of that name wins
-  const EXTRA = [
-    { value: 'number', label: 'Number (01, 02 …)' },
-    { value: 'back', label: 'Back (the page around it)' },
-  ];
-  const binds = $derived([
-    ...[...new Set([...own, ...used])]
-      .filter((k) => !EXTRA.some((x) => x.value === k) || own.includes(k))
-      .map((k) => ({ value: k, label: k })),
-    ...EXTRA.filter((x) => !own.includes(x.value)),
-  ]);
-  const names = $derived(new Set(binds.map((b) => b.value)));
-
-  // ---- nested Lists (src/site/widgets/list/nested.js): two levels at most
   const templates = $derived(live.content?.templates || {});
-  // a template another template's inner List uses: a list here would be a third level
   const outer = $derived(
     Object.entries(templates).find(([, t]) => innerTemplates(t).includes(id))?.[0] || '',
   );
-  // its outer item's properties: {parent: name} binds
-  const parentFrom = $derived(outer ? sampleSource(live.content, templates[outer]) : '');
-  const parentKeys = $derived(
-    parentFrom ? (schemaOf(live.content, parentFrom)?.properties || []).map((p) => p.key) : [],
-  );
-  const allBinds = $derived([
-    ...binds,
-    ...parentKeys.map((k) => ({ value: `parent:${k}`, label: `parent: ${k}` })),
-  ]);
-  // the item's list properties (Photos, or any whose value is a list)
   const listProps = $derived(
     (schema?.properties || [])
       .filter(
@@ -118,47 +67,6 @@
       )
       .map((p) => [p.key, p.label || p.key]),
   );
-  const sourceIds = $derived(sourceIdsOf(live.store.current));
-  const propsOf = (src) =>
-    (schemaOf(live.content, src)?.properties || []).map((p) => [p.key, p.label || p.key]);
-  // presets, then the templates: one that loops is left out, one that would be a third level
-  // is there, disabled, with why
-  const innerOptions = $derived([
-    ...PRESETS.map((p) => [p.id, p.label]),
-    ...Object.entries(templates)
-      .filter(([t]) => t !== id && innerChoice(templates, id, t) !== 'loop')
-      .map(([t, tp]) =>
-        innerChoice(templates, id, t) === 'deep'
-          ? [t, tp.name || t, { disabled: true, hint: 'It holds a list: a third level' }]
-          : innerChoice(templates, id, t) === 'opens'
-            ? [t, tp.name || t, { disabled: true, hint: 'Its items open: not inside a List' }]
-            : [t, tp.name || t],
-      ),
-  ]);
-  // a widget by its pointer: "/sections/0/widgets/2"
-  const wAt = (b) =>
-    b
-      .split('/')
-      .slice(1)
-      .reduce((o, k) => o?.[k], tpl) || {};
-  function setInner(b, mode) {
-    const prev = wAt(b).source || {};
-    set(
-      `${b}/source`,
-      innerSourceFor(mode, prev, {
-        listProperty: listProps[0]?.[0] || 'photos',
-        source: from || sourceIds[0] || '',
-        own: schema?.slug || 'slug',
-      }),
-      true,
-    );
-  }
-  function setRule(b, key, v) {
-    const where = structuredClone(wAt(b).source?.where || { op: 'and', rules: [{}] });
-    where.rules[0] = { ...where.rules[0], [key]: v };
-    set(`${b}/source/where`, where, true);
-  }
-
   const TABS = [
     ['widgets', 'Widgets'],
     ['settings', 'Settings'],
@@ -170,23 +78,6 @@
   const set = (ptr, value, structure = false) =>
     live.store.set(file, ptr, value, { source: 'panel', structure });
   const setWidgets = (next) => set(ITEM_WIDGETS, next, true);
-  const STYLES = LINE_STYLES.map(([v, l]) => [v, l]);
-
-  // a template Text's one line (another line: a Text of its own on the grid)
-  function setLine(b, key, value) {
-    const line = wAt(b).body?.[0] || { style: 'paragraph', text: [] };
-    const next = {
-      ...line,
-      [key]: key === 'text' ? keepMarks(line.text, runsOf(value)) : value,
-    };
-    set(`${b}/body`, [next]);
-  }
-  function setRole(b, v) {
-    const role = String(v || '')
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '');
-    set(`${b}/role`, role || undefined);
-  }
   const fresh = (type) =>
     newStackWidget(
       type,
@@ -210,8 +101,11 @@
     if (type === 'details') set('/clickable', false);
     const next = addAt(widgets, fresh(type), shownRows());
     setWidgets(next);
-    const id = next[next.length - 1]?.id;
-    if (id) selectWidgets([id]);
+    const wid = next[next.length - 1]?.id;
+    if (wid) {
+      selectWidgets([wid]);
+      openPopup();
+    }
   };
   // ---- Summary and details (src/site/widgets/list/details.js): one per template; the item
   // is then the summary's button, not a link
@@ -223,25 +117,12 @@
         ? 'One Summary and details per template'
         : '',
   );
-  const detailsOptions = $derived(
-    Object.entries(templates)
-      .filter(([t]) => t !== id)
-      .map(([t, tp]) =>
-        itemSection(tp)?.widgets?.some?.((w) => w?.type === 'details')
-          ? [t, tp.name || t, { disabled: true, hint: 'It has Summary and details of its own' }]
-          : [t, tp.name || t],
-      ),
-  );
   const card = $derived({
     id: section?.id || 's-tpl',
     name: (typeof tpl?.name === 'string' && tpl.name.trim()) || '',
     // title from role so WidgetRow shows Type / role (nameOf reads title, not role)
     widgets: widgets.map((w) => (w?.role && !w.title ? { ...w, title: w.role } : w)),
   });
-  const selectedAt = $derived(widgets.findIndex((w) => w?.id && w.id === ui.widget));
-  const selected = $derived(selectedAt >= 0 ? widgets[selectedAt] : null);
-  // the selected widget's tab: Content | Layout, as a page widget's (one for every widget)
-  const wtab = $derived(widgetTabOf(ui.sections));
   let widgetsModal = $state();
   const typeTiles = $derived(
     STACK_TYPES.filter(
@@ -263,209 +144,6 @@
   }
 </script>
 
-{#snippet editW(w, b)}
-  <Field
-    edit={`${file}#${b}/role`}
-    label="Role"
-    value={w.role || ''}
-    placeholder="none"
-    help="Its class: .li__<role>"
-    onvalue={(v) => setRole(b, v)}
-  />
-  {#if ['text', 'photo', 'button'].includes(w.type)}
-    <!-- When a value is missing (src/site/layout/missing.js): one full row; Inherit is left out -->
-    <Field
-      edit={`${file}#${b}/config/missing`}
-      label="When a value is missing"
-      type="select"
-      value={w.config?.missing || ''}
-      options={TEMPLATE_MISSING}
-      onvalue={(v) => set(`${b}/config/missing`, v || undefined, true)}
-    />
-  {/if}
-  {#if w.type === 'text'}
-    {@const l = w.body?.[0] || { style: 'paragraph', text: [] }}
-    <div class="tp__line">
-      <Field
-        edit={`${file}#${b}/body/0/style`}
-        label="Style"
-        type="select"
-        value={l.style}
-        options={STYLES}
-        onvalue={(v) => setLine(b, 'style', v)}
-      />
-      <Field
-        edit={`${file}#${b}/body/0/text`}
-        label="Text"
-        value={l.text}
-        binds={allBinds}
-        {names}
-        formats
-        {from}
-        onvalue={(v) => setLine(b, 'text', v)}
-      />
-    </div>
-    {#if w.join !== undefined}
-      <Field
-        edit={`${file}#${b}/join`}
-        label="Between facts"
-        value={w.join}
-        help="Its first line’s properties joined by it; an empty one takes none"
-        onvalue={(v) => set(`${b}/join`, v)}
-      />
-    {/if}
-  {:else if w.type === 'photo'}
-    <Field
-      edit={`${file}#${b}/src`}
-      label="Photo"
-      value={w.src}
-      binds={allBinds}
-      {names}
-      formats
-      {from}
-      onvalue={(v) => set(`${b}/src`, v)}
-    />
-  {:else if w.type === 'list'}
-    {@const src = w.source || {}}
-    {@const mode = src.mode === 'item' ? 'all' : src.mode}
-    <!-- every row always there (no shift): the ones the Items from doesn't use disabled -->
-    <Field
-      edit={`${file}#${b}/source/mode`}
-      label="Items from"
-      type="select"
-      value={mode}
-      options={ITEMS_FROM}
-      onvalue={(v) => setInner(b, v)}
-    />
-    <Field
-      edit={`${file}#${b}/source/property`}
-      label="Property"
-      type="select"
-      value={src.property || ''}
-      options={listProps.length ? listProps : [['', 'No list property in the sample']]}
-      disabled={mode !== 'property'}
-      onvalue={(v) => set(`${b}/source/property`, v, true)}
-    />
-    <Field
-      edit={`${file}#${b}/source/from`}
-      label="Source"
-      type="select"
-      value={src.from || ''}
-      options={sourceIds.map((n) => [n, schemaOf(live.content, n)?.label || n])}
-      disabled={mode === 'property'}
-      onvalue={(v) => set(`${b}/source/from`, v, true)}
-    />
-    <div class="tp__match">
-      <Field
-        edit={`${file}#${b}/source/where/rules/0/property`}
-        label="Match: their property"
-        type="select"
-        value={src.where?.rules?.[0]?.property || ''}
-        options={propsOf(src.from)}
-        disabled={mode !== 'match'}
-        onvalue={(v) => setRule(b, 'property', v)}
-      />
-      <span class="tp__is">is this item’s</span>
-      <Field
-        edit={`${file}#${b}/source/where/rules/0/parent`}
-        label="Property"
-        type="select"
-        value={src.where?.rules?.[0]?.parent || ''}
-        options={propsOf(from)}
-        disabled={mode !== 'match'}
-        onvalue={(v) => setRule(b, 'parent', v)}
-      />
-    </div>
-    <Field
-      edit={`${file}#${b}/config/template`}
-      label="Template"
-      type="select"
-      value={w.config?.template || 'preset:card'}
-      options={innerOptions}
-      onvalue={(v) => set(`${b}/config/template`, v, true)}
-    />
-    <!-- its Arrangement, Columns, Space between items and the Carousel's: the Layout tab -->
-  {:else if w.type === 'details'}
-    <Field
-      edit={`${file}#${b}/config/template`}
-      label="Details template"
-      type="select"
-      value={w.config?.template || ''}
-      options={[['', 'Pick a template'], ...detailsOptions]}
-      help="What opens below the summary, filled from the same item"
-      onvalue={(v) => set(`${b}/config/template`, v || undefined)}
-    />
-    <Field
-      edit={`${file}#${b}/config/several`}
-      label="Several open at once"
-      type="boolean"
-      value={w.config?.several === true}
-      help="Off: opening one closes the open one"
-      onvalue={(v) => set(`${b}/config/several`, v)}
-    />
-    <Field
-      edit={`${file}#${b}/config/icon`}
-      label="Icon"
-      type="select"
-      value={w.config?.icon || 'plus'}
-      options={[
-        ['plus', '+ / ×'],
-        ['none', 'None'],
-      ]}
-      onvalue={(v) => set(`${b}/config/icon`, v)}
-    />
-    <Field
-      edit={`${file}#${b}/config/screenReaderName`}
-      label="Screen reader name"
-      type="select"
-      value={w.config?.screenReaderName?.[0]?.property || ''}
-      options={[['', 'What the summary shows'], ...binds.map((x) => [x.value, x.label])]}
-      onvalue={(v) => set(`${b}/config/screenReaderName`, v ? [{ property: v }] : undefined)}
-    />
-    <Field
-      edit={`${file}#${b}/config/open`}
-      label="First item open"
-      type="boolean"
-      value={w.config?.open === 'first'}
-      help="Off: every item starts closed"
-      onvalue={(v) => set(`${b}/config/open`, v ? 'first' : undefined)}
-    />
-  {:else if w.type === 'button'}
-    <Field
-      edit={`${file}#${b}/label`}
-      label="Label"
-      value={w.label}
-      binds={allBinds}
-      {names}
-      formats
-      {from}
-      onvalue={(v) => set(`${b}/label`, v)}
-    />
-    <Field
-      edit={`${file}#${b}/itemLink`}
-      label="Opens the item’s page"
-      type="boolean"
-      value={w.itemLink === true}
-      onvalue={(v) => set(`${b}/itemLink`, v ? true : undefined)}
-    />
-    <Field
-      edit={`${file}#${b}/config/link`}
-      label="Link"
-      value={Array.isArray(w.config?.link) ? w.config.link : []}
-      binds={allBinds}
-      {names}
-      formats
-      {from}
-      disabled={w.itemLink === true}
-      help={w.itemLink === true ? 'It opens the item’s page' : 'A property: {url}'}
-      onvalue={(v) => {
-        const runs = runsOf(v);
-        set(`${b}/config/link`, runs.length ? runs : undefined, true);
-      }}
-    />
-  {/if}
-{/snippet}
-
 <Tabs
   tabs={TABS}
   value={tab}
@@ -474,7 +152,7 @@
   class="page-tabs"
 />
 {#if tab === 'widgets' && tpl}
-  <SectionToolbar addOnly {live} {file} onadd={() => widgetsModal?.open(0)} />
+  <SectionToolbar addOnly {live} {file} {bridge} onadd={() => widgetsModal?.open(0)} />
 {/if}
 <section class="ed-body tp" data-template-panel={id}>
   {#if !tpl}
@@ -493,54 +171,10 @@
       selected
       onselect={() => {}}
       onsection={() => {}}
-      onopen={(wid) => selectWidgets([wid])}
+      onopen={(wid) => (selectWidgets([wid]), openPopup())}
       onreorder={(from, to) => setWidgets(moveStack(widgets, from, to))}
       changed={live.changed(file, ITEM_WIDGETS)}
     />
-    {#if selected && selectedAt >= 0}
-      <!-- its tabs, as a page widget's; both laid out in one cell, the one not shown hidden: the
-           taller one sets the height, so switching moves nothing -->
-      <div class="tp__w" data-template-widget={selected.id}>
-        <Tabs
-          class="tp__tabs"
-          label="Widget"
-          tabs={WIDGET_TABS}
-          value={wtab}
-          onpick={(v) => (ui.sections[WIDGET_TAB_KEY] = v)}
-        />
-        <div class="tp__panes">
-          <div class={['tp__pane', wtab !== 'content' && 'is-hidden']} inert={wtab !== 'content'}>
-            <p
-              class="hint small tp__size"
-              class:tp__size--warn={sizes[selected.id] < MIN_TEXT_PX}
-              data-text-size={selected.id}
-            >
-              {sizeLine(sizes[selected.id]) || 'No text in the preview'}
-            </p>
-            {@render editW(selected, `${ITEM_WIDGETS}/${selectedAt}`)}
-            <Button
-              size="small"
-              icon="trash"
-              onclick={() => {
-                setWidgets(removeWidget(widgets, selectedAt));
-                selectWidgets([]);
-              }}>Remove widget</Button
-            >
-          </div>
-          <div class={['tp__pane', wtab !== 'layout' && 'is-hidden']} inert={wtab !== 'layout'}>
-            <WidgetLayout
-              {live}
-              {bridge}
-              {file}
-              at={0}
-              j={selectedAt}
-              id={selected.id}
-              widget={selected}
-            />
-          </div>
-        </div>
-      </div>
-    {/if}
   {:else if tab === 'settings'}
     <Field
       edit={`${file}#/name`}
@@ -577,60 +211,5 @@
   .tp {
     @include stack(var(--space-3));
     align-content: start;
-  }
-
-  .tp__line {
-    display: grid;
-    grid-template-columns: 112px minmax(0, 1fr);
-    gap: var(--space-2);
-    align-items: end;
-  }
-
-  // the selected widget's Content | Layout: the tabs' line runs the panel's width
-  .tp__w {
-    display: grid;
-    gap: var(--space-4);
-    min-width: 0;
-  }
-
-  .tp__panes {
-    display: grid;
-  }
-
-  .tp__pane {
-    @include stack(var(--space-3));
-    grid-area: 1 / 1;
-    align-content: start;
-    min-width: 0;
-  }
-
-  .tp__pane.is-hidden {
-    visibility: hidden;
-  }
-
-  .tp__match {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: var(--space-2);
-    align-items: end;
-  }
-
-  .tp__is {
-    height: var(--size-control);
-    line-height: var(--size-control);
-    color: var(--c-text-muted);
-  }
-
-  .tp__size {
-    overflow: hidden;
-    height: 16px;
-    margin: 0;
-    line-height: 16px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  .tp__size--warn {
-    color: var(--c-warning);
   }
 </style>

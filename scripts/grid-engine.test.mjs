@@ -128,19 +128,19 @@ test('Add widget: on the grid, following the lowest widget the preview shows', (
 });
 
 test("the template editor: a widget's Content | Layout tabs, its Text one line", () => {
-  const panel = read('src/editor/svelte/TemplatePanel.svelte');
-  assert.match(panel, /tabs=\{WIDGET_TABS\}/);
-  assert.match(
-    panel,
-    /<WidgetLayout\s+\{live\}\s+\{bridge\}\s+\{file\}\s+at=\{0\}\s+j=\{selectedAt\}/,
-  );
+  const inspector = read('src/editor/svelte/WidgetInspector.svelte');
+  const fields = read('src/editor/svelte/TemplateWidgetFields.svelte');
+  // Content | Layout live in the widget pop-up (WidgetInspector), including for a template
+  assert.match(inspector, /tabs=\{WIDGET_TABS\}/);
+  assert.match(inspector, /<TemplateWidgetFields \{live\} \{bridge\} file=\{g\.file\} \{j\} \/>/);
+  assert.match(inspector, /<WidgetLayout \{live\} \{bridge\} file=\{g\.file\} \{at\} \{j\}/);
   // both panes in one cell: no shift on a switch
-  assert.match(panel, /\.tp__pane \{[^}]*grid-area: 1 \/ 1;/);
-  assert.match(panel, /\.tp__pane\.is-hidden \{\s*visibility: hidden;/);
+  assert.match(inspector, /\.card__pane \{[^}]*grid-area: 1 \/ 1;/);
+  assert.match(inspector, /\.card__pane\.is-hidden \{\s*visibility: hidden;/);
   // the Line fields are gone: one Style + Text
-  assert.doesNotMatch(panel, /Add line|Remove line|label="Line/);
-  assert.match(panel, /label="Style"/);
-  assert.match(panel, /set\(`\$\{b\}\/body`, \[next\]\)/);
+  assert.doesNotMatch(fields, /Add line|Remove line|label="Line/);
+  assert.match(fields, /label="Style"/);
+  assert.match(fields, /set\(`\$\{ptr\}\/body`, \[next\]\)/);
   // its rows in the preview: the template's [data-tw] too (a size given keeps its height)
   assert.match(read('src/editor/widget-layout.js'), /\.sec--item > \[data-tw=/);
 });

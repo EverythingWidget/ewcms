@@ -268,11 +268,15 @@ test('the editor: Add Summary and details, its rows; no shift', () => {
   assert.deepEqual(t.at(-1).layout, { base: { col: 113, span: 8, row: 1 } });
   assert.deepEqual(t.at(-1).config, { several: false, icon: 'plus' });
   const panel = read('src/editor/svelte/TemplatePanel.svelte');
+  const fields = read('src/editor/svelte/TemplateWidgetFields.svelte');
   for (const label of [
     'Details template',
     'Several open at once',
     'Screen reader name',
     'First item open',
+  ])
+    assert.ok(fields.includes(label), label);
+  for (const label of [
     'One Summary and details per template',
     'An item that opens can’t also be a link',
   ])

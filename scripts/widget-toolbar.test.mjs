@@ -27,7 +27,7 @@ test('one widget selected: the section toolbar has its actions and a gear; rows 
 
 test('one widget: toolbar order gear, locate, eye, copy, trash; layers only for several', () => {
   const st = src('svelte/SectionToolbar.svelte');
-  const body = st.slice(st.indexOf('{:else if group}'), st.indexOf('{:else if s}'));
+  const body = st.slice(st.indexOf('{#if group}'), st.indexOf('{:else if addOnly}'));
   const icons = [...body.matchAll(/icon=(?:"([a-z-]+)"|\{allOff \? 'eye-slash' : '(eye)'\})/g)].map(
     (m) => m[2] || m[1],
   );

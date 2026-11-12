@@ -435,6 +435,8 @@ export const list = {
         depth: widget.depth || 1,
       };
       const one = (w, cls = '') => {
+        // off: not on the public page; in the editor the item grid renders it hidden
+        if (w?.config?.enabled === false && !editable) return { html: '', missing: [] };
         const filled = forItem(w, scope, itemHrefLink, sep, { handmade, href: handmadeHref });
         if (!filled) return { html: '', missing: [] };
         // item widgets inherit the List's missing choice unless they set their own

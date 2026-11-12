@@ -224,6 +224,11 @@
     await tick(); // not inside the effect below: the modal renders synchronously when opened
     const group = groups.find((g) => allFields(g).some((f) => f.edit === edit));
     if (!group) {
+      // a template widget's bound text: open that widget's pop-up, not the Sources modal
+      if (ui.target?.kind === 'item-template') {
+        if (ui.widget) openWidget(ui.widget);
+        return;
+      }
       const { file, ptr } = splitEdit(edit);
       // A list item shown on the home page (a person's name): edit it in the modal.
       if (groupFor(live.store, { file, ptr })?.id.startsWith('source:'))

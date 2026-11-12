@@ -645,6 +645,13 @@ export function showWidgets(store, file, at, ids, show) {
     if (Object.keys(config).length) widget.config = config;
     else delete widget.config;
   }
+  // a template item has no data-widget / data-sec for layout-sync: write the section
+  // list (structure) so the preview renders the hidden widgets in place
+  if (templateIdOf(file)) {
+    const list = listOf(store, file);
+    list[at] = section;
+    return write(store, file, list);
+  }
   return writeSection(store, file, at, section);
 }
 

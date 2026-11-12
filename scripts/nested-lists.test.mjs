@@ -310,6 +310,8 @@ test('the template editor: Add list, the inner List rows always there, the label
     'slug',
   );
   const panel = read('src/editor/svelte/TemplatePanel.svelte');
+  const fields = read('src/editor/svelte/TemplateWidgetFields.svelte');
+  const inspector = read('src/editor/svelte/WidgetInspector.svelte');
   for (const label of [
     'Items from',
     'Property',
@@ -317,19 +319,19 @@ test('the template editor: Add list, the inner List rows always there, the label
     'Match: their property',
     'Template',
   ])
-    assert.match(panel, new RegExp(`label="${label}"`), label);
+    assert.match(fields, new RegExp(`label="${label}"`), label);
   // its Arrangement, Columns and Space between items: the Layout tab (the List's own
   // definitions, as a page List's: WidgetLayout.svelte), not the Content tab
-  assert.match(panel, /<WidgetLayout/);
-  assert.doesNotMatch(panel, /label="Space between items"|label="Arrangement"/);
-  assert.match(panel, /is this item’s/);
+  assert.match(inspector, /<WidgetLayout/);
+  assert.doesNotMatch(fields, /label="Space between items"|label="Arrangement"/);
+  assert.match(fields, /is this item’s/);
   assert.match(
     panel,
     /This template is shown inside another List: a list here would be a third level/,
   );
-  assert.match(panel, /It holds a list: a third level/);
+  assert.match(fields, /It holds a list: a third level/);
   // no config.limit (no "At most") on an inner List
-  assert.doesNotMatch(panel, /limit|At most/);
+  assert.doesNotMatch(fields, /limit|At most/);
   const items = read('src/editor/lib/item-template.js');
   assert.match(items, /\['property', 'A property of this item'\]/);
   assert.match(items, /\['match', 'A source, matched to this item'\]/);

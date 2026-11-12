@@ -20,7 +20,9 @@
     [ Button                gear  locate  eye  copy  trash ]
   gear: its pop-up (as a double click on it, ui.popup). Its layer: in the pop-up, keys [ ].
     live, file, bridge, onsection(id), onadd(at)
-    addOnly    only the Add widget control (a template: no section gear, move, delete, or ⋯)
+    addOnly    when no widget is selected, only the Add widget control (a template: no
+              section gear, move, delete, or ⋯). A selected widget still has the same
+              actions as on a page (gear, locate, eye, copy, trash).
 -->
 <script>
   import Button from './Button.svelte';
@@ -106,27 +108,7 @@
   role="toolbar"
   aria-label={group ? 'Selected widgets' : many.length > 1 ? 'Selected sections' : 'Section'}
 >
-  {#if addOnly}
-    <button
-      type="button"
-      class="stb__add"
-      aria-haspopup="dialog"
-      aria-label="Add widget"
-      onclick={() => onadd(0)}
-    >
-      <i class="fa-solid fa-plus" aria-hidden="true"></i>Add widget
-    </button>
-  {:else if many.length > 1 && !group}
-    <p class="stb__count">{many.length} sections</p>
-    <span class="stb__gap"></span>
-    <Button
-      size="small"
-      icon="trash"
-      iconOnly
-      label="Delete {many.length} sections"
-      onclick={() => removeSelected(many)}
-    />
-  {:else if group}
+  {#if group}
     <p class="stb__count">{one ? oneLabel : `${group.ids.length} widgets`}</p>
     <span class="stb__gap"></span>
     {#if one}
@@ -173,6 +155,26 @@
       />
     {/if}
     <Button size="small" icon="trash" iconOnly label="Delete {them}" onclick={removeGroup} />
+  {:else if addOnly}
+    <button
+      type="button"
+      class="stb__add"
+      aria-haspopup="dialog"
+      aria-label="Add widget"
+      onclick={() => onadd(0)}
+    >
+      <i class="fa-solid fa-plus" aria-hidden="true"></i>Add widget
+    </button>
+  {:else if many.length > 1 && !group}
+    <p class="stb__count">{many.length} sections</p>
+    <span class="stb__gap"></span>
+    <Button
+      size="small"
+      icon="trash"
+      iconOnly
+      label="Delete {many.length} sections"
+      onclick={() => removeSelected(many)}
+    />
   {:else if s}
     <button
       type="button"

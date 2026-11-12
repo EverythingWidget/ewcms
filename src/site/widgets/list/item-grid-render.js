@@ -45,7 +45,8 @@ export function itemGridHtml(widgets, parts, section = {}, cls = '') {
         .map(([k, v]) => ` ${k}="${esc(v)}"`)
         .join('');
       const id = typeof w.id === 'string' ? ` data-tw="${esc(w.id)}"` : '';
-      return `<div class="${widgetClass(w)}" style="${widgetVars(w)}"${id}${links}>${parts[i]}</div>`;
+      const hidden = w.config?.enabled === false ? ' hidden' : '';
+      return `<div class="${widgetClass(w)}" style="${widgetVars(w)}"${id}${links}${hidden}>${parts[i]}</div>`;
     })
     .join('');
   const mins = (min ? `;--minrows:${min}` : '') + (mmin ? `;--mminrows:${mmin}` : '');

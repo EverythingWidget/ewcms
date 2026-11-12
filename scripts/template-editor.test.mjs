@@ -216,7 +216,7 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   assert.match(cols, /edit=\{`\$\{file\}#\/preview\/columns`\}/);
   assert.match(panel, /setWidgets = \(next\) => set\(ITEM_WIDGETS, next, true\)/);
   assert.match(panel, /tab === 'settings'/);
-  assert.match(panel, /formats/);
+  assert.match(read('src/editor/svelte/TemplateWidgetFields.svelte'), /formats/);
   assert.doesNotMatch(panel, /renameProperty/);
   assert.doesNotMatch(panel, /(label|help|title|placeholder)="[^"]*\bfield/i);
   assert.equal(
@@ -279,7 +279,7 @@ test('a line edited in the chips box keeps its bold, italic and links', () => {
   // no marks before: plain runs
   assert.deepEqual(keepMarks([{ t: 'a' }], [{ t: 'ab' }]), [{ t: 'ab' }]);
   assert.match(
-    read('src/editor/svelte/TemplatePanel.svelte'),
+    read('src/editor/svelte/TemplateWidgetFields.svelte'),
     /keepMarks\(line\.text, runsOf\(value\)\)/,
   );
 });
@@ -297,9 +297,9 @@ test('text under 11 px: a warning line under the widget in the template editor (
   document.defaultView.getComputedStyle = (el) => ({ fontSize: el.style?.fontSize || '16px' });
   assert.deepEqual(textSizes(document), { 'w-aaaa': 9, 'w-bbbb': 12 });
   assert.deepEqual(textSizes(null), {});
-  const panel = read('src/editor/svelte/TemplatePanel.svelte');
-  assert.ok(panel.includes('data-text-size') && panel.includes('tp__size--warn'));
-  assert.match(panel, /\.tp__size \{[^}]*height: 16px/); // one line always: no shift
+  const fields = read('src/editor/svelte/TemplateWidgetFields.svelte');
+  assert.ok(fields.includes('data-text-size') && fields.includes('twf__size--warn'));
+  assert.match(fields, /\.twf__size \{[^}]*height: 16px/); // one line always: no shift
 });
 
 test('the template panel hides what a template section does not have', () => {
@@ -308,7 +308,11 @@ test('the template panel hides what a template section does not have', () => {
   assert.match(card, /onreorder/);
   const bar = read('src/editor/svelte/SectionToolbar.svelte');
   assert.match(bar, /addOnly = false/);
-  assert.match(bar, /{#if addOnly}/);
+  // a selected widget still gets the page toolbar (gear, locate, eye, copy, trash);
+  // addOnly only covers the empty / section state (Add widget, no section gear or delete)
+  assert.match(bar, /{#if group}/);
+  assert.match(bar, /{:else if addOnly}/);
+  assert.ok(bar.indexOf('{#if group}') < bar.indexOf('{:else if addOnly}'));
   const overlay = read('src/editor/overlay.js');
   assert.match(overlay, /data-tw="\$\{CSS\.escape\(id\)\}"/);
   assert.match(overlay, /ui\.target\?\.kind === 'item-template'/);
@@ -317,6 +321,38 @@ test('the template panel hides what a template section does not have', () => {
   assert.match(overlay, /const top = widgetAt\(hit\)/);
 });
 
+
+
+test('a selected template widget uses the page pop-up and toolbar delete, in place and undoable', () => {
+  const panel = read('src/editor/svelte/TemplatePanel.svelte');
+  const bar = read('src/editor/svelte/SectionToolbar.svelte');
+  const inspector = read('src/editor/svelte/WidgetInspector.svelte');
+  const content = read('src/editor/svelte/ContentPanel.svelte');
+  const locate = read('src/editor/locate.js');
+  // no inline Content | Layout or Remove widget: those live in the pop-up and the toolbar
+  assert.doesNotMatch(panel, /data-template-widget/);
+  assert.doesNotMatch(panel, /Remove widget/);
+  assert.doesNotMatch(panel, /icon="trash"/);
+  // the same triggers as a page: a row's double click / Enter, Add widget, the toolbar's gear
+  assert.match(panel, /onopen=\{\(wid\) => \(selectWidgets\(\[wid\]\), openPopup\(\)\)\}/);
+  assert.match(panel, /selectWidgets\(\[wid\]\);\s*openPopup\(\);/);
+  assert.match(content, /<WidgetPopup /);
+  // ContentPanel already mounts the pop-up from contentGroups (targetFile is the template)
+  assert.match(content, /ui\.target\?\.kind === 'item-template'/);
+  // template Content fields, not a page widget's source + registry
+  assert.match(inspector, /templateIdOf\(g\.file\)/);
+  assert.match(inspector, /<TemplateWidgetFields \{live\} \{bridge\} file=\{g\.file\} \{j\} \/>/);
+  // toolbar: widget actions before addOnly; delete is removeWidgets (one undo step)
+  assert.ok(bar.indexOf('{#if group}') < bar.indexOf('{:else if addOnly}'));
+  assert.match(bar, /onclick=\{removeGroup\}/);
+  assert.match(bar, /run\(removeWidgets\)/);
+  // locate finds a template widget
+  assert.match(locate, /\[data-tw="\$\{q\}"\]/);
+  const render = read('src/site/widgets/list/item-grid-render.js');
+  assert.match(render, /w\.config\?\.enabled === false \? ' hidden'/);
+  const ops = read('src/editor/layout-ops.js');
+  assert.match(ops, /if \(templateIdOf\(file\)\) \{\s*const list = listOf\(store, file\);/);
+});
 
 test('a template is one section: the editor edits its file, its widgets at /sections/0/widgets', async () => {
   const { targetFile } = await import('../src/editor/layout-sync.js');

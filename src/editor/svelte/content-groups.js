@@ -181,7 +181,7 @@ function widgetGroup(store, file, at, j) {
     file,
     icon: t?.icon || 'question',
     title: t?.label || `Unknown type "${s?.type}"`,
-    name: nameOf(s),
+    name: nameOf(s) || (typeof s?.role === 'string' && s.role.trim()) || '',
     toggle: { file, ptr: `${base}/config/enabled` },
     config: (t?.config || []).map((c) => ({
       ...c,

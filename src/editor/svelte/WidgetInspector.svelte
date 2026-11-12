@@ -1,5 +1,5 @@
 <!--
-  One widget of the page (ui.widget), its two tabs (every widget has both; the last one picked
+  One widget of the page or of an item template (ui.widget), its two tabs (every widget has both; the last one picked
   is kept for every widget, browser-side: ui.sections["widgettab"], ../widget-layout.js):
     Layout   what its type supports: size, layer, what it follows, its content box,
              placement, Scale to fit (WidgetLayout.svelte; where it sits is dragged in the
@@ -20,7 +20,7 @@
   import ListLead from './ListLead.svelte';
   import Tabs from './Tabs.svelte';
   import { schemaFor } from './source-items.js';
-  import { isTemplate, pageIdOf, sourceFile } from '../../site/files.js';
+  import { isTemplate, pageIdOf, sourceFile, templateIdOf } from '../../site/files.js';
   import { resolve } from '../../site/layout/bindings.js';
   import { BIND_TYPES } from '../../site/property-types.js';
   import { widgetItems, sourceOf } from '../../site/layout/source.js';
@@ -29,6 +29,7 @@
   import ViewTop from './ViewTop.svelte';
   import WidgetLayout from './WidgetLayout.svelte';
   import { WIDGET_TABS, WIDGET_TAB_KEY, widgetTabOf } from '../widget-layout.js';
+  import TemplateWidgetFields from './TemplateWidgetFields.svelte';
 
   // bare: in the pop-up (WidgetPopup.svelte, its header has the type and name): no Back row,
   // no card, no title line
@@ -44,6 +45,8 @@
     return live.get(g.file, base) || {};
   });
   const type = $derived(WIDGET_TYPES[g.type] || {});
+  // an item template's widget: its Content fields, not a page widget's source + registry
+  const itemTpl = $derived(!!templateIdOf(g.file));
 
   // ---- what it shows (src/site/layout/source.js): on a [param] page with the page the
   // preview shows (its params), the item its bound settings show the first
@@ -140,34 +143,38 @@
       <WidgetLayout {live} {bridge} file={g.file} {at} {j} id={g.id} {widget} />
     </div>
     <div class={['card__pane', tab !== 'content' && 'is-hidden']} inert={tab !== 'content'}>
-      <!-- its source first (a widget whose type shows items), then its settings and fields -->
-      {#snippet lead()}
-        {#if type.handmade}
-          <ListLead
-            {g}
-            {live}
-            {base}
-            list={!!type.list}
-            {shown}
-            {sourceIds}
-            {onsource}
-            {bindings}
-          />
-        {:else}
-          <WidgetSource {g} {live} {base} list={!!type.list} {shown} {sourceIds} {onsource} />
-        {/if}
-      {/snippet}
-      <GroupFields
-        {g}
-        {live}
-        {bridge}
-        {sourceIds}
-        {onsource}
-        {bindings}
-        lead={type.list || type.item || type.handmade || g.fields.some((f) => f.bindType) || widget.source
-          ? lead
-          : undefined}
-      />
+      {#if itemTpl}
+        <TemplateWidgetFields {live} {bridge} file={g.file} {j} />
+      {:else}
+        <!-- its source first (a widget whose type shows items), then its settings and fields -->
+        {#snippet lead()}
+          {#if type.handmade}
+            <ListLead
+              {g}
+              {live}
+              {base}
+              list={!!type.list}
+              {shown}
+              {sourceIds}
+              {onsource}
+              {bindings}
+            />
+          {:else}
+            <WidgetSource {g} {live} {base} list={!!type.list} {shown} {sourceIds} {onsource} />
+          {/if}
+        {/snippet}
+        <GroupFields
+          {g}
+          {live}
+          {bridge}
+          {sourceIds}
+          {onsource}
+          {bindings}
+          lead={type.list || type.item || type.handmade || g.fields.some((f) => f.bindType) || widget.source
+            ? lead
+            : undefined}
+        />
+      {/if}
     </div>
   </div>
 </div>
