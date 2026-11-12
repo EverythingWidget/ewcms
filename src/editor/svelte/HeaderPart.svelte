@@ -1,7 +1,7 @@
 <!--
   Pages > Header, a site part (picked in the page picker's "Site" group, or by clicking the
   header in the preview): the menu of content/header.json (src/site/templates/header.js:
-  the nav pill and the phone menu), then the header's labels (strings.json "nav": the menu
+  the nav pill and the phone menu), then the header's labels (strings.json "header": the menu
   and close buttons, the clock). (The footer is page-like: footer.json.)
   Each item: its label, its link (a page of the site, or an external URL), and a dropdown: links one level deep, or the items of a source. Every change is one undo step;
   the preview renders the menu again.
@@ -159,18 +159,18 @@
   {/if}
 {/snippet}
 
-<!-- the header's labels (strings.json "nav"): one undo step while typing each -->
+<!-- the header's labels (strings.json "header"): one undo step while typing each -->
 {#snippet label(key, title, fallback)}
   <Field
-    edit="{STRINGS}#/nav/{key}"
+    edit="{STRINGS}#/header/{key}"
     label={title}
     placeholder={fallback}
-    value={live.get(STRINGS, `/nav/${key}`)}
-    changed={live.changed(STRINGS, `/nav/${key}`)}
+    value={live.get(STRINGS, `/header/${key}`)}
+    changed={live.changed(STRINGS, `/header/${key}`)}
     onvalue={(v) =>
-      live.store.set(STRINGS, `/nav/${key}`, v || undefined, {
+      live.store.set(STRINGS, `/header/${key}`, v || undefined, {
         source: 'panel',
-        key: `strings:nav/${key}`,
+        key: `strings:header/${key}`,
       })}
   />
 {/snippet}

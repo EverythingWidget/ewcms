@@ -49,8 +49,8 @@ test('shapes: the build stops on a wrong shape and names the file', () => {
     /content\/animations\.json: must be an object, not an array/,
   );
   assert.throws(
-    () => loadContent(tree({ 'strings.json': { version: 1, nav: 'x' } })),
-    /content\/en\/strings\.json: "nav" must be an object, not a string/,
+    () => loadContent(tree({ 'strings.json': { version: 1, header: 'x' } })),
+    /content\/en\/strings\.json: "header" must be an object, not a string/,
   );
   // optional keys may be missing
   assert.equal(loadContent(tree()).site.name, 'Site');

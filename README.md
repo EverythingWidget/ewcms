@@ -181,7 +181,7 @@ content/            ← all text, albums, projects, animation config (JSON)
   pages/            ← one folder per page (its URL) with index.json in it (see "Pages and URLs")
   sources/          ← lists that grids pull from (people, places, projects): { version, items: [...] },
                       plus <id>.schema.json: the properties of its items (see "Sources & schemas")
-  strings.json      ← UI text of the templates: the menu's Menu / Close / clock label
+  strings.json      ← UI text of the templates: the menu's Menu / Close / clock label (header.*)
 media/              ← source photos (jpg), committed
 theme/              ← the site's layers over ewcms's theme-default/ (tokens.scss, fonts.scss, overrides.scss, theme.json)
 site.config.mjs     ← the site's folders
@@ -295,7 +295,7 @@ site settings can live side by side):
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `content/header.json`                | the **menus**: the header (nav pill, dropdowns, phone menu; see "Menu")                                                                                                                                                                                                                                           |
 | `content/footer.json`                | the **footer**: `{ version, kind: "part", sections }`, sections and widgets exactly like a page's, under every page (see "Footer")                                                                                                                                                                                |
-| `content/en/strings.json`            | UI text of the templates: the menu button and clock labels (`nav.menu`, `nav.close`, `nav.clock`)                                                                                                                                                                                                                 |
+| `content/en/strings.json`            | UI text of the templates: the menu button and clock labels (`header.menu`, `header.close`, `header.clock`)                                                                                                                                                                                                                 |
 | `content/site.json`                  | name, the **SEO defaults** (`title`, `titleTemplate`, `description`, `ogPhoto`, `url`, `robots`, `lang`; see "SEO"), `forms` (where contact forms send, see "Contact form"), socials, email, `timezone` of the clock, `jobTitle` / `country` (structured data on home)                                            |
 | `content/animations.json`            | **every animation** (see below)                                                                                                                                                                                                                                                                                   |
 | `content/en/pages/index.json`        | home: its `sections` of widgets (the hero first: the big name, its text and the **scattered hero photos**, position `x/y/w` in %, `phone` over them (`{ x?, y?, w? }`, `null`: hidden on phones), `depth`, `layer` back/front), curtain text                                                                      |
@@ -1266,7 +1266,7 @@ A header item with `children` (one level deep) or `items` opens a dropdown on cl
 labels the link to the item's own page at its end. `items` names a source
 (`content/en/sources/<id>.json`) and lists its items: with their photo and photo count when the
 source has item pages (a `[param]/index.json` shows it), else by title and type, linking to their spot
-on the item's page (`/projects/#<slug>`) or, with `linkOut`, to their own site. The menu button and clock labels are in `strings.json` (`nav`).
+on the item's page (`/projects/#<slug>`) or, with `linkOut`, to their own site. The menu button and clock labels are in `strings.json` (`header`).
 `src/site/templates/header.js` renders it; `checkContent` validates its shape.
 
 ### Pages and URLs
@@ -1822,7 +1822,7 @@ animations and redirects never. Other pages render from the unsaved edits too: t
 /__editor/draft`, cleared on Save), which renders dev pages from them.
 
 **Content › Header** (a site part: the page picker's **Site** group, or click the header in the
-preview) edits `header.json` and the header's labels (`strings.json` `nav`: the menu and close
+preview) edits `header.json` and the header's labels (`strings.json` `header`: the menu and close
 buttons, the clock). The menu with its items: label,
 link (a page from the page tree, or External URL with its URL), ↑ / ↓ / Remove, **Add link**,
 and a dropdown: the items of a source, or **Dropdown links** (one level) and the
@@ -1990,7 +1990,8 @@ The shared files moved out of the language folder: `content/en/settings/` is gon
 sit at the content root, next to `templates/` (they are the same in every language), and
 `nav.json` is `header.json` (the Header). `content/en/` keeps only `pages/`, `sources/` and
 `strings.json`. A leftover `content/en/settings/` is an error (`ewcms check`, the build and the
-editor) that says where its files go. No converter; per site:
+editor) that says where its files go. The `strings.json` key `nav` is `header`
+(`header.menu`, `header.close`, `header.clock`, and the other header labels). No converter; per site:
 
 ```sh
 cd content
@@ -2002,7 +2003,8 @@ git mv en/settings/photos.json photos.json
 git mv en/settings/redirects.json redirects.json
 ```
 
-The files' contents don't change. In the engine: `NAV` is `HEADER` (src/site/files.js), the
+Then, in `en/strings.json`, rename the `"nav"` key to `"header"` (the files' other contents
+don't change). In the engine: `NAV` is `HEADER` (src/site/files.js), the
 render content's `nav` is `header`, `ROOT_FILES` lists the shared files (the language folder's
 are `LANG_FILES`), and `@site-content` is the content root (`@site-content/animations.json`).
 

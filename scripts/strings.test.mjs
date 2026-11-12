@@ -10,14 +10,17 @@ import { loadContent } from './content.mjs';
 import { SITE_A } from '../test/fixtures/index.mjs';
 
 test('t: the site string, else the core default; placeholders filled', () => {
-  const ctx = { strings: { nav: { menu: 'Menú' }, album: { prev: 'Vorige' } } };
-  assert.equal(t(ctx, 'nav.menu'), 'Menú');
-  assert.equal(t(ctx, 'nav.close'), 'Close');
+  const ctx = { strings: { header: { menu: 'Menú' }, album: { prev: 'Vorige' } } };
+  assert.equal(t(ctx, 'header.menu'), 'Menú');
+  assert.equal(t(ctx, 'header.close'), 'Close');
   assert.equal(t(ctx, 'album.prev'), 'Vorige');
   assert.equal(t(ctx, 'album.show', { n: 3 }), 'Show photo 3');
   assert.equal(t({}, 'album.slide', { n: 1, total: 9 }), '1 of 9');
   assert.equal(t({}, 'nope.key'), 'nope.key');
-  assert.deepEqual(stringsOf({ nav: { clock: 'NL' } }).nav, { ...CORE_STRINGS.nav, clock: 'NL' });
+  assert.deepEqual(stringsOf({ header: { clock: 'NL' } }).header, {
+    ...CORE_STRINGS.header,
+    clock: 'NL',
+  });
 });
 
 test('a site with its own strings renders them; without, the English defaults', () => {
@@ -26,6 +29,9 @@ test('a site with its own strings renders them; without, the English defaults', 
   const en = renderRoute(route, base).body;
   assert.match(en, />Skip to content</);
   assert.match(en, />Scroll</);
+  assert.match(en, />Menu</);
+  assert.match(en, /data-open-label="Close"/);
+  assert.match(en, />NL</);
   const nl = {
     ...base,
     strings: { ...base.strings, page: { skip: 'Naar de inhoud' }, hero: { scroll: 'Scrol' } },

@@ -142,9 +142,9 @@ function setPhoneMenu(open, { focusToggle = false } = {}) {
   if (textEl) {
     if (open) {
       label.dataset.closedText = textEl.textContent;
-      textEl.textContent = label.dataset.openLabel || CORE_STRINGS.nav.close;
+      textEl.textContent = label.dataset.openLabel || CORE_STRINGS.header.close;
     } else {
-      textEl.textContent = label.dataset.closedText || CORE_STRINGS.nav.menu;
+      textEl.textContent = label.dataset.closedText || CORE_STRINGS.header.menu;
     }
   }
   lockScroll(open);

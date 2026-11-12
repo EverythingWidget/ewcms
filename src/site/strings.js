@@ -12,7 +12,7 @@ import { isObject } from './is.js';
 
 export const CORE_STRINGS = Object.freeze({
   page: { skip: 'Skip to content' },
-  nav: {
+  header: {
     menu: 'Menu',
     close: 'Close',
     clock: '',

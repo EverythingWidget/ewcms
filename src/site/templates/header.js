@@ -12,7 +12,7 @@
  * dropdown; "all" labels its link to the item's own page. Items of a source with pages of their
  * own (a [param] page shows it) are listed with a photo and their photo count; other items (e.g.
  * projects) by title and kind, linking to their spot on the item's page, or to their own site
- * when "linkOut" is on. The menu, close and clock labels are in strings.json "nav".
+ * when "linkOut" is on. The menu, close and clock labels are in strings.json "header".
  */
 import { hrefOf } from '../hrefs.js';
 import {
@@ -163,18 +163,18 @@ export function header(ctx) {
   const items = Array.isArray(ctx.header?.header) ? ctx.header.header : [];
   return html`
   <header class="header" data-header>
-    <a class="header__logo" href="/" aria-label="${esc(t(ctx, 'nav.home', { name: site.name }))}">${esc(site.name)}</a>
+    <a class="header__logo" href="/" aria-label="${esc(t(ctx, 'header.home', { name: site.name }))}">${esc(site.name)}</a>
 
-    <nav class="nav" aria-label="${esc(t(ctx, 'nav.main'))}">
+    <nav class="nav" aria-label="${esc(t(ctx, 'header.main'))}">
       <div class="nav__pill">
         ${items.map((item, i) => navItem(ctx, item, i)).join('\n        ')}
       </div>
     </nav>
 
     <div class="header__right">
-      <span class="header__clock"><span class="header__clock-dot"></span><span${ed(STRINGS, ['nav', 'clock'])}>${esc(t(ctx, 'nav.clock'))}</span> <time data-clock="${esc(site.timezone)}">--:--</time></span>
+      <span class="header__clock"><span class="header__clock-dot"></span><span${ed(STRINGS, ['header', 'clock'])}>${esc(t(ctx, 'header.clock'))}</span> <time data-clock="${esc(site.timezone)}">--:--</time></span>
       <button class="menu-toggle glass" type="button" aria-expanded="false" aria-controls="phone-menu" data-menu-toggle>
-        <span class="menu-toggle__label" data-open-label="${esc(t(ctx, 'nav.close'))}"><span${ed(STRINGS, ['nav', 'menu'])}>${esc(t(ctx, 'nav.menu'))}</span></span>
+        <span class="menu-toggle__label" data-open-label="${esc(t(ctx, 'header.close'))}"><span${ed(STRINGS, ['header', 'menu'])}>${esc(t(ctx, 'header.menu'))}</span></span>
         <span class="menu-toggle__icon" aria-hidden="true"><i></i><i></i></span>
       </button>
     </div>
@@ -216,7 +216,7 @@ export function phoneMenu(ctx) {
   return html`
   <div class="mmenu" id="phone-menu" data-phone-menu hidden>
     <div class="mmenu__panel glass">
-      <nav class="mmenu__nav" aria-label="${esc(t(ctx, 'nav.phone'))}">
+      <nav class="mmenu__nav" aria-label="${esc(t(ctx, 'header.phone'))}">
         ${items.map((item, i) => mmItem(ctx, item, i)).join('\n        ')}
       </nav>
       <div class="mmenu__foot" data-mm-item>
