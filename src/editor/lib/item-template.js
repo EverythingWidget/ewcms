@@ -139,13 +139,24 @@ export function innerSourceFor(
 
 /**
  * A new widget on the template's grid (src/site/widgets/list/item-grid.js): its own id, full
- * width, below the last widget (it follows it: an Auto one above pushes it down), last. Summary
- * and details: its +/× at the first row's right end.
+ * width, below the lowest widget as the preview shows it (`shown`: { id: { row, rows } }, the
+ * preview's rows; without: the last one), following it (a link, STACK_ROWS_GAP rows under it:
+ * every item's content differs, so an Auto one above that grows pushes it down), last in
+ * order. Summary and details: its +/× at the first row's right end. Dragged from there on the
+ * preview grid (the Grid Engine: ../overlay.js).
  */
-export function addAt(widgets, w) {
+export function addAt(widgets, w, shown = {}) {
   const taken = new Set(widgets.map((x) => x?.id));
   const at = widgets.length;
-  const prev = widgets[at - 1]?.id;
+  const bottom = (x) => {
+    const s = shown[x?.id];
+    return Number.isInteger(s?.row) && Number.isInteger(s?.rows) ? s.row + s.rows : -1;
+  };
+  // the lowest one shown (the last in order of those as low), else the last
+  const prev = widgets.reduce(
+    (best, x) => (x?.id && bottom(x) >= 0 && bottom(x) >= bottom(best) ? x : best),
+    widgets[at - 1],
+  )?.id;
   const placed = {
     id: newId('w', taken),
     ...w,

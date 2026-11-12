@@ -44,7 +44,9 @@
     const widget = (live.get(file, `/sections/${at}`)?.widgets || []).find(
       (w) => w?.id === link.to,
     );
-    return widget ? nameOf(widget) || WIDGET_TYPES[widget.type]?.label || widget.id : link.to;
+    // (an item template's widget: its type and role, "Text · fact", as its row)
+    const label = [WIDGET_TYPES[widget?.type]?.label, widget?.role].filter(Boolean).join(' · ');
+    return widget ? nameOf(widget) || label || widget.id : link.to;
   });
 
   const phoneView = $derived(ui.viewport === 'phone');

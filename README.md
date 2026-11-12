@@ -863,7 +863,9 @@ rule work as anywhere.
   picker; the editor's **Name**), `clickable` (`false`: the item is no link to its page; left
   out: true; **Whole item clickable**), `preview` (the template editor's only: `from`, the
   source its sample item comes from, and `columns`, 1–6, the item as wide as in a List of that
-  many columns; it never changes a List), `basedOn` and `style`.
+  many columns; it never changes a List), `basedOn` and `style`. A template's Text has one
+  line (`body` of one): a second line is a Text of its own, placed on the grid (following the
+  first: a link), so each line is placed and sized there.
 
   A List picks one with `config.template: "t-<id>"` (the **Template** picker in the Content
   tab lists the presets, then the site's templates); without `config.template` it shows its
@@ -894,19 +896,33 @@ rule work as anywhere.
     curtain). Drag a row's grip to reorder (a widget that followed a removed one follows what
     it followed). **Add widget** (`SectionToolbar`, add only) opens the widget picker for the
     types a template can hold (text, photo, button, list, summary and details; a new one is
-    full width, following the last widget). Click a row to select that widget in the preview,
-    and click it in the preview to select the row. While a widget is selected, the card is
-    followed by one line with its text's size in the preview ("Text 14 px here"; under 11 px a
-    warning: "under 11 px, hard to read"; text has no minimum size, `src/editor/lib/small-text.js`;
-    switch the preview to a phone to check the phone size), then its **Role** (`.li__<role>`);
-    a Text its lines (style + text), a Photo its photo, a Button its label and **Opens the
-    item's page** (`itemLink`), and **Remove widget**. A line's bold, italic and links stay
-    through an edit (typed text takes the marks of the text before it). Every value takes
-    `{property}` chips: type `{name}` or pick one from the source's properties. Placement and
-    sizing are meant to happen on the preview grid, as a page widget's; click-to-select is
-    wired (`data-tw`); drag and resize are not yet. The editor edits the template's own file
-    (`targetFile`), its widgets at `/sections/0/widgets` as a page's, with `layer` as a page
-    widget's.
+    full width, following the lowest widget the preview shows). Click a row to select that
+    widget in the preview, and click it in the preview to select the row. While a widget is
+    selected, the card is followed by its two tabs, as a page widget's (the last one picked
+    kept for every widget):
+    - **Content**: one line with its text's size in the preview ("Text 14 px here"; under 11 px a
+      warning: "under 11 px, hard to read"; text has no minimum size, `src/editor/lib/small-text.js`;
+      switch the preview to a phone to check the phone size), then its **Role** (`.li__<role>`);
+      a Text its one line (**Style** and **Text**; a second line is a Text of its own, placed
+      on the grid), a Photo its photo, a Button its label and **Opens the item's page**
+      (`itemLink`), an inner List its source and template, and **Remove widget**. A line's
+      bold, italic and links stay through an edit (typed text takes the marks of the text
+      before it). Every value takes `{property}` chips: type `{name}` or pick one from the
+      source's properties.
+    - **Layout** (`WidgetLayout.svelte`, as a page widget's): its height (**Auto | Rows |
+      Aspect**) and **Layer**, what it **Follows** (its link and gap), its content box,
+      placement and Scale to fit; an inner List's **Arrangement**, **Columns** and **Space
+      between items**. In the phone preview it shows the phone's.
+    - **The Grid Engine**: the template's widgets are placed and sized on the preview grid
+      exactly as a page's (`overlay.js`): drag one to move it, drag its handles to resize it,
+      drag its top circle onto another widget's bottom circle to make it follow that one,
+      Ctrl/Cmd+click or a box on the empty grid to select several and move them together, the
+      arrow keys to nudge; the tag's Auto toggle; a Custom height item's bottom edge sets its
+      rows. Each is one undo step. In the phone preview a drag edits the phone areas (the
+      first one gives every widget its desktop area halved as its own; the item's phone rows
+      stay its desktop rows halved). Only in the template's own editor: on a page a List is one
+      widget. The editor edits the template's own file (`targetFile`), its widgets at
+      `/sections/0/widgets` as a page's, with `layer` as a page widget's.
   - **Settings**: **Name** (`name`, its name in a List's Template picker), **Whole item
     clickable** (`clickable`: the whole item opens the item's page; off when the template has
     Summary and details), **Columns** (`preview.columns`, 1–6: the preview shows the item as

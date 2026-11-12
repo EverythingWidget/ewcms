@@ -63,7 +63,8 @@ test('the panel card and the preview both select a section through selectSection
     / {4}selectSection\(id\);\n {4}locate\(bridge, id\);/,
   );
   const ov = src('overlay.js');
-  assert.match(ov, /if \(!b\.box && !b\.mod\) onsectionpick\(b\.sec\.dataset\.sec\)/);
+  assert.match(ov, /if \(b\.box \|\| b\.mod\) return;/);
+  assert.match(ov, /else onsectionpick\(b\.sec\.dataset\.sec\)/);
   assert.match(src('main.js'), /onsectionpick\(id\) \{\s*selectSection\(id\);/);
 });
 

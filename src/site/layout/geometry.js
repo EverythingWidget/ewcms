@@ -48,19 +48,24 @@ export function widthOf(cs) {
 /**
  * Where the widgets of a section are now, as rows.js placed them (--fr / --frs over the stored
  * area): { id: area } (the phone grid's on the phone: a widget's own phone area, or its place
- * in the default stack). widgetOf(id): the widget's model.
+ * in the default stack). widgetOf(id): the widget's model; els: the widget elements (default:
+ * the section's own [data-widget] ones; an item template's item passes its [data-tw] ones), idOf
+ * an element's id.
  */
-export function flowAreas(sec, phone, widgetOf) {
+export function flowAreas(sec, phone, widgetOf, els = null, idOf = (el) => el.dataset.widget) {
   const out = {};
-  for (const el of sec.querySelectorAll('[data-widget]')) {
-    if (el.closest('[data-sec]') !== sec) continue;
-    const widget = widgetOf(el.dataset.widget);
+  const list =
+    els ||
+    [...sec.querySelectorAll('[data-widget]')].filter((el) => el.closest('[data-sec]') === sec);
+  for (const el of list) {
+    const id = idOf(el);
+    const widget = widgetOf(id);
     if (!widget) continue;
     // the phone's: as rendered (its own area, or its place in the default stack)
     const stored = phone ? areaOfEl(el, true) : placeOf(baseOf(widget));
     const row = parseInt(el.style.getPropertyValue('--fr'), 10);
     const rows = parseInt(el.style.getPropertyValue('--frs'), 10);
-    out[el.dataset.widget] = { ...stored, ...(row > 0 && rows > 0 ? { row, rows } : {}) };
+    out[id] = { ...stored, ...(row > 0 && rows > 0 ? { row, rows } : {}) };
   }
   return out;
 }

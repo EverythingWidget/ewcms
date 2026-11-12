@@ -16,6 +16,7 @@ import {
   phoneHeightOf,
   phoneRowsOf,
   rowsOf,
+  halfArea,
   hasPhoneArea,
   linkOf,
   makesLoop,
@@ -34,7 +35,7 @@ import { resolveRows } from '../site/layout/flow.js';
 import { idsOf, newId } from '../site/layout/ids.js';
 import { fitSource } from '../site/layout/source.js';
 import { WIDGET_TYPES } from '../site/widgets/index.js';
-import { contentFromFiles, isTemplate, pageIdOf, paramsOf } from '../site/files.js';
+import { contentFromFiles, isTemplate, pageIdOf, paramsOf, templateIdOf } from '../site/files.js';
 
 const listOf = (store, file) => {
   const list = store.get(file, '/sections');
@@ -51,9 +52,19 @@ const write = (store, file, list, structure = true) =>
 /**
  * The first edit of a section's phone layout: every widget still in its default phone stack
  * (grid.js phoneStack) gets that place as its own (its area and link), so the one edited
- * leaves the stack without the others moving.
+ * leaves the stack without the others moving. An item template's (`file` a template's) has no
+ * stack: a widget without a phone area shows its desktop area halved (and its link, the gap
+ * halved: src/site/widgets/list/item-grid.js), and gets that as its own.
  */
-function ownPhoneLayout(section) {
+function ownPhoneLayout(section, file) {
+  if (templateIdOf(file)) {
+    for (const widget of section.widgets || []) {
+      if (!widget?.id || widget.layout?.phone === null || hasPhoneArea(phoneOf(widget))) continue;
+      const link = linkOf(widget, true);
+      setPhone(widget, { ...halfArea(baseOf(widget)), ...(link && { link }) });
+    }
+    return;
+  }
   const stack = phoneStack(section.widgets);
   for (const widget of section.widgets || []) {
     const s = stack.get(widget.id);
@@ -233,7 +244,14 @@ export function setPhoneHeight(store, file, at, height) {
  * its bottom): its rows become its content's, so they stay when the widget moves back up (the
  * phone's own rows on the phone). Only ever grows. In place, part of the move's undo step.
  */
-function grow(section, content, phone = false) {
+function grow(section, content, phone = false, file = '') {
+  // an item template's phone rows are its desktop rows halved (it has no phone rows of its own)
+  if (phone && templateIdOf(file)) {
+    const min = minRowsOf(section);
+    if (min && content > Math.ceil(min / 2))
+      section.rows = { min: Math.min(MAX_MIN_ROWS, content * 2) };
+    return;
+  }
   const now = phone ? phoneMinRowsOf(section) : minRowsOf(section);
   if (!now || content <= now) return;
   const rows = Math.min(MAX_MIN_ROWS, content);
@@ -449,7 +467,7 @@ export function linkWidget(store, file, at, j, to, gap = 0, { phone = false, row
   // stored rows (an auto leader's content may span more)
   const stay = !next && Number.isInteger(row) && row > 0 ? { row } : {};
   if (phone) {
-    ownPhoneLayout(section);
+    ownPhoneLayout(section, file);
     if (!hasPhoneArea(phoneOf(widget))) setPhone(widget, phoneAreaOf(widget, section.widgets));
     setPhone(widget, { link: next, ...stay });
   } else setBase(widget, { link: next, ...stay });
@@ -504,7 +522,7 @@ export function setWidget(store, file, at, j, patch, key) {
  */
 export function placePhone(store, file, at, j, area, { key, flow, rows = 0 } = {}) {
   const section = listOf(store, file)[at];
-  ownPhoneLayout(section);
+  ownPhoneLayout(section, file);
   storeFlow(section, j, flow, true);
   const widget = section.widgets[j];
   setPhone(widget, placeOf(area, MCOLS));
@@ -513,7 +531,7 @@ export function placePhone(store, file, at, j, area, { key, flow, rows = 0 } = {
     setPhone(widget, {
       link: { to: l.to, gap: gapAt(section, l, phoneOf(widget).row, flow, true) },
     });
-  grow(section, Math.max(rows, phoneRowsOf(section)), true);
+  grow(section, Math.max(rows, phoneRowsOf(section)), true, file);
   return writeSection(store, file, at, section, key);
 }
 
@@ -553,7 +571,7 @@ export function moveWidgets(
   const section = listOf(store, file)[at];
   const js = indexesOf(section, ids);
   if (!js.length || (!dc && !dr)) return false;
-  if (phone) ownPhoneLayout(section);
+  if (phone) ownPhoneLayout(section, file);
   // the others where they show now (not the moved ones: they get their new areas)
   section.widgets.forEach((widget) => {
     const a = !ids.includes(widget.id) && flow[widget.id];
@@ -575,7 +593,7 @@ export function moveWidgets(
       else setBase(widget, { link: { to: l.to, gap } });
     }
   }
-  if (phone) grow(section, Math.max(rows, phoneRowsOf(section)), true);
+  if (phone) grow(section, Math.max(rows, phoneRowsOf(section)), true, file);
   else grow(section, Math.max(rows, rowsOf(section)));
   return writeSection(store, file, at, section);
 }

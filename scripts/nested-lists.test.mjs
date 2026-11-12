@@ -316,10 +316,12 @@ test('the template editor: Add list, the inner List rows always there, the label
     'Source',
     'Match: their property',
     'Template',
-    'Columns',
-    'Space between items',
   ])
     assert.match(panel, new RegExp(`label="${label}"`), label);
+  // its Arrangement, Columns and Space between items: the Layout tab (the List's own
+  // definitions, as a page List's: WidgetLayout.svelte), not the Content tab
+  assert.match(panel, /<WidgetLayout/);
+  assert.doesNotMatch(panel, /label="Space between items"|label="Arrangement"/);
   assert.match(panel, /is this item’s/);
   assert.match(
     panel,

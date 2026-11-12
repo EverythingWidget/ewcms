@@ -887,6 +887,11 @@ function checkTemplateWidget(w, at) {
     if (gp) out.push(`${at}.${gp}`);
   } else if (w.source !== undefined)
     out.push(`${at}: no "source" in a template: the List gives each copy its item`);
+  // a template's Text is one line: another line is a Text of its own, placed on the grid
+  if (w.type === 'text' && Array.isArray(w.body) && w.body.length > 1)
+    out.push(
+      `${at}: a template's Text has one line (this one has ${w.body.length}): place each line as a Text of its own on the template's grid`,
+    );
   // on the grid, as a page's widget (layout, size, aspect, layer)
   if (!isId(w.id, 'w')) out.push(`${at}: "id" must be a widget id like "w-7qpa"`);
   if (w.z !== undefined) out.push(`${at}: "z" is "layer" now (its Layer)`);

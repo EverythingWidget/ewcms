@@ -171,9 +171,13 @@ const overlay = createOverlay({
       toast("Can't link those widgets (another section's, or a loop)", { kind: 'error' });
   },
   // a Custom section's bottom edge dragged: its rows (one undo step)
+  // (an item template's: its one section, the overlay's 'item')
   onrows(id, rows, { phone = false } = {}) {
     const file = targetFile(ui.target, bridge.doc);
-    const at = (store.current[file]?.sections || []).findIndex((s) => s?.id === id);
+    const at =
+      ui.target?.kind === 'item-template'
+        ? 0
+        : (store.current[file]?.sections || []).findIndex((s) => s?.id === id);
     if (at >= 0) setSectionRows(store, file, at, rows, { phone });
   },
   widgetOf(id) {

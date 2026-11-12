@@ -82,7 +82,10 @@ export function boxLabels(placement) {
  * the phone's rows are half the desktop's (its cells twice as big): sizes write desktop rows.
  */
 export function shownRows(doc, id, widget, phone, fallback) {
-  const el = doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`);
+  // (an item template's widget in the template editor's preview: its item's [data-tw])
+  const el =
+    doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`) ||
+    doc?.querySelector(`.sec--item > [data-tw="${CSS.escape(id)}"]`);
   const n = parseInt(el?.style.getPropertyValue('--frs') ?? '', 10);
   if (Number.isInteger(n) && n > 0) return phone ? n * 2 : n;
   return baseOf(widget).rows || fallback;

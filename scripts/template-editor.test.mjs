@@ -261,7 +261,7 @@ test('a line edited in the chips box keeps its bold, italic and links', () => {
   assert.deepEqual(keepMarks([{ t: 'a' }], [{ t: 'ab' }]), [{ t: 'ab' }]);
   assert.match(
     read('src/editor/svelte/TemplatePanel.svelte'),
-    /keepMarks\(body\[j\]\.text, runsOf\(value\)\)/,
+    /keepMarks\(line\.text, runsOf\(value\)\)/,
   );
 });
 
@@ -293,8 +293,9 @@ test('the template panel hides what a template section does not have', () => {
   const overlay = read('src/editor/overlay.js');
   assert.match(overlay, /data-tw="\$\{CSS\.escape\(id\)\}"/);
   assert.match(overlay, /ui\.target\?\.kind === 'item-template'/);
-  assert.match(overlay, /onpick\(id\);\s+return;/);
-  assert.doesNotMatch(overlay, /start\(e, tw\)/);
+  // the Grid Engine: its item's own widgets dragged, resized and linked as a page's
+  assert.doesNotMatch(overlay, /select only: drag \/ resize write-back is not wired/);
+  assert.match(overlay, /const top = widgetAt\(e\.target\)/);
 });
 
 

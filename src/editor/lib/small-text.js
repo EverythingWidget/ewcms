@@ -9,7 +9,9 @@ export const MIN_TEXT_PX = 11;
 export function textSizes(doc) {
   const out = {};
   if (!doc?.querySelectorAll) return out;
+  // (a document the preview has just left, mid reload: no window, nothing to measure)
   const win = doc.defaultView;
+  if (!win) return out;
   for (const w of doc.querySelectorAll('.sec--item > .wgt[data-tw]')) {
     const id = w.dataset.tw;
     const walker = doc.createTreeWalker(w, 4); // text nodes

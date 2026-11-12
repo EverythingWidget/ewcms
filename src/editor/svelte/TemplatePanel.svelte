@@ -3,9 +3,15 @@
   its file content/templates/<id>.json edited like a page, the preview its List of one sample
   item (src/site/widgets/list/template-preview.js). Two tabs:
     Widgets     the always-selected section card (SectionCard.svelte) of its widgets, with
-                WidgetRow rows and Add widget (SectionToolbar, add only). A row selects that
-                widget in the preview and vice versa; its settings (role, binds, …) are under
-                the card while it is selected. Placement is on the preview grid.
+                WidgetRow rows and Add widget (SectionToolbar, add only: a new widget goes on
+                the grid, free, below the others). A row selects that widget in the preview and
+                vice versa; under the card while one is selected, its two tabs, as a page
+                widget's (the last one picked kept for every widget: ../widget-layout.js):
+                Content (role, binds: a Text its one line, style + text; a second line is a
+                Text of its own on the grid) and Layout (WidgetLayout.svelte: its height, what
+                it follows, its layer, the phone's in the phone view; an inner List's
+                arrangement, columns and gap). It is placed and sized on the preview grid: the
+                Grid Engine, the overlay's drag, resize and links (../overlay.js).
     Settings    its Name (as in a List’s Template picker), Whole item clickable (the whole
                 item opens the item’s page), Columns (the preview’s: the item as wide as in
                 a List of 1–6 columns; preview.columns, never a List’s), and the preview line.
@@ -21,16 +27,16 @@
   import SectionCard from './SectionCard.svelte';
   import SectionToolbar from './SectionToolbar.svelte';
   import WidgetsModal from './WidgetsModal.svelte';
+  import WidgetLayout from './WidgetLayout.svelte';
+  import { WIDGET_TABS, WIDGET_TAB_KEY, widgetTabOf } from '../widget-layout.js';
   import { sourceIds as sourceIdsOf, templateFile } from '../../site/files.js';
   import { LINE_STYLES } from '../../site/text.js';
   import { schemaOf } from '../../site/schemas.js';
   import { previewColumns, sampleSource } from '../../site/widgets/list/template-preview.js';
   import { ITEM_WIDGETS, itemSection } from '../../site/widgets/list/item-grid.js';
-  import { MAX_GAP } from '../../site/widgets/list/index.js';
   import { PRESETS } from '../../site/widgets/list/presets.js';
   import { innerChoice, innerTemplates } from '../../site/widgets/list/nested.js';
   import { MIN_TEXT_PX, sizeLine, textSizes } from '../lib/small-text.js';
-  import { CAROUSEL, CAROUSEL_KEYS, withArrangement } from '../../site/widgets/list/carousel.js';
   import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import {
     ITEMS_FROM,
@@ -129,12 +135,6 @@
       ),
   ]);
   const COLUMNS = ['1', '2', '3', '4', '5', '6'].map((n) => [n, n]);
-  // an inner List's gap: a whole number of cells (the item's: the grid it sits on), 0 left out
-  const setGap = (b, v) => {
-    if (typeof v !== 'number' || !Number.isFinite(v)) return;
-    const n = Math.min(MAX_GAP, Math.max(0, Math.round(v)));
-    set(`${b}/config/gap`, n || undefined);
-  };
   // the preview's columns (preview.columns: 1, the default, left out; an empty preview too)
   const setColumns = (v) => {
     const n = Number(v);
@@ -179,21 +179,14 @@
   const setWidgets = (next) => set(ITEM_WIDGETS, next, true);
   const STYLES = LINE_STYLES.map(([v, l]) => [v, l]);
 
-  function setLine(b, j, key, value) {
-    const body = structuredClone(wAt(b).body || []);
-    body[j] = {
-      ...body[j],
-      [key]: key === 'text' ? keepMarks(body[j].text, runsOf(value)) : value,
+  // a template Text's one line (another line: a Text of its own on the grid)
+  function setLine(b, key, value) {
+    const line = wAt(b).body?.[0] || { style: 'paragraph', text: [] };
+    const next = {
+      ...line,
+      [key]: key === 'text' ? keepMarks(line.text, runsOf(value)) : value,
     };
-    set(`${b}/body`, body);
-  }
-  function addLine(b) {
-    const body = [...(wAt(b).body || []), { style: 'paragraph', text: [] }];
-    set(`${b}/body`, body, true);
-  }
-  function removeLine(b, j) {
-    const body = (wAt(b).body || []).filter((_, k) => k !== j);
-    set(`${b}/body`, body, true);
+    set(`${b}/body`, [next]);
   }
   function setRole(b, v) {
     const role = String(v || '')
@@ -208,9 +201,21 @@
       'View',
       listProps[0]?.[0] || 'photos',
     );
+  // where the item's widgets show now (the preview's rows.js: --fr / --frs), so a new widget
+  // goes below the lowest one as it is seen (an Auto one's real height counts)
+  const shownRows = () =>
+    Object.fromEntries(
+      [...(bridge?.doc?.querySelectorAll('.sec--item > [data-tw]') || [])].map((el) => [
+        el.dataset.tw,
+        {
+          row: parseInt(el.style.getPropertyValue('--fr'), 10),
+          rows: parseInt(el.style.getPropertyValue('--frs'), 10),
+        },
+      ]),
+    );
   const add = (type) => {
     if (type === 'details') set('/clickable', false);
-    const next = addAt(widgets, fresh(type));
+    const next = addAt(widgets, fresh(type), shownRows());
     setWidgets(next);
     const id = next[next.length - 1]?.id;
     if (id) selectWidgets([id]);
@@ -234,10 +239,6 @@
           : [t, tp.name || t],
       ),
   );
-  // an inner List's Arrangement and Carousel rows (the List's own definitions)
-  const LIST_CONFIG = WIDGET_TYPES.list.config;
-  const ARRANGE = LIST_CONFIG.find((c) => c.key === 'arrangement').options;
-  const CAR_ROWS = LIST_CONFIG.filter((c) => CAROUSEL_KEYS.includes(c.key));
   const card = $derived({
     id: section?.id || 's-tpl',
     name: (typeof tpl?.name === 'string' && tpl.name.trim()) || '',
@@ -246,20 +247,22 @@
   });
   const selectedAt = $derived(widgets.findIndex((w) => w?.id && w.id === ui.widget));
   const selected = $derived(selectedAt >= 0 ? widgets[selectedAt] : null);
+  // the selected widget's tab: Content | Layout, as a page widget's (one for every widget)
+  const wtab = $derived(widgetTabOf(ui.sections));
   let widgetsModal = $state();
   const typeTiles = $derived(
-    STACK_TYPES.filter(([type]) => !(type === 'list' && outer) && !(type === 'details' && detailsOff)).map(
-      ([type]) => {
-        const d = WIDGET_TYPES[type] || {};
-        return {
-          value: type,
-          label: d.label || type,
-          icon: d.icon,
-          line: d.line,
-          sketch: d.sketch,
-        };
-      },
-    ),
+    STACK_TYPES.filter(
+      ([type]) => !(type === 'list' && outer) && !(type === 'details' && detailsOff),
+    ).map(([type]) => {
+      const d = WIDGET_TYPES[type] || {};
+      return {
+        value: type,
+        label: d.label || type,
+        icon: d.icon,
+        line: d.line,
+        sketch: d.sketch,
+      };
+    }),
   );
   function pickAdd(type) {
     if ((type === 'list' && outer) || (type === 'details' && detailsOff)) return;
@@ -288,40 +291,27 @@
     />
   {/if}
   {#if w.type === 'text'}
-    {#each w.body || [] as l, j (j)}
-      <div class="tp__line">
-        <Field
-          edit={`${file}#${b}/body/${j}/style`}
-          label="Line {j + 1}"
-          type="select"
-          value={l.style}
-          options={STYLES}
-          onvalue={(v) => setLine(b, j, 'style', v)}
-        />
-        <Field
-          edit={`${file}#${b}/body/${j}/text`}
-          label="Text"
-          value={l.text}
-          binds={allBinds}
-          {names}
-          formats
-          {from}
-          onvalue={(v) => setLine(b, j, 'text', v)}
-        />
-        {#if (w.body || []).length > 1}
-          <Button
-            size="small"
-            icon="xmark"
-            iconOnly
-            label="Remove line {j + 1}"
-            onclick={() => removeLine(b, j)}
-          />
-        {/if}
-      </div>
-    {/each}
-    <span class="tp__start"
-      ><Button size="small" icon="plus" onclick={() => addLine(b)}>Add line</Button></span
-    >
+    {@const l = w.body?.[0] || { style: 'paragraph', text: [] }}
+    <div class="tp__line">
+      <Field
+        edit={`${file}#${b}/body/0/style`}
+        label="Style"
+        type="select"
+        value={l.style}
+        options={STYLES}
+        onvalue={(v) => setLine(b, 'style', v)}
+      />
+      <Field
+        edit={`${file}#${b}/body/0/text`}
+        label="Text"
+        value={l.text}
+        binds={allBinds}
+        {names}
+        formats
+        {from}
+        onvalue={(v) => setLine(b, 'text', v)}
+      />
+    </div>
     {#if w.join !== undefined}
       <Field
         edit={`${file}#${b}/join`}
@@ -401,47 +391,7 @@
       options={innerOptions}
       onvalue={(v) => set(`${b}/config/template`, v, true)}
     />
-    <div class="tp__pair">
-      <Field
-        edit={`${file}#${b}/config/columns`}
-        label="Columns"
-        type="select"
-        value={w.config?.columns || '3'}
-        options={COLUMNS}
-        onvalue={(v) => set(`${b}/config/columns`, v)}
-      />
-      <Field
-        edit={`${file}#${b}/config/gap`}
-        label="Space between items"
-        type="number"
-        value={w.config?.gap ?? 0}
-        onvalue={(v) => setGap(b, v)}
-      />
-    </div>
-    <!-- Arrangement, and the Carousel's settings: always shown, disabled with Grid -->
-    <Field
-      edit={`${file}#${b}/config/arrangement`}
-      label="Arrangement"
-      type="select"
-      value={w.config?.arrangement || 'grid'}
-      options={ARRANGE}
-      onvalue={(v) => set(`${b}/config`, withArrangement(w.config, v), true)}
-    />
-    <div class="tp__pair">
-      {#each CAR_ROWS as c (c.key)}
-        <Field
-          edit={`${file}#${b}/config/${c.key}`}
-          label={c.label}
-          type={c.type === 'boolean' ? 'boolean' : 'select'}
-          value={c.type === 'boolean'
-            ? (w.config?.[c.key] ?? CAROUSEL[c.key][0]) === true
-            : (w.config?.[c.key] ?? CAROUSEL[c.key][0])}
-          options={c.options ?? []}
-          disabled={w.config?.arrangement !== 'carousel'}
-          onvalue={(v) => set(`${b}/config/${c.key}`, v)}
-        />
-      {/each}
-    </div>
+    <!-- its Arrangement, Columns, Space between items and the Carousel's: the Layout tab -->
   {:else if w.type === 'details'}
     <Field
       edit={`${file}#${b}/config/template`}
@@ -555,18 +505,48 @@
       changed={live.changed(file, ITEM_WIDGETS)}
     />
     {#if selected && selectedAt >= 0}
-      <p
-        class="hint small tp__size"
-        class:tp__size--warn={sizes[selected.id] < MIN_TEXT_PX}
-        data-text-size={selected.id}
-      >
-        {sizeLine(sizes[selected.id]) || 'No text in the preview'}
-      </p>
-      {@render editW(selected, `${ITEM_WIDGETS}/${selectedAt}`)}
-      <Button size="small" icon="trash" onclick={() => {
-        setWidgets(removeWidget(widgets, selectedAt));
-        selectWidgets([]);
-      }}>Remove widget</Button>
+      <!-- its tabs, as a page widget's; both laid out in one cell, the one not shown hidden: the
+           taller one sets the height, so switching moves nothing -->
+      <div class="tp__w" data-template-widget={selected.id}>
+        <Tabs
+          class="tp__tabs"
+          label="Widget"
+          tabs={WIDGET_TABS}
+          value={wtab}
+          onpick={(v) => (ui.sections[WIDGET_TAB_KEY] = v)}
+        />
+        <div class="tp__panes">
+          <div class={['tp__pane', wtab !== 'content' && 'is-hidden']} inert={wtab !== 'content'}>
+            <p
+              class="hint small tp__size"
+              class:tp__size--warn={sizes[selected.id] < MIN_TEXT_PX}
+              data-text-size={selected.id}
+            >
+              {sizeLine(sizes[selected.id]) || 'No text in the preview'}
+            </p>
+            {@render editW(selected, `${ITEM_WIDGETS}/${selectedAt}`)}
+            <Button
+              size="small"
+              icon="trash"
+              onclick={() => {
+                setWidgets(removeWidget(widgets, selectedAt));
+                selectWidgets([]);
+              }}>Remove widget</Button
+            >
+          </div>
+          <div class={['tp__pane', wtab !== 'layout' && 'is-hidden']} inert={wtab !== 'layout'}>
+            <WidgetLayout
+              {live}
+              {bridge}
+              {file}
+              at={0}
+              j={selectedAt}
+              id={selected.id}
+              widget={selected}
+            />
+          </div>
+        </div>
+      </div>
     {/if}
   {:else if tab === 'settings'}
     <Field
@@ -618,13 +598,31 @@
 
   .tp__line {
     display: grid;
-    grid-template-columns: 112px minmax(0, 1fr) var(--size-control);
+    grid-template-columns: 112px minmax(0, 1fr);
     gap: var(--space-2);
     align-items: end;
   }
 
-  .tp__start {
-    justify-self: start;
+  // the selected widget's Content | Layout: the tabs' line runs the panel's width
+  .tp__w {
+    display: grid;
+    gap: var(--space-4);
+    min-width: 0;
+  }
+
+  .tp__panes {
+    display: grid;
+  }
+
+  .tp__pane {
+    @include stack(var(--space-3));
+    grid-area: 1 / 1;
+    align-content: start;
+    min-width: 0;
+  }
+
+  .tp__pane.is-hidden {
+    visibility: hidden;
   }
 
   .tp__match {
@@ -651,11 +649,5 @@
 
   .tp__size--warn {
     color: var(--c-warning);
-  }
-
-  .tp__pair {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-2);
   }
 </style>

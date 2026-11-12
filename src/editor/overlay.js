@@ -203,31 +203,60 @@ export function createOverlay({
   const arranging = () => clicks() === 'arrange';
   const shown = () => doc && arranging();
   const isPhone = () => win.innerWidth <= PHONE_W;
+  /**
+   * The Grid Engine: an item template open (ui.target.kind 'item-template'), the overlay arranges
+   * its item instead of the page: the preview's one item (the first .sec--item, the template's one
+   * section: src/site/widgets/list/item-grid.js) is the section, its own widgets
+   * (.sec--item > .wgt[data-tw]) the widgets, dragged, resized and linked as a page's (the
+   * writes go to the template's file: main.js widgetAt, its /sections/0). The preview page
+   * around it (its List) is never picked, and a List on a page is one widget: a template's
+   * widgets are arranged in the template's own editor only.
+   */
+  const tplOpen = () => ui.target?.kind === 'item-template';
+  /** The template's item in the preview (an inner List's items are inside it), else null. */
+  const tplSec = () => (doc && tplOpen() ? doc.querySelector('.sec--item') : null);
+  /** A widget element's id: its data-widget (a page's), its data-tw (a template's). */
+  const idOf = (el) => (el ? (tplOpen() ? el.dataset.tw : el.dataset.widget) : undefined);
   const widgetEl = (id) => {
     if (!id || !doc) return null;
-    return (
-      doc.querySelector(`[data-widget="${CSS.escape(id)}"]`) ||
-      doc.querySelector(`[data-tw="${CSS.escape(id)}"]`)
-    );
+    if (!tplOpen()) return doc.querySelector(`[data-widget="${CSS.escape(id)}"]`);
+    return tplSec()?.querySelector(`:scope > [data-tw="${CSS.escape(id)}"]`) || null;
   };
-  /** A template widget in the preview (.sec--item > .wgt[data-tw]), only while a template is open. */
-  const templateEl = (e) =>
-    ui.target?.kind === 'item-template' ? e.target.closest?.('[data-tw]') : null;
+  /** The widget under `t` (an element): a page's, or the open template's own (not an inner List item's). */
+  const widgetAt = (t) => {
+    if (!tplOpen()) return t?.closest?.('[data-widget]') || null;
+    const sec = tplSec();
+    let n = t?.closest?.('[data-tw]');
+    while (n && n.parentElement !== sec) n = n.parentElement?.closest('[data-tw]');
+    return n || null;
+  };
 
-  const secOf = (el) => el?.closest('[data-sec]');
+  const secOf = (el) => {
+    if (!tplOpen()) return el?.closest('[data-sec]');
+    const sec = tplSec();
+    return el && sec?.contains(el) ? sec : null;
+  };
+  /** A section's id (a template's item: its one section, 'item'). */
+  const secKey = (sec) => (tplOpen() ? 'item' : sec?.dataset.sec);
   /** Is a section editable now: the footer's while it is open, the page's while no site part is. */
   const live = (sec) =>
-    !doc.querySelector('[data-header][data-ed-open]') &&
-    !!sec.closest('[data-footer]') === !!doc.querySelector('[data-footer][data-ed-open]');
-  const secById = (id) => doc.querySelector(`[data-sec="${CSS.escape(id)}"]:not([hidden])`);
+    tplOpen() ||
+    (!doc.querySelector('[data-header][data-ed-open]') &&
+      !!sec.closest('[data-footer]') === !!doc.querySelector('[data-footer][data-ed-open]'));
+  const secById = (id) =>
+    tplOpen() ? null : doc.querySelector(`[data-sec="${CSS.escape(id)}"]:not([hidden])`);
   /** The section under the pointer in the preview: its row in the Sections tab shows it. */
-  const peekAt = (sec) => peekSection(sec?.dataset.sec, 'preview');
+  const peekAt = (sec) => peekSection(tplOpen() ? null : sec?.dataset.sec, 'preview');
   const unpeek = () => peekAt(null);
   /** The widget under the pointer in the preview: its row in the Sections tab lights. */
   const hotAt = (id) => hotWidget(id, 'preview');
   /** The widget elements of a section (not a nested section's). */
   const widgetsIn = (sec) =>
-    [...sec.querySelectorAll('[data-widget]')].filter((n) => secOf(n) === sec);
+    tplOpen()
+      ? [...sec.children].filter((n) => n.matches('[data-tw]'))
+      : [...sec.querySelectorAll('[data-widget]')].filter((n) => secOf(n) === sec);
+  /** Where a section's widgets are now (geometry.js flowAreas, with the template's own). */
+  const flowOf = (sec, phone) => flowAreas(sec, phone, widgetOf, widgetsIn(sec), idOf);
   /** The link a widget element follows on the grid shown: { to, gap } or null. */
   const linkOfEl = (el) => linkAttr(el, isPhone());
 
@@ -326,7 +355,7 @@ export function createOverlay({
     });
     const key = info
       .map(({ sec, cs, r }) =>
-        [sec.dataset.sec, r.x, r.y, r.w, r.h, cs.gridTemplateColumns, cs.gridTemplateRows].join(),
+        [secKey(sec), r.x, r.y, r.w, r.h, cs.gridTemplateColumns, cs.gridTemplateRows].join(),
       )
       .join('|');
     if (`${secs.length}:${key}` === gridKey) return;
@@ -415,15 +444,17 @@ export function createOverlay({
     const seen = new Set();
     const tag = tagRect();
     if (arranging())
-      for (const sec of doc.querySelectorAll('[data-sec]:not([hidden])'))
+      for (const sec of tplOpen()
+        ? [tplSec()].filter(Boolean)
+        : doc.querySelectorAll('[data-sec]:not([hidden])'))
         for (const el of live(sec) ? widgetsIn(sec) : []) {
           const l = linkOfEl(el);
           if (!l || el.hidden || linking?.el === el) continue;
-          const lead = widgetsIn(sec).find((n) => n.dataset.widget === l.to);
+          const lead = widgetsIn(sec).find((n) => idOf(n) === l.to);
           if (!lead || lead.hidden) continue;
           const [x1, y1] = bottomDot(boxOf(lead, win)).map(R);
           const [x2, y2] = topDot(boxOf(el, win)).map(R);
-          const id = el.dataset.widget;
+          const id = idOf(el);
           seen.add(id);
           let e = linkEls.get(id);
           if (!e) {
@@ -551,12 +582,7 @@ export function createOverlay({
     // the pointer's widget, else the one whose row is hovered in the panel
     const hov = hover || (ui.hot?.from === 'panel' ? widgetEl(ui.hot.id) : null);
     const h =
-      arrange &&
-      hov !== sel &&
-      !drag &&
-      !group &&
-      !boxing &&
-      !ui.multi.includes(hov?.dataset.widget)
+      arrange && hov !== sel && !drag && !group && !boxing && !ui.multi.includes(idOf(hov))
         ? hov
         : null;
     els.hover.hidden = !h;
@@ -592,11 +618,13 @@ export function createOverlay({
   function drawBlocks(arrange) {
     const ids = selectedIds(ui);
     const sec = arrange && ui.mod && ids.length && !drag && !group ? secOf(widgetEl(ids[0])) : null;
-    const others = sec
-      ? [...doc.querySelectorAll('[data-sec]:not([hidden])')].filter(
-          (s) => s !== sec && live(s) && !s.parentElement.closest('[data-sec]') && !s.contains(sec),
-        )
-      : [];
+    const others =
+      sec && !tplOpen()
+        ? [...doc.querySelectorAll('[data-sec]:not([hidden])')].filter(
+            (s) =>
+              s !== sec && live(s) && !s.parentElement.closest('[data-sec]') && !s.contains(sec),
+          )
+        : [];
     const blocks = els.blocks.children;
     while (blocks.length > others.length) blocks[blocks.length - 1].remove();
     while (blocks.length < others.length) els.blocks.append(doc.createElement('div'));
@@ -606,7 +634,7 @@ export function createOverlay({
     });
   }
 
-  const secIdOf = (id) => secOf(widgetEl(id))?.dataset.sec;
+  const secIdOf = (id) => secKey(secOf(widgetEl(id)));
 
   /** The step of one cell (px) on a section's lines: columns, rows. */
   const stepsOf = (lines) => ({
@@ -619,7 +647,7 @@ export function createOverlay({
     const sec = secOf(widgetEl(ids[0]));
     if (!sec) return null;
     const phone = isPhone();
-    const flow = flowAreas(sec, phone, widgetOf);
+    const flow = flowOf(sec, phone);
     const members = ids
       .map((id) => ({ id, el: widgetEl(id), from: flow[id] }))
       .filter((m) => m.el && m.from);
@@ -644,12 +672,12 @@ export function createOverlay({
       y: e.clientY,
       lines: linesOf(sec, win),
       items: widgetsIn(sec)
-        .filter((n) => flow[n.dataset.widget])
+        .filter((n) => flow[idOf(n)])
         .map((n) => ({
-          id: n.dataset.widget,
+          id: idOf(n),
           el: n,
-          ...flow[n.dataset.widget],
-          link: ids.includes(n.dataset.widget) ? null : linkOfEl(n),
+          ...flow[idOf(n)],
+          link: ids.includes(idOf(n)) ? null : linkOfEl(n),
         })),
       dc: 0,
       dr: 0,
@@ -709,8 +737,8 @@ export function createOverlay({
     if (!moved) {
       for (const [n, css] of g.saved) n.style.cssText = css;
       // a click (no move) on one of them: that one only
-      setAnchor(g.el.dataset.widget);
-      onpick(g.el.dataset.widget);
+      setAnchor(idOf(g.el));
+      onpick(idOf(g.el));
       return;
     }
     ongroupmove(
@@ -789,8 +817,8 @@ export function createOverlay({
     boxing.box = { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
     const rects = Object.fromEntries(
       widgetsIn(sec)
-        .filter((n) => !n.hidden && widgetOf(n.dataset.widget))
-        .map((n) => [n.dataset.widget, boxOf(n, win)]),
+        .filter((n) => !n.hidden && widgetOf(idOf(n)))
+        .map((n) => [idOf(n), boxOf(n, win)]),
     );
     const ids = [...new Set([...boxing.base, ...hits(rects, boxing.box)])];
     if (ids.join() !== selectedIds(ui).join()) onselect(ids);
@@ -809,7 +837,10 @@ export function createOverlay({
     boxing = null;
     // a click on a section's empty space: that section selected, alone (Ctrl/Cmd: the
     // selection stays)
-    if (!b.box && !b.mod) onsectionpick(b.sec.dataset.sec);
+    // (a template's item: nothing selected, its one section has no settings of its own here)
+    if (b.box || b.mod) return;
+    if (tplOpen()) onpick(null);
+    else onsectionpick(b.sec.dataset.sec);
   }
 
   function cancelBox(e) {
@@ -824,7 +855,7 @@ export function createOverlay({
 
   /** A drag of widget `el`: move (h empty) or a resize by handle `h`. */
   function start(e, el, h = '') {
-    const id = el?.dataset.widget;
+    const id = idOf(el);
     const stored = widgetOf(id);
     if (!stored) return;
     e.preventDefault();
@@ -834,17 +865,17 @@ export function createOverlay({
     const phone = isPhone();
     const saved = new Map([sec, ...widgetsIn(sec)].map((n) => [n, n.style.cssText]));
     // where the section's widgets are now (stored with the drag), then hold them there
-    const flow = flowAreas(sec, phone, widgetOf);
+    const flow = flowOf(sec, phone);
     const rows = Number(sec.style.getPropertyValue('--frows')) || 0;
     doc.documentElement.setAttribute('data-flow-hold', '');
     const from = flow[id];
     // the section's widgets and links, to move the widgets that follow this one along
     const items = widgetsIn(sec)
-      .filter((n) => flow[n.dataset.widget])
+      .filter((n) => flow[idOf(n)])
       .map((n) => ({
-        id: n.dataset.widget,
+        id: idOf(n),
         el: n,
-        ...flow[n.dataset.widget],
+        ...flow[idOf(n)],
         link: n === el ? null : linkOfEl(n),
       }));
     drag = {
@@ -983,7 +1014,9 @@ export function createOverlay({
     return parseInt(sec?.style.getPropertyValue(phone ? '--mminrows' : '--minrows'), 10) || 0;
   }
   // custom on the grid shown (the phone's height on the phone: its --mminrows)
-  const customOf = (sec) => (sec && !sec.hidden && minOf(sec, isPhone()) ? sec : null);
+  // (a template's item on the phone: none, its phone rows are its desktop rows halved)
+  const customOf = (sec) =>
+    sec && !sec.hidden && !(tplOpen() && isPhone()) && minOf(sec, isPhone()) ? sec : null;
 
   function startRows(e) {
     const sec = customOf(hoverSec) || customOf(secOf(widgetEl(ui.widget)));
@@ -991,7 +1024,7 @@ export function createOverlay({
     e.preventDefault();
     e.stopPropagation();
     const phone = isPhone();
-    const flow = flowAreas(sec, phone, widgetOf);
+    const flow = flowOf(sec, phone);
     // the rows its content needs: down to its lowest widget, as rows.js placed them
     const content = Math.max(1, ...Object.values(flow).map((a) => a.row + a.rows - 1));
     const rows = Number(sec.style.getPropertyValue('--frows')) || minOf(sec, phone) || content;
@@ -1008,7 +1041,7 @@ export function createOverlay({
       saved: [sec.style.cssText, phone ? '--mminrows' : '--minrows'],
       max: phone ? Math.ceil(MAX_MIN_ROWS / 2) : MAX_MIN_ROWS,
     };
-    setSecRows({ id: sec.dataset.sec, rows, phone });
+    setSecRows({ id: secKey(sec), rows, phone });
     win.addEventListener('pointermove', moveRows, true);
     win.addEventListener('pointerup', endRows, true);
     win.addEventListener('keydown', cancelRows, true);
@@ -1022,7 +1055,7 @@ export function createOverlay({
     s.rows = n;
     s.sec.style.setProperty('--frows', n);
     s.sec.style.setProperty(s.saved[1], n);
-    setSecRows({ id: s.sec.dataset.sec, rows: n, phone: s.phone });
+    setSecRows({ id: secKey(s.sec), rows: n, phone: s.phone });
   }
 
   function stopRows() {
@@ -1038,7 +1071,7 @@ export function createOverlay({
     const { sec, rows, from, phone } = sizing;
     if (rows === from) sec.style.cssText = sizing.saved[0];
     stopRows();
-    if (rows !== from) onrows(sec.dataset.sec, rows, { phone });
+    if (rows !== from) onrows(secKey(sec), rows, { phone });
   }
 
   function cancelRows(e) {
@@ -1056,11 +1089,11 @@ export function createOverlay({
     e.preventDefault();
     e.stopPropagation();
     selectLink(null);
-    const id = el.dataset.widget;
+    const id = idOf(el);
     const sec = secOf(el);
     const phone = isPhone();
     const widgets = widgetsIn(sec)
-      .map((n) => widgetOf(n.dataset.widget))
+      .map((n) => widgetOf(idOf(n)))
       .filter(Boolean);
     const targets = showTargets(el, sec, phone, widgets);
     linking = { el, id, sec, phone, targets, near: null, from: topDot(boxOf(el, win)), to: null };
@@ -1077,12 +1110,12 @@ export function createOverlay({
    * is hovered or dragged.
    */
   function showTargets(el, sec = secOf(el), phone = isPhone(), widgets = null) {
-    const id = el.dataset.widget;
+    const id = idOf(el);
     widgets ??= widgetsIn(sec)
-      .map((n) => widgetOf(n.dataset.widget))
+      .map((n) => widgetOf(idOf(n)))
       .filter(Boolean);
     const targets = widgetsIn(sec)
-      .filter((n) => n !== el && !n.hidden && !makesLoop(widgets, id, n.dataset.widget, phone))
+      .filter((n) => n !== el && !n.hidden && !makesLoop(widgets, id, idOf(n), phone))
       .map((n) => {
         const r = boxOf(n, win);
         const [x, y] = bottomDot(r);
@@ -1093,7 +1126,7 @@ export function createOverlay({
         dot.className = 'target';
         dot.style.left = `${x}px`;
         dot.style.top = `${y}px`;
-        return { id: n.dataset.widget, x, y, dot, frame };
+        return { id: idOf(n), x, y, dot, frame };
       });
     els.targets.replaceChildren(...targets.flatMap((t) => [t.frame, t.dot]));
     return targets;
@@ -1152,7 +1185,7 @@ export function createOverlay({
     if (near) {
       // it stays where it is: the gap is the rows between them now (negative: it overlaps its
       // leader); it is dragged where it should go from there
-      const flow = flowAreas(sec, phone, widgetOf);
+      const flow = flowOf(sec, phone);
       const a = flow[near.id];
       const b = flow[id];
       if (a && b && (was?.to !== near.id || was.gap !== b.row - (a.row + a.rows)))
@@ -1213,34 +1246,24 @@ export function createOverlay({
     if (e.target.id === '__ed-layout') return; // the overlay's own (its shadow root handles it)
     if (!arranging() || e.button !== 0 || e.altKey || editing(e.target)) return;
     selectLink(null);
-    const tw = templateEl(e);
-    if (tw) {
-      // select only: drag / resize write-back is not wired for template widgets (no /sections)
-      e.preventDefault();
-      e.stopPropagation();
-      if (doc.activeElement?.isContentEditable) doc.activeElement.blur();
-      const id = tw.dataset.tw;
-      setAnchor(id);
-      onpick(id);
-      return;
-    }
     const mod = e.ctrlKey || e.metaKey;
     const ids = selectedIds(ui);
-    const top = e.target.closest?.('[data-widget]');
+    // (a template open: its item's own widgets, dragged as a page's: the Grid Engine)
+    const top = widgetAt(e.target);
     const el = selectedUnder(e, mod) || top;
     if (!el) {
       // a section's empty grid: a selection box (Ctrl/Cmd: adds; another section's: refused)
       const sec = secOf(e.target);
       if (sec && live(sec) && widgetsIn(sec).length) {
-        if (mod && ids.length && secIdOf(ids[0]) !== sec.dataset.sec)
+        if (mod && ids.length && secIdOf(ids[0]) !== secKey(sec))
           return void (e.preventDefault(), e.stopPropagation());
         return startBox(e, sec, mod ? ids : []);
       }
       // a section without widgets: it is selected; outside any: nothing selected
-      if (sec && live(sec)) return void onsectionpick(sec.dataset.sec);
+      if (sec && live(sec) && !tplOpen()) return void onsectionpick(sec.dataset.sec);
       return void ((ui.widget || ui.section || ui.selSection || ui.multi.length) && onpick(null));
     }
-    const id = el.dataset.widget;
+    const id = idOf(el);
     if (mod) {
       // Ctrl/Cmd+click: in or out of the selection, only within its section
       e.preventDefault();
@@ -1259,28 +1282,27 @@ export function createOverlay({
     onpick(id);
     start(e, el);
     // inside the selected widget, over another one: a click (no drag) selects that other one
-    if (drag && top && top !== el) drag.click = top.dataset.widget;
+    if (drag && top && top !== el) drag.click = idOf(top);
   }
   // a double click on a widget: its pop-up (a single click only selects it; a text's own edit
   // still starts, bridge.js)
   function ondblclick(e) {
     if (!arranging() || e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     if (editing(e.target)) return;
-    const tw = templateEl(e);
-    const id = tw?.dataset.tw || e.target.closest?.('[data-widget]')?.dataset.widget;
+    const id = idOf(widgetAt(e.target));
     if (id) onopen?.(id);
   }
   const swallow = (e) => {
     if (!arranging() || e.altKey || editing(e.target)) return;
-    if (e.target.closest?.('[data-widget]')) {
+    if (e.target.closest?.(tplOpen() ? '[data-tw]' : '[data-widget]')) {
       e.preventDefault();
       e.stopPropagation();
     }
   };
   function onpointerover(e) {
     if (e.target.id === '__ed-layout') return; // over its circles: the widget stays hovered
-    hover = arranging() ? e.target.closest?.('[data-widget]') || null : null;
-    hotAt(hover?.dataset.widget);
+    hover = arranging() ? widgetAt(e.target) : null;
+    hotAt(idOf(hover));
     hoverSec = arranging() ? secOf(e.target) || null : null;
     if (e.target.id !== '__ed-layout') peekAt(arranging() ? secOf(e.target) : null);
   }
@@ -1288,6 +1310,8 @@ export function createOverlay({
   return {
     /** The preview loaded a document. */
     attach(siteWin) {
+      // a frame asked of the document before (a reload) never comes: the loop starts again
+      raf = 0;
       win = siteWin;
       doc = siteWin.document;
       gridKey = '';
