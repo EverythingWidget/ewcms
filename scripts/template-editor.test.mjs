@@ -14,6 +14,7 @@ import {
   templatePreviewPath,
   sampleSource,
   previewColumns,
+  previewWithColumns,
 } from '../src/site/widgets/list/template-preview.js';
 import {
   keepMarks,
@@ -87,6 +88,15 @@ test('the preview: one List of the first item of its source, else a hand-made sa
   assert.equal(previewColumns(card()), 1);
   assert.equal(previewColumns(card({ preview: { columns: 6 } })), 6);
   assert.equal(previewColumns(card({ preview: { columns: 9 } })), 1);
+  // 1, the default, is left out; an empty preview too
+  assert.deepEqual(previewWithColumns({ from: 'people', columns: 3 }, 4), {
+    from: 'people',
+    columns: 4,
+  });
+  assert.deepEqual(previewWithColumns({ from: 'people', columns: 3 }, 1), { from: 'people' });
+  assert.equal(previewWithColumns({ columns: 3 }, 1), undefined);
+  assert.equal(previewWithColumns(undefined, 1), undefined);
+  assert.deepEqual(previewWithColumns(undefined, 2), { columns: 2 });
   for (const n of [1, 6]) {
     const p = templatePreview(withTemplate(card({ preview: { from: 'people', columns: n } })), 't-ab12');
     const html = renderRoute(p.route, p.content, { editable: true }).body;
@@ -184,7 +194,8 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   assert.match(panel, /<SectionCard/);
   assert.match(panel, /<SectionToolbar addOnly/);
   assert.match(panel, /<WidgetsModal/);
-  // Settings: Name, Whole item clickable, the preview line (not on Widgets)
+  // Settings: Name, Whole item clickable, the preview line (not on Widgets). Columns
+  // is a pill above the preview frame (TemplateCols.svelte), not a Settings field.
   assert.match(panel, /label="Whole item clickable"/);
   assert.match(panel, /The whole item opens the item’s page/);
   assert.match(panel, /Its name in a List’s Template picker/);
@@ -192,9 +203,17 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   assert.doesNotMatch(panel, /Photo first|photoFirst/);
   assert.match(panel, /set\('\/clickable', v\)/);
   assert.match(panel, /set\('\/name', v\)/);
-  // Columns: the preview's (preview.columns), a segmented 1–6, never a List's
-  assert.match(panel, /label="Columns"\s+type="seg"/);
-  assert.match(panel, /edit=\{`\$\{file\}#\/preview\/columns`\}/);
+  assert.doesNotMatch(panel, /label="Columns"\s+type="seg"/);
+  assert.doesNotMatch(panel, /preview\/columns/);
+  const cols = read('src/editor/svelte/TemplateCols.svelte');
+  const app = read('src/editor/svelte/App.svelte');
+  assert.match(app, /<TemplateCols \{live\} \/>/);
+  // reserved row: the frame does not shift when opening or leaving a template
+  assert.match(app, /grid-template-rows: var\(--size-control\) minmax\(0, 1fr\)/);
+  assert.match(cols, /label="Columns"\s+type="seg"/);
+  assert.match(cols, /type="seg"\s+bare/);
+  assert.match(cols, /previewWithColumns/);
+  assert.match(cols, /edit=\{`\$\{file\}#\/preview\/columns`\}/);
   assert.match(panel, /setWidgets = \(next\) => set\(ITEM_WIDGETS, next, true\)/);
   assert.match(panel, /tab === 'settings'/);
   assert.match(panel, /formats/);

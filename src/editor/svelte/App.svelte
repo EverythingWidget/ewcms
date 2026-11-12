@@ -21,6 +21,7 @@
   import Toasts from './Toasts.svelte';
   import UpdateNotice from './UpdateNotice.svelte';
   import WidgetToolbar from './WidgetToolbar.svelte';
+  import TemplateCols from './TemplateCols.svelte';
   import { layerWidget } from '../layout-ops.js';
   import { targetFile } from '../layout-sync.js';
   import { ui, previewClicks, pickElement, selectLink, deselect, closePopup } from './ui.svelte.js';
@@ -167,6 +168,9 @@
   <p class="ed-boot">Could not load content: {ui.loadError}</p>
 {:else}
   <main class={['ed-stage', phone && 'is-phone']}>
+    <!-- reserved row: same height whether the template columns pill is shown, so the
+         preview frame does not shift when opening or leaving a template -->
+    <div class="ed-cols-slot"><TemplateCols {live} /></div>
     <iframe class="ed-frame" title="Site preview" {@attach bridge.attach}></iframe>
     <WidgetToolbar {live} {bridge} />
   </main>
@@ -284,7 +288,18 @@
     inset: 0 calc(var(--panel-w) + 24px) 0 0;
     padding: var(--space-3) 0 var(--space-3) var(--space-3);
     display: grid;
-    place-items: center;
+    grid-template-rows: var(--size-control) minmax(0, 1fr);
+    place-items: stretch;
+    gap: var(--space-2);
+  }
+
+  // reserved row above the frame: the template's Columns pill sits here, centred
+  .ed-cols-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    height: var(--size-control);
   }
 
   // the preview iframe
@@ -292,6 +307,7 @@
     display: block;
     width: 100%;
     height: 100%;
+    min-height: 0;
     border: 0;
     border-radius: 0; // square: the page's own edges (the phone frame keeps its round corners)
     box-shadow:
@@ -306,6 +322,7 @@
   .ed-stage.is-phone .ed-frame {
     width: 392px;
     height: min(844px, 100%);
+    place-self: center;
     border-radius: var(--radius-3xl);
   }
 

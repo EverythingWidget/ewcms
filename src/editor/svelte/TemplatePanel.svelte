@@ -13,8 +13,9 @@
                 arrangement, columns and gap). It is placed and sized on the preview grid: the
                 Grid Engine, the overlay's drag, resize and links (../overlay.js).
     Settings    its Name (as in a List’s Template picker), Whole item clickable (the whole
-                item opens the item’s page), Columns (the preview’s: the item as wide as in
-                a List of 1–6 columns; preview.columns, never a List’s), and the preview line.
+                item opens the item’s page), and the preview line. Columns (the preview’s:
+                the item as wide as in a List of 1–6 columns; preview.columns, never a
+                List’s) is a pill above the preview frame (TemplateCols.svelte).
   The file is one section (src/site/widgets/list/item-grid.js): its widgets at
   /sections/0/widgets, as a page section’s. Templates are site-wide (no language): every List
   using one shows the edit on Save.
@@ -32,7 +33,7 @@
   import { sourceIds as sourceIdsOf, templateFile } from '../../site/files.js';
   import { LINE_STYLES } from '../../site/text.js';
   import { schemaOf } from '../../site/schemas.js';
-  import { previewColumns, sampleSource } from '../../site/widgets/list/template-preview.js';
+  import { sampleSource } from '../../site/widgets/list/template-preview.js';
   import { ITEM_WIDGETS, itemSection } from '../../site/widgets/list/item-grid.js';
   import { PRESETS } from '../../site/widgets/list/presets.js';
   import { innerChoice, innerTemplates } from '../../site/widgets/list/nested.js';
@@ -134,14 +135,6 @@
             : [t, tp.name || t],
       ),
   ]);
-  const COLUMNS = ['1', '2', '3', '4', '5', '6'].map((n) => [n, n]);
-  // the preview's columns (preview.columns: 1, the default, left out; an empty preview too)
-  const setColumns = (v) => {
-    const n = Number(v);
-    const { columns: _c, ...rest } = tpl?.preview || {}; // eslint-disable-line no-unused-vars
-    const next = n > 1 ? { ...rest, columns: n } : rest;
-    set('/preview', Object.keys(next).length ? next : undefined, true);
-  };
   // a widget by its pointer: "/sections/0/widgets/2"
   const wAt = (b) =>
     b
@@ -568,16 +561,6 @@
         : 'The whole item opens the item’s page.'}
       changed={live.changed(file, '/clickable')}
       onvalue={(v) => set('/clickable', v)}
-    />
-    <Field
-      edit={`${file}#/preview/columns`}
-      label="Columns"
-      type="seg"
-      value={String(previewColumns(tpl))}
-      options={COLUMNS}
-      help="Preview only: the item as wide as in a List of this many columns"
-      changed={live.changed(file, '/preview/columns')}
-      onvalue={setColumns}
     />
     <p class="hint small tp__sample">
       {from

@@ -25,6 +25,17 @@ export const previewColumns = (tpl) => {
   return Number.isInteger(n) && n >= 1 && n <= 6 ? n : 1;
 };
 
+/**
+ * The template's "preview" after setting columns to `n` (1, the default, left out;
+ * nothing else in preview: the key itself left out).
+ */
+export function previewWithColumns(preview, n) {
+  const cols = Number(n);
+  const { columns: _c, ...rest } = preview || {}; // eslint-disable-line no-unused-vars
+  const next = Number.isInteger(cols) && cols > 1 ? { ...rest, columns: cols } : rest;
+  return Object.keys(next).length ? next : undefined;
+}
+
 /** The sample item's source: the template's preview.from, when it has items; '' for a hand-made one. */
 export function sampleSource(content, tpl) {
   const from = typeof tpl?.preview?.from === 'string' ? tpl.preview.from : '';
