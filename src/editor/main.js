@@ -2,7 +2,7 @@
  * Visual editor (any page with ?edit: /?edit, /about/?edit&tab=settings): the real site in an iframe + a side panel.
  *
  * The side panel (ui.panel; the names are explained in svelte/ui.svelte.js):
- *   Nav      - the pages list, or a page with its tabs: Sections (arrange: pick and move
+ *   Pages    - the pages list, or a page with its tabs: Sections (arrange: pick and move
  *              widgets, double click a text to type it; animations paused), Motion (animate:
  *              click a widget or an animated element to edit its animation), SEO
  *   Settings - site-wide values: site name and meta, the animations, the curtain
@@ -320,7 +320,7 @@ ui.openTemplate = (id) => {
     return void toast(`No template ${id} (content/templates/${id}.json)`, { kind: 'error' });
   closeWidgetPopup();
   ui.pagesWin = { ...ui.pagesWin, open: false };
-  if (ui.panel !== 'nav') setPanel('nav');
+  if (ui.panel !== 'pages') setPanel('pages');
   pickTarget(entry);
 };
 
@@ -488,9 +488,9 @@ function applyClicks(before) {
   }
 }
 
-/** Show a panel: 'nav' | 'settings' | 'preview' (ui.svelte.js); Pages closes the type specimen. */
+/** Show a panel: 'pages' | 'settings' | 'preview' (ui.svelte.js); Pages closes the type specimen. */
 function setPanel(panel) {
-  if (panel === 'nav') showSpecimen(false);
+  if (panel === 'pages') showSpecimen(false);
   const before = previewClicks();
   ui.panel = panel;
   if (panel !== 'preview') ui.panelBeforePreview = panel;

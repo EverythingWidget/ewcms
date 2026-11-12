@@ -280,7 +280,7 @@
   function go(u) {
     close();
     if (u.file === SITE) return actions.setPanel('settings');
-    actions.setPanel('nav');
+    actions.setPanel('pages');
     const parts = parse(u.ptr);
     if (sourceIdOf(u.file)) {
       ui.explorer = {

@@ -202,7 +202,7 @@ test('pick, hover and peek: the preview and panel sides kept apart', async () =>
 test('selectAnim (a panel choice) and pickElement anim (a preview click) set the same state', async () => {
   const a = await loadUi();
   const b = await loadUi();
-  a.ui.panel = b.ui.panel = 'nav';
+  a.ui.panel = b.ui.panel = 'pages';
   a.ui.pageTab = b.ui.pageTab = 'element-motion';
   const el = { dataset: { anim: 'a1' }, closest: () => ({ dataset: { widget: 'w-1' } }) };
   a.selectAnim(el);

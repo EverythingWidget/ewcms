@@ -1,7 +1,7 @@
 <!--
   The editor shell: the site preview on the left, the side panel on the right with the
   toolbar (Sources, Media | Preview, phone, undo, redo; the top tabs Pages | Site Settings), the current
-  tab's panel (Nav: the pages list, or the page open with its tabs Sections | Motion | SEO,
+  tab's panel (Pages: the pages list, or the page open with its tabs Sections | Motion | SEO,
   ContentPanel.svelte) (Preview's while it is on) and the Save / Publish footer. Also the
   publish dialog, the toasts and the keyboard shortcuts.
   main.js holds the logic: it changes `ui` (ui.svelte.js) and passes `actions`.
@@ -38,15 +38,15 @@
   // ui.explorer.open is set (SourcesModal.svelte), on the list of files.
   function openSources() {
     ui.explorer = { open: true, file: '', index: 0, property: '' };
-    if (!nav) actions.setPanel('nav');
+    if (!pages) actions.setPanel('pages');
   }
 
   // [panel, label, icon]: a tab with an icon shows only the icon (ui.panel, ui.svelte.js)
   const TABS = [
-    ['nav', 'Pages'],
+    ['pages', 'Pages'],
     ['settings', 'Site Settings'],
   ];
-  const nav = $derived(ui.panel === 'nav');
+  const pages = $derived(ui.panel === 'pages');
   const phone = $derived(ui.viewport === 'phone');
   // Preview: a toggle; off goes back to the tab it came from
   const previewing = $derived(ui.panel === 'preview');
@@ -241,7 +241,7 @@
       {/if}
     </header>
 
-    {#if nav}
+    {#if pages}
       <ContentPanel {live} {bridge} {actions} />
     {:else if ui.panel === 'settings'}
       <SettingsPanel {live} {bridge} {actions} />

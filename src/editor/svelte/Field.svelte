@@ -8,7 +8,7 @@
   (inside), file name and sizes, Media and ✕ (clears it; remove: the parent's, a list item's);
   grab: a pointerdown on the photo (a list's drag handle, PhotoList.svelte); the thumbnail or Change opens the Media window on it (MediaModal.svelte), which
   stores the photo picked there in this field: one undo step. No text input.
-  Used by the Nav panel, the Sources modal and Settings.
+  Used by the Pages panel, the Sources modal and Settings.
   Bindings (a widget's setting: parts, src/site/layout/parts.js):
     binds     the item's properties this one can show, [{ value, label, hint }] (null: it can't
               bind). A picker at the end of the label row: Custom (its own text: what it showed

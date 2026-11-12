@@ -59,7 +59,7 @@
   };
   function list(level = backTo()) {
     ui.pagesWin = { open: true, folder: level };
-    if (ui.panel !== 'nav') actions.setPanel('nav');
+    if (ui.panel !== 'pages') actions.setPanel('pages');
   }
 
   // ---- a [param] page: the page of it shown, and why it builds none
@@ -73,7 +73,7 @@
   /** The warning: the main widget open on its Content tab, its wrong param row focused. */
   function toMain() {
     const main = live.get(pageFile(id), '/main');
-    if (ui.panel !== 'nav') actions.setPanel('nav');
+    if (ui.panel !== 'pages') actions.setPanel('pages');
     ui.pagesWin = { ...ui.pagesWin, open: false };
     closeSectionPopup();
     const has = problem?.kind !== 'none';

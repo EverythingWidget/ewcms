@@ -1855,7 +1855,7 @@ in the URL reopens it.
 
 **Refresh** keeps your place. The URL holds the page (its path), the tab, Menu/Footer and the open Source
 Explorer item, so a shared link opens the same view:
-`/photography/people/?edit&source=people&item=noor-vermeer` (`tab`: nav (the **Pages** tab), settings, preview;
+`/photography/people/?edit&source=people&item=noor-vermeer` (`tab`: pages (the **Pages** tab), settings, preview;
 the page's own tab, Sections | Element motion | Page motion | SEO, is kept per page in sessionStorage; `view`: header,
 footer; `animation`: Site Settings > Motion's Animations library, open on that animation). Open/closed sections, the selected field or Motion
 element and the scroll positions are kept per browser tab in sessionStorage. See

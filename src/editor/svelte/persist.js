@@ -2,15 +2,15 @@
  * Keeps the editor where it was across a refresh, in two places:
  *
  *   The URL (shareable): /photography/people/?edit&tab=settings (src/editor/lib/editor-url.js)
- *     tab     ui.panel: nav | settings | preview (the page's own tab, ui.pageTab, is kept per
- *             page in sessionStorage; an unknown tab: nav)
+ *     tab     ui.panel: pages | settings | preview (the page's own tab, ui.pageTab, is kept per
+ *             page in sessionStorage; an unknown tab: pages)
  *     (path)  the URL's own path is the page in the preview (main.js keeps it up to date)
  *     view    header | footer, when a site part (Header, Footer) is edited instead of a page
  *     source  + item (+ property): the Source Explorer, open on that file and item, with that
  *             property highlighted (&source=people&item=noor-vermeer&property=summary; item is the
  *             slug, or the number without one)
  *     animation    Site Settings > Motion's Animations library, open on that animation (&animation=fade-up)
- *     pages   the pages list (Nav), open on that folder (&pages=/people/; / is the root)
+ *     pages   the pages list (the Pages tab), open on that folder (&pages=/people/; / is the root)
  *     media   + pick: the Media window, on that photo (&media=photos/x-1600.webp; / for none),
  *             picking for that field (&pick=sources/people.json#/0/photos/0/src)
  *   sessionStorage (this browser tab only, survives a refresh): the finer things. Open/closed
@@ -34,7 +34,7 @@ import { sourceIdOf } from '../../site/files.js';
 
 const KEY = 'editor:ui';
 // the URL's tab is ui.panel (ui.svelte.js)
-const PANELS = ['nav', 'settings', 'preview'];
+const PANELS = ['pages', 'settings', 'preview'];
 const PAGE_TABS = ['sections', 'element-motion', 'page-motion', 'seo'];
 const VIEWS = { header: 'Header', footer: 'Footer' };
 
@@ -53,8 +53,8 @@ function readSession() {
 function readState() {
   const state = readSession();
   const q = new URLSearchParams(location.search);
-  // nav: the page's tab stays the session's (ui.pageTab)
-  if (q.has('tab')) state.panel = PANELS.includes(q.get('tab')) ? q.get('tab') : 'nav';
+  // the page's tab stays the session's (ui.pageTab)
+  if (q.has('tab')) state.panel = PANELS.includes(q.get('tab')) ? q.get('tab') : 'pages';
   if (q.has('view'))
     state.part = VIEWS[q.get('view')] && {
       kind: 'part',
@@ -62,7 +62,7 @@ function readState() {
       title: VIEWS[q.get('view')],
     };
   if (q.has('source')) {
-    if (!q.has('tab')) state.panel = 'nav'; // the explorer is in the Pages tab
+    if (!q.has('tab')) state.panel = 'pages'; // the explorer is in the Pages tab
     state.explorer = {
       open: true,
       file: `sources/${q.get('source')}.json`,
@@ -79,7 +79,7 @@ function readState() {
       pick: q.get('pick') || '',
     };
   if (q.has('pages')) {
-    if (!q.has('tab')) state.panel = 'nav'; // the pages list is in the Pages tab
+    if (!q.has('tab')) state.panel = 'pages'; // the pages list is in the Pages tab
     state.pagesWin = { open: true, folder: q.get('pages').replace(/^\/+|\/+$/g, '') };
   }
   if (q.has('animation')) {
@@ -95,7 +95,7 @@ export function restoreUi(preview, content) {
   live = content;
   saved = readState();
   if (PANELS.includes(saved.panel)) ui.panel = saved.panel;
-  if (['nav', 'settings'].includes(saved.panelBeforePreview))
+  if (['pages', 'settings'].includes(saved.panelBeforePreview))
     ui.panelBeforePreview = saved.panelBeforePreview;
   if (PAGE_TABS.includes(saved.pageTab)) ui.pageTab = saved.pageTab;
   if (saved.part) ui.target = saved.part; // Header or Footer (pages: the URL's path)
@@ -138,7 +138,7 @@ export async function restorePlace() {
   saved = null; // only after the refresh, not on later page changes
 
   // The explorer lives in the Pages tab; SourcesModal opens itself when ui.explorer.open is set.
-  if (explorer?.open && ui.panel === 'nav') {
+  if (explorer?.open && ui.panel === 'pages') {
     const list = live.current(explorer.file)?.items;
     const at = Array.isArray(list) ? list.findIndex((it, i) => itemId(it, i) === item) : -1;
     ui.explorer = { ...explorer, index: at >= 0 ? at : explorer.index };
@@ -157,7 +157,7 @@ export async function restorePlace() {
     : edit && `[data-edit="${CSS.escape(edit)}"]`;
   const el = sel && bridge.doc.querySelector(sel);
   if (el && clicks !== 'visitor') pickElement(el, motion ? 'anim' : 'text', { quiet: true });
-  // quiet: the Nav panel doesn't scroll to the field, the panel scroll is put back below (visitor
+  // quiet: the Pages panel doesn't scroll to the field, the panel scroll is put back below (visitor
   // clicks pick nothing in the preview, the field is still the one open)
   if (el && !motion) selectText(edit, { quiet: true });
   await tick();
@@ -185,7 +185,7 @@ export function writeUrl() {
   set('animation', ui.panel === 'settings' && ui.library.name);
   set(
     'pages',
-    ui.panel === 'nav' && ui.pagesWin.open && `/${ui.pagesWin.folder}/`.replace('//', '/'),
+    ui.panel === 'pages' && ui.pagesWin.open && `/${ui.pagesWin.folder}/`.replace('//', '/'),
   );
   set('media', ui.media.open && (ui.media.key || '/'));
   set('pick', ui.media.open && ui.media.pick);

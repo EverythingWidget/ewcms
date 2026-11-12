@@ -3,7 +3,7 @@ import { popupStays } from '../multi-select.js';
  * Where the editor is, in three names (no others):
  *
  *   ui.panel      what the side panel shows, its top tab:
- *                   'nav'       the Pages tab: the pages list, or the page open with its page tabs
+ *                   'pages'     the Pages tab: the pages list, or the page open with its page tabs
  *                   'settings'  what is the same on every page
  *                   'preview'   the toolbar's Preview toggle: the unsaved and unpublished changes
  *   ui.pageTab    the open page's tab, under Pages: 'sections' | 'element-motion' (Element
@@ -31,9 +31,9 @@ export const ui = $state({
   /** Why the content could not be loaded; App shows it instead of the editor. */
   loadError: '',
   /** What the side panel shows: see "Where the editor is" above. */
-  panel: 'nav',
-  /** The panel Preview (and Ctrl+E) goes back to: 'nav' | 'settings'. */
-  panelBeforePreview: 'nav',
+  panel: 'pages',
+  /** The panel Preview (and Ctrl+E) goes back to: 'pages' | 'settings'. */
+  panelBeforePreview: 'pages',
   /** The open page's tab, or null when no page is open (the pages list, Header, Footer). */
   pageTab: null,
   /** 'desktop' | 'phone' preview size */
@@ -152,7 +152,7 @@ export const ui = $state({
 
 /** What a click in the preview does now: 'arrange' | 'animate' | 'visitor' (see above). */
 export function previewClicks() {
-  if (ui.panel !== 'nav') return 'visitor';
+  if (ui.panel !== 'pages') return 'visitor';
   return ui.pageTab === 'element-motion' ? 'animate' : 'arrange';
 }
 

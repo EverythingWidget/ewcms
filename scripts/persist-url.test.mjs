@@ -61,7 +61,7 @@ function browser(href) {
 }
 
 test('&property= in the editor URL is written and read back', async () => {
-  const urlNow = browser('/x/?edit&tab=nav&source=people&item=sam&property=title');
+  const urlNow = browser('/x/?edit&tab=pages&source=people&item=sam&property=title');
   const { restoreUi, restorePlace, writeUrl } = await import('../src/editor/svelte/persist.js');
   const { ui } = await import('../src/editor/svelte/ui.svelte.js');
 
@@ -80,4 +80,15 @@ test('&property= in the editor URL is written and read back', async () => {
   ui.explorer = { ...ui.explorer, property: '' };
   writeUrl();
   assert.equal(urlNow().searchParams.has('property'), false);
+});
+
+test('an old ?tab=nav falls back to the Pages tab', async () => {
+  const urlNow = browser('/x/?edit&tab=nav');
+  const { restoreUi, writeUrl } = await import('../src/editor/svelte/persist.js');
+  const { ui } = await import('../src/editor/svelte/ui.svelte.js');
+
+  restoreUi(bridge, live);
+  assert.equal(ui.panel, 'pages');
+  writeUrl();
+  assert.equal(urlNow().searchParams.get('tab'), 'pages');
 });

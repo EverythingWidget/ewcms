@@ -1,5 +1,5 @@
 <!--
-  Pages tab (ui.panel 'nav'): the pages list (PagesList.svelte, while ui.pagesWin.open), or the page in the
+  Pages tab (ui.panel 'pages'): the pages list (PagesList.svelte, while ui.pagesWin.open), or the page in the
   preview or a site part (the Header: HeaderPart.svelte; the Footer; an item template:
   TemplatePanel.svelte) under PageHead.svelte
   (Back to pages: back to the pages list). The two swap with a slide (lib/slide.js):

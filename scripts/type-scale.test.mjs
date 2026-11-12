@@ -190,7 +190,7 @@ test('Site Settings › Type: a row per style with its tag, Preview / Close prev
   assert.match(panel, /bridge\.doc\?\.documentElement/);
   const main = read('src/editor/main.js');
   // the Pages tab closes the specimen, back to the page it replaced
-  assert.match(main, /if \(panel === 'nav'\) showSpecimen\(false\);/);
+  assert.match(main, /if \(panel === 'pages'\) showSpecimen\(false\);/);
   assert.match(
     main,
     /ui\.specimenFrom = bridge\.path\(\) \|\| ui\.path;\s*bridge\.navigate\(TYPE_SPECIMEN\)/,

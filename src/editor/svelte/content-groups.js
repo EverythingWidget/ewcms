@@ -226,7 +226,7 @@ function fieldsOf(bridge, file) {
 }
 
 /**
- * The Nav tab's groups for `target`: the page's (or footer's) widgets, in section and
+ * The Pages tab's groups for `target`: the page's (or footer's) widgets, in section and
  * widget order (`widget`: { at, j }, where it is), each with its fields.
  * [{ id, title, name?, widget?, file?, icon?, toggle?, config?, fields: [{ edit, file, ptr, type, label }] }]
  */
