@@ -8,7 +8,10 @@
  *   a source, its schema or a page     only when the site's routes changed (routesKey): an item
  *                                      or a page added or removed, moved, a slug, or the name or
  *                                      cover of an item the menu lists
- *   the menu (settings/nav.json), the site's settings, the photos' and the UI strings
+ *   the site's settings                only when more than its type scale changed (siteKey:
+ *                                      "type" is CSS variables the Settings panel puts on the
+ *                                      preview's root as it is typed)
+ *   the menu (settings/nav.json), the photos' and the UI strings
  *   any other file the rule doesn't know (a reload is always right)
  *
  * Never: item templates, the footer, animations, redirects (none of them is a route).
@@ -67,13 +70,27 @@ export function routesKey(files) {
 }
 
 /**
- * True when an edit of `files` needs the preview loaded again. `routes`: whether the site's
- * routes changed with it (routesKey before and after; asked only when routesFile(file) is one).
+ * site.json as one string, without what the preview takes live ("type": the Settings panel
+ * sets its CSS variables on the preview's root). Equal before and after: only the type changed.
  */
-export function needsReload(files, { routes = false } = {}) {
+export function siteKey(files) {
+  const site = files?.[SITE];
+  if (!isObject(site)) return JSON.stringify(site ?? null);
+  const rest = { ...site };
+  delete rest.type;
+  return JSON.stringify(rest);
+}
+
+/**
+ * True when an edit of `files` needs the preview loaded again. `routes`: whether the site's
+ * routes changed with it (routesKey before and after; asked only when routesFile(file) is one);
+ * `site`: whether site.json changed more than its type (siteKey; left out: it did).
+ */
+export function needsReload(files, { routes = false, site = true } = {}) {
   return files.some((f) => {
     if (templateIdOf(f) || IN_PLACE.includes(f)) return false;
     if (routesFile(f)) return routes;
+    if (f === SITE) return site;
     return true; // RELOADS, and anything else
   });
 }

@@ -240,7 +240,7 @@
     {#if nav}
       <ContentPanel {live} {bridge} {actions} />
     {:else if ui.panel === 'settings'}
-      <SettingsPanel {live} {bridge} />
+      <SettingsPanel {live} {bridge} {actions} />
     {:else}
       <PreviewPanel {live} onpublish={publish} />
     {/if}

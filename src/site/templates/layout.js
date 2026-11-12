@@ -1,7 +1,7 @@
 import { html, esc, editable } from '../helpers.js';
 import { seoOf } from '../seo.js';
 import { header, phoneMenu } from './header.js';
-import { typographyVars } from '../layout/type.js';
+import { typeVars } from '../layout/type.js';
 import { layoutVars } from '../layout/contain.js';
 import { footer } from './footer.js';
 import { t } from '../strings.js';
@@ -11,9 +11,9 @@ export function head(ctx, route, accent) {
   const { site } = ctx;
   const seo = seoOf(ctx, route);
   const photo = seo.photo;
-  // site.json typography: the text styles a fit line uses (layout/type.js), where they differ
-  // site.json typography and layout (a contained section's columns: layout/contain.js)
-  const type = [typographyVars(site), layoutVars(site)].filter(Boolean).join('; ');
+  // site.json type (the text styles' sizes: layout/type.js) and layout (a contained section's
+  // columns: layout/contain.js), only what it sets
+  const type = [typeVars(site), layoutVars(site)].filter(Boolean).join('; ');
   const ld =
     route.page === 'home'
       ? html`<script type="application/ld+json">

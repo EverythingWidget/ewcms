@@ -66,6 +66,7 @@ import {
   FOLDERS,
 } from '../src/site/files.js';
 import { templateOfPath, templatePreview } from '../src/site/widgets/list/template-preview.js';
+import { isTypeSpecimen, typeSpecimen } from '../src/site/layout/type-specimen.js';
 import { checkItems, photoChecker, schemaOf } from '../src/site/schemas.js';
 import { NAMED_VIEWS, getRoutes, pathOfId, titleCase } from '../src/site/routes.js';
 import { MAX_UPLOAD, deletePhoto, r2Config, uploadPhoto, writePhotos } from './r2.mjs';
@@ -1111,6 +1112,16 @@ export function renderOp(render, root, drafts, { path: at, file, data, ids, sess
       return { status: 400, body: { error: `${at} is not a page of ${file}` } };
     const page = preview.content.pages[preview.route.id]; // (no page id: docOf can't find it)
     const html = render.renderRouteSections(preview.route, preview.content, ids, file, page);
+    return { status: 200, body: { ok: true, html } };
+  }
+  // Site Settings › Type's Preview (/__type/): made from the drafts, no file of its own
+  // (this module's, like the template preview's: not the Vite-loaded render's)
+  if (isTypeSpecimen(at)) {
+    const { route, content } = typeSpecimen(loadContent(root, draftsFor(drafts, session)));
+    if (file !== pageFile(route.id))
+      return { status: 400, body: { error: `${at} is not a page of ${file}` } };
+    const page = content.pages[route.id];
+    const html = render.renderRouteSections(route, content, ids, file, page);
     return { status: 200, body: { ok: true, html } };
   }
   const problems = checkContent(file, data);

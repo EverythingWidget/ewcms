@@ -528,11 +528,24 @@ every section is a grid of **widgets** (`src/site/layout/`):
     Aspect), its height. Same line breaks and proportions; shrink only. A Fit width line still
     fills the width.
 
-  The styles are set once in `site.json` `typography` (Site Settings ›
-  Typography), each in cells of the 120-column grid:
-  `{ "paragraph": { "size": 1.4, "line": 1.75, "tracking": 0, "min": 14 } }`: font size (cells),
-  line height (× the size), letter spacing (em) and a minimum font size (px). Defaults: title
-  19, heading 3, subheading 2, statement 5, paragraph 1.4, label 1 (also a button), small 1.05.
+  A fit line starts from its style's size in cells of the 120-column grid (`--ts-<style>`,
+  `_tokens.scss`: title 19, heading 3, subheading 2, statement 5, paragraph 1.4, label 1,
+  small 1.05); its own factor scales that to the width, so it is only a starting point.
+
+  **Type scale** (`site.json` `type`, Site Settings › **Type**; `src/site/layout/type.js`): each
+  style's usual font size grows with the window between `min` and `max` (px; equal: fixed),
+  with a line height `line` (× the size): `{ "heading": { "min": 38, "max": 104, "line": 0.92 } }`.
+  Each left out is the theme's (`--type-<style>-min`, `-max`, `-lh` in `_tokens.scss`, used by
+  `_text.scss`); what `site.json` sets goes on the page's `:root`, so it changes the preview
+  and the built site, never the editor. Defaults: title 72–250 / 0.82, heading 38–104 / 0.92,
+  subheading 22–36 / 1.15, statement 30–72 / 1.06, paragraph 16 / 1.75, label 11 / 1.55,
+  small 12 / 1.5. The card lists the styles with their tags (Title · H1 … Small · P), one row of
+  Min, Max and Line each (empty: the theme's, as the placeholder), and the preview follows as
+  you type (no reload). **Preview** shows the type specimen (the dev server's `/__type/`,
+  `src/site/layout/type-specimen.js`, never built): one full-width section of an auto-height
+  Text widget per style, each following the last; the button reads **Close preview** and goes
+  back to the page you were on, as does the Pages tab. The old cell-based `typography` is
+  refused (`"typography" is gone`).
   In the editor: the toolbar's **Fit width** icon (edit mode, after Style: the caret's line)
   and the **Scale to fit** switch in the widget's pop-up (Layout tab, after Placement; also a
   toolbar shortcut after Auto height). A type opts in through its definition: `fitWidth: true`,
@@ -567,7 +580,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   sections (above and below): empty rows are the space.
 - **Validation:** Save and the build check the layout (ids, enums, whole numbers, a widget
   ending by column 120 (60 on the phone), links within their section to a widget that is
-  there and without loops, `scale` on Text widgets only (a widget's `fit` is refused: a line's now), `typography` styles, no id twice on a page,
+  there and without loops, `scale` on Text widgets only (a widget's `fit` is refused: a line's now), `type` styles (min not over max), no id twice on a page,
   section names unique on their page and valid anchors (above), no section `aspect` /
   `spacing` / `mobile` / `rows` / `align`, which are gone) and each widget against its type (strings, lists,
   config values). An unknown widget type isn't an error: it logs a build warning and is skipped.
@@ -593,7 +606,7 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
 | `album`    | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped                                                              |
 
 - **Text widget** (`src/site/text.js`): `body` is a list of lines `{ style, list?, text: [runs] }`; a
-  style (title, heading, subheading, statement, paragraph, label, small: the site's typography)
+  style (title, heading, subheading, statement, paragraph, label, small: the site's type scale)
   is a whole line's. Runs: `{ t, marks?: ["b","i"], link? }` text, `{ property, format? }` an
   item's property (from the widget's source, filled at build time; a source's name that isn't a
   property is how many items it has). Rendered to escaped HTML; the page's title is its first Text widget's title line.

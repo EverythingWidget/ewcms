@@ -5,14 +5,17 @@
   (settings/site.json), its search and share defaults (SEO: titles, description, share photo,
   address, robots, language; a page's own are in Nav > SEO), the Page entrance section (the site's curtain
   and the page fade, settings/animations.json), where uploaded photos are served from (site.json mediaUrl)
-  and the text styles scaled text uses (Typography: site.json typography, in cells,
-  src/site/layout/type.js; the preview follows them as they are typed).
+  and the text styles' sizes (Type: site.json type, px, src/site/layout/type.js; the preview
+  follows them as they are typed, and its Preview shows every style: the type specimen,
+  site/layout/type-specimen.js, until Close preview or the Pages tab).
   Per-page things stay in Nav, on the page (sections; Motion: its animations, scroll
   backdrop and curtain; SEO); the header's menu and labels are the Header site part in Content
   (HeaderPart.svelte). redirects.json is in Redirects (RedirectSettings.svelte).
 -->
 <script>
+  import { untrack } from 'svelte';
   import Field from './Field.svelte';
+  import Button from './Button.svelte';
   import RedirectSettings from './RedirectSettings.svelte';
   import Collapsible from './Collapsible.svelte';
   import Select from './Select.svelte';
@@ -23,8 +26,11 @@
   import { SEO_SETTINGS, SITE_SETTINGS } from './content-groups.js';
   import { TARGETS } from '../../site/widgets/form/index.js';
   import { SITE } from '../../site/files.js';
-  import { COLS, MCOLS } from '../../site/layout/grid.js';
-  import { TEXT_STYLES, typographyOf } from '../../site/layout/type.js';
+  import { COLS } from '../../site/layout/grid.js';
+  import { TYPE_KEYS, TYPE_SCALE, TYPE_VARS, typeVarList } from '../../site/layout/type.js';
+  import { isTypeSpecimen } from '../../site/layout/type-specimen.js';
+  import { LINE_STYLES } from '../../site/text.js';
+  import { isObject } from '../../site/is.js';
   import {
     CONTAINED,
     CONTAINED_MIN,
@@ -32,8 +38,9 @@
     containedWidth,
   } from '../../site/layout/contain.js';
 
-  // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js)
-  let { live, bridge } = $props();
+  // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
+  // actions: showSpecimen (main.js)
+  let { live, bridge, actions } = $props();
 
   const uid = $props.id();
 
@@ -47,29 +54,54 @@
     live.store.set(SITE, `/${key}`, value, { key: `text:${SITE}#/${key}`, source: 'panel' });
   }
 
+  // Type: [key, label] of a style's fields (site.json type, by style and key)
   const TYPE_FIELDS = [
-    ['size', 'Size (cells)'],
-    ['min', 'Minimum (px)'],
-    ['line', 'Line height (× size)'],
-    ['tracking', 'Tracking (em)'],
+    ['min', 'Min (px)'],
+    ['max', 'Max (px)'],
+    ['line', 'Line'],
   ];
-  const typography = $derived.by(() => {
+  const typeVars = $derived.by(() => {
     live.version;
-    return typographyOf(live.get(SITE, '') || {});
+    return typeVarList(live.get(SITE, '') || {});
   });
-  // the preview's scaled text follows the styles as they are typed (the page's head has them
-  // after Save)
+  // the theme's sizes (the placeholders): the preview's own, read where site.json sets none
+  let themeType = $state(structuredClone(TYPE_SCALE));
+  // the preview's text follows the type as it is typed (the page's head has it after Save)
   $effect(() => {
     ui.previewVersion;
     const root = bridge.doc?.documentElement;
     if (!root) return;
-    for (const [k, t] of Object.entries(typography)) {
-      root.style.setProperty(`--ts-${k}`, t.size);
-      root.style.setProperty(`--ts-${k}-lh`, t.line);
-      root.style.setProperty(`--ts-${k}-tr`, `${t.tracking}em`);
-      root.style.setProperty(`--ts-${k}-min`, `${t.min}px`);
+    const set = new Map(typeVars);
+    for (const name of TYPE_VARS) {
+      if (set.has(name)) root.style.setProperty(name, set.get(name));
+      else root.style.removeProperty(name);
     }
+    const css = root.ownerDocument.defaultView.getComputedStyle(root);
+    const next = untrack(() => structuredClone($state.snapshot(themeType)));
+    for (const k of Object.keys(TYPE_SCALE))
+      for (const [key, suffix] of TYPE_KEYS) {
+        const name = `--type-${k}-${suffix}`;
+        const v = parseFloat(css.getPropertyValue(name));
+        if (!set.has(name) && Number.isFinite(v)) next[k][key] = v;
+      }
+    themeType = next;
   });
+  const specimen = $derived(isTypeSpecimen(ui.path));
+
+  /** A style's setting typed (undefined: cleared, the theme's); empty objects left out. */
+  function setType(k, key, value) {
+    if (value !== undefined && !(typeof value === 'number' && value > 0)) return;
+    const own = live.get(SITE, '/type');
+    const type = isObject(own) ? structuredClone($state.snapshot(own)) : {};
+    const style = { ...(isObject(type[k]) ? type[k] : {}), [key]: value };
+    if (value === undefined) delete style[key];
+    if (Object.keys(style).length) type[k] = style;
+    else delete type[k];
+    live.store.set(SITE, '/type', Object.keys(type).length ? type : undefined, {
+      key: `text:${SITE}#/type/${k}/${key}`,
+      source: 'panel',
+    });
+  }
   // Layout: a contained section's columns (layout/contain.js), its width at common windows
   const contained = $derived.by(() => {
     live.version;
@@ -84,11 +116,6 @@
   function setContained(value) {
     if (!Number.isInteger(value) || value < CONTAINED_MIN || value > COLS) return;
     set('layout/containedCols', value);
-  }
-
-  function setStyle(k, key, value) {
-    if (typeof value !== 'number' || (key !== 'tracking' && value <= 0)) return;
-    set(`typography/${k}/${key}`, value);
   }
 </script>
 
@@ -200,24 +227,33 @@
     </ul>
   </Collapsible>
 
-  <Collapsible key="settings:type" title="Typography">
+  <Collapsible key="settings:type" title="Type">
     <p class="hint">
-      The text styles of a Fit width line (a text widget's toolbar › Fit width), in cells of the
-      {COLS}-column grid (~11px at 1440px wide; on phones half a {MCOLS}-column cell), so the text
-      grows and shrinks with the page. Other lines keep their normal size.
+      The usual size of each text style, in pixels: it grows with the window between Min and Max.
+      When they are the same, the size is fixed. Empty: the theme's (shown greyed).
     </p>
-    {#each Object.entries(TEXT_STYLES) as [k, style] (k)}
-      <p class="tf__label">{style.label}</p>
-      <div class="fields">
+    <div>
+      <Button
+        size="small"
+        label={specimen ? 'Close preview' : 'Preview'}
+        title={specimen ? 'Back to the page you were on' : 'Every text style on a page of its own'}
+        aria-pressed={specimen}
+        onclick={() => actions.showSpecimen(!specimen)}
+      />
+    </div>
+    {#each LINE_STYLES as [k, name, tag] (k)}
+      <p class="tf__label">{name} · {tag.toUpperCase()}</p>
+      <div class="scale">
         {#each TYPE_FIELDS as [key, label] (key)}
           <Field
-            edit="{SITE}#/typography/{k}/{key}"
+            edit="{SITE}#/type/{k}/{key}"
             {label}
             type="number"
-            half
-            value={typography[k][key]}
-            changed={live.changed(SITE, `/typography/${k}/${key}`)}
-            onvalue={(value) => setStyle(k, key, value)}
+            empty
+            placeholder={String(themeType[k][key])}
+            value={live.get(SITE, `/type/${k}/${key}`)}
+            changed={live.changed(SITE, `/type/${k}/${key}`)}
+            onvalue={(value) => setType(k, key, value)}
           />
         {/each}
       </div>
@@ -255,6 +291,14 @@
 
 <style lang="scss">
   @use '../styles/mixins' as *;
+
+  // Type: a style's Min, Max and Line in one row
+  .scale {
+    display: grid;
+    // (minmax: a number input's default width can't widen a column)
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap-fields);
+  }
 
   // the contained width at each window size: window | px
   .widths {

@@ -2,7 +2,9 @@
 
 /*
  * The Text widget (src/site/widgets/text/index.js) and its lines' styles (.ts--<style>,
- * src/site/text.js). Fixed sizes here, the same at any widget width; a fit line (Fit width)
+ * src/site/text.js). Their sizes are the type scale (--type-<style>-min, -max, -lh: defaults in
+ * _tokens.scss, site.json "type" in the page's head): between min and max with the window, the
+ * same at any widget width; a fit line (Fit width)
  * and Scale to fit: _layout.scss ([data-fit], .wgt--scale). A word longer than the line still
  * breaks rather than spill out of the widget (not under Scale to fit: it scales down instead).
  */
@@ -27,32 +29,32 @@
   font-family: var(--f-display);
   font-weight: 400;
   // the old page title's size
-  font-size: clamp(72px, 15vw, 250px);
-  line-height: 0.82;
+  font-size: clamp(var(--type-title-min), 15vw, var(--type-title-max));
+  line-height: var(--type-title-lh);
   letter-spacing: -0.02em;
   @media (width <= 480px) {
-    font-size: 13vw;
+    font-size: min(13vw, var(--type-title-max));
   }
 }
 .ts--heading {
   font-family: var(--f-display);
   font-weight: 400;
-  font-size: clamp(38px, 6vw, 104px);
-  line-height: 0.92;
+  font-size: clamp(var(--type-heading-min), 6vw, var(--type-heading-max));
+  line-height: var(--type-heading-lh);
 }
 .ts--subheading {
   font-family: var(--f-display);
   font-weight: 400;
-  font-size: clamp(22px, 2.4vw, 36px);
-  line-height: 1.15;
+  font-size: clamp(var(--type-subheading-min), 2.4vw, var(--type-subheading-max));
+  line-height: var(--type-subheading-lh);
   letter-spacing: -0.005em;
 }
 .ts--statement {
   max-width: 1280px;
   font-family: var(--f-display);
   font-weight: 400;
-  font-size: clamp(30px, 4.3vw, 72px);
-  line-height: 1.06;
+  font-size: clamp(var(--type-statement-min), 4.3vw, var(--type-statement-max));
+  line-height: var(--type-statement-lh);
   letter-spacing: -0.005em;
   text-indent: 18%;
   .split-word {
@@ -64,13 +66,15 @@
 }
 .ts--paragraph {
   max-width: 64ch;
-  font-size: 16px;
-  line-height: 1.75;
+  // (fixed by default: min = max; 1.11vw is max at 1440px wide)
+  font-size: clamp(var(--type-paragraph-min), 1.11vw, var(--type-paragraph-max));
+  line-height: var(--type-paragraph-lh);
   color: var(--solid-faint);
 }
 .ts--label {
   font-family: var(--f-mono);
-  font-size: 11px;
+  font-size: clamp(var(--type-label-min), 0.76vw, var(--type-label-max));
+  line-height: var(--type-label-lh);
   font-weight: 400;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -78,8 +82,8 @@
 }
 .ts--small {
   max-width: 64ch;
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: clamp(var(--type-small-min), 0.83vw, var(--type-small-max));
+  line-height: var(--type-small-lh);
   color: var(--muted);
 }
 .text__body a {

@@ -16,6 +16,7 @@ import { getRoutes, buildRoutes, curtainOverrides, sitemapXml } from './routes.j
 
 export { getRoutes, buildRoutes, sitemapXml };
 export { templatePreview, templateOfPath } from './widgets/list/template-preview.js';
+export { typeSpecimen, isTypeSpecimen } from './layout/type-specimen.js';
 export { seoWarnings } from './seo.js';
 export {
   buildRedirects,

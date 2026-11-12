@@ -60,6 +60,11 @@ export const ui = $state({
    * head's warning sets it, WidgetSource.svelte takes it), or null.
    */
   focusParam: null,
+  /**
+   * The page the type specimen (Site Settings › Type › Preview, /__type/) replaced in the
+   * preview: Close preview and the Pages tab go back to it ('' when it isn't shown).
+   */
+  specimenFrom: '',
   /** The path shown in the preview ("/people/noor-vermeer/"). */
   path: '/',
   /** What the Pages tab edits: a page { kind: 'page', path, title } or a site part { kind: 'part', id: 'header' | 'footer', title }. */

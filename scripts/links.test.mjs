@@ -11,12 +11,7 @@ import {
   makesLoop,
   newWidget,
 } from '../src/site/layout/index.js';
-import {
-  checkScale,
-  checkTypography,
-  typographyOf,
-  typographyVars,
-} from '../src/site/layout/type.js';
+import { checkScale } from '../src/site/layout/type.js';
 import { flat, lay } from './test-layout.mjs';
 import { checkContent } from '../src/site/validate.js';
 import { createStore } from '../src/editor/store.js';
@@ -251,7 +246,7 @@ test('editor: phone links are separate; the first phone move brings the desktop 
   assert.equal(flat(widget()).pos.row, 30);
 });
 
-test('fit text: per widget, one boolean; site typography over the defaults', () => {
+test('fit text: per widget, one boolean; no site typography', () => {
   const t = (more) => ({
     id: 'w-aaaa',
     type: 'text',
@@ -274,22 +269,9 @@ test('fit text: per widget, one boolean; site typography over the defaults', () 
   assert.deepEqual(checkScale({ type: 'text' }), []);
   assert.equal(checkScale({ type: 'text', fit: true }).length, 1);
   assert.match(checkScale({ type: 'text', fit: true })[0], /a line's now/);
-  assert.equal(typographyOf({}).paragraph.size, 1.4);
-  const site = { typography: { paragraph: { size: 1.6, min: 15 }, title: { tracking: -0.03 } } };
-  assert.deepEqual(typographyOf(site).paragraph, { size: 1.6, line: 1.75, tracking: 0, min: 15 });
-  assert.equal(
-    typographyVars(site),
-    '--ts-title-tr: -0.03em; --ts-paragraph: 1.6; --ts-paragraph-min: 15px',
-  );
-  assert.equal(typographyVars({}), '');
-  assert.deepEqual(checkTypography(site.typography), []);
-  assert.deepEqual(checkTypography({ huge: {}, paragraph: { size: 0, x: 1 } }), [
-    'typography: unknown style "huge" (title, heading, paragraph, label, subheading, statement, small)',
-    'typography.paragraph.size must be more than 0',
-    'typography.paragraph: unknown key "x"',
-  ]);
+  // the cell-based "typography" is gone: site.json "type" sizes the styles (type-scale.test.mjs)
   assert.match(
-    checkContent('settings/site.json', { version: 1, name: 'x', url: 'y', typography: 3 })[0],
-    /typography/,
+    checkContent('settings/site.json', { version: 1, name: 'x', url: 'y', typography: {} })[0],
+    /"typography" is gone/,
   );
 });

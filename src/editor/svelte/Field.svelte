@@ -3,6 +3,7 @@
   its file, e.g. people.json, that opens it in the Source Explorer) with an input, or a
   textarea for longer text, a switch (boolean) or a Select (select, options [[value, label]]).
   bare: no label row (label is the input's aria-label; say it in the placeholder); help: a hint under it; half: it shares a row with the next field (the parent's grid).
+  empty: a number field can be cleared (onvalue(undefined): the default, say it in the placeholder).
   type 'photo': a photo (its media/ path or R2 key) as a 64px card: the photo, its label
   (inside), file name and sizes, Media and ✕ (clears it; remove: the parent's, a list item's);
   grab: a pointerdown on the photo (a list's drag handle, PhotoList.svelte); the thumbnail or Change opens the Media window on it (MediaModal.svelte), which
@@ -68,6 +69,7 @@
     grab = null,
     remove = null,
     disabled = false,
+    empty = false,
   } = $props();
 
   const uid = $props.id();
@@ -86,6 +88,12 @@
   const show = (value) => showValue(String(value ?? ''));
 
   function oninput(e) {
+    // (a half-typed number, "1e", reads '' too: badInput)
+    const el = e.currentTarget;
+    if (empty && type === 'number' && el.value.trim() === '' && !el.validity?.badInput) {
+      invalid = false;
+      return void onvalue(undefined);
+    }
     const next = parseValue(type, e.currentTarget.value);
     invalid = next === undefined;
     if (!invalid) onvalue(next);

@@ -47,7 +47,7 @@ import {
   ratioOf,
 } from './layout/index.js';
 import { linkProblems } from './layout/links.js';
-import { checkScale, checkTypography } from './layout/type.js';
+import { checkScale, checkType } from './layout/type.js';
 import { checkPlacement } from './layout/place.js';
 import { checkLayout } from './layout/contain.js';
 import { isId } from './layout/ids.js';
@@ -127,7 +127,7 @@ function checkSite(d) {
       forms: 'object',
     }),
     ...checkForms(d.forms),
-    ...checkTypography(d.typography),
+    ...checkType(d.type, d.typography),
     ...checkLayout(d.layout),
     ...(d.robots === undefined || ['index', 'noindex'].includes(d.robots)
       ? []

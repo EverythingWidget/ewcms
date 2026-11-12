@@ -60,6 +60,7 @@ import { pageSourceOf } from '../site/layout/source.js';
 import {
   ANIMATIONS,
   REDIRECTS,
+  SITE,
   isTemplate,
   pageFile,
   pageIdOf,
@@ -106,7 +107,8 @@ import {
   templatePreviewPath,
 } from '../site/widgets/list/template-preview.js';
 import { sectionsUsing } from '../site/widgets/list/template-uses.js';
-import { needsReload, routesFile, routesKey } from './lib/needs-reload.js';
+import { needsReload, routesFile, routesKey, siteKey } from './lib/needs-reload.js';
+import { TYPE_SPECIMEN, isTypeSpecimen } from '../site/layout/type-specimen.js';
 import { keepUnsaved, restoreUnsaved } from './keep-unsaved.js';
 
 // the site's content folder (site.config.mjs), for the paths the editor shows
@@ -217,6 +219,7 @@ mount(App, {
     actions: {
       setPanel,
       setPageTab,
+      showSpecimen,
       pickTarget,
       lockPart,
       save,
@@ -485,12 +488,29 @@ function applyClicks(before) {
   }
 }
 
-/** Show a panel: 'nav' | 'settings' | 'preview' (ui.svelte.js). */
+/** Show a panel: 'nav' | 'settings' | 'preview' (ui.svelte.js); Pages closes the type specimen. */
 function setPanel(panel) {
+  if (panel === 'nav') showSpecimen(false);
   const before = previewClicks();
   ui.panel = panel;
   if (panel !== 'preview') ui.panelBeforePreview = panel;
   applyClicks(before);
+}
+
+/**
+ * Site Settings › Type's Preview: the type specimen (/__type/, site/layout/type-specimen.js) in
+ * the preview (on), or the page it replaced back (off: Close preview, the Pages tab).
+ */
+function showSpecimen(on) {
+  const shown = isTypeSpecimen(bridge.path() || ui.path);
+  if (on && !shown) {
+    ui.specimenFrom = bridge.path() || ui.path;
+    bridge.navigate(TYPE_SPECIMEN);
+  } else if (!on && shown) {
+    const back = ui.specimenFrom && !isTypeSpecimen(ui.specimenFrom) ? ui.specimenFrom : '/';
+    ui.specimenFrom = '';
+    bridge.navigate(back);
+  }
 }
 
 /** The open page's tab: 'sections' | 'element-motion' | 'page-motion' | 'seo', or null (no page open). */
@@ -636,7 +656,8 @@ bridge.on('navigate', (path) => {
   url.pathname = path; // the editor's URL is the previewed page's (src/editor/lib/editor-url.js)
   history.replaceState(null, '', editorHref(url));
   // Keep Header/Footer selection; only sync target when browsing pages.
-  if (ui.target?.kind !== 'part' && !templateOfPath(path)) {
+  if (!isTypeSpecimen(path)) ui.specimenFrom = ''; // (left by a link: nothing to go back to)
+  if (ui.target?.kind !== 'part' && !templateOfPath(path) && !isTypeSpecimen(path)) {
     ui.target = { kind: 'page', path, title: path === '/' ? 'Home' : path };
   }
   updatePages();
@@ -741,6 +762,15 @@ function pushDraft({ reload = false, templates = [], sources = [] } = {}) {
   }, 250);
 }
 
+/** Whether site.json changed more than its type (lib/needs-reload.js siteKey) since last looked at. */
+let siteSeen = null;
+function siteMoved() {
+  const key = siteKey(store.current);
+  const moved = siteSeen === null || key !== siteSeen;
+  siteSeen = key;
+  return moved;
+}
+
 /**
  * Whether the site's routes (lib/needs-reload.js routesKey) changed since they were last
  * looked at: an item or page added, removed or moved, a slug, a menu's item.
@@ -774,12 +804,13 @@ store.on(({ files, source: src, structure }) => {
   // the files whose sections the preview swaps in place: the page's and the footer's
   const roots = syncRoots(bridge.doc);
   const routes = files.some(routesFile) && routesMoved();
+  const site = files.includes(SITE) && siteMoved();
   // saved: the files on disk caught up (Save reloads when it needs to); from disk: the
   // preview reloads itself (onDiskChange)
   if (src === 'saved' || src === 'rebase') pushDraft();
   else if (files.some((f) => f !== ANIMATIONS))
     pushDraft({
-      reload: needsReload(files, { routes }),
+      reload: needsReload(files, { routes, site }),
       // an item template: every List using it renders again (the template editor's preview too)
       templates: files.map(templateIdOf).filter(Boolean),
       sources: files.map((f) => sourceIdOf(f) || schemaIdOf(f)).filter(Boolean),
@@ -852,6 +883,7 @@ async function save({ quiet = false } = {}) {
     const reload = needsReload(dirty, {
       routes:
         dirty.some(routesFile) && routesKey(store.base) !== routesKey({ ...store.base, ...sent }),
+      site: dirty.includes(SITE) && siteKey(store.base) !== siteKey({ ...store.base, ...sent }),
     });
     await source.saveDev(sent);
     store.markSaved(dirty, sent);
@@ -932,6 +964,7 @@ async function boot() {
   store.load(loaded.files);
   const kept = restoreUnsaved(store, sessionStorage);
   routesSeen = routesKey(store.current); // what the preview's first load shows
+  siteSeen = siteKey(store.current);
   if (kept.length)
     toast('Unsaved edits kept', { files: kept, note: 'the dev server reloaded the editor' });
   ui.status = `Content: ${loaded.from}`;

@@ -25,7 +25,8 @@ $z-skip: 200; // .skip-link: always on top when focused
 
   --pad: clamp(16px, 2.6vw, 40px);
   --gap: clamp(12px, 1.4vw, 22px);
-  // text styles for a Fit width line (src/site/layout/type.js TEXT_STYLES; site.json typography)
+  // a Fit width line's starting sizes, in cells (src/site/layout/type.js TEXT_STYLES): its
+  // own --tkf scales them to the widget's width
   --ts-title: 19;
   --ts-title-lh: 0.82;
   --ts-title-tr: -0.02em;
@@ -54,4 +55,28 @@ $z-skip: 200; // .skip-link: always on top when focused
   --ts-small-lh: 1.5;
   --ts-small-tr: 0;
   --ts-small-min: 11px;
+  // the type scale: each text style's font size, px, between min and max (growing with the
+  // window; equal: fixed) and line height (× the size). src/site/layout/type.js TYPE_SCALE
+  // (keep them equal); site.json "type" overrides them in the page's head (_text.scss uses them)
+  --type-title-min: 72px;
+  --type-title-max: 250px;
+  --type-title-lh: 0.82;
+  --type-heading-min: 38px;
+  --type-heading-max: 104px;
+  --type-heading-lh: 0.92;
+  --type-subheading-min: 22px;
+  --type-subheading-max: 36px;
+  --type-subheading-lh: 1.15;
+  --type-statement-min: 30px;
+  --type-statement-max: 72px;
+  --type-statement-lh: 1.06;
+  --type-paragraph-min: 16px;
+  --type-paragraph-max: 16px;
+  --type-paragraph-lh: 1.75;
+  --type-label-min: 11px;
+  --type-label-max: 11px;
+  --type-label-lh: 1.55;
+  --type-small-min: 12px;
+  --type-small-max: 12px;
+  --type-small-lh: 1.5;
 }
