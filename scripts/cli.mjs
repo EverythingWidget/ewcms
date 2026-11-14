@@ -351,15 +351,10 @@ export async function publishMedia(root) {
 export function newSite(dir, { name = path.basename(path.resolve(dir)) } = {}) {
   dir = path.resolve(dir);
   if (fs.existsSync(dir) && fs.readdirSync(dir).length) throw new Error(`${dir} is not empty`);
-  // copy the starter folders; leave out the README and the .gitkeep files that hold empty dirs in git
-  const skip = new Set(['README.md', '.gitkeep']);
-  const copy = (from, to) =>
-    fs.cpSync(from, path.join(dir, to), {
-      recursive: true,
-      filter: (src) => !skip.has(path.basename(src)),
-    });
-  const starter = enginePath('starter', 'site');
-  copy(starter, '.');
+  // copy the starter, including the README and the .gitkeep files that hold empty dirs in git
+  const copy = (from, to) => fs.cpSync(from, path.join(dir, to), { recursive: true });
+  copy(enginePath('starter', 'site'), '.');
+  copy(enginePath('starter', 'README.md'), 'README.md');
   // the theme: layers over the engine's theme-default/ (its name and a tokens stub), not a copy
   copy(enginePath('starter', 'theme'), 'theme');
   fs.writeFileSync(

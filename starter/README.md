@@ -1,11 +1,9 @@
-# starter/
+This site's folders:
 
-What `ewcms new-site` copies into a new site.
-
-- `site/` — the site root: `package.json`, `site.config.mjs`, `public/`, `functions/`, and `gitignore` (renamed to `.gitignore`).
-- `theme/` — a tokens stub. The new site's theme layers over the engine's `theme-default/`; its name is written into `theme.json`.
-- `content/` — Home (a short guide), About, and 404. `content/templates/` and `content/en/sources/` are there, empty, so those folders exist from the start.
+- `content/` — pages (Home, About, and 404) and shared files (header, footer, and the like). `content/templates/` and `content/en/sources/` are empty until you add some.
+- `theme/` — this site's look, layered over the engine's default theme. Its name is in `theme.json`.
 - `media/` — source photos; empty until you add some.
-- `widgets/` — the site's own widgets; empty until you add some.
-
-`ewcms new-site` copies these folders and leaves out this README and the `.gitkeep` files that hold the empty ones in git.
+- `widgets/` — this site's own widgets; empty until you add some.
+- `public/` — files served as-is, such as the favicon and fonts.
+- `functions/` — server endpoints, such as the contact form.
+- `site.config.mjs` — this site's config.
