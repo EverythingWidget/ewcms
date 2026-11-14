@@ -13,5 +13,24 @@ import { fileURLToPath } from 'node:url';
 
 export const SITE_A = fileURLToPath(new URL('./site-a', import.meta.url));
 
+/**
+ * Content (a loadContent result) whose people have a "photo" too (the fixtures name it
+ * "cover"): a List's presets show the property of each role's own name, no mapping.
+ */
+export const withPhoto = (content) => ({
+  ...content,
+  sources: {
+    ...content.sources,
+    people: content.sources.people.map((p) => ({ ...p, photo: p.cover })),
+  },
+  schemas: {
+    ...content.schemas,
+    people: {
+      ...content.schemas.people,
+      properties: [...content.schemas.people.properties, { key: 'photo', type: 'photo' }],
+    },
+  },
+});
+
 /** Site B: site A with a widget of its own (widgets/quote, listed in its site.config.mjs). */
 export const SITE_B = fileURLToPath(new URL('./site-b', import.meta.url));

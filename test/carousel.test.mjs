@@ -25,10 +25,10 @@ import {
 } from '../src/site/widgets/list/carousel-client.js';
 import { creditText } from '../src/site/helpers.js';
 import { sourcePage } from '../src/site/widgets/data.js';
-import { SITE_A } from './fixtures/index.mjs';
+import { SITE_A, withPhoto } from './fixtures/index.mjs';
 import { template } from '../scripts/grid-helper.mjs';
 
-const base = loadContent(SITE_A);
+const base = withPhoto(loadContent(SITE_A)); // people with a "photo" (presets: no mapping)
 const noor = base.sources.people[0];
 
 // a person-page template: {back}, the title, the photos as a carousel beside the body
@@ -90,7 +90,6 @@ const photosCarousel = (config = {}) =>
   render({
     config: {
       template: 'preset:photo',
-      properties: { photo: 'cover' },
       arrangement: 'carousel',
       ...config,
     },

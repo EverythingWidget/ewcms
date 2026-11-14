@@ -425,6 +425,13 @@ function sourceProblems(src, t) {
   return [];
 }
 
+/**
+ * The last checkContent's warnings: things to tell, not problems (a widget type's `warn`, e.g.
+ * a List's leftover config.properties). Emptied at each checkContent.
+ */
+const warnings = [];
+export const contentWarnings = () => [...warnings];
+
 /** One widget: its place, then its content against its type in the registry. */
 function checkWidget(widget, where) {
   if (!isObject(widget)) return [`${where} must be an object`];
@@ -544,6 +551,7 @@ function checkWidget(widget, where) {
       bad(f.key, typeof f.list === 'string' ? 'a list of strings' : 'a list of objects');
   }
   if (t.check) out.push(...t.check(widget).map((p) => `${name}: ${p}`));
+  if (t.warn) warnings.push(...t.warn(widget).map((p) => `${name}: ${p}`));
   if (widget.config === undefined) return out;
   if (!isObject(widget.config)) return [...out, `${name}: "config" must be an object`];
   const { enabled, missing } = widget.config;
@@ -615,6 +623,7 @@ function checkPhotos(d) {
  * list is its "items", redirects.json's "redirects", photos.json's map "photos".
  */
 export function checkContent(file, data) {
+  warnings.length = 0;
   if (!isObject(data)) return [`must be an object, not ${typeOf(data)}`];
   if (data.version !== VERSION) return [`"version" must be ${VERSION} (the content's shape)`];
   const notes = commentKeys(data);

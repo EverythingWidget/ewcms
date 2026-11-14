@@ -1,19 +1,19 @@
 /**
  * The List widget's presets (./index.js): ready-made item templates, in code. A preset is a
  * column of ordinary widgets (Photo, Text, Button) whose values are parts
- * (../../layout/parts.js), so each copy fills from its own item. Which property each role
- * shows is the List's property mapping (config.properties, one row per role in the Content
- * tab), else the property of the role's own name when it has a type the role takes:
+ * (../../layout/parts.js), so each copy fills from its own item. Each role shows the source's
+ * property of the role's own name, when it has a type the role takes (a source naming it
+ * otherwise, "cover" for a photo, gets a copy of the template that says {cover}: Duplicate):
  *
  *   title   the schema's declared title property ("title" when it names none; text, words,
  *           multi-line or number)
  *   photo   "photo" (a photo)
  *   body    "body" (multi-line)
  *   facts   the properties it shows under an item's title in its lists (`list: true`)
- *   count   a plain bound count: {photos} (a list, so a part shows its length); not mapped
+ *   count   a plain bound count: {photos} (a list, so a part shows its length)
  *
- * Nothing is guessed (no "first photo property"): a role with neither is left out until it is
- * mapped. `role` names each widget's place in the preset's look (style.scss: .li__<role>).
+ * Nothing is guessed (no "first photo property"): a role with neither is left out.
+ * `role` names each widget's place in the preset's look (style.scss: .li__<role>).
  *
  *   Card   photo on top, title, facts (Album cards, the places' cards)
  *   Plain  photo, title, body, a button to the item's page; no box
@@ -97,108 +97,36 @@ export const HANDMADE_NAMES = Object.freeze({
 /** The plain bound count a source's Panel shows: {photos}. */
 export const COUNT_PROPERTY = 'photos';
 
-/**
- * Property mapping (config.properties, e.g. { "photo": "cover" }): the roles a List maps to one
- * of its source's properties, and the property types each takes. Facts are the schema's `list`
- * properties and the count is {photos}: neither is mapped.
- */
-export const MAPPABLE = Object.freeze({
+/** The property types each named role takes (facts and the count are their own). */
+const ROLE_TYPES = Object.freeze({
   title: ['text', 'words', 'multiline', 'number'],
   photo: ['photo'],
   body: ['multiline'],
 });
-const ROLE_LABELS = { title: 'Title', photo: 'Photo', body: 'Text' };
 
 /** A source's properties ([] for none / no source). */
 const propsOf = (ctx, source) => (source && schemaOf(ctx, source)?.properties) || [];
-const fits = (role, p) => !!p && MAPPABLE[role].includes(p.type);
 
 /**
- * config.properties kept to what it can mean for this source: known roles naming a property of
- * the source of a type that role takes (anything else is ignored: the automatic choice applies).
+ * The properties a preset fills: each role the property of its own name (Title the schema's
+ * declared title property) when its type fits, else null; HANDMADE_NAMES when `handmade`.
  */
-export function mappingOf(ctx, source, properties) {
-  if (!isObject(properties)) return {};
-  const props = propsOf(ctx, source);
-  const out = {};
-  for (const [role, key] of Object.entries(properties))
-    if (
-      MAPPABLE[role] &&
-      typeof key === 'string' &&
-      fits(
-        role,
-        props.find((x) => x.key === key),
-      )
-    )
-      out[role] = key;
-  return out;
-}
-
-/**
- * Each role's automatic choice, else null: Title the schema's declared title property, the
- * others the property of the role's own name; either only when its type fits the role.
- */
-function autoOf(ctx, source) {
+export function namesOf(ctx, source, { handmade = false } = {}) {
+  if (handmade) return { ...HANDMADE_NAMES };
   const props = propsOf(ctx, source);
   const own = (role) =>
     role === 'title' ? (source && schemaOf(ctx, source)?.title) || 'title' : role;
-  return Object.fromEntries(
-    Object.keys(MAPPABLE).map((role) => {
-      const key = own(role);
-      return [
-        role,
-        fits(
-          role,
-          props.find((p) => p.key === key),
-        )
-          ? key
-          : null,
-      ];
+  const n = Object.fromEntries(
+    Object.entries(ROLE_TYPES).map(([role, types]) => {
+      const p = props.find((x) => x.key === own(role));
+      return [role, p && types.includes(p.type) ? p.key : null];
     }),
   );
-}
-
-/**
- * The properties a preset fills: the automatic choices, then the mapping (config.properties)
- * over them; HANDMADE_NAMES when `handmade` (its item shape is fixed: no mapping).
- */
-export function namesOf(ctx, source, { handmade = false, properties } = {}) {
-  if (handmade) return { ...HANDMADE_NAMES };
-  const props = propsOf(ctx, source);
-  const n = { ...autoOf(ctx, source), ...mappingOf(ctx, source, properties) };
   return {
     ...n,
     facts: props.filter((p) => p.list && p.key !== n.title).map((p) => p.key),
     count: props.some((p) => p.key === COUNT_PROPERTY) ? COUNT_PROPERTY : null,
   };
-}
-
-/**
- * The Content tab's mapping rows for a preset on a source: one per mappable role the preset
- * uses, in its order, always shown: { role, label, value, auto, options, none }. value: the
- * property it shows (the mapping, else the automatic choice; '' for none); auto: the automatic
- * choice; options [[key, label]]: the source's properties of a type the role takes; none: the
- * row's text when there are no options ("No photo property in People").
- */
-export function mappingRows(ctx, source, presetId, properties) {
-  if (!source) return [];
-  const props = propsOf(ctx, source);
-  const auto = autoOf(ctx, source);
-  const mapped = mappingOf(ctx, source, properties);
-  const name = schemaOf(ctx, source)?.label || source;
-  return presetOf(presetId)
-    .roles.filter((r) => MAPPABLE[r])
-    .map((role) => {
-      const options = props.filter((p) => fits(role, p)).map((p) => [p.key, p.label || p.key]);
-      return {
-        role,
-        label: ROLE_LABELS[role],
-        value: mapped[role] || auto[role] || '',
-        auto: auto[role] || '',
-        options,
-        none: options.length ? '' : `No ${role} property in ${name}`,
-      };
-    });
 }
 
 const prop = (property) => ({ property });
@@ -221,13 +149,8 @@ export function factsRuns(facts, isEmpty = () => false, sep = ' · ') {
  * (style.scss .li__<role>); facts carry `facts` (their names, joined per item: factsRuns), the
  * button `itemLink` (its link is the item's page, set per item). Unknown id: Card's.
  */
-export function presetWidgets(
-  id,
-  ctx,
-  source,
-  { open = 'View', handmade = false, properties } = {},
-) {
-  const n = namesOf(ctx, source, { handmade, properties });
+export function presetWidgets(id, ctx, source, { open = 'View', handmade = false } = {}) {
+  const n = namesOf(ctx, source, { handmade });
   const make = {
     photo: () => n.photo && { type: 'photo', role: 'photo', src: [prop(n.photo)] },
     title: () => textW('title', line('heading', [prop(n.title)])),
@@ -250,8 +173,8 @@ export function presetWidgets(
 
 /**
  * A preset (or a site template) copied into a new item template (content/templates/t-….json):
- * its widgets as plain widgets with {property} parts, for the List's source as it shows now (its
- * mapping applied, facts joined with `sep`, a hand-made Panel's count as {count} {unit}). `basedOn`
+ * its widgets as plain widgets with {property} parts, for the List's source as it shows now
+ * (facts joined with `sep`, a hand-made Panel's count as {count} {unit}). `basedOn`
  * keeps where it came from; clickable is the preset's link. A template's own section is
  * copied as they are.
  */
@@ -259,7 +182,7 @@ export function cloneTemplate(
   ctx,
   source,
   id,
-  { handmade = false, properties, open = 'View', sep = ' · ', label } = {},
+  { handmade = false, open = 'View', sep = ' · ', label } = {},
 ) {
   const own = templateOf(ctx, id);
   if (own) {
@@ -283,7 +206,7 @@ export function cloneTemplate(
   }
   const preset = presetOf(id);
   const taken = new Set();
-  const widgets = presetWidgets(preset.id, ctx, source, { open, handmade, properties }).map((w) => {
+  const widgets = presetWidgets(preset.id, ctx, source, { open, handmade }).map((w) => {
     const { facts, handmadeCount, ...rest } = w;
     if (facts)
       // join: the separator goes only between the facts that have a value (forItem, ./index.js)

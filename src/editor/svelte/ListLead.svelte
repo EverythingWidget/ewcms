@@ -2,10 +2,9 @@
   A List widget's Content lead (WidgetInspector.svelte): Template, then Source
   (From URL | All | None | Custom). Custom is the old Hand-made mode: it only flips
   config.handmade; source and config.items are kept for switching back. From a source:
-  WidgetSource.svelte plus the type's property mapping (config.properties). Custom:
+  WidgetSource.svelte (the template names the properties it shows: no mapping). Custom:
   ListField on config.items. Only the active pane is in the flow (the other is unmounted)
-  so the pop-up is content-height. MAP_SLOTS rows always laid out in the source pane, unused
-  ones visibility:hidden / inert: no shift when the template's roles change.
+  so the pop-up is content-height.
   Template (config.template, both modes): the presets, then the site's templates
   (content/templates/t-….json); Duplicate template / Edit template sit on their own row
   under the full-width selector. Duplicate copies the one picked into a new template file
@@ -25,7 +24,6 @@
   import { HANDMADE_ITEM } from '../../site/widgets/list/handmade.js';
   import { TEXT_TYPES } from '../../site/property-types.js';
   import { pointer } from '../../site/helpers.js';
-  import { WIDGET_TYPES } from '../../site/widgets/index.js';
   import Button from './Button.svelte';
   import { ui } from './ui.svelte.js';
   import { PRESETS, cloneTemplate } from '../../site/widgets/list/presets.js';
@@ -122,30 +120,6 @@
     return typeof text === 'string' && text.trim() ? text : `Item ${i + 1}`;
   }
 
-  // ---- property mapping (config.properties), a slot per mappable role: no shift
-  const MAP_SLOTS = 3;
-  const propsPtr = $derived(`${base}/config/properties`);
-  const mapRows = $derived.by(() => {
-    live.version;
-    const mapping = WIDGET_TYPES[g.type]?.mapping;
-    if (!mapping) return [];
-    const widget = {
-      source: live.get(g.file, `${base}/source`),
-      config: live.get(g.file, `${base}/config`),
-    };
-    return mapping(live.content, widget);
-  });
-  const slots = $derived(Array.from({ length: MAP_SLOTS }, (_, i) => mapRows[i] || null));
-  function setMapping(role, key) {
-    const cur = live.get(g.file, propsPtr);
-    const next = { ...(cur && typeof cur === 'object' ? cur : {}) };
-    if (key) next[role] = key;
-    else delete next[role];
-    const opts = { key: `config:${g.file}${propsPtr}`, source: 'panel', structure: true };
-    if (Object.keys(next).length) live.store.set(g.file, propsPtr, next, opts);
-    else if (cur !== undefined) live.store.remove(g.file, propsPtr, opts);
-  }
-
   // ---- template (config.template): presets, then the site's templates
   const templatePtr = $derived(`${base}/config/template`);
   const templateId = $derived.by(() => {
@@ -176,10 +150,8 @@
     const pending = live.store.dirtyFiles().includes(g.file);
     try {
       const ctx = live.content;
-      const config = live.get(g.file, `${base}/config`) || {};
       const data = cloneTemplate(ctx, shown?.source || '', templateId, {
         handmade,
-        properties: config.properties,
         open: t(ctx, 'list.open'),
         sep: t(ctx, 'list.sep'),
       });
@@ -313,36 +285,7 @@
     oncustom={() => setHandmade(true)}
   />
 
-  {#if !handmade}
-    {#if WIDGET_TYPES[g.type]?.mapping}
-      <div class="ll__map" data-mapping>
-        {#each slots as row, i (i)}
-          <div
-            class={['ll__maprow', !row && 'is-hidden']}
-            inert={!row || undefined}
-            data-mapping-row={row?.role || undefined}
-          >
-            {#if row?.none}
-              <div class="tf">
-                <span class="tf__label">{row.label}</span>
-                <p class="ll__none" data-mapping-none>{row.none}</p>
-              </div>
-            {:else if row}
-              <Field
-                edit={`${g.file}#${propsPtr}/${row.role}`}
-                label={row.label}
-                type="select"
-                value={row.value}
-                options={row.value ? row.options : [['', 'Pick a property'], ...row.options]}
-                changed={live.changed(g.file, `${propsPtr}/${row.role}`)}
-                onvalue={(v) => setMapping(row.role, v === row.auto ? '' : v)}
-              />
-            {/if}
-          </div>
-        {/each}
-      </div>
-    {/if}
-  {:else}
+  {#if handmade}
     <ListField
       label=""
       ariaLabel="Items"
@@ -400,24 +343,6 @@
   .ll__dup .is-hidden,
   .ll__edit.is-hidden,
   .ll__note.is-hidden {
-    visibility: hidden;
-  }
-
-  // the mapping rows: every slot laid out (space reserved), unused ones hidden
-  .ll__map {
-    @include stack(var(--gap-fields));
-  }
-
-  .ll__none {
-    margin: 0;
-    color: var(--c-text-faint);
-  }
-
-  .ll__maprow {
-    min-height: var(--map-row, 56px);
-  }
-
-  .ll__maprow.is-hidden {
     visibility: hidden;
   }
 </style>

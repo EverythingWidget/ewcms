@@ -23,7 +23,7 @@ import { PRESET_STYLES, styleProblems } from '../src/site/widgets/list/item-styl
 import { partLabel, partText } from '../src/site/layout/parts.js';
 import { chipHtml, partOfName } from '../src/editor/lib/parts-input.js';
 import { innerSourceFor, newStackWidget } from '../src/editor/lib/item-template.js';
-import { SITE_A } from './fixtures/index.mjs';
+import { SITE_A, withPhoto } from './fixtures/index.mjs';
 
 const base = loadContent(SITE_A);
 const people = base.sources.people;
@@ -115,7 +115,7 @@ test('an inner template reads the outer item: {parent: title} and {number}', () 
 
 test('preset:photo: a photo only, its style spelled out, and Duplicate copies it', () => {
   assert.deepEqual(presetOf('preset:photo').roles, ['photo']);
-  const copy = cloneTemplate(base, 'people', 'preset:photo', { properties: { photo: 'cover' } });
+  const copy = cloneTemplate(withPhoto(base), 'people', 'preset:photo');
   assert.equal(copy.name, 'Photo copy');
   assert.equal(copy.basedOn, 'preset:photo');
   // its style without the keys the template grid took over; the photo's ratio is its size

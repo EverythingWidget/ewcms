@@ -12,29 +12,30 @@ import { setEditable } from '../src/site/helpers.js';
 import { newWidget, newSection, renderSections } from '../src/site/layout/index.js';
 import { bindingProblems } from '../src/site/layout/bindings.js';
 import { WIDGET_TYPES } from '../src/site/widgets/index.js';
-import { checkContent } from '../src/site/validate.js';
-import { PRESETS, factsRuns } from '../src/site/widgets/list/presets.js';
+import { checkContent, contentWarnings } from '../src/site/validate.js';
+import { PRESETS, factsRuns, namesOf } from '../src/site/widgets/list/presets.js';
 import { nextItemIndex } from '../src/site/widgets/list/client.js';
 import { resolveHandmadeItem } from '../src/site/widgets/list/handmade.js';
 import { widgetItems } from '../src/site/layout/source.js';
 import { countGroups, THIS_LIST } from '../src/editor/property-groups.js';
 import { layoutOptions, layoutParts, MISSING_OPTIONS } from '../src/editor/widget-layout.js';
 import { hideMissing } from '../src/site/layout/missing.js';
-import { SITE_A } from './fixtures/index.mjs';
+import { SITE_A, withPhoto } from './fixtures/index.mjs';
 
 const base = loadContent(SITE_A);
+// the fixtures' people name their photo "cover": the List tests use them with a "photo" too
+const shown = withPhoto(base);
 const F = 'pages/test/index.json';
 let n = 0;
 
 /** A List (config over its defaults) rendered on /about/ of `content`: its root element. */
-function list(config = {}, more = {}, content = base, extraCtx = {}) {
+function list(config = {}, more = {}, content = shown, extraCtx = {}) {
   const { routes } = buildRoutes(content);
   const page = routes.find((r) => r.path === '/about/');
   const ids = new Set();
   const w = newWidget('list', ids);
   const widget = { ...w, id: `w-ls${String(++n).padStart(3, '0')}`, ...more };
-  // the fixtures' photo property is "cover": mapped once (step 6), as a site would
-  widget.config = { properties: { photo: 'cover' }, ...w.config, ...config };
+  widget.config = { ...w.config, ...config };
   const ctx = { ...content, route: page, routes, curtains: {}, ...extraCtx };
   const [html, seen] = warnings(() => renderSections(ctx, page, F, [newSection(ids, [widget])]));
   const { document } = parseHTML(`<!doctype html><html><body>${html}</body></html>`);
@@ -749,10 +750,10 @@ test('Photo panels is gone: a "panels" widget is rejected, pointing to List', ()
   assert.match(out, /"handmade": true/);
 });
 
-// ---- step 6: property mapping (config.properties)
+// ---- which properties a preset shows: each role the property of its own name (no mapping)
 /** base with a "shots" source: title "name", photos "cover" and "still" (no "photo"). */
 const shotsSchema = (props) => ({ title: 'name', label: 'Shots', properties: props });
-const mapped = {
+const shotsOf = (props) => ({
   ...base,
   sources: {
     ...base.sources,
@@ -775,94 +776,68 @@ const mapped = {
       },
     ],
   },
-  schemas: {
-    ...base.schemas,
-    shots: shotsSchema([
-      { key: 'title', type: 'text' },
-      { key: 'name', type: 'text' },
-      { key: 'cover', type: 'photo', label: 'Cover' },
-      { key: 'still', type: 'photo' },
-      { key: 'photos', type: 'photos' },
-    ]),
-  },
-};
+  schemas: { ...base.schemas, shots: shotsSchema(props) },
+});
+const coverOnly = shotsOf([
+  { key: 'title', type: 'text' },
+  { key: 'name', type: 'text' },
+  { key: 'cover', type: 'photo', label: 'Cover' },
+  { key: 'still', type: 'photo' },
+  { key: 'photos', type: 'photos' },
+]);
 const shots = (config = {}) => ({ source: { mode: 'all', from: 'shots' }, config });
 const srcs = (el) =>
   [...el.querySelectorAll('[data-list-item] .li__photo img')].map((i) => i.getAttribute('src'));
 
-test('mapping: one row per role the preset uses, labelled by role, prefilled', () => {
-  const rows = WIDGET_TYPES.list.mapping(mapped, shots({ template: 'preset:plain' }));
-  assert.deepEqual(
-    rows.map((r) => [r.role, r.label]),
-    [
-      ['photo', 'Photo'],
-      ['title', 'Title'],
-      ['body', 'Text'],
-    ],
-  );
-  const by = Object.fromEntries(rows.map((r) => [r.role, r]));
-  // automatic: only the property of the role's own name with a fitting type
-  assert.equal(by.title.value, 'name'); // the schema's declared title, not a key named "title"
-  assert.equal(by.photo.value, ''); // no "photo": cover / still are not guessed
-  assert.deepEqual(
-    by.photo.options.map(([k]) => k),
-    ['cover', 'still'],
-  );
-  assert.equal(by.photo.none, '');
-  // nothing fits: a plain line, no empty picker
-  assert.equal(by.body.none, 'No body property in Shots');
-  assert.deepEqual(by.body.options, []);
-  // hand-made: no mapping at all
-  assert.deepEqual(WIDGET_TYPES.list.mapping(mapped, shots({ handmade: true })), []);
-});
-
-test('mapping: automatic choices render, nothing guessed', () => {
-  const { el } = list({ template: 'preset:card', properties: undefined }, shots(), mapped);
+test('presets: each role the property of its own name, nothing guessed', () => {
+  const { el } = list({ template: 'preset:card' }, shots(), coverOnly);
   // Title: the schema's declared title property ("name")
   assert.deepEqual(texts(el, '[data-list-item] .li__title'), ['n1', 'n2']);
-  assert.deepEqual(srcs(el), []); // no "photo" property: no photo until mapped
   // the count is the plain {photos}
-  const panel = list({ template: 'preset:panel', properties: undefined }, shots(), mapped).el;
+  const panel = list({ template: 'preset:panel' }, shots(), coverOnly).el;
   assert.deepEqual(texts(panel, '[data-list-item] .li__count'), ['2', '1']);
 });
 
-test('mapping: a saved config.properties is used in render', () => {
-  const { el, seen } = list(
-    { template: 'preset:card', properties: { photo: 'still', title: 'title' } },
-    shots(),
-    mapped,
-  );
-  assert.equal(srcs(el).length, 2);
-  assert.ok(
-    srcs(el).every((s) => /2/.test(s)),
-    srcs(el).join(),
-  );
-  assert.deepEqual(texts(el, '[data-list-item] .li__title'), ['Dune', 'Pier']);
+test('a source whose photo is "cover": Card without a photo, its items still whole', () => {
+  const { el, seen } = list({ template: 'preset:card' }, shots(), coverOnly);
+  const items = el.querySelectorAll('[data-list-item]');
+  assert.equal(items.length, 2);
+  // no "photo" property: no photo widget at all (cover / still are not guessed), no empty <img>
+  assert.deepEqual(srcs(el), []);
+  assert.equal(el.querySelectorAll('[data-list-item] img').length, 0);
+  // each item still links to its page and shows its title
+  for (const it of items) assert.ok(it.getAttribute('href'), it.outerHTML);
   assert.ok(!seen.some((w) => /have no \{/.test(w)), seen.join());
-  const row = WIDGET_TYPES.list
-    .mapping(mapped, shots({ properties: { photo: 'still' } }))
-    .find((r) => r.role === 'photo');
-  assert.equal(row.value, 'still');
-  // a mapping of the wrong type is ignored (the automatic choice applies)
-  const bad = WIDGET_TYPES.list
-    .mapping(mapped, shots({ properties: { photo: 'name' } }))
-    .find((r) => r.role === 'photo');
-  assert.equal(bad.value, '');
-  // stored at config.properties, checked by the List definition (no content break)
-  const ok = {
+});
+
+test('no property mapping: no hook, a leftover config.properties is ignored and only warned', () => {
+  assert.equal(WIDGET_TYPES.list.mapping, undefined);
+  const plain = list({ template: 'preset:card' }, shots(), coverOnly).html;
+  const old = list({ template: 'preset:card', properties: { photo: 'still' } }, shots(), coverOnly);
+  assert.deepEqual(srcs(old.el), []); // not mapped
+  assert.equal(old.html.replace(/w-ls\d+/g, ''), plain.replace(/w-ls\d+/g, ''));
+  // ewcms check: a warning, not a problem
+  const leftover = {
     ...newWidget('list', new Set()),
     id: 'w-map1',
     config: { properties: { photo: 'still' } },
   };
-  assert.deepEqual(WIDGET_TYPES.list.check(ok), []);
-  assert.match(
-    WIDGET_TYPES.list.check({ ...ok, config: { properties: { count: 'x' } } }).join(),
-    /config\.properties has no "count"/,
-  );
-  assert.match(
-    WIDGET_TYPES.list.check({ ...ok, config: { properties: [] } }).join(),
-    /config\.properties must be an object/,
-  );
+  assert.deepEqual(WIDGET_TYPES.list.check(leftover), []);
+  assert.match(WIDGET_TYPES.list.warn(leftover).join(), /config\.properties is no longer used/);
+  assert.deepEqual(WIDGET_TYPES.list.warn({ ...leftover, config: {} }), []);
+  const page = {
+    version: 1,
+    kind: 'page',
+    id: 'pg-map1',
+    title: 'X',
+    sections: [
+      { id: 's-map1', widgets: [{ ...leftover, source: { mode: 'all', from: 'people' } }] },
+    ],
+  };
+  assert.deepEqual(checkContent('pages/x/index.json', page), []);
+  assert.match(contentWarnings().join(), /List.*config\.properties is no longer used/);
+  checkContent('pages/x/index.json', { ...page, sections: [] });
+  assert.deepEqual(contentWarnings(), []); // emptied at each check
 });
 
 test('no "first cover of a list" fallback: a hand-made item shows only its own photo', () => {
@@ -880,37 +855,24 @@ test('no "first cover of a list" fallback: a hand-made item shows only its own p
   assert.doesNotMatch(presets, /first\('photo'\)|first\('photos'\)/);
 });
 
-test('mapping rows: every slot laid out, unused ones hidden (no layout shift)', () => {
+test('the Content tab has no mapping rows (nothing reserves room under the source)', () => {
   const lead = readFileSync(
     new URL('../src/editor/svelte/ListLead.svelte', import.meta.url),
     'utf8',
   );
-  assert.match(lead, /const MAP_SLOTS = 3/);
-  assert.match(lead, /\{#each slots as row, i \(i\)\}/);
-  assert.match(lead, /'ll__maprow', !row && 'is-hidden'/);
-  assert.match(lead, /\.ll__maprow\.is-hidden \{\s*visibility: hidden;/);
-  assert.match(lead, /data-mapping-none/);
-  assert.match(lead, /config\/properties/);
+  assert.doesNotMatch(lead, /MAP_SLOTS|ll__map|data-mapping|config\/properties|setMapping/);
   assert.doesNotMatch(lead, /config\/fields|Template needs/);
-  for (const p of PRESETS)
-    assert.ok(WIDGET_TYPES.list.mapping(mapped, shots({ template: p.id })).length <= 3, p.id);
 });
 
-test('mapping: Title auto-matches the declared title property only when its type fits', () => {
-  const withName = (type) => ({
-    ...mapped,
-    schemas: {
-      ...mapped.schemas,
-      shots: shotsSchema([
-        { key: 'title', type: 'text' },
-        { key: 'name', type },
-      ]),
-    },
-  });
-  const title = (ctx) =>
-    WIDGET_TYPES.list.mapping(ctx, shots()).find((r) => r.role === 'title').value;
+test('Title: the declared title property only when its type fits', () => {
+  const withName = (type) =>
+    shotsOf([
+      { key: 'title', type: 'text' },
+      { key: 'name', type },
+    ]);
+  const title = (ctx) => namesOf(ctx, 'shots').title;
   assert.equal(title(withName('text')), 'name');
-  assert.equal(title(withName('photo')), ''); // declared, but not a text: no choice
+  assert.equal(title(withName('photo')), null); // declared, but not a text: none
   const bare = withName('text');
   bare.schemas.shots = { ...bare.schemas.shots, title: undefined };
   assert.equal(title(bare), 'title'); // none declared: "title"

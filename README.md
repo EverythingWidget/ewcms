@@ -8,11 +8,11 @@ with GSAP page transitions. The editor (Svelte 5) runs in the dev server only an
 
 A **site** is only its own things; ewcms is everything else:
 
-| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                          | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                         |
-| -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                          | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                     |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/site` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `scripts/` (Vite plugin, dev server API, build, photos, R2), `functions/contact.js`, `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
-| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                             | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                             |
-| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                            |
+| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                             | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                         |
+| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                        |
 
 ## A site's commands
 
@@ -297,7 +297,7 @@ site settings can live side by side):
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `content/header.json`                | the **menus**: the header (nav pill, dropdowns, phone menu; see "Menu")                                                                                                                                                                                                                                           |
 | `content/footer.json`                | the **footer**: `{ version, kind: "part", sections }`, sections and widgets exactly like a page's, under every page (see "Footer")                                                                                                                                                                                |
-| `content/en/strings.json`            | UI text of the templates: the menu button and clock labels (`header.menu`, `header.close`, `header.clock`)                                                                                                                                                                                                                 |
+| `content/en/strings.json`            | UI text of the templates: the menu button and clock labels (`header.menu`, `header.close`, `header.clock`)                                                                                                                                                                                                        |
 | `content/site.json`                  | name, the **SEO defaults** (`title`, `titleTemplate`, `description`, `ogPhoto`, `url`, `robots`, `lang`; see "SEO"), `forms` (where contact forms send, see "Contact form"), socials, email, `timezone` of the clock, `jobTitle` / `country` (structured data on home)                                            |
 | `content/animations.json`            | **every animation** (see below)                                                                                                                                                                                                                                                                                   |
 | `content/en/pages/index.json`        | home: its `sections` of widgets (the hero first: the big name, its text and the **scattered hero photos**, position `x/y/w` in %, `phone` over them (`{ x?, y?, w? }`, `null`: hidden on phones), `depth`, `layer` back/front), curtain text                                                                      |
@@ -679,6 +679,7 @@ export default {
   ],
   defaults: { quote: 'Something worth repeating.', author: 'Someone', config: {} },
   check: (w) => [], // optional: extra content problems
+  warn: (w) => [], // optional: things `ewcms check` tells without failing (a leftover key)
   render: (data, ctx, widget) =>
     html`<figure class="quote">
       <blockquote ${widget.ed('quote', 'multiline')}>${lines(data.quote)}</blockquote>
@@ -890,8 +891,7 @@ rule work as anywhere.
   A List picks one with `config.template: "t-<id>"` (the **Template** picker in the Content
   tab lists the presets, then the site's templates); without `config.template` it shows its
   preset (Card) as before. From a source and Hand-made Lists use the same templates.
-  **Duplicate** (next to the picker; **Duplicate template** when a template is picked) copies the picked preset, as it shows now (its
-  property mapping applied, facts joined, a hand-made Panel's count as `{count} {unit}`), or the
+  **Duplicate** (next to the picker; **Duplicate template** when a template is picked) copies the picked preset, as it shows now (facts joined, a hand-made Panel's count as `{count} {unit}`), or the
   picked template, into a new `t-` file (the dev server's `POST /__editor/templates`: Save
   never creates files) and points the List at it, saving that switch at once (unless the page has
   other unsaved edits: then it stays unsaved and a note says "Saved as template t-…"). A copied
@@ -902,7 +902,7 @@ rule work as anywhere.
   sample item comes from; its widgets have no `source` (the List gives each copy its item), no
   List inside it yet (nested Lists come later); `ewcms check` and Save
   reject anything else with a message. A List pointing at a missing template warns and shows
-  Card. Property mapping does not apply to a template (it names its properties itself).
+  Card.
 
 - **The template editor** (local editor): **Pages > Site > Templates** lists every
   `content/templates/t-*.json` under Header and Footer; opening one works like opening a page,
@@ -1147,27 +1147,15 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
   default is 3, as Card's). The List stylesheet names no preset. `ewcms check`
   and Save reject an unknown key or value.
 
-- **Property mapping** (`config.properties`, Content tab under the source): one row per role the
-  preset uses, **Photo**, **Title**, **Text** (`photo`, `title`, `body`), each a picker of the
-  source's properties of a type that role takes (photo: `photo`; title: text, words,
-  multi-line, number; text: multi-line). A row is prefilled with its automatic choice: the
-  schema's declared title property for Title, the property of the role's own name for the others (`photo`, `body`), when its type fits, nothing
-  guessed (no "first photo property"). A source with none says so ("No photo property in
-  People") instead of an empty picker. Picking another stores it, picking the automatic one
-  again removes it:
-
-  ```json
-  {
-    "type": "list",
-    "source": { "mode": "all", "from": "people" },
-    "config": { "template": "preset:card", "properties": { "photo": "cover" } }
-  }
-  ```
-
-  A role naming a property the source doesn't have, or one of the wrong type, is ignored (the
-  automatic choice applies); other keys are rejected. Hand-made Lists have no mapping (their
-  item shape is fixed). The rows take the same room for every preset (hidden slots), so nothing
-  shifts.
+- **Which properties a preset shows**: each role the property of its own name, when its type
+  fits: **Title** the schema's declared title property (`title` when it names none; text,
+  words, multi-line, number), **Photo** `photo` (a photo), **Text** `body` (multi-line); the
+  facts are the schema's `list: true` properties, Panel's count `{photos}`. Nothing is guessed
+  (no "first photo property") and there is no mapping: a role the source has nothing for is
+  left out (a source whose photo is `cover` shows Card without a photo). To show other names,
+  **Duplicate** the template and point its parts at them (`{cover}`): a List is a simple list,
+  and its template names the properties it shows. A leftover `config.properties` (the old
+  mapping) is ignored; `ewcms check` warns about it.
   Picking **Row** sets **Columns** to `"1"`; the others default to `"3"`.
 
 - **Arrangement** (Layout tab): **Grid** only for now (`columns` `"1"`–`"6"`; 2 on a tablet, 1 on

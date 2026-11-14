@@ -68,8 +68,11 @@ export async function preview(root, opts = {}) {
   server.printUrls();
 }
 
-/** The site's content checked like the build does: a list of problems ([] = fine). */
-export async function checkContentOf(root) {
+/**
+ * The site's content checked like the build does: a list of problems ([] = fine). `warnings`
+ * collects what isn't a problem (a List's leftover config.properties).
+ */
+export async function checkContentOf(root, { warnings = [] } = {}) {
   const site = loadSiteConfig(root);
   const problems = [];
   // the render module as Node loads it (the registry its checks use) + the site's widgets
@@ -80,7 +83,7 @@ export async function checkContentOf(root) {
   const { setContentDir, ROOT_FILES } = await import(
     pathToFileURL(enginePath('src/site/files.js')).href
   );
-  const { parseContent, checkContent } = await import(
+  const { parseContent, checkContent, contentWarnings } = await import(
     pathToFileURL(enginePath('src/site/validate.js')).href
   );
   setContentDir(site.contentRel);
@@ -96,6 +99,7 @@ export async function checkContentOf(root) {
     try {
       const data = parseContent(fs.readFileSync(abs, 'utf8'), file);
       problems.push(...checkContent(file, data).map((p) => `${site.contentRootRel}/${file}: ${p}`));
+      warnings.push(...contentWarnings().map((w) => `${site.contentRootRel}/${file}: ${w}`));
     } catch (err) {
       problems.push(err.message);
     }
@@ -104,6 +108,7 @@ export async function checkContentOf(root) {
     try {
       const data = parseContent(fs.readFileSync(path.join(site.contentDir, file), 'utf8'), file);
       problems.push(...checkContent(file, data).map((p) => `${site.contentRel}/${file}: ${p}`));
+      warnings.push(...contentWarnings().map((w) => `${site.contentRel}/${file}: ${w}`));
     } catch (err) {
       problems.push(err.message);
     }
@@ -114,6 +119,7 @@ export async function checkContentOf(root) {
     try {
       const data = parseContent(fs.readFileSync(path.join(site.templatesDir, name), 'utf8'), file);
       problems.push(...checkContent(file, data).map((p) => `${site.templatesRel}/${name}: ${p}`));
+      warnings.push(...contentWarnings().map((w) => `${site.templatesRel}/${name}: ${w}`));
     } catch (err) {
       problems.push(err.message);
     }
@@ -287,7 +293,9 @@ export async function check(root, opts = {}) {
       console.error(`✗ ${what}: ${problems.length} problem(s)\n  ${problems.join('\n  ')}`);
     } else console.log(`✓ ${what}`);
   };
-  report('content', await checkContentOf(root));
+  const warnings = [];
+  report('content', await checkContentOf(root, { warnings }));
+  for (const w of warnings) console.warn(`! ${w}`);
   const warning = themeWarning(loadSiteConfig(root));
   if (warning) console.warn(warning);
   if (opts.lint !== false) report('lint', await lintSite(root));

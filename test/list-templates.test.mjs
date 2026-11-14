@@ -15,7 +15,7 @@ import { WIDGET_TYPES } from '../src/site/widgets/index.js';
 import { checkContent } from '../src/site/validate.js';
 import { cloneTemplate, presetWidgets } from '../src/site/widgets/list/presets.js';
 import { contentPath, isContentFile, templateFile, templateIdOf } from '../src/site/files.js';
-import { SITE_A } from './fixtures/index.mjs';
+import { SITE_A, withPhoto } from './fixtures/index.mjs';
 
 const base = loadContent(SITE_A);
 const people = base.sources.people;
@@ -175,7 +175,7 @@ test('a valid template passes; an invalid one is rejected with a clear message',
 });
 
 test('Duplicate preset: the clone is the preset as it shows now, and keeps "basedOn"', () => {
-  const tpl = cloneTemplate(base, 'people', 'preset:card', { properties: { photo: 'cover' } });
+  const tpl = cloneTemplate(withPhoto(base), 'people', 'preset:card');
   assert.equal(tpl.basedOn, 'preset:card');
   assert.equal(tpl.kind, 'template');
   assert.equal(tpl.name, 'Card copy');
@@ -183,12 +183,12 @@ test('Duplicate preset: the clone is the preset as it shows now, and keeps "base
   assert.deepEqual(tpl.preview, { from: 'people' });
   assert.deepEqual(checkContent(T, tpl), []);
   // the same widgets as the preset, markers resolved into plain {property} parts
-  const preset = presetWidgets('preset:card', base, 'people', { properties: { photo: 'cover' } });
+  const preset = presetWidgets('preset:card', withPhoto(base), 'people');
   assert.deepEqual(
     tpl.sections[0].widgets.map((w) => w.type),
     preset.map((w) => w.type),
   );
-  assert.deepEqual(tpl.sections[0].widgets[0].src, [{ property: 'cover' }]);
+  assert.deepEqual(tpl.sections[0].widgets[0].src, [{ property: 'photo' }]);
   assert.ok(tpl.sections[0].widgets.every((w) => !('facts' in w) && !('handmadeCount' in w)));
   // a clone of a template keeps that template's id as its from
   const again = cloneTemplate(withTemplate(card()), 'people', 't-ab12');
@@ -220,11 +220,6 @@ test('a List with config.template "t-…" renders the template, from a source an
   assert.ok(!row.querySelector('.li--beside'));
   assert.equal(row.querySelector('.li').getAttribute('style'), null);
   assert.ok(!seen.some((w) => /missing/.test(w)), seen.join());
-  // no mapping rows for a template (it names its properties itself)
-  assert.deepEqual(
-    WIDGET_TYPES.list.mapping(ctx, { source: { from: 'people' }, config: { template: 't-ab12' } }),
-    [],
-  );
   // hand-made: the same template, filled from config.items
   const hand = list(
     {
@@ -327,7 +322,7 @@ test('the panel: a Template picker and Duplicate preset, in both modes, no shift
 });
 
 test('a copied facts line drops the separator of an empty fact at render', () => {
-  const tpl = cloneTemplate(base, 'people', 'preset:card', { properties: { photo: 'cover' } });
+  const tpl = cloneTemplate(withPhoto(base), 'people', 'preset:card');
   const facts = tpl.sections[0].widgets.find((w) => w.role === 'facts');
   assert.equal(facts.join, ' · ');
   assert.deepEqual(checkContent(T, tpl), []);

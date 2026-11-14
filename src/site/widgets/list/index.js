@@ -24,8 +24,6 @@
  * gap          between the items: a whole number of the page's cells (the grid the List sits
  *              on: --cell), 0 (default) the items side by side; the space inside an item is its
  *              template's
- * properties   mapping { role: property } (title, photo, body): { "photo": "cover" }; a role
- *              left out shows the property of its own name (when its type fits), else nothing
  * seeAll       a link to the source's page after the heading (From a source only; ignored when handmade)
  *
  * When a value is missing (every widget's Content tab, config.missing: hide | show): item
@@ -55,16 +53,7 @@ import { hideMissing, missingState } from '../../layout/missing.js';
 import { isParts, partEmpty } from '../../layout/parts.js';
 import { WIDGET_TYPES } from '../index.js';
 import { sourcePage } from '../data.js';
-import {
-  MAPPABLE,
-  PRESETS,
-  PRESET_IDS,
-  factsRuns,
-  mappingRows,
-  presetWidgets,
-  presetOf,
-  templateOf,
-} from './presets.js';
+import { PRESETS, PRESET_IDS, factsRuns, presetWidgets, presetOf, templateOf } from './presets.js';
 import { isTemplateId } from '../../files.js';
 import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from './handmade.js';
 import { presetStyle, styleMarkup } from './item-style.js';
@@ -221,18 +210,6 @@ export const list = {
   handmade: true,
   // widgetItems (../../layout/source.js): hand-made items instead of the source's
   items: (ctx, widget) => (isHandmade(widget) ? handmadeItemsOf(ctx, widget) : undefined),
-  // Property mapping (config.properties): the Content tab's rows for this List (none when
-  // hand-made: its item shape is fixed)
-  // (a site template names its properties itself: no rows)
-  mapping: (ctx, widget) =>
-    widget?.config?.handmade === true || isTemplateId(widget?.config?.template)
-      ? []
-      : mappingRows(
-          ctx,
-          widget?.source?.from || '',
-          widget?.config?.template,
-          widget?.config?.properties,
-        ),
   label: 'List',
   icon: 'table-list',
   line: 'An item per entry of a source, or items you add by hand, in a look you pick',
@@ -313,6 +290,13 @@ export const list = {
     },
     motion: { animation: 'grid-reveal' },
   },
+  // not problems: a leftover key from an older shape (ewcms check shows it, Save keeps it)
+  warn: (widget) =>
+    widget.config?.properties !== undefined
+      ? [
+          'config.properties is no longer used (the List has no property mapping): its item template names the properties it shows; Duplicate the template to show others',
+        ]
+      : [],
   // arrangement "rows" is gone; hand-made items shape
   check: (widget) => {
     const out = [];
@@ -334,19 +318,6 @@ export const list = {
       out.push(
         `config.template must be a preset (${PRESET_IDS.join(', ')}) or a site template ("t-" and 4–12 letters or digits, content/templates)`,
       );
-    const props = widget.config?.properties;
-    if (props !== undefined) {
-      if (!isObject(props)) out.push('config.properties must be an object: { "photo": "cover" }');
-      else
-        for (const [role, key] of Object.entries(props)) {
-          if (!MAPPABLE[role])
-            out.push(
-              `config.properties has no "${role}" (it maps ${Object.keys(MAPPABLE).join(', ')})`,
-            );
-          else if (typeof key !== 'string' || !key)
-            out.push(`config.properties.${role} must be a property name`);
-        }
-    }
     const items = widget.config?.items;
     if (items !== undefined) {
       if (!Array.isArray(items)) out.push('config.items must be a list');
@@ -403,7 +374,6 @@ export const list = {
           open: t(ctx, 'list.open'),
           // an inner List on a property ({ photo, title, index } items): named as hand-made
           handmade: handmade || !!widget.keys,
-          properties: c.properties,
         });
     // the photo an item shows: its template's first photo's property (its {credit} is that one's)
     const photoKey = template.find((w) => w?.type === 'photo')?.src?.[0]?.property || 'photo';
