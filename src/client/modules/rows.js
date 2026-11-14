@@ -13,7 +13,8 @@
  * Measured: an auto widget's height as its content makes it (`.sec--measure` lets every widget
  * be as tall as its content for that read), or an aspect widget's width × ratio; a fixed-rows
  * widget keeps its rows. Then the links (src/site/layout/links.js, data-link / data-mlink on
- * the widget: "<leader id> <gap>") are resolved in their order: a follower's first row is its
+ * the widget: "<leader id> <gap>"; the leader named by data-widget in the editor, data-tw in an
+ * item template, data-lead on the public page) are resolved in their order: a follower's first row is its
  * leader's last row now + 1 + its gap; a free widget stays at its stored row. Run again when
  * the window resizes (on the next frame, at most once a frame while dragging), when a widget's
  * content changes size (photos, fonts, the editor's edits; on the next frame) and on reflow()
@@ -74,7 +75,7 @@ function readSection(sec, phone, row) {
   for (const el of widgetsOf(sec)) {
     if (el.hidden) continue;
     const area = areaOfEl(el, phone);
-    const id = el.dataset.widget || el.dataset.tw || `b${els.size}`;
+    const id = el.dataset.widget || el.dataset.tw || el.dataset.lead || `b${els.size}`;
     const kind = el.classList.contains('wgt--aspect')
       ? 'aspect'
       : el.classList.contains('wgt--auto')

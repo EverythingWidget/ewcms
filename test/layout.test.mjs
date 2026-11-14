@@ -112,6 +112,36 @@ test('a list widget without a source: no link, no items (not a default list)', (
   }
 });
 
+test("the public page: a leader names itself (data-lead), so its followers' links resolve", () => {
+  const ids = new Set();
+  const text = { ...newWidget('text', ids), id: 'w-ld01' };
+  const button = {
+    ...newWidget('button', ids),
+    id: 'w-ld02',
+    layout: { base: { col: 1, span: 12, link: { to: 'w-ld01', gap: 2 } } },
+  };
+  const free = { ...newWidget('button', ids), id: 'w-ld03' };
+  const out = renderSections(ctxOf(page), page, F, [newSection(ids, [text, button, free])]);
+  assert.match(out, /class="wgt wgt--text[^"]*" data-lead="w-ld01"/);
+  assert.match(out, /data-link="w-ld01 2"/);
+  // every widget another follows (data-link, or data-mlink: the phone's default stack) names
+  // itself, and only those
+  const followed = new Set([...out.matchAll(/data-m?link="(w-\w+) /g)].map((m) => m[1]));
+  const named = new Set([...out.matchAll(/data-lead="(w-\w+)"/g)].map((m) => m[1]));
+  assert.deepEqual([...named].sort(), [...followed].sort());
+  const rows = fs.readFileSync(new URL('../src/client/modules/rows.js', import.meta.url), 'utf8');
+  assert.match(rows, /el\.dataset\.widget \|\| el\.dataset\.tw \|\| el\.dataset\.lead/);
+  // the editor's preview: data-widget names every widget, no data-lead
+  setEditable(true);
+  try {
+    const ed = renderSections(ctxOf(page), page, F, [newSection(ids, [text, button])]);
+    assert.doesNotMatch(ed, /data-lead=/);
+    assert.match(ed, /data-widget="w-ld01"/);
+  } finally {
+    setEditable(false);
+  }
+});
+
 test('render: sections are grids, widgets carry their area; off is hidden', () => {
   const list = [
     section([

@@ -333,8 +333,19 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
   // the widget with the item's properties in its bound settings (as it is when nothing is bound)
   const data = resolveWidget(widget, t, { ...scope, placeholders: editable });
   const marker = editable ? ` data-widget="${esc(widget.id)}"` : '';
+  // the public page has no data-widget: a widget others follow (their data-link / data-mlink)
+  // still names itself, so rows.js can resolve the links
+  const lead =
+    !editable &&
+    (siblings || []).some(
+      (s) =>
+        s !== widget &&
+        Object.values(widgetLinks(s, siblings)).some((v) => v?.split(' ')[0] === widget.id),
+    )
+      ? ` data-lead="${esc(widget.id)}"`
+      : '';
   const hidden = widget.config?.enabled === false ? ' hidden' : '';
-  return `<div class="${widgetClass(widget)}"${marker} style="${widgetVars(widget, siblings)}"${linkAttrs(widget, siblings)}${motionAttrs(widget)}${noValue}${hidden}>${t.render(data, ctx, api)}</div>`;
+  return `<div class="${widgetClass(widget)}"${marker}${lead} style="${widgetVars(widget, siblings)}"${linkAttrs(widget, siblings)}${motionAttrs(widget)}${noValue}${hidden}>${t.render(data, ctx, api)}</div>`;
 }
 
 /** Section `at` of a page file, rendered. */
