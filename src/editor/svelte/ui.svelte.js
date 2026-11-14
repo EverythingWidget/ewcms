@@ -1,20 +1,27 @@
 import { popupStays } from '../multi-select.js';
 /**
- * Where the editor is, in three names (no others):
+ * Where the editor is, in four names (no others):
  *
+ *   ui.mode       'browse' | 'edit', the one source of truth for editing:
+ *                   'browse'    the site as visitors see it: the pages list (Pages), Site
+ *                               Settings, Preview (Ctrl+E); a page row's click only shows it
+ *                   'edit'      the page in the preview (or a site part, a template) open in
+ *                               the Pages tab with its page tabs: Edit, or a page opened
+ *                 Done (it saves first) and Back to pages go back to browse; another panel
+ *                 than Pages is always browse (setMode, setPanel in main.js).
  *   ui.panel      what the side panel shows, its top tab:
- *                   'pages'     the Pages tab: the pages list, or the page open with its page tabs
+ *                   'pages'     the Pages tab: the pages list (browse), or the page open (edit)
  *                   'settings'  what is the same on every page
- *                   'preview'   the toolbar's Preview toggle: the unsaved and unpublished changes
+ *                   'preview'   Ctrl+E's Preview: the unsaved and unpublished changes
  *   ui.pageTab    the open page's tab, under Pages: 'sections' | 'element-motion' (Element
  *                 motion) | 'page-motion' (Page motion) | 'seo'; null when no
  *                 page is open (the pages list, the Header or Footer). Kept per page in
  *                 ui.sections["pagetab:<file>"] (ContentPanel.svelte).
- *   previewClicks()  what a click in the preview does, from the two above:
- *                   'arrange'   pick and move widgets, double click to type (Pages, not on
+ *   previewClicks()  what a click in the preview does, from ui.mode only (and the edit tab):
+ *                   'visitor'   browse: links work, nothing is picked
+ *                   'arrange'   edit: pick and move widgets, double click to type (not on
  *                               Element motion)
- *                   'animate'   pick a widget or an animated element (a page's Element motion tab)
- *                   'visitor'   links work, nothing is picked (Settings, Preview)
+ *                   'animate'   edit on Element motion: pick a widget or an animated element
  *
  * Editor UI state. main.js changes it, the Svelte shell (App.svelte) shows it: it is a
  * $state object, so a change re-renders whatever uses that field.
@@ -30,6 +37,8 @@ import { popupStays } from '../multi-select.js';
 export const ui = $state({
   /** Why the content could not be loaded; App shows it instead of the editor. */
   loadError: '',
+  /** 'browse' | 'edit': see "Where the editor is" above (setMode). */
+  mode: 'browse',
   /** What the side panel shows: see "Where the editor is" above. */
   panel: 'pages',
   /** The panel Preview (and Ctrl+E) goes back to: 'pages' | 'settings'. */
@@ -151,16 +160,28 @@ export const ui = $state({
    * managing; multi: a photo list's Add photo, see openMedia).
    */
   media: { key: '', filter: 'all', pick: '', multi: null },
-  /** The pages list (Pages tab): open or not, and the folder it shows ('' = content/en/pages/ itself). */
-  pagesWin: { open: false, folder: '' },
+  /** The pages list (Pages tab, browse): the folder it shows ('' = content/en/pages/ itself). */
+  pagesWin: { folder: '' },
   /** Site Settings > Motion, the Animations library: the animation open ('' = the list). */
   library: { name: '' },
 });
 
 /** What a click in the preview does now: 'arrange' | 'animate' | 'visitor' (see above). */
 export function previewClicks() {
-  if (ui.panel !== 'pages') return 'visitor';
+  if (ui.mode !== 'edit') return 'visitor';
   return ui.pageTab === 'element-motion' ? 'animate' : 'arrange';
+}
+
+/**
+ * Browse or edit (ui.mode); the preview is told what its clicks do now (hooks.clicks: main.js
+ * applyClicks). Done saves before it calls this (App.svelte).
+ */
+export function setMode(mode) {
+  if (mode !== 'browse' && mode !== 'edit') return;
+  if (ui.mode === mode) return;
+  const before = previewClicks();
+  ui.mode = mode;
+  hooks.clicks(before);
 }
 
 /**
@@ -378,6 +399,7 @@ export function setMod(on) {
 /** Set by main.js: the preview's (overlay.js reveal). */
 // settled(): the preview shows the latest edits (pending section renders swapped in, rows
 // flowed): main.js
-export const hooks = { reveal: () => {}, settled: async () => {} };
+// clicks(before): what a preview click does changed (previewClicks): main.js applyClicks
+export const hooks = { reveal: () => {}, settled: async () => {}, clicks: () => {} };
 /** A widget scrolled to in the preview, only when it is out of view. */
 export const reveal = (id) => hooks.reveal(id);

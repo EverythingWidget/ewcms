@@ -10,7 +10,7 @@ const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 test('the pages list, a page and a template all slide inside a clipping view', () => {
   const panel = read('src/editor/svelte/ContentPanel.svelte');
   const open = panel.indexOf('class="ed-view"');
-  const list = panel.indexOf('{#if ui.pagesWin.open}', open);
+  const list = panel.indexOf('{#if browsing}', open);
   const tpl = panel.indexOf("ui.target?.kind === 'item-template'", open);
   const close = panel.indexOf('</div>', open);
   assert.ok(open > 0 && list > open && tpl > list && tpl < close);

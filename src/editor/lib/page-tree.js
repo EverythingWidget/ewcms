@@ -194,6 +194,15 @@ export const entryFor = (pages, row) =>
           : p.kind === 'page' && p.path === row.path && !p.items,
   );
 
+/**
+ * Entry `entry` (entryFor) is what the preview shows at `path`: a page's own path, one of a
+ * [param] page's item pages, an item template's preview page. A site part never is.
+ */
+export const entryShows = (entry, path) =>
+  !!entry &&
+  entry.kind !== 'part' &&
+  (entry.path === path || !!entry.items?.some((it) => it.path === path));
+
 /** The path crumbs of a level: [{ label: '/', level: '' }, { label: 'photography/', … }]. */
 export const crumbsOf = (level) => [
   { label: '/', level: '' },

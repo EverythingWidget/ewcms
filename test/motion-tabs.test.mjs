@@ -68,7 +68,8 @@ test('URL tabs are ui.panel: pages, settings, preview; clicks: arrange, animate,
   assert.match(p, /PANELS = \['pages', 'settings', 'preview'\]/);
   assert.match(p, /set\('tab', ui\.panel\)/);
   const u = read('editor/svelte/ui.svelte.js');
-  assert.match(u, /if \(ui\.panel !== 'pages'\) return 'visitor';/);
+  // browse or edit (ui.mode) is the one source: browse is visitor clicks
+  assert.match(u, /if \(ui\.mode !== 'edit'\) return 'visitor';/);
   // Element motion animates; Page motion arranges (as Sections and SEO)
   assert.match(u, /ui\.pageTab === 'element-motion' \? 'animate' : 'arrange'/);
   assert.match(p, /PAGE_TABS = \['sections', 'element-motion', 'page-motion', 'seo'\]/);
@@ -78,13 +79,15 @@ test('URL tabs are ui.panel: pages, settings, preview; clicks: arrange, animate,
     read('editor/svelte/ContentPanel.svelte'),
     /ui\.sections\[`pagetab:\$\{file\}`\] = v;/,
   );
+  // ui.mode is written only through setMode (ui.svelte.js) or main.js's setPanel (another
+  // panel than Pages browses); never a second flag beside it
   for (const f of [
     'editor/main.js',
     'editor/bridge.js',
     'editor/overlay.js',
     'editor/svelte/App.svelte',
   ])
-    assert.doesNotMatch(read(f), /ui\.mode\b|lastEdit|previewMode|'browse'/, f);
+    assert.doesNotMatch(read(f), /lastEdit|previewMode|pagesWin\.open/, f);
 });
 
 test('Motion shows the whole page; the widget pop-up has no Motion tab and stays on Motion', () => {
@@ -99,7 +102,7 @@ test('Motion shows the whole page; the widget pop-up has no Motion tab and stays
   assert.doesNotMatch(cp, /widgetTab/);
   assert.match(cp, /if \(!\(ui\.popup && ui\.widget === group\.id\)\) openWidget\(group\.id\);/);
   assert.doesNotMatch(esrc('svelte/WidgetMotion.svelte'), /inspector's Motion tab/);
-  assert.match(esrc('svelte/ContentPanel.svelte'), /\{#if popG && !ui\.pagesWin\.open\}/);
+  assert.match(esrc('svelte/ContentPanel.svelte'), /\{#if popG && !browsing\}/);
   assert.doesNotMatch(esrc('main.js'), /editMotion/);
 });
 

@@ -1,5 +1,5 @@
 <!--
-  Pages (the Pages tab, while ui.pagesWin.open): the site's pages one folder at a time
+  Pages (the Pages tab, browse: ui.mode): the site's pages one folder at a time
   (src/editor/lib/page-tree.js), its rows on the pages' card colour (--c-page-card). Another
   level slides in (lib/slide.js): a deeper one from the right, a higher one from the left.
     header      in a folder: the page head's square ← (up one level, Esc) beside the folder
@@ -16,12 +16,13 @@
   linked (out of the menu); from Not linked into it (into the menu there). The row in hand
   leaves its place, a dashed placeholder card shows where it lands (red with why: refused). A page of another
   folder dropped there moves here (its address changes, links follow, no redirect), unless
-  its name is taken here. 404 and [param] pages don't move. A click selects a row and shows
-  it in the preview; a double click (or Enter) goes into a page's level (any page, a plain one
-  too: its root row and "No sub pages yet"; a [param] page's: it can hold another), and on a
-  level's root row, on Home, 404, Header or Footer opens it (its Sections, Motion, SEO:
-  PageHead.svelte goes back). Each row's edit button (pen) opens it the same way, one click
-  (no select, no drag). Delete asks over the row: one line when nothing links to it,
+  its name is taken here. 404 and [param] pages don't move. A click selects a row (its ring)
+  and shows it in the preview, nothing else (browse); the row of the page the preview shows is
+  the active one (its fill). A double click (or Enter) goes into a page's level (any page, a
+  plain one too: its root row and "No sub pages yet"; a [param] page's: it can hold another),
+  and on a level's root row, on Home, 404, Header or Footer opens it: edit (its Sections,
+  Motion, SEO; PageHead.svelte goes back to browse). The header's Edit opens the page in the
+  preview the same way. Delete asks over the row: one line when nothing links to it,
   else with where its address and links go (a redirect). Adding, moving and deleting go to
   disk at once (actions.pagesOp in main.js).
 -->
@@ -31,7 +32,7 @@
   import BackHead from './BackHead.svelte';
   import Select from './Select.svelte';
   import { openAddPage } from './modals.svelte.js';
-  import { ui } from './ui.svelte.js';
+  import { ui, setMode } from './ui.svelte.js';
   import { toast } from './toasts.svelte.js';
   import { listDrag, rowsOf } from './list-drag.svelte.js';
   import { HEADER, isTemplate, pageFile, templateFile } from '../../site/files.js';
@@ -40,6 +41,7 @@
     crumbsOf,
     dropOf,
     entryFor,
+    entryShows,
     goesInside,
     hasInside,
     levelOf,
@@ -127,12 +129,15 @@
   }
   function open(row) {
     show(row);
-    ui.pagesWin.open = false;
+    setMode('edit');
   }
+  // browse: a click only selects the row and shows its page (a site part: no page, only selected)
   function pick(row) {
     sel = row.id;
-    show(row);
+    if (!row.part || row.itemTemplate) show(row);
   }
+  // the row of the page the preview shows (its fill; the ring is the row selected)
+  const isActive = (row) => entryShows(entryFor(ui.pages, row), ui.path);
   // a double click, or Enter / Space (a click without a pointer): into the page's level (its
   // root row first, its sub pages, or "No sub pages yet"), its root row: open it (page-tree.js)
   const inside = (row) => !row.part && goesInside(row);
@@ -292,14 +297,20 @@
   }
 </script>
 
-<!-- a row: [lead | title / path (tag) | As / | edit | trash | ›] (a level's root row: edit,
+<!-- a row: [lead | title / path (tag) | As / | slot | trash | ›] (a level's root row: slot,
      Own page), its delete confirm over it
      (j, at: its grip's index in the menu list (0) or Not linked (1)) -->
 {#snippet row(r, { j = -1, at = 0 } = {})}
   {@const lifted = j >= 0 && drag?.moving && drag.at === at && drag.j === j}
   {@const tag = tagOf(r)}
   <li
-    class={['prow', sel === r.id && 'is-sel', lifted && 'is-lifted', r.off && 'is-off']}
+    class={[
+      'prow',
+      isActive(r) && 'is-active',
+      sel === r.id && 'is-sel',
+      lifted && 'is-lifted',
+      r.off && 'is-off',
+    ]}
     style:top={lifted ? `${drag.top}px` : null}
     style:translate={lifted ? `0 ${drag.dy}px` : null}
     data-prow={j >= 0 ? j : undefined}
@@ -362,16 +373,10 @@
         aria-label="Hidden from search engines"
       ></i>
     {/if}
-    <!-- [ edit | trash | › ]: 24px slots each (empty ones kept), so the columns line up; a
-         level's root row: edit, then its Own page switch -->
-    <Button
-      size="small"
-      icon="pen-to-square"
-      iconOnly
-      label="Edit {r.title}"
-      title="Edit: its sections"
-      onclick={() => open(r)}
-    />
+    <!-- [ slot | trash | › ]: the first 24px slot is empty (the edit pen's, gone: Edit is in
+         the header), kept so the columns line up and nothing shifts; a level's root row: the
+         slot, then its Own page switch -->
+    <span class="prow__slot" aria-hidden="true"></span>
     {#if r.self && L.canOwn}
       <label
         class="prow__own"
@@ -401,7 +406,7 @@
       <span class="prow__slot" aria-hidden="true"></span>
     {/if}
     {#if r.self && !L.canOwn}
-      <!-- no switch: its place (two slots), so edit stays in the column -->
+      <!-- no switch: its place (two slots), so the columns line up -->
       <span class="prow__slot" aria-hidden="true"></span>
       <span class="prow__slot" aria-hidden="true"></span>
     {/if}
@@ -779,6 +784,16 @@
 
     &:is(:hover, :focus-within) {
       box-shadow: inset 0 0 0 1px var(--c-line-hover);
+    }
+
+    // active: the page the preview shows, a sand fill (A2); selected: the ring. Both can be on;
+    // neither changes the row's size
+    &.is-active {
+      background: color-mix(
+        in srgb,
+        var(--c-page-accent) 9%,
+        color-mix(in srgb, var(--c-text) 14%, var(--c-page-card))
+      );
     }
 
     &.is-sel {

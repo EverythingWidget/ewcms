@@ -203,6 +203,7 @@ test('selectAnim (a panel choice) and pickElement anim (a preview click) set the
   const a = await loadUi();
   const b = await loadUi();
   a.ui.panel = b.ui.panel = 'pages';
+  a.ui.mode = b.ui.mode = 'edit';
   a.ui.pageTab = b.ui.pageTab = 'element-motion';
   const el = { dataset: { anim: 'a1' }, closest: () => ({ dataset: { widget: 'w-1' } }) };
   a.selectAnim(el);

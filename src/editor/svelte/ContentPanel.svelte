@@ -1,8 +1,8 @@
 <!--
-  Pages tab (ui.panel 'pages'): the pages list (PagesList.svelte, while ui.pagesWin.open), or the page in the
-  preview or a site part (the Header: HeaderPart.svelte; the Footer; an item template:
+  Pages tab (ui.panel 'pages'): the pages list (PagesList.svelte, browse: ui.mode), or the page in the
+  preview or a site part (edit) (the Header: HeaderPart.svelte; the Footer; an item template:
   TemplatePanel.svelte) under PageHead.svelte
-  (Back to pages: back to the pages list). The two swap with a slide (lib/slide.js):
+  (Back to pages: back to the pages list, browse). The two swap with a slide (lib/slide.js):
   a page or a template opened comes in from the right, the list comes back from the left. A page is a list of sections
   holding widgets (src/site/layout/), and nothing else. A page's panel has four tabs (Tabs.svelte,
   the open one kept per page in ui.sections["pagetab:<file>"]; unknown: Sections):
@@ -43,6 +43,7 @@
     deselectSections,
     hooks,
     previewClicks,
+    setMode,
   } from './ui.svelte.js';
   import HeaderPart from './HeaderPart.svelte';
   import PageHead from './PageHead.svelte';
@@ -140,7 +141,7 @@
   // site part ends it.
   const MOTION_TABS = ['element-motion', 'page-motion'];
   $effect(() => {
-    const listing = ui.pagesWin.open || ui.target.kind !== 'page';
+    const listing = ui.mode === 'browse' || ui.target.kind !== 'page';
     const f = file;
     const kept = tab;
     untrack(() => {
@@ -246,9 +247,10 @@
   // `.ed-view` (lib/slide.js): a page or template opened comes in from the right, Back
   // to pages brings the list from the left; one still copy of the whole view going slides
   // out, one of the view coming slides in
-  let listOpen = ui.pagesWin.open;
+  const browsing = $derived(ui.mode === 'browse');
+  let listOpen = untrack(() => browsing);
   $effect.pre(() => {
-    const now = ui.pagesWin.open;
+    const now = browsing;
     untrack(() => {
       if (now === listOpen) return;
       listOpen = now;
@@ -261,17 +263,17 @@
     const { edit, quiet } = ui.selection || {};
     if (!edit || quiet) return;
     // a text clicked in the preview: its widget, not the pages list
-    untrack(() => (ui.pagesWin.open = false));
+    untrack(() => setMode('edit'));
     reveal(edit);
   });
   // a widget clicked in the preview: the same
   $effect(() => {
-    if (ui.widget) untrack(() => (ui.pagesWin.open = false));
+    if (ui.widget) untrack(() => setMode('edit'));
   });
 </script>
 
 <div class="ed-view" bind:this={view}>
-  {#if ui.pagesWin.open}
+  {#if browsing}
     <section class="ed-body">
       <PagesList {live} {actions} />
     </section>
@@ -331,11 +333,11 @@
   {/if}
 </div>
 
-{#if popSection && file && !ui.pagesWin.open && previewClicks() === 'arrange'}
+{#if popSection && file && !browsing && previewClicks() === 'arrange'}
   <SectionPopup {live} {bridge} {file} id={popSection} {popup} onclose={closeSectionPopup} />
 {/if}
 
-{#if popG && !ui.pagesWin.open}
+{#if popG && !browsing}
   <WidgetPopup g={popG} {live} {bridge} {sourceIds} {onsource} {popup} onclose={closeWidgetPopup} />
 {/if}
 

@@ -7,7 +7,7 @@
                                       The menu and its labels  (Header / Footer: the pages list's line)
     Preview noor-vermeer / 2018 ▾   (a [param] page: the page of it the preview shows)
     ⚠ No pages are built: …        (only when its main widget can't decide its pages)
-  Back to pages opens the pages list (in the Pages tab) where the page was opened (its
+  Back to pages opens the pages list (in the Pages tab; browse, ui.mode) where the page was opened (its
   own folder, or the one it is in), a path part at that folder. The path's [param]/ parts and
   the Preview line's values are in the widget accent (a param and its value read as a pair).
   A [param] page previews the page of it shown last (ui.previewAt, main.js pickTarget), else its
@@ -15,7 +15,7 @@
   tab shows it. The warning line jumps to the main widget, on the param row that is wrong.
 -->
 <script>
-  import { ui, closeSectionPopup, showWidget } from './ui.svelte.js';
+  import { ui, closeSectionPopup, showWidget, setMode } from './ui.svelte.js';
   import BackHead from './BackHead.svelte';
   import { openPreviewPicker } from './modals.svelte.js';
   import { parentId, pathOfId } from '../../site/routes.js';
@@ -56,8 +56,9 @@
     return at === id || at === parentId(id) ? at : parentId(id);
   };
   function list(level = backTo()) {
-    ui.pagesWin = { open: true, folder: level };
+    ui.pagesWin = { folder: level };
     if (ui.panel !== 'pages') actions.setPanel('pages');
+    setMode('browse');
   }
 
   // ---- a [param] page: the page of it shown, and why it builds none
@@ -71,7 +72,7 @@
   function toMain() {
     const main = live.get(pageFile(id), '/main');
     if (ui.panel !== 'pages') actions.setPanel('pages');
-    ui.pagesWin = { ...ui.pagesWin, open: false };
+    setMode('edit');
     closeSectionPopup();
     const has = problem?.kind !== 'none';
     showWidget(has ? main : null, has);

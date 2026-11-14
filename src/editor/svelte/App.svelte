@@ -1,10 +1,13 @@
 <!--
   The editor shell: the site preview on the left, the side panel on the right with the
-  toolbar (Sources, Media | Preview, phone, undo, redo; the top tabs Pages | Site Settings), the current
-  tab's panel (Pages: the pages list, or the page open with its tabs Sections | Motion | SEO,
-  ContentPanel.svelte) (Preview's while it is on) and the Save / Publish footer. Also the
-  modals, each mounted once here and opened through state (modals.svelte.js), the toasts and
-  the keyboard shortcuts.
+  header (the status line | Edit / Done | Publish; the top tabs Pages | Site Settings), the
+  current tab's panel (Pages: the pages list in browse, or the page open with its tabs
+  Sections | Motion | SEO in edit, ContentPanel.svelte) (Preview's while Ctrl+E has it on) and
+  the footer (Desktop | Mobile, Sources, Media; undo, redo in edit). Also the modals, each
+  mounted once here and opened through state (modals.svelte.js), the toasts and the keyboard
+  shortcuts.
+  Browse or edit is ui.mode (ui.svelte.js): Edit opens the page in the preview; Done saves
+  the changes (the save behind Ctrl+S), then goes back to browse.
   main.js holds the logic: it changes `ui` (ui.svelte.js) and passes `actions`.
 -->
 <script>
@@ -39,12 +42,20 @@
   import TemplateCols from './TemplateCols.svelte';
   import { layerWidget } from '../layout-ops.js';
   import { targetFile } from '../layout-sync.js';
-  import { ui, previewClicks, pickElement, selectLink, deselect, closePopup } from './ui.svelte.js';
+  import {
+    ui,
+    previewClicks,
+    pickElement,
+    selectLink,
+    deselect,
+    closePopup,
+    setMode,
+  } from './ui.svelte.js';
   import { writeUrl } from './persist.js';
   import { MOD, plural } from '../lib/format.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
-  // actions: setPanel, setPageTab, pickTarget, save, refreshStatus, pagesOp
+  // actions: setPanel, setPageTab, setMode, pickTarget, save, refreshStatus, pagesOp
   let { live, bridge, actions } = $props();
 
   // Publish: the status first (what is saved but not published, whether it can publish)
@@ -68,6 +79,20 @@
   // Preview: a toggle; off goes back to the tab it came from
   const previewing = $derived(ui.panel === 'preview');
   const togglePreview = () => actions.setPanel(previewing ? ui.panelBeforePreview : 'preview');
+  // browse or edit (ui.mode): Edit opens the page in the preview (in the Pages tab); Done saves
+  // what is unsaved first (nothing is lost), then browses; a failed save stays in edit
+  const editing = $derived(ui.mode === 'edit');
+  function edit() {
+    if (ui.panel !== 'pages') actions.setPanel('pages');
+    setMode('edit');
+  }
+  async function done() {
+    if (await actions.save()) setMode('browse');
+  }
+  const VIEWPORTS = [
+    ['desktop', 'Desktop', 'desktop'],
+    ['phone', 'Mobile', 'mobile-screen-button'],
+  ];
   const unpublished = $derived(ui.pub?.files || []);
   const ahead = $derived(ui.pub?.ahead || 0);
   const unpublishedChanges = $derived(unpublished.reduce((n, f) => n + (f.changes || 1), 0));
@@ -195,57 +220,34 @@
 
   <aside class="ed-panel">
     <header class="ed-head">
-      <!-- [ Sources | Media ] ... [ Preview | phone | undo | redo ] (quiet icon buttons) -->
-      <div class="ed-row ed-tools">
+      <!-- [ status line | Edit / Done | Publish ]: Edit and Done share one 80px slot -->
+      <div class="ed-actions">
+        <!-- one short line; the details in its tooltip -->
+        <p class="ed-pending" data-kind={pending.kind} title={pending.details} role="status">
+          {#if pending.kind !== 'none'}<i class="ed-pending__dot"></i>{/if}
+          <span>{pending.text}</span>
+        </p>
         <Button
-          icon="database"
-          iconOnly
-          label="Sources"
-          title="Sources: people, places, projects (the lists in {contentPath('sources/')})"
-          onclick={() => openSources()}
-        />
+          data-edit-toggle
+          title={editing
+            ? `Done: save the changes (${MOD}+S) and browse`
+            : 'Edit: the page in the preview'}
+          disabled={editing && (ui.saving || ui.publishing)}
+          onclick={editing ? done : edit}>{editing ? 'Done' : 'Edit'}</Button
+        >
         <Button
-          icon="images"
-          iconOnly
-          label="Media"
-          title="Media: every photo, upload, alt text"
-          onclick={() => openMedia({ key: ui.media.key })}
-        />
-        <span class="ed-tools__gap"><UpdateNotice /></span>
-        <!-- toggles, on (the accent) or off: Preview (the site as visitors see it), the phone view -->
-        <Button
-          icon="play"
-          iconOnly
-          label="Preview ({MOD}+E)"
-          title="Preview: the site as visitors see it, links work ({MOD}+E)"
-          aria-pressed={previewing}
-          onclick={togglePreview}
-        />
-        <span class="ed-tools__sep" aria-hidden="true"></span>
-        <Button
-          icon="mobile-screen-button"
-          iconOnly
-          label="Phone view"
-          aria-pressed={phone}
-          onclick={() => (ui.viewport = phone ? 'desktop' : 'phone')}
-        />
-        <Button
-          icon="rotate-left"
-          iconOnly
-          label="Undo ({MOD}+Z)"
-          disabled={!live.canUndo}
-          onclick={() => live.store.undo()}
-        />
-        <Button
-          icon="rotate-right"
-          iconOnly
-          label="Redo ({MOD}+Shift+Z)"
-          disabled={!live.canRedo}
-          onclick={() => live.store.redo()}
-        />
+          variant="primary"
+          title="Commit all saved content changes in one commit and push to {branch}"
+          disabled={ui.publishing || (!unpublished.length && !ahead && !live.changes)}
+          onclick={publish}
+        >
+          {ui.publishing
+            ? 'Publishing…'
+            : `Publish${unpublished.length ? ` · ${unpublishedChanges}` : ''}`}
+        </Button>
       </div>
-      <!-- the modes: evenly spread, the picked one with a white line; their line ends the toolbar.
-           Hidden while previewing (the rows above stay put; Preview's panel takes their place) -->
+      <!-- the modes: evenly spread, the picked one with a white line; their line ends the header.
+           Hidden while previewing (Ctrl+E; the row above stays put; Preview's panel takes their place) -->
       {#if !previewing}
         <Tabs
           class="ed-panels"
@@ -267,29 +269,55 @@
       <PreviewPanel {live} onpublish={publish} />
     {/if}
 
+    <!-- [ Desktop | Mobile ] Sources Media ... (undo redo: edit only, at the end, so nothing
+         before them moves) -->
     <footer class="ed-foot">
-      <!-- one short line before Save / Publish; the details in its tooltip -->
-      <p class="ed-pending" data-kind={pending.kind} title={pending.details} role="status">
-        {#if pending.kind !== 'none'}<i class="ed-pending__dot"></i>{/if}
-        <span>{pending.text}</span>
-      </p>
+      <div class="seg ed-vp" role="radiogroup" aria-label="Preview size">
+        {#each VIEWPORTS as [value, label, icon] (value)}
+          <button
+            type="button"
+            role="radio"
+            aria-checked={ui.viewport === value}
+            class={['seg__btn', ui.viewport === value && 'is-active']}
+            title={label}
+            aria-label={label}
+            onclick={() => (ui.viewport = value)}
+          >
+            <i class="fa-solid fa-{icon}" aria-hidden="true"></i>
+          </button>
+        {/each}
+      </div>
       <Button
-        title="Write the changes to content/*.json as a draft ({MOD}+S)"
-        disabled={!live.changes || ui.saving || ui.publishing}
-        onclick={() => actions.save()}
-      >
-        {ui.saving ? 'Saving…' : `Save${live.changes ? ` · ${live.changes}` : ''}`}
-      </Button>
+        icon="database"
+        iconOnly
+        label="Sources"
+        title="Sources: people, places, projects (the lists in {contentPath('sources/')})"
+        onclick={() => openSources()}
+      />
       <Button
-        variant="primary"
-        title="Commit all saved content changes in one commit and push to {branch}"
-        disabled={ui.publishing || (!unpublished.length && !ahead && !live.changes)}
-        onclick={publish}
-      >
-        {ui.publishing
-          ? 'Publishing…'
-          : `Publish${unpublished.length ? ` · ${unpublishedChanges}` : ''}`}
-      </Button>
+        icon="images"
+        iconOnly
+        label="Media"
+        title="Media: every photo, upload, alt text"
+        onclick={() => openMedia({ key: ui.media.key })}
+      />
+      <span class="ed-foot__gap"><UpdateNotice /></span>
+      {#if editing}
+        <Button
+          icon="rotate-left"
+          iconOnly
+          label="Undo ({MOD}+Z)"
+          disabled={!live.canUndo}
+          onclick={() => live.store.undo()}
+        />
+        <Button
+          icon="rotate-right"
+          iconOnly
+          label="Redo ({MOD}+Shift+Z)"
+          disabled={!live.canRedo}
+          onclick={() => live.store.redo()}
+        />
+      {/if}
     </footer>
   </aside>
 
@@ -370,64 +398,62 @@
     min-width: 0;
   }
 
-  // [ Sources Media ... phone undo redo ], then the modes; 16px edges
+  // [ status | Edit / Done | Publish ], then the modes; 16px edges
   .ed-head {
-    position: relative; // the update card's anchor
     flex: none;
     padding-top: var(--space-4);
     background: var(--c-panel-head);
     @include stack(var(--space-2));
   }
 
-  .ed-row {
-    display: flex;
-    min-width: 0;
-    padding-inline: var(--space-4);
-
-    > :global(*) {
-      flex: 1;
-      min-width: 0;
-    }
+  .ed-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 40px;
+    padding: 0 var(--space-4);
   }
 
-  // icon buttons: their glyphs on the 16px edges (a quiet 32px button, its icon 16px)
-  .ed-tools {
+  // Edit and Done share one slot: both are 4 letters, this min-width stops any shift
+  .ed-actions :global([data-edit-toggle]) {
+    min-width: 80px;
+  }
+
+  // [ Desktop | Mobile ] Sources Media ... undo redo: 16px edges, 8px apart
+  .ed-foot {
+    position: relative; // the update card's anchor
+    border-top: 1px solid transparent; // borderless: no line, its 1px kept (no shift)
+    background: var(--c-panel-head);
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    display: flex;
     align-items: center;
-    gap: var(--space-1);
-    padding-inline: var(--space-3);
+    gap: var(--space-2);
 
     > :global(*) {
       flex: none;
     }
   }
 
-  .ed-tools__gap {
+  // the update notice's pill sits here (its card floats over the panel: UpdateNotice.svelte)
+  .ed-foot__gap {
     flex: 1 !important;
     display: flex;
     justify-content: flex-start;
     min-width: 0;
   }
 
-  // between Preview and phone / undo / redo: a 1px gap, 16px tall (borderless: no line drawn)
-  .ed-tools__sep {
-    width: 1px;
-    height: 16px;
-    margin-inline: var(--space-1);
-  }
-
-  :global(.ed-panels) {
-    margin-top: var(--space-1);
-  }
-
-  // [ status line | Save | Publish ]
-  .ed-foot {
-    border-top: 1px solid transparent; // borderless: no line, its 1px kept (no shift)
-    background: var(--c-panel-head);
-    padding: var(--space-3) var(--space-4) var(--space-4);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+  // Desktop | Mobile: the editor's .seg, icon-only 32×32 cells, as tall as the buttons
+  .ed-vp .seg__btn {
+    display: inline-flex;
+    flex: none;
     align-items: center;
-    gap: var(--space-2);
+    justify-content: center;
+    width: var(--size-control);
+    height: var(--size-control);
+    padding: 0;
+    font-size: var(--fs-lg);
+    line-height: 1;
   }
 
   .ed-pending {

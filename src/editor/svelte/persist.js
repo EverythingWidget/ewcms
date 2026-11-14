@@ -10,7 +10,8 @@
  *             property highlighted (&source=people&item=noor-vermeer&property=summary; item is the
  *             slug, or the number without one)
  *     animation    Site Settings > Motion's Animations library, open on that animation (&animation=fade-up)
- *     pages   the pages list (the Pages tab), open on that folder (&pages=/people/; / is the root)
+ *     pages   the pages list (the Pages tab, browse), open on that folder (&pages=/people/; / is
+ *             the root); tab=pages without it: the page in the preview open (edit)
  *     media   + pick: the Media window, on that photo (&media=photos/x-1600.webp; / for none),
  *             picking for that field (&pick=sources/people.json#/0/photos/0/src)
  *   sessionStorage (this browser tab only, survives a refresh): the finer things. Open/closed
@@ -84,8 +85,10 @@ function readState() {
   }
   if (q.has('pages')) {
     if (!q.has('tab')) state.panel = 'pages'; // the pages list is in the Pages tab
-    state.pagesWin = { open: true, folder: q.get('pages').replace(/^\/+|\/+$/g, '') };
-  }
+    state.mode = 'browse';
+    state.pagesWin = { folder: q.get('pages').replace(/^\/+|\/+$/g, '') };
+  } else if (q.get('tab') === 'pages' || state.part) state.mode = 'edit'; // a page or part open
+  if (state.panel && state.panel !== 'pages') state.mode = 'browse'; // only Pages edits
   if (q.has('animation')) {
     if (!q.has('tab')) state.panel = 'settings'; // the library is in Site Settings > Motion
     state.library = { name: q.get('animation') }; // an unknown name: the list
@@ -102,11 +105,15 @@ export function restoreUi(preview, content) {
   if (['pages', 'settings'].includes(saved.panelBeforePreview))
     ui.panelBeforePreview = saved.panelBeforePreview;
   if (PAGE_TABS.includes(saved.pageTab)) ui.pageTab = saved.pageTab;
-  if (saved.part) ui.target = saved.part; // Header or Footer (pages: the URL's path)
+  // browse or edit (ui.mode: only Pages edits)
+  if (['browse', 'edit'].includes(saved.mode) && ui.panel === 'pages') ui.mode = saved.mode;
+  // Header or Footer open (pages: the URL's path; browse: the page in the preview)
+  if (saved.part && ui.mode === 'edit') ui.target = saved.part;
   ui.sections = saved.sections || {};
   // Site Settings > Motion's library, on an animation
   if (typeof saved.library?.name === 'string') ui.library = { name: saved.library.name };
-  if (saved.pagesWin) ui.pagesWin = saved.pagesWin; // the Pages tab shows the pages list (PagesList)
+  // the pages list's folder (PagesList)
+  if (typeof saved.pagesWin?.folder === 'string') ui.pagesWin = { folder: saved.pagesWin.folder };
   if (saved.media) {
     ui.media = { ...ui.media, ...saved.media }; // MediaModal's photo, filter, field
     delete ui.media.open; // (a session from before the modal stack)
@@ -127,6 +134,7 @@ export function restoreUi(preview, content) {
         sources: ui.sources,
         library: ui.library,
         pagesWin: ui.pagesWin,
+        mode: ui.mode,
         media: ui.media,
         modals: ui.modals.filter((name) => KEPT.includes(name)),
         path: bridge.path(),
@@ -197,7 +205,7 @@ export function writeUrl() {
   set('animation', ui.panel === 'settings' && ui.library.name);
   set(
     'pages',
-    ui.panel === 'pages' && ui.pagesWin.open && `/${ui.pagesWin.folder}/`.replace('//', '/'),
+    ui.panel === 'pages' && ui.mode === 'browse' && `/${ui.pagesWin.folder}/`.replace('//', '/'),
   );
   set('media', isOpen('media') && (ui.media.key || '/'));
   set('pick', isOpen('media') && ui.media.pick);

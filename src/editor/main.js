@@ -43,6 +43,8 @@ import {
   closePopup,
   closeWidgetPopup,
   clearAnim,
+  setMode,
+  deselect,
   setMod,
 } from './svelte/ui.svelte.js';
 import { toast } from './svelte/toasts.svelte.js';
@@ -219,6 +221,7 @@ mount(App, {
     actions: {
       setPanel,
       setPageTab,
+      setMode,
       showSpecimen,
       pickTarget,
       lockPart,
@@ -319,8 +322,8 @@ ui.openTemplate = (id) => {
   if (!entry)
     return void toast(`No template ${id} (content/templates/${id}.json)`, { kind: 'error' });
   closeWidgetPopup();
-  ui.pagesWin = { ...ui.pagesWin, open: false };
   if (ui.panel !== 'pages') setPanel('pages');
+  setMode('edit');
   pickTarget(entry);
 };
 
@@ -496,13 +499,37 @@ function applyClicks(before) {
   }
 }
 
-/** Show a panel: 'pages' | 'settings' | 'preview' (ui.svelte.js); Pages closes the type specimen. */
+/**
+ * Show a panel: 'pages' | 'settings' | 'preview' (ui.svelte.js); Pages closes the type
+ * specimen. Only Pages edits: another panel is browse (ui.mode).
+ */
 function setPanel(panel) {
   if (panel === 'pages') showSpecimen(false);
   const before = previewClicks();
   ui.panel = panel;
   if (panel !== 'preview') ui.panelBeforePreview = panel;
+  if (panel !== 'pages' && ui.mode !== 'browse') {
+    ui.mode = 'browse';
+    toBrowse();
+  }
   applyClicks(before);
+}
+
+/**
+ * Browse or edit changed (ui.svelte.js setMode): back in browse nothing stays selected and a
+ * site part open locks again (the page in the preview is the target); the preview's clicks
+ * follow.
+ */
+function modeChanged(before) {
+  if (ui.mode === 'browse') toBrowse();
+  applyClicks(before);
+}
+
+/** Browse: no selection (no widget, section, pop-up), no site part open. */
+function toBrowse() {
+  closePopup();
+  deselect();
+  lockPart();
 }
 
 /**
@@ -988,6 +1015,7 @@ async function boot() {
 
 boot();
 
+hooks.clicks = modeChanged;
 // a widget row clicked: it scrolls into view in the preview when out of it (overlay.js)
 hooks.reveal = (id) => overlay.reveal(id);
 // the preview caught up with the edits: the renders queued (an Auto size, typed text) swapped in,

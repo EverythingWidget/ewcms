@@ -1,10 +1,10 @@
 <script>
   /**
    * The update notice (dev only, scripts/update.mjs): a quiet "Update available" pill in the
-   * header when GitHub has a newer ewcms tag than the site's package.json; its card: the
+   * footer when GitHub has a newer ewcms tag than the site's package.json; its card: the
    * versions, the changelog, Later / Update; then installing, restarting (the dev server comes
    * back by itself, and so does this editor: Vite reloads it), done or the error. The pill sits
-   * in the header's gap and the card floats over the panel: nothing moves.
+   * in the footer's gap and the card floats over the panel above it: nothing moves.
    */
   import { onMount } from 'svelte';
 
@@ -197,7 +197,7 @@
     padding: 0 var(--space-3);
     border: 0;
     border-radius: var(--radius-pill);
-    // the widget card's tones (a surface of its own: _mixins.scss surface()) in the header
+    // the widget card's tones (a surface of its own: _mixins.scss surface()) in the footer
     @include surface(var(--c-widget-card));
     background: var(--field-bg);
     color: var(--c-widget-accent);
@@ -224,10 +224,10 @@
     background: var(--c-widget-accent);
   }
 
-  // floats over the panel under the header (.ed-head is its anchor): no layout moves
+  // floats over the panel above the footer (.ed-foot is its anchor): no layout moves
   .upd-card {
     position: absolute;
-    top: 48px;
+    bottom: calc(100% + var(--space-1));
     left: var(--space-3);
     z-index: 30;
     display: flex;
