@@ -12,7 +12,10 @@ import { bindingProblems } from '../src/render/layout/bindings.js';
 import { innerChoice } from '../src/render/widgets/list/nested.js';
 import listClient, { setOpen, opensKey } from '../src/render/widgets/list/client.js';
 import { addAt, newStackWidget } from '../src/editor/lib/item-template.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES, widgetType } from '../src/render/widgets/index.js';
+import { createStore } from '../src/editor/store.js';
+import { contentGroups } from '../src/editor/svelte/content-groups.js';
+import { templateFile } from '../src/render/files.js';
 import { SITE_A } from './fixtures/index.mjs';
 import { template } from '../scripts/grid-helper.mjs';
 
@@ -286,6 +289,43 @@ test('the editor: Add Summary and details, its rows; no shift', () => {
   const css = read('src/render/widgets/list/style.scss');
   assert.match(css, /grid-template-rows: 0fr/);
   assert.match(css, /prefers-reduced-motion: reduce/);
+});
+
+test('the editor shows Summary and details, not Unknown type', () => {
+  const def = widgetType('details');
+  assert.equal(def?.label, 'Summary and details');
+  assert.equal(def?.icon, 'plus-minus');
+  assert.equal(def?.templateOnly, true);
+  // not a page widget: a page's Add widget reads WIDGET_TYPES only
+  assert.equal(WIDGET_TYPES.details, undefined);
+  assert.match(read('src/editor/svelte/ContentPanel.svelte'), /Object\.values\(WIDGET_TYPES\)/);
+  assert.match(read('src/editor/svelte/WidgetRow.svelte'), /widgetType\(/);
+  assert.match(read('src/editor/svelte/content-groups.js'), /widgetType\(/);
+  assert.match(read('src/editor/svelte/TemplatePanel.svelte'), /widgetType\(/);
+
+  const file = templateFile('t-prow');
+  const store = createStore();
+  store.load({
+    [file]: {
+      version: 1,
+      kind: 'template',
+      name: 'Project row',
+      sections: [
+        {
+          id: 's-prow',
+          widgets: [{ id: 'w-popn', type: 'details', config: { template: 't-pmor' } }],
+        },
+      ],
+    },
+  });
+  const groups = contentGroups(
+    store,
+    { editFields: () => [] },
+    { kind: 'item-template', id: 't-prow' },
+  );
+  const g = groups.find((x) => x.id === 'w-popn');
+  assert.equal(g?.title, 'Summary and details');
+  assert.equal(g?.icon, 'plus-minus');
 });
 
 test('an item is as wide as the List gives it, never its content (a resize re-measures it)', () => {

@@ -33,6 +33,20 @@ export const DETAILS_KEYS = ['template', 'several', 'icon', 'screenReaderName', 
 export const ICONS = ['plus', 'none'];
 export const OPENS = ['none', 'first'];
 
+/**
+ * Its type in the editor: template-only (not a page widget; the List renders it). The editor
+ * looks it up with widgetType() (../index.js); it is not in WIDGET_TYPES, so Add widget on a
+ * page does not offer it.
+ */
+export const details = {
+  type: 'details',
+  label: 'Summary and details',
+  icon: 'plus-minus',
+  line: 'An item that opens, with its details below',
+  sketch: 'details',
+  templateOnly: true,
+};
+
 /** The template's "details" widget, or null. */
 export const detailsOf = (tpl) => itemWidgets(tpl).find((w) => w?.type === 'details') || null;
 

@@ -60,6 +60,7 @@ import hero from './hero/index.js';
 import albums from './albums/index.js';
 import album from './album/index.js';
 import list from './list/index.js';
+import { details } from './list/details.js';
 
 /** The built-in widgets, always on, in the order the editor offers them. */
 export const BUILTIN_WIDGETS = Object.freeze([
@@ -90,6 +91,16 @@ export const RETIRED_WIDGETS = Object.freeze({
  * `widgets`), by type. One object for the whole app: registering adds to it.
  */
 export const WIDGET_TYPES = Object.fromEntries(BUILTIN_WIDGETS.map((t) => [t.type, t]));
+
+/**
+ * Template-only widget types: they sit on an item template, never on a page (the List
+ * renders them). Not in WIDGET_TYPES, so a page's Add widget does not offer them.
+ */
+export const TEMPLATE_WIDGETS = Object.freeze([details]);
+const TEMPLATE_TYPES = Object.fromEntries(TEMPLATE_WIDGETS.map((t) => [t.type, t]));
+
+/** A type's definition: a page widget, or a template-only one (Summary and details). */
+export const widgetType = (type) => WIDGET_TYPES[type] || TEMPLATE_TYPES[type];
 
 const BUILTIN = new Set(BUILTIN_WIDGETS.map((t) => t.type));
 const TYPE_NAME = /^[a-z][a-z0-9-]*$/;

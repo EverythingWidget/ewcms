@@ -7,7 +7,7 @@ import { parse } from '../lib/pointer.js';
 import { sourceIdOf, sourceIds } from '../../render/files.js';
 import { pointer } from '../../render/helpers.js';
 import { labelOf } from '../../render/schemas.js';
-import { WIDGET_TYPES } from '../../render/widgets/index.js';
+import { widgetType } from '../../render/widgets/index.js';
 import { bindTypeOf } from '../../render/layout/bindings.js';
 import { targetFile } from '../layout-sync.js';
 import { itemName, schemaFor } from './source-items.js';
@@ -171,7 +171,7 @@ export const allFields = (g) => g.fields.flatMap((f) => (f.list ? f.items.flat()
  */
 function widgetGroup(store, file, at, j) {
   const s = sectionsOf(store, file)[at].widgets[j];
-  const t = WIDGET_TYPES[s?.type];
+  const t = widgetType(s?.type);
   const sources = sourceIds(store.current);
   const base = `/sections/${at}/widgets/${j}`;
   return {

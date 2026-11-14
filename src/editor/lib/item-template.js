@@ -4,6 +4,7 @@
  * the {property} parts in them. Pure: each returns a new value.
  */
 import { isObject } from '../../render/is.js';
+import { widgetType } from '../../render/widgets/index.js';
 import { isPropertyPart } from '../../render/layout/parts.js';
 import { newId } from '../../render/layout/ids.js';
 import { STACK_ROWS_GAP } from '../../render/widgets/list/item-grid.js';
@@ -16,7 +17,7 @@ export const STACK_TYPES = [
   ['list', 'List'],
   ['details', 'Summary and details'],
 ];
-export const typeLabel = (type) => STACK_TYPES.find(([t]) => t === type)?.[1] || type;
+export const typeLabel = (type) => widgetType(type)?.label || STACK_TYPES.find(([t]) => t === type)?.[1] || type;
 
 /** A new widget for the stack (Add): its first line, photo or button bound to `property`. */
 export function newStackWidget(type, property = 'title', open = 'View', listProperty = 'photos') {

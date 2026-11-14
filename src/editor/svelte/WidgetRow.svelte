@@ -19,7 +19,7 @@
 -->
 <script>
   import { nameOf } from './content-groups.js';
-  import { WIDGET_TYPES } from '../../render/widgets/index.js';
+  import { widgetType } from '../../render/widgets/index.js';
 
   let {
     widget,
@@ -35,7 +35,7 @@
     drop = '',
   } = $props();
 
-  const label = $derived(WIDGET_TYPES[widget?.type]?.label || `Unknown type "${widget?.type}"`);
+  const label = $derived(widgetType(widget?.type)?.label || `Unknown type "${widget?.type}"`);
   const name = $derived(nameOf(widget));
   const on = $derived(widget?.config?.enabled !== false);
 </script>

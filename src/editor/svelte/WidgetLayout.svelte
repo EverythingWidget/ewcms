@@ -12,7 +12,7 @@
 <script>
   import { NEW_ROWS, layerWidget, setWidget } from '../layout-ops.js';
   import { ASPECTS, linkOf, ratioOf, sizeOf } from '../../render/layout/index.js';
-  import { WIDGET_TYPES } from '../../render/widgets/index.js';
+  import { widgetType } from '../../render/widgets/index.js';
   import { nameOf } from './content-groups.js';
   import { ui } from './ui.svelte.js';
   import Popover from './Popover.svelte';
@@ -45,7 +45,7 @@
       (w) => w?.id === link.to,
     );
     // (an item template's widget: its type and role, "Text · fact", as its row)
-    const label = [WIDGET_TYPES[widget?.type]?.label, widget?.role].filter(Boolean).join(' · ');
+    const label = [widgetType(widget?.type)?.label, widget?.role].filter(Boolean).join(' · ');
     return widget ? nameOf(widget) || label || widget.id : link.to;
   });
 

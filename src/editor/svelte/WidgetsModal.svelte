@@ -95,6 +95,7 @@
     {:else if name === 'list'}<span class="g g3"
         >{#each Array(3) as _, i (i)}<b></b>{/each}</span
       ><b class="w40 h4"></b>
+    {:else if name === 'details'}<b class="w70 h8"></b><b class="pill"></b>
     {:else}<b class="w70 h8"></b><b class="w50 h4"></b>
     {/if}
   </span>

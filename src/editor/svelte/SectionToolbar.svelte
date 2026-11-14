@@ -28,7 +28,7 @@
   import Button from './Button.svelte';
   import { ui, selectWidgets, selectSection, openPopup } from './ui.svelte.js';
   import { locate } from '../locate.js';
-  import { WIDGET_TYPES } from '../../render/widgets/index.js';
+  import { widgetType } from '../../render/widgets/index.js';
   import {
     duplicateSection,
     duplicateWidgets,
@@ -94,7 +94,7 @@
   }
   const one = $derived(group?.ids.length === 1);
   const oneLabel = $derived(
-    one ? WIDGET_TYPES[group.widgets[0]?.type]?.label || group.widgets[0]?.type || 'Widget' : '',
+    one ? widgetType(group.widgets[0]?.type)?.label || group.widgets[0]?.type || 'Widget' : '',
   );
   const them = $derived(one ? 'it' : 'them');
   function duplicateGroup() {

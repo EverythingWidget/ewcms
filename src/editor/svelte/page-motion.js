@@ -5,7 +5,7 @@
  *   list   the page file's sections; doc  the preview's document; items  bridge.animElements()
  */
 import { nameOf } from './content-groups.js';
-import { WIDGET_TYPES } from '../../render/widgets/index.js';
+import { widgetType } from '../../render/widgets/index.js';
 
 export function motionSections(list, doc, items) {
   if (!Array.isArray(list) || !doc) return [];
@@ -19,7 +19,7 @@ export function motionSections(list, doc, items) {
         id: widget.id,
         j,
         el,
-        label: WIDGET_TYPES[widget.type]?.label || widget.type,
+        label: widgetType(widget.type)?.label || widget.type,
         name: nameOf(widget),
         animation: widget.motion?.animation || '',
         elements: el ? items.filter((it) => it.el.closest('[data-widget]') === el) : [],

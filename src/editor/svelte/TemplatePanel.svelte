@@ -31,7 +31,7 @@
   import { sampleSource } from '../../render/widgets/list/template-preview.js';
   import { ITEM_WIDGETS, itemSection } from '../../render/widgets/list/item-grid.js';
   import { innerTemplates } from '../../render/widgets/list/nested.js';
-  import { WIDGET_TYPES } from '../../render/widgets/index.js';
+  import { widgetType } from '../../render/widgets/index.js';
   import {
     STACK_TYPES,
     moveStack,
@@ -129,7 +129,7 @@
     STACK_TYPES.filter(
       ([type]) => !(type === 'list' && outer) && !(type === 'details' && detailsOff),
     ).map(([type]) => {
-      const d = WIDGET_TYPES[type] || {};
+      const d = widgetType(type) || {};
       return {
         value: type,
         label: d.label || type,
