@@ -507,11 +507,8 @@ function setPanel(panel) {
   if (panel === 'pages') showSpecimen(false);
   const before = previewClicks();
   ui.panel = panel;
-  if (panel !== 'pages' && ui.mode !== 'browse') {
-    ui.mode = 'browse';
-    toBrowse();
-  }
-  applyClicks(before);
+  if (panel !== 'pages' && ui.mode !== 'browse') setMode('browse');
+  else applyClicks(before);
 }
 
 /**

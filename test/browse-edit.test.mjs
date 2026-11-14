@@ -42,7 +42,7 @@ test('setMode: browse or edit only, and the preview is told what its clicks did 
 
 test('main.js: another panel than Pages browses; back in browse nothing stays selected', () => {
   const main = src('main.js');
-  assert.match(main, /if \(panel !== 'pages' && ui\.mode !== 'browse'\) \{\s*ui\.mode = 'browse';/);
+  assert.match(main, /if \(panel !== 'pages' && ui\.mode !== 'browse'\) setMode\('browse'\);/);
   assert.match(main, /hooks\.clicks = modeChanged;/);
   assert.match(main, /function toBrowse\(\) \{\s*closePopup\(\);\s*deselect\(\);\s*lockPart\(\);/);
   // an item template opened from a List: edit

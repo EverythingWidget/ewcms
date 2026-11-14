@@ -79,8 +79,8 @@ test('URL tabs are ui.panel: pages, settings, preview; clicks: arrange, animate,
     read('editor/svelte/ContentPanel.svelte'),
     /ui\.sections\[`pagetab:\$\{file\}`\] = v;/,
   );
-  // ui.mode is written only through setMode (ui.svelte.js) or main.js's setPanel (another
-  // panel than Pages browses); never a second flag beside it
+  // ui.mode is written only through setMode (ui.svelte.js); setPanel routes another
+  // panel than Pages through setMode('browse'); never a second flag beside it
   for (const f of [
     'editor/main.js',
     'editor/bridge.js',
