@@ -40,10 +40,9 @@
   const pickTab = (v) => (ui.sections[WIDGET_TAB_KEY] = v);
   const { at, j } = $derived(g.widget);
   const base = $derived(`/sections/${at}/widgets/${j}`);
-  const widget = $derived.by(() => {
-    live.version;
-    return live.get(g.file, base) || {};
-  });
+  // a copy, new per change: the store sets a setting in place (Layout's Columns), so the same
+  // object would leave the fields that read inside it showing the old value
+  const widget = $derived(live.copy(g.file, base) || {});
   const type = $derived(WIDGET_TYPES[g.type] || {});
   // an item template's widget: its Content fields, not a page widget's source + registry
   const itemTpl = $derived(!!templateIdOf(g.file));
@@ -51,7 +50,7 @@
   // ---- what it shows (src/site/layout/source.js): on a [param] page with the page the
   // preview shows (its params), the item its bound settings show the first
   const pageId = $derived(pageIdOf(g.file) || '');
-  // (read on its own: the store changes a value in place, so `widget` stays the same object)
+  // (read on its own, a copy: what it shows follows its source alone)
   const source = $derived.by(() => {
     live.version;
     const v = live.get(g.file, `${base}/source`);
@@ -170,7 +169,11 @@
           {sourceIds}
           {onsource}
           {bindings}
-          lead={type.list || type.item || type.handmade || g.fields.some((f) => f.bindType) || widget.source
+          lead={type.list ||
+          type.item ||
+          type.handmade ||
+          g.fields.some((f) => f.bindType) ||
+          widget.source
             ? lead
             : undefined}
         />

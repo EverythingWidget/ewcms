@@ -70,10 +70,8 @@
     }
     return null;
   });
-  const widget = $derived.by(() => {
-    live.version;
-    return where ? live.get(where.file, where.base) || {} : null;
-  });
+  // a copy, new per change (the store edits a widget in place: live.copy)
+  const widget = $derived(where ? live.copy(where.file, where.base) || {} : null);
   const type = $derived(WIDGET_TYPES[widget?.type] || {});
   const hasText = $derived(!!type.settings?.some((f) => f.type === 'rich'));
   const rich = $derived(ui.rich && ui.rich.widget === where?.id ? ui.rich : null);
@@ -349,7 +347,9 @@
       { value: 'back', label: '{back}', hint: 'the page around it' },
     ];
     const templates = live.content?.templates || {};
-    const outer = Object.entries(templates).find(([, t]) => innerTemplates(t).includes(itemTpl))?.[0];
+    const outer = Object.entries(templates).find(([, t]) =>
+      innerTemplates(t).includes(itemTpl),
+    )?.[0];
     const parentFrom = outer ? sampleSource(live.content, templates[outer]) : '';
     const parentKeys = parentFrom
       ? (schemaOf(live.content, parentFrom)?.properties || []).map((p) => p.key)

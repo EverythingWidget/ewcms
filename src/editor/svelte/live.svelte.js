@@ -81,6 +81,15 @@ export function createLive(store) {
       version;
       return store.get(file, ptr);
     },
+    /**
+     * A copy of one edited value (an object: a widget), a new object per change. get() gives the
+     * store's own, which it edits in place (a widget's config/columns): a $derived of it stays the
+     * same object, so what reads inside it (widget.config.columns) would not re-run.
+     */
+    copy(file, ptr) {
+      version;
+      return copy(store.get(file, ptr));
+    },
     /** Does the value at file#ptr differ from the saved one? */
     changed(file, ptr) {
       version;
