@@ -71,7 +71,7 @@
 
   async function focus() {
     await tick();
-    (dialog.querySelector('.xrow.is-selected') || dialog.querySelector('.pp-search'))?.focus();
+    (dialog.querySelector('.xrow.is-selected') || dialog.querySelector('.preview-search'))?.focus();
   }
   /** Shown: on its first step. */
   function onopen() {
@@ -97,7 +97,7 @@
 </script>
 
 <dialog
-  class="modal__box pp-modal"
+  class="modal__box preview-modal"
   aria-label="Preview item"
   bind:this={dialog}
   {@attach closeOnBackdrop}
@@ -119,21 +119,21 @@
       onback={() => back()}
       onclose={() => closeModal('previewPicker')}
     />
-    <div class="pp-body">
+    <div class="preview-body">
       <input
-        class="tf__input pp-search"
+        class="tf__input preview-search"
         type="search"
         placeholder="Search items"
         aria-label="Search"
         bind:value={query}
       />
       {#if step}
-        <p class="hint small pp-hint">
+        <p class="hint small preview-hint">
           <i class="fa-solid fa-filter" aria-hidden="true"></i>
           Only under [{params[step - 1]}] {picks[step - 1]} · {found} of {total}
         </p>
       {/if}
-      <div class="pp-list">
+      <div class="preview-list">
         {#each rows as r, i (r.path)}
           <ExplorerRow
             lead={String(i + 1).padStart(2, '0')}
@@ -146,7 +146,7 @@
             onclick={() => pick(r)}
           />
         {:else}
-          <p class="pp-none">
+          <p class="preview-none">
             <strong>Nothing found</strong>
             <span>{why}</span>
           </p>
@@ -159,7 +159,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  dialog.pp-modal {
+  dialog.preview-modal {
     width: min(420px, 92vw);
     max-height: min(560px, calc(100vh - 64px));
     padding: 0;
@@ -171,20 +171,20 @@
     }
   }
 
-  .pp-body {
+  .preview-body {
     @include stack(var(--space-3));
     min-height: 0;
     padding: var(--space-4) var(--space-3);
   }
 
-  .pp-search {
+  .preview-search {
     box-sizing: border-box;
     width: 100%;
     height: var(--size-control);
   }
 
   // filtered by the step before: the param colour
-  .pp-hint {
+  .preview-hint {
     @include row(var(--space-1));
     margin: 0;
     color: var(--c-widget-accent);
@@ -194,12 +194,12 @@
     }
   }
 
-  .pp-list {
+  .preview-list {
     @include stack(var(--space-1));
     overflow: auto;
   }
 
-  .pp-none {
+  .preview-none {
     @include stack(var(--space-1));
     @include muted;
     margin: 0;

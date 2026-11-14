@@ -38,7 +38,7 @@
     query = '';
     active = 0;
     await tick();
-    dialog.querySelector('.as-search')?.focus();
+    dialog.querySelector('.widgets-search')?.focus();
   }
 
   function pick(t) {
@@ -49,13 +49,13 @@
 
   async function focusTile() {
     await tick();
-    dialog.querySelectorAll('.as-tile')[active]?.focus();
+    dialog.querySelectorAll('.widgets-tile')[active]?.focus();
   }
 
   function onkeydown(e) {
     const n = shown.length;
     if (!n) return;
-    const inSearch = e.target.classList?.contains('as-search');
+    const inSearch = e.target.classList?.contains('widgets-search');
     const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: COLS, ArrowUp: -COLS }[e.key];
     if (step) {
       if (inSearch && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) return; // the caret
@@ -63,7 +63,7 @@
       if (inSearch && e.key === 'ArrowUp') return;
       const next = inSearch ? active : active + step;
       if (next < 0 || next >= n) {
-        if (e.key === 'ArrowUp') dialog.querySelector('.as-search')?.focus();
+        if (e.key === 'ArrowUp') dialog.querySelector('.widgets-search')?.focus();
         return;
       }
       active = next;
@@ -77,7 +77,7 @@
 
 <!-- a widget's sketch: grey shapes, 2:1; `name` is its definition's `sketch` (not its type) -->
 {#snippet sketch(name)}
-  <span class="as-sk as-sk--{name}" aria-hidden="true">
+  <span class="widgets-sk widgets-sk--{name}" aria-hidden="true">
     {#if name === 'text'}<b class="w40 h4"></b><b class="w70 h12"></b><b class="w90 h4"></b><b
         class="w60 h4"
       ></b>
@@ -101,7 +101,7 @@
 {/snippet}
 
 <dialog
-  class="modal__box as-modal"
+  class="modal__box widgets-modal"
   aria-label="Add widget to section {at + 1}"
   bind:this={dialog}
   {@attach closeOnBackdrop}
@@ -114,9 +114,9 @@
     crumbs={[{ label: 'after its last widget' }]}
     onclose={() => closeModal('widgets')}
   />
-  <div class="as-body">
+  <div class="widgets-body">
     <input
-      class="tf__input as-search"
+      class="tf__input widgets-search"
       type="search"
       placeholder="Search widgets"
       aria-label="Search widgets"
@@ -124,24 +124,24 @@
       oninput={() => (active = 0)}
     />
     {#if shown.length}
-      <ul class="as-tiles" role="listbox" aria-label="Widget types">
+      <ul class="widgets-tiles" role="listbox" aria-label="Widget types">
         {#each shown as t, i (t.value)}
           <li role="presentation">
             <button
               type="button"
               role="option"
               aria-selected={i === active}
-              class={['as-tile', i === active && 'is-active']}
+              class={['widgets-tile', i === active && 'is-active']}
               tabindex={i === active ? 0 : -1}
               onpointerenter={() => (active = i)}
               onfocus={() => (active = i)}
               onclick={() => pick(t)}
             >
               {@render sketch(t.sketch)}
-              <span class="as-tile__name"
+              <span class="widgets-tile__name"
                 ><i class="fa-solid fa-{t.icon}" aria-hidden="true"></i>{t.label}</span
               >
-              <span class="as-tile__line">{t.line || ''}</span>
+              <span class="widgets-tile__line">{t.line || ''}</span>
             </button>
           </li>
         {/each}
@@ -150,7 +150,7 @@
       <p class="hint">No widget matches “{query}”.</p>
     {/if}
   </div>
-  <footer class="as-foot">
+  <footer class="widgets-foot">
     <span class="hint small">Click or Enter adds it to Section {at + 1} · arrows pick</span>
     <Button size="small" onclick={() => closeModal('widgets')}>Cancel</Button>
   </footer>
@@ -159,7 +159,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  dialog.as-modal {
+  dialog.widgets-modal {
     width: min(1000px, 92vw);
     height: min(760px, calc(100vh - 48px));
     display: grid;
@@ -172,18 +172,18 @@
     }
   }
 
-  .as-body {
+  .widgets-body {
     @include stack(var(--space-3));
     align-content: start;
     padding: var(--space-4);
     overflow: auto;
   }
 
-  .as-search {
+  .widgets-search {
     height: 32px;
   }
 
-  .as-foot {
+  .widgets-foot {
     @include row(var(--space-3));
     justify-content: space-between;
     height: 56px;
@@ -195,7 +195,7 @@
     }
   }
 
-  .as-tiles {
+  .widgets-tiles {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: var(--space-3);
@@ -205,7 +205,7 @@
   }
 
   // the picked one: a ring (a shadow), so nothing moves or grows
-  .as-tile {
+  .widgets-tile {
     @include stack(var(--space-1));
     width: 100%;
     padding: var(--space-2) var(--space-2) var(--space-3);
@@ -227,7 +227,7 @@
     }
   }
 
-  .as-tile__name {
+  .widgets-tile__name {
     @include row(var(--space-2));
     margin-top: var(--space-1);
     font-weight: 500;
@@ -239,13 +239,13 @@
     }
   }
 
-  .as-tile__line {
+  .widgets-tile__line {
     min-height: 32px;
     @include muted;
     line-height: 16px;
   }
 
-  .as-sk {
+  .widgets-sk {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -347,8 +347,8 @@
     }
   }
 
-  .as-sk--grid,
-  .as-sk--albums {
+  .widgets-sk--grid,
+  .widgets-sk--albums {
     padding: 8px;
   }
 </style>

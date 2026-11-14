@@ -149,7 +149,7 @@
 </script>
 
 <dialog
-  class="modal__box src-modal"
+  class="modal__box sources-modal"
   aria-label="Sources"
   bind:this={dialog}
   {@attach closeOnBackdrop}
@@ -172,7 +172,7 @@
   />
 
   {#if !file}
-    <ul class="list src-files" aria-label="Source files">
+    <ul class="list sources-files" aria-label="Source files">
       {#each files as f (f)}
         {@const items = live.current(f)?.items}
         <li>
@@ -188,13 +188,13 @@
       {/each}
     </ul>
   {:else}
-    <nav class="src-list" aria-label="Items">
+    <nav class="sources-list" aria-label="Items">
       {#if isList}
-        <header class="row src-list__head">
+        <header class="row sources-list__head">
           {plural(list.length, 'item')}
           <Button size="small" icon="plus" onclick={add}>Add</Button>
         </header>
-        <ul class="list src-list__items">
+        <ul class="list sources-list__items">
           {#each list as it, i (i)}
             <li>
               <ExplorerRow
@@ -210,21 +210,21 @@
           {/each}
         </ul>
         {#if list.length !== base.length}
-          <p class="hint small src-list__note">
+          <p class="hint small sources-list__note">
             Added and deleted items show in the preview after Save.
           </p>
         {/if}
       {/if}
     </nav>
 
-    <section class="src-detail">
+    <section class="sources-detail">
       {#if !isList}
         <p class="hint">{baseName(file)} is not a list.</p>
       {:else if !item}
         <p class="hint">No items yet. Add one on the left.</p>
       {:else}
-        <header class="src-detail__head">
-          <h4 class="src-item__title">{itemName(item, schema)}</h4>
+        <header class="sources-detail__head">
+          <h4 class="sources-item__title">{itemName(item, schema)}</h4>
           {#if confirming}
             <span class="confirm">
               Delete {itemName(item, schema)}?
@@ -280,7 +280,7 @@
   @use '../styles/mixins' as *;
 
   // the Sources modal is a <dialog>: header on top, item list left, item fields right
-  dialog.src-modal {
+  dialog.sources-modal {
     width: min(1100px, 92vw);
     height: calc(100vh - 64px);
     max-height: 900px;
@@ -296,7 +296,7 @@
   }
 
   // the list of files, across the whole modal
-  .src-files {
+  .sources-files {
     grid-column: 1 / -1;
     align-content: start;
     gap: var(--space-1);
@@ -305,13 +305,13 @@
   }
 
   // left: the file's items
-  .src-list {
+  .sources-list {
     overflow: auto;
     padding: var(--space-4) var(--space-3) 20px;
     border-right: 1px solid var(--c-line);
   }
 
-  .src-list__head {
+  .sources-list__head {
     justify-content: space-between;
     padding: 0 var(--space-2) var(--space-3);
     @include muted;
@@ -319,16 +319,16 @@
     text-transform: uppercase;
   }
 
-  .src-list__items {
+  .sources-list__items {
     gap: var(--space-1);
   }
 
-  .src-list__note {
+  .sources-list__note {
     margin: var(--space-3) var(--space-2) 0;
   }
 
   // right: the selected item
-  .src-detail {
+  .sources-detail {
     container-type: inline-size;
     overflow: auto;
     padding: var(--space-4) var(--space-5) var(--space-5);
@@ -336,23 +336,23 @@
     align-content: start;
   }
 
-  .src-detail__head {
+  .sources-detail__head {
     @include row(var(--space-3));
     min-height: var(--size-control);
     margin-bottom: var(--space-1);
 
-    .src-item__title {
+    .sources-item__title {
       flex: 1;
       min-width: 0;
     }
   }
 
-  .src-detail :global(.tf__input:disabled) {
+  .sources-detail :global(.tf__input:disabled) {
     color: var(--c-text-muted);
     cursor: not-allowed;
   }
 
-  .src-item__title {
+  .sources-item__title {
     margin: 0;
     font-size: var(--fs-base);
     font-weight: 500;

@@ -46,7 +46,7 @@
     (
       row ||
       dialog.querySelector('.xrow.is-selected') ||
-      dialog.querySelector('.ip-search')
+      dialog.querySelector('.item-search')
     )?.focus();
   }
   /** Shown: on the current source's items (a widget's item), else on the sources. */
@@ -71,7 +71,7 @@
 </script>
 
 {#snippet row(props, editLabel, onedit)}
-  <div class="ip-row">
+  <div class="item-row">
     <ExplorerRow {...props} />
     {#if onsource}
       <Button size="small" icon="pen-to-square" iconOnly label={editLabel} onclick={onedit} />
@@ -80,7 +80,7 @@
 {/snippet}
 
 <dialog
-  class="modal__box ip-modal"
+  class="modal__box item-modal"
   aria-label={label}
   bind:this={dialog}
   {@attach closeOnBackdrop}
@@ -98,15 +98,15 @@
     onback={() => enter('')}
     onclose={() => closeModal('itemPicker')}
   />
-  <div class="ip-body">
+  <div class="item-body">
     <input
-      class="tf__input ip-search"
+      class="tf__input item-search"
       type="search"
       placeholder={source ? 'Search items' : 'Search sources'}
       aria-label="Search"
       bind:value={query}
     />
-    <div class="ip-list">
+    <div class="item-list">
       {#if !source}
         {#if none !== null}
           <ExplorerRow
@@ -156,7 +156,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  dialog.ip-modal {
+  dialog.item-modal {
     width: min(480px, 92vw);
     max-height: min(560px, calc(100vh - 64px));
     padding: 0;
@@ -168,7 +168,7 @@
     }
   }
 
-  .ip-body {
+  .item-body {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
@@ -176,19 +176,19 @@
     padding: var(--space-4) var(--space-3);
   }
 
-  .ip-search {
+  .item-search {
     box-sizing: border-box;
     width: 100%;
     height: var(--size-control);
   }
 
-  .ip-list {
+  .item-list {
     @include stack(var(--space-1));
     overflow: auto;
   }
 
   // a row and its edit button
-  .ip-row {
+  .item-row {
     @include row(var(--space-1));
 
     > :global(.xrow) {

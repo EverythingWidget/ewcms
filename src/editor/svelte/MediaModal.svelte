@@ -309,7 +309,7 @@
 
 <!-- Esc closes a modal <dialog> by itself; a click on the backdrop lands on the dialog. -->
 <dialog
-  class={['modal__box', 'md-modal', dropping && 'is-drop']}
+  class={['modal__box', 'media-modal', dropping && 'is-drop']}
   aria-label="Media"
   bind:this={dialog}
   {@attach modal('media', { onopen, ready })}
@@ -327,10 +327,10 @@
     onclose={close}
   />
 
-  <nav class="md-list" aria-label="Photos">
-    <div class="row md-list__head">
+  <nav class="media-list" aria-label="Photos">
+    <div class="row media-list__head">
       <Tabs
-        class="md-filter"
+        class="media-filter"
         role="group"
         label="Show"
         tabs={FILTERS}
@@ -350,24 +350,24 @@
     </div>
     {#if setUpR2}
       <!-- R2 tab without the R2 keys: how to set it up; Upload saves to media/ meanwhile -->
-      <div class="md-setup">
-        <i class="fa-solid fa-cloud md-setup__icon" aria-hidden="true"></i>
-        <b class="md-setup__title">R2 isn’t set up yet</b>
+      <div class="media-setup">
+        <i class="fa-solid fa-cloud media-setup__icon" aria-hidden="true"></i>
+        <b class="media-setup__title">R2 isn’t set up yet</b>
         <span>
           Photos on Cloudflare R2 load from your own photo domain. Add these keys to
           <code>.env.local</code> in your site, then restart <code>npm run dev</code>:
         </span>
-        <span class="md-setup__keys">
+        <span class="media-setup__keys">
           <code>R2_ACCOUNT_ID</code> <code>R2_ACCESS_KEY_ID</code>
           <code>R2_SECRET_ACCESS_KEY</code> <code>R2_BUCKET</code>
         </span>
         <span>Until then, Upload saves to <code>media/</code> (Local).</span>
-        <a class="md-setup__link" href={R2_HELP} target="_blank" rel="noopener">
+        <a class="media-setup__link" href={R2_HELP} target="_blank" rel="noopener">
           How to set up R2 ›
         </a>
       </div>
     {/if}
-    <ul class="md-grid">
+    <ul class="media-grid">
       {#each pending as job (job.id)}
         <li class="mtile mtile--busy">
           <img src={job.url} alt="" />
@@ -408,11 +408,11 @@
     {/if}
   </nav>
 
-  <section class="md-detail">
+  <section class="media-detail">
     {#if key && known}
       {@const info = photoInfo(key)}
-      <header class="md-detail__head">
-        <h4 class="md-detail__title">{info.name}</h4>
+      <header class="media-detail__head">
+        <h4 class="media-detail__title">{info.name}</h4>
         {#if pick}
           <Button
             variant="primary"
@@ -425,7 +425,7 @@
           </Button>
         {/if}
       </header>
-      <img class="md-preview" src={photoUrl(key)} alt="" {@attach fallback(key)} />
+      <img class="media-preview" src={photoUrl(key)} alt="" {@attach fallback(key)} />
       <p class="hint small">{photoLine(key)} · {key}</p>
 
       <label class="tf" for="{uid}-alt">
@@ -437,7 +437,7 @@
           bind:value={alt}
           onchange={saveAlt}></textarea>
       </label>
-      <div class="md-credit">
+      <div class="media-credit">
         <label class="tf" for="{uid}-credit">
           <span class="tf__label">Credit (photographer)</span>
           <input
@@ -460,7 +460,7 @@
         </label>
       </div>
 
-      <div class="md-uses">
+      <div class="media-uses">
         <span class="tf__label"
           >{uses.length ? `Used in ${plural(uses.length, 'place')}` : 'Not used'}</span
         >
@@ -514,7 +514,7 @@
 
   {#if multi}
     <!-- a fixed height: the count left, the buttons right -->
-    <footer class="md-foot">
+    <footer class="media-foot">
       <span class="hint small">{n ? `${n} picked` : 'None picked'}</span>
       <Button size="small" onclick={close}>Cancel</Button>
       <Button variant="primary" size="small" icon="plus" disabled={!n} onclick={addPicked}>
@@ -528,7 +528,7 @@
   @use '../styles/mixins' as *;
 
   // like the Pages and Sources windows: header on top, the photos left, the selected one right
-  dialog.md-modal {
+  dialog.media-modal {
     width: min(1040px, 92vw);
     height: min(720px, calc(100vh - 64px));
     display: grid;
@@ -547,20 +547,20 @@
     }
   }
 
-  .md-list {
+  .media-list {
     overflow: auto;
     scrollbar-gutter: stable; // the R2 set-up note, short, must not move Upload
     padding: var(--space-4) var(--space-4) var(--space-5);
     border-right: 1px solid var(--c-line);
   }
 
-  .md-list__head {
+  .media-list__head {
     justify-content: space-between;
     padding: 0 0 var(--space-3);
   }
 
   // the R2 tab without the R2 keys (setUpR2)
-  .md-setup {
+  .media-setup {
     @include stack(var(--space-3));
     align-items: flex-start;
     margin: var(--space-2) 0;
@@ -578,21 +578,21 @@
     }
   }
 
-  .md-setup__icon {
+  .media-setup__icon {
     font-size: var(--fs-lg);
   }
 
-  .md-setup__title {
+  .media-setup__title {
     font-size: var(--fs-base);
     font-weight: 500;
     color: var(--c-text);
   }
 
-  .md-setup__keys {
+  .media-setup__keys {
     line-height: var(--space-5);
   }
 
-  .md-setup__link {
+  .media-setup__link {
     color: var(--c-link);
     text-decoration: none;
 
@@ -601,7 +601,7 @@
     }
   }
 
-  .md-grid {
+  .media-grid {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -675,7 +675,7 @@
   }
 
   // the multi-pick footer: a fixed height, the count left, the buttons right
-  .md-foot {
+  .media-foot {
     grid-column: 1 / -1;
     @include row(var(--space-3));
     justify-content: flex-end;
@@ -709,7 +709,7 @@
   // one column as wide as the pane (minmax(0, 1fr): a long name, key or use never widens it;
   // they cut or wrap), scrolling up and down only; its head (the name and Use this photo)
   // stays at the top while it scrolls, so the button is always there
-  .md-detail {
+  .media-detail {
     min-width: 0;
     overflow: hidden auto;
     padding: 0 var(--space-5) var(--space-5);
@@ -727,7 +727,7 @@
     }
   }
 
-  .md-detail__head {
+  .media-detail__head {
     @include row(var(--space-3));
     position: sticky;
     top: 0;
@@ -742,7 +742,7 @@
     }
   }
 
-  .md-detail__title {
+  .media-detail__title {
     flex: 1;
     min-width: 0;
     margin: 0;
@@ -754,7 +754,7 @@
     color: var(--c-text);
   }
 
-  .md-preview {
+  .media-preview {
     width: 100%;
     max-height: 320px;
     object-fit: contain;
@@ -762,7 +762,7 @@
     background: var(--c-surface);
   }
 
-  .md-uses {
+  .media-uses {
     display: grid;
   }
 
@@ -770,7 +770,7 @@
     flex-wrap: wrap;
   }
 
-  .md-credit {
+  .media-credit {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-3);

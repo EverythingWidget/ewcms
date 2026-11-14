@@ -8,6 +8,6 @@ test('the Media pane: one column, its head (Use this photo) sticky', () => {
     new URL('../src/editor/svelte/MediaModal.svelte', import.meta.url),
     'utf8',
   );
-  assert.match(m, /\.md-detail \{[^}]*grid-template-columns: minmax\(0, 1fr\)/);
-  assert.match(m, /\.md-detail__head \{[^}]*position: sticky/);
+  assert.match(m, /\.media-detail \{[^}]*grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(m, /\.media-detail__head \{[^}]*position: sticky/);
 });

@@ -203,9 +203,15 @@ test('names: PublishModal (no PublishDialog), add-page-modal (no apm)', () => {
     assert.doesNotMatch(src, /PublishDialog|publishDialog/, f.pathname);
     assert.doesNotMatch(src, /\bapm\b|apm__/, f.pathname);
     assert.doesNotMatch(src, /ui\.explorer/, f.pathname);
+    assert.doesNotMatch(src, /\b(md|src|as|ip|pp)-modal\b/, f.pathname);
   }
   assert.match(read('AddPageModal.svelte'), /class="modal__box add-page-modal"/);
   assert.match(read('PublishModal.svelte'), /class="modal__box publish-modal"/);
+  assert.match(read('MediaModal.svelte'), /'media-modal'/);
+  assert.match(read('SourcesModal.svelte'), /class="modal__box sources-modal"/);
+  assert.match(read('WidgetsModal.svelte'), /class="modal__box widgets-modal"/);
+  assert.match(read('ItemPicker.svelte'), /class="modal__box item-modal"/);
+  assert.match(read('PreviewPicker.svelte'), /class="modal__box preview-modal"/);
 });
 
 test('Esc in the editor closes the modal in front only', () => {
