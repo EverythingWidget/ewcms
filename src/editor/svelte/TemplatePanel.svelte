@@ -14,7 +14,7 @@
     Settings    its Name (as in a List’s Template picker), Whole item clickable (the whole
                 item opens the item’s page), and the preview line. Columns (the preview’s:
                 the item as wide as in a List of 1–6 columns; preview.columns, never a
-                List’s) is a pill above the preview frame (TemplateCols.svelte).
+                List’s) sits above the preview frame (TemplateCols.svelte).
   The file is one section (src/render/widgets/list/item-grid.js): its widgets at
   /sections/0/widgets, as a page section’s. Templates are site-wide (no language): every List
   using one shows the edit on Save.

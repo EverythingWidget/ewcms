@@ -44,7 +44,10 @@ test('main.js: another panel than Pages browses; back in browse nothing stays se
   const main = src('main.js');
   assert.match(main, /if \(panel !== 'pages' && ui\.mode !== 'browse'\) setMode\('browse'\);/);
   assert.match(main, /hooks\.clicks = modeChanged;/);
-  assert.match(main, /function toBrowse\(\) \{\s*closePopup\(\);\s*deselect\(\);\s*lockPart\(\);/);
+  assert.match(
+    main,
+    /function toBrowse\(\) \{\s*ui\.originStack = \[\];\s*closePopup\(\);\s*deselect\(\);\s*lockPart\(\);/,
+  );
   // an item template opened from a List: edit
   assert.match(main, /setPanel\('pages'\);\s*setMode\('edit'\);\s*pickTarget\(entry\);/);
   // the old flag is gone everywhere

@@ -26,7 +26,7 @@ import './site-widgets.js';
 import './styles/editor.scss';
 import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/solid.css';
-import { mount } from 'svelte';
+import { mount, tick } from 'svelte';
 import App from './svelte/App.svelte';
 import {
   ui,
@@ -47,6 +47,8 @@ import {
   deselect,
   setMod,
 } from './svelte/ui.svelte.js';
+import { WIDGET_TAB_KEY, widgetTabOf } from './widget-layout.js';
+import { popOrigin, pushOrigin } from './lib/template-origin.js';
 import { toast } from './svelte/toasts.svelte.js';
 import { createLive } from './svelte/live.svelte.js';
 import { connectMedia } from './svelte/media.svelte.js';
@@ -224,6 +226,7 @@ mount(App, {
       setMode,
       showSpecimen,
       pickTarget,
+      returnToOrigin,
       lockPart,
       save,
       refreshStatus,
@@ -316,16 +319,95 @@ function templateEntries(files) {
     }));
 }
 
-/** Open item template `id` (the List panel's Edit template): its editor, the pages list closed. */
-ui.openTemplate = (id) => {
+/**
+ * Open item template `id` (the List pop-up's Edit template): its editor, the pages list closed.
+ * back: the place it was opened from (the page or template, the List selected, its pop-up's tab,
+ * the scroll) goes on ui.originStack, so Back returns there (returnToOrigin).
+ */
+ui.openTemplate = (id, { back = false } = {}) => {
   const entry = ui.pages.find((i) => i.kind === 'item-template' && i.id === id);
   if (!entry)
     return void toast(`No template ${id} (content/templates/${id}.json)`, { kind: 'error' });
+  const stack = back ? pushOrigin(ui.originStack, originHere()) : [];
   closeWidgetPopup();
   if (ui.panel !== 'pages') setPanel('pages');
   setMode('edit');
   pickTarget(entry);
+  ui.originStack = stack; // (pickTarget cleared it)
 };
+
+/** Where the editor is now, to come back to (ui.originStack: lib/template-origin.js). */
+function originHere() {
+  const t = ui.target;
+  if (!t) return null;
+  const title =
+    t.kind === 'item-template' ? store.current[templateFile(t.id)]?.name || t.title : t.title;
+  return {
+    target: JSON.parse(JSON.stringify(t)),
+    title: title || '',
+    widget: ui.widget,
+    popup: ui.popup,
+    widgetTab: widgetTabOf(ui.sections),
+    panelY: document.querySelector('.ed-panel .ed-body')?.scrollTop || 0,
+    popupY: document.querySelector('.wpop .wpop__body')?.scrollTop || 0,
+    path: bridge.path() || ui.path,
+  };
+}
+
+/**
+ * Back in a template opened by Edit template: the top of ui.originStack popped, its page (or
+ * template) open in edit again, the List selected, its pop-up open on the same tab, the panel
+ * and pop-up scrolled as they were. False when there is none (Back goes to the pages list).
+ */
+let returning = null;
+function returnToOrigin() {
+  const { origin, stack } = popOrigin(ui.originStack);
+  if (!origin) return false;
+  const { target, path } = origin;
+  const entry =
+    target.kind === 'item-template'
+      ? ui.pages.find((i) => i.kind === 'item-template' && i.id === target.id)
+      : target.kind === 'part'
+        ? ui.pages.find((i) => i.kind === 'part' && i.id === target.id)
+        : ui.pages.find(
+            (i) =>
+              i.kind === 'page' &&
+              (target.template ? i.template === target.template : i.path === target.path),
+          );
+  if (!entry) {
+    ui.originStack = [];
+    return false;
+  }
+  closeWidgetPopup();
+  if (ui.panel !== 'pages') setPanel('pages');
+  setMode('edit');
+  returning = origin;
+  pickTarget(entry, path);
+  ui.originStack = stack;
+  // a site part (no navigation) or the same page: put it back now
+  if (entry.kind === 'part' || bridge.path() === path) restoreOrigin();
+  return true;
+}
+
+/** The List of the origin returned to selected, its pop-up open on its tab, the scroll back. */
+async function restoreOrigin() {
+  const o = returning;
+  returning = null;
+  if (!o) return;
+  if (o.widgetTab) ui.sections[WIDGET_TAB_KEY] = o.widgetTab;
+  if (!o.widget) return;
+  selectWidgets([o.widget]);
+  await tick();
+  await new Promise((r) => requestAnimationFrame(() => r()));
+  const panel = document.querySelector('.ed-panel .ed-body');
+  if (panel) panel.scrollTop = o.panelY;
+  if (o.popup === false) return;
+  openPopup();
+  await tick();
+  await new Promise((r) => requestAnimationFrame(() => r()));
+  const body = document.querySelector('.wpop .wpop__body');
+  if (body) body.scrollTop = o.popupY;
+}
 
 /** The page entry of the page shown (a template page: the template's entry). */
 function shownPage(path = bridge.path() || '/') {
@@ -368,6 +450,7 @@ function lockPart() {
  */
 function pickTarget(item, path) {
   if (!item) return;
+  ui.originStack = []; // somewhere else (openTemplate, returnToOrigin put theirs back)
   if (item.kind !== 'page') {
     ui.target = item;
     applyPart();
@@ -507,6 +590,7 @@ function setPanel(panel) {
   if (panel === 'pages') showSpecimen(false);
   const before = previewClicks();
   ui.panel = panel;
+  if (panel !== 'pages') ui.originStack = [];
   if (panel !== 'pages' && ui.mode !== 'browse') setMode('browse');
   else applyClicks(before);
 }
@@ -523,6 +607,7 @@ function modeChanged(before) {
 
 /** Browse: no selection (no widget, section, pop-up), no site part open. */
 function toBrowse() {
+  ui.originStack = [];
   closePopup();
   deselect();
   lockPart();
@@ -695,6 +780,10 @@ bridge.on('navigate', (path) => {
   applyPart();
   ui.previewVersion++;
   clearAnim();
+  // Back from a template (returnToOrigin): the List, its pop-up and the scroll put back; any
+  // other page than a template's: the way back is gone
+  if (returning && path === returning.path) restoreOrigin();
+  else if (!templateOfPath(path)) ui.originStack = [];
 });
 // one way: what was clicked or hovered in the preview goes to ui (quiet: the selection put back
 // after a save's reload: kept, but nothing opens for it)

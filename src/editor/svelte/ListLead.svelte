@@ -7,7 +7,8 @@
   so the pop-up is content-height.
   Template (config.template, both modes): the presets, then the site's templates
   (content/templates/t-….json); Duplicate template / Edit template sit on their own row
-  under the full-width selector. Duplicate copies the one picked into a new template file
+  under the full-width selector. Edit template opens it in the template editor; its Back
+  returns here (the List selected, this pop-up on the same tab: ui.originStack). Duplicate copies the one picked into a new template file
   (POST /__editor/templates, kept in the store at once) and points the List at it. That
   switch is saved at once when the page had no other unsaved edits; otherwise it stays an
   unsaved edit and the note under the row says "Saved as template t-…". The note line is
@@ -257,7 +258,7 @@
           icon="pen"
           title="Open this template in the template editor (Pages > Site > Templates)"
           disabled={!isOwnTemplate}
-          onclick={() => ui.openTemplate?.(templateId)}
+          onclick={() => ui.openTemplate?.(templateId, { back: true })}
           data-edit-template>Edit template</Button
         >
       </span>

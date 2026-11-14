@@ -73,6 +73,12 @@ export const ui = $state({
   specimenFrom: '',
   /** The path shown in the preview ("/people/noor-vermeer/"). */
   path: '/',
+  /**
+   * Where the item template open was opened from (a List pop-up's Edit template), bottom first,
+   * at most two: { target, title, widget, its pop-up and tab, the scroll, path } each (main.js originHere). Back pops
+   * one (main.js returnToOrigin); going anywhere else empties it (lib/template-origin.js).
+   */
+  originStack: [],
   /** What the Pages tab edits: a page { kind: 'page', path, title } or a site part { kind: 'part', id: 'header' | 'footer', title }. */
   target: { kind: 'page', path: '/', title: 'Home' },
   /** Bumped when the preview shows a (new) page: the Pages tab re-reads its texts. */

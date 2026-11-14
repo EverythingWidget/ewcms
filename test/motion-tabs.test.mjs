@@ -52,7 +52,7 @@ test('top tabs Pages | Site Settings; page tabs Sections | Element motion | Page
   );
   assert.match(c, /shownTab === 'element-motion'\}\s*<MotionPanel /);
   assert.match(c, /shownTab === 'page-motion'\}\s*<PageMotionPanel /);
-  assert.match(read('editor/svelte/PageHead.svelte'), /backLabel="Back to pages"/);
+  assert.match(read('editor/svelte/PageHead.svelte'), /: 'Back to pages',?\s*\)?;/);
   assert.doesNotMatch(c, /transitions/);
   const m = read('editor/svelte/MotionPanel.svelte');
   assert.doesNotMatch(m, /AnimLibrary|Tabs/);
@@ -129,7 +129,7 @@ test('+ Property: source counts are "Count of a source", not properties; Sources
 
 test('PageHead: a square back button beside a two-line title, shared site-part lines', () => {
   const head = read('editor/svelte/PageHead.svelte');
-  assert.match(head, /<BackHead backLabel="Back to pages"/);
+  assert.match(head, /<BackHead \{backLabel\} backTitle=\{backLabel\}/);
   assert.match(
     read('editor/svelte/BackHead.svelte'),
     /icon="arrow-left" square label=\{backLabel\}/,

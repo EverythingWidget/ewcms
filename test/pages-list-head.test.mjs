@@ -25,7 +25,7 @@ test("BackHead is the page head's square back beside a two-line title, with the 
   assert.match(head, /class="bh__title"/);
   assert.match(head, /align-items: center/);
   assert.match(head, /min-height: var\(--size-control\)/);
-  assert.match(page, /<BackHead backLabel="Back to pages"/);
+  assert.match(page, /<BackHead \{backLabel\} backTitle=\{backLabel\}/);
   // the arrow is Button's icon, same control the page head uses
   assert.match(head, /<Button icon="arrow-left" square/);
 });

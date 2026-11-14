@@ -195,7 +195,7 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   assert.match(panel, /<SectionToolbar addOnly/);
   assert.match(panel, /openWidgets\(\{ at: 0, types: typeTiles/);
   // Settings: Name, Whole item clickable, the preview line (not on Widgets). Columns
-  // is a pill above the preview frame (TemplateCols.svelte), not a Settings field.
+  // is a control above the preview frame (TemplateCols.svelte), not a Settings field.
   assert.match(panel, /label="Whole item clickable"/);
   assert.match(panel, /The whole item opens the item’s page/);
   assert.match(panel, /Its name in a List’s Template picker/);
@@ -240,7 +240,7 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   // Edit template: always laid out, hidden while a preset is picked
   const lead = read('src/editor/svelte/ListLead.svelte');
   assert.match(lead, /class=\{\['ll__edit', !isOwnTemplate && 'is-hidden'\]\}/);
-  assert.match(lead, /ui\.openTemplate\?\.\(templateId\)/);
+  assert.match(lead, /ui\.openTemplate\?\.\(templateId, \{ back: true \}\)/);
   assert.match(lead, /\.ll__edit\.is-hidden/);
   // the dev server serves the preview
   assert.match(

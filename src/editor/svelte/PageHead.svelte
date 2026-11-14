@@ -3,10 +3,15 @@
   its place while it is open: PagesList.svelte; its ← on the same spot):
     ← (a 32×32 filled square Button)  Title
                                       / photography/ people/   (a page: its address, clickable crumbs)
-                                      Templates                (an item template)
+                                      Templates                (an item template from the Templates list)
+                                      People › Album card      (one opened by Edit template: the path back,
+                                                                ui.originStack; not its own name)
                                       The menu and its labels  (Header / Footer: the pages list's line)
     Preview noor-vermeer / 2018 ▾   (a [param] page: the page of it the preview shows)
     ⚠ No pages are built: …        (only when its main widget can't decide its pages)
+  An item template's title row also says how many Lists use it ("Used in 1 list", always, in a
+  slot on the right of the name: one 20px line, the head's height never changes). Opened by
+  a List's Edit template, ← goes back there (main.js returnToOrigin, "Back to People").
   Back to pages opens the pages list (in the Pages tab; browse, ui.mode) where the page was opened (its
   own folder, or the one it is in), a path part at that folder. The path's [param]/ parts and
   the Preview line's values are in the widget accent (a param and its value read as a pair).
@@ -21,10 +26,11 @@
   import { parentId, pathOfId } from '../../render/routes.js';
   import { crumbsOf, pageIds, titleOf } from '../lib/page-tree.js';
   import { SITE_PARTS } from '../lib/site-parts.js';
-  import { isParam, pageFile, paramsOf } from '../../render/files.js';
+  import { isParam, pageFile, paramsOf, templateFile } from '../../render/files.js';
   import { mainProblem } from '../../render/layout/source.js';
+  import { backLabelOf, listUses, originCrumbs, usesLabel } from '../lib/template-origin.js';
 
-  // live: reactive store; actions: pickTarget, setPanel, setPageTab (main.js)
+  // live: reactive store; actions: pickTarget, setPanel, setPageTab, returnToOrigin (main.js)
   let { live, actions } = $props();
 
   // the store's files (live.svelte.js: one shared copy per change)
@@ -48,6 +54,16 @@
   const sub = $derived(
     t?.kind === 'item-template' ? 'Templates' : (SITE_PARTS.find((p) => p.id === t?.id)?.sub ?? ''),
   );
+
+  // an item template: the path back (Edit template's origins), the Lists using it
+  const isItemTemplate = $derived(t?.kind === 'item-template');
+  const nameOf = (tid) => files[templateFile(tid)]?.name || '';
+  const origins = $derived(isItemTemplate ? originCrumbs(ui.originStack, nameOf) : []);
+  const uses = $derived(isItemTemplate ? usesLabel(listUses(files, t.id)) : '');
+  const backLabel = $derived(
+    isItemTemplate ? backLabelOf(ui.originStack, nameOf) : 'Back to pages',
+  );
+  const back = () => (origins.length && actions.returnToOrigin?.()) || list();
 
   // ←: the level it was opened from (its own folder or the one it is in), else the latter
   const backTo = () => {
@@ -81,8 +97,16 @@
 </script>
 
 <div class="ph">
-  <BackHead backLabel="Back to pages" {title} onback={() => list()}>
-    {#if crumbs.length}
+  <BackHead {backLabel} backTitle={backLabel} {title} {uses} onback={back}>
+    {#if origins.length}
+      <nav class="ph__path" aria-label="Where you came from">
+        {#each origins as c, i (c.at)}
+          {#if i}<span class="ph__sep ph__sep--crumb" aria-hidden="true">›</span>{/if}<span
+            class="ph__crumb ph__crumb--origin">{c.label}</span
+          >
+        {/each}
+      </nav>
+    {:else if crumbs.length}
       <nav class="ph__path" aria-label="Where it is">
         {#each crumbs as c, i (i)}
           {#if c.level === null}
@@ -243,6 +267,21 @@
 
   .ph__sep {
     color: var(--c-text-faint);
+  }
+
+  // the path back's ›: 4px each side
+  .ph__sep--crumb {
+    flex: none;
+    margin: 0 var(--space-1);
+  }
+
+  // a step of the path back (← goes to the last): the page accent, not a link of its own
+  .ph__crumb--origin {
+    cursor: default;
+
+    &:hover {
+      text-decoration: none;
+    }
   }
 
   // the main widget's error: one 20px line in the warning colour; a click opens the widget

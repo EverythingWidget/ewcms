@@ -1,6 +1,6 @@
 <!--
-  The template editor's preview columns (preview.columns: 1–6, 1 left out): a compact
-  pill in a row above the preview frame (App.svelte), shown only in the template
+  The template editor's preview columns (preview.columns: 1–6, 1 left out): the label and
+  the segment, no pill around them, in a row above the preview frame (App.svelte), shown only in the template
   editor, never in Settings. Preview only: the item as wide as in a List of this many
   columns (never a List's own).
 -->
@@ -56,11 +56,6 @@
     height: var(--size-control);
     max-width: 100%;
     padding: 0 var(--space-3);
-    border-radius: 999px;
-    background: var(--c-surface);
-    box-shadow:
-      0 0 0 1px var(--c-fill-active),
-      0 8px 24px -8px var(--c-scrim);
     color: var(--c-text-muted);
   }
 

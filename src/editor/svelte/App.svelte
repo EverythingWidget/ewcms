@@ -76,7 +76,7 @@
   ];
   const pages = $derived(ui.panel === 'pages');
   const phone = $derived(ui.viewport === 'phone');
-  // the item template editor: a row above the frame holds its Columns pill; on pages
+  // the item template editor: a row above the frame holds its Columns control; on pages
   // the frame takes that space (the frame moving when a template opens is accepted)
   const templating = $derived(!!templateOfPath(ui.path || ''));
   // browse or edit (ui.mode): Edit opens the page in the preview (in the Pages tab); Done saves
@@ -208,7 +208,7 @@
   <p class="ed-boot">Could not load content: {ui.loadError}</p>
 {:else}
   <main class={['ed-stage', phone && 'is-phone', templating && 'has-cols']}>
-    <!-- only in the item template editor: the row with its Columns pill -->
+    <!-- only in the item template editor: the row with its Columns control -->
     {#if templating}<div class="ed-cols-slot"><TemplateCols {live} /></div>{/if}
     <iframe class="ed-frame" title="Site preview" {@attach bridge.attach}></iframe>
     <WidgetToolbar {live} {bridge} />
@@ -339,7 +339,7 @@
     }
   }
 
-  // the template editor's row above the frame: its Columns pill sits here, centred
+  // the template editor's row above the frame: its Columns control sits here, centred
   .ed-cols-slot {
     display: flex;
     align-items: center;
