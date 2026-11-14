@@ -2,13 +2,13 @@
   The editor's side panel, App.svelte's markup with its own styles (styles.js): the header
   (status line | Edit / Done | Publish), the mode tabs, the page head (PageHead.svelte's look:
   ← title / path; page: { title, path }, false hides it), the page tabs (the real Tabs), the
-  scroll body (.ed-body) and the footer (Desktop | Mobile, Sources, Media; undo, redo in edit).
+  scroll body (.ed-body) and the footer (Desktop | Phone, Sources, Media; undo, redo in edit).
     mode     'pages' | 'settings' (default 'pages')
     editing  edit (Done, undo / redo shown) or browse (Edit; default)
     tab      the page tab shown (default 'sections'); tabs: false hides them
     height   the panel's height (default 844px)       pending  the header's line
     changes  unsaved changes                          unpublished  saved, not published
-    phone    the Mobile cell on                       children the body
+    phone    the Phone cell on                       children the body
 -->
 <script>
   import Button from '../../src/editor/svelte/Button.svelte';
@@ -39,7 +39,7 @@
   );
   const VIEWPORTS = [
     [false, 'Desktop', 'desktop'],
-    [true, 'Mobile', 'mobile-screen-button'],
+    [true, 'Phone', 'mobile-screen-button'],
   ];
   const MODES = [
     ['pages', 'Pages'],

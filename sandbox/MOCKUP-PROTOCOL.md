@@ -145,7 +145,7 @@ link colour, eye, Duplicate, Delete; no grip, no order). Put it in a `<ul>`.
 | `height`      | CSS length                                                 | `'844px'`         | panel height (body scrolls)                                                               |
 | `changes`     | number                                                     | `0`               | unsaved count: "Unsaved changes", Publish on, Undo on                                     |
 | `unpublished` | number                                                     | `0`               | saved, not published: "N changes to publish", Publish · N                                 |
-| `phone`       | bool                                                       | `false`           | the footer's Mobile cell on (else Desktop)                                                |
+| `phone`       | bool                                                       | `false`           | the footer's Phone cell on (else Desktop)                                                |
 | `pending`     | string                                                     | `'All published'` | the header's line when nothing is unsaved or unpublished                                  |
 | `children`    | snippet                                                    | —                 | the scroll body                                                                           |
 

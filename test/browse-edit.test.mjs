@@ -1,5 +1,5 @@
 // Browse and edit (ui.mode): the one source of what a preview click does (previewClicks), Edit
-// / Done in the header (Done saves first), the footer's Desktop | Mobile, Sources, Media and
+// / Done in the header (Done saves first), the footer's Desktop | Phone, Sources, Media and
 // undo / redo (edit only), and the pages list's active row (the page in the preview).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -87,11 +87,11 @@ test('header: status | Edit / Done (one 80px slot) | Publish; Done saves, then b
   assert.match(app, /mod && k === 's'/);
 });
 
-test('footer: Desktop | Mobile (32px icon cells), Sources, Media; undo / redo only in edit, last', () => {
+test('footer: Desktop | Phone (32px icon cells), Sources, Media; undo / redo only in edit, last', () => {
   const app = src('svelte/App.svelte');
   const foot = app.slice(app.indexOf('<footer class="ed-foot">'), app.indexOf('</footer>'));
   assert.match(app, /\['desktop', 'Desktop', 'desktop'\]/);
-  assert.match(app, /\['phone', 'Mobile', 'mobile-screen-button'\]/);
+  assert.match(app, /\['phone', 'Phone', 'mobile-screen-button'\]/);
   assert.match(foot, /class="seg ed-vp" role="radiogroup"/);
   assert.match(foot, /aria-checked=\{ui\.viewport === value\}/);
   const order = [

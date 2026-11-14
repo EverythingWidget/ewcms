@@ -3,7 +3,7 @@
   header (the status line | Edit / Done | Publish; the top tabs Pages | Site Settings), the
   current tab's panel (Pages: the pages list in browse, or the page open with its tabs
   Sections | Motion | SEO in edit, ContentPanel.svelte; Site Settings: SettingsPanel.svelte) and
-  the footer (Desktop | Mobile, Sources, Media; undo, redo in edit). Also the modals, each
+  the footer (Desktop | Phone, Sources, Media; undo, redo in edit). Also the modals, each
   mounted once here and opened through state (modals.svelte.js), the toasts and the keyboard
   shortcuts.
   Browse or edit is ui.mode (ui.svelte.js): Edit opens the page in the preview; Done saves
@@ -91,7 +91,7 @@
   }
   const VIEWPORTS = [
     ['desktop', 'Desktop', 'desktop'],
-    ['phone', 'Mobile', 'mobile-screen-button'],
+    ['phone', 'Phone', 'mobile-screen-button'],
   ];
   const unpublished = $derived(ui.pub?.files || []);
   const ahead = $derived(ui.pub?.ahead || 0);
@@ -260,7 +260,7 @@
       <SettingsPanel {live} {bridge} {actions} />
     {/if}
 
-    <!-- [ Desktop | Mobile ] Sources Media ... (undo redo: edit only, at the end, so nothing
+    <!-- [ Desktop | Phone ] Sources Media ... (undo redo: edit only, at the end, so nothing
          before them moves) -->
     <footer class="ed-foot">
       <div class="seg ed-vp" role="radiogroup" aria-label="Preview size">
@@ -414,7 +414,7 @@
     min-width: 80px;
   }
 
-  // [ Desktop | Mobile ] Sources Media ... undo redo: 16px edges, 8px apart
+  // [ Desktop | Phone ] Sources Media ... undo redo: 16px edges, 8px apart
   .ed-foot {
     position: relative; // the update card's anchor
     border-top: 1px solid transparent; // borderless: no line, its 1px kept (no shift)
@@ -437,7 +437,7 @@
     min-width: 0;
   }
 
-  // Desktop | Mobile: the editor's .seg, icon-only 32×32 cells, as tall as the buttons
+  // Desktop | Phone: the editor's .seg, icon-only 32×32 cells, as tall as the buttons
   .ed-vp .seg__btn {
     display: inline-flex;
     flex: none;
