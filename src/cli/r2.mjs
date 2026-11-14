@@ -9,7 +9,7 @@
  *   R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET   required
  *   R2_ENDPOINT   optional: another S3 endpoint (tests use a local mock)
  *
- * An upload is resized like the photos in media/ (scripts/photo-variants.mjs: auto-rotated,
+ * An upload is resized like the photos in media/ (src/cli/photo-variants.mjs: auto-rotated,
  * metadata stripped, WebP at 480/960/1600 px, never wider than the original) and each size is
  * stored as photos/<name>-<hash>-<width>.webp. The hash is of the original bytes: the same
  * photo always gets the same keys, and the objects can be cached forever. The original itself
@@ -26,10 +26,10 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { AwsClient } from 'aws4fetch';
 import { FORMAT, loadSharp, makeVariants, uprightSize, widthsFor } from './photo-variants.mjs';
-import { formatJSON } from '../src/editor/lib/json-format.js';
+import { formatJSON } from '../editor/lib/json-format.js';
 import { writeFileAtomic } from './content.mjs';
-import { VERSION } from '../src/render/files.js';
-import { slugify } from '../src/render/helpers.js';
+import { VERSION } from '../render/files.js';
+import { slugify } from '../render/helpers.js';
 
 /** Image types an upload can be (they are stored as WebP). */
 export const IMAGE_TYPES = new Set([

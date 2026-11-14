@@ -1,5 +1,5 @@
 /**
- * R2 upload (scripts/r2.mjs) against a local mock S3 endpoint: `npm test`.
+ * R2 upload (src/cli/r2.mjs) against a local mock S3 endpoint: `npm test`.
  * The mock checks the requests R2 would get, including their SigV4 signature (computed here
  * independently of aws4fetch); photos.json goes to a temp folder.
  */
@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
-import { NOT_CONFIGURED, deletePhoto, photoBase, r2Config, uploadPhoto } from '../scripts/r2.mjs';
+import { NOT_CONFIGURED, deletePhoto, photoBase, r2Config, uploadPhoto } from '../src/cli/r2.mjs';
 
 const SECRET = 'test-secret-key';
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest('hex');

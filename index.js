@@ -11,9 +11,9 @@ export {
   lintSite,
   publishMedia,
   newSite,
-} from './scripts/cli.mjs';
-export { buildPhotos } from './scripts/photos.mjs';
-export { checkLinks } from './scripts/check-links.mjs';
-export { loadSiteConfig } from './scripts/site-config.mjs';
+} from './src/cli/cli.mjs';
+export { buildPhotos } from './src/cli/photos.mjs';
+export { checkLinks } from './src/cli/check-links.mjs';
+export { loadSiteConfig } from './src/cli/site-config.mjs';
 export { siteConfig, staticSite, mocksPlugin } from './vite.js';
-export { ENGINE, ENGINE_VERSION, enginePath } from './scripts/engine.mjs';
+export { ENGINE, ENGINE_VERSION, enginePath } from './src/cli/engine.mjs';

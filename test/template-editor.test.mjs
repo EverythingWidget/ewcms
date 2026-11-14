@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { onGrid, template } from '../scripts/grid-helper.mjs';
 import fs from 'node:fs';
 import { parseHTML } from 'linkedom';
-import { loadContent } from '../scripts/content.mjs';
+import { loadContent } from '../src/cli/content.mjs';
 import { renderRoute } from '../src/render/render.js';
 import { checkContent } from '../src/render/validate.js';
 import { cloneTemplate } from '../src/render/widgets/list/presets.js';
@@ -244,7 +244,7 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   assert.match(lead, /\.ll__edit\.is-hidden/);
   // the dev server serves the preview
   assert.match(
-    read('scripts/vite-plugin-static-site.mjs'),
+    read('src/cli/vite-plugin-static-site.mjs'),
     /templatePreview\(content, templateOfPath\(pathname\)\)/,
   );
 });

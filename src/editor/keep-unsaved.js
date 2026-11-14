@@ -1,7 +1,7 @@
 /**
  * Unsaved edits kept over a reload the editor didn't ask for: the dev server's own full reload
  * (Vite's "vite:beforeFullReload": the engine's code changed, an npm install, a config edit).
- * Content saves never reload the editor (scripts/vite-plugin-static-site.mjs; main.js applies
+ * Content saves never reload the editor (src/cli/vite-plugin-static-site.mjs; main.js applies
  * saved and changed content itself). Before such a reload the edits (as changes on their files,
  * lib/diff.js) go to sessionStorage, and the page leaves without the "Reload site?" prompt; the
  * editor's boot puts them back on top of the files it loads, as unsaved edits.

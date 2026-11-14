@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { loadContent } from '../scripts/content.mjs';
+import { loadContent } from '../src/cli/content.mjs';
 import { save } from '../src/server/editor-server.mjs';
 import * as render from '../src/render/render.js';
 import { buildRoutes } from '../src/render/routes.js';

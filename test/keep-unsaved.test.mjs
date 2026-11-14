@@ -50,7 +50,7 @@ test('unsaved edits kept over a dev-server reload, put back as one undo step', (
 });
 
 test('content writes never full-reload; the editor wires the keep', () => {
-  const plugin = read('scripts/vite-plugin-static-site.mjs');
+  const plugin = read('src/cli/vite-plugin-static-site.mjs');
   assert.match(plugin, /if \(content\) return \[\];/);
   const main = read('src/editor/main.js');
   assert.match(main, /vite:beforeFullReload', \(\) => keepUnsaved\(store, sessionStorage\)/);

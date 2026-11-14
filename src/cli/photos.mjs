@@ -10,7 +10,7 @@
  *
  * If `sharp` isn't installed, originals are copied as-is and the site still works
  * (no srcset / placeholders). Outputs are cached: unchanged photos are skipped.
- * Sizes, format and quality: scripts/photo-variants.mjs (shared with uploads to R2).
+ * Sizes, format and quality: src/cli/photo-variants.mjs (shared with uploads to R2).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -113,6 +113,6 @@ export async function buildPhotos(root = process.cwd()) {
   return { files: files.length, built };
 }
 
-// run directly: node scripts/photos.mjs (the site: the working folder)
+// run directly: node src/cli/photos.mjs (the site: the working folder)
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url))
   await buildPhotos();

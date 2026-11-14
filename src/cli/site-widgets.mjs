@@ -16,7 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { loadSiteConfig } from './site-config.mjs';
-import { registerWidgets } from '../src/render/widgets/index.js';
+import { registerWidgets } from '../render/widgets/index.js';
 
 /** The site's widget modules: [{ spec, dir, index, style, client }] (style, client: or null). */
 export function widgetModulesOf(root) {

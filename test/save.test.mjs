@@ -29,7 +29,7 @@ test('a Save with nothing typed meanwhile leaves nothing unsaved', () => {
 });
 
 test('the dev server tells the editor’s own writes apart by their content', () => {
-  const p = readFileSync(new URL('../scripts/vite-plugin-static-site.mjs', import.meta.url), 'utf8');
+  const p = readFileSync(new URL('../src/cli/vite-plugin-static-site.mjs', import.meta.url), 'utf8');
   assert.match(p, /ownWrites/);
   assert.match(p, /server: \{ fs: \{ allow: engineAllow/);
 });

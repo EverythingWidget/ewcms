@@ -1,11 +1,11 @@
-// site.config.mjs and its paths (scripts/site-config.mjs), and the GitHub link from a remote.
+// site.config.mjs and its paths (src/cli/site-config.mjs), and the GitHub link from a remote.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { DEFAULTS, loadSiteConfig, repoUrl } from '../scripts/site-config.mjs';
-import { loadContent } from '../scripts/content.mjs';
+import { DEFAULTS, loadSiteConfig, repoUrl } from '../src/cli/site-config.mjs';
+import { loadContent } from '../src/cli/content.mjs';
 import { CONTENT_DIR } from '../src/render/files.js';
 import { SITE_A } from './fixtures/index.mjs';
 

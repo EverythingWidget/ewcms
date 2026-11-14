@@ -5,8 +5,8 @@
  * from the ports `ewcms dev` picks: 5173, 5174, …); prints the viewer's URL.
  * Plain Node, no shell: the same on Windows, macOS and Linux.
  */
-import { dev } from './cli.mjs';
-import { mockSite } from './engine.mjs';
+import { dev } from '../src/cli/cli.mjs';
+import { mockSite } from '../src/cli/engine.mjs';
 
 const port = Number(process.env.MOCK_PORT || 5199);
 const server = await dev(mockSite(), { port, photos: false });

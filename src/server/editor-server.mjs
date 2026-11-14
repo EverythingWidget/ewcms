@@ -13,7 +13,7 @@
  *                             commits not pushed yet
  *   POST /__editor/upload   → one photo (the raw bytes, its Content-Type, X-Filename): resized,
  *                             stored in Cloudflare R2 and added to photos.json
- *                             (scripts/r2.mjs), answers { key, photo }; without the R2 keys
+ *                             (src/cli/r2.mjs), answers { key, photo }; without the R2 keys
  *                             it is saved in media/ and resized there (src/server/local-upload.mjs),
  *                             answers { key, local: true, media }
  *   POST /__editor/publish  → { message }: git add + commit ONLY the changed content files in
@@ -36,7 +36,7 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { repoEnv } from './git-env.mjs';
 import { formatJSON } from '../editor/lib/json-format.js';
-import { loadSiteConfig, repoUrl } from '../../scripts/site-config.mjs';
+import { loadSiteConfig, repoUrl } from '../cli/site-config.mjs';
 import { countEdits } from '../editor/lib/edit-count.js';
 import {
   ANIMATIONS,
@@ -71,7 +71,7 @@ import { templateOfPath, templatePreview } from '../render/widgets/list/template
 import { isTypeSpecimen, typeSpecimen } from '../render/layout/type-specimen.js';
 import { checkItems, photoChecker, schemaOf } from '../render/schemas.js';
 import { NAMED_VIEWS, getRoutes, pathOfId, titleCase } from '../render/routes.js';
-import { MAX_UPLOAD, deletePhoto, r2Config, uploadPhoto, writePhotos } from '../../scripts/r2.mjs';
+import { MAX_UPLOAD, deletePhoto, r2Config, uploadPhoto, writePhotos } from '../cli/r2.mjs';
 import { uploadLocal } from './local-upload.mjs';
 import { photoUses } from '../editor/lib/photo-uses.js';
 import {
@@ -83,7 +83,7 @@ import {
   readContentFile,
   walkJson,
   writeFileAtomic,
-} from '../../scripts/content.mjs';
+} from '../cli/content.mjs';
 import { set as setAt } from '../editor/lib/pointer.js';
 import { linkAt, linksTo, titleOf, unlinkPage } from '../editor/lib/page-tree.js';
 import {
@@ -672,7 +672,7 @@ const readMediaManifest = (root) =>
   fs.existsSync(mediaFile(root)) ? JSON.parse(fs.readFileSync(mediaFile(root), 'utf8')) : {};
 
 /**
- * Local photos (.generated/media.json, scripts/photos.mjs): { src, thumb, width, height,
+ * Local photos (.generated/media.json, src/cli/photos.mjs): { src, thumb, width, height,
  * sizes } per media/ file.
  */
 function readMedia(root) {
@@ -700,7 +700,7 @@ const readPhotos = (root) =>
  *
  *   alt     { key, alt }  the alt text in photos.json ('' removes it)
  *   delete  { key }       only when no content file on disk uses it: an R2 photo loses every
- *                         size in R2 and its photos.json entry (deletePhoto, scripts/r2.mjs); a
+ *                         size in R2 and its photos.json entry (deletePhoto, src/cli/r2.mjs); a
  *                         local one its file in media/, its sizes in public/media/, its manifest
  *                         entry and alt
  *
@@ -1080,7 +1080,7 @@ export const draftsFor = (drafts, session) =>
 
 /**
  * The editor's unsaved edits, for its preview only: `drafts` (the plugin's, shared with its
- * page renderer, scripts/vite-plugin-static-site.mjs) holds them per editor session (one per
+ * page renderer, src/cli/vite-plugin-static-site.mjs) holds them per editor session (one per
  * tab), drafts[session] = files, { "pages/index.json": data }. Pages requested with
  * ?draft=<session> render from them instead of the files on disk, so a new section or menu
  * item shows without Save; every other request (the site in another tab, another editor) gets

@@ -5,7 +5,7 @@ import { GRID_STYLE_KEYS, gridStyle } from '../src/render/widgets/list/item-grid
 import { onGrid, template } from '../scripts/grid-helper.mjs';
 import fs from 'node:fs';
 import * as sass from 'sass';
-import { loadContent } from '../scripts/content.mjs';
+import { loadContent } from '../src/cli/content.mjs';
 import { checkContent } from '../src/render/validate.js';
 import { cloneTemplate } from '../src/render/widgets/list/presets.js';
 import {

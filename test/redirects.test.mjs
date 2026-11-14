@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { pagesOp } from '../src/server/editor-server.mjs';
-import { readContentDir } from '../scripts/content.mjs';
+import { readContentDir } from '../src/cli/content.mjs';
 import { getRoutes } from '../src/render/routes.js';
 import { contentFromFiles, isRootFile } from '../src/render/files.js';
 import {

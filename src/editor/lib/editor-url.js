@@ -1,5 +1,5 @@
 /**
- * The editor's address (dev server: scripts/vite-plugin-static-site.mjs; editor: main.js). The visual
+ * The editor's address (dev server: src/cli/vite-plugin-static-site.mjs; editor: main.js). The visual
  * editor is the site's own URL with an `edit` query param, so the page it edits is the URL's
  * path and its other params (tab, view, source, …: src/editor/svelte/persist.js) follow:
  *

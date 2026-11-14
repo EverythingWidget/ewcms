@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadContent } from '../scripts/content.mjs';
+import { loadContent } from '../src/cli/content.mjs';
 import { renderOp } from '../src/server/editor-server.mjs';
 import * as render from '../src/render/render.js';
 import { FOOTER, STRINGS, contentFromFiles } from '../src/render/files.js';

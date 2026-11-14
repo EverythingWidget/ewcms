@@ -20,7 +20,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { enginePath, mockSite } from './engine.mjs';
+import { enginePath, mockSite } from '../src/cli/engine.mjs';
 import { MOCKS_DIR } from './mock-api.mjs';
 
 const args = process.argv.slice(2);

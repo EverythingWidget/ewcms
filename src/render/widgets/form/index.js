@@ -9,7 +9,7 @@
  *
  * Where it sends (config.target, else site.json forms.target, see formTarget):
  *   function  POST /api/contact: the Cloudflare Pages Function (src/server/contact.js)
- *             (the dev server answers it too, scripts/vite-plugin-static-site.mjs)
+ *             (the dev server answers it too, src/cli/vite-plugin-static-site.mjs)
  *   endpoint  POST to site.json forms.endpoint (a form service such as Formspree)
  *   email     the visitor's mail app, to site.json email (mailto:); also the fallback
  * A plain <form method="post"> that works without JavaScript; src/client/modules/form.js

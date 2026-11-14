@@ -5,7 +5,7 @@
  * bundled into the site's stylesheet) and client.js (its behaviour on the page: a default
  * export `(el) => cleanup?`, run for every one of its elements, .wgt--<type>). The built-ins
  * are the folders here, always on; a site adds its own in site.config.mjs `widgets`
- * (scripts/site-widgets.mjs loads them; the browser gets them from virtual:site-widgets). Widgets sit in the sections of a page (src/render/layout/index.js places them):
+ * (src/cli/site-widgets.mjs loads them; the browser gets them from virtual:site-widgets). Widgets sit in the sections of a page (src/render/layout/index.js places them):
  *
  *   { "id": "w-k3x9", "type": "list", "label": "People", "heading": "Models",
  *     "source": { "mode": "all", "from": "people" }, "config": { "template": "preset:card" },

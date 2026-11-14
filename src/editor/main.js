@@ -944,7 +944,7 @@ async function save({ quiet = false } = {}) {
 // ---------------------------------------------------------------- changes on disk
 /**
  * The dev server reports content/, media and template changes as "site:changed"
- * (scripts/vite-plugin-static-site.mjs) instead of reloading the editor. Our own saves
+ * (src/cli/vite-plugin-static-site.mjs) instead of reloading the editor. Our own saves
  * already reloaded the preview. Anything else (the IDE, a git checkout, new media):
  * content files on disk become the base with unsaved edits kept on top (store.rebase),
  * then the preview reloads. A burst of changes is handled once.

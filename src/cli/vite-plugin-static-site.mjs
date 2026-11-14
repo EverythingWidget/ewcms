@@ -31,14 +31,14 @@ import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import { loadEnv, searchForWorkspaceRoot } from 'vite';
 import { loadContent } from './content.mjs';
-import { DRAFT_PARAM, draftsFor, editorMiddleware } from '../src/server/editor-server.mjs';
-import { contactMiddleware } from '../src/server/contact-dev.mjs';
-import { pageFile } from '../src/render/files.js';
-import { EDITOR_HTML, legacyRedirect, wantsEditor } from '../src/editor/lib/editor-url.js';
-import { checkSources } from '../src/render/schemas.js';
-import { FOLDERS, ROOT_FILES } from '../src/render/files.js';
+import { DRAFT_PARAM, draftsFor, editorMiddleware } from '../server/editor-server.mjs';
+import { contactMiddleware } from '../server/contact-dev.mjs';
+import { pageFile } from '../render/files.js';
+import { EDITOR_HTML, legacyRedirect, wantsEditor } from '../editor/lib/editor-url.js';
+import { checkSources } from '../render/schemas.js';
+import { FOLDERS, ROOT_FILES } from '../render/files.js';
 import { THEME_LAYERS, loadSiteConfig } from './site-config.mjs';
-import { createUpdater } from '../src/server/update.mjs';
+import { createUpdater } from '../server/update.mjs';
 import { registerSiteWidgets, widgetClientsModule, widgetsModule } from './site-widgets.mjs';
 import { ENGINE, enginePath, fsUrl, posixPath, sameFile, withEngineUrls } from './engine.mjs';
 
@@ -117,7 +117,7 @@ export const editorConfigModule = (site) =>
   })};\n`;
 
 /** The site's own widgets (site.config.mjs widgets): definitions for the editor, styles and
- * client modules for the public site (scripts/site-widgets.mjs). */
+ * client modules for the public site (src/cli/site-widgets.mjs). */
 export const SITE_WIDGETS = 'virtual:site-widgets';
 export const SITE_WIDGET_CLIENTS = 'virtual:site-widgets/client';
 
@@ -348,7 +348,7 @@ export default function staticSite() {
 
     /** Content and templates changed: tell the pages (see the top of this file). */
     handleHotUpdate({ file, server }) {
-      if (file.endsWith('.tmp')) return []; // writeFileAtomic's temporary file (scripts/content.mjs)
+      if (file.endsWith('.tmp')) return []; // writeFileAtomic's temporary file (src/cli/content.mjs)
       const rel = path.relative(config.root, file).split(path.sep).join('/');
       // content and media manifest files are data: they re-render pages, never hot-update modules
       const site = loadSiteConfig(config.root);

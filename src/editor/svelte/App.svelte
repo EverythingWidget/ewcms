@@ -122,7 +122,7 @@
   $effect(writeUrl);
 
   $effect(() => {
-    // the site's name (site.json), like the page's own title (scripts/vite-plugin-static-site.mjs)
+    // the site's name (site.json), like the page's own title (src/cli/vite-plugin-static-site.mjs)
     const name = live.get(SITE, '/name');
     document.title = `${live.changes ? '● ' : ''}Editor${name ? ` · ${name}` : ''}`;
   });

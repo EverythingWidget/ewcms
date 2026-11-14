@@ -1,7 +1,7 @@
 // Entry stylesheet: the core (this folder: tokens, base, backdrop, layout, text), the theme
 // (site-theme: the engine's theme-default/, or a site's older full copy) with its fonts,
 // tokens and look, then the site's layers over it (site-layer: its theme folder's fonts.scss,
-// tokens.scss, overrides.scss, each optional). Aliases: scripts/vite-plugin-static-site.mjs.
+// tokens.scss, overrides.scss, each optional). Aliases: src/cli/vite-plugin-static-site.mjs.
 @use 'site-theme/styles/fonts';
 @use 'site-layer/fonts' as site-fonts;
 @use 'tokens';

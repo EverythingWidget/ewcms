@@ -27,7 +27,7 @@ export const FOLDERS = ['pages', 'sources'];
 
 /**
  * The content folder from the site's root ("content/en", site.config.mjs), for the paths in
- * messages. scripts/content.mjs sets it when it loads a site, the editor from its config.
+ * messages. src/cli/content.mjs sets it when it loads a site, the editor from its config.
  */
 export let CONTENT_DIR = 'content/en';
 export const setContentDir = (dir) => {
@@ -37,7 +37,7 @@ export const setContentDir = (dir) => {
  * Item templates (the List's config.template "t-…"): site-wide, for every language, so they sit
  * next to the language folders: content/templates/t-<id>.json. Their file name in the content
  * files is "templates/t-<id>.json"; on disk it is one folder up from the content folder
- * (templatesDir in scripts/site-config.mjs).
+ * (templatesDir in src/cli/site-config.mjs).
  */
 export const TEMPLATES = 'templates';
 export const TEMPLATE_ID = /^t-[a-z0-9]{4,12}$/;

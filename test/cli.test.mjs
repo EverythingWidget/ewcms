@@ -1,13 +1,13 @@
-// The ewcms command's pieces (scripts/cli.mjs) and the engine paths (scripts/engine.mjs).
+// The ewcms command's pieces (src/cli/cli.mjs) and the engine paths (src/cli/engine.mjs).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { checkContentOf, newSite, siteCode, themeWarning } from '../scripts/cli.mjs';
-import { loadSiteConfig } from '../scripts/site-config.mjs';
-import { ENGINE, enginePath, fsUrl, withEngineUrls, ENGINE_MARK } from '../scripts/engine.mjs';
+import { checkContentOf, newSite, siteCode, themeWarning } from '../src/cli/cli.mjs';
+import { loadSiteConfig } from '../src/cli/site-config.mjs';
+import { ENGINE, enginePath, fsUrl, withEngineUrls, ENGINE_MARK } from '../src/cli/engine.mjs';
 
 const FIXTURE = enginePath('test', 'fixtures', 'site-a');
 

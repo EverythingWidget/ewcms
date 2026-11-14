@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * ewcms: the site's commands (scripts/cli.mjs). Run in the site's folder (npm scripts do):
+ * ewcms: the site's commands (src/cli/cli.mjs). Run in the site's folder (npm scripts do):
  *
  *   ewcms dev [--port N] [--host] [--no-photos]
  *   ewcms build [--no-photos]
@@ -11,15 +11,15 @@
  *   ewcms new-site <dir>
  *
  * --root <dir> runs it for another site's folder. In a workspace with ewcms checked out, the
- * workspace's ewcms runs (scripts/locate.mjs), whichever copy npm put in the site's node_modules.
+ * workspace's ewcms runs (src/cli/locate.mjs), whichever copy npm put in the site's node_modules.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { register } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { preferredEngine } from '../scripts/locate.mjs';
+import { preferredEngine } from '../src/cli/locate.mjs';
 
-// This copy of ewcms, or the workspace's (scripts/locate.mjs): hand over before loading anything
+// This copy of ewcms, or the workspace's (src/cli/locate.mjs): hand over before loading anything
 const self = fs.realpathSync(fileURLToPath(new URL('..', import.meta.url)));
 const rootArg = process.argv.indexOf('--root');
 const siteDir = path.resolve(rootArg > 0 ? process.argv[rootArg + 1] : process.cwd());
@@ -37,15 +37,15 @@ if (engine !== self) {
 } else await main();
 
 async function main() {
-  // ASCII output where Unicode would arrive garbled (Windows, piped: scripts/term.mjs)
-  const term = await import('../scripts/term.mjs');
+  // ASCII output where Unicode would arrive garbled (Windows, piped: src/cli/term.mjs)
+  const term = await import('../src/cli/term.mjs');
   if (term.wantsAscii()) term.asciiOutput();
-  // the site's own files that import ewcms/… get this engine's (scripts/resolve-hook.mjs)
-  register(pathToFileURL(path.join(self, 'scripts', 'resolve-hook.mjs')).href, {
+  // the site's own files that import ewcms/… get this engine's (src/cli/resolve-hook.mjs)
+  register(pathToFileURL(path.join(self, 'src', 'cli', 'resolve-hook.mjs')).href, {
     data: { engine: self },
   });
-  const cli = await import('../scripts/cli.mjs');
-  const { ENGINE_VERSION } = await import('../scripts/engine.mjs');
+  const cli = await import('../src/cli/cli.mjs');
+  const { ENGINE_VERSION } = await import('../src/cli/engine.mjs');
 
   const [command, ...rest] = process.argv.slice(2);
   const opts = { photos: true, lint: true, links: false };
@@ -80,7 +80,7 @@ usage: ewcms <dev | build | preview | check | photos | publish-media | new-site 
         if (!(await cli.check(root, opts))) process.exitCode = 1;
         break;
       case 'photos': {
-        const { buildPhotos } = await import('../scripts/photos.mjs');
+        const { buildPhotos } = await import('../src/cli/photos.mjs');
         await buildPhotos(root);
         break;
       }

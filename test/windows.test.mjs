@@ -1,5 +1,5 @@
 // Windows paths (path.win32), checked on any machine: the build's entry, /@fs/ URLs, and which
-// ewcms runs a site in a workspace (scripts/locate.mjs, scripts/resolve-hook.mjs).
+// ewcms runs a site in a workspace (src/cli/locate.mjs, src/cli/resolve-hook.mjs).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -7,10 +7,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { ENGINE, enginePath, fsUrl, posixPath, sameFile } from '../scripts/engine.mjs';
-import { isVirtualShell } from '../scripts/vite-plugin-static-site.mjs';
-import { workspaceEngine, preferredEngine } from '../scripts/locate.mjs';
-import { initialize, resolve } from '../scripts/resolve-hook.mjs';
+import { ENGINE, enginePath, fsUrl, posixPath, sameFile } from '../src/cli/engine.mjs';
+import { isVirtualShell } from '../src/cli/vite-plugin-static-site.mjs';
+import { workspaceEngine, preferredEngine } from '../src/cli/locate.mjs';
+import { initialize, resolve } from '../src/cli/resolve-hook.mjs';
 
 const W = path.win32;
 
@@ -69,13 +69,16 @@ function workspace({ workspaces = ['ewcms', 'sites/*'] } = {}) {
   // npm's second copy (a git dependency): just enough of it to start
   const copy = path.join(site, 'node_modules', 'ewcms');
   fs.mkdirSync(path.join(copy, 'bin'), { recursive: true });
-  fs.mkdirSync(path.join(copy, 'scripts'));
+  fs.mkdirSync(path.join(copy, 'src', 'cli'), { recursive: true });
   fs.writeFileSync(
     path.join(copy, 'package.json'),
     JSON.stringify({ name: 'ewcms', version: '0.0.0' }),
   );
   fs.copyFileSync(enginePath('bin', 'ewcms.mjs'), path.join(copy, 'bin', 'ewcms.mjs'));
-  fs.copyFileSync(enginePath('scripts', 'locate.mjs'), path.join(copy, 'scripts', 'locate.mjs'));
+  fs.copyFileSync(
+    enginePath('src', 'cli', 'locate.mjs'),
+    path.join(copy, 'src', 'cli', 'locate.mjs'),
+  );
   return { dir, site, copy };
 }
 
@@ -114,8 +117,8 @@ test("resolve hook: ewcms/… from a site's files is the running engine's", asyn
 });
 
 // v0.1.2: dev pages for clients without an Accept header, ASCII console text
-import { wantsPage } from '../scripts/vite-plugin-static-site.mjs';
-import { toAscii, wantsAscii } from '../scripts/term.mjs';
+import { wantsPage } from '../src/cli/vite-plugin-static-site.mjs';
+import { toAscii, wantsAscii } from '../src/cli/term.mjs';
 
 test('dev serves pages to clients that send no Accept (PowerShell Invoke-WebRequest)', () => {
   assert.equal(wantsPage('/', undefined), true);

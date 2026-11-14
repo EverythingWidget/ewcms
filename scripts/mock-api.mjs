@@ -13,7 +13,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { enginePath } from './engine.mjs';
+import { enginePath } from '../src/cli/engine.mjs';
 
 // the engine's sandbox/mocks/ (git-ignored there), whichever site the dev server runs
 export const MOCKS_DIR = enginePath('sandbox', 'mocks');

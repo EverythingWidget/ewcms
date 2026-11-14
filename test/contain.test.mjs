@@ -8,7 +8,7 @@ import {
   layoutVars,
 } from '../src/render/layout/contain.js';
 import { checkContent } from '../src/render/validate.js';
-import { loadContent } from '../scripts/content.mjs';
+import { loadContent } from '../src/cli/content.mjs';
 import { buildRoutes } from '../src/render/routes.js';
 import { renderRoute } from '../src/render/render.js';
 import { SITE_A } from './fixtures/index.mjs';

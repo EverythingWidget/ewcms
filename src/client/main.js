@@ -231,7 +231,7 @@ function connectEditor() {
     }
   });
 
-  // Content or templates changed on disk (scripts/vite-plugin-static-site.mjs): show the new
+  // Content or templates changed on disk (src/cli/vite-plugin-static-site.mjs): show the new
   // render. In the editor's preview the editor reloads the frame itself.
   import.meta.hot?.on('site:changed', () => {
     if (!flags.preview) location.reload();

@@ -1,6 +1,6 @@
 /**
- * The responsive sizes of one photo, shared by the local pipeline (scripts/photos.mjs: media/
- * -> public/media/) and uploads to Cloudflare R2 (scripts/r2.mjs), so both get the same
+ * The responsive sizes of one photo, shared by the local pipeline (src/cli/photos.mjs: media/
+ * -> public/media/) and uploads to Cloudflare R2 (src/cli/r2.mjs), so both get the same
  * treatment: auto-rotated from EXIF, metadata stripped (sharp writes none unless asked: no
  * GPS, no camera data), WebP at WIDTHS (never wider than the original), the size, a tiny
  * blurred placeholder (LQIP) and the most vivid colour (album accents).

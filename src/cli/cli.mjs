@@ -28,7 +28,7 @@ const VITE_CONFIGS = ['vite.config.js', 'vite.config.mjs', 'vite.config.ts'];
 async function viteConfig(root, extra = {}) {
   const own = VITE_CONFIGS.map((f) => path.join(root, f)).find((f) => fs.existsSync(f));
   if (own) return { configFile: own, root, ...extra };
-  const { siteConfig } = await import('../vite.js');
+  const { siteConfig } = await import('../../vite.js');
   return { configFile: false, ...siteConfig({ root }), ...extra };
 }
 

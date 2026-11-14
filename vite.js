@@ -12,11 +12,11 @@
  */
 import path from 'node:path';
 import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte';
-import staticSite from './scripts/vite-plugin-static-site.mjs';
+import staticSite from './src/cli/vite-plugin-static-site.mjs';
 import { mocksPlugin } from './scripts/mock-api.mjs';
-import { loadSiteConfig } from './scripts/site-config.mjs';
+import { loadSiteConfig } from './src/cli/site-config.mjs';
 import fs from 'node:fs';
-import { ENGINE, enginePath, posixPath } from './scripts/engine.mjs';
+import { ENGINE, enginePath, posixPath } from './src/cli/engine.mjs';
 
 /**
  * 'ewcms', 'ewcms/widget-api', …: always this engine's files (package.json exports), whichever
@@ -69,7 +69,7 @@ export function siteConfig({ root = process.cwd() } = {}) {
       assetsInlineLimit: 0,
       modulePreload: { polyfill: false },
       // Only the public site is built: index.html (the site's, else the engine's template:
-      // scripts/vite-plugin-static-site.mjs). The visual editor and the mock sandbox are dev only.
+      // src/cli/vite-plugin-static-site.mjs). The visual editor and the mock sandbox are dev only.
       rolldownOptions: {
         // "/" also on Windows: the static-site plugin serves it when the site has no index.html
         input: { main: posixPath(path.join(root, 'index.html')) },

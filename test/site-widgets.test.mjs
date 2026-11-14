@@ -1,4 +1,4 @@
-// A site's own widgets (scripts/site-widgets.mjs, widgets/index.js registerWidgets): loaded from
+// A site's own widgets (src/cli/site-widgets.mjs, widgets/index.js registerWidgets): loaded from
 // site.config.mjs, rendered, validated and added in the editor like built-ins. test/fixtures/site-b.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -9,8 +9,8 @@ import {
   registerSiteWidgets,
   widgetsModule,
   widgetClientsModule,
-} from '../scripts/site-widgets.mjs';
-import { loadContent, readContentDir } from '../scripts/content.mjs';
+} from '../src/cli/site-widgets.mjs';
+import { loadContent, readContentDir } from '../src/cli/content.mjs';
 import {
   WIDGET_TYPES,
   BUILTIN_WIDGETS,

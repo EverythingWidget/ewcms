@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import * as sass from 'sass';
 import { parseHTML } from 'linkedom';
 import { warnings } from '../scripts/test-layout.mjs';
-import { loadContent } from '../scripts/content.mjs';
+import { loadContent } from '../src/cli/content.mjs';
 import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { checkContent } from '../src/render/validate.js';

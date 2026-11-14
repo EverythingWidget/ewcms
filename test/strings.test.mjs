@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import { CORE_STRINGS, stringsOf, t } from '../src/render/strings.js';
 import { renderRoute, getRoutes } from '../src/render/render.js';
 import { checkContent } from '../src/render/validate.js';
-import { editorShell } from '../scripts/vite-plugin-static-site.mjs';
-import { loadContent } from '../scripts/content.mjs';
+import { editorShell } from '../src/cli/vite-plugin-static-site.mjs';
+import { loadContent } from '../src/cli/content.mjs';
 import { SITE_A } from './fixtures/index.mjs';
 
 test('t: the site string, else the core default; placeholders filled', () => {

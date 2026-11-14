@@ -3,7 +3,7 @@
 // published page when all its bound properties are empty: undefined, null or ''; 0 and [] are values).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadContent } from '../scripts/content.mjs';
+import { loadContent } from '../src/cli/content.mjs';
 import { setEditable } from '../src/render/helpers.js';
 import { checkContent } from '../src/render/validate.js';
 import { checkSchema } from '../src/render/schemas.js';

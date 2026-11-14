@@ -1,7 +1,7 @@
 /**
  * Link checker for the built site: every internal link (href and src starting with "/")
  * in dist/**\/*.html must point at a file in dist/ ("/people/x/" -> dist/people/x/index.html).
- * Run after a build: `ewcms check --links` (or `node scripts/check-links.mjs [dist]`).
+ * Run after a build: `ewcms check --links` (or `node src/cli/check-links.mjs [dist]`).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -45,7 +45,7 @@ export function checkLinks(dist) {
   return { count, pages: pages.length, broken };
 }
 
-// run directly: node scripts/check-links.mjs [dist] (default: the working folder's site's outDir)
+// run directly: node src/cli/check-links.mjs [dist] (default: the working folder's site's outDir)
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const { count, pages, broken } = checkLinks(
     process.argv[2] || loadSiteConfig(process.cwd()).outDir,

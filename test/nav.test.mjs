@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadContent } from '../scripts/content.mjs';
+import { loadContent } from '../src/cli/content.mjs';
 import { buildRoutes } from '../src/render/routes.js';
 import { header, phoneMenu } from '../src/render/shell/header.js';
 import { checkContent } from '../src/render/validate.js';

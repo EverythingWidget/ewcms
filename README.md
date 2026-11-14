@@ -8,11 +8,11 @@ with GSAP page transitions. The editor (Svelte 5) runs in the dev server only an
 
 A **site** is only its own things; ewcms is everything else:
 
-| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                          | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                        |
-| -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `scripts/` (Vite plugin, dev server API, build, photos, R2), `src/server/contact.js`, `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
-| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/server/contact';`                                                | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                            |
-| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                           |
+| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                          | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `src/cli` (the command, Vite plugin, build, photos, R2), `src/server` (the contact form's Pages Function, the dev server's editor API), `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
+| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/server/contact';`                                                | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                                                                              |
+| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                                                                             |
 
 ## A site's commands
 
@@ -65,9 +65,9 @@ A site depends on ewcms by a git tag (`github:EverythingWidget/ewcms#v0.1.1`, wh
 installs), and npm does not link a workspace for a git dependency: it may also put that tag's
 copy in `sites/<site>/node_modules/ewcms` (npm 10 does). That copy only starts the command:
 `ewcms` looks for a workspace above the site whose `workspaces` name a folder with ewcms in it
-(`scripts/locate.mjs`) and runs that one, so the checked-out `ewcms/` always builds and serves
+(`src/cli/locate.mjs`) and runs that one, so the checked-out `ewcms/` always builds and serves
 the site. The site's own files that import `ewcms/…` (`functions/`, widgets) get the running
-engine's files too (`scripts/resolve-hook.mjs` in Node, `resolve.alias` in the Vite preset).
+engine's files too (`src/cli/resolve-hook.mjs` in Node, `resolve.alias` in the Vite preset).
 `EWCMS_ENGINE=<folder>` picks another ewcms; `EWCMS_VERBOSE=1` prints the hand-over.
 
 Then, from the root:
@@ -107,8 +107,9 @@ theirs in a site (`content/`, `theme/`, `site.config.mjs`).
 ### Linting
 
 - **ESLint** (`eslint.config.js`): JS recommended + Svelte recommended (Svelte 5, a11y checks),
-  browser globals in `src/`, Node globals in `scripts/` and configs. `console.log` warns in `src/`
-  (`console.warn`/`error` are fine), anything goes in `scripts/`.
+  browser globals in `src/`, Node globals in `src/cli/`, `src/server/` (`.mjs`), `scripts/` and
+  configs. `console.log` warns in `src/` browser code (`console.warn`/`error` are fine), anything
+  goes in the Node files.
 - **Stylelint** (`stylelint.config.mjs`): standard SCSS rules, relaxed (blank lines, alpha notation
   and vendor prefixes are free), BEM class names (`block__elem--mod`), Svelte `<style>` blocks too.
 - **Editor-only rules** (`scripts/stylelint-4px.mjs`, three, for `src/editor/**`):
@@ -145,8 +146,8 @@ items; a **property** is one value of an item (`{ "property": "title" }`).
 **Site config:** `site.config.mjs` names the site's folders: `contentDir` (`content/en`),
 `mediaDir` (`media`), `publicDir` and `publicMediaDir` (`public/media`), `generatedDir`
 (`.generated`, the media manifest), `outDir` (`dist`), and `repo` (GitHub links when the git
-remote is not on GitHub). Every key is optional. `scripts/site-config.mjs` (`loadSiteConfig`)
-resolves them; the build, the dev server, the editor endpoints, `scripts/photos.mjs` and
+remote is not on GitHub). Every key is optional. `src/cli/site-config.mjs` (`loadSiteConfig`)
+resolves them; the build, the dev server, the editor endpoints, `src/cli/photos.mjs` and
 `check:links` all read their paths from it. Client code imports content through the
 `@site-content` alias; the editor's browser code gets its settings from `virtual:editor-config`.
 
@@ -188,33 +189,44 @@ site.config.mjs     ← the site's folders
 functions/api/contact.js ← one line: export { onRequestPost } from 'ewcms/server/contact'
 
 — in ewcms —
-bin/ewcms.mjs       ← the ewcms command (scripts/cli.mjs: dev, build, check, …)
+bin/ewcms.mjs       ← the ewcms command (src/cli/cli.mjs: dev, build, check, …)
 vite.js             ← the Vite preset (ewcms/vite)
 starter/site/       ← what ewcms new-site copies (with starter/theme/, starter/content/, and empty starter/media/ and starter/widgets/)
 starter/content/    ← the starter site's content: Home (a short guide), About, 404; empty templates/ and sources/ folders, no photos
-scripts/
-  engine.mjs        ← where the engine is; %EWCMS% / /@fs/ paths to its files
+src/cli/            ← the command, its build pipeline and photos (Node)
   cli.mjs           ← the commands
-  photos.mjs        ← media/ → public/media/*.webp sizes + .generated/media.json
+  engine.mjs        ← where the engine is; %EWCMS% / /@fs/ paths to its files
+  locate.mjs        ← which ewcms runs a site's commands (EWCMS_ENGINE, the workspace's, its own)
+  resolve-hook.mjs  ← the site's own ewcms/… imports load the running engine's files
+  term.mjs          ← ASCII output where a terminal isn't UTF-8
+  site-config.mjs   ← site.config.mjs and its defaults (loadSiteConfig)
+  site-widgets.mjs  ← a site's own widget types (site.config.mjs widgets)
   content.mjs       ← loads content/en/<folder>/*.json and strings.json + media manifest (Node)
+  photos.mjs        ← media/ → public/media/*.webp sizes + .generated/media.json
   photo-variants.mjs ← the webp sizes (sharp), for photos.mjs and r2.mjs
   r2.mjs            ← editor uploads: resized, stored in Cloudflare R2, listed in photos.json
   vite-plugin-static-site.mjs  ← the "static site builder" (dev render + build prerender)
+  check-links.mjs   ← ewcms check --links: every internal link in dist/ points at a file
+src/server/         ← everything that answers HTTP requests
+  contact.js        ← the contact form's Cloudflare Pages Function (emails via Resend; contactHandler(options))
   editor-server.mjs ← dev-only editor endpoints: content / save / draft / render / status /
                       upload / media / pages / publish (localhost only)
+  local-upload.mjs  ← uploads without R2 keys: saved in media/, resized at once
+  update.mjs        ← the editor's update notice: /__editor/update
   git-env.mjs       ← git's environment without a hook's GIT_DIR & co. (Publish)
   contact-dev.mjs   ← the dev server's POST /api/contact (logs instead of sending)
-  check-links.mjs   ← ewcms check --links: every internal link in dist/ points at a file
+scripts/            ← this repo's own tooling, not the engine
+  hooks.mjs         ← postinstall: the git hooks (an ewcms checkout only)
   mock.mjs          ← npm run mock: screenshots of sandbox/mocks
+  mock-serve.mjs, mock-push.mjs, mock-api.mjs ← the mock sandbox's server, upload and list/delete API
   stylelint-4px.mjs ← the editor's local stylelint rules
-  test-layout.mjs   ← shared test helpers
+  test-layout.mjs, grid-helper.mjs, load-ui.mjs ← shared test helpers
 test/
   *.test.mjs        ← the unit tests (node --test)
   fixtures/         ← site-a, site-b, and index.mjs
-src/server/contact.js ← the contact form's Cloudflare Pages Function (emails via Resend; contactHandler(options))
 sandbox/            ← editor UI mock builder at /sandbox/ (kit/, viewer; mocks/ is local, git-ignored): npm run mock:serve
 src/
-  site/             ← isomorphic templates (no Node APIs, run at build time AND in a browser)
+  render/           ← isomorphic templates (no Node APIs, run at build time AND in a browser)
     routes.js       ← list of pages, from the files in content/en/pages/
     render.js       ← renderRoute(route, content) → { head, body }
     helpers.js      ← html``, esc(), img() with srcset/LQIP, accent colours
@@ -1452,7 +1464,7 @@ Only source items can be placeholders.
 
 ### Photos
 
-`scripts/photos.mjs` (runs before `dev` and `build`) converts every file in `media/` into
+`src/cli/photos.mjs` (runs before `dev` and `build`) converts every file in `media/` into
 480/960/1600 px WebP files in `public/media/` and writes `.generated/media.json` with sizes,
 a tiny blurred placeholder (LQIP) and the photo's most vivid colour. Templates use it for
 `srcset`, `width/height` (no layout shift) and lazy loading. Unchanged photos are skipped.
@@ -1461,7 +1473,7 @@ Photos load lazily, except the first ones at the top of a page (`firstPhotos(i)`
 photography panel gets `loading="eager" fetchpriority="high"`, the next two `loading="eager"`.
 Album pages load their first two slides eagerly, and About its photo.
 If `sharp` is missing, originals are copied and the site still works. Both output folders are
-generated, so they're git-ignored. Sizes, format and quality are in `scripts/photo-variants.mjs`,
+generated, so they're git-ignored. Sizes, format and quality are in `src/cli/photo-variants.mjs`,
 shared with photos uploaded to R2 (below).
 
 **Alt text and credits belong to the photo**, not to the page using it: one entry per photo in
@@ -1496,8 +1508,8 @@ value into URLs when the page is rendered. A path that is in `media/` stays loca
 Photos). So the photo domain can change in one place, and existing photos keep working.
 
 The keys live in `.env.local` (git-ignored; template: `.env.example`). Only the dev server reads
-them (`loadEnv` in `scripts/vite-plugin-static-site.mjs`, R2_* only); nothing reaches the
-browser or `dist/`. Uploads and deletes: `scripts/r2.mjs` (SigV4 via `aws4fetch`, tested
+them (`loadEnv` in `src/cli/vite-plugin-static-site.mjs`, R2_* only); nothing reaches the
+browser or `dist/`. Uploads and deletes: `src/cli/r2.mjs` (SigV4 via `aws4fetch`, tested
 against a mock S3 by `npm test`). Without keys they say "R2 not configured: add keys to
 .env.local".
 

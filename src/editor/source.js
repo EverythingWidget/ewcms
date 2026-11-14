@@ -1,6 +1,6 @@
 /**
  * Where content comes from and where saves go: the dev server (`npm run dev`).
- * The Vite plugin (scripts/vite-plugin-static-site.mjs) serves /__editor/* to
+ * The Vite plugin (src/cli/vite-plugin-static-site.mjs) serves /__editor/* to
  * localhost only. There is no editor in production builds.
  */
 import { media } from './svelte/media.svelte.js';

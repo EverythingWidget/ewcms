@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { loadContent, writeFileAtomic } from '../scripts/content.mjs';
+import { loadContent, writeFileAtomic } from '../src/cli/content.mjs';
 import { readContentFiles, save } from '../src/server/editor-server.mjs';
 import { checkContent, parseContent } from '../src/render/validate.js';
 import { SITE_A } from './fixtures/index.mjs';
@@ -251,7 +251,7 @@ test('formatJSON is Prettier-clean for arrays of every shape (fixtures)', async 
 });
 
 test('every content file starts with its shape version', async () => {
-  const { readContentDir } = await import('../scripts/content.mjs');
+  const { readContentDir } = await import('../src/cli/content.mjs');
   for (const [file, data] of Object.entries(readContentDir(SITE_A)))
     assert.equal(Object.keys(data)[0] === 'version' && data.version, 1, file);
 });
@@ -259,7 +259,7 @@ test('every content file starts with its shape version', async () => {
 test('formatJSON (what Save writes) is Prettier-clean for every content file', async () => {
   const prettier = await import('prettier');
   const { formatJSON } = await import('../src/editor/lib/json-format.js');
-  const { readContentDir } = await import('../scripts/content.mjs');
+  const { readContentDir } = await import('../src/cli/content.mjs');
   const options = await prettier.resolveConfig(path.join(SITE_A, 'content/en/pages/index.json'));
   for (const [file, data] of Object.entries(readContentDir(SITE_A))) {
     const text = formatJSON(data);

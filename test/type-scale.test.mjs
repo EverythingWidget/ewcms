@@ -156,7 +156,7 @@ test('the type specimen renders: the full page (dev middleware) and its section 
   );
   // the dev middleware alone serves it (only for a path no page has)
   assert.match(
-    read('scripts/vite-plugin-static-site.mjs'),
+    read('src/cli/vite-plugin-static-site.mjs'),
     /if \(!route && isTypeSpecimen\(pathname\)\)/,
   );
 });

@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { themeHead, writeThemeLayers } from '../scripts/vite-plugin-static-site.mjs';
-import { loadSiteConfig, DEFAULT_THEME } from '../scripts/site-config.mjs';
+import { themeHead, writeThemeLayers } from '../src/cli/vite-plugin-static-site.mjs';
+import { loadSiteConfig, DEFAULT_THEME } from '../src/cli/site-config.mjs';
 
 const theme = {
   themeColor: '#050505',

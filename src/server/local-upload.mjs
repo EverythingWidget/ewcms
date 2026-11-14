@@ -1,17 +1,17 @@
 /**
  * Upload without R2 (POST /__editor/upload when the R2_* keys are missing): the photo is saved in
- * the site's media/ folder, then the local photo step runs at once (scripts/photos.mjs: rotated
+ * the site's media/ folder, then the local photo step runs at once (src/cli/photos.mjs: rotated
  * upright, metadata stripped, WebP 480/960/1600, blurred placeholder, accent colour), so the
- * photo shows right away. With the R2 keys set, uploads go to R2 as before (scripts/r2.mjs).
+ * photo shows right away. With the R2 keys set, uploads go to R2 as before (src/cli/r2.mjs).
  * Answers { status, body } like uploadPhoto: body.key is the photo's media/ path (the value to
  * store in the content), body.local is true.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { IMAGE_TYPES } from '../../scripts/r2.mjs';
-import { buildPhotos } from '../../scripts/photos.mjs';
-import { loadSiteConfig } from '../../scripts/site-config.mjs';
+import { IMAGE_TYPES } from '../cli/r2.mjs';
+import { buildPhotos } from '../cli/photos.mjs';
+import { loadSiteConfig } from '../cli/site-config.mjs';
 import { slugify } from '../render/helpers.js';
 
 const EXTS = {

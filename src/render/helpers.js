@@ -126,9 +126,9 @@ export const extAttrs = (url) => (isExternal(url) ? ' target="_blank" rel="noope
 
 /**
  * URL of a photo in the content. `src` is one of:
- *   "people/x/01.jpg"               a file in media/, resized by scripts/photos.mjs: /media/...
+ *   "people/x/01.jpg"               a file in media/, resized by src/cli/photos.mjs: /media/...
  *   "photos/x-3f9a0c1b2d-1600.webp" an object in Cloudflare R2 (uploaded and resized in the
- *                                   editor, scripts/r2.mjs): site.mediaUrl (site.json)
+ *                                   editor, src/cli/r2.mjs): site.mediaUrl (site.json)
  *                                   + "/" + key; its other sizes are in ctx.photos
  *   "https://..."                a full URL, as is
  * Files in the media manifest are local; anything else is read from site.mediaUrl, so a photo
@@ -154,7 +154,7 @@ export function warnOnce(msg, tag = 'photos') {
 /**
  * Sizes of a photo, the same shape for both kinds: { src, srcset: [{ url, w }], width, height,
  * color, lqip }, or null when there are none (a full URL, or a key missing from photos.json).
- *   media/ photos: the generated manifest (.generated/media.json, scripts/photos.mjs)
+ *   media/ photos: the generated manifest (.generated/media.json, src/cli/photos.mjs)
  *   R2 photos:     content/photos.json (written by the upload), keys made URLs here
  */
 export function photoOf(ctx, src) {
