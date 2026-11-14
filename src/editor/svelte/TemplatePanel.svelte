@@ -25,7 +25,7 @@
   import Tabs from './Tabs.svelte';
   import SectionCard from './SectionCard.svelte';
   import SectionToolbar from './SectionToolbar.svelte';
-  import WidgetsModal from './WidgetsModal.svelte';
+  import { openWidgets } from './modals.svelte.js';
   import { templateFile } from '../../site/files.js';
   import { schemaOf } from '../../site/schemas.js';
   import { sampleSource } from '../../site/widgets/list/template-preview.js';
@@ -123,7 +123,8 @@
     // title from role so WidgetRow shows Type / role (nameOf reads title, not role)
     widgets: widgets.map((w) => (w?.role && !w.title ? { ...w, title: w.role } : w)),
   });
-  let widgetsModal = $state();
+  // Add widget: the modal (WidgetsModal.svelte) with this template's types
+  const addWidget = () => openWidgets({ at: 0, types: typeTiles, onpick: (type) => pickAdd(type) });
   const typeTiles = $derived(
     STACK_TYPES.filter(
       ([type]) => !(type === 'list' && outer) && !(type === 'details' && detailsOff),
@@ -152,7 +153,7 @@
   class="page-tabs"
 />
 {#if tab === 'widgets' && tpl}
-  <SectionToolbar addOnly {live} {file} {bridge} onadd={() => widgetsModal?.open(0)} />
+  <SectionToolbar addOnly {live} {file} {bridge} onadd={addWidget} />
 {/if}
 <section class="ed-body tp" data-template-panel={id}>
   {#if !tpl}
@@ -203,7 +204,6 @@
     </p>
   {/if}
 </section>
-<WidgetsModal bind:this={widgetsModal} types={typeTiles} onpick={(type) => pickAdd(type)} />
 
 <style lang="scss">
   @use '../styles/mixins' as *;

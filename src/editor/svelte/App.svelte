@@ -3,7 +3,8 @@
   toolbar (Sources, Media | Preview, phone, undo, redo; the top tabs Pages | Site Settings), the current
   tab's panel (Pages: the pages list, or the page open with its tabs Sections | Motion | SEO,
   ContentPanel.svelte) (Preview's while it is on) and the Save / Publish footer. Also the
-  publish dialog, the toasts and the keyboard shortcuts.
+  modals, each mounted once here and opened through state (modals.svelte.js), the toasts and
+  the keyboard shortcuts.
   main.js holds the logic: it changes `ui` (ui.svelte.js) and passes `actions`.
 -->
 <script>
@@ -15,9 +16,23 @@
   import PreviewPanel from './PreviewPanel.svelte';
   import ContentPanel from './ContentPanel.svelte';
   import SettingsPanel from './SettingsPanel.svelte';
-  import PublishDialog from './PublishDialog.svelte';
+  import PublishModal from './PublishModal.svelte';
   import MediaModal from './MediaModal.svelte';
+  import SourcesModal from './SourcesModal.svelte';
+  import WidgetsModal from './WidgetsModal.svelte';
+  import AddPageModal from './AddPageModal.svelte';
+  import ItemPicker from './ItemPicker.svelte';
+  import PreviewPicker from './PreviewPicker.svelte';
   import { openMedia } from './media.svelte.js';
+  import {
+    closeModal,
+    isOpen,
+    openPublish,
+    openSources,
+    syncModals,
+    topModal,
+  } from './modals.svelte.js';
+  import { toast } from './toasts.svelte.js';
   import Toasts from './Toasts.svelte';
   import UpdateNotice from './UpdateNotice.svelte';
   import WidgetToolbar from './WidgetToolbar.svelte';
@@ -32,14 +47,16 @@
   // actions: setPanel, setPageTab, pickTarget, save, refreshStatus, pagesOp
   let { live, bridge, actions } = $props();
 
-  let publishDialog = $state();
-  const publish = () => publishDialog.open();
-  // The Source Explorer lives in the Pages tab (ContentPanel.svelte); it opens itself when
-  // ui.explorer.open is set (SourcesModal.svelte), on the list of files.
-  function openSources() {
-    ui.explorer = { open: true, file: '', index: 0, property: '' };
-    if (!pages) actions.setPanel('pages');
+  // Publish: the status first (what is saved but not published, whether it can publish)
+  async function publish() {
+    if (ui.publishing || isOpen('publish')) return;
+    await actions.refreshStatus();
+    if (ui.pub?.error)
+      return toast(`Can't publish: ${ui.pub.error}`, { kind: 'error', timeout: 0 });
+    openPublish();
   }
+  // the modals' dialogs follow the stack (ui.modals)
+  $effect(syncModals);
 
   // [panel, label, icon]: a tab with an icon shows only the icon (ui.panel, ui.svelte.js)
   const TABS = [
@@ -127,12 +144,13 @@
     } else if (e.key === 'Escape') {
       // in the widget pop-up: its own (an open menu first, then the pop-up; WidgetPopup.svelte)
       if (e.target instanceof Element && e.target.closest('.wpop')) return;
-      // A dialog closes itself on Esc; this also covers Esc pressed in the preview.
-      // arrange clicks: then the selected link, else the selected widget (the panel shows the
-      // sections again, the grid hides); not while typing in a field of the panel.
-      const open = document.querySelector('dialog[open]');
-      if (open) open.close();
-      else {
+      // A modal closes itself on Esc (the one in front); this also covers Esc pressed in the
+      // preview. arrange clicks: then the selected link, else the selected widget (the panel
+      // shows the sections again, the grid hides); not while typing in a field of the panel.
+      if (topModal()) {
+        e.preventDefault();
+        closeModal();
+      } else {
         const picked = !!ui.picked;
         if (picked) pickElement(null);
         if (previewClicks() === 'arrange' && !inField) {
@@ -184,7 +202,7 @@
           iconOnly
           label="Sources"
           title="Sources: people, places, projects (the lists in {contentPath('sources/')})"
-          onclick={openSources}
+          onclick={() => openSources()}
         />
         <Button
           icon="images"
@@ -275,8 +293,14 @@
     </footer>
   </aside>
 
-  <PublishDialog {live} {actions} bind:this={publishDialog} />
+  <!-- the modals, once each (modals.svelte.js) -->
+  <PublishModal {live} {actions} />
   <MediaModal {live} {bridge} {actions} />
+  <SourcesModal {live} {bridge} />
+  <WidgetsModal />
+  <AddPageModal {live} {actions} />
+  <ItemPicker />
+  <PreviewPicker {live} />
   <Toasts />
 {/if}
 

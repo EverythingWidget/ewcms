@@ -17,7 +17,7 @@
 <script>
   import { ui, closeSectionPopup, showWidget } from './ui.svelte.js';
   import BackHead from './BackHead.svelte';
-  import PreviewPicker from './PreviewPicker.svelte';
+  import { openPreviewPicker } from './modals.svelte.js';
   import { parentId, pathOfId } from '../../site/routes.js';
   import { crumbsOf, pageIds, titleOf } from '../lib/page-tree.js';
   import { SITE_PARTS } from '../lib/site-parts.js';
@@ -46,9 +46,7 @@
   const title = $derived(id && !t.template ? titleOf(files, id) : t?.title || '');
   // a page: its address is the crumbs, below; a template or site part: the pages list's line
   const sub = $derived(
-    t?.kind === 'item-template'
-      ? 'Templates'
-      : (SITE_PARTS.find((p) => p.id === t?.id)?.sub ?? ''),
+    t?.kind === 'item-template' ? 'Templates' : (SITE_PARTS.find((p) => p.id === t?.id)?.sub ?? ''),
   );
 
   // ←: the level it was opened from (its own folder or the one it is in), else the latter
@@ -68,7 +66,6 @@
   const route = $derived(template ? live.routeOf(ui.path) : null);
   const values = $derived(template ? paramsOf(id).map((p) => route?.params?.[p] ?? `[${p}]`) : []);
   const problem = $derived(template ? mainProblem(live.content, id) : null);
-  let picker = $state();
   const entry = () => ui.pages.find((e) => e.template === id);
   /** The warning: the main widget open on its Content tab, its wrong param row focused. */
   function toMain() {
@@ -111,7 +108,7 @@
       class="ph__preview"
       title="The page every tab and the preview show: pick another"
       aria-haspopup="dialog"
-      onclick={() => picker.open()}
+      onclick={() => openPreviewPicker({ id, onpick: (path) => actions.pickTarget(entry(), path) })}
     >
       <span class="ph__label">Preview</span>
       {#each values as v, i (i)}{#if i}<span class="ph__sep">/</span>{/if}<span class="ph__val"
@@ -119,13 +116,6 @@
         >{/each}
       <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
     </button>
-    <PreviewPicker
-      bind:this={picker}
-      {live}
-      {id}
-      path={ui.path}
-      onpick={(path) => actions.pickTarget(entry(), path)}
-    />
   {/if}
   <!-- only in that state: the head grows by this line then (nothing is reserved for it) -->
   {#if problem}

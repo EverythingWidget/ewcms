@@ -2,10 +2,12 @@
   Add widget: a modal of the widget types, a tile each (a sketch of the widget, its icon, name and
   one line, all from the registry). A search filters them; the pointer or the arrow keys pick
   one (a 2px accent ring: nothing moves), Enter or a click adds it, Esc or the backdrop closes.
-  Opened by a section's dashed Add widget button (SectionsList.svelte), which appends the widget
-  to that section and opens it.
+  Mounted once in App.svelte; a section's dashed Add widget button (SectionsList.svelte, the
+  template editor's) opens it with openWidgets({ at, types, onpick }) (modals.svelte.js), which
+  appends the widget to that section and opens it.
+    at      the section index the widget goes to
     types   [{ value, label, icon, line, sketch }] the widget types on offer (the registry's)
-    onpick  (type, at) => …   at: the section index open() was given
+    onpick  (type, at) => …
 -->
 <script module>
   const COLS = 5;
@@ -13,16 +15,17 @@
 
 <script>
   import { closeOnBackdrop } from '../lib/dialog.js';
-  import { flushSync, tick } from 'svelte';
+  import { tick } from 'svelte';
   import Button from './Button.svelte';
   import ExplorerHead from './ExplorerHead.svelte';
-
-  let { types, onpick } = $props();
+  import { argsOf, closeModal, modal } from './modals.svelte.js';
 
   let dialog = $state();
   let query = $state('');
   let active = $state(0);
-  let at = $state(0); // the section the widget goes to
+  const args = $derived(argsOf('widgets'));
+  const at = $derived(args?.at ?? 0); // the section the widget goes to
+  const types = $derived(args?.types || []);
 
   const shown = $derived.by(() => {
     const q = query.trim().toLowerCase();
@@ -30,18 +33,17 @@
     return types.filter((t) => `${t.label} ${t.line || ''}`.toLowerCase().includes(q));
   });
 
-  /** Open it for section `section` (its index). */
-  export function open(section) {
-    at = section;
+  /** Shown (openWidgets): the search empty, on the first tile. */
+  async function onopen() {
     query = '';
     active = 0;
-    flushSync();
-    if (!dialog.open) dialog.showModal();
+    await tick();
     dialog.querySelector('.as-search')?.focus();
   }
 
   function pick(t) {
-    dialog.close();
+    const { onpick } = args;
+    closeModal('widgets');
     onpick(t.value, at);
   }
 
@@ -103,13 +105,14 @@
   aria-label="Add widget to section {at + 1}"
   bind:this={dialog}
   {@attach closeOnBackdrop}
+  {@attach modal('widgets', { onopen })}
   {onkeydown}
 >
   <ExplorerHead
     title="Add widget to Section {at + 1}"
     icon="fa-plus"
     crumbs={[{ label: 'after its last widget' }]}
-    onclose={() => dialog.close()}
+    onclose={() => closeModal('widgets')}
   />
   <div class="as-body">
     <input
@@ -149,7 +152,7 @@
   </div>
   <footer class="as-foot">
     <span class="hint small">Click or Enter adds it to Section {at + 1} · arrows pick</span>
-    <Button size="small" onclick={() => dialog.close()}>Cancel</Button>
+    <Button size="small" onclick={() => closeModal('widgets')}>Cancel</Button>
   </footer>
 </dialog>
 

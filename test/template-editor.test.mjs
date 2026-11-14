@@ -193,7 +193,7 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   assert.doesNotMatch(panel, /'properties'|Style tab|<ListField|<TemplateGridRows/);
   assert.match(panel, /<SectionCard/);
   assert.match(panel, /<SectionToolbar addOnly/);
-  assert.match(panel, /<WidgetsModal/);
+  assert.match(panel, /openWidgets\(\{ at: 0, types: typeTiles/);
   // Settings: Name, Whole item clickable, the preview line (not on Widgets). Columns
   // is a pill above the preview frame (TemplateCols.svelte), not a Settings field.
   assert.match(panel, /label="Whole item clickable"/);

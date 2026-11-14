@@ -51,7 +51,8 @@ function layer(host, box) {
   const scroll = box.scrollTop;
   const copy = box.cloneNode(true);
   for (const n of [copy, ...copy.querySelectorAll('[id]')]) n.removeAttribute('id');
-  for (const d of copy.querySelectorAll('dialog')) d.remove(); // a modal isn't the view
+  // a modal is never part of a view (they are mounted in App.svelte); a guard all the same
+  for (const d of copy.querySelectorAll('dialog')) d.remove();
   const left = r.left - h.left - host.clientLeft + host.scrollLeft;
   Object.assign(copy.style, {
     position: 'absolute',

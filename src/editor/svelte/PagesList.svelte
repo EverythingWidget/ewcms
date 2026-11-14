@@ -30,7 +30,7 @@
   import Button from './Button.svelte';
   import BackHead from './BackHead.svelte';
   import Select from './Select.svelte';
-  import AddPageModal from './AddPageModal.svelte';
+  import { openAddPage } from './modals.svelte.js';
   import { ui } from './ui.svelte.js';
   import { toast } from './toasts.svelte.js';
   import { listDrag, rowsOf } from './list-drag.svelte.js';
@@ -82,7 +82,6 @@
   let root = $state();
   let subList = $state();
   let nlZone = $state();
-  let addModal = $state();
 
   const level = $derived(ui.pagesWin.folder);
   // a folder that is gone (deleted, undone, a stale URL): the top (once the pages are there:
@@ -546,7 +545,7 @@
               label="Add page"
               title={L.full ? FULL : undefined}
               disabled={level === '404' || L.full}
-              onclick={() => addModal.open({ level, linked: !isTemplate(level) })}
+              onclick={() => openAddPage({ level, linked: !isTemplate(level) })}
             />
           </span>
         {/snippet}
@@ -559,7 +558,9 @@
           {#if i === crumbsOf(level).length - 1}
             <span class="pl-top__crumb is-current" aria-current="location">{c.label}</span>
           {:else}
-            <button type="button" class="pl-top__crumb" onclick={() => go(c.level)}>{c.label}</button>
+            <button type="button" class="pl-top__crumb" onclick={() => go(c.level)}
+              >{c.label}</button
+            >
           {/if}
         {/each}
       </nav>
@@ -571,7 +572,7 @@
           label="Add page"
           title={L.full ? FULL : undefined}
           disabled={level === '404' || L.full}
-          onclick={() => addModal.open({ level, linked: !isTemplate(level) })}
+          onclick={() => openAddPage({ level, linked: !isTemplate(level) })}
         />
       </span>
     </div>
@@ -620,8 +621,6 @@
     {/if}
   {/if}
 </div>
-
-<AddPageModal bind:this={addModal} {live} {actions} />
 
 <style lang="scss">
   @use '../styles/mixins' as *;

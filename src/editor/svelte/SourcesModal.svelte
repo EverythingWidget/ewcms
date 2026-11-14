@@ -1,10 +1,12 @@
 <!--
   Source Explorer: the lists in content/en/sources/ (people, places, projects, ...). It starts on
   the files with their item counts; click one to enter it: its items on the left, the
-  selected item's properties on the right, Back returns to the files. ContentPanel.svelte calls
-  open() from its Sources button (the files), and from a grid's Source edit button or a click
-  on a list item in the preview (straight into that file, item or field).
-  Where it is lives in ui.explorer, so persist.js can bring it back after a refresh.
+  selected item's properties on the right, Back returns to the files. Mounted once in
+  App.svelte; openSources() (modals.svelte.js) opens it: the toolbar's Sources button (the
+  files), a Source edit button, the item picker's edit buttons (on top of the picker, which is
+  there again when it closes) or a click on a list item in the preview (straight into that
+  file, item or field). Where it is lives in ui.sources, so persist.js can bring it back after
+  a refresh.
   What an item has comes from its source's schema (sources/<id>.schema.json, else inferred:
   src/site/schemas.js): the properties, their labels, types, widths and help, its name and slug.
 -->
@@ -13,11 +15,12 @@
   import { closeOnBackdrop } from '../lib/dialog.js';
   import { showValue } from '../lib/show-value.js';
   import Button from './Button.svelte';
-  import { tick, flushSync } from 'svelte';
+  import { tick } from 'svelte';
   import Field from './Field.svelte';
   import ExplorerHead from './ExplorerHead.svelte';
   import ExplorerRow from './ExplorerRow.svelte';
   import { ui } from './ui.svelte.js';
+  import { closeModal, modal } from './modals.svelte.js';
   import { isSource } from './content-groups.js';
   import { baseName } from '../../site/files.js';
   import {
@@ -36,7 +39,7 @@
   let { live, bridge } = $props();
 
   let dialog = $state();
-  const file = $derived(ui.explorer.file); // '' = the list of files
+  const file = $derived(ui.sources.file); // '' = the list of files
   let confirming = $state(false); // "Delete X?" is showing
   let slugBad = $state(false);
 
@@ -47,7 +50,7 @@
   const list = $derived(live.current(file)?.items);
   const base = $derived(live.base(file)?.items || []);
   const isList = $derived(Array.isArray(list));
-  const index = $derived(isList ? Math.max(0, Math.min(ui.explorer.index, list.length - 1)) : 0);
+  const index = $derived(isList ? Math.max(0, Math.min(ui.sources.index, list.length - 1)) : 0);
   const item = $derived(isList ? list[index] : undefined);
   const schema = $derived.by(() => {
     live.version;
@@ -72,8 +75,8 @@
   const show = (value) => showValue(String(value ?? ''));
 
   function select(i) {
-    if (i !== ui.explorer.index) ui.explorer.property = '';
-    ui.explorer.index = i;
+    if (i !== ui.sources.index) ui.sources.property = '';
+    ui.sources.index = i;
     confirming = false;
     slugBad = false;
   }
@@ -115,7 +118,7 @@
   /** Enter a file ('' = back to the list of files), keeping the keyboard focus in the modal. */
   async function goTo(next) {
     const from = file;
-    ui.explorer.file = next;
+    ui.sources.file = next;
     select(0);
     await tick();
     const back = from && dialog.querySelector(`[data-file="${CSS.escape(from)}"]`);
@@ -123,32 +126,26 @@
   }
 
   /**
-   * Open on the list of files, or straight into a file at item nextIndex, optionally on one
-   * field (its data-edit): focused, scrolled to and highlighted (ui.explorer.property, its key).
-   * then: called once when it closes.
+   * Shown (openSources): on the list of files, or straight into a file at its item, optionally
+   * on one field (ui.sources.edit, its data-edit): focused, scrolled to and highlighted
+   * (ui.sources.property, its key).
    */
-  let after = null; // called once when it closes (the item picker opens again: ItemPicker.svelte)
-  export function open(nextFile = '', nextIndex = 0, edit = null, then = null) {
-    after = then;
-    ui.explorer.file = files.includes(nextFile) ? nextFile : '';
-    select(nextIndex);
-    flushSync(); // render now, so the field below exists
-    if (edit) ui.explorer.property = fields.find((f) => f.edit === edit)?.key || '';
-    if (!dialog.open) dialog.showModal();
-    ui.explorer.open = true;
-    const at = fields.find((f) => f.key === ui.explorer.property);
+  async function onopen() {
+    const { edit } = ui.sources;
+    if (!files.includes(ui.sources.file)) ui.sources.file = '';
+    select(ui.sources.index);
+    await tick(); // rendered, so the field below exists
+    if (edit) ui.sources.property = fields.find((f) => f.edit === edit)?.key || '';
+    ui.sources.edit = null;
+    await tick();
+    const at = fields.find((f) => f.key === ui.sources.property);
     const field = at && dialog.querySelector(`[data-edit="${CSS.escape(at.edit)}"]`);
-    if (!field) return void (file || dialog.querySelector('.xrow').focus());
+    if (!field) return void (file || dialog.querySelector('.xrow')?.focus());
     field.querySelector('.tf__input, button')?.focus({ preventScroll: true });
     field.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
-
-  // Open again after a refresh (persist.js), once the files are loaded: on its field too.
-  $effect(() => {
-    const { file, index } = ui.explorer;
-    // (after a tick: open() renders at once, which an effect may not do)
-    if (ui.explorer.open && files.length && !dialog.open) tick().then(() => open(file, index));
-  });
+  // it waits for the files (a refresh opens it before they are loaded)
+  const ready = () => files.length > 0;
 </script>
 
 <dialog
@@ -156,12 +153,7 @@
   aria-label="Sources"
   bind:this={dialog}
   {@attach closeOnBackdrop}
-  onclose={() => {
-    ui.explorer.open = false;
-    const then = after;
-    after = null;
-    then?.();
-  }}
+  {@attach modal('sources', { onopen, ready })}
 >
   <ExplorerHead
     title="Sources"
@@ -176,7 +168,7 @@
       : [{ label: 'sources' }]}
     back={file ? 'Back to files' : ''}
     onback={() => goTo('')}
-    onclose={() => dialog.close()}
+    onclose={() => closeModal('sources')}
   />
 
   {#if !file}
@@ -269,9 +261,9 @@
               half={halves.has(f.edit)}
               value={valueAt(item, f.path)}
               changed={fieldChanged(f)}
-              selected={ui.explorer.property === f.key}
+              selected={ui.sources.property === f.key}
               onfocus={() => {
-                ui.explorer.property = f.key;
+                ui.sources.property = f.key;
                 bridge.focusEdit(f.edit);
               }}
               onvalue={(value) =>

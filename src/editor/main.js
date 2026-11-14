@@ -13,7 +13,7 @@
  *   Save    - writes the changed files to content/ on disk (a draft: the preview and
  *             Preview show it, nothing leaves this machine)
  *   Publish - commits every saved content change in one commit and pushes it
- *             (svelte/PublishDialog.svelte)
+ *             (svelte/PublishModal.svelte)
  * Both go through the dev server (scripts/editor-server.mjs). The editor only exists
  * under `npm run dev`.
  *
@@ -878,7 +878,7 @@ function followItems() {
 }
 
 /**
- * Write the changed files to content/ (a draft). quiet: no toast (the publish dialog saves
+ * Write the changed files to content/ (a draft). quiet: no toast (the Publish modal saves
  * first and shows its own result). Returns false when it failed.
  */
 async function save({ quiet = false } = {}) {

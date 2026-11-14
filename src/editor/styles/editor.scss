@@ -727,7 +727,7 @@ textarea.tf__input {
   }
 }
 
-// a modal <dialog> (publish dialog, Sources modal)
+// a modal <dialog> (every modal: svelte/modals.svelte.js)
 dialog.modal__box {
   border: 0;
   color: var(--c-text);

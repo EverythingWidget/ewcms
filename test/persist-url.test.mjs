@@ -1,4 +1,4 @@
-// The editor's URL keeps the explorer's open property (&property=): writeUrl puts it in,
+// The editor's URL keeps the Source Explorer's open property (&property=): writeUrl puts it in,
 // restoreUi + restorePlace read it back (src/editor/svelte/persist.js). Runs the real module:
 // a loader hook compiles the *.svelte.js runes modules with Svelte's compileModule.
 import { test } from 'node:test';
@@ -67,17 +67,17 @@ test('&property= in the editor URL is written and read back', async () => {
 
   restoreUi(bridge, live);
   await restorePlace();
-  assert.equal(ui.explorer.open, true);
-  assert.equal(ui.explorer.file, 'sources/people.json');
-  assert.equal(ui.explorer.index, 1);
-  assert.equal(ui.explorer.property, 'title');
+  assert.deepEqual(ui.modals, ['sources']);
+  assert.equal(ui.sources.file, 'sources/people.json');
+  assert.equal(ui.sources.index, 1);
+  assert.equal(ui.sources.property, 'title');
 
-  ui.explorer = { ...ui.explorer, property: 'slug' };
+  ui.sources = { ...ui.sources, property: 'slug' };
   writeUrl();
   assert.equal(urlNow().searchParams.get('property'), 'slug');
   assert.equal(urlNow().searchParams.get('item'), 'sam');
 
-  ui.explorer = { ...ui.explorer, property: '' };
+  ui.sources = { ...ui.sources, property: '' };
   writeUrl();
   assert.equal(urlNow().searchParams.has('property'), false);
 });
@@ -91,4 +91,28 @@ test('an old ?tab=nav falls back to the Pages tab', async () => {
   assert.equal(ui.panel, 'pages');
   writeUrl();
   assert.equal(urlNow().searchParams.get('tab'), 'pages');
+});
+
+test('Media over Sources comes back in that order after a refresh, and in the URL', async () => {
+  const urlNow = browser('/x/?edit&tab=pages&source=people&item=noor&media=photos/a.webp');
+  const { restoreUi, restorePlace, writeUrl } = await import('../src/editor/svelte/persist.js');
+  const { ui } = await import('../src/editor/svelte/ui.svelte.js');
+
+  ui.modals = [];
+  restoreUi(bridge, live);
+  assert.deepEqual(ui.modals, ['media']); // Media at once, Sources once the page shows
+  assert.equal(ui.media.key, 'photos/a.webp');
+  assert.equal('open' in ui.media, false);
+  await restorePlace();
+  assert.deepEqual(ui.modals, ['sources', 'media']); // Sources under Media
+  assert.equal(ui.sources.index, 0);
+  writeUrl();
+  assert.equal(urlNow().searchParams.get('media'), 'photos/a.webp');
+  assert.equal(urlNow().searchParams.get('source'), 'people');
+  ui.modals = ['sources'];
+  writeUrl();
+  assert.equal(urlNow().searchParams.has('media'), false);
+  ui.modals = [];
+  writeUrl();
+  assert.equal(urlNow().searchParams.has('source'), false);
 });

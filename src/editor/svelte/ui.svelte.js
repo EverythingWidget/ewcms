@@ -135,15 +135,22 @@ export const ui = $state({
   /** Open/closed per Section key ("text:hero", "settings:site", ...), once toggled. */
   sections: {},
   /**
-   * The Source Explorer: open or not, its file ('' = the list of files), item index and the
-   * highlighted property (its key in source-items.js itemFields, e.g. "name", "photos.1").
+   * The open modals, bottom first: the last one is in front (modals.svelte.js). Media's and
+   * Sources' parameters are below (persist.js keeps them); the others' are in modals.svelte.js.
    */
-  explorer: { open: false, file: '', index: 0, property: '' },
+  modals: [],
   /**
-   * The Media window: open or not, the selected photo (media/ path or R2 key), the list filter
-   * ('all' | 'r2' | 'local') and the field it picks for (its data-edit, '' = just managing).
+   * The Source Explorer (SourcesModal.svelte): its file ('' = the list of files), item index and
+   * the highlighted property (its key in source-items.js itemFields, e.g. "name", "photos.1");
+   * edit: the field (its data-edit) to focus when it opens.
    */
-  media: { open: false, key: '', filter: 'all', pick: '' },
+  sources: { file: '', index: 0, property: '', edit: null },
+  /**
+   * The Media window (MediaModal.svelte): the selected photo (media/ path or R2 key), the list
+   * filter ('all' | 'r2' | 'local') and the field it picks for (its data-edit, '' = just
+   * managing; multi: a photo list's Add photo, see openMedia).
+   */
+  media: { key: '', filter: 'all', pick: '', multi: null },
   /** The pages list (Pages tab): open or not, and the folder it shows ('' = content/en/pages/ itself). */
   pagesWin: { open: false, folder: '' },
   /** Site Settings > Motion, the Animations library: the animation open ('' = the list). */

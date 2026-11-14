@@ -26,7 +26,7 @@
   import { parse } from '../lib/pointer.js';
   import { openMedia } from './media.svelte.js';
   import { pairedHalves } from './source-items.js';
-  import ItemPicker from './ItemPicker.svelte';
+  import SourceField from './SourceField.svelte';
   import { sourceFile } from '../../site/files.js';
   import { isParts } from '../../site/layout/parts.js';
   import { presetOf } from '../../site/widgets/list/presets.js';
@@ -153,10 +153,10 @@
 </script>
 
 <!-- one field: a Field (text, photo, switch, choice), or a source field (a list item's
-     source, ItemPicker.svelte) -->
+     source, SourceField.svelte) -->
 {#snippet field(f, half, extra = {})}
   {#if f.type === 'source'}
-    <ItemPicker
+    <SourceField
       store={live.store}
       mode="source"
       value={live.get(f.file, f.ptr)}
@@ -217,12 +217,12 @@
   </div>
 {/snippet}
 
-<!-- a widget setting (config): a source field (ItemPicker.svelte: its source only), a Select
+<!-- a widget setting (config): a source field (SourceField.svelte: its source only), a Select
      (select), a switch (boolean) through Field, or a link (LinkField) -->
 {#snippet option(c)}
   {@const value = live.get(g.file, c.ptr)}
   {#if c.type === 'source'}
-    <ItemPicker
+    <SourceField
       store={live.store}
       mode="source"
       label={c.label}

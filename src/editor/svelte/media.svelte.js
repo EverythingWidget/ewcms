@@ -10,6 +10,7 @@
 import { mediaUrl } from '../../site/helpers.js';
 import { SITE } from '../../site/files.js';
 import { ui } from './ui.svelte.js';
+import { openModal } from './modals.svelte.js';
 
 // blobs: { key: object URL } of photos uploaded in this session, shown until R2 serves them;
 // r2: are the R2 keys set (else Upload saves to media/)
@@ -81,5 +82,5 @@ export const fallback = (key) => (img) => {
  * and "Add N photos" appends them (one undo step).
  */
 export function openMedia({ key = '', pick = '', multi = null } = {}) {
-  ui.media = { ...ui.media, open: true, key, pick: multi ? '' : pick, multi };
+  openModal('media', { ...ui.media, key, pick: multi ? '' : pick, multi });
 }

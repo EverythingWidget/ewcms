@@ -1,19 +1,11 @@
 <!--
-  A source field (always a whole row of its field grid), labelled "Source list" (mode source)
-  or "Source item" (mode item): its label, what it is set to (read only) and a button that opens a window to
-  pick it. Every source-using widget has one (WidgetInspector.svelte, GroupFields.svelte).
-    mode      'item'   a widget's item, { source, id } or null: a source, then one of its items;
-                       it shows "people.json · Eeliya Rasta" and opens on that source's items
-              'source' a source id ('' or null: none): it stops at the sources, the current
-                       one highlighted; it shows "people.json"
-    value, changed (its changed dot), none (the label of no value, null: none can't be
-    picked), sourceIds, itemsOf(id) a source's items, nameOf(id, item) an item's name,
-    onpick(value | undefined); onclear(): back to empty (the ✕ beside Change, when picked);
-    store: the editor's store (the sources' schemas: a list's name, an
-    item's photo); label: its own label (a setting's, "Count of"), else by what it picks
-    onsource(file, index, edit, then): open the Source Explorer (SourcesModal.svelte); each
-              row's edit button closes this window and opens it there, and this window opens
-              again on the same source or item when the Source Explorer closes (then)
+  The item picker of a source field (SourceField.svelte): a window to pick a source (mode
+  source) or a source, then one of its items (mode item), with a search. Mounted once in
+  App.svelte; the field opens it with openItemPicker({ mode, value, none, sourceIds, itemsOf,
+  nameOf, onpick, onsource, label }) (modals.svelte.js; the props as SourceField's), optionally
+  with at (the source to open on) and id (the row to focus).
+  Each row's edit button opens the Source Explorer (onsource: SourcesModal.svelte) on top of this
+  window; closing it brings this window back as it was.
 -->
 <script>
   import { closeOnBackdrop } from '../lib/dialog.js';
@@ -21,59 +13,25 @@
   import Button from './Button.svelte';
   import ExplorerHead from './ExplorerHead.svelte';
   import ExplorerRow from './ExplorerRow.svelte';
-  import { schemaFor } from './source-items.js';
-  import { sourceFile } from '../../site/files.js';
-  import { fallback, thumbUrl } from './media.svelte.js';
+  import { argsOf, closeModal, modal } from './modals.svelte.js';
 
-  let {
-    mode = 'item',
-    value,
-    changed = false,
-    none = 'None',
-    sourceIds,
-    itemsOf,
-    nameOf = () => '',
-    onpick,
-    onsource,
-    onclear = null,
-    store = null,
-    label: ownLabel = '',
-  } = $props();
-
-  const items_ = $derived(mode === 'item');
-  // always named by what it picks: a whole list, or one item of one
-  const label = $derived(ownLabel || (items_ ? 'Source item' : 'Source list'));
+  const args = $derived(argsOf('itemPicker') || {});
+  const items_ = $derived((args.mode ?? 'item') === 'item');
+  const value = $derived(args.value);
+  const none = $derived(args.none === undefined ? 'None' : args.none);
+  const itemsOf = (id) => args.itemsOf?.(id) || [];
+  const nameOf = (id, it) => args.nameOf?.(id, it) || '';
+  const onsource = $derived(args.onsource);
+  const label = $derived(args.label || (items_ ? 'Source item' : 'Source list'));
   const current = $derived(items_ ? value?.source || '' : value || '');
-  const uid = $props.id();
   let dialog = $state();
   let source = $state(''); // the source open in the list ('' = the list of sources)
   let query = $state('');
 
-  // the card: a list's name and count, or an item's name and photo (its first photo property)
-  const schema = $derived(current && store ? schemaFor(store, sourceFile(current)) : null);
-  const picked = $derived(
-    items_ && current ? (itemsOf(current).find((i) => i?.id === value?.id) ?? null) : null,
-  );
-  const photo = $derived.by(() => {
-    const fs = schema?.properties || [];
-    for (const f of fs.filter((f) => f.type === 'photo'))
-      if (typeof picked?.[f.key] === 'string' && picked[f.key]) return picked[f.key];
-    for (const f of fs.filter((f) => f.type === 'photos'))
-      if (Array.isArray(picked?.[f.key]) && picked[f.key][0]) return picked[f.key][0];
-    return '';
-  });
-  const card = $derived(
-    !current
-      ? null
-      : items_
-        ? { name: picked ? nameOf(current, picked) : 'Missing item', meta: `${current}.json` }
-        : {
-            name: schema?.label || `${current}.json`,
-            meta: `${current}.json · ${itemsOf(current).length} items`,
-          },
-  );
   const q = $derived(query.trim().toLowerCase());
-  const sources = $derived(sourceIds.filter((id) => !q || id.toLowerCase().includes(q)));
+  const sources = $derived(
+    (args.sourceIds || []).filter((id) => !q || id.toLowerCase().includes(q)),
+  );
   const items = $derived(
     source
       ? itemsOf(source)
@@ -91,12 +49,12 @@
       dialog.querySelector('.ip-search')
     )?.focus();
   }
-  /** Open on the current source's items (a widget's item), else on the sources. */
-  export function open(at = items_ ? current : '', id = '') {
+  /** Shown: on the current source's items (a widget's item), else on the sources. */
+  function onopen() {
+    const at = args.at ?? (items_ ? current : '');
     source = items_ ? at : '';
     query = '';
-    if (!dialog.open) dialog.showModal();
-    focus(id || (!items_ ? at : ''));
+    focus(args.id || (!items_ ? at : ''));
   }
   function enter(id) {
     source = id;
@@ -104,16 +62,12 @@
     focus();
   }
   function pick(next) {
+    const { onpick } = args;
+    closeModal('itemPicker');
     onpick(next);
-    dialog.close();
   }
-  // edit a source (index -1: its list) or one of its items in the Source Explorer
-  function edit(id, index = -1, itemId = '') {
-    dialog.close();
-    onsource(`sources/${id}.json`, Math.max(0, index), null, () =>
-      open(items_ ? (index < 0 && !itemId ? '' : id) : '', itemId || id),
-    );
-  }
+  // edit a source (index -1: its list) or one of its items in the Source Explorer, on top
+  const edit = (id, index = -1) => onsource(`sources/${id}.json`, Math.max(0, index));
 </script>
 
 {#snippet row(props, editLabel, onedit)}
@@ -125,65 +79,13 @@
   </div>
 {/snippet}
 
-<div class={['tf', changed && 'is-changed']}>
-  <!-- a click anywhere on the card opens the picker; the keyboard has its main button -->
-  <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-  <div class={['sc', !card && 'is-empty']} onclick={() => open()}>
-    <button
-      type="button"
-      class="sc__main"
-      aria-haspopup="dialog"
-      aria-describedby="{uid}-label"
-      title={items_ ? 'Pick the item this widget shows' : 'Pick the source list'}
-      onclick={(e) => (e.stopPropagation(), open())}
-    >
-      {#if photo}
-        <img class="sc__tile" src={thumbUrl(photo)} alt="" {@attach fallback(photo)} />
-      {:else}
-        <span class="sc__tile" aria-hidden="true">
-          <i class="fa-solid fa-{!card ? 'plus' : items_ ? 'database' : 'table-cells'}"></i>
-        </span>
-      {/if}
-      <span class="sc__text">
-        <span class="sc__label" id="{uid}-label">{label}</span>
-        <span class="sc__name">{card ? card.name : items_ ? 'No item' : (none ?? 'No list')}</span>
-        {#if card}<span class="sc__meta">{card.meta}</span>{/if}
-      </span>
-    </button>
-    {#if card && onsource}
-      <Button
-        size="small"
-        icon="pen-to-square"
-        iconOnly
-        label={items_
-          ? `Edit ${card.name} in the Source Explorer`
-          : `Edit ${current}.json in the Source Explorer`}
-        onclick={(e) => {
-          e.stopPropagation();
-          const i = items_ ? itemsOf(current).findIndex((it) => it?.id === value?.id) : -1;
-          onsource(`sources/${current}.json`, Math.max(0, i));
-        }}
-      />
-    {/if}
-    <Button
-      size="small"
-      tabindex="-1"
-      onclick={(e) => (e.stopPropagation(), open())}>{card ? 'Change' : 'Choose'}</Button
-    >
-    {#if card && onclear}
-      <!-- like the photo card's ✕: back to none -->
-      <Button
-        size="small"
-        icon="xmark"
-        iconOnly
-        label={items_ ? 'Clear the item' : 'Clear the source list'}
-        onclick={(e) => (e.stopPropagation(), onclear())}
-      />
-    {/if}
-  </div>
-</div>
-
-<dialog class="modal__box ip-modal" aria-label={label} bind:this={dialog} {@attach closeOnBackdrop}>
+<dialog
+  class="modal__box ip-modal"
+  aria-label={label}
+  bind:this={dialog}
+  {@attach closeOnBackdrop}
+  {@attach modal('itemPicker', { onopen })}
+>
   <ExplorerHead
     title={label}
     icon="fa-database"
@@ -194,7 +96,7 @@
     sep="/"
     back={source ? 'Back to sources' : ''}
     onback={() => enter('')}
-    onclose={() => dialog.close()}
+    onclose={() => closeModal('itemPicker')}
   />
   <div class="ip-body">
     <input
@@ -241,7 +143,7 @@
               onclick: () => pick({ source, id: r.it.id }),
             },
             `Edit ${r.name} in the Source Explorer`,
-            () => edit(source, r.i, r.it?.id),
+            () => edit(source, r.i),
           )}
         {:else}
           <p class="hint small">Nothing found.</p>
@@ -253,102 +155,6 @@
 
 <style lang="scss">
   @use '../styles/mixins' as *;
-
-  .tf {
-    min-width: 0;
-  }
-
-  // the card: [ tile | label / name / meta | edit | Change ], styled as an input (its
-  // background, line and 8px corners); empty or filled the same height (the 48px tile, the
-  // text 3 x 16px at most)
-  .sc {
-    @include row(var(--space-3));
-    min-width: 0;
-    padding: var(--space-2);
-    border-radius: var(--radius-md);
-    background: var(--field-bg-dim);
-    box-shadow: inset 0 0 0 1px var(--c-line);
-    cursor: pointer;
-
-    &:hover {
-      background: var(--field-bg);
-    }
-  }
-
-  // the tile and the text: the keyboard's button
-  .sc__main {
-    @include row(var(--space-3));
-    flex: 1;
-    min-width: 0;
-    padding: 0;
-    border: 0;
-    border-radius: var(--radius-sm);
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-
-    &:focus-visible {
-      @include focus-ring;
-    }
-  }
-
-  .sc__tile {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-md);
-    background: var(--field-tile);
-    color: var(--c-accent);
-    font-size: var(--fs-lg);
-    object-fit: cover;
-
-    .is-empty & {
-      color: var(--c-text-faint);
-    }
-  }
-
-  .sc__text {
-    display: grid;
-    min-width: 0;
-    line-height: 16px;
-  }
-
-  // (changed: the dot before it, editor.scss)
-  .sc__label {
-    @include row(var(--space-2));
-    @include muted;
-    color: var(--text-quiet);
-  }
-
-  .sc__label,
-  .sc__name,
-  .sc__meta {
-    @include ellipsis;
-  }
-
-  .sc__name {
-    color: var(--c-text-strong);
-    font-size: var(--fs-base);
-    font-weight: 500;
-
-    .is-empty & {
-      color: var(--c-text-muted);
-      font-weight: 400;
-    }
-  }
-
-  .sc__meta {
-    @include muted;
-    color: var(--text-quiet);
-
-    .is-empty & {
-      white-space: normal;
-    }
-  }
 
   dialog.ip-modal {
     width: min(480px, 92vw);

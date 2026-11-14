@@ -1,5 +1,5 @@
 <!--
-  A list of content files to publish (Preview "Saved, not published" and the publish dialog):
+  A list of content files to publish (Preview "Saved, not published" and the Publish modal):
   per file its git status letter (A new, M modified, D deleted), path, number of changes,
   an optional note and the +/- lines.
   files: [{ path, status, changes, added, removed, note }] as /__editor/status gives them
@@ -33,7 +33,7 @@
     margin-bottom: var(--space-4);
   }
 
-  // publish dialog
+  // Publish modal
   .pfile {
     display: flex;
     align-items: baseline;

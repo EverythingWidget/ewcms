@@ -13,11 +13,12 @@
 <script>
   import { plural } from '../lib/format.js';
   import Button from './Button.svelte';
-  import { tick, flushSync } from 'svelte';
+  import { tick } from 'svelte';
   import ExplorerHead from './ExplorerHead.svelte';
   import ExplorerRow from './ExplorerRow.svelte';
   import Tabs from './Tabs.svelte';
   import { ui, selectText } from './ui.svelte.js';
+  import { closeModal, modal, openModal } from './modals.svelte.js';
   import {
     media,
     fallback,
@@ -103,30 +104,23 @@
     credit = { name: '', source: '', ...media.photos[next]?.credit };
   }
 
-  /** Open the window (on its photo); pick: see openMedia in media.svelte.js. */
-  export function open() {
+  /** Shown (openMedia in media.svelte.js, a refresh: persist.js): on its photo. */
+  async function onopen() {
     picked = [];
     select(ui.media.key);
-    flushSync();
-    if (!dialog.open) dialog.showModal();
-    ui.media.open = true;
+    await tick();
     const tile = dialog.querySelector('.mtile.is-selected') || dialog.querySelector('.mtile');
     tile?.focus({ preventScroll: true });
     tile?.scrollIntoView({ block: 'nearest' });
   }
 
-  const loaded = $derived.by(() => {
+  // it waits for the content (a refresh opens it before it is loaded)
+  const ready = () => {
     live.version;
     return Object.keys(live.store.current).length > 0;
-  });
-  // openMedia() and a refresh (persist.js) set ui.media.open: open then, once loaded.
-  $effect(() => {
-    if (ui.media.open && loaded && !dialog.open) tick().then(open);
-  });
+  };
 
-  function close() {
-    dialog.close();
-  }
+  const close = () => closeModal('media');
 
   // ---- upload: picked or dropped, two at a time
   function pickFiles() {
@@ -278,19 +272,17 @@
 
   /** Go to a use: a list item in the Source Explorer, a page's field, a setting. */
   function go(u) {
-    close();
-    if (u.file === SITE) return actions.setPanel('settings');
-    actions.setPanel('pages');
+    closeModal(ui.modals[0]); // every modal: the use is behind them
     const parts = parse(u.ptr);
-    if (sourceIdOf(u.file)) {
-      ui.explorer = {
-        open: true,
+    if (sourceIdOf(u.file))
+      return openModal('sources', {
         file: u.file,
         index: Number(parts[1]) || 0,
         property: parts.slice(2).join('.'),
-      };
-      return;
-    }
+        edit: null,
+      });
+    if (u.file === SITE) return actions.setPanel('settings');
+    actions.setPanel('pages');
     const id = pageIdOf(u.file);
     if (id === null) return;
     const path = pathOfId(id);
@@ -320,8 +312,8 @@
   class={['modal__box', 'md-modal', dropping && 'is-drop']}
   aria-label="Media"
   bind:this={dialog}
+  {@attach modal('media', { onopen, ready })}
   onclick={(e) => e.target === dialog && close()}
-  onclose={() => (ui.media.open = false)}
   {...drop}
 >
   <ExplorerHead

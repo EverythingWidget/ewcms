@@ -6,7 +6,7 @@
  *             page in sessionStorage; an unknown tab: pages)
  *     (path)  the URL's own path is the page in the preview (main.js keeps it up to date)
  *     view    header | footer, when a site part (Header, Footer) is edited instead of a page
- *     source  + item (+ property): the Source Explorer, open on that file and item, with that
+ *     source  + item (+ property): the Source Explorer (SourcesModal), open on that file and item, with that
  *             property highlighted (&source=people&item=noor-vermeer&property=summary; item is the
  *             slug, or the number without one)
  *     animation    Site Settings > Motion's Animations library, open on that animation (&animation=fade-up)
@@ -14,8 +14,8 @@
  *     media   + pick: the Media window, on that photo (&media=photos/x-1600.webp; / for none),
  *             picking for that field (&pick=sources/people.json#/0/photos/0/src)
  *   sessionStorage (this browser tab only, survives a refresh): the finer things. Open/closed
- *     sections and each page's tab, the selected field or Motion element, the explorer's list,
- *     the panel and preview scroll.
+ *     sections and each page's tab, the selected field or Motion element, the open modals (Media
+ *     and Sources, in their order), the panel and preview scroll.
  *
  * On load the URL wins; what it doesn't say comes from sessionStorage. Values that don't
  * exist (a bad tab, a deleted field, a renamed file) are skipped.
@@ -24,15 +24,18 @@
  * so Back leaves the editor instead of stepping through tabs.
  *
  * main.js calls restoreUi() before the UI mounts and restorePlace() once the preview shows
- * the page; App.svelte calls writeUrl() whenever the tab, view, explorer, library, Pages or
+ * the page; App.svelte calls writeUrl() whenever the tab, view, Sources, library, Pages or
  * Media window changes.
  */
 import { tick } from 'svelte';
 import { editorHref } from '../lib/editor-url.js';
 import { ui, previewClicks, pickElement, selectText } from './ui.svelte.js';
 import { sourceIdOf } from '../../site/files.js';
+import { isOpen, pushed } from './modals.svelte.js';
 
 const KEY = 'editor:ui';
+// the modals open again after a refresh (the others are opened with callbacks: modals.svelte.js)
+const KEPT = ['sources', 'media'];
 // the URL's tab is ui.panel (ui.svelte.js)
 const PANELS = ['pages', 'settings', 'preview'];
 const PAGE_TABS = ['sections', 'element-motion', 'page-motion', 'seo'];
@@ -49,7 +52,7 @@ function readSession() {
   }
 }
 
-/** sessionStorage, then the URL's tab, view and explorer on top. */
+/** sessionStorage, then the URL's tab, view and modals on top. */
 function readState() {
   const state = readSession();
   const q = new URLSearchParams(location.search);
@@ -62,22 +65,23 @@ function readState() {
       title: VIEWS[q.get('view')],
     };
   if (q.has('source')) {
-    if (!q.has('tab')) state.panel = 'pages'; // the explorer is in the Pages tab
-    state.explorer = {
-      open: true,
+    state.sources = {
       file: `sources/${q.get('source')}.json`,
       index: 0,
       property: q.get('property') || '',
     };
     state.item = q.get('item');
+    state.modals = pushed(state.modals || [], 'sources');
   }
-  if (q.has('media'))
+  if (q.has('media')) {
     state.media = {
-      open: true,
       key: q.get('media') === '/' ? '' : q.get('media'),
       filter: state.media?.filter || 'all',
       pick: q.get('pick') || '',
+      multi: null,
     };
+    state.modals = pushed(state.modals || [], 'media');
+  }
   if (q.has('pages')) {
     if (!q.has('tab')) state.panel = 'pages'; // the pages list is in the Pages tab
     state.pagesWin = { open: true, folder: q.get('pages').replace(/^\/+|\/+$/g, '') };
@@ -103,7 +107,13 @@ export function restoreUi(preview, content) {
   // Site Settings > Motion's library, on an animation
   if (typeof saved.library?.name === 'string') ui.library = { name: saved.library.name };
   if (saved.pagesWin) ui.pagesWin = saved.pagesWin; // the Pages tab shows the pages list (PagesList)
-  if (saved.media) ui.media = saved.media; // and MediaModal
+  if (saved.media) {
+    ui.media = { ...ui.media, ...saved.media }; // MediaModal's photo, filter, field
+    delete ui.media.open; // (a session from before the modal stack)
+  }
+  // Media opens at once (MediaModal waits for the content), Sources once the preview shows the
+  // page (restorePlace)
+  if (saved.modals?.includes('media')) ui.modals = ['media'];
 
   addEventListener('pagehide', () => {
     sessionStorage.setItem(
@@ -114,10 +124,11 @@ export function restoreUi(preview, content) {
         pageTab: ui.pageTab,
         part: ui.target?.kind === 'part' ? ui.target : null,
         sections: ui.sections,
-        explorer: ui.explorer,
+        sources: ui.sources,
         library: ui.library,
         pagesWin: ui.pagesWin,
         media: ui.media,
+        modals: ui.modals.filter((name) => KEPT.includes(name)),
         path: bridge.path(),
         edit: ui.selection?.edit,
         anim: ui.anim?.widget ? `widget:${ui.anim.widget}` : ui.anim?.key,
@@ -129,19 +140,20 @@ export function restoreUi(preview, content) {
 }
 
 /**
- * The preview shows the page (the first 'navigate'): open the explorer, and if it is the
+ * The preview shows the page (the first 'navigate'): open Sources, and if it is the
  * same page as before the refresh, scroll it and pick what was picked.
  */
 export async function restorePlace() {
   if (!saved) return;
-  const { explorer, item, path, edit, anim, panelY, previewY } = saved;
+  const { sources, modals, item, path, edit, anim, panelY, previewY } = saved;
   saved = null; // only after the refresh, not on later page changes
 
-  // The explorer lives in the Pages tab; SourcesModal opens itself when ui.explorer.open is set.
-  if (explorer?.open && ui.panel === 'pages') {
-    const list = live.current(explorer.file)?.items;
+  // The Source Explorer, under Media when both were open
+  if (sources && modals?.includes('sources')) {
+    const list = live.current(sources.file)?.items;
     const at = Array.isArray(list) ? list.findIndex((it, i) => itemId(it, i) === item) : -1;
-    ui.explorer = { ...explorer, index: at >= 0 ? at : explorer.index };
+    ui.sources = { ...sources, index: at >= 0 ? at : sources.index, edit: null };
+    ui.modals = ['sources', ...ui.modals.filter((name) => name !== 'sources')];
   }
 
   if (path !== bridge.path()) return;
@@ -167,28 +179,28 @@ export async function restorePlace() {
   });
 }
 
-/** An explorer item in the URL: its slug, else its number (1, 2, ...). */
+/** A Sources item in the URL: its slug, else its number (1, 2, ...). */
 const itemId = (it, index) => it?.slug || String(index + 1);
 
-/** Show the tab, view, open explorer item and library animation in the URL (App.svelte, in an $effect). */
+/** Show the tab, view, open Sources item, Media and library animation in the URL (App.svelte, in an $effect). */
 export function writeUrl() {
   const url = new URL(location.href);
   const q = url.searchParams;
   const set = (key, value) => (value ? q.set(key, value) : q.delete(key));
   set('tab', ui.panel);
   set('view', ui.target?.kind === 'part' && ui.target.id);
-  const { open, file, index } = ui.explorer;
-  const list = open && file ? live.current(file)?.items : null;
+  const { file, index } = ui.sources;
+  const list = isOpen('sources') && file ? live.current(file)?.items : null;
   set('source', list && sourceIdOf(file));
   set('item', Array.isArray(list) && list[index] && itemId(list[index], index));
-  set('property', Array.isArray(list) && list[index] && ui.explorer.property);
+  set('property', Array.isArray(list) && list[index] && ui.sources.property);
   set('animation', ui.panel === 'settings' && ui.library.name);
   set(
     'pages',
     ui.panel === 'pages' && ui.pagesWin.open && `/${ui.pagesWin.folder}/`.replace('//', '/'),
   );
-  set('media', ui.media.open && (ui.media.key || '/'));
-  set('pick', ui.media.open && ui.media.pick);
+  set('media', isOpen('media') && (ui.media.key || '/'));
+  set('pick', isOpen('media') && ui.media.pick);
   const href = editorHref(url);
   if (href !== location.pathname + location.search + location.hash)
     history.replaceState(history.state, '', href);

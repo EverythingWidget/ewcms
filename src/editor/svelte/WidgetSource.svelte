@@ -3,7 +3,7 @@
     Source       Item / All (a list widget) · From URL · None · Custom (a List: the old Hand-made
                  mode), one segmented row; From URL only on a [param] page (greyed elsewhere, its
                  tooltip says why). The Source label sits in the parent when provided (ListLead).
-    the item     Item: the item selector (ItemPicker.svelte, an item); All and From URL: its
+    the item     Item: the item selector (SourceField.svelte, an item); All and From URL: its
                  source (the same selector, a list)
     Match the address
                  From URL: a row per param of the page's address, [ where | [person] | = | property ▾ ]:
@@ -20,7 +20,7 @@
 <script>
   import InfoHelp from './InfoHelp.svelte';
   import { tick } from 'svelte';
-  import ItemPicker from './ItemPicker.svelte';
+  import SourceField from './SourceField.svelte';
   import Select from './Select.svelte';
   import { ui } from './ui.svelte.js';
   import { schemaFor, itemName } from './source-items.js';
@@ -273,8 +273,8 @@
       <span class="tf__label"
         >Source<InfoHelp label="About Source"
           ><b>Source</b>: where this widget gets its items, a list from Sources. <b>All</b> shows
-          every item, <b>From URL</b> only the item of the page you are on, <b>Custom</b> items you
-          add by hand.</InfoHelp
+          every item, <b>From URL</b> only the item of the page you are on, <b>Custom</b> items you add
+          by hand.</InfoHelp
         ></span
       >
     {/if}
@@ -295,7 +295,7 @@
   </div>
 
   {#if !handmade && mode === 'item'}
-    <ItemPicker
+    <SourceField
       store={live.store}
       value={{ source: source.from, id: source.id }}
       changed={live.changed(g.file, `${base}/source`)}
@@ -306,7 +306,7 @@
       onpick={(v) => set(v ? { mode: 'item', from: v.source, id: v.id } : undefined)}
     />
   {:else if !handmade && source}
-    <ItemPicker
+    <SourceField
       store={live.store}
       mode="source"
       value={source.from}

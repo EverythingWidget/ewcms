@@ -10,8 +10,8 @@
                  Settings are not in the panel: a section's open in a floating pop-up
                  (SectionPopup.svelte, ui.section; a card's double click or the toolbar's
                  gear), a widget's in another (WidgetPopup.svelte, ui.widget; a widget row's
-                 double click or Enter, or the widget clicked in the preview); one at a time. The Add widget modal (WidgetsModal.svelte): the
-                 widget added opens
+                 double click or Enter, or the widget clicked in the preview); one at a time.
+                 The Add widget modal (WidgetsModal.svelte, openWidgets): the widget added opens
     Element motion  MotionPanel.svelte: the widgets' animations and the fixed elements.
                  While it is open (ui.pageTab 'element-motion') the preview's clicks animate
                  (previewClicks, ui.svelte.js): they pick a widget or an animated part.
@@ -24,7 +24,7 @@
   a double click edits a text in place (bridge.js); links and buttons don't follow; a click on
   empty space or Esc drops the selection. The selected widget's section shows its grid (faint
   cells). The Sources button in the
-  toolbar (App.svelte) opens the Source Explorer (SourcesModal.svelte); so does a
+  toolbar (App.svelte) opens the Source Explorer (SourcesModal.svelte, openSources); so does a
   list item's text clicked in the preview.
 
   Selection goes both ways through ui.selection: main.js sets it when a text is clicked in
@@ -53,13 +53,12 @@
   import Tabs from './Tabs.svelte';
   import WidgetPopup from './WidgetPopup.svelte';
   import { createPopup } from '../widget-popup.js';
-  import WidgetsModal from './WidgetsModal.svelte';
   import SectionPopup from './SectionPopup.svelte';
   import SectionsList from './SectionsList.svelte';
   import SectionToolbar from './SectionToolbar.svelte';
   import { locate } from '../locate.js';
   import SeoSection from './SeoSection.svelte';
-  import SourcesModal from './SourcesModal.svelte';
+  import { openSources, openWidgets } from './modals.svelte.js';
   import { allFields, contentGroups, groupFor } from './content-groups.js';
   import { splitEdit } from '../../site/helpers.js';
   import { parse } from '../lib/pointer.js';
@@ -75,7 +74,6 @@
   let { live, bridge, actions } = $props();
 
   let view = $state();
-  let sourcesModal = $state();
 
   // The texts come from the preview's [data-edit] elements: re-read them after every edit
   // (widgets may have moved) and when the preview shows another page.
@@ -155,7 +153,7 @@
   });
   const tabsId = $props.id();
 
-  const onsource = (f, item, edit, then) => sourcesModal.open(f, item, edit, then);
+  const onsource = (file, index, edit) => openSources({ file, index, edit });
   const itemOf = (f) => Number(parse(f.ptr)[0]) || 0; // a source field's item
 
   function openWidget(id) {
@@ -176,7 +174,6 @@
   }
 
   // Add widget (a section card's): every type on offer; the widget added opens
-  let widgetsModal = $state();
   const types = $derived(
     Object.values(WIDGET_TYPES).map(({ type, label, icon, line, sketch }) => ({
       value: type,
@@ -233,7 +230,7 @@
       const { file, ptr } = splitEdit(edit);
       // A list item shown on the home page (a person's name): edit it in the modal.
       if (groupFor(live.store, { file, ptr })?.id.startsWith('source:'))
-        return sourcesModal.open(file, itemOf({ ptr }), edit);
+        return openSources({ file, index: itemOf({ ptr }), edit });
     } else {
       if (isPage && tab !== 'sections') pickTab('sections');
       // open unless it's the widget whose pop-up is already open (no reopen)
@@ -300,7 +297,7 @@
         {file}
         {bridge}
         onsection={enterSection}
-        onadd={(at) => widgetsModal.open(at)}
+        onadd={(at) => openWidgets({ at, types, onpick: (type, to) => addTo(to, type) })}
       />
     {/if}
     <!-- (a click on its empty space deselects the section card: a pointer shortcut, Esc too) -->
@@ -341,9 +338,6 @@
 {#if popG && !ui.pagesWin.open}
   <WidgetPopup g={popG} {live} {bridge} {sourceIds} {onsource} {popup} onclose={closeWidgetPopup} />
 {/if}
-
-<SourcesModal bind:this={sourcesModal} {live} {bridge} />
-<WidgetsModal bind:this={widgetsModal} {types} onpick={(type, at) => addTo(at, type)} />
 
 <style lang="scss">
   // the list ↔ page/template slide is clipped to this box; flex:1 so the body still fills

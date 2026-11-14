@@ -5,9 +5,11 @@
   picked before it (a nested page's [year] step: that person's years). A step with none says
   why (Nothing found, and its reason). The crumbs and Back go back a step; the last step's pick
   shows that page (onpick(path)). Remembered per page by main.js (ui.previewAt), never saved.
+  Mounted once in App.svelte; the Preview line opens it with openPreviewPicker({ id, onpick })
+  (modals.svelte.js).
     live   reactive store (its routes, unbuilt ones included: live.svelte.js)
     id     the [param] page ("photography/people/[person]/[year]")
-    path   the path the preview shows (its row selected)
+  The path the preview shows (ui.path) has its row selected.
 -->
 <script>
   import { closeOnBackdrop } from '../lib/dialog.js';
@@ -17,8 +19,13 @@
   import { plural } from '../lib/format.js';
   import { isParam, paramsOf } from '../../site/files.js';
   import { mainProblem } from '../../site/layout/source.js';
+  import { ui } from './ui.svelte.js';
+  import { argsOf, closeModal, modal } from './modals.svelte.js';
 
-  let { live, id, path = '', onpick } = $props();
+  let { live } = $props();
+
+  const id = $derived(argsOf('previewPicker')?.id || '');
+  const path = $derived(ui.path);
 
   let dialog = $state();
   let picks = $state([]); // the values picked in the steps before this one
@@ -66,11 +73,10 @@
     await tick();
     (dialog.querySelector('.xrow.is-selected') || dialog.querySelector('.pp-search'))?.focus();
   }
-  /** Open on its first step. */
-  export function open() {
+  /** Shown: on its first step. */
+  function onopen() {
     picks = [];
     query = '';
-    if (!dialog.open) dialog.showModal();
     focus();
   }
   function back(to = step - 1) {
@@ -84,7 +90,8 @@
       query = '';
       return focus();
     }
-    dialog.close();
+    const { onpick } = argsOf('previewPicker');
+    closeModal('previewPicker');
     onpick(r.path);
   }
 </script>
@@ -94,56 +101,59 @@
   aria-label="Preview item"
   bind:this={dialog}
   {@attach closeOnBackdrop}
+  {@attach modal('previewPicker', { onopen })}
 >
-  <ExplorerHead
-    title="Preview item"
-    icon="fa-database"
-    crumbs={[
-      ...picks.slice(0, step).map((v, i) => ({
-        label: `[${params[i]}] ${v}`,
-        onclick: () => back(i),
-      })),
-      { label: `[${param}]` },
-    ]}
-    sep="/"
-    back={step ? 'Back a step' : ''}
-    onback={() => back()}
-    onclose={() => dialog.close()}
-  />
-  <div class="pp-body">
-    <input
-      class="tf__input pp-search"
-      type="search"
-      placeholder="Search items"
-      aria-label="Search"
-      bind:value={query}
+  {#if id}
+    <ExplorerHead
+      title="Preview item"
+      icon="fa-database"
+      crumbs={[
+        ...picks.slice(0, step).map((v, i) => ({
+          label: `[${params[i]}] ${v}`,
+          onclick: () => back(i),
+        })),
+        { label: `[${param}]` },
+      ]}
+      sep="/"
+      back={step ? 'Back a step' : ''}
+      onback={() => back()}
+      onclose={() => closeModal('previewPicker')}
     />
-    {#if step}
-      <p class="hint small pp-hint">
-        <i class="fa-solid fa-filter" aria-hidden="true"></i>
-        Only under [{params[step - 1]}] {picks[step - 1]} · {found} of {total}
-      </p>
-    {/if}
-    <div class="pp-list">
-      {#each rows as r, i (r.path)}
-        <ExplorerRow
-          lead={String(i + 1).padStart(2, '0')}
-          name={r.params[param]}
-          meta={last
-            ? `${r.name} · ${plural(r.count ?? 0, 'item')}${r.unbuilt ? ' · not built' : ''}`
-            : plural(r.count ?? 0, 'item')}
-          selected={isShown(r)}
-          enter={!last}
-          onclick={() => pick(r)}
-        />
-      {:else}
-        <p class="pp-none">
-          <strong>Nothing found</strong>
-          <span>{why}</span>
+    <div class="pp-body">
+      <input
+        class="tf__input pp-search"
+        type="search"
+        placeholder="Search items"
+        aria-label="Search"
+        bind:value={query}
+      />
+      {#if step}
+        <p class="hint small pp-hint">
+          <i class="fa-solid fa-filter" aria-hidden="true"></i>
+          Only under [{params[step - 1]}] {picks[step - 1]} · {found} of {total}
         </p>
-      {/each}
+      {/if}
+      <div class="pp-list">
+        {#each rows as r, i (r.path)}
+          <ExplorerRow
+            lead={String(i + 1).padStart(2, '0')}
+            name={r.params[param]}
+            meta={last
+              ? `${r.name} · ${plural(r.count ?? 0, 'item')}${r.unbuilt ? ' · not built' : ''}`
+              : plural(r.count ?? 0, 'item')}
+            selected={isShown(r)}
+            enter={!last}
+            onclick={() => pick(r)}
+          />
+        {:else}
+          <p class="pp-none">
+            <strong>Nothing found</strong>
+            <span>{why}</span>
+          </p>
+        {/each}
+      </div>
     </div>
-  </div>
+  {/if}
 </dialog>
 
 <style lang="scss">

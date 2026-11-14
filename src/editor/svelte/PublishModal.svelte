@@ -1,8 +1,9 @@
 <!--
-  Publish dialog: what will be committed (the saved content files, plus the unsaved edits
+  Publish modal: what will be committed (the saved content files, plus the unsaved edits
   when "Save first" is ticked), a commit message, then commit + push through the dev server
   (it commits files in content/ only). Shows the result or the error; a failed push can be
-  retried. App.svelte calls open().
+  retried. Mounted once in App.svelte, whose Publish buttons check the status first and then
+  call openPublish() (modals.svelte.js).
 -->
 <script>
   import { closeOnBackdrop } from '../lib/dialog.js';
@@ -12,6 +13,7 @@
   import PubFiles from './PubFiles.svelte';
   import { ui } from './ui.svelte.js';
   import { toast } from './toasts.svelte.js';
+  import { closeModal, modal } from './modals.svelte.js';
   import * as source from '../source.js';
   import { plural } from '../lib/format.js';
 
@@ -20,8 +22,8 @@
 
   let dialog = $state();
   let textarea = $state();
-  let pub = $state(null); // /__editor/status when the dialog opened
-  let dirty = $state([]); // files with unsaved edits when the dialog opened
+  let pub = $state(null); // /__editor/status when it opened
+  let dirty = $state([]); // files with unsaved edits when it opened
   let edits = $state(0); // number of unsaved edits
   let saveFirst = $state(false);
   let message = $state('');
@@ -61,11 +63,8 @@
       : '';
   const changes = (file) => live.store.changes(file).length;
 
-  export async function open() {
-    if (ui.publishing || dialog.open) return;
-    await actions.refreshStatus();
-    if (ui.pub?.error)
-      return toast(`Can't publish: ${ui.pub.error}`, { kind: 'error', timeout: 0 });
+  /** Shown (openPublish, after App.svelte refreshed ui.pub): what will be committed now. */
+  async function onopen() {
     pub = $state.snapshot(ui.pub) || { files: [], ahead: 0 };
     dirty = live.store.dirtyFiles();
     edits = live.changes;
@@ -74,7 +73,6 @@
     retry = '';
     result = null;
     message = defaultMessage(names);
-    dialog.showModal();
     await tick();
     textarea?.focus();
     textarea?.select();
@@ -123,10 +121,11 @@
 </script>
 
 <dialog
-  class="modal__box"
+  class="modal__box publish-modal"
   aria-label="Publish to GitHub"
   bind:this={dialog}
   {@attach closeOnBackdrop}
+  {@attach modal('publish', { onopen })}
 >
   <h3 class="modal__title">Publish to GitHub</h3>
   {#if pub}
@@ -198,7 +197,7 @@
   {/if}
 
   <footer class="modal__actions">
-    <Button onclick={() => dialog.close()}>
+    <Button onclick={() => closeModal('publish')}>
       {published ? 'Close' : 'Cancel'}
     </Button>
     {#if pub && !published}

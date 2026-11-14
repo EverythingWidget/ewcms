@@ -13,7 +13,7 @@
   import { MOD, plural } from '../lib/format.js';
   import { ANIMATIONS } from '../../site/files.js';
 
-  // live: reactive store (live.svelte.js); onpublish(): opens the publish dialog
+  // live: reactive store (live.svelte.js); onpublish(): opens the Publish modal
   let { live, onpublish } = $props();
 
   // Which Discard asks "Discard …?": a file name, 'all', or null.

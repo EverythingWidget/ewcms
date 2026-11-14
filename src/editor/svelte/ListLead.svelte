@@ -19,7 +19,7 @@
   import ListField from './ListField.svelte';
   import Field from './Field.svelte';
   import LinkField from './LinkField.svelte';
-  import ItemPicker from './ItemPicker.svelte';
+  import SourceField from './SourceField.svelte';
   import { pairedHalves } from './source-items.js';
   import { sourceFile } from '../../site/files.js';
   import { HANDMADE_ITEM } from '../../site/widgets/list/handmade.js';
@@ -212,7 +212,7 @@
   <div class="fields">
     {#each fields as f (f.edit)}
       {#if f.type === 'source'}
-        <ItemPicker
+        <SourceField
           store={live.store}
           mode="source"
           value={live.get(f.file, f.ptr)}
