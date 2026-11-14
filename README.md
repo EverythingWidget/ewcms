@@ -968,8 +968,8 @@ rule work as anywhere.
   An item's own wins.
 - **Arrangement Carousel** (`config.arrangement`: `"grid"` default | `"carousel"`,
   `src/site/widgets/list/carousel.js`, `carousel-client.js`): the items one at a time in a fixed
-  slide box. Layout tab, and an inner List's rows in the template editor; the rows are always
-  shown and disabled with Grid (picking Grid drops them):
+  slide box. Layout tab, and an inner List's rows in the template editor; the rows show only
+  with Carousel (Grid hides them, and picking Grid drops them):
 
   | key          | values (default first)                     | row                                                                          |
   | ------------ | ------------------------------------------ | ---------------------------------------------------------------------------- |

@@ -2,6 +2,7 @@
 // markup and accessibility, keys only on focus, the deep link, credits, {back}, the checks.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { warnings } from '../scripts/test-layout.mjs';
 import { loadContent } from '../scripts/content.mjs';
@@ -338,9 +339,9 @@ test('checks: values, carousel keys refused with Grid, opens, nesting, thumbnail
   assert.ok(out.some((p) => p.level === 'warn' && /thumbnails: "photos"/.test(p.message)));
 });
 
-test('the editor: Arrangement Grid / Carousel and the carousel rows, disabled with Grid', () => {
+test('the editor: Arrangement Grid / Carousel and the carousel rows, shown only with Carousel', () => {
   const cfg = WIDGET_TYPES.list.config;
-  const rows = cfg.filter((c) => c.disabledWhen);
+  const rows = cfg.filter((c) => c.shownWhen);
   assert.deepEqual(
     rows.map((c) => c.label),
     [
@@ -354,9 +355,15 @@ test('the editor: Arrangement Grid / Carousel and the carousel rows, disabled wi
     ],
   );
   for (const r of rows) {
-    assert.equal(r.disabledWhen({ arrangement: 'grid' }), true);
-    assert.equal(r.disabledWhen({ arrangement: 'carousel' }), false);
+    assert.equal(r.shownWhen({ arrangement: 'grid' }), false);
+    assert.equal(r.shownWhen({}), false); // Grid is the default
+    assert.equal(r.shownWhen({ arrangement: 'carousel' }), true);
+    assert.equal(r.disabledWhen, undefined); // hidden, not greyed out
   }
+  // the Layout tab leaves them out with Grid (no disabled rows any more)
+  const wl = readFileSync('src/editor/svelte/WidgetLayout.svelte', 'utf8');
+  assert.match(wl, /filter\(\(c\) => !c\.shownWhen \|\| c\.shownWhen\(widget\.config\)\)/);
+  assert.doesNotMatch(wl, /disabledWhen/);
 });
 
 test('a button label of typed text only ([{ t }]) shows that text, not "[object Object]"', async () => {

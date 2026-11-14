@@ -72,7 +72,10 @@
   // what its type supports (its definition), in the tab's order
   const parts = $derived(layoutParts(widget.type));
   // its widget settings in this tab (a List's arrangement, columns, gap): choices, as in Content
-  const options = $derived(layoutOptions(widget.type));
+  // (a row with shownWhen only when it holds: a List's carousel rows with Carousel alone)
+  const options = $derived(
+    layoutOptions(widget.type).filter((c) => !c.shownWhen || c.shownWhen(widget.config)),
+  );
   const optionPtr = (c) => `/sections/${at}/widgets/${j}/config/${c.key}`;
   // a setting's default when the widget leaves it out (a List's carousel ones: carousel.js)
   const listDefault = (c) =>
@@ -178,7 +181,6 @@
             ? (widget.config?.[c.key] ?? listDefault(c)) === true
             : (widget.config?.[c.key] ?? listDefault(c) ?? (c.type === 'number' ? 0 : ''))}
           options={c.options ?? []}
-          disabled={!!c.disabledWhen?.(widget.config)}
           changed={live.changed(file, optionPtr(c))}
           onvalue={(v) => setOption(c, v)}
         />

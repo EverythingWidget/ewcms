@@ -75,8 +75,8 @@ import { detailsOf, nameOf, opensHtml, toggleHtml } from './details.js';
 import { innerItems, innerKeys } from './nested.js';
 import { CAROUSEL, carouselHtml, carouselOf, carouselProblems } from './carousel.js';
 
-// the Carousel settings' rows (Layout tab): always shown, disabled unless Carousel
-const onlyCarousel = (config) => config?.arrangement !== 'carousel';
+// the Carousel settings' rows (Layout tab): shown only with Carousel (Grid: hidden)
+const isCarousel = (config) => config?.arrangement === 'carousel';
 const CAROUSEL_ROWS = [
   { key: 'counter', label: 'Counter', type: 'boolean' },
   {
@@ -99,7 +99,7 @@ const CAROUSEL_ROWS = [
   },
   { key: 'alsoGrid', label: 'Also as a grid', type: 'boolean' },
   { key: 'deepLink', label: 'Open slide from #n', type: 'boolean' },
-].map((r) => ({ ...r, tab: 'layout', disabledWhen: onlyCarousel }));
+].map((r) => ({ ...r, tab: 'layout', shownWhen: isCarousel }));
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
 /** The most cells between a List's items (config.gap). */
@@ -113,7 +113,6 @@ export const gapProblem = (gap) =>
     : `config.gap must be a whole number of cells from 0 to ${MAX_GAP} (0: the items side by side)`;
 /** A phone's columns (config.phoneColumns; left out: 1). */
 const PHONE_COLUMNS = ['1', '2', '3'];
-
 
 /**
  * In the template editor's preview only: the item's widgets edit the template file
@@ -457,9 +456,7 @@ export const list = {
       // the template being previewed: its own widgets (not a details template, not a List on a page)
       const previewId = templateOfPath(ctx.route?.path || '');
       const editFile =
-        editable && previewId && c.template === previewId
-          ? templateFile(previewId)
-          : '';
+        editable && previewId && c.template === previewId ? templateFile(previewId) : '';
       const one = (w, cls = '', j = -1) => {
         // off: not on the public page; in the editor the item grid renders it hidden
         if (w?.config?.enabled === false && !editable) return { html: '', missing: [] };
