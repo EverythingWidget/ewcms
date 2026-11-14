@@ -9,10 +9,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { IMAGE_TYPES } from './r2.mjs';
-import { buildPhotos } from './photos.mjs';
-import { loadSiteConfig } from './site-config.mjs';
-import { slugify } from '../src/render/helpers.js';
+import { IMAGE_TYPES } from '../../scripts/r2.mjs';
+import { buildPhotos } from '../../scripts/photos.mjs';
+import { loadSiteConfig } from '../../scripts/site-config.mjs';
+import { slugify } from '../render/helpers.js';
 
 const EXTS = {
   'image/jpeg': 'jpg',

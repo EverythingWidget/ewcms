@@ -2,7 +2,7 @@
  * POST /api/contact: the contact form (src/render/widgets/form/index.js) on Cloudflare Pages.
  * A Pages Function: Cloudflare runs it for the site's functions/api/contact.js, which is one line:
  *
- *   export { onRequestPost } from 'ewcms/functions/contact';
+ *   export { onRequestPost } from 'ewcms/server/contact';
  *
  * (or `export const onRequestPost = contactHandler({ ... })` for its own fetch/log). Nothing
  * secret is in the site or its content. It checks the submission, drops spam, and emails it through Resend's HTTP API.
@@ -21,7 +21,7 @@
  *
  * Answers JSON ({ ok, error?, fields? }) to the page's script (Accept: application/json),
  * and a small HTML page to a form sent without JavaScript. The dev server runs the same
- * handler (scripts/contact-dev.mjs), with a fetch that only logs.
+ * handler (src/server/contact-dev.mjs), with a fetch that only logs.
  */
 
 export const MIN_SECONDS = 3;

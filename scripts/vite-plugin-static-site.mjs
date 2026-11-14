@@ -14,7 +14,7 @@
  *  dev   → any page with ?edit (/?edit, /about/?edit&tab=settings: src/editor/lib/editor-url.js)
  *          gets the editor app instead (its preview iframe, ?draft=…, always gets the site; the
  *          old /edit/?path=… redirects there, /edit/sandbox/ to /sandbox/), and /__editor/*
- *          (scripts/editor-server.mjs, localhost only) loads, saves and publishes the content JSON files and uploads photos to
+ *          (src/server/editor-server.mjs, localhost only) loads, saves and publishes the content JSON files and uploads photos to
  *          Cloudflare R2 with the R2_* keys from .env.local (read here, never sent to a page).
  *
  * Dev reloads: a change in content/, .generated/ or src/render/ sends the custom HMR event
@@ -31,14 +31,14 @@ import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import { loadEnv, searchForWorkspaceRoot } from 'vite';
 import { loadContent } from './content.mjs';
-import { DRAFT_PARAM, draftsFor, editorMiddleware } from './editor-server.mjs';
-import { contactMiddleware } from './contact-dev.mjs';
+import { DRAFT_PARAM, draftsFor, editorMiddleware } from '../src/server/editor-server.mjs';
+import { contactMiddleware } from '../src/server/contact-dev.mjs';
 import { pageFile } from '../src/render/files.js';
 import { EDITOR_HTML, legacyRedirect, wantsEditor } from '../src/editor/lib/editor-url.js';
 import { checkSources } from '../src/render/schemas.js';
 import { FOLDERS, ROOT_FILES } from '../src/render/files.js';
 import { THEME_LAYERS, loadSiteConfig } from './site-config.mjs';
-import { createUpdater } from './update.mjs';
+import { createUpdater } from '../src/server/update.mjs';
 import { registerSiteWidgets, widgetClientsModule, widgetsModule } from './site-widgets.mjs';
 import { ENGINE, enginePath, fsUrl, posixPath, sameFile, withEngineUrls } from './engine.mjs';
 
@@ -265,7 +265,7 @@ export default function staticSite() {
         }),
       );
 
-      // The contact form's POST /api/contact (functions/contact.js): checked, logged, not sent
+      // The contact form's POST /api/contact (src/server/contact.js): checked, logged, not sent
       server.middlewares.use('/api/contact', contactMiddleware(config.logger));
 
       server.middlewares.use(async (req, res, next) => {

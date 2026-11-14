@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { onGrid, template } from '../scripts/grid-helper.mjs';
-import { readContentFiles, renderOp } from '../scripts/editor-server.mjs';
+import { readContentFiles, renderOp } from '../src/server/editor-server.mjs';
 import * as render from '../src/render/render.js';
 import {
   ANIMATIONS,

@@ -24,7 +24,7 @@ import { LINE_STYLES } from '../src/render/text.js';
 import { checkContent } from '../src/render/validate.js';
 import { needsReload, siteKey } from '../src/editor/lib/needs-reload.js';
 import { HEADER, SITE, pageFile } from '../src/render/files.js';
-import { renderOp } from '../scripts/editor-server.mjs';
+import { renderOp } from '../src/server/editor-server.mjs';
 import * as render from '../src/render/render.js';
 import { SITE_A } from './fixtures/index.mjs';
 

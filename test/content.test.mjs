@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { loadContent, writeFileAtomic } from '../scripts/content.mjs';
-import { readContentFiles, save } from '../scripts/editor-server.mjs';
+import { readContentFiles, save } from '../src/server/editor-server.mjs';
 import { checkContent, parseContent } from '../src/render/validate.js';
 import { SITE_A } from './fixtures/index.mjs';
 
@@ -353,7 +353,7 @@ test('photo library: no alt or credit in pages or sources, every photo they use 
 });
 
 test('draft: pages render the unsaved edits; only existing, valid files; {} clears', async () => {
-  const { draftOp, draftsFor } = await import('../scripts/editor-server.mjs');
+  const { draftOp, draftsFor } = await import('../src/server/editor-server.mjs');
   const root = tree();
   const drafts = {};
   const r = draftOp(

@@ -51,7 +51,7 @@ function curtainLabel(incoming, doc) {
 
 /**
  * The editor's preview (dev): its pages carry ?draft=<session> (the editor tab's unsaved edits,
- * scripts/editor-server.mjs draftOp); every page it opens keeps it. Never on the public site.
+ * src/server/editor-server.mjs draftOp); every page it opens keeps it. Never on the public site.
  */
 const draftOf = () => new URLSearchParams(location.search).get('draft');
 function keepDraft(url) {

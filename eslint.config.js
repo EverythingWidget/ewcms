@@ -32,13 +32,14 @@ export default [
   },
   // Cloudflare Pages Functions: a worker (fetch, Request, Response, console).
   {
-    files: ['functions/**/*.js', 'starter/site/functions/**/*.js'],
+    files: ['src/server/contact.js', 'starter/site/functions/**/*.js'],
     languageOptions: { globals: globals.serviceworker },
   },
   // The CLI, build scripts, the Vite plugin and preset, and the tests run in Node.
   {
     files: [
       'scripts/**/*.{js,mjs}',
+      'src/server/**/*.mjs',
       'test/**/*.{js,mjs}',
       'bin/**/*.mjs',
       'starter/**/*.mjs',

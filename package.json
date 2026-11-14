@@ -13,13 +13,12 @@
     ".": "./index.js",
     "./vite": "./vite.js",
     "./widget-api": "./src/render/widget-api.js",
-    "./functions/contact": "./functions/contact.js",
+    "./server/contact": "./src/server/contact.js",
     "./stylelint-config": "./stylelint.config.mjs",
     "./package.json": "./package.json"
   },
   "files": [
     "bin",
-    "functions",
     "sandbox",
     "scripts",
     "src",

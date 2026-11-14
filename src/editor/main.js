@@ -14,7 +14,7 @@
  *             Preview show it, nothing leaves this machine)
  *   Publish - commits every saved content change in one commit and pushes it
  *             (svelte/PublishModal.svelte)
- * Both go through the dev server (scripts/editor-server.mjs). The editor only exists
+ * Both go through the dev server (src/server/editor-server.mjs). The editor only exists
  * under `npm run dev`.
  *
  * The whole UI is Svelte: svelte/App.svelte shows `ui` (svelte/ui.svelte.js) and has the

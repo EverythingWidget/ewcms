@@ -9,7 +9,7 @@ import { longestWord, hero, HERO_STYLES } from '../src/render/widgets/hero/index
 import { bindTypeOf } from '../src/render/layout/bindings.js';
 import { createStore } from '../src/editor/store.js';
 import { addSection, addWidget } from '../src/editor/layout-ops.js';
-import { renderOp } from '../scripts/editor-server.mjs';
+import { renderOp } from '../src/server/editor-server.mjs';
 import * as render from '../src/render/render.js';
 
 const ctx = { site: { name: 'Site' }, media: {}, strings: {}, lang: 'en' };

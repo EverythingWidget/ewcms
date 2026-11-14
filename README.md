@@ -8,11 +8,11 @@ with GSAP page transitions. The editor (Svelte 5) runs in the dev server only an
 
 A **site** is only its own things; ewcms is everything else:
 
-| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                          | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                       |
-| -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `scripts/` (Vite plugin, dev server API, build, photos, R2), `functions/contact.js`, `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
-| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                             | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                           |
-| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                          |
+| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                          | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                        |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `scripts/` (Vite plugin, dev server API, build, photos, R2), `src/server/contact.js`, `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
+| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/server/contact';`                                                | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                            |
+| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                           |
 
 ## A site's commands
 
@@ -185,7 +185,7 @@ content/            ← all text, albums, projects, animation config (JSON)
 media/              ← source photos (jpg), committed
 theme/              ← the site's layers over ewcms's theme-default/ (tokens.scss, fonts.scss, overrides.scss, theme.json)
 site.config.mjs     ← the site's folders
-functions/api/contact.js ← one line: export { onRequestPost } from 'ewcms/functions/contact'
+functions/api/contact.js ← one line: export { onRequestPost } from 'ewcms/server/contact'
 
 — in ewcms —
 bin/ewcms.mjs       ← the ewcms command (scripts/cli.mjs: dev, build, check, …)
@@ -211,7 +211,7 @@ scripts/
 test/
   *.test.mjs        ← the unit tests (node --test)
   fixtures/         ← site-a, site-b, and index.mjs
-functions/contact.js ← the contact form's Cloudflare Pages Function (emails via Resend; contactHandler(options))
+src/server/contact.js ← the contact form's Cloudflare Pages Function (emails via Resend; contactHandler(options))
 sandbox/            ← editor UI mock builder at /sandbox/ (kit/, viewer; mocks/ is local, git-ignored): npm run mock:serve
 src/
   site/             ← isomorphic templates (no Node APIs, run at build time AND in a browser)
@@ -1947,7 +1947,7 @@ These editor markers (`data-edit`, `data-edit-type`, `data-sec`, `data-widget`,
 - The panel footer always shows how many **saved changes aren't published** yet (and commits
   not pushed).
 
-The endpoints live in `scripts/editor-server.mjs` (`/__editor/content`, `/save`, `/draft`,
+The endpoints live in `src/server/editor-server.mjs` (`/__editor/content`, `/save`, `/draft`,
 `/render`, `/status`, `/upload`, `/media`, `/pages`, `/publish`). They exist only on the dev server, accept **only requests from this machine**
 (loopback address, localhost `Host`, same-origin `Origin`), and only touch the content files in
 those folders. The GitHub links come from the git remote, else from `site.config.mjs` `repo`. Git runs without a shell and never prompts in the terminal, so pushing
@@ -2097,7 +2097,7 @@ A site deploys like any static site: build command `npm run build`, output `dist
 
 **Cloudflare Pages:** build command `npm run build`, output directory `dist`. It reads
 `dist/_redirects` and runs the site's `functions/` (the contact form re-exports
-`ewcms/functions/contact`: set its variables, see "Contact form"). `npm ci` installs ewcms from
+`ewcms/server/contact`: set its variables, see "Contact form"). `npm ci` installs ewcms from
 GitHub by the commit in the site's `package-lock.json`, so the build machine needs read access to
 `EverythingWidget/ewcms`: either the repo is public, or the build gets a token (e.g. a
 `GITHUB_TOKEN` variable and a git `url.insteadOf` rule in the build command).

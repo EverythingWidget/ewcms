@@ -1,5 +1,5 @@
 /**
- * Upload without R2 keys (scripts/local-upload.mjs): saved in media/ and resized at once.
+ * Upload without R2 keys (src/server/local-upload.mjs): saved in media/ and resized at once.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
-import { uploadLocal } from '../scripts/local-upload.mjs';
+import { uploadLocal } from '../src/server/local-upload.mjs';
 
 const site = () => fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-local-'));
 const jpeg = (r) =>

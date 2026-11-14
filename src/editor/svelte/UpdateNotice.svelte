@@ -1,6 +1,6 @@
 <script>
   /**
-   * The update notice (dev only, scripts/update.mjs): a quiet "Update available" pill in the
+   * The update notice (dev only, src/server/update.mjs): a quiet "Update available" pill in the
    * footer when GitHub has a newer ewcms tag than the site's package.json; its card: the
    * versions, the changelog, Later / Update; then installing, restarting (the dev server comes
    * back by itself, and so does this editor: Vite reloads it), done or the error. The pill sits
