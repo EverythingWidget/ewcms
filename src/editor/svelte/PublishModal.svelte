@@ -6,7 +6,7 @@
   call openPublish() (modals.svelte.js).
 -->
 <script>
-  import { closeOnBackdrop } from '../lib/dialog.js';
+  import { closeOnBackdrop } from '../lib/modal.js';
   import { contentPath } from '../../site/files.js';
   import Button from './Button.svelte';
   import { tick } from 'svelte';

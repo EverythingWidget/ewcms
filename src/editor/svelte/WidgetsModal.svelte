@@ -14,7 +14,7 @@
 </script>
 
 <script>
-  import { closeOnBackdrop } from '../lib/dialog.js';
+  import { closeOnBackdrop } from '../lib/modal.js';
   import { tick } from 'svelte';
   import Button from './Button.svelte';
   import ExplorerHead from './ExplorerHead.svelte';

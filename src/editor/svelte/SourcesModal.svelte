@@ -12,7 +12,7 @@
 -->
 <script>
   import { plural } from '../lib/format.js';
-  import { closeOnBackdrop } from '../lib/dialog.js';
+  import { closeOnBackdrop } from '../lib/modal.js';
   import { showValue } from '../lib/show-value.js';
   import Button from './Button.svelte';
   import { tick } from 'svelte';

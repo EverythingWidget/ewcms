@@ -8,7 +8,7 @@
 -->
 <script>
   import { tick } from 'svelte';
-  import { closeOnBackdrop } from '../lib/dialog.js';
+  import { closeOnBackdrop } from '../lib/modal.js';
   import { argsOf, closeModal, modal } from './modals.svelte.js';
   import Button from './Button.svelte';
   import Select from './Select.svelte';

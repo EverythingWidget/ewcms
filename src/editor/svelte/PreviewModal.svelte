@@ -12,7 +12,7 @@
   The path the preview shows (ui.path) has its row selected.
 -->
 <script>
-  import { closeOnBackdrop } from '../lib/dialog.js';
+  import { closeOnBackdrop } from '../lib/modal.js';
   import { tick } from 'svelte';
   import ExplorerHead from './ExplorerHead.svelte';
   import ExplorerRow from './ExplorerRow.svelte';

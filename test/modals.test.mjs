@@ -195,6 +195,8 @@ test('names: PublishModal (no PublishDialog), add-page-modal (no apm)', () => {
   assert.equal(existsSync(new URL('PublishDialog.svelte', dir)), false);
   assert.equal(existsSync(new URL('ItemPicker.svelte', dir)), false);
   assert.equal(existsSync(new URL('PreviewPicker.svelte', dir)), false);
+  assert.equal(existsSync(new URL('../lib/dialog.js', dir)), false);
+  assert.equal(existsSync(new URL('../lib/modal.js', dir)), true);
   const editor = new URL('../', dir);
   const all = (d) =>
     readdirSync(d, { withFileTypes: true }).flatMap((e) =>
