@@ -347,7 +347,7 @@ export async function publishMedia(root) {
   if (failed) throw new Error(`${failed} photo(s) not uploaded`);
 }
 
-/** A new site in `dir`: a theme layered on the engine's, a starter content (the test fixture), package.json. */
+/** A new site in `dir`: a theme layered on the engine's, a starter content (Home, About and 404; no sources or photos), package.json. */
 export function newSite(dir, { name = path.basename(path.resolve(dir)) } = {}) {
   dir = path.resolve(dir);
   if (fs.existsSync(dir) && fs.readdirSync(dir).length) throw new Error(`${dir} is not empty`);
