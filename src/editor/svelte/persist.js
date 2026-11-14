@@ -6,7 +6,7 @@
  *             page in sessionStorage; an unknown tab: pages)
  *     (path)  the URL's own path is the page in the preview (main.js keeps it up to date)
  *     view    header | footer, when a site part (Header, Footer) is edited instead of a page
- *     source  + item (+ property): the Source Explorer (SourcesModal), open on that file and item, with that
+ *     source  + item (+ property): Sources (SourcesModal), open on that file and item, with that
  *             property highlighted (&source=people&item=noor-vermeer&property=summary; item is the
  *             slug, or the number without one)
  *     animation    Site Settings > Motion's Animations library, open on that animation (&animation=fade-up)
@@ -153,7 +153,7 @@ export async function restorePlace() {
   const { sources, modals, item, path, edit, anim, panelY, previewY } = saved;
   saved = null; // only after the refresh, not on later page changes
 
-  // The Source Explorer, under Media when both were open
+  // Sources, under Media when both were open
   if (sources && modals?.includes('sources')) {
     const list = live.current(sources.file)?.items;
     const at = Array.isArray(list) ? list.findIndex((it, i) => itemId(it, i) === item) : -1;

@@ -4,7 +4,7 @@
   App.svelte; the field opens it with openItemModal({ mode, value, none, sourceIds, itemsOf,
   nameOf, onpick, onsource, label }) (modals.svelte.js; the props as SourceField's), optionally
   with at (the source to open on) and id (the row to focus).
-  Each row's edit button opens the Source Explorer (onsource: SourcesModal.svelte) on top of this
+  Each row's edit button opens Sources (onsource: SourcesModal.svelte) on top of this
   window; closing it brings this window back as it was.
 -->
 <script>
@@ -66,7 +66,7 @@
     closeModal('itemModal');
     onpick(next);
   }
-  // edit a source (index -1: its list) or one of its items in the Source Explorer, on top
+  // edit a source (index -1: its list) or one of its items in Sources, on top
   const edit = (id, index = -1) => onsource(`sources/${id}.json`, Math.max(0, index));
 </script>
 
@@ -128,7 +128,7 @@
               'data-pick': id,
               onclick: () => (items_ ? enter(id) : pick(id)),
             },
-            `Edit ${id}.json in the Source Explorer`,
+            `Edit ${id}.json in Sources`,
             () => edit(id),
           )}
         {/each}
@@ -142,7 +142,7 @@
               'data-pick': r.it?.id,
               onclick: () => pick({ source, id: r.it.id }),
             },
-            `Edit ${r.name} in the Source Explorer`,
+            `Edit ${r.name} in Sources`,
             () => edit(source, r.i),
           )}
         {:else}

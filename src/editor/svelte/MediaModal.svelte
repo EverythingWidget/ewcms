@@ -270,7 +270,7 @@
     meta: u.file,
   });
 
-  /** Go to a use: a list item in the Source Explorer, a page's field, a setting. */
+  /** Go to a use: a list item in Sources, a page's field, a setting. */
   function go(u) {
     closeModal(ui.modals[0]); // every modal: the use is behind them
     const parts = parse(u.ptr);

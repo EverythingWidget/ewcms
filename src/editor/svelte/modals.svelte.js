@@ -79,7 +79,7 @@ export function closeModal(name = topModal()) {
 
 export const openPublish = () => openModal('publish');
 
-/** The Source Explorer on file `file` ('' = the list of files), item `index`, field `edit`. */
+/** Sources on file `file` ('' = the list of files), item `index`, field `edit`. */
 export const openSources = ({ file = '', index = 0, edit = null } = {}) =>
   openModal('sources', { file, index, property: '', edit });
 

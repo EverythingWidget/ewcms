@@ -12,7 +12,7 @@
     onpick(value | undefined); onclear(): back to empty (the ✕ beside Change, when picked);
     store: the editor's store (the sources' schemas: a list's name, an
     item's photo); label: its own label (a setting's, "Count of"), else by what it picks
-    onsource(file, index): open the Source Explorer (SourcesModal.svelte); the item modal's edit
+    onsource(file, index): open Sources (SourcesModal.svelte); the item modal's edit
               buttons open it on top of that modal, which is there again when it closes
 -->
 <script>
@@ -103,8 +103,8 @@
         icon="pen-to-square"
         iconOnly
         label={items_
-          ? `Edit ${card.name} in the Source Explorer`
-          : `Edit ${current}.json in the Source Explorer`}
+          ? `Edit ${card.name} in Sources`
+          : `Edit ${current}.json in Sources`}
         onclick={(e) => {
           e.stopPropagation();
           const i = items_ ? itemsOf(current).findIndex((it) => it?.id === value?.id) : -1;

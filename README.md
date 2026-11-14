@@ -343,7 +343,7 @@ shaped like the widget registry's settings (`src/site/schemas.js`):
   widget's setting types: one list, `src/site/property-types.js`.
 - `width: "half"`: two half properties next to each other share a row in the editor (one column
   when the panel is narrow); `required`, `help` (a hint under the field), `list` (shown under
-  the name in the Source Explorer's item list).
+  the name in Sources' item list).
 - Keys a schema doesn't name are kept as they are, not edited or checked (`transition`).
 
 **Checks.** Save and `npm run build` check every source against its schema: required values,
@@ -357,10 +357,9 @@ line breaks or over ~80 characters as `multiline`, text under ~24 characters as 
 objects and mixed values are left out). The title is `name`, else `title`, else the first text
 property; the slug is `slug`. Write a schema file to give properties labels, order, help and checks.
 
-The editor uses the schema everywhere: the Source Explorer's fields (labels, widgets, widths,
+The editor uses the schema everywhere: Sources' fields (labels, widgets, widths,
 help), the item names and list lines, the slug field, a new item's empty properties; the Content
-tab's labels and widgets for source properties. Schema files are not sources: pickers and the
-Source Explorer don't list them. A new source is a new `<id>.json` (with its schema) by hand.
+tab's labels and widgets for source properties. Schema files are not sources: pickers and Sources don't list them. A new source is a new `<id>.json` (with its schema) by hand.
 
 > ⚠️ **Placeholder content.** The two people (_Noor Vermeer_, _Daan Okafor_), the two places and
 > the two DIY projects are placeholders (`"placeholder": true`, shown with a "Placeholder" tag).
@@ -1410,7 +1409,7 @@ The editor keeps them up to date by itself (`src/site/redirects.js`):
   build warns). A `[param]` level in another one (`[year]` in `[person]`) redirects one level
   up by default, each page to the same outer item (`/people/:person/:year/` ->
   `/people/:person/`; links to `/people/noor/2024/` become `/people/noor/`), or nowhere.
-- **Change an item's slug** (Source Explorer; or its name, when it has no slug): Save adds a
+- **Change an item's slug** (Sources; or its name, when it has no slug): Save adds a
   redirect from its old page; links by its id need nothing.
 - No chains: a redirect to a moved path follows it (A -> B, B renamed C: A -> C). A redirect to
   itself goes, and one from a path that is a page again (a new page, a rename back) is
@@ -1831,13 +1830,13 @@ and a dropdown: the items of a source, or **Dropdown links** (one level) and the
 "all" link's label. The preview renders the menu again on each change; undo works as anywhere. On a `[param]` page the page head's **Preview** line
 picks which of its pages the preview shows.
 
-The **Sources** button (the database icon next to the page dropdown, before Pages and Media) opens the Source Explorer on the files in `content/en/sources/` (with their
+The **Sources** button (the database icon next to the page dropdown, before Pages and Media) opens Sources on the files in `content/en/sources/` (with their
 item counts): click one to edit its items, **←** goes back to the files. A grid's Source edit
 button, or a click on a person/place/project in the preview, opens straight into that item. In
 the Content tab, a group whose texts come from a source (a person on their page) shows its file
 (`people.json`) as a button in its bar (beside each field only when a group mixes sources): it
-opens the explorer on that item (with a property highlighted: `&property=` in the URL). What the
-explorer shows comes from the source's schema (see "Sources & schemas").
+opens Sources on that item (with a property highlighted: `&property=` in the URL). What Sources
+shows comes from the source's schema (see "Sources & schemas").
 
 Fields come in rows: two `half` fields (a schema's or a widget type's `width: "half"`) share
 one, a lone half takes the row, and a panel under ~340px shows one column. The bar of the
@@ -1855,8 +1854,7 @@ nothing uses: an R2 photo loses all its sizes, a local one its file in `media/` 
 commits `content/`, so commit that removal yourself). `&media=<key>` (and `&pick=<field>`)
 in the URL reopens it.
 
-**Refresh** keeps your place. The URL holds the page (its path), the tab, Menu/Footer and the open Source
-Explorer item, so a shared link opens the same view:
+**Refresh** keeps your place. The URL holds the page (its path), the tab, Menu/Footer and the open Sources item, so a shared link opens the same view:
 `/photography/people/?edit&source=people&item=noor-vermeer` (`tab`: pages (the **Pages** tab), settings, preview;
 the page's own tab, Sections | Element motion | Page motion | SEO, is kept per page in sessionStorage; `view`: header,
 footer; `animation`: Site Settings > Motion's Animations library, open on that animation). Open/closed sections, the selected field or Motion

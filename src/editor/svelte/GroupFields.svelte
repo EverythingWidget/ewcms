@@ -6,7 +6,7 @@
     g         the group
     live      reactive store (live.svelte.js); bridge: the preview (../bridge.js)
     sourceIds the files in content/en/sources/, for a list item's source
-    onsource  (file, item?, edit?): open the Source Explorer
+    onsource  (file, item?, edit?): open Sources
     bindings  a widget's: { binds(type), resolved(f), from } for its settings' pickers (Custom
               or a property of its item) and a bound text's format (WidgetInspector.svelte,
               Field.svelte); null: none

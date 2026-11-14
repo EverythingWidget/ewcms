@@ -146,7 +146,7 @@ export const ui = $state({
    */
   modals: [],
   /**
-   * The Source Explorer (SourcesModal.svelte): its file ('' = the list of files), item index and
+   * Sources (SourcesModal.svelte): its file ('' = the list of files), item index and
    * the highlighted property (its key in source-items.js itemFields, e.g. "name", "photos.1");
    * edit: the field (its data-edit) to focus when it opens.
    */

@@ -17,7 +17,7 @@
  *   width     'half': two half properties side by side in the editor
  *   required  must have a value (a photos list: at least one photo)
  *   help      a short hint under the label
- *   list      shown under the title in the editor's item lists (Source Explorer)
+ *   list      shown under the title in the editor's item lists (Sources)
  *
  * Keys of an item that its schema doesn't name are kept as they are (not edited, not
  * checked). A source without a schema gets one inferred from its items (inferSchema), so

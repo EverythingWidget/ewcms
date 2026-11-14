@@ -118,7 +118,7 @@
   });
   const branch = $derived(ui.pub?.branch ? `origin/${ui.pub.branch}` : 'GitHub');
 
-  // The tab, Header/Footer, the open Source Explorer item and library animation in the URL (persist.js).
+  // The tab, Header/Footer, the open Sources item and library animation in the URL (persist.js).
   $effect(writeUrl);
 
   $effect(() => {

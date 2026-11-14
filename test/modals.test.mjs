@@ -210,6 +210,7 @@ test('names: PublishModal (no PublishDialog), add-page-modal (no apm)', () => {
     );
     assert.doesNotMatch(src, /\bapm\b|apm__/, f.pathname);
     assert.doesNotMatch(src, /ui\.explorer/, f.pathname);
+    assert.doesNotMatch(src, /Source Explorer/, f.pathname);
     assert.doesNotMatch(src, /\b(md|src|as|ip|pp)-modal\b/, f.pathname);
   }
   assert.match(read('AddPageModal.svelte'), /class="modal__box add-page-modal"/);

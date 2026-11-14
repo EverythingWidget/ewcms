@@ -1,4 +1,4 @@
-// The editor's URL keeps the Source Explorer's open property (&property=): writeUrl puts it in,
+// The editor's URL keeps Sources' open property (&property=): writeUrl puts it in,
 // restoreUi + restorePlace read it back (src/editor/svelte/persist.js). Runs the real module:
 // a loader hook compiles the *.svelte.js runes modules with Svelte's compileModule.
 import { test } from 'node:test';

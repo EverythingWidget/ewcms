@@ -1,5 +1,5 @@
 /**
- * Plain helpers for source items (the Source Explorer, SourcesModal.svelte, and the Content
+ * Plain helpers for source items (Sources, SourcesModal.svelte, and the Content
  * tab): the source's schema (src/site/schemas.js), an item's name and list line, its
  * properties as the editor's fields, a new item, the slug format.
  */
