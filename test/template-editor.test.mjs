@@ -186,7 +186,7 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   assert.ok(list.indexOf("head('Site')") < list.indexOf("head('Templates'"));
   const main = read('src/editor/main.js');
   assert.match(main, /kind: 'item-template'/);
-  assert.match(main, /item\.kind === 'item-template'\) return void bridge\.navigate\(item\.path\)/);
+  assert.match(main, /item\.kind === 'item-template'\) bridge\.navigate\(item\.path\)/);
   // the panel: Widgets and Settings tabs, chips (formats) on each bound value
   const panel = read('src/editor/svelte/TemplatePanel.svelte');
   assert.match(panel, /\['widgets', 'Widgets'\],\s*\['settings', 'Settings'\]/);

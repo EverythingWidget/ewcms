@@ -53,3 +53,20 @@ test('a live view that changed while sliding fades in over the last 80ms, no pop
   assert.match(slide, /SLIDE\.duration - FADE/);
   assert.doesNotMatch(slide, /mask/);
 });
+
+test('a page opened shows its own sections at once, not the previous page behind the curtain', async () => {
+  const { targetFile } = await import('../src/editor/layout-sync.js');
+  // the preview still shows Home (its curtain runs): the page picked is what the panel edits
+  const home = { querySelector: () => ({ dataset: { pageFile: 'pages/index.json' } }) };
+  const about = 'pages/about/index.json';
+  assert.equal(targetFile({ kind: 'page', path: '/about/', file: about }, home), about);
+  // a page the preview went to by itself (a link, the URL): the preview's page
+  assert.equal(targetFile({ kind: 'page', path: '/' }, home), 'pages/index.json');
+  assert.equal(targetFile({ kind: 'page', path: '/' }, null), '');
+  // pickTarget sets the page's file before the preview navigates; 'navigate' hands it back
+  const main = read('src/editor/main.js');
+  const pick = main.slice(main.indexOf('function pickTarget('));
+  const set = pick.indexOf('ui.target = route ? { ...item, file: pageFile(route.id) } : item;');
+  assert.ok(set > 0 && set < pick.indexOf('bridge.navigate(to)'));
+  assert.match(main, /if \(ui\.target\?\.kind !== 'part'\) ui\.target = shownPage\(path\);/);
+});

@@ -365,15 +365,23 @@ function lockPart() {
  */
 function pickTarget(item, path) {
   if (!item) return;
-  ui.target = item;
-  applyPart();
-  if (item.kind === 'item-template') return void bridge.navigate(item.path);
-  if (item.kind !== 'page') return;
+  if (item.kind !== 'page') {
+    ui.target = item;
+    applyPart();
+    if (item.kind === 'item-template') bridge.navigate(item.path);
+    return;
+  }
   const items = item.items;
   const has = (p) => !!p && items.some((i) => i.path === p);
   const to = !items
     ? item.path
     : [path, ui.previewAt[item.template], ui.path].find(has) || items[0]?.path;
+  // the panel shows the page picked at once, its own file (layout-sync.js targetFile), not
+  // the one the preview still shows behind its curtain; the preview's page is the target
+  // again once it got there (bridge 'navigate': updatePages)
+  const route = to && live.routeOf(to);
+  ui.target = route ? { ...item, file: pageFile(route.id) } : item;
+  applyPart();
   if (to) bridge.navigate(to);
   else toast(`${item.path} has no pages to show`, { kind: 'error' });
 }

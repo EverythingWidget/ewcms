@@ -88,7 +88,8 @@
     ui.previewVersion;
     return ui.target.id !== 'header' && !bridge.doc;
   });
-  // the file whose sections are listed: the page's in the preview, or the footer's
+  // the file whose sections are listed: the page's (the one picked at once, before the preview
+  // gets there: layout-sync.js targetFile), or the footer's
   const file = $derived.by(() => {
     ui.previewVersion;
     return targetFile(ui.target, bridge.doc);

@@ -51,14 +51,15 @@ export const footerOf = (doc) => doc?.querySelector('[data-footer]') || null;
 export const previewFile = (doc) => pageView(doc)?.dataset.pageFile || '';
 
 /**
- * The file the editor edits for `target` (ui.target): the page's in the preview, the
- * footer's for the Footer, an item template's own (content/templates/t-….json: one section,
- * so its widgets are at /sections/0/widgets as a page's), '' for the Header (no sections;
- * or no preview yet).
+ * The file the editor edits for `target` (ui.target): a page picked, the page's own
+ * (target.file, main.js pickTarget: the panel shows it at once, the preview catches up),
+ * else the page's in the preview; the footer's for the Footer, an item template's own
+ * (content/templates/t-….json: one section, so its widgets are at /sections/0/widgets as a
+ * page's), '' for the Header (no sections; or no preview yet).
  */
 export const targetFile = (target, doc) =>
   target?.kind === 'page'
-    ? previewFile(doc)
+    ? target.file || previewFile(doc)
     : target?.kind === 'item-template'
       ? templateFile(target.id)
       : target?.id === 'footer'
