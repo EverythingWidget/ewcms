@@ -351,22 +351,29 @@ export async function publishMedia(root) {
 export function newSite(dir, { name = path.basename(path.resolve(dir)) } = {}) {
   dir = path.resolve(dir);
   if (fs.existsSync(dir) && fs.readdirSync(dir).length) throw new Error(`${dir} is not empty`);
-  const copy = (from, to) => fs.cpSync(from, path.join(dir, to), { recursive: true });
-  const starter = enginePath('templates', 'site');
+  // copy the starter folders; leave out the README and the .gitkeep files that hold empty dirs in git
+  const skip = new Set(['README.md', '.gitkeep']);
+  const copy = (from, to) =>
+    fs.cpSync(from, path.join(dir, to), {
+      recursive: true,
+      filter: (src) => !skip.has(path.basename(src)),
+    });
+  const starter = enginePath('starter', 'site');
   copy(starter, '.');
   // the theme: layers over the engine's theme-default/ (its name and a tokens stub), not a copy
-  copy(enginePath('templates', 'theme'), 'theme');
+  copy(enginePath('starter', 'theme'), 'theme');
   fs.writeFileSync(
     path.join(dir, 'theme', 'theme.json'),
     `${JSON.stringify({ version: 1, name }, null, 2)}\n`,
   );
-  copy(enginePath('templates', 'content'), 'content');
+  copy(enginePath('starter', 'content'), 'content');
+  copy(enginePath('starter', 'media'), 'media');
+  copy(enginePath('starter', 'widgets'), 'widgets');
   fs.renameSync(path.join(dir, 'gitignore'), path.join(dir, '.gitignore'));
   const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
   pkg.name = name.toLowerCase().replace(/[^a-z0-9-]+/g, '-');
   pkg.dependencies.ewcms = `github:EverythingWidget/ewcms#v${ENGINE_VERSION}`;
   fs.writeFileSync(path.join(dir, 'package.json'), `${JSON.stringify(pkg, null, 2)}\n`);
-  fs.mkdirSync(path.join(dir, 'media'), { recursive: true });
   console.log(`New site in ${dir} (${CONFIG_FILE}, content/, theme/, public/).
 Next: add it to the workspace (or cd into it), npm install, npx ewcms dev`);
 }

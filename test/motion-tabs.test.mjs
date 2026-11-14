@@ -7,7 +7,7 @@ import { DEFAULT_TIMING, defaultsProblems } from '../src/site/layout/motion.js';
 
 const read = (p) => readFileSync(new URL(`../src/${p}`, import.meta.url), 'utf8');
 const anims = JSON.parse(
-  readFileSync(new URL('../templates/content/animations.json', import.meta.url)),
+  readFileSync(new URL('../starter/content/animations.json', import.meta.url)),
 );
 const esrc = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
 

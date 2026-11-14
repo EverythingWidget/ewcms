@@ -57,8 +57,21 @@ test('new-site: a site folder that passes check', async () => {
     'theme/theme.json',
     'content/site.json',
     'public/favicon.svg',
+    'media',
+    'widgets',
+    'content/templates',
+    'content/en/sources',
   ])
     assert.ok(fs.existsSync(path.join(dir, f)), f);
+  // the starter's README and .gitkeep files stay in the engine; the new site only gets the folders
+  assert.equal(fs.existsSync(path.join(dir, 'README.md')), false);
+  for (const f of [
+    'media/.gitkeep',
+    'widgets/.gitkeep',
+    'content/templates/.gitkeep',
+    'content/en/sources/.gitkeep',
+  ])
+    assert.equal(fs.existsSync(path.join(dir, f)), false, f);
   const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
   assert.equal(pkg.name, 'my-site');
   assert.match(pkg.dependencies.ewcms, /^github:EverythingWidget\/ewcms#v\d/);
