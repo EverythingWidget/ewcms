@@ -3,7 +3,7 @@
   preview or a site part (the Header: HeaderPart.svelte; the Footer; an item template:
   TemplatePanel.svelte) under PageHead.svelte
   (Back to pages: back to the pages list). The two swap with a slide (lib/slide.js):
-  a page opened comes in from the right, the list comes back from the left. A page is a list of sections
+  a page or a template opened comes in from the right, the list comes back from the left. A page is a list of sections
   holding widgets (src/site/layout/), and nothing else. A page's panel has four tabs (Tabs.svelte,
   the open one kept per page in ui.sections["pagetab:<file>"]; unknown: Sections):
     Sections     SectionsList.svelte: the section cards and the dashed Add section card. One
@@ -74,7 +74,7 @@
   // actions: main.js
   let { live, bridge, actions } = $props();
 
-  let panel = $state();
+  let view = $state();
   let sourcesModal = $state();
 
   // The texts come from the preview's [data-edit] elements: re-read them after every edit
@@ -244,21 +244,18 @@
       ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
-  // the pages list and a page's view (its head, tabs and body) swap with the same slide: a
-  // page opened comes in from the right, Back to pages brings the list from the left
-  // (lib/slide.js: a still copy of the one going slides out)
-  const viewEls = () => {
-    const els = [];
-    for (let n = panel; n && !n.matches('.ed-head'); n = n.previousElementSibling) els.unshift(n);
-    return els;
-  };
+  // the pages list and a page or template's view swap with the same slide, clipped to
+  // `.ed-view` (lib/slide.js): a page or template opened comes in from the right, Back
+  // to pages brings the list from the left; a still copy of the one going slides out
+  const viewEls = () =>
+    [...(view?.children ?? [])].filter((el) => !el.matches('dialog, .modal__box'));
   let listOpen = ui.pagesWin.open;
   $effect.pre(() => {
     const now = ui.pagesWin.open;
     untrack(() => {
       if (now === listOpen) return;
       listOpen = now;
-      const play = swapView(panel?.closest('.ed-panel'), viewEls());
+      const play = swapView(view, viewEls());
       tick().then(() => play(viewEls(), now ? -1 : 1));
     });
   });
@@ -276,65 +273,66 @@
   });
 </script>
 
-{#if ui.pagesWin.open}
-  <section class="ed-body" bind:this={panel}>
-    <PagesList {live} {actions} />
-  </section>
-{:else if ui.target?.kind === 'item-template'}
-  <PageHead {live} {actions} />
-  <TemplatePanel {live} {bridge} />
-{:else}
-  <PageHead {live} {actions} />
-  {#if isPage}
-    <Tabs
-      tabs={TABS}
-      value={shownTab}
-      onpick={pickTab}
-      label="Page"
-      class="page-tabs"
-      id={tabsId}
-      panel="{tabsId}-panel"
-    />
-  {/if}
-  {#if file && !waiting && shownTab === 'sections'}
-    <SectionToolbar
-      {live}
-      {file}
-      {bridge}
-      onsection={enterSection}
-      onadd={(at) => widgetsModal.open(at)}
-    />
-  {/if}
-  <!-- (a click on its empty space deselects the section card: a pointer shortcut, Esc too) -->
-  <section
-    class="ed-body"
-    bind:this={panel}
-    id="{tabsId}-panel"
-    role={isPage ? 'tabpanel' : undefined}
-    aria-labelledby={isPage ? `${tabsId}-${shownTab}` : undefined}
-    onclick={shownTab === 'sections' ? deselect : undefined}
-  >
-    {#if waiting}
-      <p class="hint">Waiting for the preview…</p>
-    {:else if file && shownTab === 'sections'}
-      <div class="list">
-        <SectionsList {live} {bridge} {file} onopen={openWidget} onsection={openSectionPopup} />
-      </div>
-    {:else}
-      {#if isPage && shownTab === 'element-motion'}
-        <MotionPanel {live} {bridge} {actions} {file} />
-      {:else if isPage && shownTab === 'page-motion'}
-        <PageMotionPanel {live} {actions} {file} />
-      {:else if isPage && shownTab === 'seo'}
-        <SeoSection {live} {file} {actions} />
-      {:else if ui.target.id === 'header'}
-        <HeaderPart {live} />
-      {:else}
-        <p class="hint">No editable content here.</p>
-      {/if}
+<div class="ed-view" bind:this={view}>
+  {#if ui.pagesWin.open}
+    <section class="ed-body">
+      <PagesList {live} {actions} />
+    </section>
+  {:else if ui.target?.kind === 'item-template'}
+    <PageHead {live} {actions} />
+    <TemplatePanel {live} {bridge} />
+  {:else}
+    <PageHead {live} {actions} />
+    {#if isPage}
+      <Tabs
+        tabs={TABS}
+        value={shownTab}
+        onpick={pickTab}
+        label="Page"
+        class="page-tabs"
+        id={tabsId}
+        panel="{tabsId}-panel"
+      />
     {/if}
-  </section>
-{/if}
+    {#if file && !waiting && shownTab === 'sections'}
+      <SectionToolbar
+        {live}
+        {file}
+        {bridge}
+        onsection={enterSection}
+        onadd={(at) => widgetsModal.open(at)}
+      />
+    {/if}
+    <!-- (a click on its empty space deselects the section card: a pointer shortcut, Esc too) -->
+    <section
+      class="ed-body"
+      id="{tabsId}-panel"
+      role={isPage ? 'tabpanel' : undefined}
+      aria-labelledby={isPage ? `${tabsId}-${shownTab}` : undefined}
+      onclick={shownTab === 'sections' ? deselect : undefined}
+    >
+      {#if waiting}
+        <p class="hint">Waiting for the preview…</p>
+      {:else if file && shownTab === 'sections'}
+        <div class="list">
+          <SectionsList {live} {bridge} {file} onopen={openWidget} onsection={openSectionPopup} />
+        </div>
+      {:else}
+        {#if isPage && shownTab === 'element-motion'}
+          <MotionPanel {live} {bridge} {actions} {file} />
+        {:else if isPage && shownTab === 'page-motion'}
+          <PageMotionPanel {live} {actions} {file} />
+        {:else if isPage && shownTab === 'seo'}
+          <SeoSection {live} {file} {actions} />
+        {:else if ui.target.id === 'header'}
+          <HeaderPart {live} />
+        {:else}
+          <p class="hint">No editable content here.</p>
+        {/if}
+      {/if}
+    </section>
+  {/if}
+</div>
 
 {#if popSection && file && !ui.pagesWin.open && previewClicks() === 'arrange'}
   <SectionPopup {live} {bridge} {file} id={popSection} {popup} onclose={closeSectionPopup} />
@@ -348,6 +346,17 @@
 <WidgetsModal bind:this={widgetsModal} {types} onpick={(type, at) => addTo(at, type)} />
 
 <style lang="scss">
+  // the list ↔ page/template slide is clipped to this box; flex:1 so the body still fills
+  .ed-view {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: clip;
+    position: relative;
+  }
+
   // the tabs' line runs the panel's full width, above the scrolling body
   :global(.page-tabs) {
     flex: none;
