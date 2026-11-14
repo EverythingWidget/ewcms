@@ -11,7 +11,7 @@ test('--brand is the site accent, fixed; theme.js tweens --accent only', () => {
     /--brand: var\(--site-accent, #cfc8b8\);/,
   );
   assert.match(
-    read('src/site/templates/layout.js'),
+    read('src/site/shell/layout.js'),
     /--site-accent: \$\{esc\(ctx\.site\.accent \|\| accent\)\}/,
   );
   const theme = read('src/client/theme.js').replace(/\/\*\*[\s\S]*?\*\//, '');

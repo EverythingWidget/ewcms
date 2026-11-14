@@ -100,7 +100,7 @@ test('renderBackdrop: a fixed layer with its photos and settings', () => {
 
 test('layers: the ground, the backdrop, the view, the portal, the curtain (in this order)', async () => {
   const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../src/site/templates/layout.js', import.meta.url), 'utf8');
+  const src = readFileSync(new URL('../src/site/shell/layout.js', import.meta.url), 'utf8');
   const at = [
     'class="ground"',
     'id="backdrop"',

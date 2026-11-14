@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { buildRoutes } from '../src/site/routes.js';
-import { header, phoneMenu } from '../src/site/templates/header.js';
+import { header, phoneMenu } from '../src/site/shell/header.js';
 import { checkContent } from '../src/site/validate.js';
 import { setEditable } from '../src/site/helpers.js';
 import { warnings } from '../scripts/test-layout.mjs';

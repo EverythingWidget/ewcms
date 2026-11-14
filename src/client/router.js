@@ -23,7 +23,7 @@ const normalize = (pathname) =>
 
 /**
  * Pages with their own curtain or none ({ "/about/": { mode: 'off' } }), prerendered into
- * every page as #page-curtains (src/site/templates/layout.js). The router needs the
+ * every page as #page-curtains (src/site/shell/layout.js). The router needs the
  * destination's curtain before its HTML arrives, so it is known up front.
  */
 let pageCurtains = {};

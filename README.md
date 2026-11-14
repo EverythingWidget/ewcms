@@ -10,7 +10,7 @@ A **site** is only its own things; ewcms is everything else:
 
 | The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                          | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                         |
 | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/site` (templates, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `scripts/` (Vite plugin, dev server API, build, photos, R2), `functions/contact.js`, `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
+| `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/site` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `scripts/` (Vite plugin, dev server API, build, photos, R2), `functions/contact.js`, `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
 | `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                             | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                             |
 | `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                            |
 
@@ -229,7 +229,7 @@ src/
     backdrop.js     ← a page's photo backdrop
     layout/         ← sections and widgets on the square 120-column grid, real rows, ids (see "Layout")
     widgets/         ← the widget registry: every widget type (see "Layout")
-    templates/      ← layout, header/menu, footer (its sections), partials
+    shell/          ← the page shell: layout, header/menu, footer (its sections), partials
   client/           ← browser code
     main.js         ← boot: menu, router, per-page mount
     router.js       ← SPA navigation over the prerendered HTML
@@ -1241,7 +1241,7 @@ opens in a new tab). A page or item that isn't there gives a `[links]` build war
 Pages and the footer are one document type (`src/site/files.js` `docKindOf`, `docOf`): `"kind"` is
 `"page"` in a page file and `"part"` (a site part: only `sections`) here, and must match the file.
 Its sections are widgets exactly like a page's (the same grid, widgets, phone layout and motion; validated and tidied
-like a page's), rendered under every page by `src/site/templates/footer.js`. It starts empty
+like a page's), rendered under every page by `src/site/shell/footer.js`. It starts empty
 (nothing shows). It sits outside the page's view, right after `<main>`, so page transitions swap
 the page and leave the footer be; it is in the view's layer (`.site-footer`: z-index 2, between
 `#backdrop` and `#portal`; the curtain covers it). Its rows, animations and widget scripts mount
@@ -1269,7 +1269,7 @@ labels the link to the item's own page at its end. `items` names a source
 (`content/en/sources/<id>.json`) and lists its items: with their photo and photo count when the
 source has item pages (a `[param]/index.json` shows it), else by title and type, linking to their spot
 on the item's page (`/projects/#<slug>`) or, with `linkOut`, to their own site. The menu button and clock labels are in `strings.json` (`header`).
-`src/site/templates/header.js` renders it; `checkContent` validates its shape.
+`src/site/shell/header.js` renders it; `checkContent` validates its shape.
 
 ### Pages and URLs
 

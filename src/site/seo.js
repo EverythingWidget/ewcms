@@ -1,5 +1,5 @@
 /**
- * Search and share meta of a page: what <head> says about it (templates/layout.js), what the
+ * Search and share meta of a page: what <head> says about it (shell/layout.js), what the
  * editor's SEO previews show, and the build's [seo] warnings.
  *
  * Site defaults live in content/site.json:

@@ -3,7 +3,7 @@
  * the format), its default export the definition.
  */
 import { html } from '../../helpers.js';
-import { albumCard } from '../../templates/partials.js';
+import { albumCard } from '../../shell/partials.js';
 
 /**
  * Album cards of its source's items (a list widget: all of them, or the ones From URL

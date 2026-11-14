@@ -5,7 +5,7 @@
  * in its template file, rendered for the route's item.
  */
 import { accentOf, setEditable, warnOnce } from './helpers.js';
-import { head, body } from './templates/layout.js';
+import { head, body } from './shell/layout.js';
 import { renderSections, renderSection, sectionAnchor } from './layout/index.js';
 import { docKindOf, docOf, pageFile } from './files.js';
 import { bindingProblems } from './layout/bindings.js';

@@ -1,6 +1,6 @@
 <!--
   Pages > Header, a site part (picked in the page picker's "Site" group, or by clicking the
-  header in the preview): the menu of content/header.json (src/site/templates/header.js:
+  header in the preview): the menu of content/header.json (src/site/shell/header.js:
   the nav pill and the phone menu), then the header's labels (strings.json "header": the menu
   and close buttons, the clock). (The footer is page-like: footer.json.)
   Each item: its label, its link (a page of the site, or an external URL), and a dropdown: links one level deep, or the items of a source. Every change is one undo step;

@@ -73,13 +73,13 @@ export const LANG_FILES = ['strings.json'];
 const rootFile = (id) => `${id}.json`;
 
 export const SITE = rootFile('site');
-/** The Header part: the menus (templates/header.js). */
+/** The Header part: the menus (shell/header.js). */
 export const HEADER = rootFile('header');
 export const ANIMATIONS = rootFile('animations');
 export const PHOTOS = rootFile('photos');
 export const REDIRECTS = rootFile('redirects');
 /**
- * The footer: a site part, rendered under every page, outside the view (templates/footer.js).
+ * The footer: a site part, rendered under every page, outside the view (shell/footer.js).
  */
 export const FOOTER = rootFile('footer');
 export const STRINGS = 'strings.json';
