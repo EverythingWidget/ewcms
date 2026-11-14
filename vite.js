@@ -51,7 +51,7 @@ export function siteConfig({ root = process.cwd() } = {}) {
       staticSite(),
       // Svelte is editor-only (src/editor/svelte, and the editor's mock sandbox: sandbox/). The public site never imports it.
       // vitePreprocess: components can use <style lang="scss">. Runes mode everywhere (also for a
-      // component that uses none); scripts/svelte.test.mjs compiles with the same options.
+      // component that uses none); test/svelte.test.mjs compiles with the same options.
       svelte({
         include: [`${engine}/src/editor/**/*.svelte`, `${engine}/sandbox/**/*.svelte`],
         preprocess: vitePreprocess(),
