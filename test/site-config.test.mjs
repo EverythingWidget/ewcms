@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { DEFAULTS, loadSiteConfig, repoUrl } from '../scripts/site-config.mjs';
 import { loadContent } from '../scripts/content.mjs';
-import { CONTENT_DIR } from '../src/site/files.js';
+import { CONTENT_DIR } from '../src/render/files.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 test('no site.config.mjs: the defaults, resolved from the root', () => {

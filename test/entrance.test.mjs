@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { curtainFor, curtainMode } from '../src/client/anim/curtain.js';
-import { checkContent } from '../src/site/validate.js';
+import { checkContent } from '../src/render/validate.js';
 import { createStore } from '../src/editor/store.js';
 import { setCurtainMode } from '../src/editor/svelte/entrance-curtain.js';
 

@@ -28,8 +28,8 @@ import { AwsClient } from 'aws4fetch';
 import { FORMAT, loadSharp, makeVariants, uprightSize, widthsFor } from './photo-variants.mjs';
 import { formatJSON } from '../src/editor/lib/json-format.js';
 import { writeFileAtomic } from './content.mjs';
-import { VERSION } from '../src/site/files.js';
-import { slugify } from '../src/site/helpers.js';
+import { VERSION } from '../src/render/files.js';
+import { slugify } from '../src/render/helpers.js';
 
 /** Image types an upload can be (they are stored as WebP). */
 export const IMAGE_TYPES = new Set([

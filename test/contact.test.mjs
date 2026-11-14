@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { handleContact } from '../functions/contact.js';
-import { formTarget, form } from '../src/site/widgets/form/index.js';
-import { newWidget } from '../src/site/layout/index.js';
-import { checkContent } from '../src/site/validate.js';
+import { formTarget, form } from '../src/render/widgets/form/index.js';
+import { newWidget } from '../src/render/layout/index.js';
+import { checkContent } from '../src/render/validate.js';
 
 const ENV = {
   RESEND_API_KEY: 're_test',

@@ -77,14 +77,14 @@ export async function checkContentOf(root, { warnings = [] } = {}) {
   const problems = [];
   // the render module as Node loads it (the registry its checks use) + the site's widgets
   const { registerWidgets } = await import(
-    pathToFileURL(enginePath('src/site/widgets/index.js')).href
+    pathToFileURL(enginePath('src/render/widgets/index.js')).href
   );
   await registerSiteWidgets(root, { register: registerWidgets });
   const { setContentDir, ROOT_FILES } = await import(
-    pathToFileURL(enginePath('src/site/files.js')).href
+    pathToFileURL(enginePath('src/render/files.js')).href
   );
   const { parseContent, checkContent, contentWarnings } = await import(
-    pathToFileURL(enginePath('src/site/validate.js')).href
+    pathToFileURL(enginePath('src/render/validate.js')).href
   );
   setContentDir(site.contentRel);
   try {
@@ -125,8 +125,8 @@ export async function checkContentOf(root, { warnings = [] } = {}) {
     }
   }
   if (problems.length) return problems;
-  const render = await import(pathToFileURL(enginePath('src/site/render.js')).href);
-  const { checkSources } = await import(pathToFileURL(enginePath('src/site/schemas.js')).href);
+  const render = await import(pathToFileURL(enginePath('src/render/render.js')).href);
+  const { checkSources } = await import(pathToFileURL(enginePath('src/render/schemas.js')).href);
   let content;
   try {
     content = loadContent(root);
@@ -309,7 +309,7 @@ export async function check(root, opts = {}) {
 export async function publishMedia(root) {
   const { loadEnv } = await import('vite');
   const { r2Config, uploadPhoto, NOT_CONFIGURED } = await import('./r2.mjs');
-  const { PHOTOS } = await import(pathToFileURL(enginePath('src/site/files.js')).href);
+  const { PHOTOS } = await import(pathToFileURL(enginePath('src/render/files.js')).href);
   const env = loadEnv('production', root, 'R2_');
   if (r2Config(env).missing) throw new Error(NOT_CONFIGURED);
   const site = loadSiteConfig(root);

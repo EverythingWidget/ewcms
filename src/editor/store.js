@@ -15,7 +15,7 @@
 import { get, set, remove } from './lib/pointer.js';
 import { clone, equal, diff, patch } from './lib/diff.js';
 import { formatJSON } from './lib/json-format.js';
-import { omitDefaults } from '../site/defaults.js';
+import { omitDefaults } from '../render/defaults.js';
 
 export function createStore() {
   const base = {};

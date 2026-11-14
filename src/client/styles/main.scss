@@ -12,6 +12,6 @@
 @use 'layout';
 @use 'text';
 // the built-in widgets' own looks (their widget modules' style.scss), before the theme's
-@use '../../site/widgets/list/style' as list-widget;
+@use '../../render/widgets/list/style' as list-widget;
 @use 'site-theme/styles/look';
 @use 'site-layer/overrides' as site-overrides;

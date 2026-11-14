@@ -17,7 +17,7 @@
  * the published page (./index.js). Values are escaped by the widgets as before: the resolver
  * only swaps values (resolveWidget, applied to every widget before it renders).
  *
- * Which settings can bind: every setting of a widget type (src/site/widgets/index.js
+ * Which settings can bind: every setting of a widget type (src/render/widgets/index.js
  * `settings`) and its config's links; a list of { src } binds to a photos property as a whole;
  * in a list of objects, each text subkey can be bound; the Text widget's lines hold property
  * runs (../text.js). BIND_TYPES (../property-types.js) says which property types fit each

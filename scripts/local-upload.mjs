@@ -12,7 +12,7 @@ import { createHash } from 'node:crypto';
 import { IMAGE_TYPES } from './r2.mjs';
 import { buildPhotos } from './photos.mjs';
 import { loadSiteConfig } from './site-config.mjs';
-import { slugify } from '../src/site/helpers.js';
+import { slugify } from '../src/render/helpers.js';
 
 const EXTS = {
   'image/jpeg': 'jpg',

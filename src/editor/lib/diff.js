@@ -3,7 +3,7 @@
  * remote version of a file before committing (so nobody's changes get clobbered).
  */
 import { set, remove } from './pointer.js';
-import { isObject } from '../../site/is.js';
+import { isObject } from '../../render/is.js';
 
 export const clone = (v) => (v === undefined ? undefined : structuredClone(v));
 export const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);

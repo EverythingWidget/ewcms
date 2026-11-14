@@ -12,7 +12,7 @@
   "exports": {
     ".": "./index.js",
     "./vite": "./vite.js",
-    "./widget-api": "./src/site/widget-api.js",
+    "./widget-api": "./src/render/widget-api.js",
     "./functions/contact": "./functions/contact.js",
     "./stylelint-config": "./stylelint.config.mjs",
     "./package.json": "./package.json"

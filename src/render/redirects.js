@@ -69,7 +69,7 @@ function eachString(data, fn, parts = []) {
 /**
  * The paths that move: a Map of old path -> new path (null: gone, no redirect). `hash`: links
  * keep their #hash and ?query (a rename; not when sent to another page).
- * Links by id (src/site/hrefs.js) don't move with a path: `pages` (deleted page id -> the id
+ * Links by id (src/render/hrefs.js) don't move with a path: `pages` (deleted page id -> the id
  * of the page it redirects to, or null) sends { page } links on, and `sources` (sources whose
  * [param] page is deleted) makes their { item } links broken.
  * Returns the link edits [{ file, parts, value }] (redirects.json and photos.json aside) and

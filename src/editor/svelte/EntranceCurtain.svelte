@@ -12,7 +12,7 @@
   import EasePicker from './EasePicker.svelte';
   import { ui } from './ui.svelte.js';
   import { CURTAIN, CURTAIN_ROWS, TOTAL_MAX, curtainEdits, fmtS } from './entrance-curtain.js';
-  import { ANIMATIONS } from '../../site/files.js';
+  import { ANIMATIONS } from '../../render/files.js';
 
   // gsap: the preview's, for the ease curves
   let { live, bridge, gsap } = $props();

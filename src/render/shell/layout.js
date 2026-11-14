@@ -6,7 +6,7 @@ import { layoutVars } from '../layout/contain.js';
 import { footer } from './footer.js';
 import { t } from '../strings.js';
 
-/** <head> contents injected into index.html at <!--ssr-head--> (meta: src/site/seo.js) */
+/** <head> contents injected into index.html at <!--ssr-head--> (meta: src/render/seo.js) */
 export function head(ctx, route, accent) {
   const { site } = ctx;
   const seo = seoOf(ctx, route);

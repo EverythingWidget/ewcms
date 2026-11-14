@@ -1,5 +1,5 @@
 /**
- * Contact forms (src/site/widgets/form/index.js): the page works without this (a plain POST);
+ * Contact forms (src/render/widgets/form/index.js): the page works without this (a plain POST);
  * with it, the form checks its fields in place, sends with fetch and shows the section's
  * messages (data-success, data-error, data-required, data-invalid, data-sending on the
  * <form>) without leaving the page. While sending, the button is disabled with a spinner;
@@ -7,7 +7,7 @@
  * the visitor's mail app with the message filled in. Turnstile (a .cf-turnstile in the form)
  * loads Cloudflare's script on demand.
  */
-import { CORE_STRINGS } from '../../site/strings.js';
+import { CORE_STRINGS } from '../../render/strings.js';
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TURNSTILE = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 let turnstileScript = null;

@@ -1,6 +1,6 @@
 /*
- * The Text widget (src/site/widgets/text/index.js) and its lines' styles (.ts--<style>,
- * src/site/text.js). Their sizes are the type scale (--type-<style>-min, -max, -lh: defaults in
+ * The Text widget (src/render/widgets/text/index.js) and its lines' styles (.ts--<style>,
+ * src/render/text.js). Their sizes are the type scale (--type-<style>-min, -max, -lh: defaults in
  * _tokens.scss, site.json "type" in the page's head): between min and max with the window, the
  * same at any widget width; a fit line (Fit width)
  * and Scale to fit: _layout.scss ([data-fit], .wgt--scale). A word longer than the line still
@@ -81,7 +81,7 @@
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
-// lists (a line's "list": src/site/text.js): one <ul> / <ol> of <li>s on the site, flat lines
+// lists (a line's "list": src/render/text.js): one <ul> / <ol> of <li>s on the site, flat lines
 // with [data-list] while edited; the marker drawn here either way, a hanging indent.
 .ts-list {
   list-style: none;

@@ -6,7 +6,7 @@
  *   { "mode": "all",  "from": "people" }                   every item (list widgets only)
  *   { "mode": "url",  "from": "shoots", "where": { "op": "and", "rules": [...] } }
  *                                                          the items matching the page's
- *                                                          address (src/site/query.js)
+ *                                                          address (src/render/query.js)
  *   no "source"                                            None: the widget's own texts
  *
  * Item widgets (a type without `list`) offer Item / From URL / None, list widgets (`list: true`:
@@ -14,7 +14,7 @@
  * every param of its address has a row (a rule) or is Any (no rule).
  *
  * The main widget of a [param] page ("main": "<widget id>" in its index.json) decides which pages
- * exist (src/site/routes.js): one per value its rules give the page's own param, among the
+ * exist (src/render/routes.js): one per value its rules give the page's own param, among the
  * items that match the params above; a page exists when at least one item matches. It must be
  * From URL with a rule for every param (no Any): else no pages are built (mainProblem says why).
  */

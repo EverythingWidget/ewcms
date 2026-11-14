@@ -8,7 +8,7 @@
   import { showValue } from '../lib/show-value.js';
   import EasePicker from './EasePicker.svelte';
   import { fmtS } from './entrance-curtain.js';
-  import { ANIMATIONS } from '../../site/files.js';
+  import { ANIMATIONS } from '../../render/files.js';
 
   // live: reactive store (live.svelte.js); gsap: the preview's, for the ease curves.
   let { live, gsap } = $props();

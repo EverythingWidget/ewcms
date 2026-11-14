@@ -19,7 +19,7 @@
 import { gsap, reducedMotion } from '../lib/env.js';
 import { transitions } from '../anim/engine.js';
 import { lockScroll } from '../scroll.js';
-import { CORE_STRINGS } from '../../site/strings.js';
+import { CORE_STRINGS } from '../../render/strings.js';
 
 const DEFAULTS = { open: { duration: 0.45, ease: 'expo.out' }, close: { duration: 0.3 } };
 const timing = () => {

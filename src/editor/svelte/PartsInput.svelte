@@ -1,5 +1,5 @@
 <!--
-  A text field that can hold an item's properties (parts, src/site/layout/parts.js): typed text
+  A text field that can hold an item's properties (parts, src/render/layout/parts.js): typed text
   with chips in it, one line (multiline: Enter a line break). Typing `{name}` turns it into the
   chip {name}, the same as picking it (Field.svelte's picker, its + Property); `{{` is a literal
   `{`, `}}` a literal `}`. A chip whose name isn't in `names` (the item's properties and the

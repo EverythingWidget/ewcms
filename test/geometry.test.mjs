@@ -4,9 +4,9 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveRows } from '../src/site/layout/flow.js';
-import { halfArea, phoneAreaOf } from '../src/site/layout/grid.js';
-import { linkOf } from '../src/site/layout/links.js';
+import { resolveRows } from '../src/render/layout/flow.js';
+import { halfArea, phoneAreaOf } from '../src/render/layout/grid.js';
+import { linkOf } from '../src/render/layout/links.js';
 import {
   areaOfEl as areaOf,
   halfArea as halfAreaG,
@@ -19,7 +19,7 @@ import {
   rectOf,
   tracksOf,
   widthOf,
-} from '../src/site/layout/geometry.js';
+} from '../src/render/layout/geometry.js';
 
 const it = (id, row, rows, need = null, link = null) => ({ id, row, rows, need, link });
 const style = (vars) => ({ getPropertyValue: (k) => (k in vars ? String(vars[k]) : '') });

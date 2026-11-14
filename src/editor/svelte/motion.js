@@ -1,7 +1,7 @@
 /**
  * The Motion tab's model: which fields each animation type has, and where a value comes from.
  * A widget's values (widgetModel): its `motion` in its page file (the animation and its own
- * timing, src/site/layout/motion.js), then the animation's in the library.
+ * timing, src/render/layout/motion.js), then the animation's in the library.
  * A data-anim element's values live at one of these layers:
  *   element -> its widget's motion.elements["<target>"] in the page file (this widget's only)
  *   target  -> animations.json targets["<target>"]  (every element with that data-anim, "All")
@@ -13,8 +13,8 @@
  * Shown with MotionField.svelte. No DOM here.
  */
 import { compile } from '../lib/pointer.js';
-import { WIDGET_ANIM_TYPES, TIMING_KEYS as TIMING_LIST } from '../../site/layout/motion.js';
-import { isObject } from '../../site/is.js';
+import { WIDGET_ANIM_TYPES, TIMING_KEYS as TIMING_LIST } from '../../render/layout/motion.js';
+import { isObject } from '../../render/is.js';
 
 // Animations that work on any element or widget; special ones (scatter, hero-title,
 // hover-preview) need their markup.

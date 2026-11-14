@@ -29,14 +29,14 @@
     thumbUrl,
   } from './media.svelte.js';
   import { labelFor } from './content-groups.js';
-  import { splitEdit } from '../../site/helpers.js';
+  import { splitEdit } from '../../render/helpers.js';
   import { photoUses } from '../lib/photo-uses.js';
   import { appendPhotos } from '../lib/photo-list.js';
   import { parse } from '../lib/pointer.js';
   import { mediaOp, upload } from '../source.js';
   import { toast } from './toasts.svelte.js';
-  import { SITE, pageIdOf, sourceIdOf } from '../../site/files.js';
-  import { pathOfId } from '../../site/routes.js';
+  import { SITE, pageIdOf, sourceIdOf } from '../../render/files.js';
+  import { pathOfId } from '../../render/routes.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview; actions: setPanel, pickTarget
   let { live, bridge, actions } = $props();

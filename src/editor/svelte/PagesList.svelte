@@ -35,8 +35,8 @@
   import { ui, setMode } from './ui.svelte.js';
   import { toast } from './toasts.svelte.js';
   import { listDrag, rowsOf } from './list-drag.svelte.js';
-  import { HEADER, isTemplate, pageFile, templateFile } from '../../site/files.js';
-  import { parentId, pathOfId } from '../../site/routes.js';
+  import { HEADER, isTemplate, pageFile, templateFile } from '../../render/files.js';
+  import { parentId, pathOfId } from '../../render/routes.js';
   import {
     crumbsOf,
     dropOf,

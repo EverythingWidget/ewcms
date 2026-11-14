@@ -2,7 +2,7 @@
 import { flat, lay } from '../scripts/test-layout.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { checkContent } from '../src/site/validate.js';
+import { checkContent } from '../src/render/validate.js';
 import {
   HEIGHTS,
   MCOLS,
@@ -19,7 +19,7 @@ import {
   sectionAnchor,
   sectionClass,
   sectionVars,
-} from '../src/site/layout/index.js';
+} from '../src/render/layout/index.js';
 import { createStore } from '../src/editor/store.js';
 import {
   placeWidget,

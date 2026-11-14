@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createStore } from '../src/editor/store.js';
 import { addSection, addWidget } from '../src/editor/layout-ops.js';
-import { COLS, baseOf } from '../src/site/layout/index.js';
-import { checkContent } from '../src/site/validate.js';
+import { COLS, baseOf } from '../src/render/layout/index.js';
+import { checkContent } from '../src/render/validate.js';
 
 const F = 'pages/index.json';
 const fresh = () => {

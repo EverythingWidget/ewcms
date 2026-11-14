@@ -1,12 +1,12 @@
-import { isRootFile } from '../src/site/files.js';
+import { isRootFile } from '../src/render/files.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { pagesOp, editableFiles } from '../scripts/editor-server.mjs';
-import { rowsOf } from '../src/site/layout/index.js';
-import { checkContent } from '../src/site/validate.js';
+import { rowsOf } from '../src/render/layout/index.js';
+import { checkContent } from '../src/render/validate.js';
 import { read, paramPage } from '../scripts/test-layout.mjs';
 
 /** content/ in a temp dir: home, 404, about, people (+ [person] and team) and a people source. */

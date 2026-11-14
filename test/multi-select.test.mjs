@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { clampDelta, hits, range, selectedIds, toggle } from '../src/editor/multi-select.js';
 import { createStore } from '../src/editor/store.js';
 import { moveWidgets, removeWidgets } from '../src/editor/layout-ops.js';
-import { placeOf, baseOf } from '../src/site/layout/index.js';
+import { placeOf, baseOf } from '../src/render/layout/index.js';
 
 const secOf = (id) => (id.startsWith('a') ? 's-a' : 's-b');
 

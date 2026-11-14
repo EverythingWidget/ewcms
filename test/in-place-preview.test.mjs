@@ -1,6 +1,6 @@
 // The preview updates in place: only an edit that changes the routes or the menu reloads it
 // (src/editor/lib/needs-reload.js); an item template's or a source's sections are rendered
-// again where they show (src/site/widgets/list/template-uses.js), the template editor's
+// again where they show (src/render/widgets/list/template-uses.js), the template editor's
 // preview too (renderOp, swapSections); Save reloads only when needsReload says so.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { onGrid, template } from '../scripts/grid-helper.mjs';
 import { readContentFiles, renderOp } from '../scripts/editor-server.mjs';
-import * as render from '../src/site/render.js';
+import * as render from '../src/render/render.js';
 import {
   ANIMATIONS,
   FOOTER,
@@ -21,10 +21,10 @@ import {
   schemaFile,
   sourceFile,
   templateFile,
-} from '../src/site/files.js';
+} from '../src/render/files.js';
 import { needsReload, routesFile, routesKey } from '../src/editor/lib/needs-reload.js';
-import { sectionsUsing, usesOf } from '../src/site/widgets/list/template-uses.js';
-import { PREVIEW_PAGE, templatePreviewPath } from '../src/site/widgets/list/template-preview.js';
+import { sectionsUsing, usesOf } from '../src/render/widgets/list/template-uses.js';
+import { PREVIEW_PAGE, templatePreviewPath } from '../src/render/widgets/list/template-preview.js';
 import { swapSections } from '../src/editor/layout-sync.js';
 import { SITE_A } from './fixtures/index.mjs';
 

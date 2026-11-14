@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { omitDefaults, storedDefaults } from '../src/site/defaults.js';
-import { checkContent } from '../src/site/validate.js';
+import { omitDefaults, storedDefaults } from '../src/render/defaults.js';
+import { checkContent } from '../src/render/validate.js';
 
 const F = 'pages/x/index.json';
 

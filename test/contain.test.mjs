@@ -6,11 +6,11 @@ import {
   containedOf,
   containedWidth,
   layoutVars,
-} from '../src/site/layout/contain.js';
-import { checkContent } from '../src/site/validate.js';
+} from '../src/render/layout/contain.js';
+import { checkContent } from '../src/render/validate.js';
 import { loadContent } from '../scripts/content.mjs';
-import { buildRoutes } from '../src/site/routes.js';
-import { renderRoute } from '../src/site/render.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { renderRoute } from '../src/render/render.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 test('contained width: N columns of the full-width cell, at least the side margins from the edges', () => {

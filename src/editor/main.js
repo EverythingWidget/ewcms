@@ -56,9 +56,9 @@ import { createBridge } from './bridge.js';
 import { labelFor } from './svelte/content-groups.js';
 import { plural } from './lib/format.js';
 import { oneAtATime } from './lib/one-at-a-time.js';
-import { curtainOverrides, pathOfId, templateSection } from '../site/routes.js';
-import { BACKDROP } from '../site/backdrop.js';
-import { pageSourceOf } from '../site/layout/source.js';
+import { curtainOverrides, pathOfId, templateSection } from '../render/routes.js';
+import { BACKDROP } from '../render/backdrop.js';
+import { pageSourceOf } from '../render/layout/source.js';
 import {
   ANIMATIONS,
   REDIRECTS,
@@ -68,7 +68,7 @@ import {
   pageIdOf,
   schemaIdOf,
   sourceIdOf,
-} from '../site/files.js';
+} from '../render/files.js';
 import {
   itemMoves,
   moveLinks,
@@ -76,7 +76,7 @@ import {
   pruneRedirects,
   redirectsOf,
   sitePaths,
-} from '../site/redirects.js';
+} from '../render/redirects.js';
 import { compile } from './lib/pointer.js';
 import {
   markRendered,
@@ -101,16 +101,16 @@ import { nudgeStep, selectedIds } from './multi-select.js';
 import { restoreUi, restorePlace } from './svelte/persist.js';
 import { editorHref } from './lib/editor-url.js';
 import editorConfig from 'virtual:editor-config';
-import { contentFromFiles, setContentDir, templateFile, templateIdOf } from '../site/files.js';
+import { contentFromFiles, setContentDir, templateFile, templateIdOf } from '../render/files.js';
 import {
   PREVIEW_PAGE,
   templateOfPath,
   templatePreview,
   templatePreviewPath,
-} from '../site/widgets/list/template-preview.js';
-import { sectionsUsing } from '../site/widgets/list/template-uses.js';
+} from '../render/widgets/list/template-preview.js';
+import { sectionsUsing } from '../render/widgets/list/template-uses.js';
 import { needsReload, routesFile, routesKey, siteKey } from './lib/needs-reload.js';
-import { TYPE_SPECIMEN, isTypeSpecimen } from '../site/layout/type-specimen.js';
+import { TYPE_SPECIMEN, isTypeSpecimen } from '../render/layout/type-specimen.js';
 import { keepUnsaved, restoreUnsaved } from './keep-unsaved.js';
 
 // the site's content folder (site.config.mjs), for the paths the editor shows
@@ -454,7 +454,7 @@ const pagesQueued = oneAtATime(async (body) => {
 });
 
 /**
- * What a page op or Save did to links and redirects (src/site/redirects.js): links updated,
+ * What a page op or Save did to links and redirects (src/render/redirects.js): links updated,
  * redirects added, links left pointing at a deleted page, redirects removed because their
  * path is a page (again).
  */
@@ -529,7 +529,7 @@ function toBrowse() {
 }
 
 /**
- * Site Settings › Type's Preview: the type specimen (/__type/, site/layout/type-specimen.js) in
+ * Site Settings › Type's Preview: the type specimen (/__type/, render/layout/type-specimen.js) in
  * the preview (on), or the page it replaced back (off: Close preview, the Pages tab).
  */
 function showSpecimen(on) {
@@ -598,7 +598,7 @@ function syncSections(
 }
 
 /**
- * The page's backdrop (src/site/backdrop.js) after an edit: rendered by the dev server and put
+ * The page's backdrop (src/render/backdrop.js) after an edit: rendered by the dev server and put
  * in place in the preview (its script mounted again, the scroll kept), only when it changed.
  */
 let backdropShown = null; // { file, path, json } the preview shows
@@ -629,8 +629,8 @@ function syncBackdrop() {
 /**
  * The preview's sections that show edited item templates or sources rendered again in place
  * (after their draft reached the dev server, see pushDraft): those whose Lists use the template
- * (site/widgets/list/template-uses.js; the template editor's preview: its one List), and, for a
- * source, those that list it or show bound values (src/site/layout/bindings.js).
+ * (render/widgets/list/template-uses.js; the template editor's preview: its one List), and, for a
+ * source, those that list it or show bound values (src/render/layout/bindings.js).
  */
 function renderUses({ templates = [], sources = [] }) {
   const content = contentFromFiles(store.current);

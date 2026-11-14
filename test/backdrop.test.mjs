@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { backdropOf, checkBackdrop, renderBackdrop } from '../src/site/backdrop.js';
-import { checkContent } from '../src/site/validate.js';
-import { omitDefaults, storedDefaults } from '../src/site/defaults.js';
+import { backdropOf, checkBackdrop, renderBackdrop } from '../src/render/backdrop.js';
+import { checkContent } from '../src/render/validate.js';
+import { omitDefaults, storedDefaults } from '../src/render/defaults.js';
 
 const FILE = 'pages/index.json';
 const page = (backdrop) => ({ version: 1, kind: 'page', id: 'pg-t001', sections: [], backdrop });
@@ -100,7 +100,7 @@ test('renderBackdrop: a fixed layer with its photos and settings', () => {
 
 test('layers: the ground, the backdrop, the view, the portal, the curtain (in this order)', async () => {
   const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../src/site/shell/layout.js', import.meta.url), 'utf8');
+  const src = readFileSync(new URL('../src/render/shell/layout.js', import.meta.url), 'utf8');
   const at = [
     'class="ground"',
     'id="backdrop"',

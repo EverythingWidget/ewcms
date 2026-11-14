@@ -1,5 +1,5 @@
 /**
- * Photo URLs in the editor, resolved like the site does (mediaUrl in src/site/helpers.js):
+ * Photo URLs in the editor, resolved like the site does (mediaUrl in src/render/helpers.js):
  * a file in media/ from the media manifest, an R2 key from site.json's mediaUrl
  * (the edited value, so a new URL shows at once), a full URL as is.
  * Both lists come with the content (source.js load()): the media/ manifest as { src, thumb }
@@ -7,8 +7,8 @@
  * key; an upload adds its own entry; alt texts of both kinds live there too).
  * The Media window (MediaModal.svelte) lists them all; openMedia() opens it.
  */
-import { mediaUrl } from '../../site/helpers.js';
-import { SITE } from '../../site/files.js';
+import { mediaUrl } from '../../render/helpers.js';
+import { SITE } from '../../render/files.js';
 import { ui } from './ui.svelte.js';
 import { openModal } from './modals.svelte.js';
 

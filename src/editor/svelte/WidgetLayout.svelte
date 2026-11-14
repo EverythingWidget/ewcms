@@ -11,16 +11,16 @@
 -->
 <script>
   import { NEW_ROWS, layerWidget, setWidget } from '../layout-ops.js';
-  import { ASPECTS, linkOf, ratioOf, sizeOf } from '../../site/layout/index.js';
-  import { WIDGET_TYPES } from '../../site/widgets/index.js';
+  import { ASPECTS, linkOf, ratioOf, sizeOf } from '../../render/layout/index.js';
+  import { WIDGET_TYPES } from '../../render/widgets/index.js';
   import { nameOf } from './content-groups.js';
   import { ui } from './ui.svelte.js';
   import Popover from './Popover.svelte';
   import Position from './Position.svelte';
-  import { fillOf, placeOfBox, placementOf, placesOf } from '../../site/layout/place.js';
-  import { scaledToFit } from '../../site/layout/type.js';
+  import { fillOf, placeOfBox, placementOf, placesOf } from '../../render/layout/place.js';
+  import { scaledToFit } from '../../render/layout/type.js';
   import Field from './Field.svelte';
-  import { CAROUSEL, withArrangement } from '../../site/widgets/list/carousel.js';
+  import { CAROUSEL, withArrangement } from '../../render/widgets/list/carousel.js';
   import {
     boxLabels,
     layoutOptions,
@@ -63,7 +63,7 @@
   // the ratios: a Popover under Aspect, open until a click outside or Esc
   let open = $state(false);
   let aspectBtn = $state();
-  // its content box (../../site/layout/place.js): Fit | Fill (types with the switch) and its
+  // its content box (../../render/layout/place.js): Fit | Fill (types with the switch) and its
   // place; under Fill the place dims where it is (a photo's still crops: it stays)
   const placement = $derived(placementOf(widget.type));
   const fill = $derived(fillOf(widget));

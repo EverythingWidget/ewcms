@@ -1,4 +1,4 @@
-import { isRootFile } from '../src/site/files.js';
+import { isRootFile } from '../src/render/files.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -6,21 +6,21 @@ import os from 'node:os';
 import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
 import { save } from '../scripts/editor-server.mjs';
-import * as render from '../src/site/render.js';
-import { buildRoutes } from '../src/site/routes.js';
-import { setEditable } from '../src/site/helpers.js';
-import { checkContent } from '../src/site/validate.js';
-import { WIDGET_TYPES } from '../src/site/widgets/index.js';
-import { newWidget, newSection, renderSections } from '../src/site/layout/index.js';
+import * as render from '../src/render/render.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { setEditable } from '../src/render/helpers.js';
+import { checkContent } from '../src/render/validate.js';
+import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import {
   bindTypeOf,
   bindingProblems,
   resolve,
   resolveWidget,
-} from '../src/site/layout/bindings.js';
-import { isParts, isWhole, parseTyped, typedText } from '../src/site/layout/parts.js';
+} from '../src/render/layout/bindings.js';
+import { isParts, isWhole, parseTyped, typedText } from '../src/render/layout/parts.js';
 import { createStore } from '../src/editor/store.js';
-import { widgetItems } from '../src/site/layout/source.js';
+import { widgetItems } from '../src/render/layout/source.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 const content = loadContent(SITE_A);
@@ -181,7 +181,7 @@ test('[param] templates: the album title, facts and summary come from each item'
 
 test('a normal page: a widget with an item; without one its bound fields are empty', () => {
   const ids = new Set();
-  // a Text widget's field runs (src/site/text.js): the item's fields in its lines
+  // a Text widget's field runs (src/render/text.js): the item's fields in its lines
   const heading = {
     ...newWidget('text', ids),
     body: [
@@ -222,7 +222,7 @@ test('a normal page: a widget with an item; without one its bound fields are emp
 
 test('bindingProblems: schema-aware errors and warnings', () => {
   const ids = new Set();
-  // a Text widget: its title line one field (src/site/text.js), or a text
+  // a Text widget: its title line one field (src/render/text.js), or a text
   const widget = ({ title, ...patch }) => ({
     ...newWidget('text', ids),
     body: [

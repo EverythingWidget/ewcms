@@ -1,6 +1,6 @@
-// The type scale (src/site/layout/type.js): site.json "type" over the theme's sizes, as CSS
+// The type scale (src/render/layout/type.js): site.json "type" over the theme's sizes, as CSS
 // variables on the page's :root; Site Settings › Type and its Preview, the type specimen
-// (src/site/layout/type-specimen.js, /__type/); the preview follows Type without a reload.
+// (src/render/layout/type-specimen.js, /__type/); the preview follows Type without a reload.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -12,20 +12,20 @@ import {
   typeOf,
   typeVarList,
   typeVars,
-} from '../src/site/layout/type.js';
+} from '../src/render/layout/type.js';
 import {
   SPECIMEN_PAGE,
   TYPE_SPECIMEN,
   isTypeSpecimen,
   specimenPage,
   typeSpecimen,
-} from '../src/site/layout/type-specimen.js';
-import { LINE_STYLES } from '../src/site/text.js';
-import { checkContent } from '../src/site/validate.js';
+} from '../src/render/layout/type-specimen.js';
+import { LINE_STYLES } from '../src/render/text.js';
+import { checkContent } from '../src/render/validate.js';
 import { needsReload, siteKey } from '../src/editor/lib/needs-reload.js';
-import { HEADER, SITE, pageFile } from '../src/site/files.js';
+import { HEADER, SITE, pageFile } from '../src/render/files.js';
 import { renderOp } from '../scripts/editor-server.mjs';
-import * as render from '../src/site/render.js';
+import * as render from '../src/render/render.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');

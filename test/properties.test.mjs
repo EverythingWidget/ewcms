@@ -4,14 +4,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { setEditable } from '../src/site/helpers.js';
-import { checkContent } from '../src/site/validate.js';
-import { checkSchema } from '../src/site/schemas.js';
-import { checkBody, typedProperty } from '../src/site/text.js';
-import { widgetProblems } from '../src/site/widgets/index.js';
-import { newWidget, newSection, renderSections } from '../src/site/layout/index.js';
-import { resolve } from '../src/site/layout/bindings.js';
-import { isEmpty, partEmpty, propertyValue } from '../src/site/layout/parts.js';
+import { setEditable } from '../src/render/helpers.js';
+import { checkContent } from '../src/render/validate.js';
+import { checkSchema } from '../src/render/schemas.js';
+import { checkBody, typedProperty } from '../src/render/text.js';
+import { widgetProblems } from '../src/render/widgets/index.js';
+import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
+import { resolve } from '../src/render/layout/bindings.js';
+import { isEmpty, partEmpty, propertyValue } from '../src/render/layout/parts.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 const content = loadContent(SITE_A);

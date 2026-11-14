@@ -1,6 +1,6 @@
 /**
  * A site's own widgets: the widget modules site.config.mjs lists in `widgets` (paths from the
- * site's root, a folder or its index.js), after the built-ins (src/site/widgets/index.js has
+ * site's root, a folder or its index.js), after the built-ins (src/render/widgets/index.js has
  * the format). Node only. A widget module's folder:
  *
  *   index.js     default export: its definition (type, label, icon, settings, defaults, render, ...)
@@ -16,7 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { loadSiteConfig } from './site-config.mjs';
-import { registerWidgets } from '../src/site/widgets/index.js';
+import { registerWidgets } from '../src/render/widgets/index.js';
 
 /** The site's widget modules: [{ spec, dir, index, style, client }] (style, client: or null). */
 export function widgetModulesOf(root) {

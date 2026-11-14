@@ -12,7 +12,7 @@
  * stack, the rows a section grows to. A section where only those changed (one widget dragged
  * straight down) counts 1.
  */
-import { isObject } from '../../site/is.js';
+import { isObject } from '../../render/is.js';
 import { diff, equal } from './diff.js';
 
 const byId = (list) =>

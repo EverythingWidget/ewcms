@@ -1,5 +1,5 @@
 <!--
-  One widget's motion (its `motion` in the page file, src/site/layout/motion.js): Replay and a
+  One widget's motion (its `motion` in the page file, src/render/layout/motion.js): Replay and a
   scroll slider for it in the preview, its animation (none, or one of the library's that works
   on any widget) and its own timing, each field with a Custom switch (MotionGroups, scope
   'widget': off shows the animation's value, dimmed). What the animation does is read-only here:

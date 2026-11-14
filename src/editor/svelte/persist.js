@@ -31,7 +31,7 @@
 import { tick } from 'svelte';
 import { editorHref } from '../lib/editor-url.js';
 import { ui, previewClicks, pickElement, selectText } from './ui.svelte.js';
-import { sourceIdOf } from '../../site/files.js';
+import { sourceIdOf } from '../../render/files.js';
 import { isOpen, pushed } from './modals.svelte.js';
 
 const KEY = 'editor:ui';

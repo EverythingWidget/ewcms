@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { WIDGET_TYPES } from '../src/site/widgets/index.js';
+import { WIDGET_TYPES } from '../src/render/widgets/index.js';
 
 test('every widget type has its Add widget line and a sketch of a type', () => {
   for (const t of Object.values(WIDGET_TYPES)) {

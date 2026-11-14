@@ -7,7 +7,7 @@
  *   checkContent(file, data)   a list of problems ([] when fine), e.g. "footer must be an object"
  *
  * A source's items against its schema (required properties, types, photos) are checked by
- * checkItems (src/site/schemas.js): that needs the schema and the photos, not one file.
+ * checkItems (src/render/schemas.js): that needs the schema and the photos, not one file.
  */
 import { detailsProblems, detailsWidgetProblems } from './widgets/list/details.js';
 import { CAROUSEL_KEYS, carouselProblems } from './widgets/list/carousel.js';
@@ -135,7 +135,7 @@ function checkSite(d) {
   ];
 }
 
-/** site.json "forms": where contact forms send (src/site/widgets/form/index.js). */
+/** site.json "forms": where contact forms send (src/render/widgets/form/index.js). */
 function checkForms(f) {
   if (!isObject(f)) return [];
   const out = optional(f, { target: 'string', endpoint: 'string', turnstileSiteKey: 'string' });
@@ -175,7 +175,7 @@ function checkHeader(d) {
 }
 
 /**
- * redirects.json (src/site/redirects.js): a list of { from, to, status? }. Whether `to`
+ * redirects.json (src/render/redirects.js): a list of { from, to, status? }. Whether `to`
  * is a page needs the routes: the build warns about that.
  */
 function checkRedirects(d) {
@@ -198,7 +198,7 @@ function checkRedirects(d) {
   return out;
 }
 
-/** A page's search and share meta (src/site/seo.js). */
+/** A page's search and share meta (src/render/seo.js). */
 function checkMeta(meta) {
   if (!isObject(meta)) return [];
   return optional(meta, {
@@ -227,7 +227,7 @@ function checkAnimations(d) {
 }
 
 /**
- * A document (src/site/files.js DOC_KINDS): "kind" as its file says, its sections, and what its
+ * A document (src/render/files.js DOC_KINDS): "kind" as its file says, its sections, and what its
  * kind has: a page its id, meta, backdrop, transition and template; a part only sections.
  */
 function checkDoc(file, d) {
@@ -619,7 +619,7 @@ function checkPhotos(d) {
 
 /**
  * Problems with one content file's data, [] when it's fine. file: "site.json", …
- * Every file is an object with "version": 1 (VERSION, src/site/files.js) first; a source's
+ * Every file is an object with "version": 1 (VERSION, src/render/files.js) first; a source's
  * list is its "items", redirects.json's "redirects", photos.json's map "photos".
  */
 export function checkContent(file, data) {
@@ -647,7 +647,7 @@ export function checkContent(file, data) {
   if (file === HEADER) return checkHeader(d);
   if (file === STRINGS)
     return [
-      // the groups of UI text (src/site/strings.js CORE_STRINGS): objects of strings
+      // the groups of UI text (src/render/strings.js CORE_STRINGS): objects of strings
       ...optional(d, Object.fromEntries(Object.keys(CORE_STRINGS).map((g) => [g, 'object']))),
       ...(d.footer !== undefined
         ? ['"footer" is gone: the footer is footer.json, sections like a page']
@@ -660,7 +660,7 @@ export function checkContent(file, data) {
   return [];
 }
 
-/** Presets a template can come from (src/site/widgets/list/presets.js PRESETS ids). */
+/** Presets a template can come from (src/render/widgets/list/presets.js PRESETS ids). */
 const PRESET_FROM = ['preset:card', 'preset:plain', 'preset:panel', 'preset:row', 'preset:photo'];
 const ROLE = /^[a-z][a-z0-9-]*$/;
 

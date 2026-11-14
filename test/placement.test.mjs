@@ -1,9 +1,9 @@
-// Content-box placement (src/site/layout/place.js): a widget's content box Fit | Fill and its
+// Content-box placement (src/render/layout/place.js): a widget's content box Fit | Fill and its
 // place in the widget; Text: one column, no Fit | Fill; Photo: object-fit / object-position.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { widgetClass, widgetVars } from '../src/site/layout/index.js';
+import { widgetClass, widgetVars } from '../src/render/layout/index.js';
 import {
   alignOf,
   checkPlacement,
@@ -11,7 +11,7 @@ import {
   placeOfBox,
   placementOf,
   placesOf,
-} from '../src/site/layout/place.js';
+} from '../src/render/layout/place.js';
 
 const w = (type, extra = {}) => ({
   id: 'w-1',

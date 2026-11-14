@@ -6,9 +6,9 @@
  *                               it (pages/index.json is home, pages/people/index.json is
  *                               /people/); a folder named [param] ("[person]") is a template:
  *                               a page per item of a source, one URL segment per item, and
- *                               can hold one more [param] folder (see src/site/routes.js)
+ *                               can hold one more [param] folder (see src/render/routes.js)
  *   content/en/sources/<id>.json   lists that grids pull from; the top level is a JSON array
- *   content/en/sources/<id>.schema.json  the properties of that list's items (src/site/schemas.js)
+ *   content/en/sources/<id>.schema.json  the properties of that list's items (src/render/schemas.js)
  *   content/<id>.json              shared by every language, next to the language folders (like
  *                               templates/): site.json, header.json (the menus), footer.json
  *                               (the footer, a document like a page's: kind "part"),

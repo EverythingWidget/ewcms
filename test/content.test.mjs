@@ -1,4 +1,4 @@
-import { isRootFile } from '../src/site/files.js';
+import { isRootFile } from '../src/render/files.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { loadContent, writeFileAtomic } from '../scripts/content.mjs';
 import { readContentFiles, save } from '../scripts/editor-server.mjs';
-import { checkContent, parseContent } from '../src/site/validate.js';
+import { checkContent, parseContent } from '../src/render/validate.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 const site = { version: 1, name: 'Site', url: 'https://example.com' };
@@ -204,8 +204,8 @@ test('writeFileAtomic: replaces the file in one step; a failed write keeps the o
 });
 
 test('site.json with only name and url builds every page', async () => {
-  const { buildRoutes } = await import('../src/site/routes.js');
-  const { renderRoute } = await import('../src/site/render.js');
+  const { buildRoutes } = await import('../src/render/routes.js');
+  const { renderRoute } = await import('../src/render/render.js');
   const files = {
     'pages/index.json': { version: 1, kind: 'page', id: 'pg-t048' },
     'pages/about/index.json': { version: 1, kind: 'page', id: 'pg-t049' },
@@ -269,8 +269,8 @@ test('formatJSON (what Save writes) is Prettier-clean for every content file', a
 });
 
 test('editor markers: only when rendering for the editor (dev), never in the build', async () => {
-  const { buildRoutes } = await import('../src/site/routes.js');
-  const { renderRoute } = await import('../src/site/render.js');
+  const { buildRoutes } = await import('../src/render/routes.js');
+  const { renderRoute } = await import('../src/render/render.js');
   const content = loadContent(SITE_A);
   const home = buildRoutes(content).routes.find((r) => r.path === '/');
   const MARKERS = /data-edit|data-sec|data-widget|data-curtain-edit/;
@@ -310,7 +310,7 @@ test('photos.json: alt per photo, sizes for R2 photos', () => {
 });
 
 test('alt text comes from photos.json; decorative photos and missing alts are empty', async () => {
-  const { img, altOf } = await import('../src/site/helpers.js');
+  const { img, altOf } = await import('../src/render/helpers.js');
   const ctx = { photos: { 'a.jpg': { alt: 'A "cat"' } }, media: {}, site: {} };
   assert.match(img(ctx, 'a.jpg'), /alt="A &quot;cat&quot;"/);
   assert.match(img(ctx, 'a.jpg', { decorative: true }), /alt=""/);

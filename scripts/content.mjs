@@ -10,9 +10,9 @@ import {
   isContentFile,
   isRootFile,
   templateIdOf,
-} from '../src/site/files.js';
-import { assertContent, parseContent } from '../src/site/validate.js';
-import { setContentDir } from '../src/site/files.js';
+} from '../src/render/files.js';
+import { assertContent, parseContent } from '../src/render/validate.js';
+import { setContentDir } from '../src/render/files.js';
 import { loadSiteConfig } from './site-config.mjs';
 
 const read = (file, fallback) =>

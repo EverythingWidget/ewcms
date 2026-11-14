@@ -1,7 +1,7 @@
 // On phones, widgets without a phone layout stack full width in reading order.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { phoneStack, widgetVars, widgetLinks } from '../src/site/layout/index.js';
+import { phoneStack, widgetVars, widgetLinks } from '../src/render/layout/index.js';
 
 const w = (id, base, extra = {}) => ({ id, type: 'text', layout: { base }, ...extra });
 

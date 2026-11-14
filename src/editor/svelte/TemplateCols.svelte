@@ -7,12 +7,12 @@
 <script>
   import Field from './Field.svelte';
   import { ui } from './ui.svelte.js';
-  import { templateFile } from '../../site/files.js';
+  import { templateFile } from '../../render/files.js';
   import {
     previewColumns,
     previewWithColumns,
     templateOfPath,
-  } from '../../site/widgets/list/template-preview.js';
+  } from '../../render/widgets/list/template-preview.js';
 
   let { live } = $props();
 

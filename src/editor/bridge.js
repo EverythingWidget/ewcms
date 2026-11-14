@@ -12,13 +12,13 @@
  *  - lets you hover/click widgets ([data-widget]) and [data-anim] elements to select them (animate
  *    clicks, 'animate': the innermost one under the pointer); visitor clicks ('visitor'):
  *    links work, nothing is picked,
- *  - a bound value ([data-bound], src/site/layout/bindings.js) is not typed in the preview:
+ *  - a bound value ([data-bound], src/render/layout/bindings.js) is not typed in the preview:
  *    its field in the panel shows the binding.
  */
 import { withDraft } from './source.js';
 import { EDIT_PARAM } from './lib/editor-url.js';
-import { splitEdit, words } from '../site/helpers.js';
-import { ANIMATIONS, templateIdOf } from '../site/files.js';
+import { splitEdit, words } from '../render/helpers.js';
+import { ANIMATIONS, templateIdOf } from '../render/files.js';
 import { photoSrcset, photoUrl } from './svelte/media.svelte.js';
 import { T } from './ui-tokens.js';
 import {
@@ -42,8 +42,8 @@ import {
   unlist,
   autoList,
   typedProperty,
-} from '../site/text.js';
-import { isSafeHref } from '../site/hrefs.js';
+} from '../render/text.js';
+import { isSafeHref } from '../render/hrefs.js';
 
 const INJECTED_CSS = `
 html { scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / .2) transparent; }
@@ -480,7 +480,7 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
     doc?.querySelectorAll('[data-edit][contenteditable]').forEach(endEdit);
   };
 
-  // ---- the Text widget's editor (rich.js, ../site/text.js)
+  // ---- the Text widget's editor (rich.js, ../render/text.js)
 
   /** A paste's lines: its HTML's (bold, italic, safe links only), else its plain text's. */
   function pastedLines(data, w) {

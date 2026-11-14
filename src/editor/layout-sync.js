@@ -1,12 +1,12 @@
 /**
  * The page's sections in the preview, kept in step with its file while editing, without a
  * reload. The page's <main> names its file (data-page-file); every section element its id
- * (data-sec) and every widget element its id (data-widget): src/site/layout/index.js.
+ * (data-sec) and every widget element its id (data-widget): src/render/layout/index.js.
  *
  * On each change of the file, syncLayout applies what the preview can show by itself: the
  * sections' name (their id), height, width, rows and on/off (their classes and CSS variables) and the
  * widgets' places, sizes, links, text scale, phone areas, layers, on/off and motion (data-motion,
- * src/site/layout/motion.js: those widgets' animations play again). What needs the site's templates (a section added or
+ * src/render/layout/motion.js: those widgets' animations play again). What needs the site's templates (a section added or
  * copied, a widget's content or config changed after a structure edit, a section whose index
  * moved, so its editor markers point elsewhere) it reports: the editor fetches those
  * sections' HTML from the dev server (POST /__editor/render) and swaps them in (swapSections).
@@ -18,9 +18,9 @@ import {
   sectionAnchor,
   sectionClass,
   sectionVars,
-} from '../site/layout/index.js';
-import { kindOf } from '../site/widgets/index.js';
-import { templateFile } from '../site/files.js';
+} from '../render/layout/index.js';
+import { kindOf } from '../render/widgets/index.js';
+import { templateFile } from '../render/files.js';
 
 /**
  * A widget's motion attributes as the site renders them:

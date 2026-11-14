@@ -2,8 +2,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { checkContent } from '../src/site/validate.js';
-import { DEFAULT_TIMING, defaultsProblems } from '../src/site/layout/motion.js';
+import { checkContent } from '../src/render/validate.js';
+import { DEFAULT_TIMING, defaultsProblems } from '../src/render/layout/motion.js';
 
 const read = (p) => readFileSync(new URL(`../src/${p}`, import.meta.url), 'utf8');
 const anims = JSON.parse(

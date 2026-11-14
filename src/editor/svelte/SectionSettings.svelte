@@ -18,7 +18,7 @@
     phoneHeightOf,
     nameProblems,
     rowsOf,
-  } from '../../site/layout/index.js';
+  } from '../../render/layout/index.js';
 
   let { live, bridge = null, file, at, sections } = $props();
   const s = $derived(sections[at] || {});

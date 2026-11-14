@@ -16,7 +16,7 @@
   import Collapsible from './Collapsible.svelte';
   import { ui, pickElement, selectAnim, hoverElement } from './ui.svelte.js';
   import { motionSections } from './page-motion.js';
-  import { ANIMATIONS } from '../../site/files.js';
+  import { ANIMATIONS } from '../../render/files.js';
   import { animationOf, elementOf } from './motion.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js); actions: main.js;

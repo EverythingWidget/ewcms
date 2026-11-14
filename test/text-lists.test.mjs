@@ -13,9 +13,9 @@ import {
   tidyBody,
   toggleList,
   unlist,
-} from '../src/site/text.js';
+} from '../src/render/text.js';
 import { readBody } from '../src/editor/rich.js';
-import { isSafeHref } from '../src/site/hrefs.js';
+import { isSafeHref } from '../src/render/hrefs.js';
 
 const P = (t, list) => ({ style: 'paragraph', ...(list ? { list } : {}), text: t ? [{ t }] : [] });
 

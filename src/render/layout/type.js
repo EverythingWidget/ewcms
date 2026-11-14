@@ -3,7 +3,7 @@
  * src/client/styles/_text.scss). Two things change that, both worked out live in the page
  * (src/client/modules/fit.js):
  *
- *   a line's "fit": true    Fit width (src/site/text.js): that line alone fills the widget's
+ *   a line's "fit": true    Fit width (src/render/text.js): that line alone fills the widget's
  *                           WIDTH, on one line (its own --tkf); the other lines keep theirs
  *   the widget's "scale"    Scale to fit (the popup's switch, off by default): the whole text
  *                           at its styles' normal sizes, scaled down as one,

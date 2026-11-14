@@ -1,4 +1,4 @@
-// The page's backdrop (src/site/backdrop.js, modules/backdrop.js): photos in its own fixed
+// The page's backdrop (src/render/backdrop.js, modules/backdrop.js): photos in its own fixed
 // layer #backdrop, over the ground (glow and grain) and under the view; the sections have no
 // background of their own. A screen tall (the large viewport: phones' address bar doesn't
 // resize it). Layers (body): .ground 0 < #backdrop 1 < .view 2 < #portal 3 < .curtain 80.
@@ -27,7 +27,7 @@
   inset: 0;
   z-index: 1;
   background: #000;
-  opacity: 0.45; // the page's shade (style, src/site/backdrop.js)
+  opacity: 0.45; // the page's shade (style, src/render/backdrop.js)
 }
 
 .backdrop__photo {

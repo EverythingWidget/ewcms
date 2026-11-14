@@ -1,11 +1,11 @@
 /**
  * Page layout edits in the store: sections and their widgets added, duplicated, moved,
- * removed and placed (src/site/layout/index.js). Each is one undo step. Adding, duplicating,
+ * removed and placed (src/render/layout/index.js). Each is one undo step. Adding, duplicating,
  * moving and removing are `structure` changes: the preview renders the sections they touch
  * again (src/editor/layout-sync.js); placing a widget or changing a section's settings it
  * follows by itself, through the elements' classes and CSS variables.
  */
-import { DEFAULTS } from '../site/defaults.js';
+import { DEFAULTS } from '../render/defaults.js';
 import {
   MAX_MIN_ROWS,
   COLS,
@@ -30,12 +30,12 @@ import {
   setBase,
   setPhone,
   storesRows,
-} from '../site/layout/index.js';
-import { resolveRows } from '../site/layout/flow.js';
-import { idsOf, newId } from '../site/layout/ids.js';
-import { fitSource } from '../site/layout/source.js';
-import { WIDGET_TYPES } from '../site/widgets/index.js';
-import { contentFromFiles, isTemplate, pageIdOf, paramsOf, templateIdOf } from '../site/files.js';
+} from '../render/layout/index.js';
+import { resolveRows } from '../render/layout/flow.js';
+import { idsOf, newId } from '../render/layout/ids.js';
+import { fitSource } from '../render/layout/source.js';
+import { WIDGET_TYPES } from '../render/widgets/index.js';
+import { contentFromFiles, isTemplate, pageIdOf, paramsOf, templateIdOf } from '../render/files.js';
 
 const listOf = (store, file) => {
   const list = store.get(file, '/sections');
@@ -44,7 +44,7 @@ const listOf = (store, file) => {
 const write = (store, file, list, structure = true) =>
   store.set(file, '/sections', list, { source: 'panel', structure });
 /**
- * A section's stored rows made to agree with its links (src/site/layout/links.js): a linked
+ * A section's stored rows made to agree with its links (src/render/layout/links.js): a linked
  * widget's stored row is its leader's stored bottom + 1 + its gap (desktop; on the phone grid
  * for widgets with a phone area and link of their own), so the page's first render (before
  * rows.js measures, or without JS) already has every follower below its leader.
@@ -54,7 +54,7 @@ const write = (store, file, list, structure = true) =>
  * (grid.js phoneStack) gets that place as its own (its area and link), so the one edited
  * leaves the stack without the others moving. An item template's (`file` a template's) has no
  * stack: a widget without a phone area shows its desktop area halved (and its link, the gap
- * halved: src/site/widgets/list/item-grid.js), and gets that as its own.
+ * halved: src/render/widgets/list/item-grid.js), and gets that as its own.
  */
 function ownPhoneLayout(section, file) {
   if (templateIdOf(file)) {
@@ -198,7 +198,7 @@ export function removeSection(store, file, at) {
  */
 export function setSection(store, file, at, patch, key) {
   const next = { ...listOf(store, file)[at], ...patch };
-  // (a default is left out: src/site/defaults.js)
+  // (a default is left out: src/render/defaults.js)
   for (const k of Object.keys(patch))
     if (patch[k] === undefined || patch[k] === DEFAULTS.section[k]) delete next[k];
   return writeSection(store, file, at, tidyPhone(next), key);
@@ -400,7 +400,7 @@ function writeDropMain(store, file, list, gone) {
 }
 
 /**
- * The rows the page shows (src/site/layout/flow.js) stored: flow { id: area } where the
+ * The rows the page shows (src/render/layout/flow.js) stored: flow { id: area } where the
  * section's other widgets are now (their row and rows; `phone`: their phone areas). Widgets that grew or shrank (content, an aspect at this width) and the
  * widgets they pushed are stored as they are seen.
  */

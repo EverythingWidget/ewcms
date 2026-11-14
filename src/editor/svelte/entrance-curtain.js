@@ -3,7 +3,7 @@
  * EntranceCurtainTimeline.svelte): the global curtain in Site Settings, a page's own one in Motion.
  * No DOM here. Times come only from normalizeCurtain + curtainPlan (src/client/anim/curtain.js).
  */
-import { ANIMATIONS } from '../../site/files.js';
+import { ANIMATIONS } from '../../render/files.js';
 import { normalizeCurtain, curtainPlan } from '../../client/anim/curtain.js';
 
 /** The global curtain in animations.json. */
@@ -92,7 +92,7 @@ export function clampTo(field, v, plan) {
 
 /**
  * A page's curtain (Nav > a page > Motion > Transition), as one undo step. `page` is where the page's
- * "transition" is stored ({ file, ptr }, see src/site/routes.js): Global is no "transition",
+ * "transition" is stored ({ file, ptr }, see src/render/routes.js): Global is no "transition",
  * Off { curtain: 'off' }.
  */
 export function setCurtainMode(store, page, mode) {

@@ -1,5 +1,5 @@
 /**
- * Links between widgets (src/site/layout/flow.js resolves them): widgets are free by default,
+ * Links between widgets (src/render/layout/flow.js resolves them): widgets are free by default,
  * each where it was placed on the grid, overlapping when they meet. A widget can follow
  * another: its top at the other one's bottom plus a gap in cells (negative: they overlap),
  *

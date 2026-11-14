@@ -6,7 +6,7 @@
  *   section  enabled: true, width: "contained", height: "fit"
  *   widget    size: "auto", config.enabled: true
  *   hero     photos[].layer: "back"
- *   backdrop the page's (src/site/backdrop.js BACKDROP_DEFAULTS); and the other transition's
+ *   backdrop the page's (src/render/backdrop.js BACKDROP_DEFAULTS); and the other transition's
  *            options, and a backdrop without photos, are left out too
  *
  * omitDefaults also tidies (not a validation error): no empty "config" or "meta", and a widget's

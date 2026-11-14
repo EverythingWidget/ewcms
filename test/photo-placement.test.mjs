@@ -2,9 +2,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { photo } from '../src/site/widgets/photo/index.js';
-import { widgetVars } from '../src/site/layout/index.js';
-import { PLACES } from '../src/site/layout/place.js';
+import { photo } from '../src/render/widgets/photo/index.js';
+import { widgetVars } from '../src/render/layout/index.js';
+import { PLACES } from '../src/render/layout/place.js';
 
 const vars = (w) =>
   widgetVars({ id: 'w-1', type: 'photo', layout: { base: { col: 1, span: 10, row: 1 } }, ...w });

@@ -20,11 +20,11 @@
   import ListLead from './ListLead.svelte';
   import Tabs from './Tabs.svelte';
   import { schemaFor } from './source-items.js';
-  import { isTemplate, pageIdOf, sourceFile, templateIdOf } from '../../site/files.js';
-  import { resolve } from '../../site/layout/bindings.js';
-  import { BIND_TYPES } from '../../site/property-types.js';
-  import { widgetItems, sourceOf } from '../../site/layout/source.js';
-  import { WIDGET_TYPES } from '../../site/widgets/index.js';
+  import { isTemplate, pageIdOf, sourceFile, templateIdOf } from '../../render/files.js';
+  import { resolve } from '../../render/layout/bindings.js';
+  import { BIND_TYPES } from '../../render/property-types.js';
+  import { widgetItems, sourceOf } from '../../render/layout/source.js';
+  import { WIDGET_TYPES } from '../../render/widgets/index.js';
   import { ui } from './ui.svelte.js';
   import ViewTop from './ViewTop.svelte';
   import WidgetLayout from './WidgetLayout.svelte';
@@ -47,7 +47,7 @@
   // an item template's widget: its Content fields, not a page widget's source + registry
   const itemTpl = $derived(!!templateIdOf(g.file));
 
-  // ---- what it shows (src/site/layout/source.js): on a [param] page with the page the
+  // ---- what it shows (src/render/layout/source.js): on a [param] page with the page the
   // preview shows (its params), the item its bound settings show the first
   const pageId = $derived(pageIdOf(g.file) || '');
   // (read on its own, a copy: what it shows follows its source alone)

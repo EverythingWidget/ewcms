@@ -72,7 +72,7 @@ export function renderRoute(route, content, { editable = false, unbuilt = false 
 /**
  * Warns about a section anchor (its name's id) that another element on the rendered page
  * also uses (a project row's slug, a form): its link would scroll to the first of them.
- * Two sections named alike are a validation error (src/site/validate.js).
+ * Two sections named alike are a validation error (src/render/validate.js).
  */
 function anchorClashes(route, sections, html) {
   for (const s of Array.isArray(sections) ? sections : []) {
@@ -97,7 +97,7 @@ function contextOf(route, content, unbuilt = false) {
 /**
  * The editor's HTML of the sections `ids` of a route's page, by id (the dev server's
  * /__editor/render, so the preview swaps sections without loading the page again). The id
- * BACKDROP ("__backdrop") is the page's backdrop ('' without one, src/site/backdrop.js).
+ * BACKDROP ("__backdrop") is the page's backdrop ('' without one, src/render/backdrop.js).
  * `doc`: the page's data when it is no file (the template editor's preview).
  */
 export { BACKDROP };

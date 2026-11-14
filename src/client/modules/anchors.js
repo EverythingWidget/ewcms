@@ -1,5 +1,5 @@
 /**
- * Section anchors: a named section has its name's slug as its id (src/site/layout/index.js),
+ * Section anchors: a named section has its name's slug as its id (src/render/layout/index.js),
  * so /page/#our-people shows it, its top just below the fixed header (its scroll-margin-top,
  * _layout.scss).
  *

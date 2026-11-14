@@ -5,8 +5,8 @@
  * everything below reads `version` first, so a component that uses it re-renders after
  * each edit, undo, save, ... without knowing about store events.
  */
-import { contentFromFiles } from '../../site/files.js';
-import { getRoutes } from '../../site/routes.js';
+import { contentFromFiles } from '../../render/files.js';
+import { getRoutes } from '../../render/routes.js';
 
 const copy = (value) => (value === undefined ? undefined : JSON.parse(JSON.stringify(value)));
 

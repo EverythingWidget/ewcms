@@ -1,7 +1,7 @@
 /**
  * Which items of a source a widget shows, from the page's address (a widget's From URL source,
- * src/site/layout/source.js; the main widget of a [param] page decides which pages exist,
- * src/site/routes.js). The one query the build, the preview and the editor share.
+ * src/render/layout/source.js; the main widget of a [param] page decides which pages exist,
+ * src/render/routes.js). The one query the build, the preview and the editor share.
  *
  *   where   { "op": "and", "rules": [{ "param": "person", "property": "person" }, ...] }
  *           a rule: the item's `property` equals the page's value of `param` (its URL part);

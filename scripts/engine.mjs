@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 /** The engine's folder: the real one (a workspace link or node_modules/ewcms resolved). */
 export const ENGINE = fs.realpathSync(fileURLToPath(new URL('..', import.meta.url)));
 
-/** A path in the engine, e.g. enginePath('src/site/render.js'). */
+/** A path in the engine, e.g. enginePath('src/render/render.js'). */
 export const enginePath = (...parts) => path.join(ENGINE, ...parts);
 
 /** A path with "/" separators (Vite's ids, globs, URLs). */

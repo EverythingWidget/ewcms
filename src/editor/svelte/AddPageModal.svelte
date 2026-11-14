@@ -23,9 +23,9 @@
     paramFolder,
     paramsOf,
     sourceIds,
-  } from '../../site/files.js';
-  import { parentId, pathOfId } from '../../site/routes.js';
-  import { slugify } from '../../site/helpers.js';
+  } from '../../render/files.js';
+  import { parentId, pathOfId } from '../../render/routes.js';
+  import { slugify } from '../../render/helpers.js';
   import { childId, linkPage, shownPath } from '../lib/page-tree.js';
 
   // live: reactive store (live.svelte.js); actions: pagesOp (main.js)

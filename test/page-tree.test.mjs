@@ -18,11 +18,11 @@ import {
   tagOf,
   unlinkPage,
 } from '../src/editor/lib/page-tree.js';
-import { buildRoutes } from '../src/site/routes.js';
-import { hrefOf } from '../src/site/hrefs.js';
-import { contentFromFiles } from '../src/site/files.js';
-import { checkContent } from '../src/site/validate.js';
-import { ownPageRedirects } from '../src/site/redirects.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { hrefOf } from '../src/render/hrefs.js';
+import { contentFromFiles } from '../src/render/files.js';
+import { checkContent } from '../src/render/validate.js';
+import { ownPageRedirects } from '../src/render/redirects.js';
 
 const page = (id, title, more = {}) => ({
   version: 1,

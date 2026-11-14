@@ -1,17 +1,17 @@
 /**
  * What the Pages tab shows: the editable texts of the page in the preview (or of the
- * footer's widgets), grouped by widget (a page's sections hold widgets, src/site/layout/). Plain
+ * footer's widgets), grouped by widget (a page's sections hold widgets, src/render/layout/). Plain
  * functions over the store and the preview; ContentPanel.svelte renders the result.
  */
 import { parse } from '../lib/pointer.js';
-import { sourceIdOf, sourceIds } from '../../site/files.js';
-import { pointer } from '../../site/helpers.js';
-import { labelOf } from '../../site/schemas.js';
-import { WIDGET_TYPES } from '../../site/widgets/index.js';
-import { bindTypeOf } from '../../site/layout/bindings.js';
+import { sourceIdOf, sourceIds } from '../../render/files.js';
+import { pointer } from '../../render/helpers.js';
+import { labelOf } from '../../render/schemas.js';
+import { WIDGET_TYPES } from '../../render/widgets/index.js';
+import { bindTypeOf } from '../../render/layout/bindings.js';
 import { targetFile } from '../layout-sync.js';
 import { itemName, schemaFor } from './source-items.js';
-import { TEXT_TYPES } from '../../site/property-types.js';
+import { TEXT_TYPES } from '../../render/property-types.js';
 
 /** site.json values edited in the Site Settings tab: [key, label, field type]. */
 export const SITE_SETTINGS = [
@@ -22,7 +22,7 @@ export const SITE_SETTINGS = [
   ['country', 'Country code (for search engines, e.g. NL)', 'text'],
 ];
 
-/** site.json search and share defaults (src/site/seo.js), Site Settings > SEO. robots is a Select. */
+/** site.json search and share defaults (src/render/seo.js), Site Settings > SEO. robots is a Select. */
 export const SEO_SETTINGS = [
   ['title', 'Home page title (in full)', 'text'],
   ['titleTemplate', 'Title of other pages: {page} is the page, {site} the site name', 'text'],
@@ -96,8 +96,8 @@ export function nameOf(s) {
  * photo item ('' for a list of photos, null for none) so Add can open the Media window.
  */
 function registryFields(file, base, s, t) {
-  // a list item's subkey type can be { type, label, options } (src/site/widgets/index.js).
-  // bindType: what it can show of an item as a whole (src/site/layout/bindings.js; a list
+  // a list item's subkey type can be { type, label, options } (src/render/widgets/index.js).
+  // bindType: what it can show of an item as a whole (src/render/layout/bindings.js; a list
   // item's text subkey binds as text, other list items can't, null); textual: a bound one
   // can have a format ("{value} photos")
   const field = (path, type, label, whole = false, sub = false) => {

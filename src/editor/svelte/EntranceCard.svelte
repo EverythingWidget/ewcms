@@ -9,7 +9,7 @@
   import EntrancePageCurtain from './EntrancePageCurtain.svelte';
   import Collapsible from './Collapsible.svelte';
   import { ui } from './ui.svelte.js';
-  import { splitEdit } from '../../site/helpers.js';
+  import { splitEdit } from '../../render/helpers.js';
   import { curtainMode } from '../../client/anim/curtain.js';
 
   let { live, onsettings } = $props();

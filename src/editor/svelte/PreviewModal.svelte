@@ -17,8 +17,8 @@
   import ExplorerHead from './ExplorerHead.svelte';
   import ExplorerRow from './ExplorerRow.svelte';
   import { plural } from '../lib/format.js';
-  import { isParam, paramsOf } from '../../site/files.js';
-  import { mainProblem } from '../../site/layout/source.js';
+  import { isParam, paramsOf } from '../../render/files.js';
+  import { mainProblem } from '../../render/layout/source.js';
   import { ui } from './ui.svelte.js';
   import { argsOf, closeModal, modal } from './modals.svelte.js';
 

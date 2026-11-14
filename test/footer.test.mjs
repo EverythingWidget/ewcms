@@ -2,10 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { renderOp } from '../scripts/editor-server.mjs';
-import * as render from '../src/site/render.js';
-import { FOOTER, STRINGS, contentFromFiles } from '../src/site/files.js';
-import { checkContent } from '../src/site/validate.js';
-import { newWidget, newSection } from '../src/site/layout/index.js';
+import * as render from '../src/render/render.js';
+import { FOOTER, STRINGS, contentFromFiles } from '../src/render/files.js';
+import { checkContent } from '../src/render/validate.js';
+import { newWidget, newSection } from '../src/render/layout/index.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 const content = loadContent(SITE_A);

@@ -1,7 +1,7 @@
 <!--
   An item template open (Pages > Site > Templates: ui.target { kind: 'item-template', id }):
   its file content/templates/<id>.json edited like a page, the preview its List of one sample
-  item (src/site/widgets/list/template-preview.js). Two tabs:
+  item (src/render/widgets/list/template-preview.js). Two tabs:
     Widgets     the always-selected section card (SectionCard.svelte) of its widgets, with
                 WidgetRow rows and Add widget (SectionToolbar, add only when no widget is
                 selected: a new widget goes on the grid, free, below the others). A row
@@ -15,7 +15,7 @@
                 item opens the item’s page), and the preview line. Columns (the preview’s:
                 the item as wide as in a List of 1–6 columns; preview.columns, never a
                 List’s) is a pill above the preview frame (TemplateCols.svelte).
-  The file is one section (src/site/widgets/list/item-grid.js): its widgets at
+  The file is one section (src/render/widgets/list/item-grid.js): its widgets at
   /sections/0/widgets, as a page section’s. Templates are site-wide (no language): every List
   using one shows the edit on Save.
 -->
@@ -26,12 +26,12 @@
   import SectionCard from './SectionCard.svelte';
   import SectionToolbar from './SectionToolbar.svelte';
   import { openWidgets } from './modals.svelte.js';
-  import { templateFile } from '../../site/files.js';
-  import { schemaOf } from '../../site/schemas.js';
-  import { sampleSource } from '../../site/widgets/list/template-preview.js';
-  import { ITEM_WIDGETS, itemSection } from '../../site/widgets/list/item-grid.js';
-  import { innerTemplates } from '../../site/widgets/list/nested.js';
-  import { WIDGET_TYPES } from '../../site/widgets/index.js';
+  import { templateFile } from '../../render/files.js';
+  import { schemaOf } from '../../render/schemas.js';
+  import { sampleSource } from '../../render/widgets/list/template-preview.js';
+  import { ITEM_WIDGETS, itemSection } from '../../render/widgets/list/item-grid.js';
+  import { innerTemplates } from '../../render/widgets/list/nested.js';
+  import { WIDGET_TYPES } from '../../render/widgets/index.js';
   import {
     STACK_TYPES,
     moveStack,
@@ -107,7 +107,7 @@
       openPopup();
     }
   };
-  // ---- Summary and details (src/site/widgets/list/details.js): one per template; the item
+  // ---- Summary and details (src/render/widgets/list/details.js): one per template; the item
   // is then the summary's button, not a link
   const hasDetails = $derived(widgets.some((w) => w?.type === 'details'));
   const detailsOff = $derived(

@@ -31,7 +31,7 @@
     propFields,
   } from './motion.js';
   import { compile } from '../lib/pointer.js';
-  import { ANIMATIONS } from '../../site/files.js';
+  import { ANIMATIONS } from '../../render/files.js';
 
   // live: reactive store (live.svelte.js); gsap: the preview's (for the ease curves)
   let { live, gsap, m, scope, ptr, file = ANIMATIONS, key = 'motion' } = $props();

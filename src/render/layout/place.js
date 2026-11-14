@@ -1,6 +1,6 @@
 /**
  * Content-box placement: every widget is a container (its grid area) with a content box (what it
- * renders). A widget type opts in with `placement` (src/site/widgets/index.js):
+ * renders). A widget type opts in with `placement` (src/render/widgets/index.js):
  *
  *   placement: { axes: 'both' | 'v' | 'h', box: true | false, fill: false, place: 'left top' }
  *     axes   the grid of places the editor offers: 3 x 3 ('both'), one column ('v': top / middle
@@ -113,7 +113,7 @@ export function placeVars(widget) {
   return (p.axes === 'v' ? '' : `;--ph:${a.h}`) + (p.axes === 'h' ? '' : `;--pv:${a.v}`);
 }
 
-/** Problems with a widget's box / place (src/site/validate.js). */
+/** Problems with a widget's box / place (src/render/validate.js). */
 export function checkPlacement(widget) {
   const out = [];
   const p = placementOf(widget?.type);

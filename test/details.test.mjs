@@ -1,18 +1,18 @@
-// Summary and details (src/site/widgets/list/details.js, ./client.js): items that open.
+// Summary and details (src/render/widgets/list/details.js, ./client.js): items that open.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { warnings } from '../scripts/test-layout.mjs';
 import { loadContent } from '../scripts/content.mjs';
-import { buildRoutes } from '../src/site/routes.js';
-import { newWidget, newSection, renderSections } from '../src/site/layout/index.js';
-import { checkContent } from '../src/site/validate.js';
-import { bindingProblems } from '../src/site/layout/bindings.js';
-import { innerChoice } from '../src/site/widgets/list/nested.js';
-import listClient, { setOpen, opensKey } from '../src/site/widgets/list/client.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
+import { checkContent } from '../src/render/validate.js';
+import { bindingProblems } from '../src/render/layout/bindings.js';
+import { innerChoice } from '../src/render/widgets/list/nested.js';
+import listClient, { setOpen, opensKey } from '../src/render/widgets/list/client.js';
 import { addAt, newStackWidget } from '../src/editor/lib/item-template.js';
-import { WIDGET_TYPES } from '../src/site/widgets/index.js';
+import { WIDGET_TYPES } from '../src/render/widgets/index.js';
 import { SITE_A } from './fixtures/index.mjs';
 import { template } from '../scripts/grid-helper.mjs';
 
@@ -283,13 +283,13 @@ test('the editor: Add Summary and details, its rows; no shift', () => {
     assert.ok(panel.includes(label), label);
   assert.ok(read('src/editor/lib/item-template.js').includes("['details', 'Summary and details']"));
   // no shift: the transition is the details' grid row, nothing measured
-  const css = read('src/site/widgets/list/style.scss');
+  const css = read('src/render/widgets/list/style.scss');
   assert.match(css, /grid-template-rows: 0fr/);
   assert.match(css, /prefers-reduced-motion: reduce/);
 });
 
 test('an item is as wide as the List gives it, never its content (a resize re-measures it)', () => {
-  const css = read('src/site/widgets/list/style.scss');
+  const css = read('src/render/widgets/list/style.scss');
   const block = css.slice(css.indexOf('.li--template {'));
   assert.match(block, /grid-template-columns: minmax\(0, 1fr\)/);
   assert.match(block, /\.li__details-in \{[^}]*justify-items: stretch/);

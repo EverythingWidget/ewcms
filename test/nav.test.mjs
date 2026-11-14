@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { buildRoutes } from '../src/site/routes.js';
-import { header, phoneMenu } from '../src/site/shell/header.js';
-import { checkContent } from '../src/site/validate.js';
-import { setEditable } from '../src/site/helpers.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { header, phoneMenu } from '../src/render/shell/header.js';
+import { checkContent } from '../src/render/validate.js';
+import { setEditable } from '../src/render/helpers.js';
 import { warnings } from '../scripts/test-layout.mjs';
 import { SITE_A } from './fixtures/index.mjs';
 
@@ -113,7 +113,7 @@ test('render: a link to no page warns; labels are marked for the editor', () => 
 });
 
 test('links: a page by id, an item by id, an href; made into URLs at build time', async () => {
-  const { hrefOf, linkProblem } = await import('../src/site/hrefs.js');
+  const { hrefOf, linkProblem } = await import('../src/render/hrefs.js');
   const ctx = ctxWith(base.header);
   assert.equal(hrefOf(ctx, { page: 'pg-lyos' }), '/about/');
   assert.equal(

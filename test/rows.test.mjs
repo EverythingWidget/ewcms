@@ -1,9 +1,9 @@
-/** Real rows: uniform rows per section, widgets spanning whole rows, free widgets (src/site/layout/flow.js). */
+/** Real rows: uniform rows per section, widgets spanning whole rows, free widgets (src/render/layout/flow.js). */
 import { lay } from '../scripts/test-layout.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveRows, rowsFor } from '../src/site/layout/flow.js';
-import { rowsOf } from '../src/site/layout/index.js';
+import { resolveRows, rowsFor } from '../src/render/layout/flow.js';
+import { rowsOf } from '../src/render/layout/index.js';
 import { createStore } from '../src/editor/store.js';
 import { placeWidget, placePhone, setSection } from '../src/editor/layout-ops.js';
 

@@ -5,16 +5,16 @@ import os from 'node:os';
 import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
 import { save } from '../scripts/editor-server.mjs';
-import { motionChecks } from '../src/site/render.js';
-import { checkContent } from '../src/site/validate.js';
-import { WIDGET_TYPES } from '../src/site/widgets/index.js';
+import { motionChecks } from '../src/render/render.js';
+import { checkContent } from '../src/render/validate.js';
+import { WIDGET_TYPES } from '../src/render/widgets/index.js';
 import {
   WIDGET_ANIM_TYPES,
   TIMING_KEYS,
   checkMotion,
   motionAttrs,
   motionProblems,
-} from '../src/site/layout/motion.js';
+} from '../src/render/layout/motion.js';
 import { widgetModel, inherited, keepFor } from '../src/editor/svelte/motion.js';
 import { SITE_A } from './fixtures/index.mjs';
 
@@ -137,8 +137,8 @@ test('editor: a widget layer over its animation, inherit and keep', () => {
 });
 
 test('widget elements: shape, attributes; defaults and comments are refused', async () => {
-  const { checkMotion, motionAttrs } = await import('../src/site/layout/motion.js');
-  const { omitDefaults, storedDefaults } = await import('../src/site/defaults.js');
+  const { checkMotion, motionAttrs } = await import('../src/render/layout/motion.js');
+  const { omitDefaults, storedDefaults } = await import('../src/render/defaults.js');
   assert.deepEqual(checkMotion({ elements: { 'hero.title': { animation: 'x', delay: 0.2 } } }), []);
   assert.deepEqual(checkMotion({ elements: { 'hero.title': { from: {} } } }), [
     '"motion.elements.hero.title.from" must be left out: only duration, ease, delay, stagger, trigger, start, end, scrub can be set',

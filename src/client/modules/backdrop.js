@@ -1,5 +1,5 @@
 /**
- * The page's backdrop (src/site/backdrop.js): its photos in a fixed layer under the sections,
+ * The page's backdrop (src/render/backdrop.js): its photos in a fixed layer under the sections,
  * driven by the page's scroll from its top to its bottom (one ScrollTrigger).
  *   scroll  a strip of them (down or across) moves by its length less one screen: the first in
  *           view at the top, the last fully in view at the end

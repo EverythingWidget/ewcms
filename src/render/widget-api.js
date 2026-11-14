@@ -1,6 +1,6 @@
 /**
  * What a widget module may import from the core (a site's own widgets: `import { html, esc }
- * from '#widget-api'`, package.json "imports"). Kept small and stable: the rest of src/site
+ * from '#widget-api'`, package.json "imports"). Kept small and stable: the rest of src/render
  * can change without breaking a site's widgets.
  *
  *   html`...`        a template that joins lists and leaves nested html as is

@@ -7,7 +7,7 @@
 -->
 <script>
   import { closeOnBackdrop } from '../lib/modal.js';
-  import { contentPath } from '../../site/files.js';
+  import { contentPath } from '../../render/files.js';
   import Button from './Button.svelte';
   import { tick } from 'svelte';
   import PubFiles from './PubFiles.svelte';

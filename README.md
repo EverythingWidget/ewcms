@@ -8,11 +8,11 @@ with GSAP page transitions. The editor (Svelte 5) runs in the dev server only an
 
 A **site** is only its own things; ewcms is everything else:
 
-| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                          | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                     |
-| -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/site` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `scripts/` (Vite plugin, dev server API, build, photos, R2), `functions/contact.js`, `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
-| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                             | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                         |
-| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                        |
+| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                          | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                       |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `scripts/` (Vite plugin, dev server API, build, photos, R2), `functions/contact.js`, `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
+| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                             | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                           |
+| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                          |
 
 ## A site's commands
 
@@ -77,7 +77,7 @@ npm run dev -w eeliyarasta-website     # or: cd sites\eeliyarasta-website; npm r
 ```
 
 An edit in `ewcms/` reloads the page in `ewcms dev` with no install: templates and
-`src/site` re-render, client JS and styles hot-reload, the editor too. Change ewcms's
+`src/render` re-render, client JS and styles hot-reload, the editor too. Change ewcms's
 dependencies → `npm install` at the root.
 
 Works the same in PowerShell, cmd and WSL: the CLI, the hooks script and the mock tools are plain
@@ -252,7 +252,7 @@ index.html          ← HTML shell (a site may keep its own) with <!--ssr-head--
 ```
 
 **Content shape.** Every content file is a JSON object whose first key is `"version": 1`, the
-shape version (`VERSION` in `src/site/files.js`; the build and Save refuse anything else). A file
+shape version (`VERSION` in `src/render/files.js`; the build and Save refuse anything else). A file
 whose data is a list or a map keeps it under one key next to it: a source's `"items"`,
 redirects.json's `"redirects"`, photos.json's `"photos"`. A change of shape bumps the version and
 converts the content in the same commit.
@@ -265,7 +265,7 @@ of one of the item's own photos (empty: the first).
 
 `vite-plugin-static-site.mjs` is the whole builder (~200 lines):
 
-- **dev**: a middleware renders any HTML request from the `content/en/` JSON files with `src/site/render.js`
+- **dev**: a middleware renders any HTML request from the `content/en/` JSON files with `src/render/render.js`
   (through Vite's SSR loader, so template edits reload instantly). Unknown URLs get the 404 page.
 - **build**: Vite bundles the client from `index.html` (hashed JS/CSS). Then, in `closeBundle`,
   every route from `routes.js` is rendered into that shell and written to
@@ -318,7 +318,7 @@ Routes, menu, dropdowns, grids and sitemap update automatically.
 
 Each list in `content/en/sources/` can have a schema next to it, `<id>.schema.json`
 (`people.schema.json`): what an item has, in a small format of its own (not JSON Schema),
-shaped like the widget registry's settings (`src/site/schemas.js`):
+shaped like the widget registry's settings (`src/render/schemas.js`):
 
 ```json
 {
@@ -340,7 +340,7 @@ shaped like the widget registry's settings (`src/site/schemas.js`):
 - `type`: `text`, `multiline` (lines), `number`, `photo` (a `media/` path or R2 key), `photos`
   (a list of photo paths), `link` (`https://…`, `/path/` or `mailto:`), `choice`
   (one of `options: ["a", "b"]`), `boolean`, `date` (`YYYY-MM-DD`). The same names as a
-  widget's setting types: one list, `src/site/property-types.js`.
+  widget's setting types: one list, `src/render/property-types.js`.
 - `width: "half"`: two half properties next to each other share a row in the editor (one column
   when the panel is narrow); `required`, `help` (a hint under the field), `list` (shown under
   the name in Sources' item list).
@@ -372,7 +372,7 @@ tab's labels and widgets for source properties. Schema files are not sources: pi
 ### Layout
 
 Every page is an ordered list of **sections**, `sections` in its file (a `[param]/index.json` too), and
-every section is a grid of **widgets** (`src/site/layout/`):
+every section is a grid of **widgets** (`src/render/layout/`):
 
 ```json
 {
@@ -459,7 +459,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   width). Site Settings shows the resulting px at 1280, 1366, 1440, 1536 and 1920 wide, and the
   preview follows as you type. Phones: the full 60-column grid inside the side margins. On the
   page it is `--contain` on `:root` (only when not the default), read by `_layout.scss`
-  (`--cpad`); `src/site/layout/contain.js`.
+  (`--cpad`); `src/render/layout/contain.js`.
 - **A section's name (its anchor):** optional `name`, slugified into the section's HTML `id`
   (`"Our People"` → `id="our-people"`), so `/page/#our-people` links to it. It lands just below
   the fixed header (`scroll-margin-top: var(--header-h)`), with native scrolling, on a link on
@@ -482,7 +482,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   widget spans the rows its height needs at the page's width. Only `aspect` and `rows` widgets
   store `rows`; an auto widget's rows are never stored: the page's script measures them (before
   it runs an auto widget spans one row).
-- **Layout** (`layout`, `src/site/layout/grid.js`): `{ "base": { col, span, row, rows?, link? },
+- **Layout** (`layout`, `src/render/layout/grid.js`): `{ "base": { col, span, row, rows?, link? },
 "phone"?: { …the same keys… } | null }`. `base`: its area on the 120-column grid
   (first column 1–120, columns, first row; without a layout it is full width in row 1), and its
   `link`. `phone`: only what changes on phones, over what it would show there (its
@@ -496,7 +496,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   `src/client/modules/navbar.js` on load and when the header or window resizes (each
   breakpoint); the theme's `--header-h` before that. A theme's first-section widgets (hero,
   album) no longer add the header's height themselves. Other sections are unchanged.
-- **Free widgets and links** (`src/site/layout/links.js`): widgets are **free**: each stays at
+- **Free widgets and links** (`src/render/layout/links.js`): widgets are **free**: each stays at
   the row it was placed on whatever the widgets above it do, and widgets may overlap (`layer` orders
   them). A widget can **follow** another widget of its section instead,
   `layout.base.link`, `{ "to": "w-2fq0", "gap": 1 }`: its top is that widget's bottom plus `gap` cells
@@ -505,7 +505,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   theirs with them. One leader per widget, any number of followers per leader, chains; no loops
   and no links to another section (validation rejects both, and a link to a widget that isn't
   there). New widgets start free; the editor links them (Visual editor).
-- **Real rows** (`src/site/layout/flow.js`, applied by `src/client/modules/rows.js`): on the
+- **Real rows** (`src/render/layout/flow.js`, applied by `src/client/modules/rows.js`): on the
   page, every auto or aspect widget is measured (its content, or its width × ratio) and spans the
   whole rows that needs (a fixed-rows widget keeps its rows). Then the links are resolved in their
   order (a leader before its followers): a follower's first row is its leader's last row now + 1
@@ -519,7 +519,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
     with a minimum height a widget that fits in it gets the whole rows that fit (rows stay square, so up to a cell
     short; its content is still screen-high), centred. Without JavaScript the stored areas apply
     as they are (the editor keeps a follower's stored row at its leader's stored bottom + gap).
-- **Text sizes** (`src/site/layout/type.js`): by default each line of a Text widget has its
+- **Text sizes** (`src/render/layout/type.js`): by default each line of a Text widget has its
   style's normal size from the stylesheets (`_text.scss`, the same at any widget width; no cap
   by the widget's width any more). Two things change that, both worked out live by
   `src/client/modules/fit.js` (on load, when the widget's width changes, a fixed-height
@@ -539,7 +539,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   `_tokens.scss`: title 19, heading 3, subheading 2, statement 5, paragraph 1.4, label 1,
   small 1.05); its own factor scales that to the width, so it is only a starting point.
 
-  **Type scale** (`site.json` `type`, Site Settings › **Type**; `src/site/layout/type.js`): each
+  **Type scale** (`site.json` `type`, Site Settings › **Type**; `src/render/layout/type.js`): each
   style's usual font size grows with the window between `min` and `max` (px; equal: fixed),
   with a line height `line` (× the size): `{ "heading": { "min": 38, "max": 104, "line": 0.92 } }`.
   Each left out is the theme's (`--type-<style>-min`, `-max`, `-lh` in `_tokens.scss`, used by
@@ -549,14 +549,14 @@ every section is a grid of **widgets** (`src/site/layout/`):
   small 12 / 1.5. The card lists the styles with their tags (Title · H1 … Small · P), one row of
   Min, Max and Line each (empty: the theme's, as the placeholder), and the preview follows as
   you type (no reload). **Preview** shows the type specimen (the dev server's `/__type/`,
-  `src/site/layout/type-specimen.js`, never built): one full-width section of an auto-height
+  `src/render/layout/type-specimen.js`, never built): one full-width section of an auto-height
   Text widget per style, each following the last; the button reads **Close preview** and goes
   back to the page you were on, as does the Pages tab. The old cell-based `typography` is
   refused (`"typography" is gone`).
   In the editor: the toolbar's **Fit width** icon (edit mode, after Style: the caret's line)
   and the **Scale to fit** switch in the widget's pop-up (Layout tab, after Placement; also a
   toolbar shortcut after Auto height). A type opts in through its definition: `fitWidth: true`,
-  `scaleToFit: true` (the Text widget; `src/site/widgets/index.js`).
+  `scaleToFit: true` (the Text widget; `src/render/widgets/index.js`).
 
 - **The widget pop-up** has two tabs, the same for every widget: **Content** (source,
   settings, texts) and **Layout** (what its type's definition supports, in order: Size Auto /
@@ -576,7 +576,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   area). Why 60: half of 120, so halving is exact; 120 columns on a 390px screen
   would be 3px cells.
 - **Ids:** every section and widget has a stable id (`s-…`, `b-…`), given once when it is made
-  (`src/site/layout/ids.js`) and kept when it moves or changes. The editor finds them in the
+  (`src/render/layout/ids.js`) and kept when it moves or changes. The editor finds them in the
   preview by it (`data-sec`, `data-widget`, dev only).
 - **CSS:** positions are CSS variables on the elements (`--rows --mrows` on a section, its
   height preset a class: `.sec--h-third`, `.sec--h-half`, `.sec--h-full`,
@@ -593,7 +593,7 @@ every section is a grid of **widgets** (`src/site/layout/`):
   config values). An unknown widget type isn't an error: it logs a build warning and is skipped.
 - **Bindings:** a widget's setting can show a source item's value instead of its own (below).
 
-**Widgets.** The widget types live in **one registry**, `src/site/widgets/` (`index.js` explains the
+**Widgets.** The widget types live in **one registry**, `src/render/widgets/` (`index.js` explains the
 shape): the build renders with it, and the editor reads it for each widget's settings and config
 and for **Add widget**. A type is `{ type, label, icon, settings, config, defaults, render(data,
 ctx, widget) }`; `list` makes it show a list of items (grid, albums, projects), `item` one item it
@@ -612,7 +612,7 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
 | `projects` | **list**: the project accordion of its items; with a `title` it gets a head (home)                                                                                           |
 | `album`    | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped                                                              |
 
-- **Text widget** (`src/site/text.js`): `body` is a list of lines `{ style, list?, text: [runs] }`; a
+- **Text widget** (`src/render/text.js`): `body` is a list of lines `{ style, list?, text: [runs] }`; a
   style (title, heading, subheading, statement, paragraph, label, small: the site's type scale)
   is a whole line's. Runs: `{ t, marks?: ["b","i"], link? }` text, `{ property, format? }` an
   item's property (from the widget's source, filled at build time; a source's name that isn't a
@@ -633,12 +633,12 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
   from the registry, e.g. text `lines-up`, photo `photo-reveal`, grid `grid-reveal`). Composite
   widgets (hero, heading, album) keep `data-anim` **elements** inside them
   for their own pieces (see Animations).
-- **A new type:** add it to a file in `src/site/widgets/` and to `WIDGET_TYPES` in `index.js`
+- **A new type:** add it to a file in `src/render/widgets/` and to `WIDGET_TYPES` in `index.js`
   (and its styles); the editor shows it with no editor code.
 
 ### Custom widgets
 
-Built-in widgets live in `src/site/widgets/<type>/index.js`, one module each (always on). A site
+Built-in widgets live in `src/render/widgets/<type>/index.js`, one module each (always on). A site
 can add its own the same way: a folder with an `index.js`, listed in `site.config.mjs`:
 
 ```js
@@ -688,7 +688,7 @@ export default {
 };
 ```
 
-That's all: the registry (`registerWidgets` in `src/site/widgets/index.js`) adds it next to the
+That's all: the registry (`registerWidgets` in `src/render/widgets/index.js`) adds it next to the
 built-ins for the prerender, content validation (its `settings` types and `check`), and, through
 `virtual:site-widgets`, the editor: the Add widget modal, the inspector (from `settings`/`config`),
 Motion and the widget/layout toolbars need no code of their own. `widget.ed(key)` makes a field
@@ -698,7 +698,7 @@ After editing a widget's `index.js`, restart `npm run dev` (the editor's server 
 
 ### Widget sources
 
-Which items a widget shows is its `source` (`src/site/layout/source.js`), one of three modes; no
+Which items a widget shows is its `source` (`src/render/layout/source.js`), one of three modes; no
 `source` is **None** (the widget's own texts):
 
 ```json
@@ -716,11 +716,11 @@ Which items a widget shows is its `source` (`src/site/layout/source.js`), one of
   name slugified), any other property its value slugified (`2018`, `Noor Vermeer` -> `noor-vermeer`);
   a property holding the id of the param's item matches too (a reference to another source's
   item). A new row defaults to the property of the same name, else `slug`.
-- **One query:** `query(list, where, params)` in `src/site/query.js` is what the build, the
+- **One query:** `query(list, where, params)` in `src/render/query.js` is what the build, the
   preview and the editor all use. Rules can be groups (`{ op: "and" | "or", rules }`), so more
   kinds of rules can come later without a new format.
 - **The main widget** of a `[param]` page (`"main": "<widget id>"` in its `index.json`) decides
-  which pages are built (`src/site/routes.js`): for each page of the folder around it, the items
+  which pages are built (`src/render/routes.js`): for each page of the folder around it, the items
   matching the params above, one page per value of its own param's property among them (the first
   of those its item); a page exists when at least one item matches (a list main widget shows all
   of them). It must be From URL with a property for every param (no Any). If it can't decide (no
@@ -734,8 +734,8 @@ Which items a widget shows is its `source` (`src/site/layout/source.js`), one of
 ### Bindings
 
 Any text, long text, photo or link setting of a widget (and a link in its config, `link`) can show
-values of a **source item** instead of its own, as **parts** (`src/site/layout/parts.js`,
-`src/site/layout/bindings.js`):
+values of a **source item** instead of its own, as **parts** (`src/render/layout/parts.js`,
+`src/render/layout/bindings.js`):
 
 ```json
 {
@@ -752,7 +752,7 @@ values of a **source item** instead of its own, as **parts** (`src/site/layout/p
 - **One property alone** (`[{ "property": "<name>" }]`) is the item's whole value. Its type must fit
   the setting's (a text setting takes `text`, `choice`, `number`, `date`, `link`; a multi-line text
   also `multiline`; a photo `photo`; a link `link`; a list of photos (`[{ src }]`) `photos`;
-  see `BIND_TYPES` in `src/site/property-types.js`). Only text settings mix text and properties.
+  see `BIND_TYPES` in `src/render/property-types.js`). Only text settings mix text and properties.
 - **A name** is a property of the item (when the source's schema has it, it is never a source,
   even when the item leaves it empty); a name that isn't one but is a source's id is that source's
   list. A list shows its length (`{people}`: "12"; an empty list "0") in the text's own look.
@@ -771,7 +771,7 @@ values of a **source item** instead of its own, as **parts** (`src/site/layout/p
 - **The item:** the first item of the widget's source (see "Widget sources"): the one picked, or
   the first matching the page's address.
 - **Rendering:** one resolver, `resolveWidget()`, swaps the values in before every widget renders
-  (`src/site/layout/index.js`), so widgets don't know about bindings; values are escaped as
+  (`src/render/layout/index.js`), so widgets don't know about bindings; values are escaped as
   always. A widget without parts renders exactly as before.
 - **Checks:** Save and the build check their shape (`validate.js`; the old `{ "bind" }`, `{ "field" }` and
   Text `{ "count" }` shapes are errors that say what to write) and, against the sources' schemas,
@@ -806,7 +806,7 @@ values of a **source item** instead of its own, as **parts** (`src/site/layout/p
 
 ### List widget
 
-A **List** (`src/site/widgets/list/`) shows items as the same **column of widgets**, the
+A **List** (`src/render/widgets/list/`) shows items as the same **column of widgets**, the
 **preset**: either every item of its source (**From a source**: All or From URL), or items you
 add by hand (**Hand-made**: `config.handmade` and `config.items`). Each item widget is a real widget
 (Photo, Text, Button), rendered by the same code as on a page, so bindings, formats and the hide
@@ -970,7 +970,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
   gets that photo's credit from `photos.json` ("Photo: Name / Unsplash") and its `source` link.
   An item's own wins.
 - **Arrangement Carousel** (`config.arrangement`: `"grid"` default | `"carousel"`,
-  `src/site/widgets/list/carousel.js`, `carousel-client.js`): the items one at a time in a fixed
+  `src/render/widgets/list/carousel.js`, `carousel-client.js`): the items one at a time in a fixed
   slide box. Layout tab, and an inner List's rows in the template editor; the rows show only
   with Carousel (Grid hides them, and picking Grid drops them):
 
@@ -995,7 +995,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
   `thumbnails: "photos"` with no photo in the template warns (numbers show). The Album widget
   stays for now.
 
-- **The template grid** (`src/site/widgets/list/item-grid.js`, `item-grid-render.js`): each
+- **The template grid** (`src/render/widgets/list/item-grid.js`, `item-grid-render.js`): each
   item is a grid of its own, as a page's section (`.sec.sec--item`, 120 columns, 60 on a phone)
   and its widgets are placed as page widgets are, with the same keys and the same mechanism
   (`src/client/modules/rows.js` flows it with the page; `data-tw` names a widget): `id`,
@@ -1029,7 +1029,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
     | `style.align`, `style.titleSize`                                           | each text's own alignment and style                                    |
     | `opens`, `{ "type": "toggle" }`, `"details": true`                         | a `details` widget (Summary and details, below)                        |
 
-- **Summary and details** (`"type": "details"`, `src/site/widgets/list/details.js`): an item
+- **Summary and details** (`"type": "details"`, `src/render/widgets/list/details.js`): an item
   that opens. The template is the **summary** (always shown); the `details` widget sits on its
   grid where the +/× goes and names the **details' template**, shown below once opened, on its
   own grid and filled from the same item.
@@ -1137,7 +1137,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
 
   A border is an inset box-shadow ring (`--item-border`, listed with `--item-shadow`), so it
   never shifts the layout. The presets are style values only (`PRESET_STYLES` in
-  `src/site/widgets/list/item-style.js`): Card `photoRatio 4/5, photoPlacement above,
+  `src/render/widgets/list/item-style.js`): Card `photoRatio 4/5, photoPlacement above,
 hoverEffect accent, titleSize m, textBody lines`; Plain `photoRatio 4/3, photoPlacement above,
 padding 0, border none, shadow none, background none, hoverEffect accent, titleSize s,
 textBody prose`; Panel `photoRatio 4/5, photoPlacement above, padding 0, textOverPhoto bottom,
@@ -1228,10 +1228,10 @@ opens in a new tab). A page or item that isn't there gives a `[links]` build war
 ### Footer
 
 `content/footer.json` is the footer: `{ "version": 1, "kind": "part", "sections": [] }`.
-Pages and the footer are one document type (`src/site/files.js` `docKindOf`, `docOf`): `"kind"` is
+Pages and the footer are one document type (`src/render/files.js` `docKindOf`, `docOf`): `"kind"` is
 `"page"` in a page file and `"part"` (a site part: only `sections`) here, and must match the file.
 Its sections are widgets exactly like a page's (the same grid, widgets, phone layout and motion; validated and tidied
-like a page's), rendered under every page by `src/site/shell/footer.js`. It starts empty
+like a page's), rendered under every page by `src/render/shell/footer.js`. It starts empty
 (nothing shows). It sits outside the page's view, right after `<main>`, so page transitions swap
 the page and leave the footer be; it is in the view's layer (`.site-footer`: z-index 2, between
 `#backdrop` and `#portal`; the curtain covers it). Its rows, animations and widget scripts mount
@@ -1246,7 +1246,7 @@ locks it again. An empty footer shows a 96px placeholder in the editor to click.
 ### Links
 
 A link in the content says what it points at; its URL is made at build time
-(`src/site/hrefs.js`, `hrefOf()`), so renaming or moving a page or changing an item's slug
+(`src/render/hrefs.js`, `hrefOf()`), so renaming or moving a page or changing an item's slug
 never breaks one: `{ "page": "pg-k3x9" }` (a page by its id, the `"id"` in its file),
 `{ "item": { "source": "people", "id": "p-k3x9" } }` (an item's page) or
 `{ "href": "https://…" }` (a full URL, `mailto:`, `#anchor`). Widget settings (a button's,
@@ -1259,7 +1259,7 @@ labels the link to the item's own page at its end. `items` names a source
 (`content/en/sources/<id>.json`) and lists its items: with their photo and photo count when the
 source has item pages (a `[param]/index.json` shows it), else by title and type, linking to their spot
 on the item's page (`/projects/#<slug>`) or, with `linkOut`, to their own site. The menu button and clock labels are in `strings.json` (`header`).
-`src/site/shell/header.js` renders it; `checkContent` validates its shape.
+`src/render/shell/header.js` renders it; `checkContent` validates its shape.
 
 ### Pages and URLs
 
@@ -1279,7 +1279,7 @@ move. A page's own file is
 | `pages/people/[person]/[year]/index.json` | `/people/<slug>/<year>/`: a template in a template (nested)    |
 
 - **Ids:** code names a page by its folder path: `home`, `people`, `people/whatever`,
-  `people/[person]` (`pageFile(id)` / `pageIdOf(file)` in `src/site/files.js`). Nothing else is a
+  `people/[person]` (`pageFile(id)` / `pageIdOf(file)` in `src/render/files.js`). Nothing else is a
   page file: `pages/about.json` or `pages/people/x.json` are ignored.
 - **Templates:** a `[param]` folder (a named param: `[person]`, `[place]`, `[year]`; a-z first,
   then a-z, 0-9, dashes) is a template. Its `index.json` names its **main widget** (`"main":
@@ -1319,7 +1319,7 @@ that every internal `href` / `src` in `dist/` points at a file.
 
 ### Contact form
 
-A **Contact form** widget (Add widget > Contact form; `src/site/widgets/form/index.js`): title,
+A **Contact form** widget (Add widget > Contact form; `src/render/widgets/form/index.js`): title,
 intro, its fields, the button and the messages are content, edited in the Content panel. Each
 field: label, placeholder, name (what the email calls it; `name`, `email` and `phone` get the
 browser's autofill), type (text, email, phone, long text, choice), required, and a choice's
@@ -1383,7 +1383,7 @@ page (it would hide it). `checkContent` checks the shape: `from` starts with `/`
 the same path, `to` a path or URL, status 301 or 302. `npm run check:links` stays strict: links
 in the site must point at pages, not at redirects.
 
-The editor keeps them up to date by itself (`src/site/redirects.js`):
+The editor keeps them up to date by itself (`src/render/redirects.js`):
 
 - **Rename a page** (its SEO tab, Address): every path of its folder redirects to the new one, its
   item pages with one pattern per level (`/people/:person/` -> `/models/:person/`,
@@ -1411,7 +1411,7 @@ remove, every change one undo step.
 
 ### SEO
 
-What `<head>` says about a page: `src/site/seo.js` (`seoOf`), from the site's defaults and the
+What `<head>` says about a page: `src/render/seo.js` (`seoOf`), from the site's defaults and the
 page's own `meta`. Edited in the editor: Site Settings > SEO (the defaults) and Content > SEO (the
 page in the preview; collapsed, below its sections, with a search-result and a share-card
 preview and the 60/160 character counts).
@@ -1457,7 +1457,7 @@ Only source items can be placeholders.
 a tiny blurred placeholder (LQIP) and the photo's most vivid colour. Templates use it for
 `srcset`, `width/height` (no layout shift) and lazy loading. Unchanged photos are skipped.
 Photos load lazily, except the first ones at the top of a page (`firstPhotos(i)` in
-`src/site/helpers.js`, by template position): the first hero photo, people/places card and
+`src/render/helpers.js`, by template position): the first hero photo, people/places card and
 photography panel gets `loading="eager" fetchpriority="high"`, the next two `loading="eager"`.
 Album pages load their first two slides eagerly, and About its photo.
 If `sharp` is missing, originals are copied and the site still works. Both output folders are
@@ -1468,7 +1468,7 @@ shared with photos uploaded to R2 (below).
 `content/photos.json` (`alt`, `credit`, `focal`), keyed by its `media/` path or R2
 key, edited in the editor's Media window. Everything else refers to a photo by its path only
 (a source's `photos` is a list of paths, `cover` and `photo` are paths). Every `<img>` takes it from there (`altOf()` / `img()` in
-`src/site/helpers.js`); thumbnails and repeats are `decorative` (`alt=""`). A photo without
+`src/render/helpers.js`); thumbnails and repeats are `decorative` (`alt=""`). A photo without
 alt text renders `alt=""` and the build warns.
 
 ### Photos on Cloudflare R2
@@ -1490,7 +1490,7 @@ Media window write it right away). A key missing from it renders as a plain `<im
 build warns. **Delete** in the Media window (only for photos nothing uses) removes every size
 from R2 (`deletePhoto`, a SigV4 `DELETE` per key) and the entry.
 
-The content stores keys, not URLs: `mediaUrl()` / `photoOf()` (`src/site/helpers.js`) turn a
+The content stores keys, not URLs: `mediaUrl()` / `photoOf()` (`src/render/helpers.js`) turn a
 value into URLs when the page is rendered. A path that is in `media/` stays local, a full
 `https://` URL is used as is, anything else is `site.json` `mediaUrl` + `/` + key (Site Settings >
 Photos). So the photo domain can change in one place, and existing photos keep working.
@@ -1569,7 +1569,7 @@ Markup only says **what** an element is: `data-anim="hero.title"`. All the **how
 ```
 
 **No defaults, no comments.** A value equal to its default is left out
-(`src/site/defaults.js`): a section's `enabled: true`, `width: "contained"`, `height: "fit"`; a
+(`src/render/defaults.js`): a section's `enabled: true`, `width: "contained"`, `height: "fit"`; a
 widget's `size: "auto"` and `config.enabled: true`; a hero photo's `layer: "back"`. Validation
 reports a stored default, and the editor's save strips them. Keys starting with `_` (comments)
 are refused anywhere in content: this README documents the shape. The animation library is the
@@ -1607,7 +1607,7 @@ while it crosses the screen), `fade-scrub` (fades in from `top 95%` to `top 55%`
 ```
 
 `animation` is an animation id; every other key is a timing override (`TIMING_KEYS` in
-`src/site/layout/motion.js`: duration, ease, delay, stagger, trigger, start, end, scrub). What
+`src/render/layout/motion.js`: duration, ease, delay, stagger, trigger, start, end, scrub). What
 the animation does (type, from/to, split, …) only comes from the library. The widget renders
 `data-motion="parallax-y"` and `data-motion-options` (its timing), and the engine
 (`src/client/anim/engine.js`) builds it as `animation ← motion`. It animates the widget's
@@ -1700,7 +1700,7 @@ the page's place in the site's order); a drop that can't land shows why in red. 
 **moves** into that folder and into the menu there, in one op on disk (its address changes,
 links follow, no redirect: pre-v1), unless a page of that name is there already or the name is
 reserved at the top (`home`, `404`, `edit`, `assets`, `media`, `sandbox`: `RESERVED` in
-`src/site/files.js`, for adding, renaming and moving alike). 404 and `[param]` pages don't move. The website's dropdowns
+`src/render/files.js`, for adding, renaming and moving alike). 404 and `[param]` pages don't move. The website's dropdowns
 show a folder's "All …" link first, as its root row is first here.
 
 Rows show only their own segment under the folder (`people/`; elsewhere the full path) and
@@ -1806,7 +1806,7 @@ added, copied, moved or deleted, a setting that changes what a widget shows) the
 renders just the sections it touched from the editor's copy of the page (`POST
 /__editor/render`) and the preview swaps them in and mounts the page again, without a reload.
 An item template or a source edited: the sections whose Lists use it (or show its values) are
-rendered again the same way (`src/site/widgets/list/template-uses.js`), the template editor's
+rendered again the same way (`src/render/widgets/list/template-uses.js`), the template editor's
 preview too. The preview loads again only for an edit that changes the routes or the menu
 (`src/editor/lib/needs-reload.js`, by file: an item or page added, removed or moved, a slug, a
 name the menu lists; the menu, the site settings, photos and UI strings); templates, the footer,
@@ -1914,14 +1914,14 @@ for multi-line text (`\n` ⇄ `<br>`), `'number'` for numbers and `'words'` for 
 `<span>` per word (the hero name: edited as plain text, re-split into words and re-animated after the edit). Page copy (titles, intros) lives
 in each page's `pages/<page>/index.json`, shared copy (nav) in `site.json`, for this reason. The editor only ever writes
 existing JSON files in `content/en/pages/`, `content/en/sources/`, `content/en/strings.json`, the shared files at `content/` and `content/templates/` (the
-content folder: `site.config.mjs`; the folders: `src/site/files.js`); only the pages list (and Address) creates, moves or deletes files, and only page files.
+content folder: `site.config.mjs`; the folders: `src/render/files.js`); only the pages list (and Address) creates, moves or deletes files, and only page files.
 These editor markers (`data-edit`, `data-edit-type`, `data-sec`, `data-widget`,
 `data-curtain-edit`) are only rendered by the dev server; `npm run build` leaves them out
 (`renderRoute(route, content, { editable })`), which makes the built HTML about 9% smaller.
 
 **Save and Publish**
 
-- **Content checks** (`src/site/validate.js`): broken JSON in a content file stops the build and
+- **Content checks** (`src/render/validate.js`): broken JSON in a content file stops the build and
   the dev server with the file, line and column (the editor shows the same error). Save checks
   the shape of every file first (pages are objects, a `[param]` page names its source, sources
   are lists of objects, `site.json` has `name` and `url`, `animations.json` has `animations`,
@@ -1995,7 +1995,7 @@ git mv en/settings/redirects.json redirects.json
 ```
 
 Then, in `en/strings.json`, rename the `"nav"` key to `"header"` (the files' other contents
-don't change). In the engine: `NAV` is `HEADER` (src/site/files.js), the
+don't change). In the engine: `NAV` is `HEADER` (src/render/files.js), the
 render content's `nav` is `header`, `ROOT_FILES` lists the shared files (the language folder's
 are `LANG_FILES`), and `@site-content` is the content root (`@site-content/animations.json`).
 
@@ -2028,7 +2028,7 @@ source of the same name, even when the item leaves it empty; a widget whose boun
 are all empty (missing, `null` or `""`; `0` and `[]` are values) isn't rendered; typed text
 reads `}}` as a literal `}` (as `{{` is a `{`); `isBinding` / `bindingsOf` / `formatted`
 (bindings.js) and `countText` / `fieldText` (text.js) are gone (`parts.js`: `isParts`,
-`isWhole`, `partText`, `parseTyped`); `src/site/field-types.js` is `property-types.js`
+`isWhole`, `partText`, `parseTyped`); `src/render/field-types.js` is `property-types.js`
 (`PROPERTY_TYPES`, `SOURCE_PROPERTY_TYPES`, `SETTING_TYPES`). In the editor: **+ Property**,
 **Text with properties**.
 

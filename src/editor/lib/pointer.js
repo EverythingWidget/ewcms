@@ -1,5 +1,5 @@
 /** JSON Pointer (RFC 6901) helpers: "/sections/people/title" <-> ['sections', 'people', 'title']. */
-import { isObject } from '../../site/is.js';
+import { isObject } from '../../render/is.js';
 export const parse = (ptr) =>
   !ptr
     ? []
@@ -9,7 +9,7 @@ export const parse = (ptr) =>
         .map((t) => t.replace(/~1/g, '/').replace(/~0/g, '~'));
 
 /** Parts -> pointer: the site's pointer() (helpers.js). */
-export { pointer as compile } from '../../site/helpers.js';
+export { pointer as compile } from '../../render/helpers.js';
 
 export function get(obj, ptr) {
   let cur = obj;

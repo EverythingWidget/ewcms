@@ -1,4 +1,4 @@
-// The List's Carousel arrangement (src/site/widgets/list/carousel.js, carousel-client.js):
+// The List's Carousel arrangement (src/render/widgets/list/carousel.js, carousel-client.js):
 // markup and accessibility, keys only on focus, the deep link, credits, {back}, the checks.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -6,25 +6,25 @@ import { readFileSync } from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { warnings } from '../scripts/test-layout.mjs';
 import { loadContent } from '../scripts/content.mjs';
-import { buildRoutes } from '../src/site/routes.js';
-import { newWidget, newSection, renderSections } from '../src/site/layout/index.js';
-import { checkContent } from '../src/site/validate.js';
-import { bindingProblems } from '../src/site/layout/bindings.js';
-import { WIDGET_TYPES } from '../src/site/widgets/index.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
+import { checkContent } from '../src/render/validate.js';
+import { bindingProblems } from '../src/render/layout/bindings.js';
+import { WIDGET_TYPES } from '../src/render/widgets/index.js';
 import {
   carouselOf,
   carouselProblems,
   slideRatioOf,
   withArrangement,
-} from '../src/site/widgets/list/carousel.js';
+} from '../src/render/widgets/list/carousel.js';
 import {
   carouselClient,
   carouselKey,
   showSlide,
   slideFromHash,
-} from '../src/site/widgets/list/carousel-client.js';
-import { creditText } from '../src/site/helpers.js';
-import { sourcePage } from '../src/site/widgets/data.js';
+} from '../src/render/widgets/list/carousel-client.js';
+import { creditText } from '../src/render/helpers.js';
+import { sourcePage } from '../src/render/widgets/data.js';
 import { SITE_A, withPhoto } from './fixtures/index.mjs';
 import { template } from '../scripts/grid-helper.mjs';
 
@@ -371,7 +371,7 @@ test('a button label of typed text only ([{ t }]) shows that text, not "[object 
   assert.ok(btn, 'the back button');
   assert.match(btn.textContent, /← People/);
   assert.doesNotMatch(el.innerHTML, /object Object/);
-  const { resolve } = await import('../src/site/layout/bindings.js');
+  const { resolve } = await import('../src/render/layout/bindings.js');
   assert.equal(resolve([{ t: 'a' }, { t: 'b' }], { def: { type: 'text' } }), 'ab');
   // not a text setting (a list's entries): left as it is
   const list = [{ t: 'x' }];

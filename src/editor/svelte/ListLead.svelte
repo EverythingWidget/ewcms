@@ -20,14 +20,14 @@
   import LinkField from './LinkField.svelte';
   import SourceField from './SourceField.svelte';
   import { pairedHalves } from './source-items.js';
-  import { sourceFile } from '../../site/files.js';
-  import { HANDMADE_ITEM } from '../../site/widgets/list/handmade.js';
-  import { TEXT_TYPES } from '../../site/property-types.js';
-  import { pointer } from '../../site/helpers.js';
+  import { sourceFile } from '../../render/files.js';
+  import { HANDMADE_ITEM } from '../../render/widgets/list/handmade.js';
+  import { TEXT_TYPES } from '../../render/property-types.js';
+  import { pointer } from '../../render/helpers.js';
   import Button from './Button.svelte';
   import { ui } from './ui.svelte.js';
-  import { PRESETS, cloneTemplate } from '../../site/widgets/list/presets.js';
-  import { t } from '../../site/strings.js';
+  import { PRESETS, cloneTemplate } from '../../render/widgets/list/presets.js';
+  import { t } from '../../render/strings.js';
   import { saveDev, templatesOp } from '../source.js';
   import { toast } from './toasts.svelte.js';
 

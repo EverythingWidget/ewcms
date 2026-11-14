@@ -9,7 +9,7 @@
   grab: a pointerdown on the photo (a list's drag handle, PhotoList.svelte); the thumbnail or Change opens the Media window on it (MediaModal.svelte), which
   stores the photo picked there in this field: one undo step. No text input.
   Used by the Pages panel, the Sources modal and Settings.
-  Bindings (a widget's setting: parts, src/site/layout/parts.js):
+  Bindings (a widget's setting: parts, src/render/layout/parts.js):
     binds     the item's properties this one can show, [{ value, label, hint }] (null: it can't
               bind). A picker at the end of the label row: Custom (its own text: what it showed
               becomes it), one of them (stores [{ "property": "<name>" }]) or, a text field,
@@ -23,8 +23,8 @@
     A whole value of another type (a photo, a number) is the item's, dimmed and read only.
 -->
 <script>
-  import { parseInput as parseValue } from '../../site/property-types.js';
-  import { isParts, isWhole } from '../../site/layout/parts.js';
+  import { parseInput as parseValue } from '../../render/property-types.js';
+  import { isParts, isWhole } from '../../render/layout/parts.js';
   import PartsInput from './PartsInput.svelte';
   import { partOfName } from '../lib/parts-input.js';
   import { showValue } from '../lib/show-value.js';
@@ -32,7 +32,7 @@
   import Select from './Select.svelte';
   import { countGroups } from '../property-groups.js';
   import Position from './Position.svelte';
-  import { baseName } from '../../site/files.js';
+  import { baseName } from '../../render/files.js';
   import { fallback, openMedia, photoInfo, photoLine, thumbUrl } from './media.svelte.js';
 
   // edit: the field's data-edit ("file#/pointer"), also on the label so others can find it.

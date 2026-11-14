@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { COLS, MCOLS, PHONE_MAX, PHONE_MQ } from '../src/site/layout/grid.js';
-import { sizes } from '../src/site/helpers.js';
+import { COLS, MCOLS, PHONE_MAX, PHONE_MQ } from '../src/render/layout/grid.js';
+import { sizes } from '../src/render/helpers.js';
 
 test('the phone breakpoint: PHONE_MAX is $bp-sm in the site tokens; sizes() uses it', () => {
   const scss = readFileSync(new URL('../src/client/styles/_tokens.scss', import.meta.url), 'utf8');

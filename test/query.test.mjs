@@ -10,12 +10,12 @@ import {
   ruleOf,
   unmatched,
   valueOf,
-} from '../src/site/query.js';
-import { widgetItems, mainAt, mainProblem, sourceOf } from '../src/site/layout/source.js';
-import { buildRoutes } from '../src/site/routes.js';
-import { contentFromFiles } from '../src/site/files.js';
-import { checkContent } from '../src/site/validate.js';
-import { itemHref } from '../src/site/helpers.js';
+} from '../src/render/query.js';
+import { widgetItems, mainAt, mainProblem, sourceOf } from '../src/render/layout/source.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { contentFromFiles } from '../src/render/files.js';
+import { checkContent } from '../src/render/validate.js';
+import { itemHref } from '../src/render/helpers.js';
 
 const schema = {
   version: 1,

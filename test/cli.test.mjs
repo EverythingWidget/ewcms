@@ -13,7 +13,10 @@ const FIXTURE = enginePath('test', 'fixtures', 'site-a');
 
 test('engine paths: /@fs URLs with "/" (also for a Windows path), %EWCMS% in html', () => {
   assert.ok(fs.existsSync(path.join(ENGINE, 'package.json')));
-  assert.match(fsUrl(enginePath('src', 'site', 'render.js')), /^\/@fs\/.*\/src\/site\/render\.js$/);
+  assert.match(
+    fsUrl(enginePath('src', 'render', 'render.js')),
+    /^\/@fs\/.*\/src\/render\/render\.js$/,
+  );
   assert.doesNotMatch(fsUrl(enginePath('src', 'x.js')), /\\/);
   const html = withEngineUrls(`<script src="${ENGINE_MARK}/src/main.js"></script>`);
   assert.equal(html, `<script src="${fsUrl(enginePath('src', 'main.js'))}"></script>`);

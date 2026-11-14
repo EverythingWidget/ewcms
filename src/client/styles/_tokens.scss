@@ -1,8 +1,8 @@
 // Core design tokens: the breakpoints, the stacking layers, the grid and the text styles the
-// layout code mirrors (src/site/layout/grid.js, type.js, contain.js). The look (colours,
+// layout code mirrors (src/render/layout/grid.js, type.js, contain.js). The look (colours,
 // fonts, radius, easing, the header's height) is the theme's: site-theme/styles/_tokens.scss.
 
-// the phone breakpoint: PHONE_MAX in src/site/layout/grid.js (keep the two equal)
+// the phone breakpoint: PHONE_MAX in src/render/layout/grid.js (keep the two equal)
 $bp-md: 900px;
 $bp-sm: 760px;
 
@@ -19,13 +19,13 @@ $z-curtain: 80; // .curtain: the page transition, over all chrome
 $z-skip: 200; // .skip-link: always on top when focused
 
 :root {
-  // the square grid's columns: COLS and MCOLS in src/site/layout/grid.js (keep them equal)
+  // the square grid's columns: COLS and MCOLS in src/render/layout/grid.js (keep them equal)
   --cols: 120;
   --mcols: 60;
 
   --pad: clamp(16px, 2.6vw, 40px);
   --gap: clamp(12px, 1.4vw, 22px);
-  // a Fit width line's starting sizes, in cells (src/site/layout/type.js TEXT_STYLES): its
+  // a Fit width line's starting sizes, in cells (src/render/layout/type.js TEXT_STYLES): its
   // own --tkf scales them to the widget's width
   --ts-title: 19;
   --ts-title-lh: 0.82;
@@ -56,7 +56,7 @@ $z-skip: 200; // .skip-link: always on top when focused
   --ts-small-tr: 0;
   --ts-small-min: 11px;
   // the type scale: each text style's font size, px, between min and max (growing with the
-  // window; equal: fixed) and line height (× the size). src/site/layout/type.js TYPE_SCALE
+  // window; equal: fixed) and line height (× the size). src/render/layout/type.js TYPE_SCALE
   // (keep them equal); site.json "type" overrides them in the page's head (_text.scss uses them)
   --type-title-min: 72px;
   --type-title-max: 250px;

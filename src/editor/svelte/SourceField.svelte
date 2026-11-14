@@ -18,7 +18,7 @@
 <script>
   import Button from './Button.svelte';
   import { schemaFor } from './source-items.js';
-  import { sourceFile } from '../../site/files.js';
+  import { sourceFile } from '../../render/files.js';
   import { fallback, thumbUrl } from './media.svelte.js';
   import { openItemModal } from './modals.svelte.js';
 

@@ -15,7 +15,7 @@
   import { untrack } from 'svelte';
   import Button from './Button.svelte';
   import Tabs from './Tabs.svelte';
-  import { SITE, contentPath } from '../../site/files.js';
+  import { SITE, contentPath } from '../../render/files.js';
   import ContentPanel from './ContentPanel.svelte';
   import SettingsPanel from './SettingsPanel.svelte';
   import PublishModal from './PublishModal.svelte';
@@ -39,7 +39,7 @@
   import UpdateNotice from './UpdateNotice.svelte';
   import WidgetToolbar from './WidgetToolbar.svelte';
   import TemplateCols from './TemplateCols.svelte';
-  import { templateOfPath } from '../../site/widgets/list/template-preview.js';
+  import { templateOfPath } from '../../render/widgets/list/template-preview.js';
   import { layerWidget } from '../layout-ops.js';
   import { targetFile } from '../layout-sync.js';
   import {

@@ -9,8 +9,8 @@ import { onGrid, template } from '../scripts/grid-helper.mjs';
 import { createStore } from '../src/editor/store.js';
 import { linkWidget, placePhone, placeWidget, setSectionRows } from '../src/editor/layout-ops.js';
 import { addAt } from '../src/editor/lib/item-template.js';
-import { flowAreas } from '../src/site/layout/geometry.js';
-import { checkContent } from '../src/site/validate.js';
+import { flowAreas } from '../src/render/layout/geometry.js';
+import { checkContent } from '../src/render/validate.js';
 
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 const T = 'templates/t-ab12.json';

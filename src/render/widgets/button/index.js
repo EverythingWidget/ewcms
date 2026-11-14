@@ -6,7 +6,7 @@ import { html, esc, extAttrs } from '../../helpers.js';
 import { hrefOf } from '../../hrefs.js';
 
 /**
- * A button linking somewhere (config.link: a page, an item or a URL; src/site/hrefs.js). Its
+ * A button linking somewhere (config.link: a page, an item or a URL; src/render/hrefs.js). Its
  * label is edited in its settings popup only (no widget.ed: never inline in the preview; only a Text
  * widget's content is).
  */

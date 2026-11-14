@@ -1,12 +1,12 @@
 /**
  * Plain helpers for source items (Sources, SourcesModal.svelte, and the Content
- * tab): the source's schema (src/site/schemas.js), an item's name and list line, its
+ * tab): the source's schema (src/render/schemas.js), an item's name and list line, its
  * properties as the editor's fields, a new item, the slug format.
  */
-import { pointer } from '../../site/helpers.js';
-import { itemsOf, schemaFile, sourceIdOf } from '../../site/files.js';
-import { itemTitle, newItemOf, schemaOf } from '../../site/schemas.js';
-import { controlOf } from '../../site/property-types.js';
+import { pointer } from '../../render/helpers.js';
+import { itemsOf, schemaFile, sourceIdOf } from '../../render/files.js';
+import { itemTitle, newItemOf, schemaOf } from '../../render/schemas.js';
+import { controlOf } from '../../render/property-types.js';
 
 /** The schema of a source file ("sources/people.json") in the store: its schema file, else inferred. */
 export function schemaFor(store, file) {
@@ -31,7 +31,7 @@ export const itemMeta = (item, schema) =>
 
 export const pad = (i) => String(i + 1).padStart(2, '0');
 
-export { slugify } from '../../site/helpers.js';
+export { slugify } from '../../render/helpers.js';
 
 /**
  * What the editor shows for schema property `f` (a value at `path` in item i of `file`):

@@ -1,8 +1,8 @@
 /**
  * The template editor's Style tab (TemplatePanel.svelte): one picker per item style key
- * (src/site/widgets/list/item-style.js), its first option Theme ('': the key left out).
+ * (src/render/widgets/list/item-style.js), its first option Theme ('': the key left out).
  */
-import { STYLE_KEYS } from '../../site/widgets/list/item-style.js';
+import { STYLE_KEYS } from '../../render/widgets/list/item-style.js';
 
 const px = (n) => [String(n), `${n} px`];
 const RATIO = {

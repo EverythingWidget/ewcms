@@ -3,8 +3,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseHTML } from 'linkedom';
 import { readBody, renderEditing, posOf, pointOf, isCaret } from '../src/editor/rich.js';
-import { htmlLines, renderBody } from '../src/site/text.js';
-import { isSafeHref } from '../src/site/hrefs.js';
+import { htmlLines, renderBody } from '../src/render/text.js';
+import { isSafeHref } from '../src/render/hrefs.js';
 
 const dom = (inner = '') => {
   const { document } = parseHTML(

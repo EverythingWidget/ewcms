@@ -1,9 +1,9 @@
 /**
- * The DOM side of PartsInput.svelte (a text field with property chips: src/site/layout/parts.js):
+ * The DOM side of PartsInput.svelte (a text field with property chips: src/render/layout/parts.js):
  * render a value as text and chips, read it back, turn a typed {name} into a chip.
  */
-import { esc } from '../../site/helpers.js';
-import { isPropertyPart, isParts, partLabel } from '../../site/layout/parts.js';
+import { esc } from '../../render/helpers.js';
+import { isPropertyPart, isParts, partLabel } from '../../render/layout/parts.js';
 
 const unknown = (names, name) => !!names && !names.has(name);
 

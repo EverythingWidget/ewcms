@@ -1,8 +1,8 @@
 // A site with no pages yet: renderRoute must not crash (dev GET / was 500 at route.id).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { getRoutes, buildRoutes } from '../src/site/routes.js';
-import { renderRoute, EMPTY_ROUTE } from '../src/site/render.js';
+import { getRoutes, buildRoutes } from '../src/render/routes.js';
+import { renderRoute, EMPTY_ROUTE } from '../src/render/render.js';
 
 const empty = (site) => ({
   site,

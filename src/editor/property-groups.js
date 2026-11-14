@@ -5,7 +5,7 @@
  *   Count of this List  {items}, how many items the List shows (only on a List widget)
  *   Count of a source   {people}, … how many items each source has
  *
- * Neither is a property of the item (../site/layout/parts.js has the names' order: the item's
+ * Neither is a property of the item (../render/layout/parts.js has the names' order: the item's
  * own property, then {items} on a List, then a source).
  */
 export const THIS_LIST = 'Count of this List';

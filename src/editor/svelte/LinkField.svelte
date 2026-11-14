@@ -1,18 +1,18 @@
 <!--
-  A link (src/site/hrefs.js): one Select of where it goes, a page of the site (by its id), a
+  A link (src/render/hrefs.js): one Select of where it goes, a page of the site (by its id), a
   source item's page (by the item's id), a property of the widget's item (binds, [{ property }]) or an
   external link (a URL), with the URL's input under it; the dropdown searchable. value: the link ({ page } | { item } | { href }
   | [{ property }]); onvalue(next) gets the next one (undefined: no link, when `empty` is set).
   Used by widget settings and list fields (GroupFields.svelte) and the header's menu (HeaderPart).
 -->
 <script>
-  import { isWhole } from '../../site/layout/parts.js';
+  import { isWhole } from '../../render/layout/parts.js';
   import Field from './Field.svelte';
   import Select from './Select.svelte';
   import { ui } from './ui.svelte.js';
   import { itemName, schemaFor } from './source-items.js';
-  import { sourceFile, sourceIds } from '../../site/files.js';
-  import { linkKind } from '../../site/hrefs.js';
+  import { sourceFile, sourceIds } from '../../render/files.js';
+  import { linkKind } from '../../render/hrefs.js';
 
   let {
     live,

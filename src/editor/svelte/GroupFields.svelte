@@ -27,9 +27,9 @@
   import { openMedia } from './media.svelte.js';
   import { pairedHalves } from './source-items.js';
   import SourceField from './SourceField.svelte';
-  import { sourceFile } from '../../site/files.js';
-  import { isParts } from '../../site/layout/parts.js';
-  import { presetOf } from '../../site/widgets/list/presets.js';
+  import { sourceFile } from '../../render/files.js';
+  import { isParts } from '../../render/layout/parts.js';
+  import { presetOf } from '../../render/widgets/list/presets.js';
   import { MISSING_OPTIONS } from '../widget-layout.js';
 
   let { g, live, bridge, sourceIds, onsource, bindings = null, lead } = $props();

@@ -4,7 +4,7 @@
  * out, on load and whenever the section resizes (ResizeObserver, window resize; both
  * rAF-throttled: at most one flow per frame). A column and a row are both --cell: the cells are square.
  *
- * Real rows (src/site/layout/flow.js): measures every widget of the view's sections and sets
+ * Real rows (src/render/layout/flow.js): measures every widget of the view's sections and sets
  * where it sits and how many rows it spans now, as --fr / --frs on the widget and --frows on
  * the section (_layout.scss reads them over the stored --r / --rs / --rows, or on the phone
  * grid --mr / --mrs / --mrows). The stored area is what the page renders with before this
@@ -12,7 +12,7 @@
  *
  * Measured: an auto widget's height as its content makes it (`.sec--measure` lets every widget
  * be as tall as its content for that read), or an aspect widget's width × ratio; a fixed-rows
- * widget keeps its rows. Then the links (src/site/layout/links.js, data-link / data-mlink on
+ * widget keeps its rows. Then the links (src/render/layout/links.js, data-link / data-mlink on
  * the widget: "<leader id> <gap>"; the leader named by data-widget in the editor, data-tw in an
  * item template, data-lead on the public page) are resolved in their order: a follower's first row is its
  * leader's last row now + 1 + its gap; a free widget stays at its stored row. Run again when
@@ -25,9 +25,9 @@
  * the whole rows that fit; rows stay square, so a screen-high widget's rows may be up to a cell
  * short of the screen, its content still is).
  */
-import { resolveRows, rowsFor } from '../../site/layout/flow.js';
-import { COLS, MCOLS, PHONE_MQ, cellOf } from '../../site/layout/grid.js';
-import { areaOfEl, linkOfEl, widthOf } from '../../site/layout/geometry.js';
+import { resolveRows, rowsFor } from '../../render/layout/flow.js';
+import { COLS, MCOLS, PHONE_MQ, cellOf } from '../../render/layout/grid.js';
+import { areaOfEl, linkOfEl, widthOf } from '../../render/layout/geometry.js';
 
 const PHONE = PHONE_MQ;
 const VARS = ['--fr', '--frs'];

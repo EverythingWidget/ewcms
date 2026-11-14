@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { boxOf } from '../src/site/layout/geometry.js';
+import { boxOf } from '../src/render/layout/geometry.js';
 import { createStore } from '../src/editor/store.js';
 import { addSection, placeWidget } from '../src/editor/layout-ops.js';
 

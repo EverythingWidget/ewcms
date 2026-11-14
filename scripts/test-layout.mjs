@@ -4,10 +4,10 @@
  * back (flat) for assertions. And a git environment for tests that run git (testEnv,
  * useTestEnv; see git-env.mjs for why).
  */
-import { isRootFile } from '../src/site/files.js';
+import { isRootFile } from '../src/render/files.js';
 import fs from 'node:fs';
 import path from 'node:path';
-import { storesRows } from '../src/site/layout/grid.js';
+import { storesRows } from '../src/render/layout/grid.js';
 
 const clean = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined));
 
@@ -78,7 +78,7 @@ export const read = (root, f) =>
   JSON.parse(fs.readFileSync(path.join(root, isRootFile(f) ? 'content' : 'content/en', f), 'utf8'));
 
 /**
- * A [param] page's content (src/site/layout/source.js) for page `id` ("people/[person]"): an
+ * A [param] page's content (src/render/layout/source.js) for page `id` ("people/[person]"): an
  * album widget as its main widget, From URL `from`, each param of the address matching the property
  * `properties` names for it, else slug. extra: more keys of the page (meta, ...).
  */

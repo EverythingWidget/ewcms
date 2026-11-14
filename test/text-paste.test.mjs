@@ -1,8 +1,8 @@
 // Text widget fixes: safe links, paste into lines, fit to widget's search.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { isSafeHref, linkProblem, hrefOf, UNSAFE_HREF } from '../src/site/hrefs.js';
-import { checkBody, deleteRange, insertLines, plainLines, htmlLines } from '../src/site/text.js';
+import { isSafeHref, linkProblem, hrefOf, UNSAFE_HREF } from '../src/render/hrefs.js';
+import { checkBody, deleteRange, insertLines, plainLines, htmlLines } from '../src/render/text.js';
 import { fitFactor } from '../src/client/modules/fit.js';
 
 test('links: only safe URLs; checked in a body; never output', () => {

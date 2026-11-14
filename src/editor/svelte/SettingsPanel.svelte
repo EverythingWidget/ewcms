@@ -5,9 +5,9 @@
   (site.json), its search and share defaults (SEO: titles, description, share photo,
   address, robots, language; a page's own are in Nav > SEO), the Page entrance section (the site's curtain
   and the page fade, animations.json), where uploaded photos are served from (site.json mediaUrl)
-  and the text styles' sizes (Type: site.json type, px, src/site/layout/type.js; the preview
+  and the text styles' sizes (Type: site.json type, px, src/render/layout/type.js; the preview
   follows them as they are typed, and its Preview shows every style: the type specimen,
-  site/layout/type-specimen.js, until Close preview or the Pages tab).
+  render/layout/type-specimen.js, until Close preview or the Pages tab).
   Per-page things stay in Nav, on the page (sections; Motion: its animations, scroll
   backdrop and curtain; SEO); the header's menu and labels are the Header site part in Content
   (HeaderPart.svelte). redirects.json is in Redirects (RedirectSettings.svelte).
@@ -24,19 +24,19 @@
   import EntranceFade from './EntranceFade.svelte';
   import { ui } from './ui.svelte.js';
   import { SEO_SETTINGS, SITE_SETTINGS } from './content-groups.js';
-  import { TARGETS } from '../../site/widgets/form/index.js';
-  import { SITE } from '../../site/files.js';
-  import { COLS } from '../../site/layout/grid.js';
-  import { TYPE_KEYS, TYPE_SCALE, TYPE_VARS, typeVarList } from '../../site/layout/type.js';
-  import { isTypeSpecimen } from '../../site/layout/type-specimen.js';
-  import { LINE_STYLES } from '../../site/text.js';
-  import { isObject } from '../../site/is.js';
+  import { TARGETS } from '../../render/widgets/form/index.js';
+  import { SITE } from '../../render/files.js';
+  import { COLS } from '../../render/layout/grid.js';
+  import { TYPE_KEYS, TYPE_SCALE, TYPE_VARS, typeVarList } from '../../render/layout/type.js';
+  import { isTypeSpecimen } from '../../render/layout/type-specimen.js';
+  import { LINE_STYLES } from '../../render/text.js';
+  import { isObject } from '../../render/is.js';
   import {
     CONTAINED,
     CONTAINED_MIN,
     containedOf,
     containedWidth,
-  } from '../../site/layout/contain.js';
+  } from '../../render/layout/contain.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
   // actions: showSpecimen (main.js)

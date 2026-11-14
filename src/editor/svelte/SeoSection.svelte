@@ -1,7 +1,7 @@
 <!--
   Nav > SEO (a tab of the page panel), plain fields: its address (PageAddress.svelte:
   renames it), then what search engines and share cards say about the page in the preview, from
-  its file's "meta" (src/site/seo.js). A page: title, description, share photo, noindex and
+  its file's "meta" (src/render/seo.js). A page: title, description, share photo, noindex and
   canonical. A [param] page: its template's defaults for every item page (an item's own name,
   summary and cover come first). Below, a search result and a share card as the build makes
   them, with the character counts search engines show. Empty fields fall back to the site's
@@ -14,8 +14,8 @@
   import PageAddress from './PageAddress.svelte';
   import { ui } from './ui.svelte.js';
   import { photoSrcset, photoUrl, media } from './media.svelte.js';
-  import { DESCRIPTION_MAX, TITLE_MAX, seoOf } from '../../site/seo.js';
-  import { contentFromFiles, isTemplate, pageIdOf } from '../../site/files.js';
+  import { DESCRIPTION_MAX, TITLE_MAX, seoOf } from '../../render/seo.js';
+  import { contentFromFiles, isTemplate, pageIdOf } from '../../render/files.js';
 
   // live: reactive store (live.svelte.js); file: the page file of the preview
   // actions: pagesOp (main.js: the Address renames the page on disk)

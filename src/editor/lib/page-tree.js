@@ -4,7 +4,7 @@
  *
  * A level is a page's folder (its page id; '' is the top, home's folder). It shows:
  *   own        a folder's root row: its own page, always (locked first); off ("ownPage":
- *              false: its URL opens its first sub page, src/site/routes.js) it is still there,
+ *              false: its URL opens its first sub page, src/render/routes.js) it is still there,
  *              quieter. The top has none: its page is home, a row of the menu like the others
  *   sub        the pages in the folder that are in the menu (header.json), in the menu's order
  *              (at the top home too), then its [param] page (pinned last; a [param] folder
@@ -28,7 +28,7 @@ import {
   isTemplate,
   pageFile,
   pageIdOf,
-} from '../../site/files.js';
+} from '../../render/files.js';
 import {
   getRoutes,
   navOrder,
@@ -36,7 +36,7 @@ import {
   parentId,
   pathOfId,
   titleCase,
-} from '../../site/routes.js';
+} from '../../render/routes.js';
 
 export const FIXED = ['home', '404'];
 const NOT_FOUND = '404';
@@ -111,7 +111,7 @@ export function levelOf(files, level, filter = 'all', routes = null) {
       template,
       // a [param] page in one: its pages are per outer page ("[person]")
       nested: template && isTemplate(parentId(id)) ? nameOf(parentId(id)) : null,
-      // the pages it builds (its main widget decides: src/site/layout/source.js)
+      // the pages it builds (its main widget decides: src/render/layout/source.js)
       count: template ? built.filter((r) => r.id === id).length : undefined,
       fixed: FIXED.includes(id),
       movable: !template && id !== NOT_FOUND,

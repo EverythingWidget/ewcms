@@ -33,7 +33,7 @@
  *   width    'contained': inside the page's side margins | 'full': edge to edge
  *   enabled  false: off: not on the public page at all; in the editor's preview rendered hidden
  *            (so it can be turned on live)
- * A widget (its content: src/site/widgets/index.js):
+ * A widget (its content: src/render/widgets/index.js):
  *   layout   { base, phone? }: where it sits. base: { col, span, row, rows?, link? }: its
  *            grid area (columns 1-120, rows (cells) from 1) and its link. phone (optional,
  *            below 760px): any of the same keys over the phone grid of 60 columns: an area of
@@ -208,7 +208,7 @@ export function sectionClass(s) {
 /**
  * What is wrong with each section's name, by index ('' when nothing, or no name): text whose
  * anchor starts with a letter, isn't one of the page's own ids, and no other section on the
- * page has (src/site/validate.js; the editor's name field shows it as you type).
+ * page has (src/render/validate.js; the editor's name field shows it as you type).
  */
 export function nameProblems(sections) {
   const list = Array.isArray(sections) ? sections : [];
@@ -318,7 +318,7 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
     const miss = missingOf({ v: value }, { settings: [{ key: 'v' }] }, scope).missing.length;
     return miss ? `${attr} data-bound-missing` : attr;
   };
-  // the render's `widget` (src/site/widgets/index.js): its id, file, ed() and what it shows
+  // the render's `widget` (src/render/widgets/index.js): its id, file, ed() and what it shows
   const api = {
     id: widget.id,
     file,

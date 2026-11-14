@@ -1,5 +1,5 @@
 <!--
-  Site Settings > Redirects: content/redirects.json (src/site/redirects.js), the old
+  Site Settings > Redirects: content/redirects.json (src/render/redirects.js), the old
   addresses that send visitors on, written to dist/_redirects by the build. Renaming or
   deleting a page in the pages list, and changing an item's slug, add them by themselves;
   here they can be checked, changed, added and removed. Each: from (a path, or a pattern like
@@ -11,9 +11,9 @@
   import ListField from './ListField.svelte';
   import Collapsible from './Collapsible.svelte';
   import Select from './Select.svelte';
-  import { REDIRECTS } from '../../site/files.js';
-  import { isExternal } from '../../site/helpers.js';
-  import { buildRedirects, redirectsOf, sitePaths } from '../../site/redirects.js';
+  import { REDIRECTS } from '../../render/files.js';
+  import { isExternal } from '../../render/helpers.js';
+  import { buildRedirects, redirectsOf, sitePaths } from '../../render/redirects.js';
 
   // live: reactive store (live.svelte.js)
   let { live } = $props();

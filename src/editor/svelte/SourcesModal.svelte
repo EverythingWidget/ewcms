@@ -8,7 +8,7 @@
   file, item or field). Where it is lives in ui.sources, so persist.js can bring it back after
   a refresh.
   What an item has comes from its source's schema (sources/<id>.schema.json, else inferred:
-  src/site/schemas.js): the properties, their labels, types, widths and help, its name and slug.
+  src/render/schemas.js): the properties, their labels, types, widths and help, its name and slug.
 -->
 <script>
   import { plural } from '../lib/format.js';
@@ -22,7 +22,7 @@
   import { ui } from './ui.svelte.js';
   import { closeModal, modal } from './modals.svelte.js';
   import { isSource } from './content-groups.js';
-  import { baseName } from '../../site/files.js';
+  import { baseName } from '../../render/files.js';
   import {
     itemName,
     itemMeta,

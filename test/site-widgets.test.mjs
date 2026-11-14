@@ -17,10 +17,10 @@ import {
   registerWidgets,
   widgetProblems,
   isCustomWidget,
-} from '../src/site/widgets/index.js';
-import { renderRoute, getRoutes } from '../src/site/render.js';
-import { checkContent } from '../src/site/validate.js';
-import { newWidget } from '../src/site/layout/index.js';
+} from '../src/render/widgets/index.js';
+import { renderRoute, getRoutes } from '../src/render/render.js';
+import { checkContent } from '../src/render/validate.js';
+import { newWidget } from '../src/render/layout/index.js';
 import { createStore } from '../src/editor/store.js';
 import { addWidget } from '../src/editor/layout-ops.js';
 

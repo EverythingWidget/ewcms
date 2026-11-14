@@ -1,4 +1,4 @@
-// Feature 3: When a value is missing + config.needs (src/site/layout/missing.js) in templates
+// Feature 3: When a value is missing + config.needs (src/render/layout/missing.js) in templates
 // and on pages; a button hides on an empty link or label; false is empty for hiding.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,12 +7,12 @@ import fs from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { warnings } from '../scripts/test-layout.mjs';
 import { loadContent } from '../scripts/content.mjs';
-import { buildRoutes } from '../src/site/routes.js';
-import { newWidget, newSection, renderSections } from '../src/site/layout/index.js';
-import { checkContent } from '../src/site/validate.js';
-import { bindingProblems } from '../src/site/layout/bindings.js';
-import { WIDGET_TYPES } from '../src/site/widgets/index.js';
-import { goneOf, missingState } from '../src/site/layout/missing.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
+import { checkContent } from '../src/render/validate.js';
+import { bindingProblems } from '../src/render/layout/bindings.js';
+import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { goneOf, missingState } from '../src/render/layout/missing.js';
 import { TEMPLATE_MISSING } from '../src/editor/lib/item-template.js';
 import { SITE_A } from './fixtures/index.mjs';
 

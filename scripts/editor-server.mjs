@@ -28,7 +28,7 @@
  * Host header (widgets DNS rebinding) and, when present, a same-origin Origin header.
  * Only existing JSON files in content/en/pages/, content/en/sources/, content/en/strings.json,
  * the shared files at the content root (content/site.json, header.json, ...) and content/templates/ can be
- * read or written (site.config.mjs contentDir, src/site/files.js FOLDERS); Save never creates files: only
+ * read or written (site.config.mjs contentDir, src/render/files.js FOLDERS); Save never creates files: only
  * the pages list does (POST /pages), and only page files under content/en/pages/.
  */
 import fs from 'node:fs';
@@ -66,11 +66,11 @@ import {
   sourceIdOf,
   contentFromFiles,
   FOLDERS,
-} from '../src/site/files.js';
-import { templateOfPath, templatePreview } from '../src/site/widgets/list/template-preview.js';
-import { isTypeSpecimen, typeSpecimen } from '../src/site/layout/type-specimen.js';
-import { checkItems, photoChecker, schemaOf } from '../src/site/schemas.js';
-import { NAMED_VIEWS, getRoutes, pathOfId, titleCase } from '../src/site/routes.js';
+} from '../src/render/files.js';
+import { templateOfPath, templatePreview } from '../src/render/widgets/list/template-preview.js';
+import { isTypeSpecimen, typeSpecimen } from '../src/render/layout/type-specimen.js';
+import { checkItems, photoChecker, schemaOf } from '../src/render/schemas.js';
+import { NAMED_VIEWS, getRoutes, pathOfId, titleCase } from '../src/render/routes.js';
 import { MAX_UPLOAD, deletePhoto, r2Config, uploadPhoto, writePhotos } from './r2.mjs';
 import { uploadLocal } from './local-upload.mjs';
 import { photoUses } from '../src/editor/lib/photo-uses.js';
@@ -95,17 +95,17 @@ import {
   redirectsOf,
   renameParam,
   sitePaths,
-} from '../src/site/redirects.js';
-import { checkContent } from '../src/site/validate.js';
-import { omitDefaults } from '../src/site/defaults.js';
-import { newWidget, newSection } from '../src/site/layout/index.js';
-import { eachWidget } from '../src/site/layout/ids.js';
-import { pageSourceOf, sourceOf } from '../src/site/layout/source.js';
-import { defaultWhere, rulesOf } from '../src/site/query.js';
-import { newId } from '../src/site/layout/ids.js';
-import { bindingProblems } from '../src/site/layout/bindings.js';
-import { motionProblems } from '../src/site/layout/motion.js';
-import { WIDGET_TYPES } from '../src/site/widgets/index.js';
+} from '../src/render/redirects.js';
+import { checkContent } from '../src/render/validate.js';
+import { omitDefaults } from '../src/render/defaults.js';
+import { newWidget, newSection } from '../src/render/layout/index.js';
+import { eachWidget } from '../src/render/layout/ids.js';
+import { pageSourceOf, sourceOf } from '../src/render/layout/source.js';
+import { defaultWhere, rulesOf } from '../src/render/query.js';
+import { newId } from '../src/render/layout/ids.js';
+import { bindingProblems } from '../src/render/layout/bindings.js';
+import { motionProblems } from '../src/render/layout/motion.js';
+import { WIDGET_TYPES } from '../src/render/widgets/index.js';
 
 /** A new page's heading row: below the header (16 empty rows, ~180px at 1440 wide). */
 const HEAD_ROW = 17;
@@ -140,7 +140,7 @@ export function editableFiles(root) {
 
 // ---------------------------------------------------------------- item templates
 /**
- * POST /templates { op: 'add', data }: write `data` (an item template, src/site/validate.js
+ * POST /templates { op: 'add', data }: write `data` (an item template, src/render/validate.js
  * checkItemTemplate) as a new content/templates/t-<id>.json under a fresh id. The only way a
  * template file is made (Save never creates files). Returns { status, body }: body { ok, id,
  * file, data, created: [file] }.
@@ -171,7 +171,7 @@ const PROTECTED = new Set(['home', '404']); // no rename, move or delete
 /**
  * The pages list (src/editor/svelte/PagesList.svelte, AddPageModal, the SEO tab's Address): the pages in content/en/pages/. Every
  * page is a folder, its URL, with its own file index.json inside; pages/index.json is home,
- * whose folder is content/en/pages/ itself. Ids as in src/site/files.js: "home", "people",
+ * whose folder is content/en/pages/ itself. Ids as in src/render/files.js: "home", "people",
  * "people/whatever", "people/[person]". `parent` is the id of the page whose folder it is
  * about, '' for the root (the pages next to home's file).
  *
@@ -197,7 +197,7 @@ const PROTECTED = new Set(['home', '404']); // no rename, move or delete
  * folder is never at the root, a folder has at most one, and one can hold only another
  * (with another name: "[person]/[year]"). Returns { status, body }; body.created and body.removed list the
  * content files ("pages/x/index.json") that appeared and went, body.changed the others it
- * wrote: rename and delete keep links and redirects.json up to date (src/site/redirects.js),
+ * wrote: rename and delete keep links and redirects.json up to date (src/render/redirects.js),
  * body.links links were changed, body.broken links point at a deleted page without a
  * redirect, body.added and body.pruned are the redirects added and removed (from a path that
  * is a page again).
@@ -310,7 +310,7 @@ export function pagesOp(
       const t = String(title || '').trim() || titleCase(name);
       const file = pageFile(join(parent, name));
       onWrite();
-      // a new page starts with a Text widget: its label and title (src/site/layout/), below the header: sections have
+      // a new page starts with a Text widget: its label and title (src/render/layout/), below the header: sections have
       // no space above, so the rows above it are empty (HEAD_ROW)
       const ids = new Set();
       const heading = {
@@ -530,7 +530,7 @@ export function pagesOp(
 
 /**
  * Problems of the sources among `files` (or whose schema is among them) against their
- * schema (src/site/schemas.js): the schema in `files`, else on disk, else inferred. Photos
+ * schema (src/render/schemas.js): the schema in `files`, else on disk, else inferred. Photos
  * must be in the media manifest or photos.json.
  */
 function sourceProblems(root, files) {
@@ -583,7 +583,7 @@ function albumWidget(root, source, ids, params, key) {
 }
 
 /**
- * Widgets of the saved pages whose animation isn't in the library (src/site/layout/motion.js):
+ * Widgets of the saved pages whose animation isn't in the library (src/render/layout/motion.js):
  * an unknown animation id is a save error. A saved animations.json can break any page.
  */
 function motionErrors(root, files) {
@@ -593,7 +593,7 @@ function motionErrors(root, files) {
 }
 
 /**
- * Bindings of the saved pages that don't fit their sources' schemas (src/site/layout/bindings.js;
+ * Bindings of the saved pages that don't fit their sources' schemas (src/render/layout/bindings.js;
  * the 'error' level: an unknown source or property, a type that doesn't fit). A saved schema or
  * source can break any page's bindings, so then every page is checked.
  */
@@ -611,7 +611,7 @@ function bindingErrors(root, files) {
 
 /**
  * Save: write the editor's files ({ "pages/index.json": data, ... }) to content/. Only existing
- * editable files, and only when every one of them has the right shape (src/site/validate.js)
+ * editable files, and only when every one of them has the right shape (src/render/validate.js)
  * and every source fits its schema (sourceProblems): nothing is written otherwise. Each file is written atomically (temp file + rename).
  * Returns { status, body }.
  */
@@ -854,7 +854,7 @@ const parseJSON = (text) => {
 
 /**
  * Content files that differ from HEAD (the ones Publish would commit), plus branch and
- * push state. Only content files (src/site/files.js FOLDERS, LANG_FILES, ROOT_FILES, the
+ * push state. Only content files (src/render/files.js FOLDERS, LANG_FILES, ROOT_FILES, the
  * templates) are looked at.
  */
 export async function contentStatus(root) {
@@ -1105,7 +1105,7 @@ export function draftOp(root, drafts, files, session) {
 /**
  * POST /__editor/render: the HTML of some sections of a page in the preview, from the
  * editor's copy of its file (data) over the drafts, so the preview swaps just those
- * sections after a structure edit (src/editor/layout-sync.js). render: src/site/render.js.
+ * sections after a structure edit (src/editor/layout-sync.js). render: src/render/render.js.
  * { path, file, data, ids } -> { ok, html: { [section id]: html } }
  */
 export function renderOp(render, root, drafts, { path: at, file, data, ids, session } = {}) {
@@ -1157,7 +1157,7 @@ const sendJSON = (res, status, data) => {
  * @param {{ root: string, logger: import('vite').Logger, env?: object, drafts?: object, onWrite?: () => void, render?: () => Promise<object> }} opts
  * env: the R2_* variables for uploads (Node side only). drafts: the unsaved edits pages render
  * from (draftOp). onWrite runs right before files are written (used to keep the editor from
- * reloading itself). render: loads src/site/render.js (Vite's, so template edits show).
+ * reloading itself). render: loads src/render/render.js (Vite's, so template edits show).
  */
 export function editorMiddleware({
   root,
@@ -1165,7 +1165,7 @@ export function editorMiddleware({
   env = {},
   drafts = {},
   onWrite = () => {},
-  render = () => import('../src/site/render.js'),
+  render = () => import('../src/render/render.js'),
   updater = null,
 }) {
   const log = (msg) => logger.info(`\x1b[32m✓\x1b[0m ${msg}`, { timestamp: true });

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { checkBody, renderBody, splitLine, tidyBody, toggleFit } from '../src/site/text.js';
+import { checkBody, renderBody, splitLine, tidyBody, toggleFit } from '../src/render/text.js';
 import { scaleFactor } from '../src/client/modules/fit.js';
 
 const L = (t, style = 'title', more = {}) => ({ style, ...more, text: [{ t }] });

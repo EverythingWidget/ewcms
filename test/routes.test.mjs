@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { paramPage } from '../scripts/test-layout.mjs';
-import { buildRoutes, pathOfId, sitemapXml } from '../src/site/routes.js';
-import { contentFromFiles, isContentFile, pageFile, pageIdOf } from '../src/site/files.js';
-import { itemHref, slugify } from '../src/site/helpers.js';
+import { buildRoutes, pathOfId, sitemapXml } from '../src/render/routes.js';
+import { contentFromFiles, isContentFile, pageFile, pageIdOf } from '../src/render/files.js';
+import { itemHref, slugify } from '../src/render/helpers.js';
 
 const site = { name: 'Site', title: 'Site home', description: 'd' };
 const content = (files) => contentFromFiles({ 'site.json': site, ...files });

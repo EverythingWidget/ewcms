@@ -3,7 +3,7 @@
  * the site's styles nor the editor's reach it):
  *
  *   Grid      the square cells (120 columns, the phone grid's 60, and its rows, all one
- *             --cell: src/site/layout/flow.js) of the selected widget's section only, while a
+ *             --cell: src/render/layout/flow.js) of the selected widget's section only, while a
  *             widget is selected (and so while it is dragged or resized) or an empty
  *             section's settings pop-up is open (ui.section), from the section's own computed grid: faint white lines, every 5th a little stronger. Nothing
  *             selected: no grid
@@ -48,9 +48,9 @@
  * (clicks(), widget, link) every frame, and the section metrics once per drag, so the grid
  * doesn't move under the pointer while the page reflows.
  */
-import { COLS, MAX_MIN_ROWS, MCOLS, makesLoop, sizeOf } from '../site/layout/index.js';
+import { COLS, MAX_MIN_ROWS, MCOLS, makesLoop, sizeOf } from '../render/layout/index.js';
 import { templateHit } from './lib/template-hit.js';
-import { resolveRows } from '../site/layout/flow.js';
+import { resolveRows } from '../render/layout/flow.js';
 import {
   flowAreas,
   linesOf,
@@ -59,8 +59,8 @@ import {
   boxOf,
   rectOf,
   tracksOf,
-} from '../site/layout/geometry.js';
-import { PHONE_MAX } from '../site/layout/grid.js';
+} from '../render/layout/geometry.js';
+import { PHONE_MAX } from '../render/layout/grid.js';
 import { clampDelta, hits, offscreen, selectedIds, toggle } from './multi-select.js';
 import { T } from './ui-tokens.js';
 import {
@@ -207,7 +207,7 @@ export function createOverlay({
   /**
    * The Grid Engine: an item template open (ui.target.kind 'item-template'), the overlay arranges
    * its item instead of the page: the preview's one item (the first .sec--item, the template's one
-   * section: src/site/widgets/list/item-grid.js) is the section, its own widgets
+   * section: src/render/widgets/list/item-grid.js) is the section, its own widgets
    * (.sec--item > .wgt[data-tw]) the widgets, dragged, resized and linked as a page's (the
    * writes go to the template's file: main.js widgetAt, its /sections/0). The preview page
    * around it (its List) is never picked, and a List on a page is one widget: a template's

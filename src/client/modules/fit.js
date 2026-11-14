@@ -1,8 +1,8 @@
 /**
- * A Text widget's live sizes (src/site/layout/type.js), worked out in the page and the editor's
+ * A Text widget's live sizes (src/render/layout/type.js), worked out in the page and the editor's
  * preview alike:
  *
- *   Fit width   a line with "fit": true ([data-fit], src/site/text.js) fills the widget's width,
+ *   Fit width   a line with "fit": true ([data-fit], src/render/text.js) fills the widget's width,
  *               on one line: --tkf on that line (_layout.scss: its style's size in cells × it).
  *               Never by its height; the other lines keep their style's size.
  *   Scale to fit  a widget with "scale": true (.wgt--scale): its text laid out at its normal

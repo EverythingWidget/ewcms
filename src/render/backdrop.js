@@ -18,7 +18,7 @@
  * drift. Rendered as a fixed layer under the sections (src/client/modules/backdrop.js); the
  * sections have no background of their own, so they show it.
  *
- * Defaults are left out on save (BACKDROP_DEFAULTS, src/site/defaults.js), and so are the
+ * Defaults are left out on save (BACKDROP_DEFAULTS, src/render/defaults.js), and so are the
  * other transition's options and a backdrop without photos (tidyBackdrop).
  */
 import { esc, html, img } from './helpers.js';

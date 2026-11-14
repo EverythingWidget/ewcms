@@ -1,5 +1,5 @@
 /**
- * The Text widget's inline editor (src/site/text.js has the model): a lean contenteditable
+ * The Text widget's inline editor (src/render/text.js has the model): a lean contenteditable
  * over the widget's rendered lines in the preview. Typing is the browser's; after each input
  * the lines are read back into the model (readBody). Everything else (a line's style, bold,
  * italic, a link, a property chip, Enter; `{name}` typed: text.js typedProperty) is an edit of the model (text.js), after
@@ -12,8 +12,8 @@
  * ([data-property]: atomic, contenteditable=false). Anything else the browser
  * makes (a pasted <div>, a <span style>) is read as its text, so the model stays clean.
  */
-import { MARKS, renderBody, tidyBody } from '../site/text.js';
-import { isSafeHref, linkProblem } from '../site/hrefs.js';
+import { MARKS, renderBody, tidyBody } from '../render/text.js';
+import { isSafeHref, linkProblem } from '../render/hrefs.js';
 
 const LINE = '[data-line]';
 const isChip = (n) => n.nodeType === 1 && n.dataset.property !== undefined;

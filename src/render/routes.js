@@ -18,7 +18,7 @@
  *
  * Which pages a [param] page has: its main widget decides ("main": "<widget id>", a From URL
  * widget, layout/source.js). Each param of the address matches a property of the main widget's
- * source (its rule, src/site/query.js); its pages: for each page of the folder around it, the
+ * source (its rule, src/render/query.js); its pages: for each page of the folder around it, the
  * items that match the params above, one page per value of its own param's property among them
  * (a URL part: the slug, or the value slugified), the first of those its item. A page exists
  * when at least one item matches; no main widget, or a param without a property to match: no pages
@@ -32,12 +32,12 @@
  * in the folder: the route keeps its path for the editor, gets `redirect` (that page's path),
  * links to it go straight there (hrefs.js), and the build writes a redirect instead of the page.
  *
- * Folders nest to any depth. Every page is its list of sections of widgets (src/site/layout/). Its
+ * Folders nest to any depth. Every page is its list of sections of widgets (src/render/layout/). Its
  * "view" (the class of <main> and <html data-page>, for the styles) is its "view" key,
  * else the built-in name of the same page (home, photography, people, places, projects,
  * about, 404), else "page"; templates default to "album" (no footer).
  *
- * Search and share meta (src/site/seo.js): a page's title is its meta.title, else its first
+ * Search and share meta (src/render/seo.js): a page's title is its meta.title, else its first
  * heading's title, else its folder name, in the site's titleTemplate (home: meta.title, else
  * site.title, in full); description, photo, canonical and noindex come from its "meta".
  * A [param] page: "<item name> | <section>", the item's body and cover, else the template's

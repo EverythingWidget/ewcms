@@ -2,7 +2,7 @@
  * Tiny, dependency-free helpers shared by every template.
  * Templates are plain functions: (data) => HTML string. They run in Node at
  * build time (prerender) and can also run in the browser (e.g. the future
- * visual editor's live preview), so nothing in src/site may use Node APIs.
+ * visual editor's live preview), so nothing in src/render may use Node APIs.
  */
 
 /** Escape text for HTML text/attribute context. Always use for content values. */
@@ -88,7 +88,7 @@ export const slugify = (text) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-/** URL slug of a source item: its schema's slug property, else its title slugified (src/site/schemas.js). */
+/** URL slug of a source item: its schema's slug property, else its title slugified (src/render/schemas.js). */
 export const itemSlug = (item, schema) => {
   const own = schema.slug ? item?.[schema.slug] : undefined;
   return own != null && own !== '' ? String(own) : slugify(itemTitle(item, schema) ?? '');

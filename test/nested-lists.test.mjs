@@ -1,26 +1,26 @@
-// List step 10: nested Lists (two levels; src/site/widgets/list/nested.js).
+// List step 10: nested Lists (two levels; src/render/widgets/list/nested.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { onGrid, template } from '../scripts/grid-helper.mjs';
-import { gridStyle } from '../src/site/widgets/list/item-grid.js';
+import { gridStyle } from '../src/render/widgets/list/item-grid.js';
 import fs from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { warnings } from '../scripts/test-layout.mjs';
 import { loadContent } from '../scripts/content.mjs';
-import { buildRoutes } from '../src/site/routes.js';
-import { newWidget, newSection, renderSections } from '../src/site/layout/index.js';
-import { checkContent } from '../src/site/validate.js';
-import { bindingProblems } from '../src/site/layout/bindings.js';
-import { WIDGET_TYPES } from '../src/site/widgets/index.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
+import { checkContent } from '../src/render/validate.js';
+import { bindingProblems } from '../src/render/layout/bindings.js';
+import { WIDGET_TYPES } from '../src/render/widgets/index.js';
 import {
   innerChoice,
   innerItems,
   innerSourceProblems,
   nestingProblems,
-} from '../src/site/widgets/list/nested.js';
-import { presetOf, cloneTemplate } from '../src/site/widgets/list/presets.js';
-import { PRESET_STYLES, styleProblems } from '../src/site/widgets/list/item-style.js';
-import { partLabel, partText } from '../src/site/layout/parts.js';
+} from '../src/render/widgets/list/nested.js';
+import { presetOf, cloneTemplate } from '../src/render/widgets/list/presets.js';
+import { PRESET_STYLES, styleProblems } from '../src/render/widgets/list/item-style.js';
+import { partLabel, partText } from '../src/render/layout/parts.js';
 import { chipHtml, partOfName } from '../src/editor/lib/parts-input.js';
 import { innerSourceFor, newStackWidget } from '../src/editor/lib/item-template.js';
 import { SITE_A, withPhoto } from './fixtures/index.mjs';
@@ -294,7 +294,7 @@ test('{parent: title}: the outer item, its chip and label, read back in the edit
   assert.match(chip, /\{parent: title\}/);
   assert.doesNotMatch(chip, /is-unknown/);
   assert.match(read('src/editor/rich.js'), /n\.dataset\.of === 'parent' \? \{ of: 'parent' \}/);
-  assert.match(read('src/site/text.js'), /data-of="parent"/);
+  assert.match(read('src/render/text.js'), /data-of="parent"/);
 });
 
 test('the template editor: Add list, the inner List rows always there, the labels', () => {

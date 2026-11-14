@@ -9,7 +9,7 @@
 <script>
   import ScrollBackdrop from './ScrollBackdrop.svelte';
   import Collapsible from './Collapsible.svelte';
-  import { isObject } from '../../site/is.js';
+  import { isObject } from '../../render/is.js';
 
   let { live, file } = $props();
 

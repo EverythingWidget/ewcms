@@ -19,7 +19,7 @@
 -->
 <script>
   import { nameOf } from './content-groups.js';
-  import { WIDGET_TYPES } from '../../site/widgets/index.js';
+  import { WIDGET_TYPES } from '../../render/widgets/index.js';
 
   let {
     widget,

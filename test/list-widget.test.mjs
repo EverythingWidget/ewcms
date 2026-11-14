@@ -7,20 +7,20 @@ import { readFileSync } from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { warnings } from '../scripts/test-layout.mjs';
 import { loadContent } from '../scripts/content.mjs';
-import { buildRoutes } from '../src/site/routes.js';
-import { setEditable } from '../src/site/helpers.js';
-import { newWidget, newSection, renderSections } from '../src/site/layout/index.js';
-import { bindingProblems } from '../src/site/layout/bindings.js';
-import { WIDGET_TYPES } from '../src/site/widgets/index.js';
-import { checkContent, contentWarnings } from '../src/site/validate.js';
-import { CORE_STRINGS } from '../src/site/strings.js';
-import { PRESETS, factsRuns, namesOf } from '../src/site/widgets/list/presets.js';
-import { nextItemIndex } from '../src/site/widgets/list/client.js';
-import { resolveHandmadeItem } from '../src/site/widgets/list/handmade.js';
-import { widgetItems } from '../src/site/layout/source.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { setEditable } from '../src/render/helpers.js';
+import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
+import { bindingProblems } from '../src/render/layout/bindings.js';
+import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { checkContent, contentWarnings } from '../src/render/validate.js';
+import { CORE_STRINGS } from '../src/render/strings.js';
+import { PRESETS, factsRuns, namesOf } from '../src/render/widgets/list/presets.js';
+import { nextItemIndex } from '../src/render/widgets/list/client.js';
+import { resolveHandmadeItem } from '../src/render/widgets/list/handmade.js';
+import { widgetItems } from '../src/render/layout/source.js';
 import { countGroups, THIS_LIST } from '../src/editor/property-groups.js';
 import { layoutOptions, layoutParts, MISSING_OPTIONS } from '../src/editor/widget-layout.js';
-import { hideMissing } from '../src/site/layout/missing.js';
+import { hideMissing } from '../src/render/layout/missing.js';
 import { onGrid, template } from '../scripts/grid-helper.mjs';
 import { SITE_A, withPhoto } from './fixtures/index.mjs';
 
@@ -218,7 +218,10 @@ test('Grid; columns and gap; Row preset defaults to 1 column', () => {
   for (const bad of ['m', 's', 1.5, -1, 25])
     assert.match(check(bad), /config\.gap must be a whole number of cells/, String(bad));
   assert.equal(gw.config.gap, undefined, 'a new List: no gap (0)');
-  const css = readFileSync(new URL('../src/site/widgets/list/style.scss', import.meta.url), 'utf8');
+  const css = readFileSync(
+    new URL('../src/render/widgets/list/style.scss', import.meta.url),
+    'utf8',
+  );
   assert.match(css, /gap: calc\(var\(--list-gap, 0\) \* var\(--cell, 0px\)\)/);
   assert.doesNotMatch(css, /--gap-[sml]|list--gap/);
   // Row preset's default columns when columns is omitted
@@ -688,10 +691,10 @@ test('ListLead: Source Custom is handmade, no Items switch', () => {
     /An item per entry of a source, or items you add by hand, in a look you pick/,
   );
   // layout: no type === 'list' leak; items via widgetItems (source.js)
-  const layout = readFileSync(new URL('../src/site/layout/index.js', import.meta.url), 'utf8');
+  const layout = readFileSync(new URL('../src/render/layout/index.js', import.meta.url), 'utf8');
   assert.doesNotMatch(layout, /widgets\/list\/(hand|handmade)/);
   assert.doesNotMatch(layout, /type === ['"]list['"]/);
-  const source = readFileSync(new URL('../src/site/layout/source.js', import.meta.url), 'utf8');
+  const source = readFileSync(new URL('../src/render/layout/source.js', import.meta.url), 'utf8');
   // the generic helper never imports a widget module: the List def's items hook
   assert.doesNotMatch(source, /widgets\//);
   assert.match(source, /type\?\.items\?\.\(ctx, widget\)/);
@@ -914,14 +917,14 @@ test('no heading, no See all: a leftover heading or config.seeAll renders nothin
 
 test('no "first cover of a list" fallback: a hand-made item shows only its own photo', () => {
   const handmade = readFileSync(
-    new URL('../src/site/widgets/list/handmade.js', import.meta.url),
+    new URL('../src/render/widgets/list/handmade.js', import.meta.url),
     'utf8',
   );
   assert.doesNotMatch(handmade, /sourceCover|coverOf/);
   const it = resolveHandmadeItem(base, { title: 'P', source: 'people' });
   assert.equal(it.photo, '');
   const presets = readFileSync(
-    new URL('../src/site/widgets/list/presets.js', import.meta.url),
+    new URL('../src/render/widgets/list/presets.js', import.meta.url),
     'utf8',
   );
   assert.doesNotMatch(presets, /first\('photo'\)|first\('photos'\)/);

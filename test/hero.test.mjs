@@ -5,12 +5,12 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as sass from 'sass';
-import { longestWord, hero, HERO_STYLES } from '../src/site/widgets/hero/index.js';
-import { bindTypeOf } from '../src/site/layout/bindings.js';
+import { longestWord, hero, HERO_STYLES } from '../src/render/widgets/hero/index.js';
+import { bindTypeOf } from '../src/render/layout/bindings.js';
 import { createStore } from '../src/editor/store.js';
 import { addSection, addWidget } from '../src/editor/layout-ops.js';
 import { renderOp } from '../scripts/editor-server.mjs';
-import * as render from '../src/site/render.js';
+import * as render from '../src/render/render.js';
 
 const ctx = { site: { name: 'Site' }, media: {}, strings: {}, lang: 'en' };
 const widget = { ed: () => '' };

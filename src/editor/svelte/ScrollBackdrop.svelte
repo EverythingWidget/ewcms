@@ -1,5 +1,5 @@
 <!--
-  The page's backdrop (src/site/backdrop.js): photos behind its sections as it scrolls, in the
+  The page's backdrop (src/render/backdrop.js): photos behind its sections as it scrolls, in the
   page's Page motion tab (the Scroll backdrop card, ScrollBackdropCard.svelte), plain fields under a "Backdrop" heading. Its photos (PhotoList.svelte: drag a photo to move
   it, Media to change, ✕ to remove, Add photo opens Media), then its transition: Scroll (a
   direction) or Fade (direct or through black, Parallax, Scrub). The options sit in one slot of
@@ -20,8 +20,8 @@
     SHADE_MAX,
     THROUGH,
     TRANSITIONS,
-  } from '../../site/backdrop.js';
-  import { isObject } from '../../site/is.js';
+  } from '../../render/backdrop.js';
+  import { isObject } from '../../render/is.js';
 
   let { live, file } = $props();
 

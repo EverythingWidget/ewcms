@@ -5,8 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { pagesOp } from '../scripts/editor-server.mjs';
 import { readContentDir } from '../scripts/content.mjs';
-import { getRoutes } from '../src/site/routes.js';
-import { contentFromFiles, isRootFile } from '../src/site/files.js';
+import { getRoutes } from '../src/render/routes.js';
+import { contentFromFiles, isRootFile } from '../src/render/files.js';
 import {
   buildRedirects,
   itemMoves,
@@ -15,8 +15,8 @@ import {
   pruneRedirects,
   redirectsText,
   sitePaths,
-} from '../src/site/redirects.js';
-import { checkContent } from '../src/site/validate.js';
+} from '../src/render/redirects.js';
+import { checkContent } from '../src/render/validate.js';
 import { read, paramPage } from '../scripts/test-layout.mjs';
 
 /** content/ in a temp dir: home, 404, people (+ [param] and team), about, a menu and redirects. */
@@ -245,7 +245,7 @@ test('validation: redirects.json', () => {
 });
 
 test("a source's page ({back}) is the page that shows the source, wherever it is", async () => {
-  const { sourcePage } = await import('../src/site/widgets/data.js');
+  const { sourcePage } = await import('../src/render/widgets/data.js');
   const pages = {
     home: page('pg-home', {
       type: 'list',

@@ -2,11 +2,11 @@
  * vite-plugin-static-site: the whole "static site builder" in one small plugin.
  *
  *  dev   → every HTML request is rendered on the fly from content/<folder>/*.json with the
- *          templates in src/site (via Vite's SSR loader, so edits hot-reload).
+ *          templates in src/render (via Vite's SSR loader, so edits hot-reload).
  *  build → after Vite bundles the client (index.html → dist/index.html with hashed
  *          JS/CSS), every route is rendered into that shell and written to
  *          dist/<route>/index.html, plus 404.html, sitemap.xml, robots.txt and _redirects
- *          (content/redirects.json, src/site/redirects.js).
+ *          (content/redirects.json, src/render/redirects.js).
  *
  * index.html is the shell; it contains two markers: <!--ssr-head--> and <!--ssr-body-->.
  *
@@ -17,7 +17,7 @@
  *          (scripts/editor-server.mjs, localhost only) loads, saves and publishes the content JSON files and uploads photos to
  *          Cloudflare R2 with the R2_* keys from .env.local (read here, never sent to a page).
  *
- * Dev reloads: a change in content/, .generated/ or src/site/ sends the custom HMR event
+ * Dev reloads: a change in content/, .generated/ or src/render/ sends the custom HMR event
  * "site:changed" { files, content, external } instead of Vite's full reload, which every
  * page would obey, the editor (?edit) included. The editor reloads only its preview
  * (src/editor/main.js); a plain site tab reloads itself (src/client/main.js). external is
@@ -33,10 +33,10 @@ import { loadEnv, searchForWorkspaceRoot } from 'vite';
 import { loadContent } from './content.mjs';
 import { DRAFT_PARAM, draftsFor, editorMiddleware } from './editor-server.mjs';
 import { contactMiddleware } from './contact-dev.mjs';
-import { pageFile } from '../src/site/files.js';
+import { pageFile } from '../src/render/files.js';
 import { EDITOR_HTML, legacyRedirect, wantsEditor } from '../src/editor/lib/editor-url.js';
-import { checkSources } from '../src/site/schemas.js';
-import { FOLDERS, ROOT_FILES } from '../src/site/files.js';
+import { checkSources } from '../src/render/schemas.js';
+import { FOLDERS, ROOT_FILES } from '../src/render/files.js';
 import { THEME_LAYERS, loadSiteConfig } from './site-config.mjs';
 import { createUpdater } from './update.mjs';
 import { registerSiteWidgets, widgetClientsModule, widgetsModule } from './site-widgets.mjs';
@@ -44,8 +44,8 @@ import { ENGINE, enginePath, fsUrl, posixPath, sameFile, withEngineUrls } from '
 
 // the engine's modules the server loads itself (render, registry): absolute, the engine is
 // not inside the site's root (node_modules/ewcms, or a workspace folder next to it)
-const RENDER_FILE = enginePath('src/site/render.js');
-const WIDGETS_FILE = enginePath('src/site/widgets/index.js');
+const RENDER_FILE = enginePath('src/render/render.js');
+const WIDGETS_FILE = enginePath('src/render/widgets/index.js');
 const RENDER_MODULE = fsUrl(RENDER_FILE);
 const WIDGETS_MODULE = fsUrl(WIDGETS_FILE);
 
@@ -357,9 +357,9 @@ export default function staticSite() {
           rel.startsWith(`${posixRel(config.root, d)}/`),
         ) ||
         ROOT_FILES.some((f) => rel === posixRel(config.root, path.join(site.contentRootDir, f)));
-      // the engine's templates: src/site in the engine's folder
+      // the engine's templates: src/render in the engine's folder
       const engineRel = posixRel(ENGINE, file);
-      const template = engineRel.startsWith('src/site/');
+      const template = engineRel.startsWith('src/render/');
       if (!content && !template) return;
       const own = ownWrites.get(path.resolve(file));
       let mine = false;
@@ -378,7 +378,7 @@ export default function staticSite() {
         data: { files: [template ? `ewcms/${engineRel}` : rel], content, external },
       });
       // Client code imports animations.json: without this, Vite would full-reload every page.
-      // src/site modules keep Vite's own handling (the editor imports some of them).
+      // src/render modules keep Vite's own handling (the editor imports some of them).
       if (content) return [];
     },
 

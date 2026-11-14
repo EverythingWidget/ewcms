@@ -1,4 +1,4 @@
-// The Text widget's body (src/site/text.js): checked, rendered, edited as a model.
+// The Text widget's body (src/render/text.js): checked, rendered, edited as a model.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -17,8 +17,8 @@ import {
   insertRun,
   splitLine,
   tidyBody,
-} from '../src/site/text.js';
-import { partText } from '../src/site/layout/parts.js';
+} from '../src/render/text.js';
+import { partText } from '../src/render/layout/parts.js';
 
 const at = (line, a) => ({ line, at: a });
 const body = [

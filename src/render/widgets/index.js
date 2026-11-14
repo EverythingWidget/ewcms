@@ -5,7 +5,7 @@
  * bundled into the site's stylesheet) and client.js (its behaviour on the page: a default
  * export `(el) => cleanup?`, run for every one of its elements, .wgt--<type>). The built-ins
  * are the folders here, always on; a site adds its own in site.config.mjs `widgets`
- * (scripts/site-widgets.mjs loads them; the browser gets them from virtual:site-widgets). Widgets sit in the sections of a page (src/site/layout/index.js places them):
+ * (scripts/site-widgets.mjs loads them; the browser gets them from virtual:site-widgets). Widgets sit in the sections of a page (src/render/layout/index.js places them):
  *
  *   { "id": "w-k3x9", "type": "list", "label": "People", "heading": "Models",
  *     "source": { "mode": "all", "from": "people" }, "config": { "template": "preset:card" },
@@ -41,9 +41,9 @@
  *               type: 'source' (a content/en/sources file) | 'select' (options [[value, label]])
  *                     | 'text' | 'boolean'; every widget also has config.enabled (on/off)
  *   defaults  a new widget of this type (Add widget)
- *   check(widget)  optional: more problems than its settings' types (src/site/validate.js)
+ *   check(widget)  optional: more problems than its settings' types (src/render/validate.js)
  *   warn(widget)   optional: things to tell, not problems (ewcms check shows them, e.g. a
- *             List's leftover config.properties; src/site/validate.js)
+ *             List's leftover config.properties; src/render/validate.js)
  *   list      a list widget: it shows all its source's items (its source: All / From URL /
  *             None), not one (Item / From URL / None): ../layout/source.js
  *   item      it needs an item (its source's first): without one it is skipped
@@ -75,7 +75,7 @@ export const BUILTIN_WIDGETS = Object.freeze([
 
 /**
  * Widget types that are gone, each with what to write instead: content that still has one is
- * rejected (src/site/validate.js); nothing converts it.
+ * rejected (src/render/validate.js); nothing converts it.
  */
 export const RETIRED_WIDGETS = Object.freeze({
   panels:

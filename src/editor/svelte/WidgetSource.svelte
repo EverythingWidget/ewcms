@@ -1,5 +1,5 @@
 <!--
-  A widget's source, first in its Content tab (WidgetInspector.svelte; src/site/layout/source.js):
+  A widget's source, first in its Content tab (WidgetInspector.svelte; src/render/layout/source.js):
     Source       Item / All (a list widget) · From URL · None · Custom (a List: the old Hand-made
                  mode), one segmented row; From URL only on a [param] page (greyed elsewhere, its
                  tooltip says why). The Source label sits in the parent when provided (ListLead).
@@ -25,11 +25,11 @@
   import { ui } from './ui.svelte.js';
   import { schemaFor, itemName } from './source-items.js';
   import { plural } from '../lib/format.js';
-  import { isTemplate, pageIdOf, paramsOf, sourceFile } from '../../site/files.js';
-  import { mainProblem, sourceOf, urlSource } from '../../site/layout/source.js';
-  import { isPropertyPart, isParts, partText } from '../../site/layout/parts.js';
-  import { defaultProperty, hasProperty, ruleOf, SLUG } from '../../site/query.js';
-  import { MATCH_TYPES } from '../../site/property-types.js';
+  import { isTemplate, pageIdOf, paramsOf, sourceFile } from '../../render/files.js';
+  import { mainProblem, sourceOf, urlSource } from '../../render/layout/source.js';
+  import { isPropertyPart, isParts, partText } from '../../render/layout/parts.js';
+  import { defaultProperty, hasProperty, ruleOf, SLUG } from '../../render/query.js';
+  import { MATCH_TYPES } from '../../render/property-types.js';
 
   // g: the widget's group; base: its pointer; list: a list widget (All instead of Item); shown:
   // what it shows on the page in the preview (widgetItems)

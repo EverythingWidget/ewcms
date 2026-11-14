@@ -4,7 +4,7 @@
   TemplatePanel.svelte) under PageHead.svelte
   (Back to pages: back to the pages list, browse). The two swap with a slide (lib/slide.js):
   a page or a template opened comes in from the right, the list comes back from the left. A page is a list of sections
-  holding widgets (src/site/layout/), and nothing else. A page's panel has four tabs (Tabs.svelte,
+  holding widgets (src/render/layout/), and nothing else. A page's panel has four tabs (Tabs.svelte,
   the open one kept per page in ui.sections["pagetab:<file>"]; unknown: Sections):
     Sections     SectionsList.svelte: the section cards and the dashed Add section card. One
                  Settings are not in the panel: a section's open in a floating pop-up
@@ -61,13 +61,13 @@
   import SeoSection from './SeoSection.svelte';
   import { openSources, openWidgets } from './modals.svelte.js';
   import { allFields, contentGroups, groupFor } from './content-groups.js';
-  import { splitEdit } from '../../site/helpers.js';
+  import { splitEdit } from '../../render/helpers.js';
   import { parse } from '../lib/pointer.js';
   import { targetFile } from '../layout-sync.js';
-  import { sourceIds as sourceIdsOf } from '../../site/files.js';
-  import { WIDGET_TYPES } from '../../site/widgets/index.js';
+  import { sourceIds as sourceIdsOf } from '../../render/files.js';
+  import { WIDGET_TYPES } from '../../render/widgets/index.js';
   import { addWidget } from '../layout-ops.js';
-  import { PHONE_MQ } from '../../site/layout/grid.js';
+  import { PHONE_MQ } from '../../render/layout/grid.js';
   import { swapView } from '../lib/slide.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);

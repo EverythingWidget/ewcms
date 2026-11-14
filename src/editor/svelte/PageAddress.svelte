@@ -16,8 +16,8 @@
     paramFolder,
     paramOf,
     paramsOf,
-  } from '../../site/files.js';
-  import { parentId, pathOfId } from '../../site/routes.js';
+  } from '../../render/files.js';
+  import { parentId, pathOfId } from '../../render/routes.js';
   import { FIXED, childId, pageIds, shownPath } from '../lib/page-tree.js';
 
   // live: reactive store; file: the page's file; actions: pagesOp (main.js)

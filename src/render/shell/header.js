@@ -38,7 +38,7 @@ const caret =
   '<svg class="caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>';
 const arrowNE = '<span class="arrow-ne" aria-hidden="true">↗</span>';
 
-/** Where a menu item links (a link, src/site/hrefs.js): '#' and a warning when nowhere. */
+/** Where a menu item links (a link, src/render/hrefs.js): '#' and a warning when nowhere. */
 export function linkOf(ctx, item) {
   return hrefOf(ctx, item, `${contentPath(HEADER)}: "${item.label}"`) || '#';
 }

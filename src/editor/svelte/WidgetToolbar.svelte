@@ -23,20 +23,20 @@
   (rich.js).
 -->
 <script>
-  import { BIND_TYPES } from '../../site/property-types.js';
+  import { BIND_TYPES } from '../../render/property-types.js';
   import { ui, previewClicks } from './ui.svelte.js';
   import { targetFile } from '../layout-sync.js';
   import { schemaFor } from './source-items.js';
-  import { WIDGET_TYPES } from '../../site/widgets/index.js';
+  import { WIDGET_TYPES } from '../../render/widgets/index.js';
   import { countGroups } from '../property-groups.js';
-  import { sourceFile, sourceIds as sourceIdsOf, templateIdOf } from '../../site/files.js';
-  import { sourceOf } from '../../site/layout/source.js';
-  import { sampleSource } from '../../site/widgets/list/template-preview.js';
-  import { innerTemplates } from '../../site/widgets/list/nested.js';
-  import { schemaOf } from '../../site/schemas.js';
+  import { sourceFile, sourceIds as sourceIdsOf, templateIdOf } from '../../render/files.js';
+  import { sourceOf } from '../../render/layout/source.js';
+  import { sampleSource } from '../../render/widgets/list/template-preview.js';
+  import { innerTemplates } from '../../render/widgets/list/nested.js';
+  import { schemaOf } from '../../render/schemas.js';
   import { untrack } from 'svelte';
   import { NEW_ROWS, setWidget } from '../layout-ops.js';
-  import { isSafeHref, UNSAFE_HREF } from '../../site/hrefs.js';
+  import { isSafeHref, UNSAFE_HREF } from '../../render/hrefs.js';
   import {
     LINE_STYLES,
     insertRun,
@@ -47,10 +47,10 @@
     toggleList,
     styleLabel,
     toggleMark,
-  } from '../../site/text.js';
+  } from '../../render/text.js';
   import { MOD } from '../lib/format.js';
-  import { sizeOf } from '../../site/layout/index.js';
-  import { hasFitWidth, hasScaleToFit, scaledToFit } from '../../site/layout/type.js';
+  import { sizeOf } from '../../render/layout/index.js';
+  import { hasFitWidth, hasScaleToFit, scaledToFit } from '../../render/layout/type.js';
   import { autoPatch, scaleHint, scalePatch, shownRows } from '../widget-layout.js';
   import { shownPlace, tagParts } from '../widget-tag.js';
 

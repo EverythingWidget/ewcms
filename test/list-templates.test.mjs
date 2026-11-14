@@ -9,12 +9,12 @@ import { parseHTML } from 'linkedom';
 import { warnings } from '../scripts/test-layout.mjs';
 import { loadContent, readContentDir } from '../scripts/content.mjs';
 import { templatesOp, editableFiles } from '../scripts/editor-server.mjs';
-import { buildRoutes } from '../src/site/routes.js';
-import { newWidget, newSection, renderSections } from '../src/site/layout/index.js';
-import { WIDGET_TYPES } from '../src/site/widgets/index.js';
-import { checkContent } from '../src/site/validate.js';
-import { cloneTemplate, presetWidgets } from '../src/site/widgets/list/presets.js';
-import { contentPath, isContentFile, templateFile, templateIdOf } from '../src/site/files.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
+import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { checkContent } from '../src/render/validate.js';
+import { cloneTemplate, presetWidgets } from '../src/render/widgets/list/presets.js';
+import { contentPath, isContentFile, templateFile, templateIdOf } from '../src/render/files.js';
 import { SITE_A, withPhoto } from './fixtures/index.mjs';
 
 const base = loadContent(SITE_A);

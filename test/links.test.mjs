@@ -1,7 +1,7 @@
-/** Free widgets and links (src/site/layout/links.js, flow.js), fit text (type.js), the migration. */
+/** Free widgets and links (src/render/layout/links.js, flow.js), fit text (type.js), the migration. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveRows } from '../src/site/layout/flow.js';
+import { resolveRows } from '../src/render/layout/flow.js';
 import {
   widgetClass,
   widgetLinks,
@@ -10,10 +10,10 @@ import {
   linkProblems,
   makesLoop,
   newWidget,
-} from '../src/site/layout/index.js';
-import { checkScale } from '../src/site/layout/type.js';
+} from '../src/render/layout/index.js';
+import { checkScale } from '../src/render/layout/type.js';
 import { flat, lay } from '../scripts/test-layout.mjs';
-import { checkContent } from '../src/site/validate.js';
+import { checkContent } from '../src/render/validate.js';
 import { createStore } from '../src/editor/store.js';
 import {
   addWidget,

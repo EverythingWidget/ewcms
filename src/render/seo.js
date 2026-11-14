@@ -14,7 +14,7 @@
  *   themeColor     the meta theme-color (empty: index.html's own)
  *   entityType     the home page's JSON-LD @type ("Person", the default; "Organization", ...)
  *   name           the site's name: og:site_name, JSON-LD, the editor's title
- * A page's own, in its file's "meta" (src/site/routes.js reads them into its route):
+ * A page's own, in its file's "meta" (src/render/routes.js reads them into its route):
  *   title, description, photo (a photo: media/ path or R2 key), noindex, canonical
  * [param] pages: see routes.js (the item's name, summary and cover, then the template's meta).
  */

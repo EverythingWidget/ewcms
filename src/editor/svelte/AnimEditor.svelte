@@ -14,7 +14,7 @@
   import Select from './Select.svelte';
   import { ui, pickElement } from './ui.svelte.js';
   import { GENERIC_TYPES, animModel, keepFor, layerPtr } from './motion.js';
-  import { ANIMATIONS } from '../../site/files.js';
+  import { ANIMATIONS } from '../../render/files.js';
 
   // cfg: animations.json as edited; items: the page's animated elements; gsap: the preview's;
   // onlibrary(name): open the Animations library (Site Settings > Motion) at that animation;

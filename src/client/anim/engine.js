@@ -1,6 +1,6 @@
 /**
  * Animation engine: reads content/animations.json (the single source of truth)
- * and wires every widget with motion ([data-motion], src/site/layout/motion.js) and every
+ * and wires every widget with motion ([data-motion], src/render/layout/motion.js) and every
  * [data-anim="<target id>"] element in a view.
  *
  * Every spec starts from the site's default timing (animations.json `defaults`: duration, delay,
@@ -17,7 +17,7 @@
  *
  *   spec = defaults ⟵ animations[animation] ⟵ targets[id] ⟵ its widget's elements[id] ⟵ data-anim-options (JSON)
  *
- * A widget's `motion.elements` (data-anim-elements on its element, src/site/layout/motion.js) may
+ * A widget's `motion.elements` (data-anim-elements on its element, src/render/layout/motion.js) may
  * pick another animation (`animation`) or timing for the elements with that name inside it.
  * `key` is a per-element id assigned at mount time, "<path>|<target id>|<n>" (n = index among
  * elements with that target on the page): the editor uses it to find an element again.
@@ -32,7 +32,7 @@
 import config from '@site-content/animations.json';
 import { gsap, reducedMotion } from '../lib/env.js';
 import { types } from './types.js';
-import { isObject } from '../../site/is.js';
+import { isObject } from '../../render/is.js';
 
 const merge = (...objs) => {
   const out = {};

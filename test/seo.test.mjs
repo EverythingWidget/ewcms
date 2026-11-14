@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { paramPage } from '../scripts/test-layout.mjs';
-import { buildRoutes, sitemapXml } from '../src/site/routes.js';
-import { renderRoute } from '../src/site/render.js';
-import { contentFromFiles } from '../src/site/files.js';
-import { seoOf, seoWarnings, sharePhoto } from '../src/site/seo.js';
-import { checkContent } from '../src/site/validate.js';
+import { buildRoutes, sitemapXml } from '../src/render/routes.js';
+import { renderRoute } from '../src/render/render.js';
+import { contentFromFiles } from '../src/render/files.js';
+import { seoOf, seoWarnings, sharePhoto } from '../src/render/seo.js';
+import { checkContent } from '../src/render/validate.js';
 
 const site = {
   name: 'Site',

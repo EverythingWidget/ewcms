@@ -5,10 +5,10 @@
  * tab (WidgetLayout.svelte) and its toolbar shortcut (WidgetToolbar.svelte) call these, so a
  * setting has one code path, one content key and one state.
  */
-import { WIDGET_TYPES } from '../site/widgets/index.js';
-import { placementOf } from '../site/layout/place.js';
-import { hasScaleToFit } from '../site/layout/type.js';
-import { baseOf } from '../site/layout/index.js';
+import { WIDGET_TYPES } from '../render/widgets/index.js';
+import { placementOf } from '../render/layout/place.js';
+import { hasScaleToFit } from '../render/layout/type.js';
+import { baseOf } from '../render/layout/index.js';
 
 /** The pop-up's tabs: every widget has both. */
 export const WIDGET_TABS = [
@@ -35,7 +35,7 @@ export function layoutOptions(type) {
  * When a value is missing (every widget's Content tab, GroupFields.svelte): Hide leaves the
  * widget out of the published page; Show empty keeps it. Default Hide (omitted from content).
  * A List's item widgets inherit the List's choice unless they set their own
- * (../site/layout/missing.js).
+ * (../render/layout/missing.js).
  */
 export const MISSING_OPTIONS = [
   ['hide', 'Hide'],

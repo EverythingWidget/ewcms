@@ -1,10 +1,10 @@
-// UI text (src/site/strings.js): core English defaults under the site's strings.json, and the
+// UI text (src/render/strings.js): core English defaults under the site's strings.json, and the
 // site settings the shell and head take: lang, themeColor, entityType, the editor's title.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CORE_STRINGS, stringsOf, t } from '../src/site/strings.js';
-import { renderRoute, getRoutes } from '../src/site/render.js';
-import { checkContent } from '../src/site/validate.js';
+import { CORE_STRINGS, stringsOf, t } from '../src/render/strings.js';
+import { renderRoute, getRoutes } from '../src/render/render.js';
+import { checkContent } from '../src/render/validate.js';
 import { editorShell } from '../scripts/vite-plugin-static-site.mjs';
 import { loadContent } from '../scripts/content.mjs';
 import { SITE_A } from './fixtures/index.mjs';

@@ -28,7 +28,7 @@
   import Button from './Button.svelte';
   import { ui, selectWidgets, selectSection, openPopup } from './ui.svelte.js';
   import { locate } from '../locate.js';
-  import { WIDGET_TYPES } from '../../site/widgets/index.js';
+  import { WIDGET_TYPES } from '../../render/widgets/index.js';
   import {
     duplicateSection,
     duplicateWidgets,

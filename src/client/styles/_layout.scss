@@ -1,7 +1,7 @@
 @use 'tokens' as *;
 
 /*
- * The layout engine (src/site/layout/index.js), the square grid: a section is a grid
+ * The layout engine (src/render/layout/index.js), the square grid: a section is a grid
  * of 120 columns and --rows rows, all of one size, --cell: every cell is exactly square, with
  * no gaps either way. modules/rows.js measures the section's content width and sets --cell
  * (width / 120, floored to 1/64px; the few px left over are centred) on the section, and again
@@ -9,13 +9,13 @@
  * from 100vw.
  * Widgets sit in it by their CSS variables: --c / --s (first column / columns), --r / --rs
  * (first row / rows), --z (layer), --ar (an aspect widget's ratio). Rows never grow: a widget
- * whose content needs more rows spans more, and modules/rows.js (src/site/layout/flow.js)
+ * whose content needs more rows spans more, and modules/rows.js (src/render/layout/flow.js)
  * sets where every widget sits now (a linked widget below its leader) and how many rows it
  * spans (--fr / --frs) and the section's rows (--frows), which win over the stored ones.
  * While it measures, a section has .sec--measure. A section has no padding above or below
  * (the space between sections is empty rows); at the sides --cpad: a contained section is
  * --contain columns of the full-width cell wide, centred, at least the page's --pad from the
- * edges (src/site/layout/contain.js). Its height is at
+ * edges (src/render/layout/contain.js). Its height is at
  * least its rows, or its preset's (.sec--h-third / -half / -full: that much of the screen),
  * its rows always centred in it. A named section has an id (its anchor): a link to it lands
  * below the fixed header (scroll-margin-top; modules/anchors.js). A custom height
@@ -35,7 +35,7 @@
  * desktop layout scaled down until its widgets are placed for it. Why 60 and not 120: a phone
  * is ~390px wide, and 120 columns would be ~3px cells; 60 give ~6px.
  *
- * Fit width lines ([data-fit], src/site/layout/type.js): sizes in --tcell, the 120-column
+ * Fit width lines ([data-fit], src/render/layout/type.js): sizes in --tcell, the 120-column
  * grid's cell (on the phone grid half a cell), × the style's size (--ts-<style>) × the line's
  * fit factor (--tkf, src/client/modules/fit.js: it fills the widget's width).
  */
@@ -49,7 +49,7 @@
 
 .sec {
   // a contained section's side margins: --contain (site.json layout.contained, 115 by default:
-  // src/site/layout/contain.js) columns of the full-width cell, centred, at least --pad
+  // src/render/layout/contain.js) columns of the full-width cell, centred, at least --pad
   --cpad: max(var(--pad), calc((var(--cols) - var(--contain, 115)) * 100vw / (2 * var(--cols))));
   --cell: calc((100vw - 2 * var(--cpad)) / var(--cols));
   --tcell: var(--cell);
@@ -153,7 +153,7 @@
   @include fill;
 }
 
-// a widget's content box, placed in it (src/site/layout/place.js): its root in a 1 x 1 grid,
+// a widget's content box, placed in it (src/render/layout/place.js): its root in a 1 x 1 grid,
 // at --ph / --pv (Fit: as big as its content) or stretched over it (Fill: rows: the widget's
 // width and height; auto: its width; aspect: the ratio box)
 .wgt--placed {
@@ -219,7 +219,7 @@
 }
 
 /*
- * A Text widget's live sizes (src/client/modules/fit.js, src/site/layout/type.js).
+ * A Text widget's live sizes (src/client/modules/fit.js, src/render/layout/type.js).
  * Fit width: a fit line ([data-fit]) in its style's size in cells × its own --tkf, on one line,
  * filling the widget's width; ÷ --tks so it still fills it under Scale to fit. A style's size,
  * line height (× the size) and tracking (em) are --ts-<style>, -lh, -tr (defaults in

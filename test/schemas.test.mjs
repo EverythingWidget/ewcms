@@ -11,10 +11,10 @@ import {
   inferSchema,
   newItemOf,
   schemaOf,
-} from '../src/site/schemas.js';
-import { buildRoutes } from '../src/site/routes.js';
-import { contentFromFiles, isContentFile, schemaIdOf, sourceIdOf } from '../src/site/files.js';
-import { checkContent } from '../src/site/validate.js';
+} from '../src/render/schemas.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { contentFromFiles, isContentFile, schemaIdOf, sourceIdOf } from '../src/render/files.js';
+import { checkContent } from '../src/render/validate.js';
 import { save } from '../scripts/editor-server.mjs';
 
 const PEOPLE = {

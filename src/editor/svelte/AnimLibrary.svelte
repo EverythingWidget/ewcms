@@ -9,7 +9,7 @@
 -->
 <script>
   import Button from './Button.svelte';
-  import { ANIMATIONS, contentPath } from '../../site/files.js';
+  import { ANIMATIONS, contentPath } from '../../render/files.js';
   import { tick } from 'svelte';
   import MotionGroups from './MotionGroups.svelte';
   import { ui } from './ui.svelte.js';

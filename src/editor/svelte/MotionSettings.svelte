@@ -2,7 +2,7 @@
   Site Settings > Motion: what every page's animations share (animations.json).
     Default timing  `defaults` { duration, delay, ease }: what an animation plays with when it
                     sets none itself (src/client/anim/engine.js). Empty: GSAP's own (the
-                    placeholders), as before there was a setting. Checked by src/site/validate.js.
+                    placeholders), as before there was a setting. Checked by src/render/validate.js.
     Animations      the library (AnimLibrary.svelte): every animation, edit one with the
                     preview in view; "uses on this page" counts the page in the preview.
                     The animation open is ui.library.name, kept by persist.js.
@@ -14,8 +14,8 @@
   import { ui } from './ui.svelte.js';
   import { motionSections } from './page-motion.js';
   import { targetFile } from '../layout-sync.js';
-  import { ANIMATIONS } from '../../site/files.js';
-  import { DEFAULT_TIMING } from '../../site/layout/motion.js';
+  import { ANIMATIONS } from '../../render/files.js';
+  import { DEFAULT_TIMING } from '../../render/layout/motion.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js); gsap: the preview's
   let { live, bridge, gsap } = $props();

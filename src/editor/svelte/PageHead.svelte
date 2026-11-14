@@ -18,11 +18,11 @@
   import { ui, closeSectionPopup, showWidget, setMode } from './ui.svelte.js';
   import BackHead from './BackHead.svelte';
   import { openPreviewModal } from './modals.svelte.js';
-  import { parentId, pathOfId } from '../../site/routes.js';
+  import { parentId, pathOfId } from '../../render/routes.js';
   import { crumbsOf, pageIds, titleOf } from '../lib/page-tree.js';
   import { SITE_PARTS } from '../lib/site-parts.js';
-  import { isParam, pageFile, paramsOf } from '../../site/files.js';
-  import { mainProblem } from '../../site/layout/source.js';
+  import { isParam, pageFile, paramsOf } from '../../render/files.js';
+  import { mainProblem } from '../../render/layout/source.js';
 
   // live: reactive store; actions: pickTarget, setPanel, setPageTab (main.js)
   let { live, actions } = $props();

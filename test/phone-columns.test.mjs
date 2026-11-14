@@ -6,10 +6,10 @@ import * as sass from 'sass';
 import { parseHTML } from 'linkedom';
 import { warnings } from '../scripts/test-layout.mjs';
 import { loadContent } from '../scripts/content.mjs';
-import { buildRoutes } from '../src/site/routes.js';
-import { newWidget, newSection, renderSections } from '../src/site/layout/index.js';
-import { checkContent } from '../src/site/validate.js';
-import { WIDGET_TYPES } from '../src/site/widgets/index.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
+import { checkContent } from '../src/render/validate.js';
+import { WIDGET_TYPES } from '../src/render/widgets/index.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 const base = loadContent(SITE_A);
@@ -40,7 +40,7 @@ test('rendered: --list-mcols only when set; left out, a phone shows one column a
   assert.match(two.getAttribute('style'), /--list-cols:3;--list-mcols:2/);
   const none = list({}).el.querySelector('.list__items');
   assert.equal(none.getAttribute('style'), '--list-cols:3');
-  const css = read('src/site/widgets/list/style.scss');
+  const css = read('src/render/widgets/list/style.scss');
   assert.match(css, /repeat\(var\(--list-mcols, 1\), minmax\(0, 1fr\)\)/);
 });
 
@@ -72,7 +72,10 @@ test('the editor: the Columns row per layout, in the same place (no shift)', () 
 
 // the List's grid rules, cascaded at a viewport width (media max-width, specificity, then order)
 const GRID_CSS = sass.compileString(
-  read('src/site/widgets/list/style.scss').replace(/@use[^;]+;/g, '$bp-md: 900px; $bp-sm: 760px;'),
+  read('src/render/widgets/list/style.scss').replace(
+    /@use[^;]+;/g,
+    '$bp-md: 900px; $bp-sm: 760px;',
+  ),
 ).css;
 const spec = (sel) => {
   const flat = sel.replace(/:not\(([^)]*)\)/g, ' $1');

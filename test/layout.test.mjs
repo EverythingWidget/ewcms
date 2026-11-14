@@ -1,4 +1,4 @@
-import { isRootFile } from '../src/site/files.js';
+import { isRootFile } from '../src/render/files.js';
 import { flat, lay, warnings } from '../scripts/test-layout.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,19 +7,19 @@ import os from 'node:os';
 import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
 import { save, renderOp } from '../scripts/editor-server.mjs';
-import * as render from '../src/site/render.js';
-import { buildRoutes } from '../src/site/routes.js';
-import { setEditable } from '../src/site/helpers.js';
-import { checkContent } from '../src/site/validate.js';
-import { WIDGET_TYPES } from '../src/site/widgets/index.js';
+import * as render from '../src/render/render.js';
+import { buildRoutes } from '../src/render/routes.js';
+import { setEditable } from '../src/render/helpers.js';
+import { checkContent } from '../src/render/validate.js';
+import { WIDGET_TYPES } from '../src/render/widgets/index.js';
 import {
   phoneRowsOf,
   newWidget,
   newSection,
   renderSections,
   rowsOf,
-} from '../src/site/layout/index.js';
-import { idsOf, isId, newId } from '../src/site/layout/ids.js';
+} from '../src/render/layout/index.js';
+import { idsOf, isId, newId } from '../src/render/layout/ids.js';
 import { createStore } from '../src/editor/store.js';
 import {
   addWidget,

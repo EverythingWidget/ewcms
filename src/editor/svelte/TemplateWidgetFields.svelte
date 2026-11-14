@@ -8,12 +8,12 @@
 -->
 <script>
   import Field from './Field.svelte';
-  import { sourceIds as sourceIdsOf, templateIdOf } from '../../site/files.js';
-  import { schemaOf } from '../../site/schemas.js';
-  import { sampleSource } from '../../site/widgets/list/template-preview.js';
-  import { ITEM_WIDGETS, itemSection } from '../../site/widgets/list/item-grid.js';
-  import { PRESETS } from '../../site/widgets/list/presets.js';
-  import { innerChoice, innerTemplates } from '../../site/widgets/list/nested.js';
+  import { sourceIds as sourceIdsOf, templateIdOf } from '../../render/files.js';
+  import { schemaOf } from '../../render/schemas.js';
+  import { sampleSource } from '../../render/widgets/list/template-preview.js';
+  import { ITEM_WIDGETS, itemSection } from '../../render/widgets/list/item-grid.js';
+  import { PRESETS } from '../../render/widgets/list/presets.js';
+  import { innerChoice, innerTemplates } from '../../render/widgets/list/nested.js';
   import { MIN_TEXT_PX, sizeLine, textSizes } from '../lib/small-text.js';
   import {
     ITEMS_FROM,
@@ -156,7 +156,7 @@
   onvalue={(v) => setRole(b, v)}
 />
 {#if ['text', 'photo', 'button'].includes(w.type)}
-  <!-- When a value is missing (src/site/layout/missing.js): one full row; Inherit is left out -->
+  <!-- When a value is missing (src/render/layout/missing.js): one full row; Inherit is left out -->
   <Field
     edit={`${file}#${b}/config/missing`}
     label="When a value is missing"
