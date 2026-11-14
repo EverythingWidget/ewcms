@@ -408,7 +408,7 @@ const pagesQueued = oneAtATime(async (body) => {
     : [];
   const dirty = store.dirtyFiles().filter((f) => touched.includes(f));
   if (dirty.length && ['rename', 'move', 'delete'].includes(body.op)) {
-    toast('Save or discard the unsaved changes first', { kind: 'error', files: dirty });
+    toast('Save or undo the unsaved changes first', { kind: 'error', files: dirty });
     return null;
   }
   let res;
@@ -500,14 +500,13 @@ function applyClicks(before) {
 }
 
 /**
- * Show a panel: 'pages' | 'settings' | 'preview' (ui.svelte.js); Pages closes the type
+ * Show a panel: 'pages' | 'settings' (ui.svelte.js); Pages closes the type
  * specimen. Only Pages edits: another panel is browse (ui.mode).
  */
 function setPanel(panel) {
   if (panel === 'pages') showSpecimen(false);
   const before = previewClicks();
   ui.panel = panel;
-  if (panel !== 'preview') ui.panelBeforePreview = panel;
   if (panel !== 'pages' && ui.mode !== 'browse') {
     ui.mode = 'browse';
     toBrowse();
@@ -872,7 +871,7 @@ store.on(({ files, source: src, structure }) => {
     const fromPreview = src && src.nodeType === 1;
     bridge.applyTexts({
       skip: fromPreview ? src : null,
-      force: ['undo', 'redo', 'rebase', 'discard'].includes(src),
+      force: ['undo', 'redo', 'rebase'].includes(src),
     });
   }
   if (files.includes(ANIMATIONS)) {

@@ -200,14 +200,6 @@ export function createStore() {
       const names = [...Object.keys(files), ...removed];
       if (names.length) emit(names, 'files');
     },
-    /** Back to the saved version of `files` (all by default), as one undo step. */
-    discard(files = Object.keys(current)) {
-      const changes = files
-        .filter((f) => !equal(current[f], base[f]))
-        .map((f) => ({ file: f, ptr: '', before: clone(current[f]), after: clone(base[f]) }));
-      changes.forEach((c) => write(c, c.after));
-      if (changes.length) commitEntry({ changes, t: Date.now() }, { source: 'discard' });
-    },
     on(fn) {
       listeners.add(fn);
       return () => listeners.delete(fn);

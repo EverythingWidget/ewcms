@@ -3,7 +3,7 @@
   (status line | Edit / Done | Publish), the mode tabs, the page head (PageHead.svelte's look:
   ← title / path; page: { title, path }, false hides it), the page tabs (the real Tabs), the
   scroll body (.ed-body) and the footer (Desktop | Mobile, Sources, Media; undo, redo in edit).
-    mode     'pages' | 'settings' | 'preview' (default 'pages'; preview: no mode tabs)
+    mode     'pages' | 'settings' (default 'pages')
     editing  edit (Done, undo / redo shown) or browse (Edit; default)
     tab      the page tab shown (default 'sections'); tabs: false hides them
     height   the panel's height (default 844px)       pending  the header's line
@@ -65,17 +65,15 @@
           >{unpublished ? `Publish · ${unpublished}` : 'Publish'}</Button
         >
       </div>
-      {#if mode !== 'preview'}
-        <Tabs
-          class="ed-panels"
-          role="navigation"
-          fill
-          label="Mode"
-          tabs={MODES}
-          value={mode}
-          onpick={() => {}}
-        />
-      {/if}
+      <Tabs
+        class="ed-panels"
+        role="navigation"
+        fill
+        label="Mode"
+        tabs={MODES}
+        value={mode}
+        onpick={() => {}}
+      />
     </header>
     {#if page && mode === 'pages'}
       <div class="kit-ph">

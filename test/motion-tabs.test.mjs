@@ -65,7 +65,7 @@ test('top tabs Pages | Site Settings; page tabs Sections | Element motion | Page
 
 test('URL tabs are ui.panel: pages, settings, preview; clicks: arrange, animate, visitor', () => {
   const p = read('editor/svelte/persist.js');
-  assert.match(p, /PANELS = \['pages', 'settings', 'preview'\]/);
+  assert.match(p, /PANELS = \['pages', 'settings'\]/);
   assert.match(p, /set\('tab', ui\.panel\)/);
   const u = read('editor/svelte/ui.svelte.js');
   // browse or edit (ui.mode) is the one source: browse is visitor clicks

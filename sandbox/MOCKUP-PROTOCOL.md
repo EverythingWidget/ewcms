@@ -138,7 +138,7 @@ link colour, eye, Duplicate, Delete; no grip, no order). Put it in a `<ul>`.
 
 | prop          | type                                                       | default           | meaning                                                                                   |
 | ------------- | ---------------------------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------- |
-| `mode`        | `'pages'`\|`'settings'`\|`'preview'`                       | `'pages'`         | active mode tab, Pages \| Settings (`preview`: no mode tabs)                              |
+| `mode`        | `'pages'`\|`'settings'`                                    | `'pages'`         | active mode tab, Pages \| Settings                                                        |
 | `editing`     | bool                                                       | `false`           | edit (Done, undo / redo in the footer) or browse (Edit)                                   |
 | `tab`         | `'sections'`\|`'element-motion'`\|`'page-motion'`\|`'seo'` | `'sections'`      | page tab (only in `pages`; Page motion holds the Scroll backdrop and Page entrance cards) |
 | `tabs`        | bool                                                       | `true`            | `false` hides the page tabs                                                               |

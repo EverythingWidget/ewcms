@@ -12,7 +12,7 @@ const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 
 test('previewClicks comes from ui.mode only: browse is visitor, edit arranges or animates', async () => {
   const { ui, previewClicks } = await loadUi();
   assert.equal(ui.mode, 'browse', 'the editor opens in browse');
-  for (const panel of ['pages', 'settings', 'preview']) {
+  for (const panel of ['pages', 'settings']) {
     ui.panel = panel;
     for (const tab of [null, 'sections', 'element-motion']) {
       ui.pageTab = tab;
@@ -79,9 +79,11 @@ test('header: status | Edit / Done (one 80px slot) | Publish; Done saves, then b
     app,
     /function edit\(\) \{\s*if \(ui\.panel !== 'pages'\) actions\.setPanel\('pages'\);\s*setMode\('edit'\);/,
   );
-  // the old Save and Preview buttons are gone (Ctrl+S still saves, Ctrl+E still previews)
+  // the old Save and Preview buttons are gone (Ctrl+S still saves); no Preview panel, no Ctrl+E
   assert.doesNotMatch(app, />\s*\{ui\.saving \? 'Saving…'/);
   assert.doesNotMatch(app, /icon="play"/);
+  assert.doesNotMatch(app, /PreviewPanel|togglePreview|previewing|panelBeforePreview/);
+  assert.doesNotMatch(app, /mod && k === 'e'\)/);
   assert.match(app, /mod && k === 's'/);
 });
 

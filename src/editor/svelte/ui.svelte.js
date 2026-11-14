@@ -4,7 +4,7 @@ import { popupStays } from '../multi-select.js';
  *
  *   ui.mode       'browse' | 'edit', the one source of truth for editing:
  *                   'browse'    the site as visitors see it: the pages list (Pages), Site
- *                               Settings, Preview (Ctrl+E); a page row's click only shows it
+ *                               Settings; a page row's click only shows it
  *                   'edit'      the page in the preview (or a site part, a template) open in
  *                               the Pages tab with its page tabs: Edit, or a page opened
  *                 Done (it saves first) and Back to pages go back to browse; another panel
@@ -12,7 +12,6 @@ import { popupStays } from '../multi-select.js';
  *   ui.panel      what the side panel shows, its top tab:
  *                   'pages'     the Pages tab: the pages list (browse), or the page open (edit)
  *                   'settings'  what is the same on every page
- *                   'preview'   Ctrl+E's Preview: the unsaved and unpublished changes
  *   ui.pageTab    the open page's tab, under Pages: 'sections' | 'element-motion' (Element
  *                 motion) | 'page-motion' (Page motion) | 'seo'; null when no
  *                 page is open (the pages list, the Header or Footer). Kept per page in
@@ -41,8 +40,6 @@ export const ui = $state({
   mode: 'browse',
   /** What the side panel shows: see "Where the editor is" above. */
   panel: 'pages',
-  /** The panel Preview (and Ctrl+E) goes back to: 'pages' | 'settings'. */
-  panelBeforePreview: 'pages',
   /** The open page's tab, or null when no page is open (the pages list, Header, Footer). */
   pageTab: null,
   /** 'desktop' | 'phone' preview size */

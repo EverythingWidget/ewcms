@@ -2,7 +2,7 @@
   The editor shell: the site preview on the left, the side panel on the right with the
   header (the status line | Edit / Done | Publish; the top tabs Pages | Site Settings), the
   current tab's panel (Pages: the pages list in browse, or the page open with its tabs
-  Sections | Motion | SEO in edit, ContentPanel.svelte) (Preview's while Ctrl+E has it on) and
+  Sections | Motion | SEO in edit, ContentPanel.svelte; Site Settings: SettingsPanel.svelte) and
   the footer (Desktop | Mobile, Sources, Media; undo, redo in edit). Also the modals, each
   mounted once here and opened through state (modals.svelte.js), the toasts and the keyboard
   shortcuts.
@@ -16,7 +16,6 @@
   import Button from './Button.svelte';
   import Tabs from './Tabs.svelte';
   import { SITE, contentPath } from '../../site/files.js';
-  import PreviewPanel from './PreviewPanel.svelte';
   import ContentPanel from './ContentPanel.svelte';
   import SettingsPanel from './SettingsPanel.svelte';
   import PublishModal from './PublishModal.svelte';
@@ -76,9 +75,6 @@
   ];
   const pages = $derived(ui.panel === 'pages');
   const phone = $derived(ui.viewport === 'phone');
-  // Preview: a toggle; off goes back to the tab it came from
-  const previewing = $derived(ui.panel === 'preview');
-  const togglePreview = () => actions.setPanel(previewing ? ui.panelBeforePreview : 'preview');
   // browse or edit (ui.mode): Edit opens the page in the preview (in the Pages tab); Done saves
   // what is unsaved first (nothing is lost), then browses; a failed save stays in edit
   const editing = $derived(ui.mode === 'edit');
@@ -143,9 +139,6 @@
     } else if (mod && k === 'e' && e.shiftKey) {
       e.preventDefault();
       location.href = bridge.path() || '/';
-    } else if (mod && k === 'e') {
-      e.preventDefault();
-      togglePreview();
     } else if (mod && (k === 'z' || k === 'y') && !inField) {
       e.preventDefault();
       if (k === 'y' || e.shiftKey) live.store.redo();
@@ -246,27 +239,22 @@
             : `Publish${unpublished.length ? ` · ${unpublishedChanges}` : ''}`}
         </Button>
       </div>
-      <!-- the modes: evenly spread, the picked one with a white line; their line ends the header.
-           Hidden while previewing (Ctrl+E; the row above stays put; Preview's panel takes their place) -->
-      {#if !previewing}
-        <Tabs
-          class="ed-panels"
-          role="navigation"
-          fill
-          label="Panel"
-          tabs={TABS}
-          value={ui.panel}
-          onpick={(panel) => panel !== ui.panel && actions.setPanel(panel)}
-        />
-      {/if}
+      <!-- the modes: evenly spread, the picked one with a white line; their line ends the header -->
+      <Tabs
+        class="ed-panels"
+        role="navigation"
+        fill
+        label="Panel"
+        tabs={TABS}
+        value={ui.panel}
+        onpick={(panel) => panel !== ui.panel && actions.setPanel(panel)}
+      />
     </header>
 
     {#if pages}
       <ContentPanel {live} {bridge} {actions} />
-    {:else if ui.panel === 'settings'}
-      <SettingsPanel {live} {bridge} {actions} />
     {:else}
-      <PreviewPanel {live} onpublish={publish} />
+      <SettingsPanel {live} {bridge} {actions} />
     {/if}
 
     <!-- [ Desktop | Mobile ] Sources Media ... (undo redo: edit only, at the end, so nothing

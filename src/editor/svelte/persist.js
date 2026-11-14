@@ -2,7 +2,7 @@
  * Keeps the editor where it was across a refresh, in two places:
  *
  *   The URL (shareable): /photography/people/?edit&tab=settings (src/editor/lib/editor-url.js)
- *     tab     ui.panel: pages | settings | preview (the page's own tab, ui.pageTab, is kept per
+ *     tab     ui.panel: pages | settings (the page's own tab, ui.pageTab, is kept per
  *             page in sessionStorage; an unknown tab: pages)
  *     (path)  the URL's own path is the page in the preview (main.js keeps it up to date)
  *     view    header | footer, when a site part (Header, Footer) is edited instead of a page
@@ -38,7 +38,7 @@ const KEY = 'editor:ui';
 // the modals open again after a refresh (the others are opened with callbacks: modals.svelte.js)
 const KEPT = ['sources', 'media'];
 // the URL's tab is ui.panel (ui.svelte.js)
-const PANELS = ['pages', 'settings', 'preview'];
+const PANELS = ['pages', 'settings'];
 const PAGE_TABS = ['sections', 'element-motion', 'page-motion', 'seo'];
 const VIEWS = { header: 'Header', footer: 'Footer' };
 
@@ -102,8 +102,6 @@ export function restoreUi(preview, content) {
   live = content;
   saved = readState();
   if (PANELS.includes(saved.panel)) ui.panel = saved.panel;
-  if (['pages', 'settings'].includes(saved.panelBeforePreview))
-    ui.panelBeforePreview = saved.panelBeforePreview;
   if (PAGE_TABS.includes(saved.pageTab)) ui.pageTab = saved.pageTab;
   // browse or edit (ui.mode: only Pages edits)
   if (['browse', 'edit'].includes(saved.mode) && ui.panel === 'pages') ui.mode = saved.mode;
@@ -127,7 +125,6 @@ export function restoreUi(preview, content) {
       KEY,
       JSON.stringify({
         panel: ui.panel,
-        panelBeforePreview: ui.panelBeforePreview,
         pageTab: ui.pageTab,
         part: ui.target?.kind === 'part' ? ui.target : null,
         sections: ui.sections,
