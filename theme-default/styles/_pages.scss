@@ -112,6 +112,13 @@
 .formwidget {
   display: grid;
   gap: 24px;
+  &__title {
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: clamp(38px, 6vw, 104px);
+    line-height: 0.92;
+    max-width: 14ch;
+  }
   &__intro {
     max-width: 64ch;
     font-size: 16px;

@@ -244,7 +244,7 @@ test('validation: redirects.json', () => {
   );
 });
 
-test('"See all" links go to the page that shows the source, wherever it is', async () => {
+test("a source's page ({back}) is the page that shows the source, wherever it is", async () => {
   const { sourcePage } = await import('../src/site/widgets/data.js');
   const pages = {
     home: page('pg-home', {

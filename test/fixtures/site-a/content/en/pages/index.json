@@ -213,7 +213,6 @@
         {
           "id": "w-xh7b",
           "type": "list",
-          "heading": "Models I've worked with",
           "source": {
             "mode": "all",
             "from": "people"
@@ -222,8 +221,7 @@
             "template": "t-acrp",
             "columns": "3",
             "gap": 2,
-            "phoneColumns": "1",
-            "seeAll": true
+            "phoneColumns": "1"
           },
           "motion": {
             "animation": "grid-reveal"
@@ -237,7 +235,6 @@
         {
           "id": "w-vnrc",
           "type": "list",
-          "heading": "Buildings, streets & castles",
           "source": {
             "mode": "all",
             "from": "places"
@@ -246,8 +243,7 @@
             "template": "t-acrl",
             "columns": "2",
             "gap": 2,
-            "phoneColumns": "1",
-            "seeAll": true
+            "phoneColumns": "1"
           },
           "motion": {
             "animation": "grid-reveal",
@@ -268,10 +264,8 @@
           },
           "config": {
             "template": "t-prow",
-            "columns": "1",
-            "seeAll": true
+            "columns": "1"
           },
-          "heading": "Things I build",
           "motion": {
             "animation": "list-up",
             "trigger": "load"

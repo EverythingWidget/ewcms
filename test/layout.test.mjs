@@ -102,13 +102,13 @@ test("a widget whose source or item is cleared (the editor's ✕) still renders,
   }
 });
 
-test('a list widget without a source: its head without a link, no items (not a default list)', () => {
+test('a list widget without a source: no link, no items (not a default list)', () => {
   for (const type of ['albums', 'list']) {
     const ids = new Set();
     const widget = newWidget(type, ids);
     delete widget.source; // None
     const out = renderSections(ctxOf(page), page, F, [newSection(ids, [widget])]);
-    assert.doesNotMatch(out, /section__cta|<img/, type);
+    assert.doesNotMatch(out, /class="btn|<img/, type);
   }
 });
 

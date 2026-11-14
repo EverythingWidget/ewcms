@@ -13,6 +13,7 @@ import { newWidget, newSection, renderSections } from '../src/site/layout/index.
 import { bindingProblems } from '../src/site/layout/bindings.js';
 import { WIDGET_TYPES } from '../src/site/widgets/index.js';
 import { checkContent, contentWarnings } from '../src/site/validate.js';
+import { CORE_STRINGS } from '../src/site/strings.js';
 import { PRESETS, factsRuns, namesOf } from '../src/site/widgets/list/presets.js';
 import { nextItemIndex } from '../src/site/widgets/list/client.js';
 import { resolveHandmadeItem } from '../src/site/widgets/list/handmade.js';
@@ -157,35 +158,51 @@ test('a missing value: Hide leaves its widget out and warns; Show empty keeps it
   }
 });
 
-test('{items}: the List’s own items, how many; an item property of that name wins', () => {
-  const heading = [{ t: 'People ' }, { property: 'items' }];
-  const { el } = list({}, { heading });
-  assert.equal(el.querySelector('.list__head h2').textContent, `People ${people.length}`);
+test('{items}: the List’s own items, how many, in its item template; not a Button’s', () => {
+  const tpl = template({
+    name: 'Count',
+    widgets: onGrid([
+      {
+        type: 'text',
+        role: 'title',
+        body: [{ style: 'label', text: [{ t: 'People ' }, { property: 'items' }] }],
+      },
+    ]),
+  });
+  const content = { ...shown, templates: { ...shown.templates, 't-cnt1': tpl } };
+  const { el } = list({ template: 't-cnt1' }, {}, content);
+  const all = texts(el, '[data-list-item]');
+  assert.equal(all.length, people.length);
+  assert.ok(
+    all.every((x) => x === `People ${people.length}`),
+    all.join(),
+  );
   // filtered: the items it shows, not the whole source
-  const one = list({}, { heading, source: { mode: 'item', from: 'people', id: people[0].id } });
-  const shown = one.el.querySelectorAll('[data-list-item]').length;
-  assert.equal(one.el.querySelector('.list__head h2').textContent, `People ${shown}`);
-  // known to the checks on a list widget only
+  const one = list(
+    { template: 't-cnt1' },
+    { source: { mode: 'item', from: 'people', id: people[0].id } },
+    content,
+  );
+  const n = one.el.querySelectorAll('[data-list-item]').length;
+  assert.deepEqual(new Set(texts(one.el, '[data-list-item]')), new Set([`People ${n}`]));
+  // known to the checks on a list widget only: a Button's label has no {items}
   const page = (widget) => ({
     pages: { 'pg-li01': { id: 'pg-li01', sections: [{ widgets: [widget] }] } },
   });
-  const content = { ...base, pages: {} };
-  const listW = { id: 'w-li01', type: 'list', heading, source: { mode: 'all', from: 'people' } };
-  assert.deepEqual(bindingProblems({ ...content, ...page(listW) }, { types: WIDGET_TYPES }), []);
   const btn = {
     id: 'w-li02',
     type: 'button',
-    label: heading,
+    label: [{ t: 'People ' }, { property: 'items' }],
     source: { mode: 'all', from: 'people' },
   };
   assert.match(
-    bindingProblems({ ...content, ...page(btn) }, { types: WIDGET_TYPES })[0].message,
+    bindingProblems({ ...base, pages: {}, ...page(btn) }, { types: WIDGET_TYPES })[0].message,
     /people has no property "items"/,
   );
 });
 
-test('Grid; columns and gap; See all; Row preset defaults to 1 column', () => {
-  const grid = list({ arrangement: 'grid', columns: '4', gap: 3, seeAll: true }, { heading: 'P' });
+test('Grid; columns and gap; Row preset defaults to 1 column', () => {
+  const grid = list({ arrangement: 'grid', columns: '4', gap: 3 });
   const items = grid.el.querySelector('.list__items');
   assert.ok(items.classList.contains('list__items--grid'));
   assert.equal(items.getAttribute('data-cols'), '4');
@@ -204,9 +221,6 @@ test('Grid; columns and gap; See all; Row preset defaults to 1 column', () => {
   const css = readFileSync(new URL('../src/site/widgets/list/style.scss', import.meta.url), 'utf8');
   assert.match(css, /gap: calc\(var\(--list-gap, 0\) \* var\(--cell, 0px\)\)/);
   assert.doesNotMatch(css, /--gap-[sml]|list--gap/);
-  assert.ok(grid.el.querySelector('.list__head .section__cta[href]'));
-  // no heading: no head
-  assert.equal(list({ columns: '1' }).el.querySelector('.list__head'), null);
   // Row preset's default columns when columns is omitted
   assert.equal(
     list({ template: 'preset:row', columns: undefined })
@@ -256,7 +270,7 @@ test('the pop-up: Arrangement, Columns, Gap in Layout; Content has Preset and Wh
   const content = WIDGET_TYPES.list.config.filter((c) => c.tab !== 'layout').map((c) => c.key);
   assert.deepEqual(
     content.filter((k) => k !== 'handmade' && k !== 'items'),
-    ['template', 'seeAll'],
+    ['template'],
   );
   assert.ok(content.includes('handmade'));
   assert.ok(content.includes('items'));
@@ -512,7 +526,7 @@ test('hand-made Panel like Photography: titles, counts, units, source covers, so
         { title: 'Places', photo: base.sources.places[0].cover, source: 'places', unit: 'places' },
       ],
     },
-    { heading: 'Photography', source: undefined },
+    { source: undefined },
   );
   const items = [...el.querySelectorAll('[data-list-item]')];
   assert.equal(items.length, 2);
@@ -553,25 +567,7 @@ test('hand-made: own photo and link win over the pointed source', () => {
   assert.ok(img?.getAttribute('src')?.includes('noor-vermeer') || img?.getAttribute('srcset'));
 });
 
-test('hand-made: {items} is the hand-made list; See all is off; empty has no count', () => {
-  const { el } = list(
-    {
-      handmade: true,
-      template: 'preset:panel',
-      seeAll: true,
-      items: [
-        { title: 'People', source: 'people', unit: 'models' },
-        { title: 'Places', source: 'places', unit: 'places' },
-      ],
-    },
-    {
-      heading: [{ t: '' }, { property: 'items' }, { t: ' groups' }],
-      source: undefined,
-    },
-  );
-  assert.match(el.querySelector('.list__head .section__title')?.textContent || '', /2 groups/);
-  // See all ignored when hand-made
-  assert.equal(el.querySelector('.list__head .section__cta'), null);
+test('hand-made: empty has no count', () => {
   // no pointed source: title only, no count overlay
   const bare = list(
     { handmade: true, template: 'preset:panel', items: [{ title: 'Solo' }] },
@@ -649,7 +645,7 @@ test('hand-made validation; mode switch keeps unused data (shape allows both)', 
   assert.match(checkContent('pages/x/index.json', bad).join('; '), /config\.items\.0\.title/);
 });
 
-test('ListLead: Source Custom is handmade, no Items switch, seeAll disabled when handmade', () => {
+test('ListLead: Source Custom is handmade, no Items switch', () => {
   const lead = readFileSync(
     new URL('../src/editor/svelte/ListLead.svelte', import.meta.url),
     'utf8',
@@ -679,7 +675,7 @@ test('ListLead: Source Custom is handmade, no Items switch, seeAll disabled when
     new URL('../src/editor/svelte/GroupFields.svelte', import.meta.url),
     'utf8',
   );
-  assert.match(gf, /disabled=\{handmade && c\.key === 'seeAll'\}/);
+  assert.doesNotMatch(gf, /seeAll/);
   const insp = readFileSync(
     new URL('../src/editor/svelte/WidgetInspector.svelte', import.meta.url),
     'utf8',
@@ -858,6 +854,62 @@ test('an inner List leftover config.properties is also only warned', () => {
     contentWarnings().join(),
     /sections\.0\.widgets\.0 \(List\): config\.properties is no longer used/,
   );
+});
+
+test('no heading, no See all: a leftover heading or config.seeAll renders nothing and only warns', () => {
+  // the List is only its items: nothing before them, whatever is left over
+  const old = list({ seeAll: true }, { heading: 'Models' });
+  assert.equal(
+    old.el.querySelector('.list').firstElementChild.className.split(' ')[0],
+    'list__items',
+  );
+  assert.doesNotMatch(old.html, /list__head|section__|See all|>Models</);
+  // no setting for them: not in the Content tab, not in a new List
+  assert.equal(WIDGET_TYPES.list.settings, undefined);
+  assert.ok(!WIDGET_TYPES.list.config.some((c) => c.key === 'seeAll'));
+  const fresh = newWidget('list', new Set());
+  assert.equal(fresh.heading, undefined);
+  assert.equal(fresh.config.seeAll, undefined);
+  // ewcms check: warnings, not problems (on a page)
+  const leftover = { ...fresh, id: 'w-hd01', heading: 'Models', config: { seeAll: true } };
+  assert.deepEqual(WIDGET_TYPES.list.check(leftover), []);
+  const warned = WIDGET_TYPES.list.warn(leftover).join('; ');
+  assert.match(warned, /"heading" is no longer used/);
+  assert.match(warned, /config\.seeAll is no longer used/);
+  assert.match(WIDGET_TYPES.list.warn({ ...leftover, heading: '' }).join(), /"heading"/);
+  assert.deepEqual(WIDGET_TYPES.list.warn({ ...fresh, config: {} }), []);
+  const page = {
+    version: 1,
+    kind: 'page',
+    id: 'pg-hd01',
+    title: 'X',
+    sections: [
+      { id: 's-hd01', widgets: [{ ...leftover, source: { mode: 'all', from: 'people' } }] },
+    ],
+  };
+  assert.deepEqual(checkContent('pages/x/index.json', page), []);
+  assert.match(contentWarnings().join(), /List.*"heading" is no longer used/);
+  assert.match(contentWarnings().join(), /List.*config\.seeAll is no longer used/);
+  // an inner List's leftover heading: warned too
+  const t = template({
+    name: 'P',
+    widgets: onGrid([
+      {
+        type: 'list',
+        role: 'photos',
+        heading: 'Photos',
+        source: { mode: 'all', from: 'people' },
+        config: { template: 'preset:card', columns: '4' },
+      },
+    ]),
+  });
+  assert.deepEqual(checkContent('templates/t-hd01.json', t), []);
+  assert.match(
+    contentWarnings().join(),
+    /sections\.0\.widgets\.0 \(List\): "heading" is no longer used/,
+  );
+  // the strings: no See all
+  assert.equal(CORE_STRINGS.list.seeAll, undefined);
 });
 
 test('no "first cover of a list" fallback: a hand-made item shows only its own photo', () => {

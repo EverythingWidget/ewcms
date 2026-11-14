@@ -272,34 +272,3 @@ $hero-em-per-char: 0.6;
     @include hero-name-size(12vw);
   }
 }
-
-/* ---------------- Widget heads (List heading + see-all) ---------------- */
-.section {
-  &__head {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: end;
-    gap: 18px 24px;
-    padding-top: 22px;
-    margin-bottom: clamp(32px, 6vh, 64px);
-    border-top: 1px solid var(--line);
-  }
-  &__label {
-    grid-column: 1 / -1;
-  }
-  &__title {
-    font-family: var(--f-display);
-    font-weight: 400;
-    font-size: clamp(38px, 6vw, 104px);
-    line-height: 0.92;
-    max-width: 14ch;
-  }
-  @media (max-width: $bp-sm) {
-    &__head {
-      grid-template-columns: 1fr;
-    }
-    &__cta {
-      justify-self: start;
-    }
-  }
-}

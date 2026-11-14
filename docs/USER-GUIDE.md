@@ -63,8 +63,9 @@ A page is a stack of **sections**; each holds **widgets** (text, photo, button, 
   **Grid** (1–6 columns; Row defaults to 1) and the space between items, in grid cells (0: side
   by side). Carousel comes later. **When a value is
   missing** (every widget's Content tab): **Hide** leaves it out of the page; **Show empty**
-  keeps the space. A List's items follow the List's choice unless set. `{items}` in its heading
-  (under **Count of this List** in the picker) is how many items it shows.
+  keeps the space. A List's items follow the List's choice unless set. `{items}` in an item's text
+  (under **Count of this List** in the picker) is how many items it shows. A List has no
+  heading or See all link: add a Text widget and a Button widget next to it.
 - **Ctrl/⌘+Z** undoes, Shift+Ctrl/⌘+Z redoes.
 - An **ⓘ** beside a setting explains it: click it, Esc or a click elsewhere closes it.
 

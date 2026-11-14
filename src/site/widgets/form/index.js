@@ -172,7 +172,7 @@ export const form = {
     const turnstile = mode === 'function' && ctx.site?.forms?.turnstileSiteKey;
     const msg = (key) => ` data-${key}="${esc(s[key] ?? '')}"`;
     return html` <div class="formwidget">
-      ${s.title ? html`<h2 class="section__title" ${widget.ed('title')}>${esc(s.title)}</h2>` : ''}
+      ${s.title ? html`<h2 class="formwidget__title" ${widget.ed('title')}>${esc(s.title)}</h2>` : ''}
       ${s.body ? html`<p class="formwidget__intro" ${widget.ed('body', 'multiline')}>${esc(s.body)}</p>` : ''}
       <form class="cform" id="${id}" method="post" action="${esc(action)}"${mode === 'email' ? ' enctype="text/plain"' : ''} data-contact="${mode}"${msg('success')}${msg('error')}${msg('required')}${msg('invalid')}${msg('sending')}>
         ${fields.map(

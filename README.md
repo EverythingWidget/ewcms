@@ -631,7 +631,7 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
   reads its first for its photos, and its texts, like any widget's, are bindings to it (below).
 - **Animations:** a widget's `motion` picks its animation (a new widget gets its type's default
   from the registry, e.g. text `lines-up`, photo `photo-reveal`, grid `grid-reveal`). Composite
-  widgets (hero, heading, album, section heads) keep `data-anim` **elements** inside them
+  widgets (hero, heading, album) keep `data-anim` **elements** inside them
   for their own pieces (see Animations).
 - **A new type:** add it to a file in `src/site/widgets/` and to `WIDGET_TYPES` in `index.js`
   (and its styles); the editor shows it with no editor code.
@@ -815,17 +815,21 @@ rule work as anywhere.
 ```json
 {
   "type": "list",
-  "heading": [{ "t": "People " }, { "property": "items" }],
   "source": { "mode": "all", "from": "people" },
   "config": {
     "template": "preset:card",
     "arrangement": "grid",
     "columns": "3",
-    "gap": 2,
-    "seeAll": true
+    "gap": 2
   }
 }
 ```
+
+A List is a simple list: only its items, no heading and no See all link. A heading is a
+**Text** widget and a See all a **Button** widget (its link written out, e.g.
+`{ "href": "/photography/people/" }`), placed on the grid next to the List. A leftover
+`heading` or `config.seeAll` renders nothing; `ewcms check` warns about it (the List type's
+`warn`, on a page and in an item template).
 
 - **Presets** (`config.template`, `presets.js`): **Card** (photo, title, facts: Album cards),
   **Plain** (photo, title, long text, a View button), **Panel** (a big photo with its title and
@@ -980,7 +984,7 @@ rule work as anywhere.
   | `alsoGrid`   | `false` \| `true`                          | **Also as a grid**: a Carousel / Grid switch (the grid uses columns and gap) |
   | `deepLink`   | `false` \| `true`                          | **Open slide from #n**: `#3` opens slide 3; moving writes it                 |
 
-  Accessibility: a region with `aria-roledescription="carousel"` and a label (the heading);
+  Accessibility: a region with `aria-roledescription="carousel"` and a label ("Carousel", the strings' `carousel.carousel`);
   each slide `aria-label="3 of 8"`, the ones not shown `inert`; arrows and thumbnails are
   buttons, the current thumbnail `aria-current`; the counter `aria-live="polite"`. Keys only
   while the carousel has focus (it is focusable): ← → one slide, Home / End, G the grid (with
@@ -1196,8 +1200,7 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
   `source` fills the link (that source's page) when it is empty, and Panel's count is how many
   items it has (two digits, `04`) plus `unit`. The photo is the item's own `photo` (nothing is
   taken from the source's items). Switching modes keeps unused source and items.
-  **See all** (`config.seeAll`) is From a source only (disabled when Hand-made). The heading is a
-  normal bindable setting. No items: "Nothing here yet.".
+  No items: "Nothing here yet.".
 - **Look:** items use the theme's `--item-*` tokens (`theme-default/styles/_tokens.scss`), so a theme
   restyles every List at once.
 - **In the editor:** settings marked `tab: 'layout'` in a widget definition show in its Layout tab
@@ -1301,7 +1304,7 @@ move. A page's own file is
   A template's is `album`. New pages start with a section holding a Text widget (a label and a title line).
 - **Head:** title, description, share photo and robots come from the page's `meta` and the
   site's defaults; see "SEO".
-- Links to an item (menu dropdowns, grids, next) come from the routes, and a grid's "See all"
+- Links to an item (menu dropdowns, grids, next) come from the routes, and an item's `{back}`
   goes to the page that shows its source (the folder of its top-level `[param]` page, else the first page
   with a widget of it), so they follow a folder rename. A new page is in the menu when added
   with In the menu on (the pages list), else add it there or in Content › Header (see "Menu").
@@ -1616,7 +1619,7 @@ scroll, scrub-words, parallax); `scatter`, `hero-title` and `hover-preview` stay
 
 `data-anim` is still used for what is not a widget (curtain, header, menu) and for the
 **elements** of composite widgets (hero photos/title/meta, a heading's title and intro,
-album, section heads). The old per-element hooks widgets replace (text, photo, form title,
+album). The old per-element hooks widgets replace (text, photo, form title,
 intro, grids, album grids/panels, projects list) are gone: their targets were removed from
 `animations.json`.
 

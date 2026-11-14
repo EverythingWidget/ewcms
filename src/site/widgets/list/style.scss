@@ -11,11 +11,6 @@
   gap: var(--item-pad-l);
 }
 
-// the head: its title and See all on one row
-.list__head {
-  margin: 0;
-}
-
 // the space between the items: config.gap, a whole number of the cells of the grid the List
 // sits on (inline --list-gap; 0, the default: side by side). An item's own --cell (.sec--item)
 // is set inside it, so this is the page's

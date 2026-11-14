@@ -3,9 +3,8 @@
  * format; its look is ./style.scss, its behaviour ./client.js). It repeats an item template
  * once per item: of its source (From a source), or of config.items (Hand-made).
  *
- *   { "type": "list", "heading": "People", "source": { "mode": "all", "from": "people" },
- *     "config": { "template": "preset:card", "arrangement": "grid", "columns": "3",
- *                 "gap": 2, "seeAll": true } }
+ *   { "type": "list", "source": { "mode": "all", "from": "people" },
+ *     "config": { "template": "preset:card", "arrangement": "grid", "columns": "3", "gap": 2 } }
  *
  *   Hand-made (Photography-style panels by hand):
  *   { "type": "list", "config": { "handmade": true, "template": "preset:panel", "columns": "2",
@@ -24,17 +23,19 @@
  * gap          between the items: a whole number of the page's cells (the grid the List sits
  *              on: --cell), 0 (default) the items side by side; the space inside an item is its
  *              template's
- * seeAll       a link to the source's page after the heading (From a source only; ignored when handmade)
+ *
+ * A List is only its items: no heading, no See all link. A heading is a Text widget and a See
+ * all a Button widget (its link written out), placed on the page's grid next to the List; a
+ * leftover "heading" or config.seeAll only warns (warn below), nothing shows it.
  *
  * When a value is missing (every widget's Content tab, config.missing: hide | show): item
  * widgets inherit this List's choice unless they set their own (../../layout/missing.js).
  *
- * {items} in the heading (or any part of its items) is the List's own items: a list, so a
- * part shows how many (the A1 rule: an item's own "items" property wins; ../../layout/parts.js).
+ * {items} in any part of its items is the List's own items: a list, so a part shows how many
+ * (the A1 rule: an item's own "items" property wins; ../../layout/parts.js).
  * No items: the List's empty state, never nothing.
  */
 import {
-  html,
   esc,
   ed,
   editRef,
@@ -214,7 +215,6 @@ export const list = {
   icon: 'table-list',
   line: 'An item per entry of a source, or items you add by hand, in a look you pick',
   sketch: 'list',
-  settings: [{ key: 'heading', label: 'Heading (empty: none)' }],
   config: [
     // handmade + items: Content tab via ListLead (not the generic settings loop)
     { key: 'handmade', type: 'boolean' },
@@ -240,7 +240,6 @@ export const list = {
       also: isTemplateId,
       options: PRESETS.map((p) => [p.id, p.label]),
     },
-    { key: 'seeAll', label: 'See all link', type: 'boolean' },
     {
       key: 'arrangement',
       label: 'Arrangement',
@@ -280,23 +279,32 @@ export const list = {
     ...CAROUSEL_ROWS,
   ],
   defaults: {
-    heading: '',
     source: { mode: 'all', from: 'people' },
     config: {
       template: 'preset:card',
       arrangement: 'grid',
       columns: '3',
-      seeAll: false,
     },
     motion: { animation: 'grid-reveal' },
   },
   // not problems: a leftover key from an older shape (ewcms check shows it, Save keeps it)
-  warn: (widget) =>
-    widget.config?.properties !== undefined
+  warn: (widget) => [
+    ...(widget.config?.properties !== undefined
       ? [
           'config.properties is no longer used (the List has no property mapping): its item template names the properties it shows; Duplicate the template to show others',
         ]
-      : [],
+      : []),
+    ...(widget.heading !== undefined
+      ? [
+          '"heading" is no longer used (a List has no heading): a Text widget above the List shows it; remove the key',
+        ]
+      : []),
+    ...(widget.config?.seeAll !== undefined
+      ? [
+          'config.seeAll is no longer used (a List has no See all link): a Button widget links to the page; remove the key',
+        ]
+      : []),
+  ],
   // arrangement "rows" is gone; hand-made items shape
   check: (widget) => {
     const out = [];
@@ -397,8 +405,6 @@ export const list = {
     const liClass = ['li', `li--${shape}`, ...look.cls].join(' ');
     const liStyle = look.vars ? ` style="${esc(look.vars)}"` : '';
     const photoFirst = !opens && !own && preset.photoFirst && template[0]?.type === 'photo';
-    // See all: only From a source (hand-made has no single source page)
-    const href = !handmade && source && c.seeAll ? sourcePage(ctx, source) : '';
     const siteTemplate = !!own; // (`own` below is each item's own properties)
     // its one section (./item-grid.js): an item's height (fit, or custom: at least its rows)
     const itemSec = own ? itemSection(own) : null;
@@ -477,12 +483,6 @@ export const list = {
           `${contentPath(widget.file)}: List ${widget.id}: ${n} of ${items.length} items have no {${name}}: ${listHide ? 'its widget is hidden there' : 'it shows empty'}`,
           'layout',
         );
-    const head = s.heading
-      ? html`<header class="section__head list__head">
-          <h2 class="section__title" data-anim="section.title">${esc(s.heading)}</h2>
-          ${href ? html`<a class="btn glass section__cta" href="${esc(href)}"><span>${esc(t(ctx, 'list.seeAll'))}</span> <span aria-hidden="true">→</span></a>` : ''}
-        </header>`
-      : '';
     const gridHtml = `<div class="list__items list__items--grid" style="--list-cols:${columns}${gap ? `;--list-gap:${gap}` : ''}${phoneCols ? `;--list-mcols:${phoneCols}` : ''}" data-cols="${columns}"${opens ? ` data-opens="${several ? 'several' : 'one'}"` : ''}>${out.join('')}</div>`;
     const carousel = c.arrangement === 'carousel' && items.length && !opens;
     if (c.arrangement === 'carousel' && opens)
@@ -496,7 +496,7 @@ export const list = {
       : carousel
         ? carouselHtml(ctx, {
             id: widget.id,
-            label: s.heading || t(ctx, 'carousel.carousel'),
+            label: t(ctx, 'carousel.carousel'),
             slides: out,
             items: items.map((it) => {
               const o = isObject(it) ? it : {};
@@ -508,7 +508,7 @@ export const list = {
             t: (k, v) => t(ctx, k, v),
           })
         : gridHtml;
-    return `<div class="list list--${shape}" data-arrangement="${carousel ? 'carousel' : 'grid'}" data-cols="${columns}">${head}${body}</div>`;
+    return `<div class="list list--${shape}" data-arrangement="${carousel ? 'carousel' : 'grid'}" data-cols="${columns}">${body}</div>`;
   },
 };
 

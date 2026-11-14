@@ -13,19 +13,6 @@ import {
 import { sourceFile } from '../files.js';
 import { t } from '../strings.js';
 
-/**
- * A widget's head: eyebrow (label) / title / glass CTA. at(key): the widget's editor marker for one
- * of its settings (see widgets/index.js).
- */
-export const sectionHead = ({ at, eyebrow, title, href, cta }) => {
-  return html`
-  <header class="section__head">
-    <span class="section__label label" data-anim="section.label"${at('eyebrow')}>${esc(eyebrow)}</span>
-    <h2 class="section__title" data-anim="section.title"${at('title')}>${esc(title)}</h2>
-    ${href ? html`<a class="btn glass section__cta" href="${esc(href)}"><span${at('cta')}>${esc(cta)}</span> <span aria-hidden="true">→</span></a>` : ''}
-  </header>`;
-};
-
 /** Album card (People / Places index). Hovering cycles through the first photos. */
 export const albumCard = (ctx, kind, album, { landscape = false, index = 0 } = {}) => {
   const at = (key, type) => ed(sourceFile(kind), ['items', index, key], type);
