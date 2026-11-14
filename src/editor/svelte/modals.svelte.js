@@ -10,12 +10,12 @@
  *   sources        SourcesModal.svelte     openSources({ file, index, edit })
  *   widgets        WidgetsModal.svelte     openWidgets({ at, types, onpick })
  *   addPage        AddPageModal.svelte     openAddPage({ level, linked })
- *   itemPicker     ItemPicker.svelte       openItemPicker({ mode, value, ..., onpick, onsource })
- *   previewPicker  PreviewPicker.svelte    openPreviewPicker({ id, onpick })
+ *   itemModal      ItemModal.svelte        openItemModal({ mode, value, ..., onpick, onsource })
+ *   previewModal   PreviewModal.svelte     openPreviewModal({ id, onpick })
  *
  * The stack is the open modals, bottom first. The top one is in front; closing it shows the one
  * below again, as it was (Media opened from a photo field in Sources, Sources opened from a
- * row of the item picker). At most one of each: opening one that is open already closes the
+ * row of the item modal). At most one of each: opening one that is open already closes the
  * ones above it, closing one closes the ones above it too. Esc and the backdrop close the top
  * one only (the browser sends them to the dialog in front).
  *
@@ -33,8 +33,8 @@ export const MODALS = [
   'sources',
   'widgets',
   'addPage',
-  'itemPicker',
-  'previewPicker',
+  'itemModal',
+  'previewModal',
 ];
 
 /** The stack with `name` on top: when it is open already, the ones above it close. */
@@ -92,11 +92,11 @@ export const openAddPage = ({ level = '', linked = true } = {}) =>
   openModal('addPage', { level, linked });
 
 /** The item selector of a source field (its props: SourceField.svelte; at, id: where it opens). */
-export const openItemPicker = (params) =>
-  openModal('itemPicker', { at: undefined, id: '', ...params });
+export const openItemModal = (params) =>
+  openModal('itemModal', { at: undefined, id: '', ...params });
 
 /** The item selector of a [param] page's Preview line: page `id`, onpick(path). */
-export const openPreviewPicker = ({ id, onpick }) => openModal('previewPicker', { id, onpick });
+export const openPreviewModal = ({ id, onpick }) => openModal('previewModal', { id, onpick });
 
 // ---- the dialogs
 

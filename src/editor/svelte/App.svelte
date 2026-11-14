@@ -23,8 +23,8 @@
   import SourcesModal from './SourcesModal.svelte';
   import WidgetsModal from './WidgetsModal.svelte';
   import AddPageModal from './AddPageModal.svelte';
-  import ItemPicker from './ItemPicker.svelte';
-  import PreviewPicker from './PreviewPicker.svelte';
+  import ItemModal from './ItemModal.svelte';
+  import PreviewModal from './PreviewModal.svelte';
   import { openMedia } from './media.svelte.js';
   import {
     closeModal,
@@ -318,8 +318,8 @@
   <SourcesModal {live} {bridge} />
   <WidgetsModal />
   <AddPageModal {live} {actions} />
-  <ItemPicker />
-  <PreviewPicker {live} />
+  <ItemModal />
+  <PreviewModal {live} />
   <Toasts />
 {/if}
 

@@ -11,13 +11,13 @@
   own folder, or the one it is in), a path part at that folder. The path's [param]/ parts and
   the Preview line's values are in the widget accent (a param and its value read as a pair).
   A [param] page previews the page of it shown last (ui.previewAt, main.js pickTarget), else its
-  first; the Preview line opens the item selector (PreviewPicker.svelte) to pick another, every
+  first; the Preview line opens the item selector (PreviewModal.svelte) to pick another, every
   tab shows it. The warning line jumps to the main widget, on the param row that is wrong.
 -->
 <script>
   import { ui, closeSectionPopup, showWidget, setMode } from './ui.svelte.js';
   import BackHead from './BackHead.svelte';
-  import { openPreviewPicker } from './modals.svelte.js';
+  import { openPreviewModal } from './modals.svelte.js';
   import { parentId, pathOfId } from '../../site/routes.js';
   import { crumbsOf, pageIds, titleOf } from '../lib/page-tree.js';
   import { SITE_PARTS } from '../lib/site-parts.js';
@@ -109,7 +109,7 @@
       class="ph__preview"
       title="The page every tab and the preview show: pick another"
       aria-haspopup="dialog"
-      onclick={() => openPreviewPicker({ id, onpick: (path) => actions.pickTarget(entry(), path) })}
+      onclick={() => openPreviewModal({ id, onpick: (path) => actions.pickTarget(entry(), path) })}
     >
       <span class="ph__label">Preview</span>
       {#each values as v, i (i)}{#if i}<span class="ph__sep">/</span>{/if}<span class="ph__val"

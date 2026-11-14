@@ -1,7 +1,7 @@
 <!--
-  The item picker of a source field (SourceField.svelte): a window to pick a source (mode
+  The item modal of a source field (SourceField.svelte): a window to pick a source (mode
   source) or a source, then one of its items (mode item), with a search. Mounted once in
-  App.svelte; the field opens it with openItemPicker({ mode, value, none, sourceIds, itemsOf,
+  App.svelte; the field opens it with openItemModal({ mode, value, none, sourceIds, itemsOf,
   nameOf, onpick, onsource, label }) (modals.svelte.js; the props as SourceField's), optionally
   with at (the source to open on) and id (the row to focus).
   Each row's edit button opens the Source Explorer (onsource: SourcesModal.svelte) on top of this
@@ -15,7 +15,7 @@
   import ExplorerRow from './ExplorerRow.svelte';
   import { argsOf, closeModal, modal } from './modals.svelte.js';
 
-  const args = $derived(argsOf('itemPicker') || {});
+  const args = $derived(argsOf('itemModal') || {});
   const items_ = $derived((args.mode ?? 'item') === 'item');
   const value = $derived(args.value);
   const none = $derived(args.none === undefined ? 'None' : args.none);
@@ -63,7 +63,7 @@
   }
   function pick(next) {
     const { onpick } = args;
-    closeModal('itemPicker');
+    closeModal('itemModal');
     onpick(next);
   }
   // edit a source (index -1: its list) or one of its items in the Source Explorer, on top
@@ -84,7 +84,7 @@
   aria-label={label}
   bind:this={dialog}
   {@attach closeOnBackdrop}
-  {@attach modal('itemPicker', { onopen })}
+  {@attach modal('itemModal', { onopen })}
 >
   <ExplorerHead
     title={label}
@@ -96,7 +96,7 @@
     sep="/"
     back={source ? 'Back to sources' : ''}
     onback={() => enter('')}
-    onclose={() => closeModal('itemPicker')}
+    onclose={() => closeModal('itemModal')}
   />
   <div class="item-body">
     <input

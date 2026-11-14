@@ -1,7 +1,7 @@
 <!--
   A source field (always a whole row of its field grid), labelled "Source list" (mode source)
   or "Source item" (mode item): its label, what it is set to (read only) and a button that opens
-  the item picker (ItemPicker.svelte, openItemPicker in modals.svelte.js) to pick it. Every
+  the item modal (ItemModal.svelte, openItemModal in modals.svelte.js) to pick it. Every
   source-using widget has one (WidgetInspector.svelte, GroupFields.svelte).
     mode      'item'   a widget's item, { source, id } or null: a source, then one of its items;
                        it shows "people.json · Eeliya Rasta" and opens on that source's items
@@ -12,15 +12,15 @@
     onpick(value | undefined); onclear(): back to empty (the ✕ beside Change, when picked);
     store: the editor's store (the sources' schemas: a list's name, an
     item's photo); label: its own label (a setting's, "Count of"), else by what it picks
-    onsource(file, index): open the Source Explorer (SourcesModal.svelte); the picker's edit
-              buttons open it on top of the picker, which is there again when it closes
+    onsource(file, index): open the Source Explorer (SourcesModal.svelte); the item modal's edit
+              buttons open it on top of that modal, which is there again when it closes
 -->
 <script>
   import Button from './Button.svelte';
   import { schemaFor } from './source-items.js';
   import { sourceFile } from '../../site/files.js';
   import { fallback, thumbUrl } from './media.svelte.js';
-  import { openItemPicker } from './modals.svelte.js';
+  import { openItemModal } from './modals.svelte.js';
 
   let {
     mode = 'item',
@@ -67,13 +67,13 @@
           },
   );
 
-  /** The item picker, on the current source's items (a widget's item), else on the sources. */
+  /** The item modal, on the current source's items (a widget's item), else on the sources. */
   const open = () =>
-    openItemPicker({ mode, value, none, sourceIds, itemsOf, nameOf, onpick, onsource, label });
+    openItemModal({ mode, value, none, sourceIds, itemsOf, nameOf, onpick, onsource, label });
 </script>
 
 <div class={['tf', changed && 'is-changed']}>
-  <!-- a click anywhere on the card opens the picker; the keyboard has its main button -->
+  <!-- a click anywhere on the card opens the item modal; the keyboard has its main button -->
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class={['sc', !card && 'is-empty']} onclick={() => open()}>
     <button

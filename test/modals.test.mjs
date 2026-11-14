@@ -1,6 +1,6 @@
 // The modals (src/editor/svelte/modals.svelte.js): every window that blocks what is behind it
 // is a native <dialog> opened with showModal, mounted once in App.svelte and opened through
-// state, on a stack (Media over Sources, Sources over the item picker; at most one of each).
+// state, on a stack (Media over Sources, Sources over the item modal; at most one of each).
 // Runs the real module: a loader hook compiles the *.svelte.js runes modules.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -53,13 +53,13 @@ test('the stack: pushed puts one on top, at most one of each; popped closes it a
   assert.deepEqual(m.pushed([], 'sources'), ['sources']);
   assert.deepEqual(m.pushed(['sources'], 'media'), ['sources', 'media']);
   // open already: the ones above it close, no second copy
-  assert.deepEqual(m.pushed(['itemPicker', 'sources', 'media'], 'sources'), [
-    'itemPicker',
+  assert.deepEqual(m.pushed(['itemModal', 'sources', 'media'], 'sources'), [
+    'itemModal',
     'sources',
   ]);
   assert.deepEqual(m.pushed(['media'], 'media'), ['media']);
   assert.deepEqual(m.popped(['sources', 'media'], 'media'), ['sources']);
-  assert.deepEqual(m.popped(['itemPicker', 'sources', 'media'], 'sources'), ['itemPicker']);
+  assert.deepEqual(m.popped(['itemModal', 'sources', 'media'], 'sources'), ['itemModal']);
   assert.deepEqual(m.popped(['sources'], 'media'), ['sources']);
 });
 
@@ -67,23 +67,23 @@ test('openModal and closeModal: the top one closes first, one of each, parameter
   ui.modals = [];
   const store = { current: {}, set() {} };
   const onpick = () => {};
-  m.openItemPicker({ mode: 'item', value: null, store, onpick });
+  m.openItemModal({ mode: 'item', value: null, store, onpick });
   m.openSources({ file: 'sources/people.json', index: 2 });
-  assert.deepEqual(ui.modals, ['itemPicker', 'sources']);
+  assert.deepEqual(ui.modals, ['itemModal', 'sources']);
   assert.equal(m.topModal(), 'sources');
-  assert.equal(m.isOpen('itemPicker'), true);
-  // the picker's parameters are kept as given (the store is not made reactive)
-  assert.equal(m.argsOf('itemPicker').store, store);
-  assert.equal(m.argsOf('itemPicker').onpick, onpick);
+  assert.equal(m.isOpen('itemModal'), true);
+  // the item modal's parameters are kept as given (the store is not made reactive)
+  assert.equal(m.argsOf('itemModal').store, store);
+  assert.equal(m.argsOf('itemModal').onpick, onpick);
   // Media's and Sources' are in ui (persist.js keeps them)
   assert.equal(ui.sources.file, 'sources/people.json');
   assert.equal(ui.sources.index, 2);
   m.openSources({ file: 'sources/places.json' }); // open already: stays one, on top
-  assert.deepEqual(ui.modals, ['itemPicker', 'sources']);
+  assert.deepEqual(ui.modals, ['itemModal', 'sources']);
   assert.equal(ui.sources.file, 'sources/places.json');
-  m.closeModal(); // the top one: back to the picker
-  assert.deepEqual(ui.modals, ['itemPicker']);
-  m.closeModal('itemPicker');
+  m.closeModal(); // the top one: back to the item modal
+  assert.deepEqual(ui.modals, ['itemModal']);
+  m.closeModal('itemModal');
   assert.deepEqual(ui.modals, []);
   m.closeModal(); // nothing open: nothing happens
   assert.deepEqual(ui.modals, []);
@@ -167,8 +167,8 @@ const MODALS = {
   sources: 'SourcesModal',
   widgets: 'WidgetsModal',
   addPage: 'AddPageModal',
-  itemPicker: 'ItemPicker',
-  previewPicker: 'PreviewPicker',
+  itemModal: 'ItemModal',
+  previewModal: 'PreviewModal',
 };
 
 test('each modal is mounted once, in App.svelte, and is a <dialog> on the stack', () => {
@@ -186,13 +186,15 @@ test('each modal is mounted once, in App.svelte, and is a <dialog> on the stack'
   }
   // showModal only in modals.svelte.js (its order is the stack's)
   for (const f of files) assert.doesNotMatch(read(f), /\.showModal\(/, f);
-  // the item picker's field is its own component; Sources has no reopen workaround
+  // the item modal's field is its own component; Sources has no reopen workaround
   assert.doesNotMatch(read('SourceField.svelte'), /<dialog/);
   assert.doesNotMatch(read('SourcesModal.svelte'), /let after|then\?\.\(\)/);
 });
 
 test('names: PublishModal (no PublishDialog), add-page-modal (no apm)', () => {
   assert.equal(existsSync(new URL('PublishDialog.svelte', dir)), false);
+  assert.equal(existsSync(new URL('ItemPicker.svelte', dir)), false);
+  assert.equal(existsSync(new URL('PreviewPicker.svelte', dir)), false);
   const editor = new URL('../', dir);
   const all = (d) =>
     readdirSync(d, { withFileTypes: true }).flatMap((e) =>
@@ -201,6 +203,11 @@ test('names: PublishModal (no PublishDialog), add-page-modal (no apm)', () => {
   for (const f of all(editor).filter((u) => /\.(svelte|js|scss)$/.test(u.pathname))) {
     const src = readFileSync(f, 'utf8');
     assert.doesNotMatch(src, /PublishDialog|publishDialog/, f.pathname);
+    assert.doesNotMatch(
+      src,
+      /ItemPicker|PreviewPicker|openItemPicker|openPreviewPicker|\bitemPicker\b|\bpreviewPicker\b/,
+      f.pathname,
+    );
     assert.doesNotMatch(src, /\bapm\b|apm__/, f.pathname);
     assert.doesNotMatch(src, /ui\.explorer/, f.pathname);
     assert.doesNotMatch(src, /\b(md|src|as|ip|pp)-modal\b/, f.pathname);
@@ -210,8 +217,8 @@ test('names: PublishModal (no PublishDialog), add-page-modal (no apm)', () => {
   assert.match(read('MediaModal.svelte'), /'media-modal'/);
   assert.match(read('SourcesModal.svelte'), /class="modal__box sources-modal"/);
   assert.match(read('WidgetsModal.svelte'), /class="modal__box widgets-modal"/);
-  assert.match(read('ItemPicker.svelte'), /class="modal__box item-modal"/);
-  assert.match(read('PreviewPicker.svelte'), /class="modal__box preview-modal"/);
+  assert.match(read('ItemModal.svelte'), /class="modal__box item-modal"/);
+  assert.match(read('PreviewModal.svelte'), /class="modal__box preview-modal"/);
 });
 
 test('Esc in the editor closes the modal in front only', () => {

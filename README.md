@@ -1668,7 +1668,7 @@ folder; a `[param]/` part, its slash too, in the widget accent; an item template
 Header: "The menu and its labels"; Footer: "Its sections and widgets" — the pages list's
 lines, `src/editor/lib/site-parts.js`). A `[param]` page has a **Preview** line
 under it, its values in the widget accent (`Preview noor-vermeer / 2018 ▾`): the page of it the
-preview and every tab show. It opens the item selector (`PreviewPicker.svelte`), one step per
+preview and every tab show. It opens the item selector (`PreviewModal.svelte`), one step per
 param, each listing only the values under the ones picked before it (`[year]` after
 `[person] noor-vermeer`: her years), "Nothing found" and why when there are none; its crumbs
 and Back go back a step. The page shown is remembered per page (`ui.previewAt`, editor state

@@ -5,7 +5,7 @@
   picked before it (a nested page's [year] step: that person's years). A step with none says
   why (Nothing found, and its reason). The crumbs and Back go back a step; the last step's pick
   shows that page (onpick(path)). Remembered per page by main.js (ui.previewAt), never saved.
-  Mounted once in App.svelte; the Preview line opens it with openPreviewPicker({ id, onpick })
+  Mounted once in App.svelte; the Preview line opens it with openPreviewModal({ id, onpick })
   (modals.svelte.js).
     live   reactive store (its routes, unbuilt ones included: live.svelte.js)
     id     the [param] page ("photography/people/[person]/[year]")
@@ -24,7 +24,7 @@
 
   let { live } = $props();
 
-  const id = $derived(argsOf('previewPicker')?.id || '');
+  const id = $derived(argsOf('previewModal')?.id || '');
   const path = $derived(ui.path);
 
   let dialog = $state();
@@ -90,8 +90,8 @@
       query = '';
       return focus();
     }
-    const { onpick } = argsOf('previewPicker');
-    closeModal('previewPicker');
+    const { onpick } = argsOf('previewModal');
+    closeModal('previewModal');
     onpick(r.path);
   }
 </script>
@@ -101,7 +101,7 @@
   aria-label="Preview item"
   bind:this={dialog}
   {@attach closeOnBackdrop}
-  {@attach modal('previewPicker', { onopen })}
+  {@attach modal('previewModal', { onopen })}
 >
   {#if id}
     <ExplorerHead
@@ -117,7 +117,7 @@
       sep="/"
       back={step ? 'Back a step' : ''}
       onback={() => back()}
-      onclose={() => closeModal('previewPicker')}
+      onclose={() => closeModal('previewModal')}
     />
     <div class="preview-body">
       <input
