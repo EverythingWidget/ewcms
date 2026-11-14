@@ -1,5 +1,6 @@
-// The editor's sideways slide: a page or a template opened comes in from the right,
-// clipped to the panel so the outgoing view never peeks at the edge and then pops away.
+// The editor's sideways slide: a page, a template or a folder opened comes in from the right,
+// one copy of the old view and one of the new, clipped to the panel's edge, so the outgoing
+// view never peeks at the edge, isn't cropped, and the incoming one doesn't pop at the end.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -13,15 +14,42 @@ test('the pages list, a page and a template all slide inside a clipping view', (
   const tpl = panel.indexOf("ui.target?.kind === 'item-template'", open);
   const close = panel.indexOf('</div>', open);
   assert.ok(open > 0 && list > open && tpl > list && tpl < close);
-  assert.match(panel, /swapView\(view, viewEls\(\)\)/);
+  // the whole view, one block: no list of its children to pick from
+  assert.match(panel, /swapView\(view\)/);
+  assert.match(panel, /play\(now \? -1 : 1\)/);
+  assert.doesNotMatch(panel, /viewEls/);
   assert.match(panel, /overflow:\s*clip/);
   assert.match(read('src/editor/lib/slide.js'), /prefers-reduced-motion/);
 });
 
-test('swapView slides clipped copies and hides the live incoming view', () => {
+test('a folder slides its whole .ed-body, padding too, in the view (the panel edge)', () => {
+  const list = read('src/editor/svelte/PagesList.svelte');
+  assert.match(list, /const body = root\.closest\('\.ed-body'\) \?\? root;/);
+  assert.match(list, /swapView\(body\.parentElement, body\)/);
+  assert.match(list, /play\(dir\)/);
+  assert.doesNotMatch(list, /swapView\(root/);
+});
+
+test('swapView slides one old copy and one new copy, sized to the larger view', () => {
   const slide = read('src/editor/lib/slide.js');
-  assert.match(slide, /inset: '0'/);
-  assert.match(slide, /overflow: 'clip'/);
-  assert.match(slide, /visibility = 'hidden'/);
-  assert.match(slide, /if \(!host \|\| !els\.length \|\| still\(\)\) return \(\) => \{\}/);
+  assert.match(slide, /export function swapView\(host, box = host\)/);
+  assert.equal(slide.match(/cloneNode\(/g).length, 1); // in layer(): one copy per layer
+  assert.equal(slide.match(/= layer\(host, box\)/g).length, 2); // the old and the new
+  assert.doesNotMatch(slide, /inset: '0'/); // layers don't follow a shrinking host
+  assert.match(slide, /Math\.max\(before\.w, host\.clientWidth\)/);
+  assert.match(slide, /Math\.max\(before\.h, host\.clientHeight\)/);
+  assert.match(slide, /overflow: 'clip'/); // the layer clips
+  assert.match(slide, /overflow: 'hidden', \/\/ not clip/); // the copy can keep its scroll
+  assert.doesNotMatch(slide, /containerType/);
+  assert.match(slide, /host\.style\.visibility = 'hidden'/);
+  assert.match(slide, /if \(!host \|\| !box \|\| still\(\)\) return \(\) => \{\}/);
+});
+
+test('a live view that changed while sliding fades in over the last 80ms, no pop', () => {
+  const slide = read('src/editor/lib/slide.js');
+  assert.match(slide, /export const FADE = 0\.08/);
+  assert.match(slide, /if \(!inn\.changed\(\)\) return;/);
+  assert.match(slide, /opacity: 0, duration: FADE/);
+  assert.match(slide, /SLIDE\.duration - FADE/);
+  assert.doesNotMatch(slide, /mask/);
 });

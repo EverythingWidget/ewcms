@@ -1,97 +1,118 @@
 /**
- * The editor's one sideways slide (ContentPanel's Sections panes, the pages list's levels,
- * the pages list and a page's view): 0.35s power2.out, the width of what slides; reduced
- * motion: none.
+ * The editor's one sideways slide (the pages list's levels, the pages list and a page's or
+ * template's view): 0.35s power2.out, the width of what slides; reduced motion: none.
  *
  * Swapping a view for another (a pages list level for the next, the list for a page):
- *   const play = swapView(host, [old elements]);   // before the old view goes (a copy of it)
+ *   const play = swapView(host, box);   // before the old view goes: one copy of `box`
  *   …the new view renders…
- *   play([new elements], dir);   // dir 1: the new comes in from the right (going in), -1: back
- * Copies of both views sit in a clipping layer that stays put over the host; only the
- * copies move (their `left`), so a transformed scroll container never paints past the
- * panel edge. The live incoming view stays in place, hidden, until the slide ends.
- * A new swap in the same host ends a running one at once.
+ *   play(dir);   // dir 1: the new comes in from the right (going in), -1: back
+ * `box` (the host itself by default) is copied whole, as one block, padding and all: one old
+ * copy and one new copy slide, nothing else. They sit in clipping layers that stay put over
+ * the host (ContentPanel's `.ed-view`: its edge is the panel's), so a transformed scroll
+ * container never paints past it. The layers keep the larger of the host's size before and
+ * after the swap, so a view that gets shorter doesn't crop the one sliding out. The live host
+ * stays in place, hidden, until the slide ends; when the live view changed during the slide
+ * (it loaded, say), the new copy fades into it over the last FADE seconds instead of swapping
+ * at once. A new swap in the same host ends a running one at once.
  */
 import { gsap } from 'gsap';
 
 export const SLIDE = { duration: 0.35, ease: 'power2.out' };
+export const FADE = 0.08; // the copy → live view crossfade, at the slide's end
 
 export const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const running = new WeakMap(); // host → end the slide in it now
 
-function layer(host) {
+// what `box` shows (its content, not the slide's own layers in it)
+const shows = (box) =>
+  [...box.childNodes]
+    .filter((n) => !(n.dataset && 'slide' in n.dataset))
+    .map((n) => n.outerHTML ?? n.textContent)
+    .join('');
+
+// one still copy of `box` in a clipping layer over `host`
+function layer(host, box) {
   const el = document.createElement('div');
+  el.dataset.slide = '';
   el.inert = true;
   el.setAttribute('aria-hidden', 'true');
   Object.assign(el.style, {
     position: 'absolute',
-    inset: '0',
+    top: '0',
+    left: '0',
     overflow: 'clip',
     pointerEvents: 'none',
+    visibility: 'visible', // over the hidden live host
   });
   const h = host.getBoundingClientRect();
-  const scrolled = [];
-  const bases = [];
-  function fill(els) {
-    for (const src of els) {
-      const r = src.getBoundingClientRect();
-      const copy = src.cloneNode(true);
-      for (const n of [copy, ...copy.querySelectorAll('[id]')]) n.removeAttribute('id');
-      const left = r.left - h.left - host.clientLeft + host.scrollLeft;
-      Object.assign(copy.style, {
-        position: 'absolute',
-        margin: '0',
-        boxSizing: 'border-box',
-        overflow: 'clip',
-        containerType: 'normal',
-        left: `${left}px`,
-        top: `${r.top - h.top - host.clientTop + host.scrollTop}px`,
-        width: `${r.width}px`,
-        height: `${r.height}px`,
-      });
-      el.append(copy);
-      bases.push([copy, left]);
-      if (src.scrollTop) scrolled.push([copy, src.scrollTop]);
-    }
-  }
-  const applyScroll = () => {
-    for (const [copy, top] of scrolled) copy.scrollTop = top;
+  const r = box.getBoundingClientRect();
+  const html = shows(box); // to tell whether the live view changed since
+  const scroll = box.scrollTop;
+  const copy = box.cloneNode(true);
+  for (const n of [copy, ...copy.querySelectorAll('[id]')]) n.removeAttribute('id');
+  for (const d of copy.querySelectorAll('dialog')) d.remove(); // a modal isn't the view
+  const left = r.left - h.left - host.clientLeft + host.scrollLeft;
+  Object.assign(copy.style, {
+    position: 'absolute',
+    margin: '0',
+    boxSizing: 'border-box',
+    overflow: 'hidden', // not clip: the copy keeps its scroll position
+    visibility: '',
+    left: `${left}px`,
+    top: `${r.top - h.top - host.clientTop + host.scrollTop}px`,
+    width: `${r.width}px`,
+    height: `${r.height}px`,
+  });
+  el.append(copy);
+  return {
+    el,
+    size: (w, ht) => Object.assign(el.style, { width: `${w}px`, height: `${ht}px` }),
+    applyScroll: () => void (scroll && (copy.scrollTop = scroll)),
+    slide: (from, to, tl) => tl.fromTo(copy, { left: left + from }, { left: left + to }, 0),
+    changed: () => !box.isConnected || shows(box) !== html,
   };
-  const slide = (fromShift, toShift, at) => {
-    for (const [copy, left] of bases)
-      at.fromTo(copy, { left: left + fromShift }, { left: left + toShift }, 0);
-  };
-  return { el, fill, applyScroll, slide };
 }
 
-export function swapView(host, els) {
+export function swapView(host, box = host) {
   running.get(host)?.();
-  els = els.filter(Boolean);
-  if (!host || !els.length || still()) return () => {};
-  const out = layer(host);
+  if (!host || !box || still()) return () => {};
+  const before = { w: host.clientWidth, h: host.clientHeight };
+  const out = layer(host, box);
   out.el.style.zIndex = '4';
-  out.fill(els);
-  return (next, dir = 1) => {
-    next = next.filter(Boolean);
+  return (dir = 1) => {
+    if (!box.isConnected) return;
     const prevPosition = host.style.position;
-    if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
-    const inn = layer(host);
+    const prevVisibility = host.style.visibility;
+    const inn = layer(host, box);
     inn.el.style.zIndex = '3';
-    inn.fill(next);
-    for (const el of next) el.style.visibility = 'hidden';
+    if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+    const w = Math.max(before.w, host.clientWidth);
+    const h = Math.max(before.h, host.clientHeight);
+    out.size(w, h);
+    inn.size(w, h);
+    host.style.visibility = 'hidden'; // the live view, and whatever renders in it meanwhile
     host.append(out.el, inn.el);
     out.applyScroll();
     inn.applyScroll();
-    const w = host.clientWidth;
     const tl = gsap.timeline({ defaults: { ...SLIDE, force3D: false }, onComplete: () => end() });
     out.slide(0, -dir * w, tl);
     inn.slide(dir * w, 0, tl);
+    // the live view changed while it slid: show it under the copy and fade the copy away
+    tl.call(
+      () => {
+        if (!inn.changed()) return;
+        host.style.visibility = prevVisibility;
+        tl.to(inn.el, { opacity: 0, duration: FADE, ease: 'none' }, SLIDE.duration - FADE);
+      },
+      [],
+      SLIDE.duration - FADE,
+    );
     function end() {
       tl.kill();
       out.el.remove();
       inn.el.remove();
-      for (const el of next) el.style.visibility = '';
+      host.style.visibility = prevVisibility;
       host.style.position = prevPosition;
       running.delete(host);
     }

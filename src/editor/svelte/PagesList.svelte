@@ -92,7 +92,8 @@
     if (level && ids.length && !ids.includes(level)) ui.pagesWin.folder = '';
   });
   // another level slides in (lib/slide.js): a deeper one from the right, a higher one (←, a
-  // path part, Esc) from the left; a still copy of the one before slides out
+  // path part, Esc) from the left; a still copy of the body before (.ed-body, padding and
+  // all) slides out, clipped to the panel's edge like a page
   let shown = untrack(() => ui.pagesWin.folder);
   const depth = (id) => (id ? id.split('/').length : 0);
   $effect.pre(() => {
@@ -101,8 +102,10 @@
       if (next === shown || !root) return void (shown = next);
       const dir = depth(next) > depth(shown) ? 1 : -1;
       shown = next;
-      const play = swapView(root, [...root.children]);
-      tick().then(() => root && play([...root.children], dir));
+      // the whole body slides, its 12px padding too, in the view (the panel's edge)
+      const body = root.closest('.ed-body') ?? root;
+      const play = swapView(body.parentElement, body);
+      tick().then(() => play(dir));
     });
   });
   // the store's files (live.svelte.js: one shared copy per change)
@@ -623,7 +626,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  // positioned: a dragged row floats over it, a level sliding out lies over it
+  // positioned: a dragged row floats over it
   .pl {
     @include stack(var(--space-2));
     position: relative;

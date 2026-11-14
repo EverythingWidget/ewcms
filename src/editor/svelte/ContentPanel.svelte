@@ -246,17 +246,16 @@
 
   // the pages list and a page or template's view swap with the same slide, clipped to
   // `.ed-view` (lib/slide.js): a page or template opened comes in from the right, Back
-  // to pages brings the list from the left; a still copy of the one going slides out
-  const viewEls = () =>
-    [...(view?.children ?? [])].filter((el) => !el.matches('dialog, .modal__box'));
+  // to pages brings the list from the left; one still copy of the whole view going slides
+  // out, one of the view coming slides in
   let listOpen = ui.pagesWin.open;
   $effect.pre(() => {
     const now = ui.pagesWin.open;
     untrack(() => {
       if (now === listOpen) return;
       listOpen = now;
-      const play = swapView(view, viewEls());
-      tick().then(() => play(viewEls(), now ? -1 : 1));
+      const play = swapView(view);
+      tick().then(() => play(now ? -1 : 1));
     });
   });
 
