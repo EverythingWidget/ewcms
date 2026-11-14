@@ -924,6 +924,8 @@ function checkTemplateWidget(w, at) {
     );
   if (w.type === 'photo' && w.config?.width !== undefined)
     out.push(`${at}.config.width is gone (Photo width): give the photo its columns (its "layout")`);
+  const t = WIDGET_TYPES[w.type];
+  if (t.warn) warnings.push(...t.warn(w).map((p) => `${at} (${t.label}): ${p}`));
   return out;
 }
 

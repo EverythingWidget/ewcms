@@ -42,6 +42,8 @@
  *                     | 'text' | 'boolean'; every widget also has config.enabled (on/off)
  *   defaults  a new widget of this type (Add widget)
  *   check(widget)  optional: more problems than its settings' types (src/site/validate.js)
+ *   warn(widget)   optional: things to tell, not problems (ewcms check shows them, e.g. a
+ *             List's leftover config.properties; src/site/validate.js)
  *   list      a list widget: it shows all its source's items (its source: All / From URL /
  *             None), not one (Item / From URL / None): ../layout/source.js
  *   item      it needs an item (its source's first): without one it is skipped

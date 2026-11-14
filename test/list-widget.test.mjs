@@ -20,6 +20,7 @@ import { widgetItems } from '../src/site/layout/source.js';
 import { countGroups, THIS_LIST } from '../src/editor/property-groups.js';
 import { layoutOptions, layoutParts, MISSING_OPTIONS } from '../src/editor/widget-layout.js';
 import { hideMissing } from '../src/site/layout/missing.js';
+import { onGrid, template } from '../scripts/grid-helper.mjs';
 import { SITE_A, withPhoto } from './fixtures/index.mjs';
 
 const base = loadContent(SITE_A);
@@ -838,6 +839,25 @@ test('no property mapping: no hook, a leftover config.properties is ignored and 
   assert.match(contentWarnings().join(), /List.*config\.properties is no longer used/);
   checkContent('pages/x/index.json', { ...page, sections: [] });
   assert.deepEqual(contentWarnings(), []); // emptied at each check
+});
+
+test('an inner List leftover config.properties is also only warned', () => {
+  const t = template({
+    name: 'P',
+    widgets: onGrid([
+      {
+        type: 'list',
+        role: 'photos',
+        source: { mode: 'all', from: 'people' },
+        config: { template: 'preset:card', columns: '4', properties: { photo: 'still' } },
+      },
+    ]),
+  });
+  assert.deepEqual(checkContent('templates/t-map1.json', t), []);
+  assert.match(
+    contentWarnings().join(),
+    /sections\.0\.widgets\.0 \(List\): config\.properties is no longer used/,
+  );
 });
 
 test('no "first cover of a list" fallback: a hand-made item shows only its own photo', () => {

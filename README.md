@@ -1158,14 +1158,14 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
   mapping) is ignored; `ewcms check` warns about it.
   Picking **Row** sets **Columns** to `"1"`; the others default to `"3"`.
 
-- **Arrangement** (Layout tab): **Grid** only for now (`columns` `"1"`–`"6"`; 2 on a tablet, 1 on
-  a phone). Carousel comes later (not offered yet). Arrow keys, Home and End move between the
-  items in every column count. **Space between items** (`gap`): a whole number of cells of the
-  grid the List sits on (a page's: its section's `--cell`; an inner List's: its item's), 0 to
-  24, rendered as `gap: calc(n * var(--cell))`; 0, the default (left out), puts the items side
-  by side (the space inside an item is its template's). The item's own cell
-  (`100cqw / 120`) is set inside it, so the items of a List of 6 with a gap of 2 are each
-  (120 − 5 × 2) / 6 page cells wide: a template scales to any width. The Carousel's
+- **Arrangement** (Layout tab): **Grid** or **Carousel** (`config.arrangement`: `"grid"` default |
+  `"carousel"`). **Grid** (`columns` `"1"`–`"6"`; 2 on a tablet, 1 on a phone). Arrow keys, Home
+  and End move between the items in every column count. **Space between items** (`gap`): a whole
+  number of cells of the grid the List sits on (a page's: its section's `--cell`; an inner
+  List's: its item's), 0 to 24, rendered as `gap: calc(n * var(--cell))`; 0, the default (left
+  out), puts the items side by side (the space inside an item is its template's). The item's
+  own cell (`100cqw / 120`) is set inside it, so the items of a List of 6 with a gap of 2 are
+  each (120 − 5 × 2) / 6 page cells wide: a template scales to any width. The Carousel's
   **Also as a grid** uses the same gap. (The old Arrangement **Rows** is gone: write
   `"columns": "1"`.)
 - **Phone columns** (`config.phoneColumns`: `"1"` default \| `"2"` \| `"3"`): the Columns row
@@ -1999,7 +1999,7 @@ are `LANG_FILES`), and `@site-content` is the content root (`@site-content/anima
 ## Breaking content changes 0.4.0
 
 The List widget: Arrangement **Rows** is gone (write `"columns": "1"`; the validator says so).
-Carousel is not offered yet. `config.missing` is now on every widget (Content tab; default Hide).
+Carousel is available (Arrangement **Grid** | **Carousel**). `config.missing` is now on every widget (Content tab; default Hide).
 Fixtures never used Arrangement Rows.
 
 Bound values are **parts** now (see "Bindings"), and what a source's item has is its
