@@ -208,8 +208,18 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   const cols = read('src/editor/svelte/TemplateCols.svelte');
   const app = read('src/editor/svelte/App.svelte');
   assert.match(app, /<TemplateCols \{live\} \/>/);
-  // reserved row: the frame does not shift when opening or leaving a template
-  assert.match(app, /grid-template-rows: var\(--size-control\) minmax\(0, 1fr\)/);
+  // the Columns row only in the template editor; on pages the frame takes that space
+  assert.match(
+    app,
+    /\{#if templating\}<div class="ed-cols-slot"><TemplateCols \{live\} \/><\/div>\{\/if\}/,
+  );
+  assert.match(app, /templating = \$derived\(!!templateOfPath\(ui\.path \|\| ''\)\)/);
+  assert.match(app, /\.ed-stage \{[^}]*grid-template-rows: minmax\(0, 1fr\);/);
+  assert.match(
+    app,
+    /&\.has-cols \{\s*grid-template-rows: var\(--size-control\) minmax\(0, 1fr\);/,
+  );
+  assert.doesNotMatch(app, /reserved row/);
   assert.match(cols, /label="Columns"\s+type="seg"/);
   assert.match(cols, /type="seg"\s+bare/);
   assert.match(cols, /previewWithColumns/);

@@ -1,7 +1,8 @@
 <!--
   The template editor's preview columns (preview.columns: 1–6, 1 left out): a compact
-  pill in a reserved row above the preview frame (App.svelte), never in Settings. Preview
-  only: the item as wide as in a List of this many columns (never a List's own).
+  pill in a row above the preview frame (App.svelte), shown only in the template
+  editor, never in Settings. Preview only: the item as wide as in a List of this many
+  columns (never a List's own).
 -->
 <script>
   import Field from './Field.svelte';

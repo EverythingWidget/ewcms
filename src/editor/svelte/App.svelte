@@ -39,6 +39,7 @@
   import UpdateNotice from './UpdateNotice.svelte';
   import WidgetToolbar from './WidgetToolbar.svelte';
   import TemplateCols from './TemplateCols.svelte';
+  import { templateOfPath } from '../../site/widgets/list/template-preview.js';
   import { layerWidget } from '../layout-ops.js';
   import { targetFile } from '../layout-sync.js';
   import {
@@ -75,6 +76,9 @@
   ];
   const pages = $derived(ui.panel === 'pages');
   const phone = $derived(ui.viewport === 'phone');
+  // the item template editor: a row above the frame holds its Columns pill; on pages
+  // the frame takes that space (the frame moving when a template opens is accepted)
+  const templating = $derived(!!templateOfPath(ui.path || ''));
   // browse or edit (ui.mode): Edit opens the page in the preview (in the Pages tab); Done saves
   // what is unsaved first (nothing is lost), then browses; a failed save stays in edit
   const editing = $derived(ui.mode === 'edit');
@@ -203,10 +207,9 @@
 {#if ui.loadError}
   <p class="ed-boot">Could not load content: {ui.loadError}</p>
 {:else}
-  <main class={['ed-stage', phone && 'is-phone']}>
-    <!-- reserved row: same height whether the template columns pill is shown, so the
-         preview frame does not shift when opening or leaving a template -->
-    <div class="ed-cols-slot"><TemplateCols {live} /></div>
+  <main class={['ed-stage', phone && 'is-phone', templating && 'has-cols']}>
+    <!-- only in the item template editor: the row with its Columns pill -->
+    {#if templating}<div class="ed-cols-slot"><TemplateCols {live} /></div>{/if}
     <iframe class="ed-frame" title="Site preview" {@attach bridge.attach}></iframe>
     <WidgetToolbar {live} {bridge} />
   </main>
@@ -328,12 +331,15 @@
     inset: 0 calc(var(--panel-w) + 24px) 0 0;
     padding: var(--space-3) 0 var(--space-3) var(--space-3);
     display: grid;
-    grid-template-rows: var(--size-control) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
     place-items: stretch;
     gap: var(--space-2);
+    &.has-cols {
+      grid-template-rows: var(--size-control) minmax(0, 1fr);
+    }
   }
 
-  // reserved row above the frame: the template's Columns pill sits here, centred
+  // the template editor's row above the frame: its Columns pill sits here, centred
   .ed-cols-slot {
     display: flex;
     align-items: center;
