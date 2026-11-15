@@ -1029,7 +1029,10 @@ export function createBridge({
       (e) => {
         if (rich && rich.el.contains(e.target)) {
           if (richKey(e)) return;
-          if (isShortcut(e)) emit('key', e);
+          if (isShortcut(e)) {
+            e.preventDefault(); // Ctrl+Z: the editor's undo, not the iframe's (G14)
+            emit('key', e);
+          }
           e.stopPropagation();
           return;
         }
@@ -1053,7 +1056,10 @@ export function createBridge({
           }
           e.stopPropagation(); // keep site shortcuts (album arrows, menu) out of typing
         }
-        if (isShortcut(e)) emit('key', e);
+        if (isShortcut(e)) {
+          e.preventDefault(); // Ctrl+Z after a drag: the store's undo on the first press (G14)
+          emit('key', e);
+        }
       },
       true,
     );

@@ -113,3 +113,10 @@ test("a press on a widget's link or button only picks it: no pressed look, Alt s
   // the site's own styles are untouched: the press look stays for visitors
   assert.match(read('src/client/styles/_glass.scss'), /&:active \{\s*transform: scale\(0\.97\);/);
 });
+
+
+test('G14: Ctrl+Z in the preview is preventDefault before the editor undo runs', () => {
+  const b = src('bridge.js');
+  assert.match(b, /e\.preventDefault\(\); \/\/ Ctrl\+Z after a drag/);
+  assert.match(b, /e\.preventDefault\(\); \/\/ Ctrl\+Z: the editor's undo/);
+});
