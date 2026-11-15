@@ -451,11 +451,18 @@
       <span class="prow__slot" aria-hidden="true"></span>
       <span class="prow__slot" aria-hidden="true"></span>
     {/if}
-    {#if !r.self}
-      <span class="prow__slot" aria-hidden="true"
-        >{#if hasInside(r)}<i class="fa-solid fa-chevron-right" title="Double click: go inside"
-          ></i>{/if}</span
+    {#if !r.self && hasInside(r)}
+      <!-- a click goes inside (as a double click on the row), F100 -->
+      <button
+        type="button"
+        class="prow__slot prow__in"
+        title="Go inside (or double-click the row)"
+        aria-label="Go inside {r.title}"
+        onclick={() => go(r.id)}
+        ><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button
       >
+    {:else if !r.self}
+      <span class="prow__slot" aria-hidden="true"></span>
     {/if}
     {#if asking === r.id}
       {@const heavy = heavyOf(r)}
@@ -987,6 +994,21 @@
     width: 24px;
     color: var(--c-text-muted);
     font-size: var(--fs-2xs);
+  }
+
+  // the chevron: a 24px button in its slot, no box of its own until hovered
+  .prow__in {
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-xs);
+    background: none;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--c-control-hover);
+      color: var(--c-text);
+    }
   }
 
   .prow__flag {

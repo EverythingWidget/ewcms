@@ -25,7 +25,7 @@
     paramsOf,
     sourceIds,
   } from '../../render/files.js';
-  import { parentId, pathOfId } from '../../render/routes.js';
+  import { pageTitle, parentId, pathOfId, titleCase } from '../../render/routes.js';
   import { slugify } from '../../render/helpers.js';
   import { childId, linkPage, shownPath } from '../lib/page-tree.js';
 
@@ -118,6 +118,21 @@
     dialog.querySelector('input')?.focus();
   }
 
+  // the folder's other pages (not [param] or template ones), in name order, for a dropdown made
+  // for the new one (linkPage, F100): their H1 as the label, else their name
+  function siblingsOf(folder) {
+    if (!folder) return [];
+    const files = live.files;
+    return Object.keys(files)
+      .map((f) => pageIdOf(f))
+      .filter((id) => id && id !== folder && parentId(id) === folder && !isTemplate(id))
+      .sort()
+      .map((id) => ({
+        pid: files[pageFile(id)]?.id,
+        label: pageTitle(files[pageFile(id)]) || titleCase(id.split('/').pop()),
+      }));
+  }
+
   async function add(e) {
     e.preventDefault();
     if (!ready || busy) return;
@@ -133,7 +148,13 @@
     if (kind === 'page' && linked) {
       const pid = live.current(pageFile(res.id))?.id;
       const parent = level ? live.current(pageFile(level))?.id : null;
-      const nav = linkPage(live.current(HEADER) || {}, pid, title.trim(), parent);
+      const nav = linkPage(
+        live.current(HEADER) || {},
+        pid,
+        title.trim(),
+        parent,
+        siblingsOf(level),
+      );
       if (pid) live.store.set(HEADER, '/header', nav.header, { source: 'panel' });
     }
     closeModal('addPage');

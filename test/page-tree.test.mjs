@@ -401,3 +401,28 @@ test("a [param] page counts the pages it builds: none without items, or when its
   });
   assert.equal(count(broken), 0);
 });
+
+test("linkPage: a dropdown made for a new page takes its folder's unlinked pages too (F100)", () => {
+  const nav = {
+    header: [
+      { label: 'Behandelingen', page: 'pg-b' },
+      { label: 'Over', page: 'pg-o' },
+    ],
+  };
+  const siblings = [
+    { pid: 'pg-u', label: 'Uitstraling' },
+    { pid: 'pg-o', label: 'Over' }, // in the menu already: stays where it is
+    { pid: 'pg-n', label: 'New' }, // the new page itself: once
+  ];
+  const next = linkPage(nav, 'pg-n', 'New', 'pg-b', siblings);
+  assert.deepEqual(next.header[0].children, [
+    { label: 'Uitstraling', page: 'pg-u' },
+    { label: 'New', page: 'pg-n' },
+  ]);
+  // a dropdown that exists: only the new page goes in
+  const again = linkPage(next, 'pg-m', 'More', 'pg-b', [{ pid: 'pg-x', label: 'X' }]);
+  assert.deepEqual(
+    again.header[0].children.map((c) => c.page),
+    ['pg-u', 'pg-n', 'pg-m'],
+  );
+});

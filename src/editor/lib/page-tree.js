@@ -249,15 +249,23 @@ const copy = (nav) => {
 
 /**
  * Add page `pid` to the menu as `label`: into the dropdown of `parentPid`'s item when it is a
- * top item without a source list, else at the end of the top level. Returns the copy.
+ * top item without a source list, else at the end of the top level. The dropdown made for it
+ * (the item had none) first takes its folder's other pages that aren't in the menu yet
+ * (`siblings`: [{ pid, label }], in order), so it doesn't hold the new page alone (F100).
+ * Returns the copy.
  */
-export function linkPage(nav, pid, label, parentPid) {
+export function linkPage(nav, pid, label, parentPid, siblings = []) {
   const next = copy(nav);
   if (findItem(next.header, pid)) return next;
   const parent = next.header.find((it) => it?.page === parentPid);
   const item = { label, page: pid };
-  if (parent && parent.items === undefined) (parent.children ||= []).push(item);
-  else next.header.push(item);
+  if (parent && parent.items === undefined) {
+    if (!Array.isArray(parent.children))
+      parent.children = siblings
+        .filter((s) => s?.pid && s.pid !== pid && !findItem(next.header, s.pid))
+        .map((s) => ({ label: s.label, page: s.pid }));
+    parent.children.push(item);
+  } else next.header.push(item);
   return next;
 }
 
