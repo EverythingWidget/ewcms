@@ -141,7 +141,7 @@
   // its toolbar's width (measured), for where it goes and what moves into "…"
   let barW = $state(0);
   // the whole bar, about: style + Fit + lists + B I link + Property, then the layout part
-  const TEXT_W = 440;
+  const TEXT_W = 464;
   // (Shrink to fit's shortcut: one more icon)
   const LAYOUT_W = $derived(13 + 32 + 4 + 136 + (canScaleFit ? 36 : 0));
   // the marks go into "…" only when the preview (the frame, 8px each side) can't hold the bar
@@ -480,12 +480,12 @@
         <button
           type="button"
           class={['btb__btn btb__style', open === 'style' && 'is-open']}
-          title="The style of the line the caret is in (the whole line)"
+          title="Style of this line: Title, Heading, Paragraph, Label… (the whole line)"
+          aria-label="Style: {styleLabel(style)}"
           onclick={(e) => toggle('style', e)}
-          ><span>{styleLabel(style)}</span><i
-            class="fa-solid fa-chevron-down btb__caret"
-            aria-hidden="true"
-          ></i></button
+          ><i class="fa-solid fa-heading btb__style-icon" aria-hidden="true"></i><span
+            >{styleLabel(style)}</span
+          ><i class="fa-solid fa-chevron-down btb__caret" aria-hidden="true"></i></button
         >
         {#if canFit}
           <button
@@ -745,9 +745,21 @@
     white-space: nowrap;
   }
 
+  // its icon says what it is (F18); the name after it, the caret at the end
   .btb__style {
-    justify-content: space-between;
-    width: 112px;
+    justify-content: flex-start;
+    gap: var(--space-2);
+    width: 136px;
+
+    > span {
+      flex: 1;
+      text-align: left;
+    }
+  }
+
+  .btb__style-icon {
+    color: var(--c-widget-accent);
+    font-size: var(--fs-2xs);
   }
 
   .btb__property:not(:disabled) {
