@@ -56,10 +56,17 @@
     const v = live.get(g.file, `${base}/source`);
     return v && typeof v === 'object' ? structuredClone(v) : null;
   });
+  // a List's Show only (config.showOnly) narrows them: the "N items" line follows it
+  const showOnly = $derived.by(() => {
+    live.version;
+    const v = live.get(g.file, `${base}/config/showOnly`);
+    return v && typeof v === 'object' ? structuredClone(v) : null;
+  });
   const shown = $derived.by(() => {
     const route = live.routeOf(ui.path);
     const at = isTemplate(pageId) && route?.id === pageId ? route : { params: {} };
-    return widgetItems(live.content, at, { source });
+    const hook = type.showOnly ? { showOnly: type.showOnly } : null;
+    return widgetItems(live.content, at, { source, config: { showOnly } }, hook);
   });
   const item = $derived(shown.item);
   const from = $derived(sourceOf({ source })?.from ?? null);

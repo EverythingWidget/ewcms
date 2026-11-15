@@ -158,3 +158,22 @@ test('F39: the editor: one Show only row under Source, with an (i), never named 
   );
   for (const src of [lead, mod]) assert.doesNotMatch(src, /\bfilter[A-Z]\w*|\bFilter\b/);
 });
+
+test('Show only: the source\'s "N items" line counts the shown items, not the source\'s', () => {
+  // what WidgetInspector.svelte passes: the source, Show only and the List's showOnly hook alone
+  const hook = { showOnly: WIDGET_TYPES.list.showOnly };
+  const count = (showOnly) =>
+    widgetItems(content, null, { source: from, config: { showOnly } }, hook).items.length;
+  assert.equal(count(null), 36);
+  assert.equal(count({ field: 'category', value: 'uitstraling' }), 9);
+  assert.equal(count({ field: 'category', value: 'laserontharing' }), 14);
+  const insp = readFileSync(
+    new URL('../src/editor/svelte/WidgetInspector.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.match(insp, /config\/showOnly/);
+  assert.match(
+    insp,
+    /widgetItems\(live\.content, at, \{ source, config: \{ showOnly \} \}, hook\)/,
+  );
+});
