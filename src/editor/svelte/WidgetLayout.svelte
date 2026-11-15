@@ -20,6 +20,7 @@
   import { fillOf, placeOfBox, placementOf, placesOf } from '../../render/layout/place.js';
   import { scaledToFit } from '../../render/layout/type.js';
   import Field from './Field.svelte';
+  import InfoHelp from './InfoHelp.svelte';
   import { CAROUSEL, withArrangement } from '../../render/widgets/list/carousel.js';
   import {
     boxLabels,
@@ -193,12 +194,12 @@
               type="button"
               role="radio"
               aria-checked={size === 'auto'}
-              title="Size: as tall as its content"
+              title="Auto height: as tall as its content"
               class={['seg__btn', size === 'auto' && 'is-active']}
               onclick={() => setSize('auto')}
             >
               <i class="fa-solid fa-up-down wl__ic" aria-hidden="true"></i>
-              Auto
+              Auto height
             </button>
             <button
               type="button"
@@ -263,7 +264,13 @@
       {#if !parts.includes('size')}<div class="wl__row">{@render layerSet()}</div>{/if}
     {:else if part === 'link'}
       <p class="hint small wl__link">
-        {#if link}Follows {leader}, gap {link.gap}{:else}Free (not linked){/if}
+        {#if link}Follows {leader}, gap {link.gap}{:else}Free (not linked){/if}<InfoHelp
+          label="About links"
+          ><b>Linked</b>: a widget that follows another sits under it, a gap of rows apart, and
+          moves when it grows or moves. To link, drag the filled circle above the selected widget
+          onto the empty circle under another. To unlink, drop it anywhere else, or click the line
+          and press Delete. Desktop and Phone have their own links.</InfoHelp
+        >
       </p>
     {:else if part === 'box'}
       <div class="tf is-half">

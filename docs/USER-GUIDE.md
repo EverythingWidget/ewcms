@@ -17,7 +17,7 @@ version in `package.json`.
   tabs).
 - **section settings**: one section's name, rows, background and the like (its gear).
 - Never just "the settings": say which of the three.
-- **source**: a list of items (people, places, projects); **property**: one value of an item
+- **source**: a list of items (such as products, team members or events); **property**: one value of an item
   (its title, photos, year). A widget shows its source's properties as `{name}` chips.
 
 ## Pages

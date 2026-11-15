@@ -2,7 +2,8 @@
   One field: a label (name, and, changed, a dot before it;, for a value from a source list, a button naming
   its file, e.g. people.json, that opens it in Sources) with an input, or a
   textarea for longer text, a switch (boolean) or a Select (select, options [[value, label]]).
-  bare: no label row (label is the input's aria-label; say it in the placeholder); help: a hint under it; half: it shares a row with the next field (the parent's grid).
+  bare: no label row (label is the input's aria-label; say it in the placeholder); help: a hint under it; tip: a snippet, an (i) after
+  the label that explains it (InfoHelp.svelte: in the label row, nothing shifts); half: it shares a row with the next field (the parent's grid).
   empty: a number field can be cleared (onvalue(undefined): the default, say it in the placeholder).
   type 'photo': a photo (its media/ path or R2 key) as a 64px card: the photo, its label
   (inside), file name and sizes, Media and ✕ (clears it; remove: the parent's, a list item's);
@@ -29,6 +30,7 @@
   import { partOfName } from '../lib/parts-input.js';
   import { showValue } from '../lib/show-value.js';
   import Button from './Button.svelte';
+  import InfoHelp from './InfoHelp.svelte';
   import Select from './Select.svelte';
   import { countGroups } from '../property-groups.js';
   import Position from './Position.svelte';
@@ -51,6 +53,7 @@
     onsource,
     placeholder = '',
     help = '',
+    tip = null,
     half = false,
     options = [],
     unset = '',
@@ -189,7 +192,9 @@
   data-edit={edit}
 >
   {#if !bare && !inner}<span class="tf__label">
-      {#if binds}<span class="tf__name">{label}</span>{:else}{label}{/if}
+      {#if binds}<span class="tf__name">{label}</span>{:else}{label}{/if}{#if tip}<InfoHelp
+          label="About {label}">{@render tip()}</InfoHelp
+        >{/if}
       {#if type === 'boolean'}
         <input
           type="checkbox"

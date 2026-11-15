@@ -154,7 +154,11 @@
   placeholder="none"
   help="Its class: .li__<role>"
   onvalue={(v) => setRole(b, v)}
-/>
+>
+  {#snippet tip()}<b>Role</b>: this widget's name in the template, and its style hook (the
+    class .li__&lt;role&gt;). It doesn't pick what it shows: its own property does. Only a preset
+    uses it, to fill the part from the source's property of the same name.{/snippet}
+</Field>
 {#if ['text', 'photo', 'button'].includes(w.type)}
   <!-- When a value is missing (src/render/layout/missing.js): one full row; Inherit is left out -->
   <Field
@@ -164,7 +168,12 @@
     value={w.config?.missing || ''}
     options={TEMPLATE_MISSING}
     onvalue={(v) => set(`${b}/config/missing`, v || undefined, true)}
-  />
+  >
+    {#snippet tip()}<b>When a value is missing</b>: an item has no value for a property this
+      widget shows. <b>Hide</b> leaves the widget out of that item when all its properties are
+      empty (a button: its link or label). <b>Show empty</b> keeps it, empty. <b>Inherit</b>:
+      as the List says.{/snippet}
+  </Field>
 {/if}
 {#if w.type === 'text'}
   <!-- Style + Text: edited in the preview (the page Text's toolbar), not here -->

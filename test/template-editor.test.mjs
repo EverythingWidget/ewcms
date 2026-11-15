@@ -1,4 +1,4 @@
-// List step 8: the template editor (Pages > Site > Templates, content/templates/t-….json).
+// List step 8: the template editor (Pages > Templates, content/templates/t-….json).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { onGrid, template } from '../scripts/grid-helper.mjs';
@@ -176,7 +176,7 @@ test('the binds a template uses are listed once, first use first', () => {
 });
 
 test('the editor: a Templates group under Site, its own target, Edit template, no shift', () => {
-  // Pages > Site > Templates: an entry per template file (main.js), its row opens it
+  // Pages > Templates: an entry per template file (main.js), its row opens it
   const pages = [
     { kind: 'item-template', id: 't-ab12', title: 'People card', path: '/__template/t-ab12/' },
   ];

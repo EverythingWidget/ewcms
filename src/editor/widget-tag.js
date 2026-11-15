@@ -30,8 +30,8 @@ export function tagHtml(p, from = null, auto = false) {
   const t = tagParts(p, from, auto);
   const part = (v, ch) => (ch ? `<b class="ch">${v}</b>` : v);
   const title = auto
-    ? 'Auto: as tall as its content (click: fixed rows)'
-    : 'Auto: off (click: as tall as its content)';
+    ? 'Auto height: as tall as its content (click: fixed rows)'
+    : 'Auto height: off (click: as tall as its content)';
   const toggle = `<i class="auto${auto ? ' is-on' : ''}" data-auto title="${title}">${UP_DOWN}</i>`;
   return `${toggle}${part(t.size, t.sizeCh)} · ${part(t.pos, t.posCh)}`;
 }

@@ -18,6 +18,7 @@
   import WidgetSource from './WidgetSource.svelte';
   import ListField from './ListField.svelte';
   import Field from './Field.svelte';
+  import InfoHelp from './InfoHelp.svelte';
   import LinkField from './LinkField.svelte';
   import SourceField from './SourceField.svelte';
   import { pairedHalves } from './source-items.js';
@@ -236,7 +237,12 @@
         note = '';
         setTemplate(v);
       }}
-    />
+    >
+      {#snippet tip()}<b>Template</b>: how each item looks. A preset fills each part from the
+        source's property of the same name: <b>photo</b>, <b>body</b>, and the source's title
+        property for <b>title</b>. A part the source has no property for is left out. To show other
+        properties, <b>Duplicate</b> it and pick them in the template.{/snippet}
+    </Field>
     <div class="ll__actions">
       <Button
         size="small"
@@ -256,7 +262,7 @@
         <Button
           size="small"
           icon="pen"
-          title="Open this template in the template editor (Pages > Site > Templates)"
+          title="Open this template in the template editor (Pages > Templates)"
           disabled={!isOwnTemplate}
           onclick={() => ui.openTemplate?.(templateId, { back: true })}
           data-edit-template>Edit template</Button
@@ -269,7 +275,14 @@
   </div>
 
   <div class="ll__source-head">
-    <span class="tf__label">Source</span>
+    <span class="tf__label"
+      >Source<InfoHelp label="About Source"
+        ><b>Source</b>: where the List gets its items, one copy of the template each.
+        <b>From URL</b>: the items that match the page's address (only on a [param] page).
+        <b>All</b>: every item of a list in Sources. <b>None</b>: no items. <b>Custom</b>: items you
+        add here by hand.</InfoHelp
+      ></span
+    >
     {#if handmade}
       <Button size="small" icon="plus" onclick={addItem}>Add</Button>
     {/if}

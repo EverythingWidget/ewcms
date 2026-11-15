@@ -921,7 +921,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
   reject anything else with a message. A List pointing at a missing template warns and shows
   Card.
 
-- **The template editor** (local editor): **Pages > Site > Templates** lists every
+- **The template editor** (local editor): **Pages > Templates** lists every
   `content/templates/t-*.json` under Header and Footer; opening one works like opening a page,
   and **Edit template** (next to the List's Template picker, shown only while a template is
   picked, its place always kept) jumps to it. The preview (the dev server's
@@ -946,7 +946,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
       bold, italic and links stay through an edit (typed text takes the marks of the text
       before it). Every value takes `{property}` chips: type `{name}` or pick one from the
       source's properties.
-    - **Layout** (`WidgetLayout.svelte`, as a page widget's): its height (**Auto | Rows |
+    - **Layout** (`WidgetLayout.svelte`, as a page widget's): its height (**Auto height | Rows |
       Aspect**) and **Layer**, what it **Follows** (its link and gap), its content box,
       placement and Scale to fit; an inner List's **Arrangement**, **Columns** and **Space
       between items**. In the phone preview it shows the phone's.

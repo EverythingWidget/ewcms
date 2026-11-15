@@ -1,5 +1,5 @@
 <!--
-  An item template open (Pages > Site > Templates: ui.target { kind: 'item-template', id }):
+  An item template open (Pages > Templates: ui.target { kind: 'item-template', id }):
   its file content/templates/<id>.json edited like a page, the preview its List of one sample
   item (src/render/widgets/list/template-preview.js). Two tabs:
     Widgets     the always-selected section card (SectionCard.svelte) of its widgets, with

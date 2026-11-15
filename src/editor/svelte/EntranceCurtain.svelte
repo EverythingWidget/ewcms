@@ -200,7 +200,7 @@
       padding-inline: var(--space-2);
     }
 
-    // the first row ("Curtain for this page", or "Total duration") leaves room for Replay
+    // the first row ("On this page", or "Total duration") leaves room for Replay
     > :nth-child(2) > .tf__label {
       min-height: 24px;
       padding-right: 28px;

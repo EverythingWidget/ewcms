@@ -33,7 +33,17 @@
 
   // g: the widget's group; base: its pointer; list: a list widget (All instead of Item); shown:
   // what it shows on the page in the preview (widgetItems)
-  let { g, live, base, list = false, shown, sourceIds, onsource, handmade = false, oncustom = null } = $props();
+  let {
+    g,
+    live,
+    base,
+    list = false,
+    shown,
+    sourceIds,
+    onsource,
+    handmade = false,
+    oncustom = null,
+  } = $props();
 
   const NO_PARAMS = 'This page’s address has no params to match';
   const ANY_WHY =
@@ -272,9 +282,9 @@
     {#if !oncustom}
       <span class="tf__label"
         >Source<InfoHelp label="About Source"
-          ><b>Source</b>: where this widget gets its items, a list from Sources. <b>All</b> shows
-          every item, <b>From URL</b> only the item of the page you are on, <b>Custom</b> items you add
-          by hand.</InfoHelp
+          ><b>Source</b>: the item whose properties this widget shows. <b>From URL</b>: the item the
+          page's address names (only on a [param] page). <b>Item</b>: one item you pick from
+          Sources. <b>None</b>: no item, only its own text.</InfoHelp
         ></span
       >
     {/if}

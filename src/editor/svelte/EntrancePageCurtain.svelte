@@ -51,14 +51,13 @@
   <div class="fields">
     <div class={['tf', live.changed(page.file, page.ptr) && 'is-changed']}>
       <span class="tf__label"
-        >{route.template ? 'Curtain for every item page' : 'Curtain for this page'}<InfoHelp
-          label="About Curtain"
+        >{route.template ? 'On every item page' : 'On this page'}<InfoHelp label="About Curtain"
           ><b>Curtain</b>: a panel that covers the screen while a visitor goes from one page to the
           next. <b>Site default</b> uses the site's curtain (Site Settings > Page entrance),
           <b>Off</b> skips it on this page: a page fade instead.</InfoHelp
         ></span
       >
-      <div class="seg" role="radiogroup" aria-label="Curtain for this page">
+      <div class="seg" role="radiogroup" aria-label="Curtain on this page">
         {#each CURTAIN_MODES as m (m)}
           <button
             type="button"

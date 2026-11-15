@@ -24,6 +24,7 @@
 -->
 <script>
   import { BIND_TYPES } from '../../render/property-types.js';
+  import InfoHelp from './InfoHelp.svelte';
   import { ui, previewClicks } from './ui.svelte.js';
   import { targetFile } from '../layout-sync.js';
   import { schemaFor } from './source-items.js';
@@ -472,7 +473,7 @@
           class="btb__btn"
           title="Edit its text (or double-click it); Esc or a click outside ends"
           onclick={() => bridge.editWidget(where.id)}
-          ><i class="fa-solid fa-pen" aria-hidden="true"></i><span>Edit</span></button
+          ><i class="fa-solid fa-pen" aria-hidden="true"></i><span>Edit text</span></button
         >
       {/if}
       {#if editing}
@@ -522,6 +523,12 @@
           : 'Auto height: off (click: as tall as its content)'}
         onclick={toggleAuto}><i class="fa-solid fa-up-down" aria-hidden="true"></i></button
       >
+      <InfoHelp label="About Size"
+        ><b>Auto height</b> (this switch): as tall as its content; it grows with its text. Off, its
+        height is a fixed number of rows (Layout tab: <b>Rows</b>, or <b>Aspect</b>: its width × a
+        ratio). Auto height and Aspect widgets resize only from their sides. A widget that grows
+        covers the ones under it unless they are linked to it.</InfoHelp
+      >
       {#if canScaleFit}
         <button
           type="button"
@@ -533,6 +540,12 @@
         >
       {/if}
       <span class="btb__size">{sizeText}</span>
+      <InfoHelp label="About the grid"
+        ><b>The grid</b>: a section is 120 columns wide on Desktop, 60 on Phone; rows are cells as
+        tall as they are wide. It shows while a widget is selected. Drag the widget to move it, its
+        handles to resize it: it snaps to the cells. Esc deselects. Here: width × height ·
+        row:column.</InfoHelp
+      >
     </div>
 
     {#if open}

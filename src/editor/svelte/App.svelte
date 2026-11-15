@@ -12,6 +12,7 @@
 -->
 <script>
   import { keptForReload } from '../keep-unsaved.js';
+  import InfoHelp from './InfoHelp.svelte';
   import { untrack } from 'svelte';
   import Button from './Button.svelte';
   import Tabs from './Tabs.svelte';
@@ -278,11 +279,18 @@
           </button>
         {/each}
       </div>
+      <InfoHelp label="About Desktop and Phone"
+        ><b>Desktop</b> and <b>Phone</b> each have their own layout. Moving, resizing and linking widgets,
+        and a section's height, change only the view you are in; Auto height, Rows and Aspect are shared.
+        Phone is 60 columns wide; a widget not yet placed there stacks full width in page order.</InfoHelp
+      >
       <Button
         icon="database"
         iconOnly
         label="Sources"
-        title="Sources: people, places, projects (the lists in {contentPath('sources/')})"
+        title="Sources: your lists of items, such as products, team members or events (in {contentPath(
+          'sources/',
+        )})"
         onclick={() => openSources()}
       />
       <Button
