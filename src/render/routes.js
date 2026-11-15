@@ -39,7 +39,7 @@
  *
  * Search and share meta (src/render/seo.js): a page's title is its meta.title, else its first
  * heading's title, else its folder name, in the site's titleTemplate (home: meta.title, else
- * site.title, in full); description, photo, canonical and noindex come from its "meta".
+ * site.title, else site.name, in full); description, photo, canonical and noindex come from its "meta".
  * A [param] page: "<item name> | <section>", the item's body and cover, else the template's
  * meta.description / meta.photo; its meta.noindex keeps every item page out.
  * Routes with noindex (404, meta.noindex, items with "placeholder": true, or site.json
@@ -184,7 +184,7 @@ export function buildRoutes(content, { unbuilt = false } = {}) {
     const meta = page.meta || {};
     const title =
       id === 'home'
-        ? meta.title || site.title
+        ? meta.title || site.title || site.name || ''
         : fillTitle(site, meta.title || pageTitle(page) || titleCase(segments.at(-1)));
     routes.push({
       path: pathOfId(id),

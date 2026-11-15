@@ -4,7 +4,6 @@
   "id": "pg-home",
   "curtainText": "Your new site",
   "meta": {
-    "title": "Home",
     "description": "A new site built with ewcms."
   },
   "sections": [
