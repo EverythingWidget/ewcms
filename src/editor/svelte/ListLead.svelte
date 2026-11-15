@@ -33,6 +33,7 @@
   import { t } from '../../render/strings.js';
   import { saveDev, templatesOp } from '../source.js';
   import { toast } from './toasts.svelte.js';
+  import { setListCustom } from '../layout-ops.js';
 
   let { g, live, base, list = false, shown, sourceIds, onsource, bindings = null } = $props();
 
@@ -42,13 +43,6 @@
     live.version;
     return live.get(g.file, customPtr) === true;
   });
-
-  const setCustom = (on) =>
-    live.store.set(g.file, customPtr, on ? true : undefined, {
-      key: `config:${g.file}${customPtr}`,
-      source: 'panel',
-      structure: true,
-    });
 
   // ---- custom items as a ListField descriptor (config.items)
   const itemsOf = (id) => {
@@ -297,7 +291,7 @@
     {sourceIds}
     {onsource}
     {custom}
-    oncustom={() => setCustom(true)}
+    oncustom={() => setListCustom(live.store, g.file, base)}
   />
 
   {#if custom}

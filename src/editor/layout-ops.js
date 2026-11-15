@@ -681,3 +681,21 @@ export function layerWidgets(store, file, at, ids, dir) {
   }
   return writeSection(store, file, at, section);
 }
+
+/**
+ * A List switched to Custom (its own items, config.items): its source goes with it, one undo
+ * step. A source left on it showed nothing and failed the save when it wasn't one (F79).
+ */
+export function setListCustom(store, file, base) {
+  store.batch(
+    () => {
+      store.set(file, `${base}/config/custom`, true, {
+        key: `config:${file}${base}/config/custom`,
+        structure: true,
+      });
+      if (store.get(file, `${base}/source`) !== undefined)
+        store.set(file, `${base}/source`, undefined, { structure: true });
+    },
+    { source: 'panel' },
+  );
+}

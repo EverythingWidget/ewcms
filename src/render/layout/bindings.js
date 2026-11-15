@@ -28,6 +28,7 @@ import { contentPath, isTemplateId, pageFile, templateIdOf } from '../files.js';
 import { isObject } from '../is.js';
 import { eachWidget } from './ids.js';
 import { MODES, sourceOf } from './source.js';
+import { isCustom } from '../widgets/list/custom.js';
 import { BIND_TYPES, TEXT_TYPES } from '../property-types.js';
 import { flatWidgets, holdsCarousel, nestingProblems } from '../widgets/list/nested.js';
 import { detailsOf, detailsWarnings } from '../widgets/list/details.js';
@@ -205,8 +206,10 @@ export function bindingProblems(content, { types, files = null }) {
       if (!t || !isObject(widget)) continue;
       const where = `${contentPath(file)} (sections/${at}/widgets/${j})`;
       const problem = (level, msg) => out.push({ level, message: `${where}: ${msg}` });
-      const s = sourceOf(widget);
-      if (widget.source !== undefined && !s) {
+      // a Custom List shows its own items: a source left on it (from before Custom) is unused,
+      // never a reason a save fails (F79)
+      const s = widget.type === 'list' && isCustom(widget) ? null : sourceOf(widget);
+      if (widget.source !== undefined && !s && !(widget.type === 'list' && isCustom(widget))) {
         problem(
           'error',
           `source: { "mode": ${MODES.map((m) => `"${m}"`).join(' | ')}, "from": "<source>" }`,
