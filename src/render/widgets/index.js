@@ -80,7 +80,7 @@ export const BUILTIN_WIDGETS = Object.freeze([
  */
 export const RETIRED_WIDGETS = Object.freeze({
   panels:
-    'Photo panels ("panels") is gone: use a List ("list") with "config": { "handmade": true, "template": "preset:panel", "columns": "2", "items": [{ "title", "source", "unit" }] }',
+    'Photo panels ("panels") is gone: use a List ("list") with "config": { "custom": true, "template": "preset:panel", "columns": "2", "items": [{ "title", "source", "unit" }] }',
   grid: 'Photo grid ("grid") is gone: use a List ("list") with a template (Album card: "t-acrp" / "t-acrl", or a preset)',
   projects:
     'Project list ("projects") is gone: use a List ("list") with "config": { "template": "t-prow", "columns": "1" } (or a row preset)',

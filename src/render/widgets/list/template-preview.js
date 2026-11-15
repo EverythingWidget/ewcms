@@ -1,7 +1,7 @@
 /**
  * The template editor's preview (dev only): an item template (content/templates/t-….json)
  * rendered as one List of one sample item on a page of its own, at /__template/<id>/.
- * The sample: the first item of the template's "preview.from" source, else a hand-made
+ * The sample: the first item of the template's "preview.from" source, else a custom
  * sample item. The List has the template's "preview.columns" (1–6; left out: 1), so the item
  * is as wide as in a List of that many columns (the preview's only: a List keeps its own).
  * Never built: the dev middleware alone serves it.
@@ -36,14 +36,14 @@ export function previewWithColumns(preview, n) {
   return Object.keys(next).length ? next : undefined;
 }
 
-/** The sample item's source: the template's preview.from, when it has items; '' for a hand-made one. */
+/** The sample item's source: the template's preview.from, when it has items; '' for a custom one. */
 export function sampleSource(content, tpl) {
   const from = typeof tpl?.preview?.from === 'string' ? tpl.preview.from : '';
   const list = from && content?.sources?.[from];
   return Array.isArray(list) && list.some((it) => typeof it?.id === 'string') ? from : '';
 }
 
-/** The hand-made sample item (no source to take one from). */
+/** The custom sample item (no source to take one from). */
 export const SAMPLE_ITEM = Object.freeze({ title: 'Sample item', photo: '', source: '', unit: '' });
 
 /**
@@ -62,7 +62,7 @@ export function templatePreview(content, id) {
     config: {
       template: id,
       columns: String(previewColumns(tpl)),
-      ...(from ? {} : { handmade: true, items: [{ ...SAMPLE_ITEM }] }),
+      ...(from ? {} : { custom: true, items: [{ ...SAMPLE_ITEM }] }),
     },
   };
   const page = {

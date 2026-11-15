@@ -14,6 +14,8 @@ import {
 import { assertContent, parseContent } from '../render/validate.js';
 import { setContentDir } from '../render/files.js';
 import { loadSiteConfig } from './site-config.mjs';
+import { warnOnce } from '../render/helpers.js';
+import { renameOldCustom } from '../render/widgets/list/custom.js';
 
 const read = (file, fallback) =>
   fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : fallback;
@@ -24,6 +26,13 @@ const read = (file, fallback) =>
  */
 export function readContentFile(root, file, { check = true } = {}) {
   const data = parseContent(fs.readFileSync(contentFilePath(root, file), 'utf8'), file);
+  // a List from before 0.9: config.handmade is read as config.custom (the editor saves it so)
+  const old = renameOldCustom(data);
+  if (old)
+    warnOnce(
+      `${file}: ${old === 1 ? 'a List says' : `${old} Lists say`} config.handmade, now config.custom: read as config.custom; rename the key (ewcms check lists them)`,
+      'content',
+    );
   if (check) assertContent(file, data);
   return data;
 }

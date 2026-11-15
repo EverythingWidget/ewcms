@@ -1,5 +1,5 @@
 /**
- * Hand-made List items (./index.js): config.handmade + config.items. Each item is
+ * Custom List items (./index.js): config.custom + config.items. Each item is
  * { title, photo, link, source?, unit }; a pointed source fills the link when it is empty and
  * supplies the Panel count (how many items + unit). The photo is the item's own.
  */
@@ -8,11 +8,45 @@ import { hrefOf, linkProblem } from '../../hrefs.js';
 import { isObject } from '../../is.js';
 import { sourcePage } from '../data.js';
 
-/** Is this List in Hand-made mode (config.handmade)? */
-export const isHandmade = (widget) => widget?.config?.handmade === true;
+/**
+ * Is this List in Custom mode (config.custom)? A List from before 0.9 says config.handmade:
+ * it is read as config.custom too (content loading renames it: renameOldCustom).
+ */
+export const isCustom = (widget) =>
+  widget?.config?.custom === true ||
+  (widget?.config?.custom === undefined && widget?.config?.handmade === true);
 
-/** A new hand-made item (Add): empty texts; source left for the editor to pick. */
-export const HANDMADE_ITEM = Object.freeze({
+/** The List's key before 0.9 for Custom (config.handmade, now config.custom). */
+export const OLD_CUSTOM_KEY = 'handmade';
+
+/**
+ * Content from before 0.9, in place: every List's config.handmade (in a page, a template, an
+ * inner List) becomes config.custom, in the same place among its keys (config.custom wins when
+ * both are there). Returns how many Lists had it, so the loader can warn.
+ */
+export function renameOldCustom(data) {
+  let n = 0;
+  const walk = (v) => {
+    if (Array.isArray(v)) return v.forEach(walk);
+    if (!isObject(v)) return;
+    const c = v.config;
+    if (v.type === 'list' && isObject(c) && Object.hasOwn(c, OLD_CUSTOM_KEY)) {
+      const has = Object.hasOwn(c, 'custom');
+      const entries = Object.entries(c).flatMap(([k, x]) =>
+        k !== OLD_CUSTOM_KEY ? [[k, x]] : has ? [] : [['custom', x]],
+      );
+      for (const k of Object.keys(c)) delete c[k];
+      Object.assign(c, Object.fromEntries(entries));
+      n++;
+    }
+    Object.values(v).forEach(walk);
+  };
+  walk(data);
+  return n;
+}
+
+/** A new custom item (Add): empty texts; source left for the editor to pick. */
+export const CUSTOM_ITEM = Object.freeze({
   title: '',
   photo: '',
   source: '',
@@ -20,12 +54,12 @@ export const HANDMADE_ITEM = Object.freeze({
 });
 
 /**
- * One hand-made config item as a List item for presets: title, photo (its own),
+ * One custom config item as a List item for presets: title, photo (its own),
  * unit, source id, link (as written), href (own link or the pointed source's page) and count
  * (the pointed source's items, two digits as the Panel shows it: "04"; '' without one). Every key is always there, '' when empty. No
  * source-item id.
  */
-export function resolveHandmadeItem(ctx, raw = {}) {
+export function resolveCustomItem(ctx, raw = {}) {
   const title = typeof raw.title === 'string' ? raw.title : '';
   const unit = typeof raw.unit === 'string' ? raw.unit : '';
   const source = typeof raw.source === 'string' ? raw.source : '';
@@ -44,16 +78,16 @@ export function resolveHandmadeItem(ctx, raw = {}) {
 }
 
 /** config.items resolved for render and {items}. */
-export const handmadeItemsOf = (ctx, widget) =>
+export const customItemsOf = (ctx, widget) =>
   (Array.isArray(widget?.config?.items) ? widget.config.items : []).map((it) =>
-    resolveHandmadeItem(ctx, it),
+    resolveCustomItem(ctx, it),
   );
 
 /**
- * What's wrong with one hand-made item (null when fine). `where` prefixes messages
+ * What's wrong with one custom item (null when fine). `where` prefixes messages
  * (e.g. config.items.0).
  */
-export function handmadeItemProblem(it, where = 'item') {
+export function customItemProblem(it, where = 'item') {
   if (!isObject(it)) return `${where} must be an object`;
   for (const k of ['title', 'photo', 'unit', 'source'])
     if (it[k] !== undefined && typeof it[k] !== 'string') return `${where}.${k} must be a text`;

@@ -821,8 +821,8 @@ values of a **source item** instead of its own, as **parts** (`src/render/layout
 
 A **List** (`src/render/widgets/list/`) shows items as the same **column of widgets**, the
 **preset**: either every item of its source (**From a source**: All or From URL), or items you
-add by hand (**Hand-made**: `config.handmade` and `config.items`). Each item widget is a real widget
-(Photo, Text, Button), rendered by the same code as on a page, so bindings, formats and the hide
+add by hand (**Custom**: `config.custom` and `config.items`; `config.handmade` before 0.9, still
+read as `config.custom`, with a warning). Each item widget is a real widget (Photo, Text, Button), rendered by the same code as on a page, so bindings, formats and the hide
 rule work as anywhere.
 
 ```json
@@ -846,7 +846,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
 
 - **Presets** (`config.template`, `presets.js`): **Card** (photo, title, facts: Album cards),
   **Plain** (photo, title, long text, a View button), **Panel** (a big photo with its title and
-  photo count over it: the Photography panels, a hand-made List; the old Photo panels widget
+  photo count over it: the Photography panels, a custom List; the old Photo panels widget
   (`panels`) is gone and content that still has one is rejected with a pointer to List), **Row** (a small photo, the title, the facts on the right:
   project rows), **Photo** (`preset:photo`, a photo only: no text, no box, no link; four
   columns: a photo grid, an inner List of an item's photos). Each preset is a column of widgets; its facts are the source's `list`
@@ -907,8 +907,8 @@ A List is a simple list: only its items, no heading and no See all link. A headi
 
   A List picks one with `config.template: "t-<id>"` (the **Template** picker in the Content
   tab lists the presets, then the site's templates); without `config.template` it shows its
-  preset (Card) as before. From a source and Hand-made Lists use the same templates.
-  **Duplicate** (next to the picker; **Duplicate template** when a template is picked) copies the picked preset, as it shows now (facts joined, a hand-made Panel's count as `{count} {unit}`), or the
+  preset (Card) as before. From a source and Custom Lists use the same templates.
+  **Duplicate** (next to the picker; **Duplicate template** when a template is picked) copies the picked preset, as it shows now (facts joined, a custom Panel's count as `{count} {unit}`), or the
   picked template, into a new `t-` file (the dev server's `POST /__editor/templates`: Save
   never creates files) and points the List at it, saving that switch at once (unless the page has
   other unsaved edits: then it stays unsaved and a note says "Saved as template t-…"). A copied
@@ -926,7 +926,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
   and **Edit template** (next to the List's Template picker, shown only while a template is
   picked, its place always kept) jumps to it. The preview (the dev server's
   `/__template/<id>/`, never built) shows the template as a List of one sample item: the first
-  item of its `preview.from`, else a hand-made sample, in a List of its `preview.columns`
+  item of its `preview.from`, else a custom sample, in a List of its `preview.columns`
   (left out: 1), so the item is as wide as there. Two tabs:
   - **Widgets**: an always-selected section card of its widgets (`SectionCard.svelte`; not
     collapsible; no section gear, height/width, move, delete, hide/duplicate, locator or
@@ -966,7 +966,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
     clickable** (`clickable`: the whole item opens the item's page; off when the template has
     Summary and details), **Columns** (`preview.columns`, 1–6: the preview shows the item as
     wide as in a List of that many columns; the preview's only, never a List's), and the
-    preview line ("Preview: the first item of <source>", or a hand-made sample when it has no
+    preview line ("Preview: the first item of <source>", or a custom sample when it has no
     source).
 
   **Save** writes the template file (validated as above); every List using it shows the change.
@@ -1208,8 +1208,8 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
   - Hidden widgets stay in the editor's preview, dimmed and as big as they are (no shift).
   - `ewcms check` warns when every summary widget of an item that opens can be hidden ("Its
     summary can be empty"); the +/× icon, or a widget set to Show empty, keeps it.
-- **From a source / Hand-made** (`config.handmade`): Content tab. From a source is today's source
-  picker; Hand-made edits `config.items` (`[{ title, photo, link, source, unit }]`). A pointed
+- **From a source / Custom** (`config.custom`): Content tab. From a source is today's source
+  picker; Custom edits `config.items` (`[{ title, photo, link, source, unit }]`). A pointed
   `source` fills the link (that source's page) when it is empty, and Panel's count is how many
   items it has (two digits, `04`) plus `unit`. The photo is the item's own `photo` (nothing is
   taken from the source's items). Switching modes keeps unused source and items.

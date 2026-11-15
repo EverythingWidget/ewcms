@@ -1,13 +1,13 @@
 /**
  * The built-in List widget (list): a widget module like any custom one (../index.js has the
  * format; its look is ./style.scss, its behaviour ./client.js). It repeats an item template
- * once per item: of its source (From a source), or of config.items (Hand-made).
+ * once per item: of its source (From a source), or of config.items (Custom).
  *
  *   { "type": "list", "source": { "mode": "all", "from": "people" },
  *     "config": { "template": "preset:card", "arrangement": "grid", "columns": "3", "gap": 2 } }
  *
- *   Hand-made (Photography-style panels by hand):
- *   { "type": "list", "config": { "handmade": true, "template": "preset:panel", "columns": "2",
+ *   Custom (Photography-style panels by hand):
+ *   { "type": "list", "config": { "custom": true, "template": "preset:panel", "columns": "2",
  *       "items": [
  *         { "title": "People", "source": "people", "unit": "models" },
  *         { "title": "Places", "source": "places", "unit": "places" }
@@ -15,9 +15,10 @@
  *
  * template     a preset (./presets.js): preset:card | preset:plain | preset:panel | preset:row | preset:photo,
  *              or a site template "t-…" (content/templates/t-….json: Duplicate preset makes one)
- * handmade     true: items come from config.items (Hand-made); omit/false: from the source
- * items        hand-made entries [{ title, photo?, link?, source?, unit? }]; kept when switching
- *              back to From a source (and source is kept when switching to Hand-made)
+ * custom       true: items come from config.items (Custom); omit/false: from the source
+ *              (config.handmade before 0.9: read as custom, ewcms check warns)
+ * items        custom entries [{ title, photo?, link?, source?, unit? }]; kept when switching
+ *              back to From a source (and source is kept when switching to Custom)
  * arrangement  Grid | Carousel (Layout tab: a button group).
  * columns      "1"–"6" (two on a tablet, one on a phone). Row preset defaults to "1", others "3".
  * gap          between the items: a whole number of the page's cells (the grid the List sits
@@ -56,7 +57,7 @@ import { WIDGET_TYPES } from '../index.js';
 import { sourcePage } from '../data.js';
 import { PRESETS, PRESET_IDS, factsRuns, presetWidgets, presetOf, templateOf } from './presets.js';
 import { isTemplateId } from '../../files.js';
-import { HANDMADE_ITEM, handmadeItemProblem, handmadeItemsOf, isHandmade } from './handmade.js';
+import { CUSTOM_ITEM, customItemProblem, customItemsOf, isCustom } from './custom.js';
 import { presetStyle, styleMarkup } from './item-style.js';
 import { itemGridHtml } from './item-grid-render.js';
 import { itemSection, itemWidgets } from './item-grid.js';
@@ -164,12 +165,12 @@ function itemWidget(w, ctx, scope, { hide, api, cls = '' }) {
 }
 
 /**
- * A template widget for one item: facts joined; item link; hand-made Panel count from the
+ * A template widget for one item: facts joined; item link; custom Panel count from the
  * pointed source + unit (absent when there is nothing to count).
  */
-function forItem(w, scope, link, sep, { handmade = false, href = '' } = {}) {
-  if (w.handmadeCount) {
-    // the item's own count (resolveHandmadeItem: the pointed source's, "04"), then its unit
+function forItem(w, scope, link, sep, { custom = false, href = '' } = {}) {
+  if (w.customCount) {
+    // the item's own count (resolveCustomItem: the pointed source's, "04"), then its unit
     const unit = scope.item?.unit;
     if (!scope.item?.count) return null; // no count overlay
     const runs = [{ property: 'count' }];
@@ -195,8 +196,8 @@ function forItem(w, scope, link, sep, { handmade = false, href = '' } = {}) {
     };
   }
   if (w.itemLink) {
-    // hand-made: the button uses the resolved href (no source-item id)
-    if (handmade && href) return { ...w, config: { ...w.config, link: { href } } };
+    // custom: the button uses the resolved href (no source-item id)
+    if (custom && href) return { ...w, config: { ...w.config, link: { href } } };
     return { ...w, config: { ...w.config, link } };
   }
   return w;
@@ -207,17 +208,17 @@ export const list = {
   // added from the editor: Auto, as tall as what it holds
   added: { size: 'auto' },
   list: true,
-  // Content tab: From a source | Hand-made (ListLead.svelte); items at config.items
-  handmade: true,
-  // widgetItems (../../layout/source.js): hand-made items instead of the source's
-  items: (ctx, widget) => (isHandmade(widget) ? handmadeItemsOf(ctx, widget) : undefined),
+  // Content tab: From a source | Custom (ListLead.svelte); items at config.items
+  customItems: true,
+  // widgetItems (../../layout/source.js): custom items instead of the source's
+  items: (ctx, widget) => (isCustom(widget) ? customItemsOf(ctx, widget) : undefined),
   label: 'List',
   icon: 'table-list',
   line: 'An item per entry of a source, or items you add by hand, in a look you pick',
   sketch: 'list',
   config: [
-    // handmade + items: Content tab via ListLead (not the generic settings loop)
-    { key: 'handmade', type: 'boolean' },
+    // custom + items: Content tab via ListLead (not the generic settings loop)
+    { key: 'custom', type: 'boolean' },
     {
       key: 'items',
       label: 'Items',
@@ -228,7 +229,7 @@ export const list = {
         photo: { type: 'photo', label: 'Photo' },
         link: { type: 'link', label: 'Link' },
       },
-      item: { ...HANDMADE_ITEM },
+      item: { ...CUSTOM_ITEM },
     },
     {
       key: 'template',
@@ -299,13 +300,18 @@ export const list = {
           '"heading" is no longer used (a List has no heading): a Text widget above the List shows it; remove the key',
         ]
       : []),
+    ...(widget.config?.handmade !== undefined
+      ? [
+          'config.handmade is now config.custom (Source: Custom): rename the key; until then it is read as config.custom',
+        ]
+      : []),
     ...(widget.config?.seeAll !== undefined
       ? [
           'config.seeAll is no longer used (a List has no See all link): a Button widget links to the page; remove the key',
         ]
       : []),
   ],
-  // arrangement "rows" is gone; hand-made items shape
+  // arrangement "rows" is gone; custom items shape
   check: (widget) => {
     const out = [];
     if (widget.config?.arrangement === 'rows')
@@ -316,11 +322,11 @@ export const list = {
     const gp = gapProblem(widget.config?.gap);
     if (gp) out.push(gp);
     if (
-      widget.config?.handmade !== undefined &&
-      widget.config.handmade !== true &&
-      widget.config.handmade !== false
+      widget.config?.custom !== undefined &&
+      widget.config.custom !== true &&
+      widget.config.custom !== false
     )
-      out.push('config.handmade must be true (Hand-made) or left out (From a source)');
+      out.push('config.custom must be true (Custom) or left out (From a source)');
     const tpl = widget.config?.template;
     if (tpl !== undefined && !PRESET_IDS.includes(tpl) && !isTemplateId(tpl))
       out.push(
@@ -331,7 +337,7 @@ export const list = {
       if (!Array.isArray(items)) out.push('config.items must be a list');
       else
         items.forEach((it, i) => {
-          const p = handmadeItemProblem(it, `config.items.${i}`);
+          const p = customItemProblem(it, `config.items.${i}`);
           if (p) out.push(p);
         });
     }
@@ -340,8 +346,8 @@ export const list = {
   render: (s, ctx, widget) => {
     // `s` is the content widget (resolveWidget); `widget` is the render api (id, items, …)
     const c = s.config || {};
-    const handmade = c.handmade === true;
-    const source = handmade ? '' : widget.source || ''; // None / handmade: no source list
+    const custom = isCustom(s);
+    const source = custom ? '' : widget.source || ''; // None / custom: no source list
     // config.template: a preset ("preset:card"), or a site template ("t-…", content/templates)
     const own = templateOf(ctx, c.template);
     if (isTemplateId(c.template) && !own)
@@ -362,7 +368,7 @@ export const list = {
     // {number}: every item's place in the List as shown ("01", "02" … "100"; an item's own
     // "number" property wins)
     const keys = new Set([
-      ...(handmade
+      ...(custom
         ? ['title', 'photo', 'unit', 'count', 'source']
         : widget.keys || keysOf(ctx, source) || []),
       'number',
@@ -380,8 +386,8 @@ export const list = {
       ? structuredClone(itemWidgets(own))
       : presetWidgets(preset.id, ctx, source, {
           open: t(ctx, 'list.open'),
-          // an inner List on a property ({ photo, title, index } items): named as hand-made
-          handmade: handmade || !!widget.keys,
+          // an inner List on a property ({ photo, title, index } items): named as custom
+          custom: custom || !!widget.keys,
         });
     // the photo an item shows: its template's first photo's property (its {credit} is that one's)
     const photoKey = template.find((w) => w?.type === 'photo')?.src?.[0]?.property || 'photo';
@@ -412,8 +418,8 @@ export const list = {
     const missing = new Map(); // name -> how many items have no value for it
     const out = items.map((item, i) => {
       const at = widget.indexOf ? widget.indexOf(item) : i;
-      const itemHrefLink = !handmade && item?.id ? { item: { source, id: item.id } } : undefined;
-      const handmadeHref = handmade ? item.href || '' : '';
+      const itemHrefLink = !custom && item?.id ? { item: { source, id: item.id } } : undefined;
+      const customHref = custom ? item.href || '' : '';
       // parent: an inner List's outer item ({ of: "parent" } parts, ./nested.js)
       const own = isObject(item) ? item : {};
       // {number}, {back}, a photo's {credit} / {creditUrl}: an item's own property wins
@@ -436,7 +442,7 @@ export const list = {
       const one = (w, cls = '', j = -1) => {
         // off: not on the public page; in the editor the item grid renders it hidden
         if (w?.config?.enabled === false && !editable) return { html: '', missing: [] };
-        const filled = forItem(w, scope, itemHrefLink, sep, { handmade, href: handmadeHref });
+        const filled = forItem(w, scope, itemHrefLink, sep, { custom, href: customHref });
         if (!filled) return { html: '', missing: [] };
         // item widgets inherit the List's missing choice unless they set their own
         const hide = filled.config?.missing !== undefined ? hideMissing(filled.config) : listHide;
@@ -469,7 +475,7 @@ export const list = {
           : photoFirst
             ? `${first}<div class="li__text">${rest.join('')}</div>`
             : `<div class="li__text">${parts.join('')}</div>`;
-      const url = handmade ? handmadeHref : itemHrefLink ? itemHref(ctx, source, item) : '';
+      const url = custom ? customHref : itemHrefLink ? itemHref(ctx, source, item) : '';
       const tag = link && url ? 'a' : 'div';
       const ref = tag === 'a' ? ` href="${esc(url)}"` : '';
       const opensAttr = opens

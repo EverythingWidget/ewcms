@@ -16,7 +16,7 @@ import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { CORE_STRINGS } from '../src/render/strings.js';
 import { PRESETS, factsRuns, namesOf } from '../src/render/widgets/list/presets.js';
 import { nextItemIndex } from '../src/render/widgets/list/client.js';
-import { resolveHandmadeItem } from '../src/render/widgets/list/handmade.js';
+import { resolveCustomItem } from '../src/render/widgets/list/custom.js';
 import { widgetItems } from '../src/render/layout/source.js';
 import { countGroups, THIS_LIST } from '../src/editor/property-groups.js';
 import { layoutOptions, layoutParts, MISSING_OPTIONS } from '../src/editor/widget-layout.js';
@@ -272,12 +272,12 @@ test('the pop-up: Arrangement, Columns, Gap in Layout; Content has Preset and Wh
   ]);
   const content = WIDGET_TYPES.list.config.filter((c) => c.tab !== 'layout').map((c) => c.key);
   assert.deepEqual(
-    content.filter((k) => k !== 'handmade' && k !== 'items'),
+    content.filter((k) => k !== 'custom' && k !== 'items'),
     ['template'],
   );
-  assert.ok(content.includes('handmade'));
+  assert.ok(content.includes('custom'));
   assert.ok(content.includes('items'));
-  assert.equal(WIDGET_TYPES.list.handmade, true);
+  assert.equal(WIDGET_TYPES.list.customItems, true);
   // Arrangement: Grid or Carousel
   assert.equal(WIDGET_TYPES.list.config.find((c) => c.key === 'arrangement').type, 'seg');
   assert.deepEqual(WIDGET_TYPES.list.config.find((c) => c.key === 'arrangement').options, [
@@ -516,12 +516,12 @@ test("a List's missing choice: item widgets inherit it unless they set their own
   }
 });
 
-// step 4: hand-made items
+// step 4: custom items
 
-test('hand-made Panel like Photography: titles, counts, units, source covers, source page links', () => {
+test('custom Panel like Photography: titles, counts, units, source covers, source page links', () => {
   const { el } = list(
     {
-      handmade: true,
+      custom: true,
       template: 'preset:panel',
       columns: '2',
       items: [
@@ -547,10 +547,10 @@ test('hand-made Panel like Photography: titles, counts, units, source covers, so
   assert.ok(items[1].querySelector('.li__photo img, .li__photo picture, img'));
 });
 
-test('hand-made: own photo and link win over the pointed source', () => {
+test('custom: own photo and link win over the pointed source', () => {
   const { el } = list(
     {
-      handmade: true,
+      custom: true,
       template: 'preset:panel',
       items: [
         {
@@ -570,10 +570,10 @@ test('hand-made: own photo and link win over the pointed source', () => {
   assert.ok(img?.getAttribute('src')?.includes('noor-vermeer') || img?.getAttribute('srcset'));
 });
 
-test('hand-made: empty has no count', () => {
+test('custom: empty has no count', () => {
   // no pointed source: title only, no count overlay
   const bare = list(
-    { handmade: true, template: 'preset:panel', items: [{ title: 'Solo' }] },
+    { custom: true, template: 'preset:panel', items: [{ title: 'Solo' }] },
     { source: undefined },
   );
   assert.equal(bare.el.querySelector('[data-list-item] .li__count'), null);
@@ -588,7 +588,7 @@ test('source-mode Panel still works; reorder of hand items keeps values', () => 
   // reorder: render with swapped config.items
   const a = list(
     {
-      handmade: true,
+      custom: true,
       template: 'preset:card',
       items: [
         { title: 'A', source: 'people' },
@@ -599,7 +599,7 @@ test('source-mode Panel still works; reorder of hand items keeps values', () => 
   );
   const b = list(
     {
-      handmade: true,
+      custom: true,
       template: 'preset:card',
       items: [
         { title: 'B', source: 'places' },
@@ -612,7 +612,7 @@ test('source-mode Panel still works; reorder of hand items keeps values', () => 
   assert.deepEqual(texts(b.el, '[data-list-item] .li__title'), ['B', 'A']);
 });
 
-test('hand-made validation; mode switch keeps unused data (shape allows both)', () => {
+test('custom validation; mode switch keeps unused data (shape allows both)', () => {
   const ids = new Set();
   const w = {
     ...newWidget('list', ids),
@@ -620,7 +620,7 @@ test('hand-made validation; mode switch keeps unused data (shape allows both)', 
     source: { mode: 'all', from: 'people' },
     config: {
       ...newWidget('list', new Set()).config,
-      handmade: true,
+      custom: true,
       items: [
         { title: 'People', source: 'people', unit: 'models' },
         { title: 'Places', source: 'places', unit: 'places' },
@@ -648,7 +648,7 @@ test('hand-made validation; mode switch keeps unused data (shape allows both)', 
   assert.match(checkContent('pages/x/index.json', bad).join('; '), /config\.items\.0\.title/);
 });
 
-test('ListLead: Source Custom is handmade, no Items switch', () => {
+test('ListLead: Source Custom is config.custom, no Items switch', () => {
   const lead = readFileSync(
     new URL('../src/editor/svelte/ListLead.svelte', import.meta.url),
     'utf8',
@@ -656,8 +656,9 @@ test('ListLead: Source Custom is handmade, no Items switch', () => {
   // the Items mode switch is gone (wording may still appear in the file comment)
   assert.doesNotMatch(lead, /tf__label">Items</);
   assert.doesNotMatch(lead, />From a source</);
-  assert.doesNotMatch(lead, />Hand-made</);
-  assert.match(lead, /config\/handmade/);
+  assert.doesNotMatch(lead, /tf__label">Custom</);
+  assert.doesNotMatch(lead, /handmade/i);
+  assert.match(lead, /config\/custom/);
   assert.match(lead, /config\/items/);
   assert.doesNotMatch(lead, /ll__pane/);
   assert.match(lead, /ListField/);
@@ -683,16 +684,16 @@ test('ListLead: Source Custom is handmade, no Items switch', () => {
     new URL('../src/editor/svelte/WidgetInspector.svelte', import.meta.url),
     'utf8',
   );
-  assert.match(insp, /type\.handmade/);
+  assert.match(insp, /type\.customItems/);
   assert.match(insp, /ListLead/);
-  // add-menu line mentions hand-made items
+  // add-menu line mentions custom items
   assert.match(
     WIDGET_TYPES.list.line,
     /An item per entry of a source, or items you add by hand, in a look you pick/,
   );
   // layout: no type === 'list' leak; items via widgetItems (source.js)
   const layout = readFileSync(new URL('../src/render/layout/index.js', import.meta.url), 'utf8');
-  assert.doesNotMatch(layout, /widgets\/list\/(hand|handmade)/);
+  assert.doesNotMatch(layout, /widgets\/list\/(hand|custom)/);
   assert.doesNotMatch(layout, /type === ['"]list['"]/);
   const source = readFileSync(new URL('../src/render/layout/source.js', import.meta.url), 'utf8');
   // the generic helper never imports a widget module: the List def's items hook
@@ -701,18 +702,18 @@ test('ListLead: Source Custom is handmade, no Items switch', () => {
   assert.equal(typeof WIDGET_TYPES.list.items, 'function');
 });
 
-test('resolveHandmadeItem: every key always present, empty when missing', () => {
+test('resolveCustomItem: every key always present, empty when missing', () => {
   const ctx = { sources: { people: [{ id: 'a' }, { id: 'b' }] } };
   const keys = ['count', 'href', 'link', 'photo', 'source', 'title', 'unit'];
-  const empty = resolveHandmadeItem(ctx, {});
+  const empty = resolveCustomItem(ctx, {});
   assert.deepEqual(Object.keys(empty).sort(), keys);
   for (const k of keys) assert.equal(empty[k], '', k);
-  const full = resolveHandmadeItem(ctx, { title: 'P', source: 'people', unit: 'models' });
+  const full = resolveCustomItem(ctx, { title: 'P', source: 'people', unit: 'models' });
   assert.deepEqual(Object.keys(full).sort(), keys);
   assert.equal(full.count, '02');
   assert.equal(full.unit, 'models');
-  // a hand-made List gives these items through widgetItems (the def hook)
-  const w = { type: 'list', config: { handmade: true, items: [{}] } };
+  // a custom List gives these items through widgetItems (the def hook)
+  const w = { type: 'list', config: { custom: true, items: [{}] } };
   const shown = widgetItems(ctx, {}, w, WIDGET_TYPES.list);
   assert.equal(shown.source, null);
   assert.deepEqual(Object.keys(shown.items[0]).sort(), keys);
@@ -747,7 +748,7 @@ test('Photo panels is gone: a "panels" widget is rejected, pointing to List', ()
   };
   const out = checkContent('pages/x/index.json', page).join('; ');
   assert.match(out, /Photo panels \("panels"\) is gone: use a List \("list"\)/);
-  assert.match(out, /"handmade": true/);
+  assert.match(out, /"custom": true/);
 });
 
 // ---- which properties a preset shows: each role the property of its own name (no mapping)
@@ -915,13 +916,13 @@ test('no heading, no See all: a leftover heading or config.seeAll renders nothin
   assert.equal(CORE_STRINGS.list.seeAll, undefined);
 });
 
-test('no "first cover of a list" fallback: a hand-made item shows only its own photo', () => {
-  const handmade = readFileSync(
-    new URL('../src/render/widgets/list/handmade.js', import.meta.url),
+test('no "first cover of a list" fallback: a custom item shows only its own photo', () => {
+  const custom = readFileSync(
+    new URL('../src/render/widgets/list/custom.js', import.meta.url),
     'utf8',
   );
-  assert.doesNotMatch(handmade, /sourceCover|coverOf/);
-  const it = resolveHandmadeItem(base, { title: 'P', source: 'people' });
+  assert.doesNotMatch(custom, /sourceCover|coverOf/);
+  const it = resolveCustomItem(base, { title: 'P', source: 'people' });
   assert.equal(it.photo, '');
   const presets = readFileSync(
     new URL('../src/render/widgets/list/presets.js', import.meta.url),
@@ -951,4 +952,28 @@ test('Title: the declared title property only when its type fits', () => {
   const bare = withName('text');
   bare.schemas.shots = { ...bare.schemas.shots, title: undefined };
   assert.equal(title(bare), 'title'); // none declared: "title"
+});
+
+test('config.handmade (before 0.9): renamed config.custom in place, still read as Custom', async () => {
+  const { renameOldCustom, isCustom } = await import('../src/render/widgets/list/custom.js');
+  const old = { type: 'list', config: { handmade: true, template: 'preset:panel', items: [] } };
+  assert.equal(isCustom(old), true);
+  const page = {
+    sections: [{ widgets: [old, { type: 'text', config: { handmade: true } }] }],
+    tpl: { type: 'list', config: { custom: false, handmade: true } },
+  };
+  assert.equal(renameOldCustom(page), 2);
+  // same place among its keys; a text widget is not a List: left alone
+  assert.deepEqual(Object.keys(old.config), ['custom', 'template', 'items']);
+  assert.equal(old.config.custom, true);
+  assert.deepEqual(page.sections[0].widgets[1].config, { handmade: true });
+  // both there: config.custom wins
+  assert.deepEqual(page.tpl.config, { custom: false });
+  assert.equal(renameOldCustom(page), 0);
+  // ewcms check: a warning, not a problem
+  assert.match(
+    WIDGET_TYPES.list.warn({ config: { handmade: true } }).join(' '),
+    /config\.handmade is now config\.custom/,
+  );
+  assert.deepEqual(WIDGET_TYPES.list.check({ config: { handmade: true } }), []);
 });

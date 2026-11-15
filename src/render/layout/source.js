@@ -40,7 +40,7 @@ const listOf = (ctx, from) => (Array.isArray(ctx?.sources?.[from]) ? ctx.sources
  * first (its bound settings') and that one's index in the source (indexOf: any item's, for the
  * editor's markers); source null and items [] for None.
  * A type can supply its own items (`type.items?.(ctx, widget)`, the widget's definition: the
- * List's hand-made config.items): an array means those, source null; undefined means its source
+ * List's custom config.items): an array means those, source null; undefined means its source
  * as usual. This helper never imports a widget module.
  * route: the page's (its params on a [param] page, the ids of their items as refs).
  */

@@ -121,12 +121,12 @@
   const fields = $derived(g.fields.filter((f) => f.type !== 'rich'));
   // the widget settings shown: a source, a choice, a switch, a link (in the config's order);
   // not the ones its definition puts in the Layout tab (`tab: 'layout'`: WidgetLayout.svelte)
-  // List Custom (hand-made): handmade + items are edited in ListLead (not here)
+  // List Custom: config.custom + items are edited in ListLead (not here)
   const settings = $derived(
     g.config?.filter(
       (c) =>
         c.tab !== 'layout' &&
-        c.key !== 'handmade' &&
+        c.key !== 'custom' &&
         c.key !== 'items' &&
         !c.lead &&
         !c.list &&

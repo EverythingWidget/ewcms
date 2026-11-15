@@ -85,8 +85,8 @@ export const PRESET_IDS = PRESETS.map((p) => p.id);
 /** A preset by id (an unknown id: Card). */
 export const presetOf = (id) => PRESETS.find((p) => p.id === id) || PRESETS[0];
 
-/** Hand-made List items (no List-level source): title, photo, and Panel's count. */
-export const HANDMADE_NAMES = Object.freeze({
+/** Custom List items (no List-level source): title, photo, and Panel's count. */
+export const CUSTOM_NAMES = Object.freeze({
   title: 'title',
   photo: 'photo',
   facts: [],
@@ -109,10 +109,10 @@ const propsOf = (ctx, source) => (source && schemaOf(ctx, source)?.properties) |
 
 /**
  * The properties a preset fills: each role the property of its own name (Title the schema's
- * declared title property) when its type fits, else null; HANDMADE_NAMES when `handmade`.
+ * declared title property) when its type fits, else null; CUSTOM_NAMES when `custom`.
  */
-export function namesOf(ctx, source, { handmade = false } = {}) {
-  if (handmade) return { ...HANDMADE_NAMES };
+export function namesOf(ctx, source, { custom = false } = {}) {
+  if (custom) return { ...CUSTOM_NAMES };
   const props = propsOf(ctx, source);
   const own = (role) =>
     role === 'title' ? (source && schemaOf(ctx, source)?.title) || 'title' : role;
@@ -149,19 +149,19 @@ export function factsRuns(facts, isEmpty = () => false, sep = ' · ') {
  * (style.scss .li__<role>); facts carry `facts` (their names, joined per item: factsRuns), the
  * button `itemLink` (its link is the item's page, set per item). Unknown id: Card's.
  */
-export function presetWidgets(id, ctx, source, { open = 'View', handmade = false } = {}) {
-  const n = namesOf(ctx, source, { handmade });
+export function presetWidgets(id, ctx, source, { open = 'View', custom = false } = {}) {
+  const n = namesOf(ctx, source, { custom });
   const make = {
     photo: () => n.photo && { type: 'photo', role: 'photo', src: [prop(n.photo)] },
     title: () => textW('title', line('heading', [prop(n.title)])),
     facts: () =>
       n.facts.length && { ...textW('facts', line('label', factsRuns(n.facts))), facts: n.facts },
-    // handmade: per-item count from the pointed source + unit (forItem in ./index.js); marker
-    // a plain bound count ({photos}); hand-made: the item's count + unit (forItem, ./index.js)
+    // custom: per-item count from the pointed source + unit (forItem in ./index.js); marker
+    // a plain bound count ({photos}); custom: the item's count + unit (forItem, ./index.js)
     count: () =>
       n.count &&
-      (handmade
-        ? { ...textW('count', line('label', [prop(n.count)])), handmadeCount: true }
+      (custom
+        ? { ...textW('count', line('label', [prop(n.count)])), customCount: true }
         : textW('count', line('label', [prop(n.count)]))),
     body: () => n.body && textW('body', line('paragraph', [prop(n.body)])),
     button: () => ({ type: 'button', role: 'button', label: open, itemLink: true, config: {} }),
@@ -174,7 +174,7 @@ export function presetWidgets(id, ctx, source, { open = 'View', handmade = false
 /**
  * A preset (or a site template) copied into a new item template (content/templates/t-….json):
  * its widgets as plain widgets with {property} parts, for the List's source as it shows now
- * (facts joined with `sep`, a hand-made Panel's count as {count} {unit}). `basedOn`
+ * (facts joined with `sep`, a custom Panel's count as {count} {unit}). `basedOn`
  * keeps where it came from; clickable is the preset's link. A template's own section is
  * copied as they are.
  */
@@ -182,11 +182,11 @@ export function cloneTemplate(
   ctx,
   source,
   id,
-  { handmade = false, open = 'View', sep = ' · ', label } = {},
+  { custom = false, open = 'View', sep = ' · ', label } = {},
 ) {
   const own = templateOf(ctx, id);
   if (own) {
-    const from = own.preview?.from || (!handmade && source) || '';
+    const from = own.preview?.from || (!custom && source) || '';
     const preview = {
       ...(from ? { from } : {}),
       ...(own.preview?.columns ? { columns: own.preview.columns } : {}),
@@ -206,8 +206,8 @@ export function cloneTemplate(
   }
   const preset = presetOf(id);
   const taken = new Set();
-  const widgets = presetWidgets(preset.id, ctx, source, { open, handmade }).map((w) => {
-    const { facts, handmadeCount, ...rest } = w;
+  const widgets = presetWidgets(preset.id, ctx, source, { open, custom }).map((w) => {
+    const { facts, customCount, ...rest } = w;
     if (facts)
       // join: the separator goes only between the facts that have a value (forItem, ./index.js)
       return {
@@ -215,7 +215,7 @@ export function cloneTemplate(
         join: sep,
         body: [{ ...rest.body[0], text: factsRuns(facts, () => false, sep) }],
       };
-    if (handmadeCount)
+    if (customCount)
       return {
         ...rest,
         body: [{ style: 'label', text: [prop('count'), { t: ' ' }, prop('unit')] }],
@@ -228,7 +228,7 @@ export function cloneTemplate(
     name: label || `${preset.label} copy`,
     basedOn: preset.id,
     clickable: preset.link,
-    ...(!handmade && source ? { preview: { from: source } } : {}),
+    ...(!custom && source ? { preview: { from: source } } : {}),
     style: gridStyle(presetStyle(preset.id)),
     // the preset's stack on the template grid (./item-grid.js): its one section
     sections: [

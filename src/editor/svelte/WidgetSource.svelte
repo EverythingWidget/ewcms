@@ -1,7 +1,7 @@
 <!--
   A widget's source, first in its Content tab (WidgetInspector.svelte; src/render/layout/source.js):
-    Source       Item / All (a list widget) · From URL · None · Custom (a List: the old Hand-made
-                 mode), one segmented row; From URL only on a [param] page (greyed elsewhere, its
+    Source       Item / All (a list widget) · From URL · None · Custom (a List: config.custom),
+                 one segmented row; From URL only on a [param] page (greyed elsewhere, its
                  tooltip says why). The Source label sits in the parent when provided (ListLead).
     the item     Item: the item selector (SourceField.svelte, an item); All and From URL: its
                  source (the same selector, a list)
@@ -41,7 +41,7 @@
     shown,
     sourceIds,
     onsource,
-    handmade = false,
+    custom = false,
     oncustom = null,
   } = $props();
 
@@ -60,7 +60,7 @@
     const v = live.get(g.file, `${base}/source`);
     return sourceOf({ source: v }) ? structuredClone(v) : null;
   });
-  const mode = $derived(handmade ? 'custom' : (source?.mode ?? 'none'));
+  const mode = $derived(custom ? 'custom' : (source?.mode ?? 'none'));
   const MODES = $derived([
     ['url', 'From URL'],
     list ? ['all', 'All'] : ['item', 'Item'],
@@ -108,9 +108,9 @@
     });
   const firstFrom = () =>
     source?.from || sourceIds.find((id) => itemsOf(id).length) || sourceIds[0] || '';
-  const clearHandmade = () =>
-    live.store.set(g.file, `${base}/config/handmade`, undefined, {
-      key: `config:${g.file}${base}/config/handmade`,
+  const clearCustom = () =>
+    live.store.set(g.file, `${base}/config/custom`, undefined, {
+      key: `config:${g.file}${base}/config/custom`,
       source: 'panel',
       structure: true,
     });
@@ -129,8 +129,8 @@
       const it = shown?.item ?? itemsOf(from).find((i) => typeof i?.id === 'string');
       if (it) set({ mode: 'item', from, id: it.id });
     };
-    // leaving Custom: clear handmade with the source mode, one undo step
-    if (handmade) live.store.batch(() => (clearHandmade(), apply()), { source: 'panel' });
+    // leaving Custom: clear custom with the source mode, one undo step
+    if (custom) live.store.batch(() => (clearCustom(), apply()), { source: 'panel' });
     else apply();
   }
   /**
@@ -248,7 +248,7 @@
 
   // ---- what it shows
   const showsLine = $derived.by(() => {
-    if (handmade || !source) return null;
+    if (custom || !source) return null;
     const n = shown?.items.length ?? 0;
     const first = shown?.item;
     if (!n)
@@ -304,7 +304,7 @@
     </div>
   </div>
 
-  {#if !handmade && mode === 'item'}
+  {#if !custom && mode === 'item'}
     <SourceField
       store={live.store}
       value={{ source: source.from, id: source.id }}
@@ -315,7 +315,7 @@
       {nameOf}
       onpick={(v) => set(v ? { mode: 'item', from: v.source, id: v.id } : undefined)}
     />
-  {:else if !handmade && source}
+  {:else if !custom && source}
     <SourceField
       store={live.store}
       mode="source"

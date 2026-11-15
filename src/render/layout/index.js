@@ -295,7 +295,7 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
   }
   const parts = (path) => ['sections', at, 'widgets', j, ...[path].flat()];
   // what it shows (./source.js): its items, the first one for its bound settings
-  // (a type's own items hook: the List's hand-made config.items)
+  // (a type's own items hook: the List's custom config.items)
   const shown = widgetItems(ctx, route, widget, t);
   const { item } = shown;
   if (t.item && !item) {

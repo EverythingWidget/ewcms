@@ -57,8 +57,8 @@ A page is a stack of **sections**; each holds **widgets** (text, photo, button, 
   off the site; **Show empty** keeps it. In the editor it's dimmed with a tag and "No value for
   {name}".
 - **List** shows items with one look each: **Card**, **Plain**, **Panel** or **Row** (Content
-  tab, Preset; each is a column of widgets). **From a source** (All / From URL) or **Hand-made**
-  (you add the items: title, photo, link, an optional pointed source, and unit). Hand-made Panel
+  tab, Preset; each is a column of widgets). **From a source** (All / From URL) or **Custom**
+  (you add the items: title, photo, link, an optional pointed source, and unit). Custom Panel
   items can point at a source so the count and cover come from that list. In the Layout tab:
   **Grid** (1–6 columns; Row defaults to 1) and the space between items, in grid cells (0: side
   by side). Carousel comes later. **When a value is

@@ -189,14 +189,14 @@ test('Duplicate preset: the clone is the preset as it shows now, and keeps "base
     preset.map((w) => w.type),
   );
   assert.deepEqual(tpl.sections[0].widgets[0].src, [{ property: 'photo' }]);
-  assert.ok(tpl.sections[0].widgets.every((w) => !('facts' in w) && !('handmadeCount' in w)));
+  assert.ok(tpl.sections[0].widgets.every((w) => !('facts' in w) && !('customCount' in w)));
   // a clone of a template keeps that template's id as its from
   const again = cloneTemplate(withTemplate(card()), 'people', 't-ab12');
   assert.equal(again.basedOn, 't-ab12');
   assert.deepEqual(again.sections[0].widgets, card().sections[0].widgets);
   assert.notEqual(again.sections[0].id, card().sections[0].id, 'its section: an id of its own');
-  // a hand-made Panel's count is its {count} {unit}
-  const panel = cloneTemplate(base, '', 'preset:panel', { handmade: true });
+  // a custom Panel's count is its {count} {unit}
+  const panel = cloneTemplate(base, '', 'preset:panel', { custom: true });
   assert.deepEqual(panel.sections[0].widgets.at(-1).body[0].text, [
     { property: 'count' },
     { t: ' ' },
@@ -204,7 +204,7 @@ test('Duplicate preset: the clone is the preset as it shows now, and keeps "base
   ]);
 });
 
-test('a List with config.template "t-…" renders the template, from a source and hand-made', () => {
+test('a List with config.template "t-…" renders the template, from a source and custom', () => {
   const ctx = withTemplate(card());
   const { el, seen } = list({ template: 't-ab12' }, {}, ctx);
   const items = el.querySelectorAll('[data-list-item]');
@@ -220,10 +220,10 @@ test('a List with config.template "t-…" renders the template, from a source an
   assert.ok(!row.querySelector('.li--beside'));
   assert.equal(row.querySelector('.li').getAttribute('style'), null);
   assert.ok(!seen.some((w) => /missing/.test(w)), seen.join());
-  // hand-made: the same template, filled from config.items
+  // custom: the same template, filled from config.items
   const hand = list(
     {
-      handmade: true,
+      custom: true,
       template: 't-ab12',
       items: [{ title: 'People', photo: people[0].cover, source: 'people', unit: 'models' }],
     },

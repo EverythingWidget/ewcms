@@ -365,7 +365,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  // a setting that can't be used now (a hand-made List's See all link): greyed out, same size
+  // a setting that can't be used now (a custom List's See all link): greyed out, same size
   .tf.is-disabled {
     opacity: var(--o-disabled);
     // keep the pre-brighten fill so disabled fields still read as dimmer than enabled ones

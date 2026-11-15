@@ -164,3 +164,26 @@ test('siteCode: config, functions/ and content are no reason to warn; own JS and
     for (const r of [a, b]) fs.rmSync(r, { recursive: true, force: true });
   }
 });
+
+test('check: a List from before 0.9 (config.handmade) is a warning, read as config.custom', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-check-'));
+  fs.cpSync(path.join(FIXTURE, 'content'), path.join(root, 'content'), { recursive: true });
+  const file = path.join(root, 'content', 'en', 'pages', 'photography', 'index.json');
+  const text = fs.readFileSync(file, 'utf8');
+  assert.match(text, /"custom": true/);
+  fs.writeFileSync(file, text.replace('"custom": true', '"handmade": true'));
+  const warnings = [];
+  assert.deepEqual(await checkContentOf(root, { warnings }), []);
+  assert.ok(
+    warnings.some((w) =>
+      /pages\/photography\/index\.json: .*config\.handmade is now config\.custom/.test(w),
+    ),
+    warnings.join('\n'),
+  );
+  // content loading reads it as config.custom (the editor and the build see the new key)
+  const { readContentFile } = await import('../src/cli/content.mjs');
+  const page = readContentFile(root, 'pages/photography/index.json');
+  const lists = JSON.stringify(page);
+  assert.match(lists, /"custom":true/);
+  assert.doesNotMatch(lists, /handmade/);
+});

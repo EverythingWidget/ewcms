@@ -4,6 +4,26 @@ Releases are tagged `vX.Y.Z` on main; a site pins one in its `package.json`
 (`"ewcms": "github:EverythingWidget/ewcms#vX.Y.Z"`). Breaking changes are marked **Breaking** and
 say what a site must do before it bumps its pin.
 
+## Unreleased
+
+### Breaking: what a site must do before bumping
+
+- **Breaking: a List's `config.handmade` is `config.custom`.** The content key now matches the
+  editor's label (Source: **Custom**). Rename `"handmade": true` to `"custom": true` on every List
+  that has it (pages, item templates, inner Lists). Until then nothing breaks: content loading
+  reads a leftover `config.handmade` as `config.custom` (the editor saves it under the new key),
+  and the dev server and `ewcms check` warn about each file that still has it. A site pinned to
+  0.8.0 or older only reads `handmade`: convert its content in the same commit as the pin bump.
+
+### Editor
+
+- Info tips (ⓘ) where you learn the editor: the grid and Size / Auto height on the widget
+  toolbar, links on the Layout tab, Desktop and Phone, a List's Template and Source, Role, and
+  When a value is missing. The single-item widget's Source tip explains From URL, Item and None.
+- Names: Size **Auto** is **Auto height**; the widget toolbar's **Edit** is **Edit text**; the
+  Page entrance card's field is **On this page**; Edit template points at Pages › Templates.
+- The header's Edit / Done and Publish are 32px, as the back arrow and the icon buttons.
+
 ## 0.8.0 (2026-11-15)
 
 ### Breaking: what a site must do before bumping to 0.8.0

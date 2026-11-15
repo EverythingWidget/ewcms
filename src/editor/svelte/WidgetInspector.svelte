@@ -147,7 +147,7 @@
       {:else}
         <!-- its source first (a widget whose type shows items), then its settings and fields -->
         {#snippet lead()}
-          {#if type.handmade}
+          {#if type.customItems}
             <ListLead
               {g}
               {live}
@@ -171,7 +171,7 @@
           {bindings}
           lead={type.list ||
           type.item ||
-          type.handmade ||
+          type.customItems ||
           g.fields.some((f) => f.bindType) ||
           widget.source
             ? lead

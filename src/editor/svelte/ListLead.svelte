@@ -1,7 +1,7 @@
 <!--
   A List widget's Content lead (WidgetInspector.svelte): Template, then Source
-  (From URL | All | None | Custom). Custom is the old Hand-made mode: it only flips
-  config.handmade; source and config.items are kept for switching back. From a source:
+  (From URL | All | None | Custom). Custom only flips config.custom; source and config.items are
+  kept for switching back. From a source:
   WidgetSource.svelte (the template names the properties it shows: no mapping). Custom:
   ListField on config.items. Only the active pane is in the flow (the other is unmounted)
   so the pop-up is content-height.
@@ -23,7 +23,7 @@
   import SourceField from './SourceField.svelte';
   import { pairedHalves } from './source-items.js';
   import { sourceFile } from '../../render/files.js';
-  import { HANDMADE_ITEM } from '../../render/widgets/list/handmade.js';
+  import { CUSTOM_ITEM } from '../../render/widgets/list/custom.js';
   import { TEXT_TYPES } from '../../render/property-types.js';
   import { pointer } from '../../render/helpers.js';
   import Button from './Button.svelte';
@@ -35,21 +35,21 @@
 
   let { g, live, base, list = false, shown, sourceIds, onsource, bindings = null } = $props();
 
-  const handmadePtr = $derived(`${base}/config/handmade`);
+  const customPtr = $derived(`${base}/config/custom`);
   const itemsPtr = $derived(`${base}/config/items`);
-  const handmade = $derived.by(() => {
+  const custom = $derived.by(() => {
     live.version;
-    return live.get(g.file, handmadePtr) === true;
+    return live.get(g.file, customPtr) === true;
   });
 
-  const setHandmade = (on) =>
-    live.store.set(g.file, handmadePtr, on ? true : undefined, {
-      key: `config:${g.file}${handmadePtr}`,
+  const setCustom = (on) =>
+    live.store.set(g.file, customPtr, on ? true : undefined, {
+      key: `config:${g.file}${customPtr}`,
       source: 'panel',
       structure: true,
     });
 
-  // ---- hand-made items as a ListField descriptor (config.items)
+  // ---- custom items as a ListField descriptor (config.items)
   const itemsOf = (id) => {
     live.version;
     const list = live.get(sourceFile(id), '/items');
@@ -64,7 +64,7 @@
         photo: { type: 'photo', label: 'Photo' },
         link: { type: 'link', label: 'Link' },
       },
-      item: { ...HANDMADE_ITEM },
+      item: { ...CUSTOM_ITEM },
       label: 'Items',
     },
   );
@@ -93,7 +93,7 @@
       file: g.file,
       ptr: itemsPtr,
       label: listDef.label || 'Items',
-      item: listDef.item ?? { ...HANDMADE_ITEM },
+      item: listDef.item ?? { ...CUSTOM_ITEM },
       photo: null, // ListField (not PhotoList); photo is a sub-field of each item
       items: items.map((_, j) =>
         subs.map(([sub, type]) => field([...basePath, j, sub], type, sub, true)),
@@ -153,7 +153,7 @@
     try {
       const ctx = live.content;
       const data = cloneTemplate(ctx, shown?.source || '', templateId, {
-        handmade,
+        custom,
         open: t(ctx, 'list.open'),
         sep: t(ctx, 'list.sep'),
       });
@@ -283,7 +283,7 @@
         add here by hand.</InfoHelp
       ></span
     >
-    {#if handmade}
+    {#if custom}
       <Button size="small" icon="plus" onclick={addItem}>Add</Button>
     {/if}
   </div>
@@ -295,11 +295,11 @@
     {shown}
     {sourceIds}
     {onsource}
-    {handmade}
-    oncustom={() => setHandmade(true)}
+    {custom}
+    oncustom={() => setCustom(true)}
   />
 
-  {#if handmade}
+  {#if custom}
     <ListField
       label=""
       ariaLabel="Items"

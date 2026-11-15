@@ -200,7 +200,7 @@
     <p class="hint small tp__sample">
       {from
         ? `Preview: the first item of ${schema?.label || from}`
-        : 'Preview: a hand-made sample item (no source)'}
+        : 'Preview: a sample item (no source)'}
     </p>
   {/if}
 </section>

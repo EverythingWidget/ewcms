@@ -63,7 +63,7 @@ test('the preview address: /__template/<id>/ for a template id only', () => {
   assert.equal(templateOfPath('/about/'), '');
 });
 
-test('the preview: one List of the first item of its source, else a hand-made sample', () => {
+test('the preview: one List of the first item of its source, else a custom sample', () => {
   const name = base.sources.people[0].title || base.sources.people[0].name;
   const from = withTemplate(card({ preview: { from: 'people' } }));
   assert.equal(sampleSource(from, from.templates['t-ab12']), 'people');
@@ -73,7 +73,7 @@ test('the preview: one List of the first item of its source, else a hand-made sa
   const items = document.querySelectorAll('.li');
   assert.equal(items.length, 1);
   if (name) assert.match(items[0].textContent, new RegExp(String(name).slice(0, 6)));
-  // no source (or one without items): the hand-made sample
+  // no source (or one without items): the custom sample
   for (const tpl of [card(), card({ preview: { from: 'nope' } })]) {
     const p = templatePreview(withTemplate(tpl), 't-ab12');
     const html = renderRoute(p.route, p.content, { editable: true }).body;
@@ -120,7 +120,7 @@ test('"preview.from" (where its sample comes from) and its columns; Duplicate re
     /"preview\.from" must be a source name/,
   );
   assert.deepEqual(cloneTemplate(base, 'people', 'preset:card').preview, { from: 'people' });
-  assert.equal(cloneTemplate(base, '', 'preset:panel', { handmade: true }).preview, undefined);
+  assert.equal(cloneTemplate(base, '', 'preset:panel', { custom: true }).preview, undefined);
   // a copy of a template keeps its preview
   const again = cloneTemplate(
     withTemplate(card({ preview: { from: 'people', columns: 4 } })),
