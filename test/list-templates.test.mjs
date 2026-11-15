@@ -344,3 +344,36 @@ test('a copied facts line drops the separator of an empty fact at render', () =>
     /join: only a text/,
   );
 });
+
+test('templatesOp delete: an unused template goes; one a List uses stays (G10)', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-tpl-'));
+  try {
+    fs.cpSync(SITE_A, root, {
+      recursive: true,
+      filter: (p) => !/[\\/](dist|\.generated)([\\/]|$)/.test(p),
+    });
+    const { version: _v, ...data } = cloneTemplate(base, 'people', 'preset:card'); // eslint-disable-line no-unused-vars
+    const { id, file } = templatesOp(root, { op: 'add', data }).body;
+    const abs = path.join(root, 'content', 'templates', `${id}.json`);
+    // a page whose List uses it: refused, the file stays
+    const user = path.join(root, 'content', 'en', 'pages', 'index.json');
+    const page = JSON.parse(fs.readFileSync(user, 'utf8'));
+    const ids = new Set();
+    page.sections = [newSection(ids, [{ ...newWidget('list', ids), config: { template: id } }])];
+    const before = fs.readFileSync(user, 'utf8');
+    fs.writeFileSync(user, JSON.stringify(page));
+    const used = templatesOp(root, { op: 'delete', id });
+    assert.equal(used.status, 409);
+    assert.match(used.body.error, /pages\/index\.json uses it/);
+    assert.ok(fs.existsSync(abs));
+    // unused: deleted
+    fs.writeFileSync(user, before);
+    const res = templatesOp(root, { op: 'delete', id });
+    assert.equal(res.status, 200, JSON.stringify(res.body));
+    assert.deepEqual(res.body.removed, [file]);
+    assert.ok(!fs.existsSync(abs));
+    assert.equal(templatesOp(root, { op: 'delete', id }).status, 404);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

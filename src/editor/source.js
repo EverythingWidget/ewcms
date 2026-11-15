@@ -89,7 +89,7 @@ export const pagesOp = (body) =>
 
 /**
  * A new item template (POST /__editor/templates, templatesOp in src/server/editor-server.mjs):
- * { op: 'add', data }. Answers { id, file, data }.
+ * { op: 'add', data } answers { id, file, data }; { op: 'delete', id } answers { removed }.
  */
 export const templatesOp = (body) =>
   json('/__editor/templates', {

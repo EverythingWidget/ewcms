@@ -63,6 +63,7 @@ import {
   schemaIdOf,
   sourceFile,
   templateFile,
+  isTemplateId,
   sourceIdOf,
   contentFromFiles,
   FOLDERS,
@@ -106,6 +107,7 @@ import { newId } from '../render/layout/ids.js';
 import { bindingProblems } from '../render/layout/bindings.js';
 import { motionProblems } from '../render/layout/motion.js';
 import { WIDGET_TYPES } from '../render/widgets/index.js';
+import { usesOf } from '../render/widgets/list/template-uses.js';
 
 /** A new page's heading row: below the header (16 empty rows, ~180px at 1440 wide). */
 const HEAD_ROW = 17;
@@ -145,7 +147,13 @@ export function editableFiles(root) {
  * template file is made (Save never creates files). Returns { status, body }: body { ok, id,
  * file, data, created: [file] }.
  */
-export function templatesOp(root, { op, data } = {}, onWrite = () => {}, random = Math.random) {
+export function templatesOp(
+  root,
+  { op, data, id: gone } = {},
+  onWrite = () => {},
+  random = Math.random,
+) {
+  if (op === 'delete') return deleteTemplate(root, gone, onWrite);
   if (op !== 'add') return { status: 400, body: { error: `Unknown template op "${op}"` } };
   const have = new Set(templateFiles(root));
   let id;
@@ -163,6 +171,30 @@ export function templatesOp(root, { op, data } = {}, onWrite = () => {}, random 
   onWrite(new Map([[abs, text]]));
   writeFileAtomic(abs, text);
   return { status: 200, body: { ok: true, id, file, data: clean, created: [file], removed: [] } };
+}
+
+/**
+ * POST /templates { op: 'delete', id }: remove content/templates/<id>.json, only when nothing
+ * uses it (a List's or another template's "template": id, at any depth): a List left without its
+ * template would not render (G10). Returns { status, body }: body { ok, id, created: [],
+ * removed: [file] }.
+ */
+function deleteTemplate(root, id, onWrite) {
+  const file = isTemplateId(id) && templateFile(id);
+  if (!file || !templateFiles(root).includes(file))
+    return { status: 404, body: { error: `No template "${id ?? ''}"` } };
+  const users = Object.entries(readContentFiles(root))
+    .filter(([f, json]) => f !== file && usesOf(json).templates.has(id))
+    .map(([f]) => f);
+  if (users.length)
+    return {
+      status: 409,
+      body: { error: `Not deleted: ${users.join(', ')} ${users.length === 1 ? 'uses' : 'use'} it` },
+    };
+  const abs = contentFilePath(root, file);
+  onWrite();
+  fs.rmSync(abs, { force: true });
+  return { status: 200, body: { ok: true, id, created: [], removed: [file] } };
 }
 
 // ---------------------------------------------------------------- pages
@@ -1265,7 +1297,9 @@ export function editorMiddleware({
       if (route === 'POST /templates') {
         const { status, body } = templatesOp(root, await readJSON(req), onWrite);
         if (body.ok)
-          log(`editor templates: added ${loadSiteConfig(root).templatesRel}/${body.id}.json`);
+          log(
+            `editor templates: ${body.removed.length ? 'deleted' : 'added'} ${loadSiteConfig(root).templatesRel}/${body.id}.json`,
+          );
         return sendJSON(res, status, body);
       }
 

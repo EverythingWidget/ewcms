@@ -57,6 +57,8 @@
   } from '../lib/page-tree.js';
   import { plural } from '../lib/format.js';
   import { swapView } from '../lib/slide.js';
+  import { templatesOp } from '../source.js';
+  import { usesOf } from '../../render/widgets/list/template-uses.js';
   import { SITE_PARTS } from '../lib/site-parts.js';
 
   // live: reactive store (live.svelte.js); actions: pickTarget, pagesOp (main.js)
@@ -250,7 +252,13 @@
 
   // ---- delete
   // a [param] page always asks: its item pages have addresses visitors may come to
-  const heavyOf = (row) => row.template || linksTo(files, row.pid, pageFile(row.id)) > 0;
+  // the files whose Lists (or templates) show an item template: it can't go while one does
+  const usersOf = (row) =>
+    Object.keys(files).filter(
+      (f) => f !== templateFile(row.id) && usesOf(files[f]).templates.has(row.id),
+    );
+  const heavyOf = (row) =>
+    !row.itemTemplate && (row.template || linksTo(files, row.pid, pageFile(row.id)) > 0);
   // its links outside the menu (the menu's own items are "In the menu")
   const others = (row) =>
     linksTo(files, row.pid, pageFile(row.id)) - linksTo({ [HEADER]: files[HEADER] }, row.pid);
@@ -281,10 +289,32 @@
     { value: GONE, label: 'No redirect (the page is gone)' },
   ];
   async function remove(row, heavy) {
+    if (row.itemTemplate) return removeTemplate(row);
     const redirect = heavy && redirectTo !== GONE ? redirectTo : null;
     busy = true;
     // no redirect: its menu item goes with it, on disk (pagesOp: header.json follows the files)
     await actions.pagesOp({ op: 'delete', id: row.id, redirect });
+    busy = false;
+    asking = '';
+  }
+  // an item template: its file goes (the server refuses while a List uses it), G10
+  async function removeTemplate(row) {
+    const file = templateFile(row.id);
+    if (live.store.dirtyFiles().includes(file)) {
+      toast('Save or undo its unsaved changes first', { kind: 'error', files: [file] });
+      return void (asking = '');
+    }
+    busy = true;
+    try {
+      const res = await templatesOp({ op: 'delete', id: row.id });
+      // the one open: back to the home page
+      if (ui.target?.kind === 'item-template' && ui.target.id === row.id)
+        actions.pickTarget(ui.pages.find((p) => p.kind === 'page' && p.path === '/'));
+      live.store.files({}, res.removed);
+      toast(`Template “${row.title}” deleted`, { kind: 'ok', files: res.removed });
+    } catch (err) {
+      toast(err.message, { kind: 'error', timeout: 0 });
+    }
     busy = false;
     asking = '';
   }
@@ -393,6 +423,17 @@
           onchange={(e) => setOwn(e.currentTarget.checked)}
         />
       </label>
+    {:else if r.itemTemplate}
+      {@const users = usersOf(r)}
+      <Button
+        size="small"
+        icon="trash"
+        iconOnly
+        label="Delete {r.title}"
+        title={users.length ? `In use: ${users.join(', ')}` : undefined}
+        disabled={busy || users.length > 0}
+        onclick={() => ask(r)}
+      />
     {:else if !r.self && !r.part && !r.fixed}
       <Button
         size="small"
