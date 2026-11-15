@@ -148,8 +148,8 @@
         <!-- a Text's words aren't a field here: say where they are (always shown: no shift) -->
         {#if widget.type === 'text'}
           <p class="hint" data-text-hint>
-            Type the text in the preview: double-click it (or Edit text in its toolbar). Styles,
-            bold, links and Full-width line are in that toolbar.
+            Type the text in the preview: with the widget picked, just type (or press Enter, or
+            double-click it). Styles, bold, links and Full-width line are in its toolbar.
           </p>
         {/if}
         <!-- its source first (a widget whose type shows items), then its settings and fields -->

@@ -478,7 +478,7 @@
         <button
           type="button"
           class="btb__btn"
-          title="Edit its text (or double-click it); Esc or a click outside ends"
+          title="Edit its text (or just type, or double-click it); Esc or a click outside ends"
           onclick={() => bridge.editWidget(where.id)}
           ><i class="fa-solid fa-pen" aria-hidden="true"></i><span>Edit text</span></button
         >

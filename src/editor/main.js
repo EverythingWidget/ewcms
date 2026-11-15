@@ -853,6 +853,15 @@ function selectionKey(e) {
     const [x, y] = ARROWS[e.key];
     const n = nudgeStep(e.shiftKey);
     if (overlay.nudge(x * n, y * n)) e.preventDefault();
+  } else if (
+    (e.key === 'Enter' || (e.key.length === 1 && !'[]'.includes(e.key))) &&
+    selectedIds(ui).length === 1 &&
+    !e.target.closest?.('button, a, [role="button"]')
+  ) {
+    // a picked Text widget: Enter edits its text, a character typed starts typing at its end
+    // (it went to the browser: F45, F54)
+    const typed = e.key === 'Enter' || e.key === ' ' ? '' : e.key;
+    if (bridge.editWidget(selectedIds(ui)[0], typed)) e.preventDefault();
   } else if (['Delete', 'Backspace'].includes(e.key) && ui.multi.length > 1 && !ui.link) {
     const found = widgetAt(ui.multi[0]);
     if (!found) return;

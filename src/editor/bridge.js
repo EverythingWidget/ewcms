@@ -451,12 +451,16 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
       }
     },
     /** A widget's edit mode (its toolbar's Edit): its text editable, the caret at its end. */
-    editWidget(id) {
+    /** Edit a Text widget's text (the caret at its end), `typed` typed there; false: no Text. */
+    editWidget(id, typed = '') {
       const el = richOf(
         doc?.querySelector(`[data-tw="${CSS.escape(id)}"]`) ||
           doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`),
       );
-      if (el) startRich(el);
+      if (!el) return false;
+      startRich(el);
+      if (typed) doc.execCommand('insertText', false, typed);
+      return true;
     },
     focusEdit(edit) {
       const el = doc?.querySelector(
@@ -745,6 +749,12 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
   // Ctrl+S / E / Z / Y, Esc, and [ ] (a widget's layer: by character, AltGr included) when not typing
   const isShortcut = (e) =>
     ((e.metaKey || e.ctrlKey) && /^[sezy]$/i.test(e.key)) ||
+    // Enter or a character on a picked Text widget: its text edited (main.js selectionKey)
+    ((e.key === 'Enter' || e.key.length === 1) &&
+      !e.metaKey &&
+      !e.ctrlKey &&
+      !e.altKey &&
+      !typing(e.target)) ||
     e.key === 'Escape' ||
     ((e.key === '[' || e.key === ']') && !typing(e.target)) ||
     (/^(Arrow(Left|Right|Up|Down)|Delete|Backspace)$/.test(e.key) && !typing(e.target));
