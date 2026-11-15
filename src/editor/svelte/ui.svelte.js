@@ -424,5 +424,20 @@ export function setMod(on) {
 // flowed): main.js
 // clicks(before): what a preview click does changed (previewClicks): main.js applyClicks
 export const hooks = { reveal: () => {}, settled: async () => {}, clicks: () => {} };
+
+// Edits on their way to the store (Add widget waits for the preview to settle before it adds):
+// a save waits for them, so a Ctrl+S pressed meanwhile saves them too, not nothing (F103).
+let coming = []; // (plain: nothing shows it)
+/** Run `edit` (async; it changes the store when done) as an edit a save waits for. */
+export function editComing(edit) {
+  const p = Promise.resolve().then(edit);
+  coming = [...coming, p];
+  p.finally(() => (coming = coming.filter((q) => q !== p))).catch(() => {});
+  return p;
+}
+/** Every edit on its way is in the store (or failed). */
+export async function editsLanded() {
+  while (coming.length) await Promise.allSettled(coming);
+}
 /** A widget scrolled to in the preview, only when it is out of view. */
 export const reveal = (id) => hooks.reveal(id);

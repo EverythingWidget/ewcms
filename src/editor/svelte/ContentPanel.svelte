@@ -43,6 +43,7 @@
     closeSectionPopup,
     deselectSections,
     hooks,
+    editComing,
     previewClicks,
     setMode,
   } from './ui.svelte.js';
@@ -194,11 +195,13 @@
     );
   // first the preview catches up with the last edits (typed text, a size: their renders and
   // rows), so the new widget goes below what they make, not a stale height
-  async function addTo(at, type) {
-    await hooks.settled();
-    selectWidgets([addWidget(live.store, file, at, type, { shown: shownRows(at) }).id]);
-    autoPopup();
-  }
+  // (an edit on its way: a Ctrl+S meanwhile waits for it, F103)
+  const addTo = (at, type) =>
+    editComing(async () => {
+      await hooks.settled();
+      selectWidgets([addWidget(live.store, file, at, type, { shown: shownRows(at) }).id]);
+      autoPopup();
+    });
 
   /** Open the widget holding `edit` and scroll to it (a Header label: its field); list items open the Sources modal. */
   async function reveal(edit) {

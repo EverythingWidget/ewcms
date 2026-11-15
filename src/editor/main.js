@@ -33,6 +33,7 @@ import {
   selectWidgets,
   selectSection,
   hooks,
+  editsLanded,
   previewClicks,
   pickElement,
   selectText,
@@ -1016,6 +1017,8 @@ function followItems() {
  * first and shows its own result). Returns false when it failed.
  */
 async function save({ quiet = false } = {}) {
+  // an edit still on its way (a widget just picked in Add widget) is saved with the rest (F103)
+  await editsLanded();
   const followed = ui.saving ? null : followItems();
   const dirty = store.dirtyFiles();
   if (!dirty.length) return true;
