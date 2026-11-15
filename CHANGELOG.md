@@ -4,9 +4,9 @@ Releases are tagged `vX.Y.Z` on main; a site pins one in its `package.json`
 (`"ewcms": "github:EverythingWidget/ewcms#vX.Y.Z"`). Breaking changes are marked **Breaking** and
 say what a site must do before it bumps its pin.
 
-## Unreleased
+## 0.9.0 (2026-11-15)
 
-### Breaking: what a site must do before bumping
+### Breaking: what a site must do before bumping to 0.9.0
 
 - **Breaking: a List's `config.handmade` is `config.custom`.** The content key now matches the
   editor's label (Source: **Custom**). There is no fallback: a List that still says
@@ -21,7 +21,8 @@ say what a site must do before it bumps its pin.
   When a value is missing. The single-item widget's Source tip explains From URL, Item and None.
   The Desktop and Phone tip leads the footer row, before the Desktop | Phone toggle.
 - Names: Size **Auto** is **Auto height**; the widget toolbar's **Edit** is **Edit text**; the
-  Page entrance card's field is **On this page**; Edit template points at Pages › Templates.
+  Page entrance card's field is **On this page**; Edit template points at Pages › Templates; the
+  Sources button's examples are generic.
 - The header's Edit / Done and Publish are 32px, as the back arrow and the icon buttons.
 - List order: a source owns it. In Sources, each item row has a grip (drag, or Alt+↑/↓) and Save
   writes the new order to `sources/<id>.json`; every List of that source follows it. A List's
