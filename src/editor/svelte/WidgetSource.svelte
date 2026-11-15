@@ -46,6 +46,7 @@
   } = $props();
 
   const NO_PARAMS = 'This page’s address has no params to match';
+  const NO_SOURCES = 'No lists in Sources yet: add one first (Sources, at the bottom of the panel)';
   const ANY_WHY =
     'Not on the main widget: it decides which pages exist, so each address must match real items (no match shows the 404 page). A param it ignores would make the same page under many addresses.';
   // what a URL part can be compared with: one value, not photos, long texts or lists
@@ -290,13 +291,15 @@
     {/if}
     <div class="seg" role="radiogroup" aria-label="Source">
       {#each MODES as [m, label] (m)}
-        {@const off = m === 'url' && !params.length}
+        {@const noParams = m === 'url' && !params.length}
+        {@const noSources = (m === 'all' || m === 'item') && !sourceIds.length}
+        {@const off = noParams || noSources}
         <button
           type="button"
           role="radio"
           aria-checked={mode === m}
           aria-disabled={off || undefined}
-          title={off ? NO_PARAMS : undefined}
+          title={noParams ? NO_PARAMS : noSources ? NO_SOURCES : undefined}
           class={['seg__btn', mode === m && 'is-active', off && 'is-off']}
           onclick={() => !off && pickMode(m)}>{label}</button
         >
