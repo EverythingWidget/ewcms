@@ -81,6 +81,21 @@ function readRuns(node, marks = [], link = null, self = false) {
   return out.map((r) => (r.marks ? { ...r, marks: MARKS.filter((x) => r.marks.includes(x)) } : r));
 }
 
+/**
+ * What Ctrl+A selects in a Text widget: first the caret's line (all of it, like a triple
+ * click), so typing over it keeps its style (a Title stays a Title); null when that line is
+ * selected already (or the text has one line, or the selection spans lines): the browser's
+ * select all, every line.
+ */
+export function lineToSelect(sel, body) {
+  if (!sel || !Array.isArray(body) || body.length < 2) return null;
+  if (sel.from.line !== sel.to.line || !body[sel.to.line]) return null;
+  const len = lineLength(body[sel.to.line]);
+  const [a, b] = sel.from.at <= sel.to.at ? [sel.from.at, sel.to.at] : [sel.to.at, sel.from.at];
+  if (a === 0 && b === len) return null;
+  return { from: { line: sel.to.line, at: 0 }, to: { line: sel.to.line, at: len } };
+}
+
 /** The line elements of a body element. */
 const linesOf = (root) => [...root.children].filter((n) => n.matches(LINE));
 

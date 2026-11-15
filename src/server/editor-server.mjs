@@ -327,6 +327,9 @@ export function pagesOp(
         id: newPageId(),
         curtainText: t,
         sections: [section],
+        // its name is its own: typing in its heading doesn't rename it (F56; else routes.js
+        // pageTitle, the first title line, names it)
+        meta: { title: t },
       });
       return done({ id: join(parent, name), created: [file] });
     }

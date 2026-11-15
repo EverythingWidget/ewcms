@@ -24,6 +24,7 @@ import { T } from './ui-tokens.js';
 import {
   isCaret,
   oneLineSelection,
+  lineToSelect,
   posOf,
   readBody,
   renderEditing,
@@ -654,6 +655,17 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
       bridge.richApply((body, sel) =>
         sel && !isCaret(sel) ? { body: toggleMark(body, sel.from, sel.to, k) } : null,
       );
+      return true;
+    }
+    // Ctrl+A: the caret's line first (typed over, it keeps its style), then every line (F56)
+    if (mod && !e.altKey && !e.shiftKey && k === 'a') {
+      const line = lineToSelect(selectionOf(rich.el, win), store.get(rich.file, rich.ptr));
+      if (!line) return false;
+      e.preventDefault();
+      e.stopPropagation();
+      selectAt(rich.el, win, line);
+      richSel = line;
+      emit('rich', richState());
       return true;
     }
     if (mod && !e.altKey && k === 'k') {
