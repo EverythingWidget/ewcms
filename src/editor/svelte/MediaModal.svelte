@@ -257,7 +257,9 @@
   }
 
   function use() {
-    live.store.set(pick.file, pick.ptr, key, { source: 'panel' });
+    // rendered again: the photo's <img> (srcset, size) is the render's; a new widget has
+    // none yet (it showed only after a reload: F75)
+    live.store.set(pick.file, pick.ptr, key, { source: 'panel', structure: true });
     close();
   }
 

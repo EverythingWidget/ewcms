@@ -103,3 +103,11 @@ test('a picked widget has Add widget (to its section) next to its actions (F59)'
     /label="Add widget to this section"[\s\S]*onclick=\{\(\) => onadd\(addOnly \? 0 : group\.at\)\}/,
   );
 });
+
+test('a photo picked renders its widget again: its <img> shows at once (F75)', () => {
+  assert.match(
+    src('MediaModal.svelte'),
+    /live\.store\.set\(pick\.file, pick\.ptr, key, \{ source: 'panel', structure: true \}\);/,
+  );
+  assert.match(src('GroupFields.svelte'), /const structure =\s+f\.type === 'photo' \|\|/);
+});

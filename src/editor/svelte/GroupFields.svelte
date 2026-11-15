@@ -80,8 +80,10 @@
 
   // a switch or a choice can change what the widget shows: rendered again
   // a value with properties (parts) shows the item's: rendered again too
+  // a photo too: its <img> (srcset, size) is the render's; there may be none yet (F75)
   function setValue(f, value) {
     const structure =
+      f.type === 'photo' ||
       f.type === 'boolean' ||
       f.type === 'select' ||
       f.type === 'seg' ||
@@ -89,7 +91,7 @@
       isParts(value) ||
       isParts(live.get(f.file, f.ptr));
     const typed =
-      !['boolean', 'select', 'seg', 'spot'].includes(f.type) && typeof value !== 'object';
+      !['boolean', 'select', 'seg', 'spot', 'photo'].includes(f.type) && typeof value !== 'object';
     live.store.set(f.file, f.ptr, value, {
       source: 'panel',
       structure,
