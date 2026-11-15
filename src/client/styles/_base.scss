@@ -114,12 +114,13 @@ html.anim-pending [data-motion] > * {
   }
 }
 
+// the chrome's small labels: the Label style's tracking and case (--type-label-tracking, -case)
 .label {
   font-family: var(--f-mono);
   font-size: 11px;
   font-weight: 400;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: var(--type-label-tracking, 0.08em);
+  text-transform: var(--type-label-case, uppercase);
   color: var(--muted);
 }
 .muted {

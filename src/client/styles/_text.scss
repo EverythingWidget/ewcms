@@ -77,8 +77,8 @@
   font-size: clamp(var(--type-label-min), 0.76vw, var(--type-label-max));
   line-height: var(--type-label-lh);
   font-weight: var(--type-label-weight, 400);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: var(--type-label-tracking, 0.08em);
+  text-transform: var(--type-label-case, uppercase);
   color: var(--type-label-color, var(--muted));
 }
 .ts--small {

@@ -62,8 +62,7 @@ test('F86: each text style reads its weight, tracking and colour', () => {
   for (const s of ['title', 'heading', 'subheading', 'statement', 'paragraph', 'label', 'small']) {
     const rule = t.slice(t.indexOf(`.ts--${s} {`), t.indexOf('}', t.indexOf(`.ts--${s} {`)));
     assert.match(rule, new RegExp(`font-weight: var\\(--type-${s}-weight, `), s);
-    if (s !== 'label')
-      assert.match(rule, new RegExp(`letter-spacing: var\\(--type-${s}-tracking, `), s);
+    assert.match(rule, new RegExp(`letter-spacing: var\\(--type-${s}-tracking, `), s);
     assert.match(rule, new RegExp(`color: var\\(--type-${s}-color, `), s);
   }
 });
@@ -74,4 +73,17 @@ test('ewcms check asks only for the tokens before @optional', () => {
   fs.writeFileSync(path.join(dir, 'theme/tokens.scss'), requiredPart(starter));
   assert.equal(themeWarning(loadSiteConfig(dir)), '');
   fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test("F87: the Label (and the chrome's .label) read their tracking and case", () => {
+  const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
+  for (const [f, sel] of [
+    ['src/client/styles/_text.scss', '.ts--label {'],
+    ['src/client/styles/_base.scss', '.label {'],
+  ]) {
+    const t = read(f);
+    const rule = t.slice(t.indexOf(sel), t.indexOf('}', t.indexOf(sel)));
+    assert.match(rule, /letter-spacing: var\(--type-label-tracking, 0\.08em\)/, f);
+    assert.match(rule, /text-transform: var\(--type-label-case, uppercase\)/, f);
+  }
 });
