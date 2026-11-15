@@ -101,8 +101,9 @@ export function createStore() {
     remove(file, ptr, opts) {
       return store.set(file, ptr, undefined, opts);
     },
-    /** Group several set() calls into one undo step. */
+    /** Group several set() calls into one undo step (a batch inside a batch joins it). */
     batch(fn, { source } = {}) {
+      if (batchEntry) return void fn();
       batchEntry = { changes: [], t: Date.now() };
       try {
         fn();

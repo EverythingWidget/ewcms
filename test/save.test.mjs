@@ -29,7 +29,23 @@ test('a Save with nothing typed meanwhile leaves nothing unsaved', () => {
 });
 
 test('the dev server tells the editor’s own writes apart by their content', () => {
-  const p = readFileSync(new URL('../src/cli/vite-plugin-static-site.mjs', import.meta.url), 'utf8');
+  const p = readFileSync(
+    new URL('../src/cli/vite-plugin-static-site.mjs', import.meta.url),
+    'utf8',
+  );
   assert.match(p, /ownWrites/);
   assert.match(p, /server: \{ fs: \{ allow: engineAllow/);
+});
+
+test('store.batch inside a batch joins it: one undo step, no error (F20: Custom to None)', () => {
+  const store = createStore();
+  store.load({ 'a.json': { x: 1, y: 1, z: 1 } });
+  store.batch(() => {
+    store.set('a.json', '/x', 2);
+    store.batch(() => store.set('a.json', '/y', 2));
+    store.set('a.json', '/z', 2);
+  });
+  assert.deepEqual(store.current['a.json'], { x: 2, y: 2, z: 2 });
+  store.undo();
+  assert.deepEqual(store.current['a.json'], { x: 1, y: 1, z: 1 });
 });
