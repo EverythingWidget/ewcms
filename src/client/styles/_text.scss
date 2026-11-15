@@ -34,8 +34,10 @@
   line-height: var(--type-title-lh);
   letter-spacing: var(--type-title-tracking, -0.02em);
   color: var(--type-title-color, inherit);
+  // a phone: its own size with the width (--type-title-phone), the max its cap (it may go under
+  // the min)
   @media (width <= 480px) {
-    font-size: min(13vw, var(--type-title-max));
+    font-size: min(var(--type-title-phone, 13vw), var(--type-title-max));
   }
 }
 .ts--heading {
@@ -45,6 +47,11 @@
   line-height: var(--type-heading-lh);
   letter-spacing: var(--type-heading-tracking, inherit);
   color: var(--type-heading-color, inherit);
+  // a phone, as the Title: a size with the width (--type-heading-phone), the max its cap, so a
+  // heading whose min is large (min = max: fixed) still shrinks on a phone (F98)
+  @media (width <= 480px) {
+    font-size: min(var(--type-heading-phone, 10vw), var(--type-heading-max));
+  }
 }
 .ts--subheading {
   font-family: var(--f-display);

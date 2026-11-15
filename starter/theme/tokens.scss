@@ -111,6 +111,11 @@
   // check doesn't ask for them. inherit: what is around it (a hero's colours, the body's weight);
   // var(--muted): that token where the text is (a hero sets its own).
 
+  // a phone's (≤ 480px) Title and Heading size: with the width, capped at their max (it may go
+  // under the min)
+  // --type-title-phone: 13vw;
+  // --type-heading-phone: 10vw;
+
   // the text styles' weight, tracking and colour (src/client/styles/_text.scss .ts--<style>)
   // --type-title-weight: 400;
   // --type-title-tracking: -0.02em;

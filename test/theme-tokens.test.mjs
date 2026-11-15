@@ -188,3 +188,21 @@ test('F85: the starter has the type scale, the engine\'s defaults; check asks fo
   );
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('F98: the Heading has a phone size capped at its max, as the Title', () => {
+  const t = fs.readFileSync(path.join(root, 'src/client/styles/_text.scss'), 'utf8');
+  for (const [s, vw] of [
+    ['title', 13],
+    ['heading', 10],
+  ]) {
+    const at = t.indexOf(`.ts--${s} {`);
+    const block = t.slice(at, t.indexOf('\n}', at));
+    assert.match(
+      block,
+      new RegExp(
+        `@media \\(width <= 480px\\) \\{\\s*font-size: min\\(var\\(--type-${s}-phone, ${vw}vw\\), var\\(--type-${s}-max\\)\\);`,
+      ),
+      s,
+    );
+  }
+});

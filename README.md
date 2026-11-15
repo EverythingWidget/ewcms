@@ -579,7 +579,9 @@ every section is a grid of **widgets** (`src/render/layout/`):
   `_text.scss`); what `site.json` sets goes on the page's `:root`, so it changes the preview
   and the built site, never the editor. Defaults: title 72–250 / 0.82, heading 38–104 / 0.92,
   subheading 22–36 / 1.15, statement 30–72 / 1.06, paragraph 16 / 1.75, label 11 / 1.55,
-  small 12 / 1.5. The card lists the styles with their tags (Title · H1 … Small · P), one row of
+  small 12 / 1.5. On a phone (≤ 480px) the Title and the Heading take a size with the width instead,
+  capped at their max (it may go under the min): `--type-title-phone` (13vw) and
+  `--type-heading-phone` (10vw), theme tokens. The card lists the styles with their tags (Title · H1 … Small · P), one row of
   Min, Max and Line each (empty: the theme's, as the placeholder), and the preview follows as
   you type (no reload). **Preview** shows the type specimen (the dev server's `/__type/`,
   `src/render/layout/type-specimen.js`, never built): one full-width section of an auto-height
