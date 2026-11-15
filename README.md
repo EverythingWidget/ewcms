@@ -1787,7 +1787,7 @@ cancels, and a drag is one undo step. A drag starts from where the widget is sho
 stores where the section's other widgets are now (their real rows, see Layout), so what you see
 is what is stored. An aspect or auto widget's rows follow its width: only its sides resize (the
 whole left or right edge is a grip, not only its middle handle). A widget added from the editor
-is Rows, 40 columns × 6 rows; a Text Auto, 80 columns wide; a Hero the section's full width × 68 rows (about a screen under
+is Rows, 40 columns × 6 rows; a Text Auto, 80 columns wide; a List Auto, all 120; a Hero the section's full width × 68 rows (about a screen under
 the header at 1440 × 900; a type's `added: { span, rows }`; `added.lang.<lang>`: its texts on a site in that language, e.g. a Contact form's in Dutch). A
 **double click** on a text edits it in place (until you click elsewhere, press Esc or Enter in
 a one-line text); a double click on a photo or a bound value opens its field in the panel.

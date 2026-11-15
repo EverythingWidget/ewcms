@@ -147,3 +147,12 @@ test('a new Text is two thirds wide, not a third (F47)', () => {
   assert.equal(addWidget(store, F, 0, 'text').layout.base.span, 80);
   assert.equal(addWidget(store, F, 0, 'photo').layout.base.span, 40);
 });
+
+test('a new List is all columns wide, its tiles a useful size (F81)', () => {
+  const store = createStore();
+  store.load({ [F]: { version: 1, kind: 'page', id: 'pg-t144', sections: [] } });
+  addSection(store, F);
+  const list = addWidget(store, F, 0, 'list');
+  assert.equal(list.layout.base.span, COLS);
+  assert.equal(list.size, undefined); // Auto
+});

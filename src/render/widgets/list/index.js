@@ -214,8 +214,9 @@ function forItem(w, scope, link, sep, { custom = false, href = '' } = {}) {
 
 export const list = {
   type: 'list',
-  // added from the editor: Auto, as tall as what it holds
-  added: { size: 'auto' },
+  // added from the editor: Auto, as tall as what it holds; all columns wide, its tiles a
+  // useful size (a third, 40, made them tiny: F81)
+  added: { size: 'auto', span: 'all' },
   list: true,
   // Content tab: From a source | Custom (ListLead.svelte); items at config.items
   customItems: true,
