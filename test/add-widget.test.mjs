@@ -72,7 +72,7 @@ test('added text, button, form, lists: Auto (no rows); photo and hero as before'
 
 test('Add widget waits for the preview to settle; Auto measured, not its stored --rs', () => {
   const panel = read('src/editor/svelte/ContentPanel.svelte');
-  assert.match(panel, /await hooks\.settled\(\);\s*openWidget\(addWidget/);
+  assert.match(panel, /await hooks\.settled\(\);\s*selectWidgets\(\[addWidget\(/);
   assert.match(panel, /classList\.contains\('wgt--auto'\)\s*\?\s*0/);
   assert.match(panel, /getBoundingClientRect\(\)\.height \/ cell/);
   assert.match(read('src/editor/main.js'), /hooks\.settled = async/);
@@ -87,4 +87,19 @@ test('a new List starts on None (its empty state); a default source only when th
   store.load({ ...store.current, 'sources/people.json': { version: 1, items: [] } });
   assert.equal(addWidget(store, F, 0, 'list').source, undefined);
   assert.deepEqual(addWidget(store, F, 0, 'albums').source, { mode: 'all', from: 'people' });
+});
+
+test('the widget pop-up stays closed after the user closes it (F14, F30)', () => {
+  const ui = readFileSync(new URL('../src/editor/svelte/ui.svelte.js', import.meta.url), 'utf8');
+  assert.match(ui, /export function autoPopup\(\) \{\s*if \(!ui\.popupShut\) ui\.popup = true;/);
+  assert.match(ui, /export function openPopup\(\) \{\s*ui\.popup = true;\s*ui\.popupShut = false;/);
+  assert.match(
+    ui,
+    /export function dismissWidgetPopup\(\) \{\s*closeWidgetPopup\(\);\s*ui\.popupShut = true;/,
+  );
+  const cp = readFileSync(
+    new URL('../src/editor/svelte/ContentPanel.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.match(cp, /onclose=\{dismissWidgetPopup\}/);
 });

@@ -100,7 +100,10 @@ test('Motion shows the whole page; the widget pop-up has no Motion tab and stays
   assert.doesNotMatch(esrc('svelte/ui.svelte.js'), /widgetTab/);
   const cp = esrc('svelte/ContentPanel.svelte');
   assert.doesNotMatch(cp, /widgetTab/);
-  assert.match(cp, /if \(!\(ui\.popup && ui\.widget === group\.id\)\) openWidget\(group\.id\);/);
+  assert.match(
+    cp,
+    /if \(!\(ui\.popup && ui\.widget === group\.id\)\) \{\s*selectWidgets\(\[group\.id\]\);\s*autoPopup\(\);/,
+  );
   assert.doesNotMatch(esrc('svelte/WidgetMotion.svelte'), /inspector's Motion tab/);
   assert.match(esrc('svelte/ContentPanel.svelte'), /\{#if popG && !browsing\}/);
   assert.doesNotMatch(esrc('main.js'), /editMotion/);

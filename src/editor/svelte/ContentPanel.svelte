@@ -37,7 +37,8 @@
     ui,
     selectWidgets,
     openPopup,
-    closeWidgetPopup,
+    dismissWidgetPopup,
+    autoPopup,
     openSectionPopup,
     closeSectionPopup,
     deselectSections,
@@ -215,7 +216,8 @@
   // rows), so the new widget goes below what they make, not a stale height
   async function addTo(at, type) {
     await hooks.settled();
-    openWidget(addWidget(live.store, file, at, type, { shown: shownRows(at) }).id);
+    selectWidgets([addWidget(live.store, file, at, type, { shown: shownRows(at) }).id]);
+    autoPopup();
   }
 
   /** Open the widget holding `edit` and scroll to it (a Header label: its field); list items open the Sources modal. */
@@ -225,7 +227,7 @@
     if (!group) {
       // a template widget's bound text: open that widget's pop-up, not the Sources modal
       if (ui.target?.kind === 'item-template') {
-        if (ui.widget) openWidget(ui.widget);
+        if (ui.widget) autoPopup();
         return;
       }
       const { file, ptr } = splitEdit(edit);
@@ -235,7 +237,11 @@
     } else {
       if (isPage && tab !== 'sections') pickTab('sections');
       // open unless it's the widget whose pop-up is already open (no reopen)
-      if (!(ui.popup && ui.widget === group.id)) openWidget(group.id);
+      // (not after the user closed it: then only selected, F14)
+      if (!(ui.popup && ui.widget === group.id)) {
+        selectWidgets([group.id]);
+        autoPopup();
+      }
     }
     await tick();
     document
@@ -341,7 +347,15 @@
 {/if}
 
 {#if popG && !browsing}
-  <WidgetPopup g={popG} {live} {bridge} {sourceIds} {onsource} {popup} onclose={closeWidgetPopup} />
+  <WidgetPopup
+    g={popG}
+    {live}
+    {bridge}
+    {sourceIds}
+    {onsource}
+    {popup}
+    onclose={dismissWidgetPopup}
+  />
 {/if}
 
 <style lang="scss">

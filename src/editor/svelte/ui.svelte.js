@@ -105,6 +105,11 @@ export const ui = $state({
   /** The selected widget's pop-up shown (a double click opens it; a single click only selects). */
   popup: false,
   /**
+   * The pop-up closed by its × (or Esc): it stays closed when a widget is selected or added (a
+   * text clicked, a new widget) until a double click or the gear opens it again (F14).
+   */
+  popupShut: false,
+  /**
    * A widget hovered: { id, from: 'panel' | 'preview' } (its row hovered: its outline in the
    * preview; it hovered in the preview: its row lit), or null.
    */
@@ -277,6 +282,13 @@ function choose(el, kind, quiet) {
 /** The selected widget's pop-up shown (a double click, the toolbar's gear). */
 export function openPopup() {
   ui.popup = true;
+  ui.popupShut = false;
+}
+
+/** The pop-up opened for a selection the user didn't ask it for (a text clicked, a widget
+ *  added): not after they closed it (ui.popupShut). */
+export function autoPopup() {
+  if (!ui.popupShut) ui.popup = true;
 }
 
 /** The widget pop-up hidden; the widget stays selected. */
@@ -288,6 +300,12 @@ export function closePopup() {
 export function closeWidgetPopup() {
   ui.selection = null;
   ui.popup = false;
+}
+
+/** The user closed the pop-up (its ×, Esc): closeWidgetPopup, and it stays closed (autoPopup). */
+export function dismissWidgetPopup() {
+  closeWidgetPopup();
+  ui.popupShut = true;
 }
 
 /**

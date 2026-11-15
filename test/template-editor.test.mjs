@@ -342,7 +342,7 @@ test('a selected template widget uses the page pop-up and toolbar delete, in pla
   // the same triggers as a page: a row's double click / Enter, Add widget, the toolbar's gear
   assert.match(panel, /onopen=\{\(wid\) => \(selectWidgets\(\[wid\]\), openPopup\(\)\)\}/);
   assert.match(panel, /selectWidgets\(\[wid\]\);\s*openPopup\(\);/);
-  assert.match(content, /<WidgetPopup /);
+  assert.match(content, /<WidgetPopup\s/);
   // ContentPanel already mounts the pop-up from contentGroups (targetFile is the template)
   assert.match(content, /ui\.target\?\.kind === 'item-template'/);
   // template Content fields, not a page widget's source + registry
