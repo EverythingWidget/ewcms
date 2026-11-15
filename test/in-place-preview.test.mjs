@@ -25,7 +25,7 @@ import {
 import { needsReload, routesFile, routesKey } from '../src/editor/lib/needs-reload.js';
 import { sectionsUsing, usesOf } from '../src/render/widgets/list/template-uses.js';
 import { PREVIEW_PAGE, templatePreviewPath } from '../src/render/widgets/list/template-preview.js';
-import { swapSections } from '../src/editor/layout-sync.js';
+import { swapSections, swapWidget } from '../src/editor/layout-sync.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
@@ -205,6 +205,29 @@ test('swapSections: a page that is no file (the template preview) swaps each sec
   assert.equal(view.querySelector('[data-sec="s-tplp"]').textContent, 'new');
   assert.equal(view.children.length, 2);
   assert.equal(view.firstElementChild.dataset.sec, 's-tplp');
+});
+
+test('swapWidget: a Text edit ended swaps only its widget, its section and the others stay (G3)', () => {
+  const { document } = parseHTML(
+    '<div data-router-view data-page-file="pages/index.json"><section data-sec="s-a"><div data-widget="w-t" style="--fr: 3; --frs: 9">old</div><div data-widget="w-p"><img></div></section></div>',
+  );
+  globalThis.CSS ??= { escape: (v) => v };
+  const view = document.querySelector('[data-router-view]');
+  const sec = view.querySelector('[data-sec]');
+  const img = view.querySelector('img');
+  const store = { current: { 'pages/index.json': { sections: [{ id: 's-a', widgets: [] }] } } };
+  const html = {
+    's-a':
+      '<section data-sec="s-a"><div data-widget="w-t">new</div><div data-widget="w-p"><img></div></section>',
+  };
+  assert.equal(swapWidget(document, store, html, view, 'w-t'), true);
+  assert.equal(view.querySelector('[data-widget="w-t"]').textContent, 'new');
+  assert.equal(view.querySelector('[data-widget="w-t"]').style.getPropertyValue('--frs'), '9');
+  assert.equal(view.querySelector('[data-sec]'), sec);
+  assert.equal(view.querySelector('img'), img);
+  // more than its section, or a widget it doesn't have: no (the sections are swapped instead)
+  assert.equal(swapWidget(document, store, { ...html, 's-b': '' }, view, 'w-t'), false);
+  assert.equal(swapWidget(document, store, html, view, 'w-zz'), false);
 });
 
 test('the editor: in place by default, a reload only by the rule, on Save too', () => {

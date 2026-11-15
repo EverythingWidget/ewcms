@@ -214,6 +214,36 @@ export function holdScroll(doc) {
 }
 
 /**
+ * Only widget `id` of its rendered section (html: { sectionId: markup }) put in place of the one
+ * shown, the rest of the section left as it is: a Text edit's end (Esc, a click away) shows the
+ * text as the site renders it without the section, its photos and animations, being swapped and
+ * played again (G3). False (nothing done) unless exactly its section was rendered and both have
+ * the widget.
+ */
+export function swapWidget(doc, store, html, view, id) {
+  const ids = Object.keys(html);
+  const sections = store.current[view?.dataset.pageFile]?.sections;
+  if (ids.length !== 1 || !id || !Array.isArray(sections)) return false;
+  const at = sections.findIndex((s) => s?.id === ids[0]);
+  const sec = sectionsIn(view).get(ids[0]);
+  const sel = `[data-widget="${CSS.escape(id)}"]`;
+  const old = sec?.querySelector(sel);
+  if (at < 0 || !old) return false;
+  const tpl = doc.createElement('template');
+  tpl.innerHTML = html[ids[0]];
+  const next = tpl.content.firstElementChild?.querySelector(sel);
+  if (!next) return false;
+  // the rows the flow gave it (rows.js) kept until it flows again
+  for (const k of ['--fr', '--frs']) {
+    const v = old.style.getPropertyValue(k);
+    if (v) next.style.setProperty(k, v);
+  }
+  old.replaceWith(next);
+  rendered.set(sec, keyOf(sections[at], at));
+  return true;
+}
+
+/**
  * Put freshly rendered sections ({ id: html }) into the preview, in the file's order (a page
  * that is no file, the template editor's preview: each in place of the one it renders again).
  */

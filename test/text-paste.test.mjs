@@ -2,7 +2,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { isSafeHref, linkProblem, hrefOf, UNSAFE_HREF } from '../src/render/hrefs.js';
-import { checkBody, deleteRange, insertLines, plainLines, htmlLines } from '../src/render/text.js';
+import {
+  checkBody,
+  deleteRange,
+  insertLines,
+  plainLines,
+  htmlLines,
+  typeOver,
+} from '../src/render/text.js';
 import { fitFactor } from '../src/client/modules/fit.js';
 
 test('links: only safe URLs; checked in a body; never output', () => {
@@ -159,4 +166,20 @@ test('paste: HTML whose white-space keeps newlines (a code editor, a text field)
     htmlLines(el('BODY', [el('SPAN', ['a\nb'])]), () => true),
     [{ style: 'paragraph', text: [{ t: 'a b' }] }],
   );
+});
+
+test('typeOver: a letter typed over a Label and a Title is one Title line, not a Label (G3)', () => {
+  const body = [
+    { style: 'label', text: [{ t: 'Eyebrow' }] },
+    { style: 'title', text: [{ t: 'Page title' }] },
+    { style: 'paragraph', text: [{ t: 'Intro' }] },
+  ];
+  const all = typeOver(body, { line: 0, at: 0 }, { line: 2, at: 5 }, 'N');
+  assert.deepEqual(all.body, [{ style: 'title', text: [{ t: 'N' }] }]);
+  assert.deepEqual(all.at, { line: 0, at: 1 });
+  // from inside the Label: its text stays, so does its style
+  const mid = typeOver(body, { line: 0, at: 3 }, { line: 1, at: 4 }, 'x');
+  assert.deepEqual(mid.body[0], { style: 'label', text: [{ t: 'Eyex title' }] });
+  // within one line: the browser's own typing
+  assert.equal(typeOver(body, { line: 1, at: 0 }, { line: 1, at: 4 }, 'x'), null);
 });

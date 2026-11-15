@@ -45,6 +45,7 @@ import {
   unlist,
   autoList,
   typedProperty,
+  typeOver,
 } from '../render/text.js';
 import { isDraftHref, isSafeHref } from '../render/hrefs.js';
 
@@ -1009,6 +1010,22 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
           if (!sel) return null;
           const out = insertLines(body, sel.from, sel.to, lines);
           return { body: out.body, sel: { from: out.at, to: out.at } };
+        });
+      },
+      true,
+    );
+    // a letter typed over several lines: one line, its style not a Label's when the first was
+    // one (typeOver, G3); within a line the browser types as usual
+    doc.addEventListener(
+      'beforeinput',
+      (e) => {
+        if (!rich || !rich.el.contains(e.target) || e.inputType !== 'insertText' || !e.data) return;
+        const sel = selectionOf(rich.el, win);
+        if (!sel || sel.from.line === sel.to.line) return;
+        e.preventDefault();
+        bridge.richApply((body, at) => {
+          const out = typeOver(body, (at || sel).from, (at || sel).to, e.data);
+          return out && { body: out.body, sel: { from: out.at, to: out.at } };
         });
       },
       true,

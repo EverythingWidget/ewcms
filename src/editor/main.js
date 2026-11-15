@@ -88,6 +88,7 @@ import {
   previewFile,
   setPartOpen,
   swapSections,
+  swapWidget,
   syncLayout,
   syncRoots,
   targetFile,
@@ -672,7 +673,7 @@ bridge.on('connect', () => {
  */
 let rendering = Promise.resolve();
 function syncSections(
-  { structure = false } = {},
+  { structure = false, only = null } = {},
   root = bridge.doc?.querySelector('[data-router-view]'),
 ) {
   const stale = syncLayout(bridge.doc, store, { structure, root });
@@ -686,7 +687,7 @@ function syncSections(
     bridge.api?.reflow?.();
     bridge.api?.refresh?.();
   }
-  renderSections(stale, root);
+  renderSections(stale, root, { only });
 }
 
 /**
@@ -745,7 +746,11 @@ function renderUses({ templates = [], sources = [] }) {
  * Sections `ids` of `root` (the previewed page's view, or the footer) rendered by the dev
  * server and swapped in, in turn.
  */
-function renderSections(stale, root = bridge.doc?.querySelector('[data-router-view]')) {
+function renderSections(
+  stale,
+  root = bridge.doc?.querySelector('[data-router-view]'),
+  { only = null } = {},
+) {
   if (!stale.length || !root) return;
   rendering = rendering.then(async () => {
     const file = root.dataset.pageFile;
@@ -759,8 +764,11 @@ function renderSections(stale, root = bridge.doc?.querySelector('[data-router-vi
       // the preview stays where it is scrolled (layout-sync.js holdScroll)
       const release = holdScroll(bridge.doc);
       try {
-        swapSections(bridge.doc, store, html, root);
-        bridge.api?.remountView();
+        if (only && swapWidget(bridge.doc, store, html, root, only)) bridge.api?.reflow?.();
+        else {
+          swapSections(bridge.doc, store, html, root);
+          bridge.api?.remountView();
+        }
       } finally {
         release();
       }
@@ -807,7 +815,11 @@ bridge.on('textPick', selectText);
 // section rendered again (the fields' values, the animations' markup)
 bridge.on('rich', (state) => (ui.rich = state));
 bridge.on('richDone', (edit) => {
-  for (const root of syncRoots(bridge.doc)) syncSections({ structure: true }, root);
+  // only its widget swapped in when its section is all that changed (G3: not the section, its
+  // photos and animations, rendered and played again)
+  const [, file, ptr] = /^(.*?)#(\/sections\/\d+\/widgets\/\d+)\//.exec(String(edit || '')) || [];
+  const only = file ? store.get(file, ptr)?.id : null;
+  for (const root of syncRoots(bridge.doc)) syncSections({ structure: true, only }, root);
   // a template Text: Lists that use it (the template preview too) render once the edit ends
   const id = templateIdOf(String(edit || '').split('#')[0]);
   if (id) pushDraft({ templates: [id] });

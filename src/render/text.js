@@ -521,6 +521,31 @@ export function deleteRange(body, from, to) {
 }
 
 /**
+ * Text typed over a selection of several lines (Ctrl+A twice, a drag across lines): the lines
+ * joined into one as deleteRange does, with `text` at the selection's start. A first line typed
+ * over from its start takes the style of the first selected line that isn't a Label (a Label is
+ * a small line over a title: typing over a whole text with one, everything became a Label, G3);
+ * else it keeps its own. Returns { body, at } (the caret after the text), or null when the
+ * selection is in one line (the browser's own typing does that).
+ */
+export function typeOver(body, from, to, text) {
+  const [s, e] = ordered(from, to);
+  if (s.line === e.line || !body?.[s.line] || !body[e.line]) return null;
+  const out = deleteRange(body, s, e);
+  const line = out[s.line];
+  if (s.at === 0) {
+    const main = body.slice(s.line, e.line + 1).find((l) => l?.style !== 'label');
+    if (main && line.style === 'label') {
+      line.style = main.style;
+      if (listOf(main)) line.list = main.list;
+    }
+  }
+  const [head, tail] = splitRuns(line.text, s.at);
+  line.text = tidyRuns([...head, { t: text }, ...tail]);
+  return { body: out, at: { line: s.line, at: s.at + text.length } };
+}
+
+/**
  * Pasted lines ([{ style, text }], pastedLines) put in over a selection: one line goes into
  * the caret's line; more each become their own line between its two halves (an empty half
  * goes). Returns { body, at } (at: the caret after them).
