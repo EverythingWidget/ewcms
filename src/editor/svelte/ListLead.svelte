@@ -19,6 +19,7 @@
   import ListField from './ListField.svelte';
   import Field from './Field.svelte';
   import InfoHelp from './InfoHelp.svelte';
+  import { moveAt } from '../lib/reorder.js';
   import LinkField from './LinkField.svelte';
   import SourceField from './SourceField.svelte';
   import { pairedHalves } from './source-items.js';
@@ -104,11 +105,8 @@
   const listOf = () => [...(live.get(g.file, itemsPtr) || [])];
   const setList = (next) =>
     live.store.set(g.file, itemsPtr, next, { source: 'panel', structure: true });
-  const moveItem = (from, to) => {
-    const list = listOf();
-    list.splice(to, 0, ...list.splice(from, 1));
-    setList(list);
-  };
+  // a Custom item dragged by its grip (ListField) or Alt+↑/↓: the List shows them in this order
+  const moveItem = (from, to) => setList(moveAt(listOf(), from, to));
   const removeItem = (i) => {
     const list = listOf();
     list.splice(i, 1);
@@ -280,7 +278,8 @@
         ><b>Source</b>: where the List gets its items, one copy of the template each.
         <b>From URL</b>: the items that match the page's address (only on a [param] page).
         <b>All</b>: every item of a list in Sources. <b>None</b>: no items. <b>Custom</b>: items you
-        add here by hand.</InfoHelp
+        add here by hand. <b>Order</b>: the source's; drag its items in Sources to change it
+        (Custom: drag them here).</InfoHelp
       ></span
     >
     {#if custom}

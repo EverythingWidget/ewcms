@@ -7,6 +7,10 @@
   there again when it closes) or a click on a list item in the preview (straight into that
   file, item or field). Where it is lives in ui.sources, so persist.js can bring it back after
   a refresh.
+  The items' order is the source's: the order every List of it shows (All, From URL). A row's
+  grip drags it to another place (list-drag.svelte.js, as ListField and the Pages list), or
+  Alt+↑/↓ on the grip; one undo step, written to sources/<id>.json on Save. The selection
+  follows its item.
   What an item has comes from its source's schema (sources/<id>.schema.json, else inferred:
   src/render/schemas.js): the properties, their labels, types, widths and help, its name and slug.
 -->
@@ -20,6 +24,9 @@
   import ExplorerHead from './ExplorerHead.svelte';
   import ExplorerRow from './ExplorerRow.svelte';
   import { ui } from './ui.svelte.js';
+  import InfoHelp from './InfoHelp.svelte';
+  import { listDrag, rowsOf } from './list-drag.svelte.js';
+  import { moveAt, movedIndex } from '../lib/reorder.js';
   import { closeModal, modal } from './modals.svelte.js';
   import { isSource } from './content-groups.js';
   import { baseName } from '../../render/files.js';
@@ -95,6 +102,40 @@
     select(Math.max(0, Math.min(at, now.length - 2)));
     const rest = now.filter((_, i) => i !== at);
     live.store.set(file, '/items', rest, { source: 'panel' });
+  }
+
+  // ---- the order: a row's grip drags it (list-drag.svelte.js), Alt+↑/↓ on the grip moves it
+  let itemsEl = $state();
+  const ld = listDrag({
+    lists: () => [rowsOf(itemsEl, '[data-srow]')],
+    shape: () => `${file}|${list?.length}`,
+    ondrop: (d) => move(d.j, d.over.to),
+    scroller: () => itemsEl,
+    grabbing: true,
+    edgeScroll: true,
+    swallowClick: true,
+  });
+  const drag = $derived(ld.drag);
+
+  /** Item `from` to place `to`: one undo step; the selected item stays selected. */
+  function move(from, to) {
+    const now = live.store.current[file].items;
+    const next = moveAt(now, from, to);
+    if (next.every((it, k) => it === now[k])) return;
+    const sel = movedIndex(index, from, Math.max(0, Math.min(to, now.length - 1)));
+    live.store.set(file, '/items', next, { source: 'panel' });
+    ui.sources.index = sel;
+  }
+
+  async function nudge(e, i) {
+    if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const to = i + (e.key === 'ArrowUp' ? -1 : 1);
+    if (to < 0 || to >= list.length) return;
+    move(i, to);
+    await tick();
+    itemsEl.querySelector(`:scope > [data-srow="${to}"] .srow__grip`)?.focus();
   }
 
   async function askDelete() {
@@ -191,12 +232,31 @@
     <nav class="sources-list" aria-label="Items">
       {#if isList}
         <header class="row sources-list__head">
-          {plural(list.length, 'item')}
+          <span
+            >{plural(list.length, 'item')}<InfoHelp label="About the order"
+              ><b>Order</b>: every List of this source shows its items in this order. Drag a row's
+              grip (or Alt+↑/↓ on it) to move it; Save writes the new order.</InfoHelp
+            ></span
+          >
           <Button size="small" icon="plus" onclick={add}>Add</Button>
         </header>
-        <ul class="list sources-list__items">
+        <ul class="list sources-list__items" bind:this={itemsEl}>
           {#each list as it, i (i)}
-            <li>
+            {@const lifted = drag?.moving && drag.j === i}
+            <li
+              class={['srow', lifted && 'is-lifted', ld.dropAt(i)]}
+              style:translate={lifted ? `0 ${drag.dy}px` : null}
+              data-srow={i}
+            >
+              <button
+                type="button"
+                class="srow__grip"
+                aria-label="Move: {itemName(it, schema)} (drag, or Alt+↑/↓)"
+                title="Drag to reorder (or Alt+↑/↓)"
+                onpointerdown={(e) => ld.grab(e, { j: i })}
+                onkeydown={(e) => nudge(e, i)}
+                ><i class="fa-solid fa-grip-vertical" aria-hidden="true"></i></button
+              >
               <ExplorerRow
                 lead={pad(i)}
                 name={itemName(it, schema)}
@@ -321,6 +381,68 @@
 
   .sources-list__items {
     gap: var(--space-1);
+  }
+
+  // a row: [grip | the item]; lifted while dragged (no size change), a line where it lands
+  .srow {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    border-radius: var(--radius-lg);
+
+    > :global(.xrow) {
+      flex: 1;
+      min-width: 0;
+    }
+
+    &.is-lifted {
+      z-index: 2;
+      background: var(--c-card);
+      box-shadow:
+        0 0 0 1px var(--c-accent),
+        0 12px 28px -12px var(--c-scrim);
+    }
+
+    &.is-drop-before::before,
+    &.is-drop-after::after {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      border-top: 2px solid var(--c-accent);
+    }
+
+    &.is-drop-before::before {
+      top: calc(var(--space-1) / -2);
+    }
+
+    &.is-drop-after::after {
+      bottom: calc(var(--space-1) / -2);
+    }
+  }
+
+  // the grip: ListField's, a quiet 24px column at the row's left
+  .srow__grip {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--c-text-faint);
+    cursor: grab;
+    touch-action: none;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--c-text);
+      outline: none;
+    }
+
+    &:focus-visible {
+      box-shadow: inset 0 0 0 1px var(--c-accent);
+    }
   }
 
   .sources-list__note {

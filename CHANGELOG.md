@@ -23,6 +23,9 @@ say what a site must do before it bumps its pin.
 - Names: Size **Auto** is **Auto height**; the widget toolbar's **Edit** is **Edit text**; the
   Page entrance card's field is **On this page**; Edit template points at Pages › Templates.
 - The header's Edit / Done and Publish are 32px, as the back arrow and the icon buttons.
+- List order: a source owns it. In Sources, each item row has a grip (drag, or Alt+↑/↓) and Save
+  writes the new order to `sources/<id>.json`; every List of that source follows it. A List's
+  Custom items keep their grip. An ⓘ on the Sources item count and on the List's Source says so.
 
 ## 0.8.0 (2026-11-15)
 

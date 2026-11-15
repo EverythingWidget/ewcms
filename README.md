@@ -1841,6 +1841,10 @@ the Content tab, a group whose texts come from a source (a person on their page)
 (`people.json`) as a button in its bar (beside each field only when a group mixes sources): it
 opens Sources on that item (with a property highlighted: `&property=` in the URL). What Sources
 shows comes from the source's schema (see "Sources & schemas").
+**The order is the source's**: each item row has a grip; drag it (or Alt+↑/↓ on it) to move the
+item, and Save writes the new order to `sources/<id>.json`. Every List of that source (All, From
+URL) shows its items in that order; there is no per-List order. A List's **Custom** items have
+the same grip in its Content tab.
 
 Fields come in rows: two `half` fields (a schema's or a widget type's `width: "half"`) share
 one, a lone half takes the row, and a panel under ~340px shows one column. The bar of the
