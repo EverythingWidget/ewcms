@@ -17,8 +17,9 @@ import { hrefOf } from '../../hrefs.js';
  */
 export const text = {
   type: 'text',
-  // added from the editor: Auto, as tall as what it holds
-  added: { size: 'auto' },
+  // added from the editor: Auto, as tall as what it holds; two thirds wide, so a heading or a
+  // paragraph doesn't wrap at every word (F47; a third, 40, before)
+  added: { size: 'auto', span: 80 },
   label: 'Text',
   icon: 'font',
   line: 'Titles, paragraphs, labels: any text',

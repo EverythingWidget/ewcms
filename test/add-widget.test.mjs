@@ -139,3 +139,11 @@ test('a Contact form or Button added on a Dutch site has Dutch texts (F62)', () 
   store.load({ 'site.json': { version: 1, name: 'X', lang: 'en' } });
   assert.equal(addWidget(store, FT, 0, 'form').title, 'Get in touch');
 });
+
+test('a new Text is two thirds wide, not a third (F47)', () => {
+  const store = createStore();
+  store.load({ [F]: { version: 1, kind: 'page', id: 'pg-t144', sections: [] } });
+  addSection(store, F);
+  assert.equal(addWidget(store, F, 0, 'text').layout.base.span, 80);
+  assert.equal(addWidget(store, F, 0, 'photo').layout.base.span, 40);
+});
