@@ -155,3 +155,10 @@ test('after a save the footer says Saved until the next edit (F60)', () => {
   const main = readFileSync(new URL('../src/editor/main.js', import.meta.url), 'utf8');
   assert.match(main, /ui\.saved = !store\.dirtyFiles\(\)\.length;/);
 });
+
+test('a scroll reveal fades with opacity, so waiting content stays in the page text (F42)', () => {
+  const t = read('client/anim/types.js');
+  assert.match(t, /const readable = \(spec, vars\) =>/);
+  assert.match(t, /return \{ \.\.\.rest, opacity: autoAlpha \};/);
+  assert.equal((t.match(/readable\(spec, spec\.(from|to)\)/g) || []).length, 4);
+});

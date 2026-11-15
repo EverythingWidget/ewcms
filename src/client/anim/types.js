@@ -55,6 +55,17 @@ const scrollVars = (spec, trigger) => {
   };
 };
 
+/**
+ * Content that waits for a scroll reveal fades with opacity, not autoAlpha: autoAlpha's
+ * visibility:hidden takes it out of the page's text until scrolled to (find in page, screen
+ * readers and page readers saw a page without its List or intro: F42). It looks the same.
+ */
+const readable = (spec, vars) => {
+  if (spec.trigger !== 'scroll' || !vars || !('autoAlpha' in vars)) return vars;
+  const { autoAlpha, ...rest } = vars;
+  return { ...rest, opacity: autoAlpha };
+};
+
 /** What a type moves: a widget's targets, else the element's `children`, else the element. */
 const targetsOf = (el, spec, ctx) =>
   ctx.targets || (spec.children ? [...el.querySelectorAll(spec.children)] : [el]);
@@ -66,9 +77,9 @@ function reveal(el, spec, ctx) {
   if (ctx.reduce) return gsap.set(targets, { ...spec.to, clearProps: 'clipPath,transform' });
   gsap.fromTo(
     targets,
-    spec.from,
+    readable(spec, spec.from),
     tweenVars(spec, {
-      ...spec.to,
+      ...readable(spec, spec.to),
       ...scrollVars(spec, ctx.trigger || (ctx.targets ? targets[0] : el)),
     }),
   );
@@ -129,8 +140,8 @@ function split(el, spec, ctx) {
       onSplit: (self) =>
         gsap.fromTo(
           self[spec.split],
-          spec.from,
-          tweenVars(spec, { ...spec.to, ...scrollVars(spec, ctx.trigger || t) }),
+          readable(spec, spec.from),
+          tweenVars(spec, { ...readable(spec, spec.to), ...scrollVars(spec, ctx.trigger || t) }),
         ),
     });
     ctx.onCleanup(() => s.revert());
