@@ -296,6 +296,27 @@ const below = (section, shown = {}) =>
     }),
   ) + 1;
 
+/** The first phone row below the section's widgets (`shown`: as the phone preview shows them,
+ *  { id: { row, rows } }; else those with a phone area, as stored); 0 when none. */
+const belowPhone = (section, shown = {}) => {
+  // as shown: every widget (a stacked one too); as stored: those with a phone area
+  const own = (section.widgets || []).filter(
+    (widget) => shown[widget.id] || hasPhoneArea(phoneOf(widget)),
+  );
+  if (!own.length) return 0;
+  return (
+    Math.max(
+      ...own.map((widget) => {
+        const s = shown[widget.id];
+        if (Number.isInteger(s?.row) && Number.isInteger(s?.rows) && s.rows > 0)
+          return s.row + s.rows - 1;
+        const p = placeOf(phoneOf(widget), MCOLS);
+        return p.row + (phoneOf(widget).rows ?? GUESS) - 1;
+      }),
+    ) + 1
+  );
+};
+
 /** A new widget of `type` in section `at` (addedWidget's size), below its other widgets (free: no link). */
 export function addWidget(store, file, at, type, { shown } = {}) {
   const list = listOf(store, file);
@@ -623,9 +644,9 @@ export function removeWidgets(store, file, at, ids) {
 
 /**
  * Copies of widgets `ids` of section `at` (new ids, free, below the others as `shown`, see
- * below): the copies' ids.
+ * below; a phone area below the phone's as `shownPhone`): the copies' ids.
  */
-export function duplicateWidgets(store, file, at, ids, { shown } = {}) {
+export function duplicateWidgets(store, file, at, ids, { shown, shownPhone } = {}) {
   const list = listOf(store, file);
   const section = list[at];
   const js = indexesOf(section, ids);
@@ -633,12 +654,19 @@ export function duplicateWidgets(store, file, at, ids, { shown } = {}) {
   const taken = idsOf(list);
   const row = below(section, shown);
   const top = Math.min(...js.map((j) => placeOf(baseOf(section.widgets[j])).row));
+  // their phone areas too: below the phone's placed widgets, not on top of the originals (G5)
+  const phoneRow = belowPhone(section, shownPhone);
+  const phoneRowOf = (widget) => placeOf(phoneOf(widget), MCOLS).row;
+  const placed = js.map((j) => section.widgets[j]).filter((w) => hasPhoneArea(phoneOf(w)));
+  const phoneTop = placed.length ? Math.min(...placed.map(phoneRowOf)) : 0;
   const copies = [];
   for (const j of js.reverse()) {
     const copy = copyOf(section.widgets[j], 'w', taken);
     // the group keeps its shape, below the section's widgets
     setBase(copy, { row: row + placeOf(baseOf(section.widgets[j])).row - top, link: undefined });
-    if (phoneOf(copy)) setPhone(copy, { link: undefined });
+    if (hasPhoneArea(phoneOf(copy)))
+      setPhone(copy, { row: phoneRow + phoneRowOf(copy) - phoneTop, link: undefined });
+    else if (phoneOf(copy)) setPhone(copy, { link: undefined });
     section.widgets.splice(j + 1, 0, copy);
     copies.unshift(copy.id);
   }

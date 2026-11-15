@@ -107,8 +107,11 @@
   function duplicateGroup() {
     if (!group) return;
     // below the section's widgets as the preview shows them (an auto text's real height, F23)
-    const shown = shownRows(bridge?.doc, sections[group.at]?.widgets?.map((w) => w?.id) || []);
-    const copies = run(duplicateWidgets, { shown });
+    const ids = sections[group.at]?.widgets?.map((w) => w?.id) || [];
+    const shown = shownRows(bridge?.doc, ids);
+    // and on the phone grid, for copies with a phone area of their own (G5)
+    const shownPhone = shownRows(bridge?.doc, ids, { phone: true });
+    const copies = run(duplicateWidgets, { shown, shownPhone });
     if (copies?.length) selectWidgets(copies);
   }
 </script>

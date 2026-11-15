@@ -156,3 +156,20 @@ test('a new List is all columns wide, its tiles a useful size (F81)', () => {
   assert.equal(list.layout.base.span, COLS);
   assert.equal(list.size, undefined); // Auto
 });
+
+test("a duplicate with a phone area of its own goes below the phone's widgets too, not on its original (G5)", () => {
+  const store = fresh();
+  addSection(store, F, 'photo');
+  const sec = () => store.current[F].sections[0];
+  const id = sec().widgets[0].id;
+  sec().widgets[0].layout.phone = { col: 1, span: 60, row: 12, rows: 20 };
+  const [copy] = duplicateWidgets(store, F, 0, [id]);
+  const phone = (w) => sec().widgets.find((x) => x.id === w).layout.phone;
+  assert.equal(phone(copy).row, 32);
+  assert.equal(phone(copy).span, 60);
+  // as the phone preview shows them
+  const [again] = duplicateWidgets(store, F, 0, [id], {
+    shownPhone: { [id]: { row: 12, rows: 20 }, [copy]: { row: 32, rows: 30 } },
+  });
+  assert.equal(phone(again).row, 62);
+});
