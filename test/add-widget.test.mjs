@@ -119,3 +119,23 @@ test('a duplicate goes below the section as shown, not over a tall auto text (F2
   const [again] = duplicateWidgets(store, F, 0, [id]);
   assert.ok(baseOf(sec().widgets.find((w) => w.id === again)).row > 12);
 });
+
+test('a Contact form or Button added on a Dutch site has Dutch texts (F62)', () => {
+  const store = createStore();
+  const page = {
+    version: 1,
+    kind: 'page',
+    id: 'pg-t048',
+    sections: [{ id: 's-aaaa', widgets: [] }],
+  };
+  store.load({ [FT]: page, 'site.json': { version: 1, name: 'X', lang: 'nl' } });
+  const form = addWidget(store, FT, 0, 'form');
+  assert.equal(form.title, 'Neem contact op');
+  assert.equal(form.submit, 'Verstuur');
+  assert.ok(form.fields.some((f) => f.name === 'email' && f.type === 'email'));
+  assert.equal(addWidget(store, FT, 0, 'button').label, 'Neem contact op');
+  assert.deepEqual(checkContent(FT, store.current[FT]), []);
+  // another language: the defaults
+  store.load({ 'site.json': { version: 1, name: 'X', lang: 'en' } });
+  assert.equal(addWidget(store, FT, 0, 'form').title, 'Get in touch');
+});

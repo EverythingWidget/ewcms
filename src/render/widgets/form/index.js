@@ -79,7 +79,33 @@ function input(f, id) {
 export const form = {
   type: 'form',
   // added from the editor: Auto, as tall as what it holds
-  added: { size: 'auto' },
+  added: {
+    size: 'auto',
+    // its texts in the site's language (site.json "lang"), over the defaults (F62)
+    lang: {
+      nl: {
+        title: 'Neem contact op',
+        body: '',
+        fields: [
+          { name: 'name', type: 'text', label: 'Naam', placeholder: 'Je naam', required: true },
+          {
+            name: 'email',
+            type: 'email',
+            label: 'E-mail',
+            placeholder: 'jij@voorbeeld.nl',
+            required: true,
+          },
+          { name: 'message', type: 'textarea', label: 'Bericht', placeholder: '', required: true },
+        ],
+        submit: 'Verstuur',
+        sending: 'Versturen…',
+        success: 'Dank je! Je bericht is verstuurd; je hoort snel van me.',
+        error: 'Sorry, je bericht kon niet worden verstuurd. Probeer het opnieuw, of mail me.',
+        required: 'Vul dit in.',
+        invalid: 'Vul een geldig e-mailadres in.',
+      },
+    },
+  },
   label: 'Contact form',
   icon: 'envelope',
   line: 'Name, email and a message',

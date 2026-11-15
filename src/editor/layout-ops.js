@@ -303,6 +303,11 @@ export function addWidget(store, file, at, type, { shown } = {}) {
   const first = !section.widgets?.length;
   const widget = addedWidget(type, idsOf(list), { col: 1, row: first ? 1 : below(section, shown) });
   const content = contentFromFiles(store.current);
+  // its texts in the site's language when its type has them ("nl": Dutch; F62)
+  const lang = String(content.site?.lang || '')
+    .toLowerCase()
+    .split('-')[0];
+  Object.assign(widget, structuredClone(WIDGET_TYPES[type]?.added?.lang?.[lang] || {}));
   // a new List starts on None (its empty state) until a source is picked; another widget's
   // default source only when the site has that list (not "people" on a site without one)
   if (type === 'list' || !Array.isArray(content.sources?.[widget.source?.from]))

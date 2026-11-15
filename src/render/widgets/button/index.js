@@ -13,7 +13,7 @@ import { hrefOf } from '../../hrefs.js';
 export const button = {
   type: 'button',
   // added from the editor: Auto, as tall as what it holds
-  added: { size: 'auto' },
+  added: { size: 'auto', lang: { nl: { label: 'Neem contact op' } } },
   label: 'Button',
   icon: 'arrow-right',
   line: 'A link to a page or a site',
