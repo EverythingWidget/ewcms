@@ -191,6 +191,29 @@ export function syncLayout(doc, store, { structure = false, root = pageView(doc)
 }
 
 /**
+ * The preview's scroll kept while sections are swapped (swapSections) and flowed again
+ * (remountView): call it before, and the returned function after. A section swapped in has its
+ * stored rows until the page flows it (src/client/modules/rows.js), and the element the browser
+ * anchored the scroll to (CSS scroll anchoring) is gone with the old one: the page jumped
+ * (to the top, or by a section's difference), so the next click hit another widget. Held here:
+ * the page's height (a min-height on <html>), no scroll anchoring, and the scroll put back.
+ */
+export function holdScroll(doc) {
+  const html = doc?.documentElement;
+  const win = doc?.defaultView;
+  if (!html || !win) return () => {};
+  const y = win.scrollY;
+  const was = { minHeight: html.style.minHeight, anchor: html.style.overflowAnchor };
+  html.style.overflowAnchor = 'none';
+  html.style.minHeight = `${html.scrollHeight}px`;
+  return () => {
+    html.style.minHeight = was.minHeight;
+    if (win.scrollY !== y) win.scrollTo(0, y);
+    html.style.overflowAnchor = was.anchor;
+  };
+}
+
+/**
  * Put freshly rendered sections ({ id: html }) into the preview, in the file's order (a page
  * that is no file, the template editor's preview: each in place of the one it renders again).
  */

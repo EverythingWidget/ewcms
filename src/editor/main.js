@@ -81,6 +81,7 @@ import {
 } from '../render/redirects.js';
 import { compile } from './lib/pointer.js';
 import {
+  holdScroll,
   markRendered,
   previewFile,
   setPartOpen,
@@ -749,8 +750,14 @@ function renderSections(stale, root = bridge.doc?.querySelector('[data-router-vi
     try {
       const { html } = await source.render({ path, file, data: store.current[file], ids: stale });
       if (!root.isConnected || bridge.path() !== path) return;
-      swapSections(bridge.doc, store, html, root);
-      bridge.api?.remountView();
+      // the preview stays where it is scrolled (layout-sync.js holdScroll)
+      const release = holdScroll(bridge.doc);
+      try {
+        swapSections(bridge.doc, store, html, root);
+        bridge.api?.remountView();
+      } finally {
+        release();
+      }
     } catch (err) {
       toast(`Preview: ${err.message}`, { kind: 'error' });
     }
