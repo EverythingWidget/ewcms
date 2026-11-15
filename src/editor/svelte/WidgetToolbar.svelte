@@ -287,12 +287,23 @@
   $effect(() => {
     if (!rich) open = null;
   });
-  // Ctrl+K while editing: the link box
+  // Ctrl+K while editing: the link box (the preview's, and here: footer text too, F115)
   $effect(() =>
     bridge.on('richLink', () => {
       if (rich?.selected || rich?.link) openLink();
     }),
   );
+  $effect(() => {
+    const onKey = (e) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.key.toLowerCase() !== 'k') return;
+      if (e.target.closest?.('input, textarea, select')) return;
+      if (!(rich?.selected || rich?.link)) return;
+      e.preventDefault();
+      openLink();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  });
 
   // the toolbar keeps the preview's focus (the caret stays): its buttons don't take it
   const keepFocus = (e) => {

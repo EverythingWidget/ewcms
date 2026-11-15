@@ -799,7 +799,7 @@ export function createBridge({
   const typing = (t) => !!t?.closest?.('input, textarea, select, [contenteditable]');
   // Ctrl+S / E / Z / Y, Esc, and [ ] (a widget's layer: by character, AltGr included) when not typing
   const isShortcut = (e) =>
-    ((e.metaKey || e.ctrlKey) && /^[sezy]$/i.test(e.key)) ||
+    ((e.metaKey || e.ctrlKey) && /^[sezyk]$/i.test(e.key)) ||
     // Enter or a character on a picked Text widget: its text edited (main.js selectionKey)
     ((e.key === 'Enter' || e.key.length === 1) &&
       !e.metaKey &&

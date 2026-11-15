@@ -89,3 +89,12 @@ test('G12: a locked Header or Footer opens only from its chip, not a stray click
     /:is\(\[data-header\], \[data-footer\]\):not\(\[data-ed-open\]\) \{ pointer-events: none; \}/,
   );
 });
+
+
+test('F115: Ctrl+K opens the link box from the editor window too, every rich-text field', () => {
+  const b = read('editor/bridge.js');
+  assert.match(b, /\^\[sezyk\]\$/);
+  const tb = read('editor/svelte/WidgetToolbar.svelte');
+  assert.match(tb, /window\.addEventListener\('keydown', onKey, true\)/);
+  assert.match(tb, /e\.key\.toLowerCase\(\) !== 'k'/);
+});
