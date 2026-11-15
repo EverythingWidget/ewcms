@@ -153,6 +153,8 @@ export function createStore() {
       const last = history.at(-1);
       if (last) last.sealed = true;
     },
+    /** The last undo step (an object kept as it is), for "undo this one" (undoToast). */
+    lastStep: () => history.at(-1) || null,
     canUndo: () => history.length > 0,
     canRedo: () => future.length > 0,
 

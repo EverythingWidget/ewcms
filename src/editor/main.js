@@ -49,7 +49,7 @@ import {
 } from './svelte/ui.svelte.js';
 import { WIDGET_TAB_KEY, widgetTabOf } from './widget-layout.js';
 import { popOrigin, pushOrigin } from './lib/template-origin.js';
-import { toast } from './svelte/toasts.svelte.js';
+import { toast, undoToast } from './svelte/toasts.svelte.js';
 import { createLive } from './svelte/live.svelte.js';
 import { connectMedia } from './svelte/media.svelte.js';
 import { createStore } from './store.js';
@@ -855,8 +855,10 @@ function selectionKey(e) {
     const found = widgetAt(ui.multi[0]);
     if (!found) return;
     e.preventDefault();
-    removeWidgets(store, found.file, found.at, ui.multi);
+    const n = ui.multi.length;
+    if (!removeWidgets(store, found.file, found.at, ui.multi)) return;
     selectWidgets([]);
+    undoToast(store, `${n} widgets deleted`);
   }
 }
 document.addEventListener('keydown', selectionKey);

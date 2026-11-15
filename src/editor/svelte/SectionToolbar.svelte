@@ -26,6 +26,7 @@
 -->
 <script>
   import Button from './Button.svelte';
+  import { undoToast } from './toasts.svelte.js';
   import { ui, selectWidgets, selectSection, openPopup } from './ui.svelte.js';
   import { locate } from '../locate.js';
   import { widgetType } from '../../render/widgets/index.js';
@@ -73,7 +74,9 @@
   // several sections selected: the ones still on the page
   const many = $derived(ui.selSections.filter((id) => sections.some((x) => x?.id === id)));
   function removeSelected(ids) {
-    if (removeSections(live.store, file, ids)) selectSection(null);
+    if (!removeSections(live.store, file, ids)) return;
+    selectSection(null);
+    undoToast(live.store, ids.length > 1 ? `${ids.length} sections deleted` : 'Section deleted');
   }
 
   // ---- widget mode: one widget selected, or several (all in one section)
@@ -89,8 +92,10 @@
   const allOff = $derived(!!group?.widgets.every((widget) => widget?.config?.enabled === false));
   const run = (fn, ...rest) => group && fn(live.store, file, group.at, group.ids, ...rest);
   function removeGroup() {
-    run(removeWidgets);
+    const what = one ? `${oneLabel} deleted` : `${group?.ids.length} widgets deleted`;
+    if (!run(removeWidgets)) return;
     selectWidgets([]);
+    undoToast(live.store, what);
   }
   const one = $derived(group?.ids.length === 1);
   const oneLabel = $derived(

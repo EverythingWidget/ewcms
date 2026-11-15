@@ -33,6 +33,18 @@
           <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
         </a>
       {/if}
+      {#if t.action}
+        <span class="toast__action"
+          ><Button
+            size="small"
+            label={t.action.label}
+            onclick={() => {
+              dismiss(t.id);
+              t.action.run();
+            }}
+          /></span
+        >
+      {/if}
       <Button size="small" icon="xmark" iconOnly label="Dismiss" onclick={() => dismiss(t.id)} />
     </p>
   {/each}
@@ -90,6 +102,12 @@
     code {
       color: var(--c-text);
     }
+  }
+
+  .toast__action {
+    display: inline-block;
+    margin-left: var(--space-2);
+    vertical-align: middle;
   }
 
   .toast > :global(.btn) {
