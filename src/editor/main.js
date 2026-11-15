@@ -165,6 +165,8 @@ const overlay = createOverlay({
     if (!found) return;
     if (phone) placePhone(store, found.file, found.at, found.j, pos, { flow, rows });
     else placeWidget(store, found.file, found.at, found.j, pos, undefined, { flow, rows, size });
+    // its height dragged: Auto height is off now; said, with Undo (F58)
+    if (size === 'rows') undoToast(store, `Auto height off: ${pos.rows} rows tall`);
   },
   // the preview tag's Auto toggle: Size Auto ↔ Rows (keeping the rows it shows), one undo step
   onsize(id, size, rows) {

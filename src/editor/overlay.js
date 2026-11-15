@@ -49,6 +49,9 @@
  * doesn't move under the pointer while the page reflows.
  */
 import { COLS, MAX_MIN_ROWS, MCOLS, makesLoop, sizeOf } from '../render/layout/index.js';
+
+/** An Auto widget's height dragged by fewer rows than this: a stray drag, nothing changes. */
+const STRAY_ROWS = 2;
 import { templateHit } from './lib/template-hit.js';
 import { resolveRows } from '../render/layout/flow.js';
 import {
@@ -999,7 +1002,15 @@ export function createOverlay({
   function end() {
     const { id, from, pos, phone, flow } = drag;
     const rows = drag.content || 0;
-    const moved = ['col', 'span', 'row', 'rows'].some((k) => pos[k] !== from[k]);
+    // an Auto widget's top or bottom edge moved by a row (a stray drag) changes nothing: its
+    // height is Auto until dragged at least STRAY_ROWS (F58)
+    const auto = !phone && sizeOf(widgetOf(id)) !== 'rows';
+    const stray =
+      auto &&
+      /[ns]/.test(drag.h) &&
+      Math.abs(pos.rows - from.rows) < STRAY_ROWS &&
+      ['col', 'span'].every((k) => pos[k] === from[k]);
+    const moved = !stray && ['col', 'span', 'row', 'rows'].some((k) => pos[k] !== from[k]);
     if (!moved) restore(); // a click changes nothing
     const tall = /[ns]/.test(drag.h) && pos.rows !== from.rows;
     const size = !phone && tall && sizeOf(widgetOf(id)) !== 'rows' ? 'rows' : undefined;
