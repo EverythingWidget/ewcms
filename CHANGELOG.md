@@ -20,6 +20,7 @@ say what a site must do before it bumps its pin.
 - Info tips (ⓘ) where you learn the editor: the grid and Size / Auto height on the widget
   toolbar, links on the Layout tab, Desktop and Phone, a List's Template and Source, Role, and
   When a value is missing. The single-item widget's Source tip explains From URL, Item and None.
+  The Desktop and Phone tip leads the footer row, before the Desktop | Phone toggle.
 - Names: Size **Auto** is **Auto height**; the widget toolbar's **Edit** is **Edit text**; the
   Page entrance card's field is **On this page**; Edit template points at Pages › Templates.
 - The header's Edit / Done and Publish are 32px, as the back arrow and the icon buttons.

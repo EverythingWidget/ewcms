@@ -263,9 +263,14 @@
       <SettingsPanel {live} {bridge} {actions} />
     {/if}
 
-    <!-- [ Desktop | Phone ] Sources Media ... (undo redo: edit only, at the end, so nothing
-         before them moves) -->
+    <!-- (i) [ Desktop | Phone ] Sources Media ... (the tip leads, before the toggle it explains;
+         undo redo: edit only, at the end, so nothing before them moves) -->
     <footer class="ed-foot">
+      <InfoHelp label="About Desktop and Phone"
+        ><b>Desktop</b> and <b>Phone</b> each have their own layout. Moving, resizing and linking widgets,
+        and a section's height, change only the view you are in; Auto height, Rows and Aspect are shared.
+        Phone is 60 columns wide; a widget not yet placed there stacks full width in page order.</InfoHelp
+      >
       <div class="seg ed-vp" role="radiogroup" aria-label="Preview size">
         {#each VIEWPORTS as [value, label, icon] (value)}
           <button
@@ -281,11 +286,6 @@
           </button>
         {/each}
       </div>
-      <InfoHelp label="About Desktop and Phone"
-        ><b>Desktop</b> and <b>Phone</b> each have their own layout. Moving, resizing and linking widgets,
-        and a section's height, change only the view you are in; Auto height, Rows and Aspect are shared.
-        Phone is 60 columns wide; a widget not yet placed there stacks full width in page order.</InfoHelp
-      >
       <Button
         icon="database"
         iconOnly
@@ -426,7 +426,7 @@
     min-width: 80px;
   }
 
-  // [ Desktop | Phone ] Sources Media ... undo redo: 16px edges, 8px apart
+  // (i) [ Desktop | Phone ] Sources Media ... undo redo: 16px edges, 8px apart
   .ed-foot {
     position: relative; // the update card's anchor
     border-top: 1px solid transparent; // borderless: no line, its 1px kept (no shift)
@@ -438,6 +438,11 @@
 
     > :global(*) {
       flex: none;
+    }
+
+    // the Desktop / Phone tip leads the row: on the 16px edge (no label to keep 4px from)
+    > :global(.ih) {
+      margin: 0;
     }
   }
 

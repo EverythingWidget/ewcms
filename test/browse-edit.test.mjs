@@ -90,7 +90,7 @@ test('header: status | Edit / Done (one 80px slot) | Publish; Done saves, then b
   assert.match(app, /mod && k === 's'/);
 });
 
-test('footer: Desktop | Phone (32px icon cells), Sources, Media; undo / redo only in edit, last', () => {
+test('footer: the Desktop / Phone tip, Desktop | Phone (32px icon cells), Sources, Media; undo / redo only in edit, last', () => {
   const app = src('svelte/App.svelte');
   const foot = app.slice(app.indexOf('<footer class="ed-foot">'), app.indexOf('</footer>'));
   assert.match(app, /\['desktop', 'Desktop', 'desktop'\]/);
@@ -98,6 +98,7 @@ test('footer: Desktop | Phone (32px icon cells), Sources, Media; undo / redo onl
   assert.match(foot, /class="seg ed-vp" role="radiogroup"/);
   assert.match(foot, /aria-checked=\{ui\.viewport === value\}/);
   const order = [
+    'label="About Desktop and Phone"',
     'ed-vp',
     'label="Sources"',
     'label="Media"',
