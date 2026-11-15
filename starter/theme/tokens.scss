@@ -106,6 +106,21 @@
   // the Label's tracking and case, the chrome's small labels (.label) too: none for as typed
   // --type-label-tracking: 0.08em;
   // --type-label-case: uppercase;
+
+  // the body text (src/client/styles/_base.scss body): what isn't a Text style inherits it
+  // --body-size: 14px;
+  // --body-lh: 1.55;
+  // --body-weight: 400;
+  // --body-tracking: normal;
+
+  // the header: the logo's weight and tracking; the nav items' (and the phone's Menu button's)
+  // size, weight, tracking and case (src/client/styles/_chrome.scss)
+  // --logo-weight: inherit;
+  // --logo-tracking: -0.01em;
+  // --nav-size: 12px;
+  // --nav-weight: inherit;
+  // --nav-tracking: 0.06em;
+  // --nav-case: uppercase;
   // --type-small-weight: inherit;
   // --type-small-tracking: inherit;
   // --type-small-color: var(--muted);

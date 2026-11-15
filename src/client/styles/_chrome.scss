@@ -28,7 +28,8 @@
     font-family: var(--f-display);
     font-size: 22px;
     line-height: 1;
-    letter-spacing: -0.01em;
+    font-weight: var(--logo-weight, inherit);
+    letter-spacing: var(--logo-tracking, -0.01em);
   }
 
   &__right {
@@ -85,9 +86,11 @@
     gap: 7px;
     height: 36px;
     padding: 0 16px; /* border-radius: 999px; */
-    font-size: 12px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    // the nav's type: tokens (--nav-size, -weight, -tracking, -case), the phone's Menu button too
+    font-size: var(--nav-size, 12px);
+    font-weight: var(--nav-weight, inherit);
+    letter-spacing: var(--nav-tracking, 0.06em);
+    text-transform: var(--nav-case, uppercase);
     color: var(--soft);
     transition:
       background 0.35s var(--ease-out),
@@ -236,9 +239,10 @@
   gap: 12px;
   height: 42px;
   padding: 0 8px 0 18px;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: var(--nav-size, 12px);
+  font-weight: var(--nav-weight, inherit);
+  letter-spacing: var(--nav-tracking, 0.06em);
+  text-transform: var(--nav-case, uppercase);
 
   &__icon {
     position: relative;

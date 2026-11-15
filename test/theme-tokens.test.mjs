@@ -87,3 +87,19 @@ test("F87: the Label (and the chrome's .label) read their tracking and case", ()
     assert.match(rule, /text-transform: var\(--type-label-case, uppercase\)/, f);
   }
 });
+
+const rule = (f, sel) => {
+  const t = fs.readFileSync(path.join(root, f), 'utf8');
+  return t.slice(t.indexOf(sel), t.indexOf('}', t.indexOf(sel)));
+};
+
+test('F89: the body text and the nav read their size, weight, tracking (and case, line height)', () => {
+  const body = rule('src/client/styles/_base.scss', '\nbody {');
+  for (const t of ['--body-size, 14px', '--body-lh, 1.55', '--body-weight, 400', '--body-tracking'])
+    assert.ok(body.includes(`var(${t}`), t);
+  for (const sel of ['&__item {', '.menu-toggle {']) {
+    const nav = rule('src/client/styles/_chrome.scss', sel);
+    for (const t of ['--nav-size, 12px', '--nav-weight', '--nav-tracking, 0.06em', '--nav-case'])
+      assert.ok(nav.includes(`var(${t}`), `${sel} ${t}`);
+  }
+});
