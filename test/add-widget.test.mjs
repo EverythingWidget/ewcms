@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createStore } from '../src/editor/store.js';
-import { addSection, addWidget } from '../src/editor/layout-ops.js';
+import { addSection, addWidget, duplicateWidgets } from '../src/editor/layout-ops.js';
 import { COLS, baseOf } from '../src/render/layout/index.js';
 import { checkContent } from '../src/render/validate.js';
 
@@ -73,8 +73,10 @@ test('added text, button, form, lists: Auto (no rows); photo and hero as before'
 test('Add widget waits for the preview to settle; Auto measured, not its stored --rs', () => {
   const panel = read('src/editor/svelte/ContentPanel.svelte');
   assert.match(panel, /await hooks\.settled\(\);\s*selectWidgets\(\[addWidget\(/);
-  assert.match(panel, /classList\.contains\('wgt--auto'\)\s*\?\s*0/);
-  assert.match(panel, /getBoundingClientRect\(\)\.height \/ cell/);
+  const shown = read('src/editor/shown-rows.js'); // (the Duplicate button's too)
+  assert.match(panel, /shownRowsIn\(/);
+  assert.match(shown, /classList\.contains\('wgt--auto'\)\s*\?\s*0/);
+  assert.match(shown, /getBoundingClientRect\(\)\.height \/ cell/);
   assert.match(read('src/editor/main.js'), /hooks\.settled = async/);
 });
 
@@ -102,4 +104,18 @@ test('the widget pop-up stays closed after the user closes it (F14, F30)', () =>
     'utf8',
   );
   assert.match(cp, /onclose=\{dismissWidgetPopup\}/);
+});
+
+test('a duplicate goes below the section as shown, not over a tall auto text (F23)', () => {
+  const store = fresh();
+  addSection(store, F, 'photo');
+  const sec = () => store.current[F].sections[0];
+  sec().widgets[0].size = undefined; // an auto text at row 12, 28 rows tall in the preview
+  sec().widgets[0].layout.base = { col: 1, span: 64, row: 12 };
+  const id = sec().widgets[0].id;
+  const [copy] = duplicateWidgets(store, F, 0, [id], { shown: { [id]: { row: 12, rows: 28 } } });
+  assert.equal(baseOf(sec().widgets.find((w) => w.id === copy)).row, 40);
+  // no preview: as stored (an auto widget counts as a guess)
+  const [again] = duplicateWidgets(store, F, 0, [id]);
+  assert.ok(baseOf(sec().widgets.find((w) => w.id === again)).row > 12);
 });

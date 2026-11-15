@@ -616,14 +616,17 @@ export function removeWidgets(store, file, at, ids) {
   return writeDropMain(store, file, list, ids);
 }
 
-/** Copies of widgets `ids` of section `at` (new ids, free, below the others): the copies' ids. */
-export function duplicateWidgets(store, file, at, ids) {
+/**
+ * Copies of widgets `ids` of section `at` (new ids, free, below the others as `shown`, see
+ * below): the copies' ids.
+ */
+export function duplicateWidgets(store, file, at, ids, { shown } = {}) {
   const list = listOf(store, file);
   const section = list[at];
   const js = indexesOf(section, ids);
   if (!js.length) return [];
   const taken = idsOf(list);
-  const row = below(section);
+  const row = below(section, shown);
   const top = Math.min(...js.map((j) => placeOf(baseOf(section.widgets[j])).row));
   const copies = [];
   for (const j of js.reverse()) {

@@ -68,7 +68,7 @@
   import { sourceIds as sourceIdsOf } from '../../render/files.js';
   import { WIDGET_TYPES } from '../../render/widgets/index.js';
   import { addWidget } from '../layout-ops.js';
-  import { PHONE_MQ } from '../../render/layout/grid.js';
+  import { shownRows as shownRowsIn } from '../shown-rows.js';
   import { swapView } from '../lib/slide.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
@@ -187,31 +187,11 @@
   );
   // where the section's widgets are in the preview now (rows.js's --fr / --frs: an auto
   // widget's real height, a follower's row), so the new one goes below all of them
-  const shownRows = (at) => {
-    const out = {};
-    const win = bridge?.doc?.defaultView;
-    if (!win || win.matchMedia(PHONE_MQ).matches) return out; // the phone grid's rows: not these
-    const ids = (live.store.current[file]?.sections?.[at]?.widgets || []).map(
-      (widget) => widget.id,
+  const shownRows = (at) =>
+    shownRowsIn(
+      bridge?.doc,
+      (live.store.current[file]?.sections?.[at]?.widgets || []).map((widget) => widget.id),
     );
-    for (const id of ids) {
-      const el = bridge?.doc?.querySelector(`[data-widget="${CSS.escape(id)}"]`);
-      if (!el || el.hidden) continue;
-      const st = win.getComputedStyle(el);
-      const row = parseInt(el.style.getPropertyValue('--fr') || st.getPropertyValue('--r'), 10);
-      // rows.js's rows, else (not flowed yet) its height in cells: an auto widget's stored --rs
-      // is a placeholder (1), never its content's
-      const cell = parseFloat(win.getComputedStyle(el.parentElement).getPropertyValue('--cell'));
-      const tall = cell > 0 ? Math.ceil(el.getBoundingClientRect().height / cell - 0.01) : 0;
-      const flowed = parseInt(el.style.getPropertyValue('--frs'), 10) || 0;
-      const stored = el.classList.contains('wgt--auto')
-        ? 0
-        : parseInt(st.getPropertyValue('--rs'), 10) || 0;
-      const rows = Math.max(flowed || stored, tall);
-      if (row > 0 && rows > 0) out[id] = { row, rows };
-    }
-    return out;
-  };
   // first the preview catches up with the last edits (typed text, a size: their renders and
   // rows), so the new widget goes below what they make, not a stale height
   async function addTo(at, type) {

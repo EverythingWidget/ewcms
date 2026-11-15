@@ -29,6 +29,7 @@
   import { undoToast } from './toasts.svelte.js';
   import { ui, selectWidgets, selectSection, openPopup } from './ui.svelte.js';
   import { locate } from '../locate.js';
+  import { shownRows } from '../shown-rows.js';
   import { widgetType } from '../../render/widgets/index.js';
   import {
     duplicateSection,
@@ -103,7 +104,10 @@
   );
   const them = $derived(one ? 'it' : 'them');
   function duplicateGroup() {
-    const copies = run(duplicateWidgets);
+    if (!group) return;
+    // below the section's widgets as the preview shows them (an auto text's real height, F23)
+    const shown = shownRows(bridge?.doc, sections[group.at]?.widgets?.map((w) => w?.id) || []);
+    const copies = run(duplicateWidgets, { shown });
     if (copies?.length) selectWidgets(copies);
   }
 </script>
