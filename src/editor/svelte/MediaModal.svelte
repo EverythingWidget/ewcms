@@ -150,7 +150,35 @@
       progress: null,
     }));
     pending = [...jobs, ...pending];
+    // this batch (and any still running): counted for one summary at the end (F72)
+    batch.total += jobs.length;
     run();
+  }
+
+  // the uploads since the window went quiet: one summary toast when the last one is done, not
+  // a toast per photo (F72); a single photo keeps its own
+  let batch = $state({ total: 0, done: 0, failed: 0, existing: 0 });
+  /** One upload ended: 'new', 'existing' (already there) or 'failed'. */
+  function counted(result) {
+    if (result === 'failed') batch.failed++;
+    else batch.done++;
+    if (result === 'existing') batch.existing++;
+    const { total, done, failed, existing } = batch;
+    if (done + failed < total) return;
+    batch = { total: 0, done: 0, failed: 0, existing: 0 };
+    if (total < 2) return;
+    const fresh = done - existing;
+    toast(`Uploaded ${done} of ${total} photos`, {
+      kind: failed ? 'error' : 'ok',
+      note: [
+        existing && `${existing} already there`,
+        failed && `${failed} failed`,
+        fresh && `${fresh} new`,
+      ]
+        .filter(Boolean)
+        .join(' · '),
+      timeout: failed ? 0 : 5000,
+    });
   }
 
   let running = 0;
@@ -184,13 +212,16 @@
       }
       select(res.key);
       const where = res.local ? 'media/' : 'R2';
-      toast(res.existing ? `${job.name} is already in ${where}` : `Uploaded ${job.name}`, {
-        kind: 'ok',
-        note: res.key,
-      });
+      if (batch.total < 2)
+        toast(res.existing ? `${job.name} is already in ${where}` : `Uploaded ${job.name}`, {
+          kind: 'ok',
+          note: res.key,
+        });
+      counted(res.existing ? 'existing' : 'new');
     } catch (err) {
       URL.revokeObjectURL(job.url);
       toast(`${job.name}: ${err.message}`, { kind: 'error', timeout: 0 });
+      counted('failed');
     } finally {
       pending = pending.filter((j) => j.id !== job.id);
     }
@@ -257,6 +288,11 @@
   }
 
   function use() {
+    // no alt text yet: say so where it is picked (live it was alt="" on every photo: F74)
+    if (!media.photos[key]?.alt)
+      toast('This photo has no alt text yet', {
+        note: 'Add it in Media (Alt text): what the photo shows, for screen readers',
+      });
     // rendered again: the photo's <img> (srcset, size) is the render's; a new widget has
     // none yet (it showed only after a reload: F75)
     live.store.set(pick.file, pick.ptr, key, { source: 'panel', structure: true });
@@ -375,7 +411,7 @@
           <img src={job.url} alt="" />
           <span class="mtile__state">
             {job.progress === null
-              ? 'Waiting…'
+              ? `Waiting… (${batch.done + batch.failed} of ${batch.total} done)`
               : job.progress < 1
                 ? `Uploading ${Math.round(job.progress * 100)}%`
                 : 'Resizing…'}
@@ -398,6 +434,8 @@
             onclick={() => (multi ? toggle(k) : select(k))}
           >
             <img src={thumbUrl(k)} alt="" loading="lazy" {@attach fallback(k)} />
+            <!-- its file name, over the photo's foot (the tile's size stays): F74 -->
+            <span class="mtile__name" aria-hidden="true">{photoInfo(k).name}</span>
             {#if multi && picked.includes(k)}
               <span class="mtile__num">{picked.indexOf(k) + 1}</span>
             {/if}
@@ -431,7 +469,11 @@
       <p class="hint small">{photoLine(key)} · {key}</p>
 
       <label class="tf" for="{uid}-alt">
-        <span class="tf__label">Alt text (what the photo shows, for screen readers)</span>
+        <span class="tf__label"
+          >Alt text (what the photo shows, for screen readers){#if !media.photos[key]?.alt}<b
+              class="media-alt-missing">None yet: please add one</b
+            >{/if}</span
+        >
         <textarea
           id="{uid}-alt"
           class="tf__input"
@@ -644,12 +686,12 @@
         0 0 0 4px color-mix(in srgb, var(--c-accent) 24%, transparent);
     }
 
-    // the field's photo now
+    // the field's photo now (top left: its name is at the foot)
     &.is-current::after {
       content: 'in use here';
       position: absolute;
       left: 4px;
-      bottom: 4px;
+      top: 4px;
       padding: 0 var(--space-2);
       border-radius: var(--radius-pill);
       font-size: var(--fs-xs);
@@ -657,6 +699,27 @@
       color: var(--c-on-light);
       background: var(--c-text);
     }
+  }
+
+  .media-alt-missing {
+    font-weight: 400;
+    color: var(--c-warning);
+  }
+
+  // the file name: one line over the photo's foot, cut with an ellipsis
+  .mtile__name {
+    position: absolute;
+    inset: auto 0 0;
+    padding: var(--space-4) var(--space-2) var(--space-1);
+    overflow: hidden;
+    font-size: var(--fs-xs);
+    line-height: 16px;
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--c-text);
+    background: linear-gradient(transparent, rgb(0 0 0 / 0.7));
+    pointer-events: none;
   }
 
   // the pick order (multi-pick): a solid accent badge, top left

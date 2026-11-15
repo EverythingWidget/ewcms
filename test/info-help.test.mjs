@@ -123,3 +123,11 @@ test('a disabled Rename says to type a new name first (F82)', () => {
     /title=\{value === name \? 'Type a new name in the field first' : undefined\}/,
   );
 });
+
+test('Media: one summary after several uploads, file names on tiles, a prompt for alt text (F72, F74)', () => {
+  const m = src('MediaModal.svelte');
+  assert.match(m, /toast\(`Uploaded \$\{done\} of \$\{total\} photos`/);
+  assert.match(m, /<span class="mtile__name" aria-hidden="true">\{photoInfo\(k\)\.name\}<\/span>/);
+  assert.match(m, /class="media-alt-missing">None yet: please add one/);
+  assert.match(m, /toast\('This photo has no alt text yet'/);
+});
