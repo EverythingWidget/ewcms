@@ -135,3 +135,28 @@ test('fit: the longest line fills the width (a hair under), whatever the height'
   // a fixed indent (a style's text-indent) is taken off its line's room
   assert.equal(fitFactor(1000, [400], [200]), 1.99);
 });
+
+test('paste: HTML whose white-space keeps newlines (a code editor, a text field) keeps the lines (F38)', () => {
+  const root = el('BODY', [
+    el(
+      'SPAN',
+      ['Uitstraling: Maat\nEen verzorgde look\n\nEen uitstraling'],
+      {},
+      {
+        whiteSpace: 'pre-wrap',
+      },
+    ),
+  ]);
+  assert.deepEqual(
+    htmlLines(root, () => true),
+    [
+      { style: 'paragraph', text: [{ t: 'Uitstraling: Maat\nEen verzorgde look' }] },
+      { style: 'paragraph', text: [{ t: 'Een uitstraling' }] },
+    ],
+  );
+  // without it, newlines are spaces (as HTML shows them)
+  assert.deepEqual(
+    htmlLines(el('BODY', [el('SPAN', ['a\nb'])]), () => true),
+    [{ style: 'paragraph', text: [{ t: 'a b' }] }],
+  );
+});

@@ -590,7 +590,15 @@ export function htmlLines(root, safe) {
       let t = String(n.textContent ?? n.nodeValue ?? '').replace(/\u00a0/g, ' ');
       if (!pre.on) t = t.replace(/\s+/g, ' ');
       if (!cur && !t.trim()) return; // whitespace between blocks
-      push(t, marks, link);
+      if (!pre.on) return void push(t, marks, link);
+      // kept newlines (<pre>, white-space: pre*, as a code editor or a text field copies):
+      // as plain text, a blank line a new line, a newline a break in it (F38)
+      t.replace(/\r\n?/g, '\n')
+        .split(/\n[ \t]*\n+/)
+        .forEach((part, i) => {
+          if (i) close();
+          push(i ? part.replace(/^\n+/, '') : part, marks, link);
+        });
       return;
     }
     if (n.nodeType !== 1 && n.nodeType !== 9 && n.nodeType !== 11) return;
@@ -621,7 +629,10 @@ export function htmlLines(root, safe) {
       const href = (n.getAttribute?.('href') || '').trim();
       nl = href && safe(href) ? { href } : null;
     }
-    if (tag === 'PRE') pre.on++;
+    // newlines kept: a <pre>, or an element whose white-space keeps them (pre, pre-wrap, …)
+    const keeps =
+      tag === 'PRE' || /^(pre|pre-wrap|pre-line|break-spaces)$/.test(style.whiteSpace || '');
+    if (keeps) pre.on++;
     if (tag === 'UL' || tag === 'OL') lists.push(tag === 'OL' ? 'number' : 'bullet');
     const was = item;
     if (tag === 'LI') item = lists.at(-1) || 'bullet';
@@ -629,7 +640,7 @@ export function htmlLines(root, safe) {
     if (block) close();
     if (tag === 'LI') item = was;
     if (tag === 'UL' || tag === 'OL') lists.pop();
-    if (tag === 'PRE') pre.on--;
+    if (keeps) pre.on--;
   };
   walk(root, [], null);
   close();
