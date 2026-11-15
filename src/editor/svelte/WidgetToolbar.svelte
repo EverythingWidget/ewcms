@@ -390,7 +390,8 @@
         aria-selected={s === style}
         class={['btb__opt', s === style && 'is-on']}
         onclick={() => pickStyle(s)}
-        ><span class="sty sty--{s}">{label}</span><span class="btb__hint">{tag.toUpperCase()}</span
+        ><span class="sty sty--{s}">{label}</span><span class="btb__hint"
+          >{s === 'label' ? 'CAPS · P' : tag.toUpperCase()}</span
         ><i class={['fa-solid fa-check btb__check', s !== style && 'is-off']} aria-hidden="true"
         ></i></button
       >
