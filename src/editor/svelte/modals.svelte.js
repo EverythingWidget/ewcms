@@ -9,7 +9,7 @@
  *   media          MediaModal.svelte       openMedia({ key, pick, multi })   (media.svelte.js)
  *   sources        SourcesModal.svelte     openSources({ file, index, edit })
  *   widgets        WidgetsModal.svelte     openWidgets({ at, types, onpick })
- *   addPage        AddPageModal.svelte     openAddPage({ level, linked })
+ *   addPage        AddPageModal.svelte     openAddPage({ level })
  *   itemModal      ItemModal.svelte        openItemModal({ mode, value, ..., onpick, onsource })
  *   previewModal   PreviewModal.svelte     openPreviewModal({ id, onpick })
  *

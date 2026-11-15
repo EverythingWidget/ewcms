@@ -35,7 +35,7 @@
   import { ui, setMode } from './ui.svelte.js';
   import { toast } from './toasts.svelte.js';
   import { listDrag, rowsOf } from './list-drag.svelte.js';
-  import { HEADER, isTemplate, pageFile, templateFile } from '../../render/files.js';
+  import { HEADER, pageFile, templateFile } from '../../render/files.js';
   import { parentId, pathOfId } from '../../render/routes.js';
   import {
     crumbsOf,
@@ -550,7 +550,7 @@
               label="Add page"
               title={L.full ? FULL : undefined}
               disabled={level === '404' || L.full}
-              onclick={() => openAddPage({ level, linked: !isTemplate(level) })}
+              onclick={() => openAddPage({ level })}
             />
           </span>
         {/snippet}
@@ -577,7 +577,7 @@
           label="Add page"
           title={L.full ? FULL : undefined}
           disabled={level === '404' || L.full}
-          onclick={() => openAddPage({ level, linked: !isTemplate(level) })}
+          onclick={() => openAddPage({ level })}
         />
       </span>
     </div>

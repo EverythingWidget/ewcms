@@ -3,7 +3,7 @@
   once in App.svelte): a page in the folder shown, or its [param] page (one page per item
   of a source, at /folder/[param]/; a [param] folder holds only another one, so in one only that
   kind can be added). Title, the name in its URL (from the title, unless typed),
-  In the menu (on by default). Adding goes to disk at
+  In the menu (off at first, then as last picked; F61, F37). Adding goes to disk at
   once (actions.pagesOp); In the menu adds its menu item (an undo step, saved with Save).
 -->
 <script>
@@ -39,7 +39,9 @@
   let name = $state('');
   let source = $state('');
   let param = $state('');
-  let linked = $state(true);
+  let linked = $state(false);
+  // In the menu as last picked (this session): it no longer resets to on (F37)
+  let lastLinked = false;
   let busy = $state(false);
 
   // the store's files (live.svelte.js: one shared copy per change)
@@ -82,6 +84,12 @@
   );
   // where the item pages go: "/people/[person]/[year]/"
   const templatePath = $derived(`${shownPath(level || 'home')}${paramFolder(paramName)}/`);
+  // why Add can't yet (its tooltip, F43): what is missing
+  const why = $derived(
+    kind === 'page'
+      ? noPage || (!title.trim() ? 'Type a title first' : !slug ? 'Type a name for its URL' : error)
+      : noTemplate || (!source ? 'Add a list in Sources first' : paramError),
+  );
   const ready = $derived(
     kind === 'page'
       ? !!slug && !error && !!title.trim() && !noPage
@@ -90,9 +98,9 @@
 
   /** Shown (openAddPage): for its folder ('' = the top), In the menu as it was given. */
   async function onopen() {
-    const { level: at = '', linked: menu = true } = argsOf('addPage') || {};
+    const { level: at = '' } = argsOf('addPage') || {};
     level = at;
-    linked = menu;
+    linked = lastLinked;
     kind = isTemplate(at) ? 'template' : 'page';
     title = name = param = '';
     source = sources[0] || '';
@@ -104,6 +112,7 @@
     e.preventDefault();
     if (!ready || busy) return;
     busy = true;
+    lastLinked = linked;
     const res = await actions.pagesOp(
       kind === 'page'
         ? { op: 'add', parent: level, name: slug, title: title.trim() }
@@ -204,7 +213,13 @@
 
     <footer class="modal__actions">
       <Button onclick={() => closeModal('addPage')}>Cancel</Button>
-      <Button type="submit" variant="primary" icon="plus" disabled={!ready || busy}>Add</Button>
+      <Button
+        type="submit"
+        variant="primary"
+        icon="plus"
+        disabled={!ready || busy}
+        title={ready ? 'Add the page' : why}>Add</Button
+      >
     </footer>
   </form>
 </dialog>

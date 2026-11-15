@@ -229,3 +229,16 @@ test('Esc in the editor closes the modal in front only', () => {
   assert.match(app, /if \(topModal\(\)\) \{\s*e\.preventDefault\(\);\s*closeModal\(\);/);
   assert.doesNotMatch(app, /querySelector\('dialog\[open\]'\)/);
 });
+
+test('Add page: In the menu starts off, keeps the last pick; Add says what is missing (F37, F43, F61)', () => {
+  const src = readFileSync(
+    new URL('../src/editor/svelte/AddPageModal.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.match(src, /let linked = \$state\(false\);/);
+  assert.match(src, /linked = lastLinked;/);
+  assert.match(src, /lastLinked = linked;/);
+  // Add needs a title and a valid name, never In the menu
+  assert.doesNotMatch(src.match(/const ready = \$derived\([\s\S]*?\);/)[0], /linked/);
+  assert.match(src, /title=\{ready \? 'Add the page' : why\}/);
+});
