@@ -22,9 +22,9 @@
  *   placement optional { axes, box, fill, place, media }: its content box's Fit / Fill and
  *             place in the widget (../layout/place.js)
  *   fitWidth  optional true: its text lines can each fill its width (a line's "fit", the
- *             toolbar's Fit width; ../text.js)
+ *             toolbar's Full-width line; ../text.js)
  *   scaleToFit  optional true: its whole text can scale down to fit it (the widget's "scale",
- *             Scale to fit; ../layout/type.js)
+ *             Shrink to fit; ../layout/type.js)
  *   size      optional false: no Size (Auto / Rows / Aspect); every built-in has it
  *   settings  its content settings for the editor (each one field there; an item's properties
  *             can fill them, ../layout/bindings.js): [{ key, label, type?, width?, list?, item? }]

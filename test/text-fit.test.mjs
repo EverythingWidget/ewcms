@@ -5,7 +5,7 @@ import { scaleFactor } from '../src/client/modules/fit.js';
 
 const L = (t, style = 'title', more = {}) => ({ style, ...more, text: [{ t }] });
 
-test('Fit width: a line\'s "fit" (any style), toggled on the caret\'s line', () => {
+test('Full-width line: a line\'s "fit" (any style), toggled on the caret\'s line', () => {
   const body = [L('Noor'), L('Amsterdam', 'paragraph')];
   const on = toggleFit(body, 1);
   assert.equal(on[1].fit, true);
@@ -29,7 +29,7 @@ test('Fit width: a line\'s "fit" (any style), toggled on the caret\'s line', () 
   assert.equal(e[1].fit, undefined);
 });
 
-test('Scale to fit: shrink only, by width and (a fixed height) height', () => {
+test('Shrink to fit: shrink only, by width and (a fixed height) height', () => {
   assert.equal(scaleFactor(400, 300, 100), 1); // fits: its normal size
   assert.equal(scaleFactor(400, 800, 100), 0.497); // twice too wide: half, a hair under
   assert.equal(scaleFactor(400, 400, 400, 200), 0.497); // twice too tall in a fixed height

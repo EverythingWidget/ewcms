@@ -3,9 +3,9 @@
  * src/client/styles/_text.scss). Two things change that, both worked out live in the page
  * (src/client/modules/fit.js):
  *
- *   a line's "fit": true    Fit width (src/render/text.js): that line alone fills the widget's
+ *   a line's "fit": true    Full-width line (src/render/text.js): that line alone fills the widget's
  *                           WIDTH, on one line (its own --tkf); the other lines keep theirs
- *   the widget's "scale"    Scale to fit (the popup's switch, off by default): the whole text
+ *   the widget's "scale"    Shrink to fit (the popup's switch, off by default): the whole text
  *                           at its styles' normal sizes, scaled down as one,
  *                           until it fits the widget's width and (a fixed height) its height
  *                           (the widget's --tks, never above 1); a fit line still fills the width
@@ -21,14 +21,14 @@
  * Each left out is the theme's. They become CSS variables on the page's :root
  * (--type-<style>-min, -max, -lh; typeVars), so they change the site, never the editor.
  *
- * Fit width starts from TEXT_STYLES' size in cells (--ts-<style>, _tokens.scss), only a
+ * Full-width line starts from TEXT_STYLES' size in cells (--ts-<style>, _tokens.scss), only a
  * starting point: the line's own factor (--tkf) scales it to the widget's width.
  * A fit line's size is in cells × its own factor (_layout.scss .ts[data-fit]).
  */
 import { isObject } from '../is.js';
 import { WIDGET_TYPES } from '../widgets/index.js';
 
-/** The text styles and a Fit width line's starting sizes (in cells; at 1440px a cell is ~11.3px). */
+/** The text styles and a full-width line's starting sizes (in cells; at 1440px a cell is ~11.3px). */
 export const TEXT_STYLES = {
   title: { label: 'Title', size: 19, line: 0.82, tracking: -0.02, min: 40 },
   heading: { label: 'Heading', size: 3, line: 1.1, tracking: -0.01, min: 20 },
@@ -56,15 +56,15 @@ export const TYPE_KEYS = [
   ['line', 'lh', ''],
 ];
 
-/** Can a type's text scale to fit (its definition's `scaleToFit`: Scale to fit)? */
+/** Can a type's text scale to fit (its definition's `scaleToFit`: Shrink to fit)? */
 export const hasScaleToFit = (type) =>
   (typeof type === 'string' ? WIDGET_TYPES[type] : type)?.scaleToFit === true;
 
-/** Can a type's lines each fill its width (its definition's `fitWidth`: Fit width)? */
+/** Can a type's lines each fill its width (its definition's `fitWidth`: Full-width line)? */
 export const hasFitWidth = (type) =>
   (typeof type === 'string' ? WIDGET_TYPES[type] : type)?.fitWidth === true;
 
-/** Does a widget's text scale down to fit it (Scale to fit)? */
+/** Does a widget's text scale down to fit it (Shrink to fit)? */
 export const scaledToFit = (widget) => hasScaleToFit(widget?.type) && widget?.scale === true;
 
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
@@ -139,7 +139,7 @@ export function checkScale(widget) {
   const out = [];
   if (widget?.fit !== undefined)
     out.push(
-      '"fit" is a line\'s now (a line\'s "fit": true for Fit width); for Scale to fit on the whole widget write "scale": true',
+      '"fit" is a line\'s now (a line\'s "fit": true for Full-width line); for Shrink to fit on the whole widget write "scale": true',
     );
   if (widget?.scale === undefined) return out;
   if (!hasScaleToFit(widget.type)) {

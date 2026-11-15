@@ -486,7 +486,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
 - **A page** has no grid setting: the page grid is always 120 columns (a `grid` key is
   refused).
 - **A widget:** its `type` and content (below), `layout` (below), `layer` (a whole number:
-  its layer when widgets overlap, higher in front; the **Layer** buttons; `z` is refused), `size`, `scale` (Text widgets: Scale to fit, below) and an optional `motion`
+  its layer when widgets overlap, higher in front; the **Layer** buttons; `z` is refused), `size`, `scale` (Text widgets: Shrink to fit, below) and an optional `motion`
   (`{ "animation": "fade-scrub", "start": "top 70%" }`: an animation from the library plus its own
   timing, see Animations).
 - **Size** (`size`): `auto` (**default**: as tall as its content), `aspect` (its width, from its
@@ -538,14 +538,14 @@ every section is a grid of **widgets** (`src/render/layout/`):
   `src/client/modules/fit.js` (on load, when the widget's width changes, a fixed-height
   widget's height too, and on every edit, at most once a frame; the height it gives an Auto
   widget is not a change, so no loop):
-  - **Fit width**, a line's `"fit": true` (any style; `[data-fit]` on the page): that line
+  - **Full-width line**, a line's `"fit": true` (any style; `[data-fit]` on the page): that line
     alone fills the widget's **width**, on one line (its own `--tkf` over its style's size in
     cells; never by its height). The other lines keep their style's size.
-  - **Scale to fit**, the widget's `"scale": true` (off by default; `.wgt--scale`): the whole
+  - **Shrink to fit**, the widget's `"scale": true` (off by default; `.wgt--scale`): the whole
     text is laid out at its normal sizes at the widget's width, then scaled down as one
     (`--tks`, the text body's zoom, at its laid-out width `--tkw`), until it fits the
     widget's width (a word wider than it no longer breaks) and, with a fixed height (Rows,
-    Aspect), its height. Same line breaks and proportions; shrink only. A Fit width line still
+    Aspect), its height. Same line breaks and proportions; shrink only. A full-width line still
     fills the width.
 
   A fit line starts from its style's size in cells of the 120-column grid (`--ts-<style>`,
@@ -566,17 +566,17 @@ every section is a grid of **widgets** (`src/render/layout/`):
   Text widget per style, each following the last; the button reads **Close preview** and goes
   back to the page you were on, as does the Pages tab. The old cell-based `typography` is
   refused (`"typography" is gone`).
-  In the editor: the toolbar's **Fit width** icon (edit mode, after Style: the caret's line)
-  and the **Scale to fit** switch in the widget's pop-up (Layout tab, after Placement; also a
+  In the editor: the toolbar's **Full-width line** icon (edit mode, after Style: the caret's line)
+  and the **Shrink to fit** switch in the widget's pop-up (Layout tab, after Placement; also a
   toolbar shortcut after Auto height). A type opts in through its definition: `fitWidth: true`,
   `scaleToFit: true` (the Text widget; `src/render/widgets/index.js`).
 
 - **The widget pop-up** has two tabs, the same for every widget: **Content** (source,
   settings, texts) and **Layout** (what its type's definition supports, in order: Size Auto /
-  Rows / Aspect, Layer, what it follows, the **Content box**, Placement, Scale to fit;
+  Rows / Aspect, Layer, what it follows, the **Content box**, Placement, Shrink to fit;
   `src/editor/widget-layout.js` `layoutParts`). The last tab picked is kept for every widget
   (browser-side, with the page tabs). The Content box is **Contain / Cover** on a photo and
-  **Fit / Fill** on a button (saved as `box`: `fit` / `fill` either way). Auto height and Scale
+  **Fit / Fill** on a button (saved as `box`: `fit` / `fill` either way). Auto height and Shrink
   to fit have a toolbar shortcut that writes the same key through the same code.
 
 - **Phones** (below 760px): every section is a **60-column** square grid (`--cell` = width /
@@ -947,7 +947,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
       source's properties.
     - **Layout** (`WidgetLayout.svelte`, as a page widget's): its height (**Auto height | Rows |
       Aspect**) and **Layer**, what it **Follows** (its link and gap), its content box,
-      placement and Scale to fit; an inner List's **Arrangement**, **Columns** and **Space
+      placement and Shrink to fit; an inner List's **Arrangement**, **Columns** and **Space
       between items**. In the phone preview it shows the phone's.
     - **The Grid Engine**: the template's widgets are placed and sized on the preview grid
       exactly as a page's (`overlay.js`): drag one to move it, drag its handles to resize it,

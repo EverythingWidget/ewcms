@@ -25,7 +25,7 @@ $z-skip: 200; // .skip-link: always on top when focused
 
   --pad: clamp(16px, 2.6vw, 40px);
   --gap: clamp(12px, 1.4vw, 22px);
-  // a Fit width line's starting sizes, in cells (src/render/layout/type.js TEXT_STYLES): its
+  // a full-width line's starting sizes, in cells (src/render/layout/type.js TEXT_STYLES): its
   // own --tkf scales them to the widget's width
   --ts-title: 19;
   --ts-title-lh: 0.82;

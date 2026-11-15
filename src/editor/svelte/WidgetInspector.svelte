@@ -2,7 +2,7 @@
   One widget of the page or of an item template (ui.widget), its two tabs (every widget has both; the last one picked
   is kept for every widget, browser-side: ui.sections["widgettab"], ../widget-layout.js):
     Layout   what its type supports: size, layer, what it follows, its content box,
-             placement, Scale to fit (WidgetLayout.svelte; where it sits is dragged in the
+             placement, Shrink to fit (WidgetLayout.svelte; where it sits is dragged in the
              preview, overlay.js)
     Content  its source (WidgetSource.svelte: Item / All, From URL or None, and on a [param] page
              whether it is the main widget), then its settings and texts (GroupFields.svelte),
@@ -149,7 +149,7 @@
         {#if widget.type === 'text'}
           <p class="hint" data-text-hint>
             Type the text in the preview: double-click it (or Edit text in its toolbar). Styles,
-            bold, links and Fit width are in that toolbar.
+            bold, links and Full-width line are in that toolbar.
           </p>
         {/if}
         <!-- its source first (a widget whose type shows items), then its settings and fields -->

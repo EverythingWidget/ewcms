@@ -3,7 +3,7 @@
   the stage (App.svelte) at the widget's top left edge, above it (below it when there is no
   room, inside it when it is taller than the frame), never moving the page. Two parts:
 
-    text      (a Text widget) style ▾ (the line the caret is in: the whole line), Fit width
+    text      (a Text widget) style ▾ (the line the caret is in: the whole line), Full-width line
               (that line fills the widget's width, a line's "fit": text.js), B, I, link
               (the selected text only: greyed with nothing selected or when not editing),
               + Property (a property of the item the widget shows, or a source: how many, at the
@@ -17,7 +17,7 @@
   Its layout (size, layer) is in the pop-up's Layout tab (WidgetLayout.svelte); the
   keys [ and ] still move it down / up a layer (App.svelte). A widget without text has none
   (nothing shows). A preview too narrow for the whole bar puts the text marks into a "…" menu (the widget's
-  own width doesn't matter). Its end: the layout part, the Auto height toggle (and Scale to fit, a type with
+  own width doesn't matter). Its end: the layout part, the Auto height toggle (and Shrink to fit, a type with
   `scaleToFit`: shortcuts to the pop-up's Layout tab, ../widget-layout.js) and its size and place
   (`64×22 · 4:1`, `64×auto`), on every widget (one without text: that part alone). The edit itself is bridge.js's
   (rich.js).
@@ -78,12 +78,12 @@
   const rich = $derived(ui.rich && ui.rich.widget === where?.id ? ui.rich : null);
   const editing = $derived(!!rich);
   const style = $derived(rich ? rich.style : widget?.body?.[0]?.style || 'paragraph');
-  // Fit width: the caret's line fills the widget's width (a line's "fit", text.js), or its
+  // Full-width line: the caret's line fills the widget's width (a line's "fit", text.js), or its
   // style's size; a type whose definition has `fitWidth`. Shown while its text is edited (a
   // caret line); its state is that line's in the content, as the click changes it
   const canFit = $derived(hasFitWidth(widget?.type));
   const isFit = $derived(!!rich && widget?.body?.[rich.line]?.fit === true);
-  // Scale to fit's shortcut (its home: the pop-up's Layout tab), a type with `scaleToFit`
+  // Shrink to fit's shortcut (its home: the pop-up's Layout tab), a type with `scaleToFit`
   const canScaleFit = $derived(hasScaleToFit(widget?.type));
   const isScaled = $derived(scaledToFit(widget));
   const toggleScale = () =>
@@ -142,7 +142,7 @@
   let barW = $state(0);
   // the whole bar, about: style + Fit + lists + B I link + Property, then the layout part
   const TEXT_W = 440;
-  // (Scale to fit's shortcut: one more icon)
+  // (Shrink to fit's shortcut: one more icon)
   const LAYOUT_W = $derived(13 + 32 + 4 + 136 + (canScaleFit ? 36 : 0));
   // the marks go into "…" only when the preview (the frame, 8px each side) can't hold the bar
   const level = $derived.by(() => {
@@ -491,11 +491,11 @@
           <button
             type="button"
             class={['btb__btn btb__icon btb__fit', isFit && 'is-on']}
-            aria-label="Fit width"
+            aria-label="Full-width line"
             aria-pressed={isFit}
             title={isFit
-              ? "Fit width on: this line fills the widget's width. Click: its style's size"
-              : "Fit width: this line fills the widget's width (off: its style's size)"}
+              ? "Full-width line on: this line's text is sized to fill the widget's width. Click: its style's size"
+              : "Full-width line: size this line's text to fill the widget's width (the whole text: Shrink to fit)"}
             onclick={fitLine}
             ><i class="fa-solid fa-arrows-left-right-to-line" aria-hidden="true"></i></button
           >
@@ -533,9 +533,9 @@
         <button
           type="button"
           class={['btb__btn btb__icon btb__scale', isScaled && 'is-on']}
-          aria-label="Scale to fit"
+          aria-label="Shrink to fit"
           aria-pressed={isScaled}
-          title={`Scale to fit. ${scaleHint(isScaled)} (Click: ${isScaled ? 'off' : 'on'})`}
+          title={`Shrink to fit. ${scaleHint(isScaled)} (Click: ${isScaled ? 'off' : 'on'})`}
           onclick={toggleScale}><i class="fa-solid fa-compress" aria-hidden="true"></i></button
         >
       {/if}
@@ -705,7 +705,7 @@
     }
   }
 
-  // Fit width on: a light fill, dark icon (the line it is on fills the widget)
+  // Full-width line on: a light fill, dark icon (the line it is on fills the widget)
   .btb__btn.btb__fit.is-on {
     background: var(--c-text);
     color: var(--c-on-light);

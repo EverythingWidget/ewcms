@@ -25,7 +25,7 @@ export const text = {
   sketch: 'text',
   // always full width: no Fit / Fill, only where it sits top to bottom
   placement: { axes: 'v', box: false, place: 'top' },
-  // its lines can each fill its width (Fit width), its whole text scale down (Scale to fit)
+  // its lines can each fill its width (Full-width line), its whole text scale down (Shrink to fit)
   fitWidth: true,
   scaleToFit: true,
   settings: [{ key: 'body', label: 'Text', type: 'rich' }],

@@ -2,9 +2,9 @@
  * The Text widget (src/render/widgets/text/index.js) and its lines' styles (.ts--<style>,
  * src/render/text.js). Their sizes are the type scale (--type-<style>-min, -max, -lh: defaults in
  * _tokens.scss, site.json "type" in the page's head): between min and max with the window, the
- * same at any widget width; a fit line (Fit width)
- * and Scale to fit: _layout.scss ([data-fit], .wgt--scale). A word longer than the line still
- * breaks rather than spill out of the widget (not under Scale to fit: it scales down instead).
+ * same at any widget width; a fit line (Full-width line)
+ * and Shrink to fit: _layout.scss ([data-fit], .wgt--scale). A word longer than the line still
+ * breaks rather than spill out of the widget (not under Shrink to fit: it scales down instead).
  */
 .text {
   min-width: 0;

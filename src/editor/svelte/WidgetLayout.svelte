@@ -4,9 +4,9 @@
   List's Arrangement, Columns, Gap: choices, as the Content tab's); one row of its size (Auto | Rows | Aspect,
   Aspect showing its ratio and opening the ratios under the group; it stays open after a pick)
   and its layer (forward / backward) at the end; what it follows; its content box (a photo's
-  Contain | Cover, else Fit | Fill); its placement; Scale to fit (type.js "scale": its whole
-  text scales down to fit). Auto height and Scale to fit have a toolbar shortcut too
-  (WidgetToolbar.svelte): both write through ../widget-layout.js. A line's Fit width: the
+  Contain | Cover, else Fit | Fill); its placement; Shrink to fit (type.js "scale": its whole
+  text scales down to fit). Auto height and Shrink to fit have a toolbar shortcut too
+  (WidgetToolbar.svelte): both write through ../widget-layout.js. A line's Full-width line (the toolbar's): the
   toolbar.
 -->
 <script>
@@ -104,7 +104,7 @@
             },
           )
         : live.store.set(file, optionPtr(c), v, { source: 'panel', structure: true });
-  // Scale to fit (off by default): its hint has two lines' room, so nothing moves when it changes
+  // Shrink to fit (off by default): its hint has two lines' room, so nothing moves when it changes
   const isScaled = $derived(scaledToFit(widget));
 
   let ratioText = $state('');
@@ -304,7 +304,7 @@
     {:else if part === 'scale'}
       <label class="tf wl__scale">
         <span class="tf__label">
-          <span class="wl__scale-label">Scale to fit</span>
+          <span class="wl__scale-label">Shrink to fit</span>
           <input
             type="checkbox"
             class="switch"
@@ -372,7 +372,7 @@
     @include row(var(--space-2));
   }
 
-  // Scale to fit: the whole row, its name as a field's value (as Main widget), the switch at the end
+  // Shrink to fit: the whole row, its name as a field's value (as Main widget), the switch at the end
   .wl__scale {
     grid-column: 1 / -1;
   }

@@ -235,7 +235,7 @@ export function sectionAnchor(s) {
 
 /**
  * The classes of a widget's element: its type, size mode (wgt--aspect, wgt--auto; fixed rows:
- * neither), Scale to fit (wgt--scale), hidden on phones.
+ * neither), Shrink to fit (wgt--scale), hidden on phones.
  */
 export function widgetClass(widget) {
   const size = sizeOf(widget);

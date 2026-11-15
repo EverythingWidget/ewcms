@@ -22,7 +22,7 @@
  * of one run of the same list are one <ul> / <ol> of <li>s (each with its style's class); while
  * edited every line stays one element (rich.js maps the caret by them), [data-list] on it, its
  * marker drawn by the CSS (src/client/styles/_text.scss) either way.
- * A line can fill the widget's width: "fit": true (the toolbar's Fit width), with any style; on
+ * A line can fill the widget's width: "fit": true (the toolbar's Full-width line), with any style; on
  * the page [data-fit], sized by src/client/modules/fit.js (its own --tkf). The other lines keep
  * their style's size.
  * One line is one element (h1 / h2 / h3 / p) with its style's class (.ts--<style>). Every
@@ -54,7 +54,7 @@ export const MARKS = ['b', 'i'];
 /** A line's list kinds: a bulleted or a numbered list item. */
 export const LISTS = ['bullet', 'number'];
 const listOf = (line) => (LISTS.includes(line?.list) ? line.list : undefined);
-/** Is a line fitted to the widget's width ("fit": true, the toolbar's Fit width)? */
+/** Is a line fitted to the widget's width ("fit": true, the toolbar's Full-width line)? */
 export const fitOf = (line) => line?.fit === true;
 /** A line's own keys (style, list, fit) with new text. */
 const withText = (line, text) => ({
@@ -330,7 +330,7 @@ export function setStyle(body, i, style) {
   return out;
 }
 
-/** Line `i` fitted to the widget's width, or its style's size again (a toggle: Fit width). */
+/** Line `i` fitted to the widget's width, or its style's size again (a toggle: Full-width line). */
 export function toggleFit(body, i) {
   const out = clone(body.length ? body : [{ style: 'paragraph', text: [] }]);
   if (!out[i]) return out;

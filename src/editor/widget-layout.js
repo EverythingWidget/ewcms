@@ -46,7 +46,7 @@ export const MISSING_OPTIONS = [
  * What a type's Layout tab shows, in order: 'size' (Auto / Rows / Aspect, unless its
  * definition says `size: false`), 'layer', 'link' (what it follows), then 'options' (its
  * widget settings with `tab: 'layout'`, a List's arrangement, columns and gap), 'box',
- * 'placement', 'scale' (Scale to fit): from its definition. (When a value is missing lives
+ * 'placement', 'scale' (Shrink to fit): from its definition. (When a value is missing lives
  * on the Content tab.)
  */
 export function layoutParts(type) {
@@ -103,11 +103,11 @@ export function sizePatch(next, { rows, ratio }) {
 /** Auto height on or off (the toolbar's shortcut): Auto, or Rows at the rows it shows now. */
 export const autoPatch = (on, rows) => sizePatch(on ? 'auto' : 'rows', { rows });
 
-/** Scale to fit on or off. */
+/** Shrink to fit on or off. */
 export const scalePatch = (on) => ({ scale: on ? true : undefined });
 
-/** Scale to fit's hint (two lines' room in the tab). */
+/** Shrink to fit's hint (two lines' room in the tab). */
 export const scaleHint = (on) =>
   on
-    ? 'On: the whole text scales down to fit the widget.'
+    ? 'On: the whole text shrinks to fit the widget.'
     : 'Off: each style keeps its own size at any width.';

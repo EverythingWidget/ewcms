@@ -2,10 +2,10 @@
  * A Text widget's live sizes (src/render/layout/type.js), worked out in the page and the editor's
  * preview alike:
  *
- *   Fit width   a line with "fit": true ([data-fit], src/render/text.js) fills the widget's width,
+ *   Full-width line   a line with "fit": true ([data-fit], src/render/text.js) fills the widget's width,
  *               on one line: --tkf on that line (_layout.scss: its style's size in cells × it).
  *               Never by its height; the other lines keep their style's size.
- *   Scale to fit  a widget with "scale": true (.wgt--scale): its text laid out at its normal
+ *   Shrink to fit  a widget with "scale": true (.wgt--scale): its text laid out at its normal
  *               sizes at the widget's width (kept, --tkw: or its widest word's), scaled down as one, like a
  *               photo (--tks: the text body's zoom, never above 1), until it fits the widget's
  *               width (a word wider than it) and, a widget with a fixed height (Rows, Aspect),
@@ -54,7 +54,7 @@ export function fitFactor(room, widths, indents = []) {
 }
 
 /**
- * Scale to fit's factor: the text laid out at `room` (px wide) is `width` × `height` (its
+ * Shrink to fit's factor: the text laid out at `room` (px wide) is `width` × `height` (its
  * widest content, a word wider than the room too); `fixed` of that height is fit lines, which
  * keep their size. Fits `room` and `limit` (the widget's height; Infinity: an Auto widget), at
  * most 1 (only down).
@@ -74,7 +74,7 @@ export function scaleFactor(room, width, height, limit = Infinity, fixed = 0) {
 const cache = new WeakMap();
 const VARS = ['--tks', '--tkw'];
 
-/** Every fit line's --tkf and the widget's Scale to fit (--tks, --tkw); only when it changed. */
+/** Every fit line's --tkf and the widget's Shrink to fit (--tks, --tkw); only when it changed. */
 export function fitOne(el) {
   const body = el.querySelector('.text__body') || el.firstElementChild;
   if (!body) return;
@@ -128,7 +128,7 @@ export function fitText(view) {
     for (const el of dirty) {
       if (el.isConnected && el.matches(WATCH)) fitOne(el);
       else {
-        // gone (a section rendered again), or neither fit lines nor Scale to fit any more
+        // gone (a section rendered again), or neither fit lines nor Shrink to fit any more
         ro.unobserve(el);
         watched.delete(el);
         if (el.isConnected) clear(el);
@@ -156,7 +156,7 @@ export function fitText(view) {
       queue(t);
     }),
   );
-  // widgets that get a fit line or Scale to fit later (the editor), and the text typed in them
+  // widgets that get a fit line or Shrink to fit later (the editor), and the text typed in them
   const mo = new MutationObserver((list) => {
     for (const m of list) {
       const t = m.target.nodeType === 1 ? m.target : m.target.parentElement;
