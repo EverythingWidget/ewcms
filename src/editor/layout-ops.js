@@ -302,13 +302,18 @@ export function addWidget(store, file, at, type, { shown } = {}) {
   const section = list[at];
   const first = !section.widgets?.length;
   const widget = addedWidget(type, idsOf(list), { col: 1, row: first ? 1 : below(section, shown) });
+  const content = contentFromFiles(store.current);
+  // a new List starts on None (its empty state) until a source is picked; another widget's
+  // default source only when the site has that list (not "people" on a site without one)
+  if (type === 'list' || !Array.isArray(content.sources?.[widget.source?.from]))
+    delete widget.source;
   // its source fitted to the page: From URL matches this page's params, or can't be here
   if (widget.source) {
     const id = pageIdOf(file) || '';
     const fit = fitSource(widget.source, {
       list: !!WIDGET_TYPES[type]?.list,
       params: isTemplate(id) ? paramsOf(id) : [],
-      content: contentFromFiles(store.current),
+      content,
     });
     if (fit) widget.source = fit;
     else delete widget.source;

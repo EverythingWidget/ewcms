@@ -77,3 +77,14 @@ test('Add widget waits for the preview to settle; Auto measured, not its stored 
   assert.match(panel, /getBoundingClientRect\(\)\.height \/ cell/);
   assert.match(read('src/editor/main.js'), /hooks\.settled = async/);
 });
+
+test('a new List starts on None (its empty state); a default source only when the site has it (F20)', () => {
+  const store = fresh();
+  addSection(store, F);
+  assert.equal(addWidget(store, F, 0, 'list').source, undefined);
+  // no "people" list on this site: the Albums widget's default source is left out too
+  assert.equal(addWidget(store, F, 0, 'albums').source, undefined);
+  store.load({ ...store.current, 'sources/people.json': { version: 1, items: [] } });
+  assert.equal(addWidget(store, F, 0, 'list').source, undefined);
+  assert.deepEqual(addWidget(store, F, 0, 'albums').source, { mode: 'all', from: 'people' });
+});
