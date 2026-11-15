@@ -111,8 +111,5 @@ test("a press on a widget's link or button only picks it: no pressed look, Alt s
   );
   assert.match(b, /classList\.toggle\('__ed-alt', !!e\.altKey\)/);
   // the site's own styles are untouched: the press look stays for visitors
-  assert.match(
-    read('theme-default/styles/_glass.scss'),
-    /&:active \{\s*transform: scale\(0\.97\);/,
-  );
+  assert.match(read('src/client/styles/_glass.scss'), /&:active \{\s*transform: scale\(0\.97\);/);
 });

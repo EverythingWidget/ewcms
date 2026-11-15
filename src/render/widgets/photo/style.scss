@@ -1,0 +1,16 @@
+// The Photo widget's look (./index.js). Bundled into the site's stylesheet
+// (src/client/styles/main.scss).
+
+/* ---------------- Photo widget (any page) ---------------- */
+.photowidget {
+  &__figure {
+    display: grid;
+    gap: 12px;
+    max-width: 960px;
+    img {
+      width: 100%;
+      height: auto;
+      border-radius: var(--radius);
+    }
+  }
+}

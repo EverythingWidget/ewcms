@@ -29,7 +29,7 @@ const heroPhoto = (ctx, widget, p, i) => {
 
 /**
  * Characters in the name's longest word: the theme caps the name's size by it (hero__title in
- * theme-default/styles/_home.scss), so a long name wraps between words and its longest word
+ * ./style.scss), so a long name wraps between words and its longest word
  * still fits the screen.
  */
 export const longestWord = (text) =>

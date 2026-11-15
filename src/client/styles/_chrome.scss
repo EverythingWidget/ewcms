@@ -1,4 +1,6 @@
-@use 'site-core/tokens' as *;
+// The site's chrome, engine UI around every page: the header, the phone menu, the page
+// entrance curtain and the footer. Colours and fonts come from the site's theme tokens.
+@use 'tokens' as *;
 
 /* ---------------- Header ---------------- */
 .header {

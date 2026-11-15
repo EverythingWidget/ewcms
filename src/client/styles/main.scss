@@ -1,7 +1,9 @@
 // Entry stylesheet: the core (this folder: tokens, base, backdrop, layout, text), the theme
-// (site-theme: the engine's theme-default/, or a site's older full copy) with its fonts,
-// tokens and look, then the site's layers over it (site-layer: its theme folder's fonts.scss,
+// (site-theme: the engine's theme-default/, or a site's older full copy) with its fonts and
+// tokens, then the site's layers over it (site-layer: its theme folder's fonts.scss,
 // tokens.scss, overrides.scss, each optional). Aliases: src/cli/vite-plugin-static-site.mjs.
+// The engine's UI (glass, chrome: header, phone menu, curtain, footer) and the built-in
+// widgets' looks (each widget module's style.scss) read the tokens.
 @use 'site-theme/styles/fonts';
 @use 'site-layer/fonts' as site-fonts;
 @use 'tokens';
@@ -11,7 +13,13 @@
 @use 'backdrop';
 @use 'layout';
 @use 'text';
-// the built-in widgets' own looks (their widget modules' style.scss), before the theme's
+// the built-in widgets' own looks (their widget modules' style.scss) and the chrome
 @use '../../render/widgets/list/style' as list-widget;
-@use 'site-theme/styles/look';
+@use 'glass';
+@use 'chrome';
+@use '../../render/widgets/hero/style' as hero-widget;
+@use '../../render/widgets/albums/style' as albums-widget;
+@use '../../render/widgets/photo/style' as photo-widget;
+@use '../../render/widgets/form/style' as form-widget;
+@use '../../render/widgets/album/style' as album-widget;
 @use 'site-layer/overrides' as site-overrides;

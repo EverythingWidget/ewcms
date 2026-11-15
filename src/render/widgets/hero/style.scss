@@ -1,4 +1,6 @@
-@use 'site-core/tokens' as *;
+// The Hero widget's look (./index.js): the name with its scattered drifting photos, and the
+// photo beside / behind styles. Bundled into the site's stylesheet (src/client/styles/main.scss).
+@use '../../../client/styles/tokens' as *;
 
 // the display font's widest average glyph, in em: sizes the longest word of the name to fit
 $hero-em-per-char: 0.6;

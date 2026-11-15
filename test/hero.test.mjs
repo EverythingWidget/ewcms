@@ -32,10 +32,10 @@ test('longestWord: characters in the longest word (accents count once)', () => {
   assert.equal(longestWord(''), 1);
 });
 
-test('the theme wraps the name and caps its size by the longest word', () => {
+test('the hero wraps the name and caps its size by the longest word', () => {
   const dir = new URL('../', import.meta.url).pathname;
-  const src = readFileSync(`${dir}theme-default/styles/_home.scss`, 'utf8').replace(
-    "@use 'site-core/tokens' as *;",
+  const src = readFileSync(`${dir}src/render/widgets/hero/style.scss`, 'utf8').replace(
+    "@use '../../../client/styles/tokens' as *;",
     '$bp-sm: 640px;',
   );
   const css = sass.compileString(src).css;
@@ -81,10 +81,13 @@ test('beside / behind: the first photo with a file, alone, no scatter', () => {
   assert.doesNotMatch(hero.render({ style: 'beside', photos: [] }, ctx, widget), /hero__photo"/);
 });
 
-test('the theme lays out beside (right half, 4px corners) and behind (gradient)', () => {
-  const src = readFileSync(new URL('../theme-default/styles/_home.scss', import.meta.url), 'utf8');
+test('the hero lays out beside (right half, 4px corners) and behind (gradient)', () => {
+  const src = readFileSync(
+    new URL('../src/render/widgets/hero/style.scss', import.meta.url),
+    'utf8',
+  );
   const css = sass.compileString(
-    src.replace("@use 'site-core/tokens' as *;", '$bp-sm: 640px;'),
+    src.replace("@use '../../../client/styles/tokens' as *;", '$bp-sm: 640px;'),
   ).css;
   assert.match(css, /\.hero--beside \.hero__photo \{[^}]*border-radius: 4px/);
   assert.match(css, /\.hero--beside \.hero__photo \{[^}]*width: calc\(50% - var\(--pad\) - 12px\)/);
@@ -96,7 +99,7 @@ test('the theme lays out beside (right half, 4px corners) and behind (gradient)'
 });
 
 test('the hero takes its widget area; an Auto hero what its section leaves', () => {
-  const home = read('theme-default/styles/_home.scss');
+  const home = read('src/render/widgets/hero/style.scss');
   const hero = block(home, '\n.hero');
   assert.match(hero, /height: 100%;/);
   assert.doesNotMatch(hero, /svh|min-height/);

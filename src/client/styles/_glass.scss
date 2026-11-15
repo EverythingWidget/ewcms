@@ -1,4 +1,5 @@
-// Glass surfaces. The blur lives on ::before so a glass element never becomes a
+// Glass surfaces (the header's pills, dropdowns, buttons): engine UI. The fill mixes the theme's
+// --glass-base with the album's --accent (the site's theme tokens). The blur lives on ::before so a glass element never becomes a
 // "backdrop root": glass inside glass (nav pill > dropdown) still blurs the page.
 @mixin glass-surface {
   content: '';
