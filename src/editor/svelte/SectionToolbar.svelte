@@ -16,8 +16,9 @@
   Two or more widgets selected (ui.multi, multi-select.js): widget mode, what they share:
     [ 3 widgets                 eye  copy  layer↓  layer↑  trash ]
   each one undo step for all of them (Delete too: undo brings them back); the same 40px row.
-  One widget selected (ui.widget): its actions, as its row had them, and its settings:
-    [ Button                gear  locate  eye  copy  trash ]
+  One widget selected (ui.widget): Add widget (to its section), its actions, as its row had
+  them, and its settings:
+    [ Button             +  gear  locate  eye  copy  trash ]
   gear: its pop-up (as a double click on it, ui.popup). Its layer: in the pop-up, keys [ ].
     live, file, bridge, onsection(id), onadd(at)
     addOnly    when no widget is selected, only the Add widget control (a template: no
@@ -121,6 +122,16 @@
     <p class="stb__count">{one ? oneLabel : `${group.ids.length} widgets`}</p>
     <span class="stb__gap"></span>
     {#if one}
+      <!-- Add widget next to a picked one too, not only on its section (F59) -->
+      <Button
+        size="small"
+        icon="plus"
+        iconOnly
+        label="Add widget to this section"
+        title="Add widget to this section"
+        aria-haspopup="dialog"
+        onclick={() => onadd(addOnly ? 0 : group.at)}
+      />
       <Button
         size="small"
         icon="gear"

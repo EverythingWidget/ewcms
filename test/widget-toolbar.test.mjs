@@ -25,13 +25,14 @@ test('one widget selected: the section toolbar has its actions and a gear; rows 
   assert.doesNotMatch(row, /<Button|onduplicate|ondelete|onshow/);
 });
 
-test('one widget: toolbar order gear, locate, eye, copy, trash; layers only for several', () => {
+test('one widget: toolbar order add, gear, locate, eye, copy, trash; layers only for several', () => {
   const st = src('svelte/SectionToolbar.svelte');
   const body = st.slice(st.indexOf('{#if group}'), st.indexOf('{:else if addOnly}'));
   const icons = [...body.matchAll(/icon=(?:"([a-z-]+)"|\{allOff \? 'eye-slash' : '(eye)'\})/g)].map(
     (m) => m[2] || m[1],
   );
   assert.deepEqual(icons, [
+    'plus',
     'gear',
     'location-crosshairs',
     'eye',

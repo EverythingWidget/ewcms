@@ -95,3 +95,11 @@ test('a picked Text widget: Enter or a character typed edits its text (F45, F54)
   // the preview's keys reach it (not the browser) when not typing
   assert.match(bridge, /\(\(e\.key === 'Enter' \|\| e\.key\.length === 1\) &&/);
 });
+
+test('a picked widget has Add widget (to its section) next to its actions (F59)', () => {
+  const t = src('SectionToolbar.svelte');
+  assert.match(
+    t,
+    /label="Add widget to this section"[\s\S]*onclick=\{\(\) => onadd\(addOnly \? 0 : group\.at\)\}/,
+  );
+});
