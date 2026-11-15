@@ -113,7 +113,7 @@
 {/snippet}
 
 <!-- a card's click and double click are pointer shortcuts: the keyboard has the section toolbar -->
-<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 
 <section
   class={[
@@ -125,6 +125,7 @@
     cls,
   ]}
   data-section={id}
+  aria-labelledby="{uid}-head"
   data-card={onenter ? '' : undefined}
   onclick={onenter && pick}
   ondblclick={onenter && enter}
@@ -132,10 +133,13 @@
 >
   <div class="collapsible__bar">
     {#if onenter}
-      <span class="collapsible__toggle collapsible__toggle--card">{@render head()}</span>
+      <span id="{uid}-head" class="collapsible__toggle collapsible__toggle--card"
+        >{@render head()}</span
+      >
     {:else}
       <button
         type="button"
+        id="{uid}-head"
         class="collapsible__toggle"
         aria-expanded={isOpen}
         aria-controls="{uid}-body"

@@ -15,7 +15,13 @@
   });
 </script>
 
-<section class="ed-toasts" aria-live="polite" popover="manual" bind:this={box}>
+<section
+  class="ed-toasts"
+  aria-label="Notifications"
+  aria-live="polite"
+  popover="manual"
+  bind:this={box}
+>
   {#each toasts as t (t.id)}
     <p class="toast toast--{t.kind}">
       {t.text}

@@ -127,7 +127,7 @@
 {#snippet titleTip()}<b>Home page title</b>: the browser tab and search result of your Home page,
   used as written. Empty: the <b>Site name</b>. Home's own Title (its SEO tab) wins over both.{/snippet}
 
-<section class="ed-body">
+<section class="ed-body" aria-label="Site Settings">
   <MotionSettings {live} {bridge} {gsap} />
 
   <Collapsible key="settings:site" title="Name & Details">

@@ -60,7 +60,8 @@
   }
 </script>
 
-<Collapsible key="settings:motion" title="Motion">
+<!-- closed until opened (long: it pushed Name & Details off screen); remembered once toggled -->
+<Collapsible key="settings:motion" title="Motion" open={false}>
   <p class="hint">Used on every page: the default timing and the animations every widget can use</p>
   {#each FIELDS as [key, label, placeholder] (key)}
     <Field
