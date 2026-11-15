@@ -2,8 +2,8 @@
 // lines of that grid), the space between its items (page cells), and each item's style (./item-style.js:
 // the template's or the preset's, as --item-* overrides and li--<style> classes; no rule
 // here names a preset). Items read the theme's --item-*
-// tokens (theme-default/styles/_tokens.scss), so a theme restyles every List at once. Bundled
-// into the site's stylesheet before the theme's look (src/client/styles/main.scss).
+// tokens (the site's theme/tokens.scss; ewcms starter/theme/tokens.scss), so a theme restyles
+// every List at once. Bundled into the site's stylesheet (src/client/styles/main.scss).
 @use '../../../client/styles/tokens' as *;
 
 .list {

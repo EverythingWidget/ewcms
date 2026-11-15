@@ -159,7 +159,7 @@
               "list": "bullet",
               "text": [
                 {
-                  "t": "The engine’s default theme always loads; the site’s theme layers on top."
+                  "t": "Each site owns its theme (tokens and fonts); the engine’s chrome and widgets read it."
                 }
               ]
             }

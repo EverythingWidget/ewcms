@@ -9,14 +9,14 @@
  *                  the site's own JS) when ESLint / Stylelint are installed; --links: the build's links
  *   photos         media/ → public/media sizes + .generated/media.json
  *   publish-media  upload media/ photos to Cloudflare R2 (.env.local R2_* keys), like the editor
- *   new-site <dir> a new site: a theme layered on theme-default, starter content, package.json
+ *   new-site <dir> a new site: its own theme (a copy of starter/theme), starter content, package.json
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { ENGINE, enginePath, posixPath, ENGINE_VERSION } from './engine.mjs';
-import { loadSiteConfig, CONFIG_FILE, DEFAULT_THEME } from './site-config.mjs';
+import { loadSiteConfig, CONFIG_FILE, STARTER_THEME } from './site-config.mjs';
 import { buildPhotos } from './photos.mjs';
 import { checkLinks } from './check-links.mjs';
 import { registerSiteWidgets } from './site-widgets.mjs';
@@ -192,7 +192,6 @@ export function siteCode(root, site = loadSiteConfig(root)) {
   );
   const dirs = [
     site.themeDir,
-    site.themeLayerDir,
     ...(site.config?.widgets || []).map((w) => path.resolve(root, w)),
   ].filter((d) => d && !path.resolve(d).startsWith(ENGINE));
   const scss = [...new Set(dirs.flatMap((d) => filesIn(root, d, /\.scss$/)))];
@@ -249,11 +248,7 @@ export async function lintSite(root, log = console) {
     const { default: config } = await import(
       pathToFileURL(enginePath('stylelint.config.mjs')).href
     );
-    const dirs = [
-      site.themeDir,
-      site.themeLayerDir,
-      ...site.config.widgets.map((w) => path.resolve(root, w)),
-    ];
+    const dirs = [site.themeDir, ...site.config.widgets.map((w) => path.resolve(root, w))];
     const files = dirs
       .filter((d) => d && fs.existsSync(d) && !d.startsWith(ENGINE))
       .map((d) => `${posixPath(d)}/**/*.scss`);
@@ -271,17 +266,29 @@ export async function lintSite(root, log = console) {
   return out;
 }
 
+/** The custom properties a stylesheet sets (`--name:`), in order, once each. */
+const tokensSet = (scss) => [...new Set(scss.match(/(?<![\w-])--[\w-]+(?=\s*:)/g) || [])];
+
 /**
- * A warning for a site whose theme folder is an older full copy of the engine's theme
- * (styles/_look.scss): it misses the engine's theme fixes. '' otherwise. Not a failure.
+ * A warning for a site whose theme misses tokens of the look (ewcms starter/theme/tokens.scss):
+ * the engine has no theme of its own, so the chrome and widgets would read them unset. The
+ * site's tokens.scss and overrides.scss count. '' when none is missing. Not a failure.
  */
 export function themeWarning(site) {
-  if (site.themeLayerDir || site.themeDir === DEFAULT_THEME) return '';
-  const rel = posixPath(path.relative(site.root, site.themeDir)) || '.';
+  const read = (f) =>
+    site.themeDir && fs.existsSync(path.join(site.themeDir, f))
+      ? fs.readFileSync(path.join(site.themeDir, f), 'utf8')
+      : '';
+  const own = new Set(tokensSet(read('tokens.scss') + read('overrides.scss')));
+  const starter = fs.readFileSync(path.join(STARTER_THEME, 'tokens.scss'), 'utf8');
+  const missing = tokensSet(starter).filter((t) => !own.has(t));
+  if (!missing.length) return '';
+  const rel =
+    posixPath(path.relative(site.root, path.resolve(site.root, site.config.themeDir))) || '.';
   return (
-    `[check] ${rel}/ is a full copy of the engine's theme: it misses the engine's theme fixes. ` +
-    `Keep only what differs (tokens.scss, fonts.scss, overrides.scss, theme.json): ` +
-    `see ewcms docs/THEME-MIGRATION.md`
+    `[check] ${rel}/tokens.scss misses ${missing.length} token(s) of the look (${missing.join(', ')}): ` +
+    `ewcms has no default theme, so its chrome and widgets read them unset. Copy them from ` +
+    `ewcms starter/theme/tokens.scss (and fonts.scss, theme.json): see ewcms docs/THEME-MIGRATION.md`
   );
 }
 
@@ -355,7 +362,7 @@ export async function publishMedia(root) {
   if (failed) throw new Error(`${failed} photo(s) not uploaded`);
 }
 
-/** A new site in `dir`: a theme layered on the engine's, a starter content (Home, About and 404; no sources or photos), package.json. */
+/** A new site in `dir`: its own theme (a copy of starter/theme), a starter content (Home, About and 404; no sources or photos), package.json. */
 export function newSite(dir, { name = path.basename(path.resolve(dir)) } = {}) {
   dir = path.resolve(dir);
   if (fs.existsSync(dir) && fs.readdirSync(dir).length) throw new Error(`${dir} is not empty`);
@@ -363,12 +370,11 @@ export function newSite(dir, { name = path.basename(path.resolve(dir)) } = {}) {
   const copy = (from, to) => fs.cpSync(from, path.join(dir, to), { recursive: true });
   copy(enginePath('starter', 'site'), '.');
   copy(enginePath('starter', 'README.md'), 'README.md');
-  // the theme: layers over the engine's theme-default/ (its name and a tokens stub), not a copy
-  copy(enginePath('starter', 'theme'), 'theme');
-  fs.writeFileSync(
-    path.join(dir, 'theme', 'theme.json'),
-    `${JSON.stringify({ version: 1, name }, null, 2)}\n`,
-  );
+  // the theme: the site's own copy of the look (tokens, fonts, theme.json), named after it
+  copy(STARTER_THEME, 'theme');
+  const themeFile = path.join(dir, 'theme', 'theme.json');
+  const theme = JSON.parse(fs.readFileSync(themeFile, 'utf8'));
+  fs.writeFileSync(themeFile, `${JSON.stringify({ ...theme, name }, null, 2)}\n`);
   copy(enginePath('starter', 'content'), 'content');
   copy(enginePath('starter', 'media'), 'media');
   copy(enginePath('starter', 'widgets'), 'widgets');

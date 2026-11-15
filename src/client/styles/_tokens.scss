@@ -1,6 +1,6 @@
 // Core design tokens: the breakpoints, the stacking layers, the grid and the text styles the
 // layout code mirrors (src/render/layout/grid.js, type.js, contain.js). The look (colours,
-// fonts, radius, easing, the header's height) is the theme's: site-theme/styles/_tokens.scss.
+// fonts, radius, easing, the header's height) is the site's: its theme/tokens.scss.
 
 // the phone breakpoint: PHONE_MAX in src/render/layout/grid.js (keep the two equal)
 $bp-md: 900px;

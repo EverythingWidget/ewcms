@@ -8,11 +8,11 @@ with GSAP page transitions. The editor (Svelte 5) runs in the dev server only an
 
 A **site** is only its own things; ewcms is everything else:
 
-| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                          | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                                                                          |
-| -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content/` (JSON), `media/` (photos), `theme/` (`theme.json`, `styles/`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `src/cli` (the command, Vite plugin, build, photos, R2), `src/server` (the contact form's Pages Function, the dev server's editor API), `theme-default/`, `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
-| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/server/contact';`                                                | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                                                                              |
-| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                      |                                                                                                                                                                                                                                                                                                                                             |
+| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                                            | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                                                                                                            |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `content/` (JSON), `media/` (photos), `theme/` (`tokens.scss`, `fonts.scss`, `theme.json`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `src/cli` (the command, Vite plugin, build, photos, R2), `src/server` (the contact form's Pages Function, the dev server's editor API), `starter/` (what `new-site` copies, its theme too), `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
+| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/server/contact';`                                                                  | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                                                                                                                |
+| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                                        |                                                                                                                                                                                                                                                                                                                                                                               |
 
 ## A site's commands
 
@@ -23,7 +23,7 @@ ewcms preview [--port N]                      # serve dist/ on http://localhost:
 ewcms check [--links] [--no-lint]             # content (every file, sources, bindings, motion) + the site's JS/SCSS; --links: dist/'s links
 ewcms photos                                  # media/ → public/media/*.webp sizes + .generated/media.json
 ewcms publish-media                           # media/ photos → Cloudflare R2 (.env.local R2_* keys), like the editor's uploads
-ewcms new-site <dir>                          # a new site: a theme over theme-default, starter content, package.json
+ewcms new-site <dir>                          # a new site: its own theme (a copy of starter/theme), starter content, package.json
 ```
 
 A site's `package.json` maps them (`npm run dev`, `npm run build`, `npm run check`). It needs no
@@ -37,8 +37,8 @@ export default mergeConfig(siteConfig({ root: import.meta.dirname }), {/* more *
 ```
 
 `index.html` (the page shell) is the engine's unless the site has one; its `%EWCMS%/…` paths
-point at the engine's files (the dev server serves them as `/@fs/…`). The engine's `theme-default/`
-always loads; the site's `theme/` layers on it (see **Theme**).
+point at the engine's files (the dev server serves them as `/@fs/…`). The look is the site's
+own `theme/`; the engine has no theme of its own (see **Theme**).
 
 **Updates (dev only).** The editor checks the engine's GitHub tags: when one is newer than the
 `#vX.Y.Z` in the site's `package.json`, its header shows **Update available**; the card lists the
@@ -151,22 +151,23 @@ resolves them; the build, the dev server, the editor endpoints, `src/cli/photos.
 `check:links` all read their paths from it. Client code imports content through the
 `@site-content` alias; the editor's browser code gets its settings from `virtual:editor-config`.
 
-**Theme:** the engine's theme, `theme-default/`, always loads: `theme.json` (`themeColor`,
-`colorScheme` and `preloads`, put in every page's head at `<!--theme-meta-->` and
-`<!--theme-preloads-->` in `index.html`; `site.json` `themeColor` wins) and `styles/`: the fonts,
-the colour, font, radius and easing tokens (every colour of the look is a token in
-`_tokens.scss`), glass, the chrome (header, menus, curtain, footer) and the widgets' looks
-(`_look.scss`). A site's `theme/` (`site.config.mjs` `themeDir`) layers on it, each file
-optional: `tokens.scss` (`:root` tokens, after the engine's), `fonts.scss` (`@font-face`, after
-the engine's), `overrides.scss` (rules after the engine's look) and `theme.json` (merged over the
-engine's key by key). The layers reach `main.scss` through the `site-layer` alias
-(`.generated/theme-layers`: a stub per layer, the site's file or empty). An older `theme/` with
-`styles/_look.scss` is a full copy: it replaces `theme-default/` as before, and `ewcms check`
-warns (docs/THEME-MIGRATION.md). The core stylesheets (`src/client/styles`: the grid,
-breakpoints, text styles, base, backdrop, layout) take the theme through the `site-theme` alias
-(`main.scss`); the theme takes the core's breakpoints and layers as `site-core/tokens`. The
-editor has its own tokens and fonts (`src/editor/styles/_tokens.scss`, `_fonts.scss`,
-`src/editor/fonts`): it never reads the site's theme, so a theme can change and the editor stays.
+**Theme:** the look is the site's own `theme/` (`site.config.mjs` `themeDir`), each file
+optional: `tokens.scss` (`:root` tokens: the colours, fonts, radius, easing, the header's height
+and the List's `--item-*`; every colour of the look is a token), `fonts.scss` (`@font-face`),
+`overrides.scss` (rules after the engine's styles) and `theme.json` (`themeColor`, `colorScheme`
+and `preloads`, put in every page's head at `<!--theme-meta-->` and `<!--theme-preloads-->` in
+`index.html`; `site.json` `themeColor` wins). The engine has no theme of its own: `ewcms new-site`
+copies `starter/theme/` (tokens, fonts, theme.json) into the new site, which owns that copy, and
+`ewcms check` warns when a site's tokens miss any of the starter's (docs/THEME-MIGRATION.md). The
+files reach `main.scss` through the `site-layer` alias (`.generated/theme-layers`: a stub per
+file, the site's or empty: Sass has no optional `@use`); the site's tokens take the core's
+breakpoints as `site-core/tokens`. The engine's styles read the tokens: the core
+(`src/client/styles`: the grid, breakpoints, text styles, base, backdrop, layout), the engine's UI
+there too (`_glass.scss`, `_chrome.scss`: the header, the phone menu, the curtain, the footer) and
+each built-in widget's look next to it (`src/render/widgets/<type>/style.scss`: hero, albums,
+photo, form, album, list). The editor has its own tokens and fonts
+(`src/editor/styles/_tokens.scss`, `_fonts.scss`, `src/editor/fonts`): it never reads the site's
+theme, so a theme can change and the editor stays.
 
 ```
 — in a site —
@@ -184,7 +185,7 @@ content/            ← all text, albums, projects, animation config (JSON)
                       plus <id>.schema.json: the properties of its items (see "Sources & schemas")
   strings.json      ← UI text of the templates: the menu's Menu / Close / clock label (header.*)
 media/              ← source photos (jpg), committed
-theme/              ← the site's layers over ewcms's theme-default/ (tokens.scss, fonts.scss, overrides.scss, theme.json)
+theme/              ← the site's look: tokens.scss, fonts.scss, overrides.scss, theme.json (new-site copies ewcms's starter/theme/)
 site.config.mjs     ← the site's folders
 functions/api/contact.js ← one line: export { onRequestPost } from 'ewcms/server/contact'
 
@@ -251,7 +252,7 @@ src/
     anim/types.js   ← animation types (reveal, split, parallax, scatter, …)
     modules/        ← real rows, album slider, project accordion, card hover, misc
     ui/             ← menu (click-only), clock
-    styles/         ← SCSS (tokens, glass, chrome, home, pages, album)
+    styles/         ← SCSS: the core (tokens, base, backdrop, layout, text) and the chrome (glass, header, menus, curtain, footer); main.scss bundles them with the widgets' style.scss and the site's theme
   editor/           ← the visual editor app (any page + ?edit), dev server only, never built or shipped
     config.js       ← content files the editor may write and publish
     store.js        ← in-memory content copies, dirty state, undo/redo, rebase
@@ -1213,7 +1214,7 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
   items it has (two digits, `04`) plus `unit`. The photo is the item's own `photo` (nothing is
   taken from the source's items). Switching modes keeps unused source and items.
   No items: "Nothing here yet.".
-- **Look:** items use the theme's `--item-*` tokens (`theme-default/styles/_tokens.scss`), so a theme
+- **Look:** items use the theme's `--item-*` tokens (the site's `theme/tokens.scss`), so a theme
   restyles every List at once.
 - **In the editor:** settings marked `tab: 'layout'` in a widget definition show in its Layout tab
   (`layoutOptions()` in `src/editor/widget-layout.js`), the rest in Content. The pickers and

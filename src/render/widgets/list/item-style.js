@@ -1,6 +1,6 @@
 /**
  * Item style (step 9): an item template's "style" (content/templates/t-….json), how each
- * item looks, over the theme's --item-* tokens (theme-default/styles/_tokens.scss). Every
+ * item looks, over the theme's --item-* tokens (the site's theme/tokens.scss). Every
  * key is optional: left out, the theme's value shows ("Theme" in the editor, never saved).
  * Sizes are px on the 4px grid. The presets are style values too (PRESET_STYLES): a List on
  * a preset shows that preset's style, Duplicate writes it into the new template.

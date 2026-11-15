@@ -1,4 +1,33 @@
-# Theme migration: from a full copy to layers (ewcms 0.1.37+)
+# Theme migration
+
+## Next release: the engine has no theme of its own
+
+`theme-default/` is gone. The look (its tokens, fonts and `theme.json`) moved to `starter/theme/`,
+which `ewcms new-site` copies into a new site; the site owns that copy. The rest of the old
+theme was engine UI and now lives with the engine's code: the chrome (header, phone menu,
+curtain, footer, glass) in `src/client/styles/`, each built-in widget's look next to the widget
+(`src/render/widgets/<type>/style.scss`: hero, albums, photo, form, album). Those read the site's
+tokens, exactly as before. Nothing is layered over an engine theme anymore: a site's
+`theme/tokens.scss`, `fonts.scss` and `theme.json` are the whole look.
+
+**Before you bump a site's ewcms pin to it**, give the site its own copy of the look, or its
+colours, fonts and head meta go missing:
+
+1. `theme/tokens.scss`: copy `starter/theme/tokens.scss` from this release (it is the old
+   `theme-default/styles/_tokens.scss`), then put the site's own values back over it (a site
+   that only set what differed keeps those lines; every other token comes from the copy).
+2. `theme/fonts.scss`: if the site used the engine's DM Mono / Momo Trust Display, copy
+   `starter/theme/fonts.scss` (its own `@font-face` rules stay).
+3. `theme/theme.json`: it is no longer merged over an engine one. Add any key the site took from
+   the engine (`colorScheme`, `themeColor`, `preloads`) from `starter/theme/theme.json`.
+4. `npx ewcms check`: no theme warning (it lists any token of the starter's that the site's
+   `tokens.scss` / `overrides.scss` misses), then compare every page, desktop and phone, before
+   and after (screenshots).
+
+An old full-copy theme (`theme/styles/_look.scss`, below) is no longer special: its `styles/`
+are not loaded. Move what differs into `tokens.scss`, `fonts.scss` and `overrides.scss` first.
+
+## 0.1.37: from a full copy to layers
 
 Before 0.1.37 a site's `theme/` was a full copy of the engine's `theme-default/` (`theme.json`
 and `styles/` with `_look.scss`, `_chrome.scss`, `_home.scss`, …). Such a copy replaces the
@@ -15,7 +44,7 @@ optional:
 | `theme/overrides.scss` | rules after the engine's look (`.btn`, `.hero__title`, …). Keep it short.                                                                                                                                              |
 | `theme/theme.json`     | merged over the engine's key by key (`name`, `themeColor`, `colorScheme`, `preloads`: a key replaces the engine's whole value).                                                                                        |
 
-## Steps
+### Steps
 
 1. Diff your copy against the engine's: `diff -r theme/styles node_modules/ewcms/theme-default/styles`.
 2. Token values that differ from the engine's `_tokens.scss` go in `theme/tokens.scss`

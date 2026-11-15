@@ -9,19 +9,17 @@
  *     publicMediaDir: 'public/media',  // the photos' generated sizes (served as /media/...)
  *     generatedDir: '.generated',      // the media manifest (media.json)
  *     outDir: 'dist',                  // the build
- *     themeDir: 'theme',               // the site's layers over the engine's theme-default/:
- *                                      // tokens.scss, fonts.scss, overrides.scss, theme.json
- *                                      // (each optional); an older full copy (styles/_look.scss)
- *                                      // replaces theme-default/
+ *     themeDir: 'theme',               // the site's look: tokens.scss, fonts.scss,
+ *                                      // overrides.scss, theme.json (each optional; a new site
+ *                                      // gets a copy of the engine's starter/theme/)
  *     widgets: ['./widgets/quote'],    // the site's own widgets (widget modules), after the built-ins
  *     repo: { owner, name },           // GitHub links when the git remote names none
  *   };
  *
  * Every key is optional (DEFAULTS); paths are relative to the root. loadSiteConfig(root) gives
  * the merged config (config) and the absolute paths (contentDir, mediaDir, publicDir,
- * publicMediaDir, generatedDir, manifest, outDir, themeDir: the base theme, the site-theme alias),
- * themeLayerDir and themeLayers (the site's layer folder and files, null and [] without),
- * theme (the base theme's theme.json, the site's merged over it key by key),
+ * publicMediaDir, generatedDir, manifest, outDir), themeDir and themeLayers (the site's theme
+ * folder and its style files, null and [] without), theme (its theme.json, {} without),
  * plus contentRootDir (the content root: contentDir's parent, the shared files and templates/),
  * contentRel and contentRootRel (contentDir and contentRootDir from the root,
  * with "/": git paths and messages) and mediaUrl (publicMediaDir as a URL: "/media").
@@ -45,14 +43,11 @@ export const DEFAULTS = Object.freeze({
   repo: Object.freeze({ owner: '', name: '' }),
 });
 
-/** The engine's theme, for a site without its own themeDir. */
-export const DEFAULT_THEME = enginePath('theme-default');
-
-/** A site theme's optional layers, each over the engine's theme (src/client/styles/main.scss). */
+/** A site theme's style files, each optional (src/client/styles/main.scss: the site-layer alias). */
 export const THEME_LAYERS = Object.freeze(['fonts.scss', 'tokens.scss', 'overrides.scss']);
 
-/** Whether a site's theme folder is a full copy of the engine's (before layers): its own look. */
-export const isFullCopyTheme = (dir) => fs.existsSync(path.join(dir, 'styles', '_look.scss'));
+/** The theme a new site starts from (ewcms new-site copies it): the look's tokens, fonts, theme.json. */
+export const STARTER_THEME = enginePath('starter', 'theme');
 
 const require = createRequire(import.meta.url);
 const cache = new Map();
@@ -67,13 +62,10 @@ export function loadSiteConfig(root = process.cwd()) {
   const own = fs.existsSync(file) ? require(file).default || {} : {};
   const config = { ...DEFAULTS, ...own, repo: { ...DEFAULTS.repo, ...own.repo } };
   const abs = (p) => path.resolve(root, p);
-  // The engine's theme (theme-default/) always loads; a site's theme folder layers on it
-  // (themeLayers: tokens.scss, fonts.scss, overrides.scss, theme.json merged key by key). A
-  // folder with styles/_look.scss is an older full copy of the theme: it replaces the engine's.
-  const siteTheme = abs(config.themeDir);
-  const fullCopy = isFullCopyTheme(siteTheme);
-  const themeDir = fullCopy ? siteTheme : DEFAULT_THEME;
-  const layerDir = !fullCopy && fs.existsSync(siteTheme) ? siteTheme : null;
+  // The look is the site's own: its theme folder's tokens.scss, fonts.scss, overrides.scss
+  // (themeLayers, each optional) and theme.json. The engine has no theme of its own: its chrome
+  // and widgets read the site's tokens.
+  const themeDir = fs.existsSync(abs(config.themeDir)) ? abs(config.themeDir) : null;
   const site = {
     root,
     config,
@@ -89,12 +81,8 @@ export function loadSiteConfig(root = process.cwd()) {
     manifest: path.join(abs(config.generatedDir), 'media.json'),
     outDir: abs(config.outDir),
     themeDir,
-    themeLayerDir: layerDir,
-    themeLayers: layerDir ? THEME_LAYERS.filter((f) => fs.existsSync(path.join(layerDir, f))) : [],
-    theme: {
-      ...readJson(path.join(themeDir, 'theme.json')),
-      ...(layerDir ? readJson(path.join(layerDir, 'theme.json')) : {}),
-    },
+    themeLayers: themeDir ? THEME_LAYERS.filter((f) => fs.existsSync(path.join(themeDir, f))) : [],
+    theme: themeDir ? readJson(path.join(themeDir, 'theme.json')) : {},
     contentRel: posix(path.relative(root, abs(config.contentDir))),
     contentRootRel: posix(path.relative(root, path.dirname(abs(config.contentDir)))) || '.',
     templatesRel: posix(

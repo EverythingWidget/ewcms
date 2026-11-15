@@ -1,12 +1,13 @@
-// The theme (site.config.mjs themeDir: theme.json and styles/): its part of the page head, and
-// where loadSiteConfig finds it.
+// The theme (site.config.mjs themeDir: theme.json, tokens.scss, fonts.scss, overrides.scss): its
+// part of the page head, and where loadSiteConfig finds it.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { themeHead, writeThemeLayers } from '../src/cli/vite-plugin-static-site.mjs';
-import { loadSiteConfig, DEFAULT_THEME } from '../src/cli/site-config.mjs';
+import { loadSiteConfig, STARTER_THEME } from '../src/cli/site-config.mjs';
+import { enginePath } from '../src/cli/engine.mjs';
 
 const theme = {
   themeColor: '#050505',
@@ -27,34 +28,15 @@ test('themeHead: theme-color (site.json first), color-scheme, preloads', () => {
   assert.deepEqual(themeHead({}), { meta: '', preloads: '' });
 });
 
-test('loadSiteConfig: a full-copy theme folder (styles/_look.scss) and its theme.json', () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-'));
-  fs.writeFileSync(path.join(root, 'site.config.mjs'), "export default { themeDir: 'looks/a' };\n");
-  fs.mkdirSync(path.join(root, 'looks/a/styles'), { recursive: true });
-  fs.writeFileSync(path.join(root, 'looks/a/styles/_look.scss'), '');
-  fs.writeFileSync(path.join(root, 'looks/a/theme.json'), JSON.stringify(theme));
-  const site = loadSiteConfig(root);
-  assert.equal(site.themeDir, path.join(root, 'looks/a'));
-  assert.equal(site.themeLayerDir, null);
-  assert.deepEqual(site.theme, theme);
-  // no theme folder: the engine's theme-default, and its theme.json
-  const bare = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-'));
-  assert.equal(loadSiteConfig(bare).themeDir, DEFAULT_THEME);
-  assert.equal(loadSiteConfig(bare).theme.version, 1);
-});
-
-test('loadSiteConfig: a layer theme folder over the engine theme, theme.json merged by key', () => {
+test('loadSiteConfig: the site theme folder, its style files and theme.json', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-'));
   fs.mkdirSync(path.join(root, 'theme'));
   fs.writeFileSync(path.join(root, 'theme/tokens.scss'), ':root { --bg: #fff; }\n');
-  fs.writeFileSync(path.join(root, 'theme/theme.json'), '{ "name": "G", "themeColor": "#fff" }');
+  fs.writeFileSync(path.join(root, 'theme/theme.json'), JSON.stringify(theme));
   const site = loadSiteConfig(root);
-  assert.equal(site.themeDir, DEFAULT_THEME);
-  assert.equal(site.themeLayerDir, path.join(root, 'theme'));
+  assert.equal(site.themeDir, path.join(root, 'theme'));
   assert.deepEqual(site.themeLayers, ['tokens.scss']);
-  assert.equal(site.theme.name, 'G');
-  assert.equal(site.theme.themeColor, '#fff');
-  assert.equal(site.theme.colorScheme, 'dark'); // the engine's
+  assert.deepEqual(site.theme, theme); // the site's alone: the engine has no theme of its own
   // the site-layer stubs: its tokens used, the other two empty
   const dir = writeThemeLayers(site);
   assert.match(
@@ -62,17 +44,42 @@ test('loadSiteConfig: a layer theme folder over the engine theme, theme.json mer
     /@use '\.\.\/\.\.\/theme\/tokens';/,
   );
   assert.doesNotMatch(fs.readFileSync(path.join(dir, '_overrides.scss'), 'utf8'), /@use/);
-  // an empty theme folder: the engine's theme as is
-  const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-'));
-  fs.mkdirSync(path.join(empty, 'theme'));
-  assert.equal(loadSiteConfig(empty).theme.version, 1);
-  assert.deepEqual(loadSiteConfig(empty).themeLayers, []);
+  // another folder (site.config.mjs themeDir)
+  const other = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-'));
+  fs.writeFileSync(
+    path.join(other, 'site.config.mjs'),
+    "export default { themeDir: 'looks/a' };\n",
+  );
+  fs.mkdirSync(path.join(other, 'looks/a'), { recursive: true });
+  fs.writeFileSync(path.join(other, 'looks/a/fonts.scss'), '');
+  assert.equal(loadSiteConfig(other).themeDir, path.join(other, 'looks/a'));
+  assert.deepEqual(loadSiteConfig(other).themeLayers, ['fonts.scss']);
+  // no theme folder: no theme, empty stubs
+  const bare = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-'));
+  const none = loadSiteConfig(bare);
+  assert.equal(none.themeDir, null);
+  assert.deepEqual(none.themeLayers, []);
+  assert.deepEqual(none.theme, {});
+  const stubs = writeThemeLayers(none);
+  assert.doesNotMatch(fs.readFileSync(path.join(stubs, '_tokens.scss'), 'utf8'), /@use/);
+  for (const d of [root, other, bare]) fs.rmSync(d, { recursive: true, force: true });
 });
 
-test('theme-default: no colour outside its tokens', () => {
-  const dir = path.join(DEFAULT_THEME, 'styles');
-  for (const f of fs.readdirSync(dir).filter((f) => f !== '_tokens.scss')) {
-    const code = fs.readFileSync(path.join(dir, f), 'utf8').replace(/\/\/.*$/gm, '');
+test('the starter theme: every colour in its tokens; the engine styles none of its own', () => {
+  const starter = JSON.parse(fs.readFileSync(path.join(STARTER_THEME, 'theme.json'), 'utf8'));
+  assert.equal(starter.version, 1);
+  assert.equal(starter.colorScheme, 'dark');
+  // what was the engine's theme-default: its chrome and the widgets' looks read the site's tokens
+  const files = [
+    'src/client/styles/_chrome.scss',
+    'src/client/styles/_glass.scss',
+    ...['hero', 'albums', 'photo', 'form', 'album'].map(
+      (w) => `src/render/widgets/${w}/style.scss`,
+    ),
+  ].map((f) => enginePath(f));
+  for (const f of files) {
+    const code = fs.readFileSync(f, 'utf8').replace(/\/\/.*$/gm, '');
     assert.doesNotMatch(code, /#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/i, f);
   }
+  assert.equal(fs.existsSync(enginePath('theme-default')), false);
 });

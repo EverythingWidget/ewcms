@@ -1,13 +1,11 @@
-// Entry stylesheet: the core (this folder: tokens, base, backdrop, layout, text), the theme
-// (site-theme: the engine's theme-default/, or a site's older full copy) with its fonts and
-// tokens, then the site's layers over it (site-layer: its theme folder's fonts.scss,
-// tokens.scss, overrides.scss, each optional). Aliases: src/cli/vite-plugin-static-site.mjs.
-// The engine's UI (glass, chrome: header, phone menu, curtain, footer) and the built-in
-// widgets' looks (each widget module's style.scss) read the tokens.
-@use 'site-theme/styles/fonts';
+// Entry stylesheet: the site's fonts and tokens (its theme folder: site-layer, a stub per file,
+// the site's own or empty: src/cli/vite-plugin-static-site.mjs writeThemeLayers), the core
+// (this folder: tokens, base, backdrop, layout, text), the engine's UI (glass, chrome: header,
+// phone menu, curtain, footer), the built-in widgets' looks (each widget module's style.scss),
+// then the site's overrides.scss. The look itself (colours, fonts) is the site's tokens: a new
+// site gets a copy of ewcms starter/theme/.
 @use 'site-layer/fonts' as site-fonts;
 @use 'tokens';
-@use 'site-theme/styles/tokens' as theme-tokens;
 @use 'site-layer/tokens' as site-tokens;
 @use 'base';
 @use 'backdrop';

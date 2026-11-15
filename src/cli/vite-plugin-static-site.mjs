@@ -144,14 +144,14 @@ export function wantsPage(pathname, accept = '') {
 
 /**
  * The site-layer folder (<generatedDir>/theme-layers): _fonts, _tokens and _overrides, each
- * the site theme's own (themeLayerDir: fonts.scss, ...) or empty. main.scss uses all three, so
+ * the site theme's own (themeDir: fonts.scss, ...) or empty. main.scss uses all three, so
  * a layer is optional: Sass has no optional @use. Rewritten when a layer file comes or goes.
  */
 export function writeThemeLayers(site) {
   const dir = path.join(site.generatedDir, 'theme-layers');
   fs.mkdirSync(dir, { recursive: true });
   for (const file of THEME_LAYERS) {
-    const own = site.themeLayerDir && path.join(site.themeLayerDir, file);
+    const own = site.themeDir && path.join(site.themeDir, file);
     const rel = own && fs.existsSync(own) && posixPath(path.relative(dir, own));
     const text = rel ? `@use '${rel.replace(/\.scss$/, '')}';\n` : "// none in the site's theme\n";
     const out = path.join(dir, `_${file}`);
@@ -189,9 +189,8 @@ export default function staticSite() {
         resolve: {
           alias: {
             [CONTENT_ALIAS]: site.contentRootDir,
-            // the stylesheets: the core's main.scss uses the theme's, the theme's the core's tokens
-            'site-theme': site.themeDir,
-            // the site theme's layers over it (tokens, fonts, overrides): writeThemeLayers
+            // the stylesheets: main.scss uses the site theme's (tokens, fonts, overrides:
+            // writeThemeLayers), the site's theme the core's tokens (breakpoints)
             'site-layer': writeThemeLayers(site),
             'site-core': CORE_STYLES,
           },
@@ -238,10 +237,10 @@ export default function staticSite() {
         ...ROOT_FILES.map((f) => path.join(site.contentRootDir, f)),
       ]);
       // a theme layer added or deleted: the site-layer stubs follow (Vite then rebuilds the CSS)
-      if (site.themeLayerDir) {
-        server.watcher.add(site.themeLayerDir);
+      if (site.themeDir) {
+        server.watcher.add(site.themeDir);
         const relayer = (file) => {
-          if (path.dirname(path.resolve(file)) === path.resolve(site.themeLayerDir))
+          if (path.dirname(path.resolve(file)) === path.resolve(site.themeDir))
             writeThemeLayers(site);
         };
         server.watcher.on('add', relayer).on('unlink', relayer);

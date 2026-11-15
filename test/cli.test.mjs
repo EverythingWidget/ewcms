@@ -75,22 +75,53 @@ test('new-site: a site folder that passes check', async () => {
   assert.equal(pkg.name, 'my-site');
   assert.match(pkg.dependencies.ewcms, /^github:EverythingWidget\/ewcms#v\d/);
   assert.deepEqual(await checkContentOf(dir), []);
-  // the theme: layers over the engine's (a name and a tokens stub), no copy of its styles
-  assert.deepEqual(fs.readdirSync(path.join(dir, 'theme')).sort(), ['theme.json', 'tokens.scss']);
+  // the theme: the site's own copy of the starter's look (tokens, fonts, theme.json), named
+  assert.deepEqual(fs.readdirSync(path.join(dir, 'theme')).sort(), [
+    'fonts.scss',
+    'theme.json',
+    'tokens.scss',
+  ]);
+  const theme = JSON.parse(fs.readFileSync(path.join(dir, 'theme/theme.json'), 'utf8'));
+  assert.equal(theme.name, 'My Site');
+  assert.equal(theme.colorScheme, 'dark'); // the starter's
   assert.equal(
-    JSON.parse(fs.readFileSync(path.join(dir, 'theme/theme.json'), 'utf8')).name,
-    'My Site',
+    fs.readFileSync(path.join(dir, 'theme/tokens.scss'), 'utf8'),
+    fs.readFileSync(enginePath('starter/theme/tokens.scss'), 'utf8'),
   );
   assert.equal(themeWarning(loadSiteConfig(dir)), '');
   assert.throws(() => newSite(dir), /not empty/);
 });
 
-test('check: a warning for a full-copy theme, none for layers or none', () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-copy-'));
-  fs.mkdirSync(path.join(dir, 'theme/styles'), { recursive: true });
-  fs.writeFileSync(path.join(dir, 'theme/styles/_look.scss'), '');
-  assert.match(themeWarning(loadSiteConfig(dir)), /theme\/ is a full copy.*THEME-MIGRATION/);
-  assert.equal(themeWarning(loadSiteConfig(fs.mkdtempSync(path.join(os.tmpdir(), 'e-')))), '');
+test('check: a warning for a theme that misses tokens of the look, none for a whole one', () => {
+  const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-theme-'));
+  // no theme folder (or an older full copy, styles/_look.scss): every token missing
+  const bare = tmp();
+  assert.match(
+    themeWarning(loadSiteConfig(bare)),
+    /theme\/tokens\.scss misses \d+ token\(s\) of the look \(--bg, --bg-2, .*starter\/theme.*THEME-MIGRATION/,
+  );
+  // a whole copy of the starter's tokens
+  const part = tmp();
+  fs.mkdirSync(path.join(part, 'theme'));
+  fs.copyFileSync(enginePath('starter/theme/tokens.scss'), path.join(part, 'theme/tokens.scss'));
+  assert.equal(themeWarning(loadSiteConfig(part)), '');
+  // a partial layer (a site of before: only what differed from the engine's theme)
+  const partial = tmp();
+  fs.mkdirSync(path.join(partial, 'theme'));
+  fs.writeFileSync(
+    path.join(partial, 'theme/tokens.scss'),
+    ':root { --bg: #fff; --bg-2: #eee; }\n',
+  );
+  const w = themeWarning(loadSiteConfig(partial));
+  assert.match(w, /\(--fg, --muted,/);
+  assert.doesNotMatch(w, /--bg\b/);
+  // overrides.scss counts too
+  fs.writeFileSync(
+    path.join(partial, 'theme/overrides.scss'),
+    fs.readFileSync(enginePath('starter/theme/tokens.scss'), 'utf8'),
+  );
+  assert.equal(themeWarning(loadSiteConfig(partial)), '');
+  for (const d of [bare, part, partial]) fs.rmSync(d, { recursive: true, force: true });
 });
 
 test('bin: ewcms --version and usage', () => {
@@ -122,13 +153,13 @@ test('siteCode: config, functions/ and content are no reason to warn; own JS and
     '.generated/c.mjs': '',
   };
   const a = site(base);
-  const b = site({ ...base, 'widgets/quote/index.js': '', 'theme/styles/_look.scss': 'a {}\n' });
+  const b = site({ ...base, 'widgets/quote/index.js': '', 'theme/tokens.scss': ':root {}\n' });
   try {
     // like eeliyarasta-website: config + one function, no theme of its own: nothing to warn about
     assert.deepEqual(siteCode(a, loadSiteConfig(a)), { js: [], scss: [] });
     const code = siteCode(b, loadSiteConfig(b));
     assert.deepEqual(code.js, ['widgets/quote/index.js']);
-    assert.deepEqual(code.scss, ['theme/styles/_look.scss']);
+    assert.deepEqual(code.scss, ['theme/tokens.scss']);
   } finally {
     for (const r of [a, b]) fs.rmSync(r, { recursive: true, force: true });
   }
