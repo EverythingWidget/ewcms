@@ -20,7 +20,7 @@
  *             area, on the phone grid of 60 columns (widgets without one stack full width in
  *             reading order: that is where the drag starts; the first phone edit gives the
  *             section's widgets those places as their own). An aspect or auto widget's rows
- *             follow its width: only its sides resize.
+ *             follow its width: only its sides resize (an Aspect corner keeps its ratio).
  *   Links     the selected widget only shows a filled circle above its top edge (drag it) and
  *             an empty one below its bottom edge (a drop target only; a hovered widget shows
  *             none: select it first). Hovering the filled circle shows the widgets it may link
@@ -48,12 +48,12 @@
  * (clicks(), widget, link) every frame, and the section metrics once per drag, so the grid
  * doesn't move under the pointer while the page reflows.
  */
-import { COLS, MAX_MIN_ROWS, MCOLS, makesLoop, sizeOf } from '../render/layout/index.js';
+import { COLS, MAX_MIN_ROWS, MCOLS, makesLoop, ratioOf, sizeOf } from '../render/layout/index.js';
 
 /** An Auto widget's height dragged by fewer rows than this: a stray drag, nothing changes. */
 const STRAY_ROWS = 2;
 import { templateHit } from './lib/template-hit.js';
-import { resolveRows } from '../render/layout/flow.js';
+import { aspectRows, resolveRows } from '../render/layout/flow.js';
 import {
   flowAreas,
   linesOf,
@@ -952,8 +952,23 @@ export function createOverlay({
       r = Math.min(Math.max(1, nearest(rows.starts, rowStart + dy, step)), end);
       n = end - r + 1;
     }
-    drag.pos = { col, span: Math.min(span, drag.cols - col + 1), row: r, rows: n };
+    span = Math.min(span, drag.cols - col + 1);
+    // an Aspect widget's corner (desktop): its ratio kept, its rows follow its width, so its
+    // size readout and the rows stored are the ones it shows (G7); its top or bottom edge
+    // alone still makes it a Rows widget
+    const ratio = aspectCorner(drag) && ratioOf(widgetOf(drag.id)?.aspect);
+    if (ratio) {
+      const width = cols.ends[col + span - 2] - cols.starts[col - 1];
+      n = aspectRows(width, ratio, step);
+      if (h.includes('n')) r = Math.max(1, from.row + from.rows - n);
+    }
+    drag.pos = { col, span, row: r, rows: n };
     show(drag.pos);
+  }
+
+  /** A desktop drag of an Aspect widget's corner (its ratio kept: move, end). */
+  function aspectCorner(d) {
+    return !d.phone && /[ns]/.test(d.h) && /[ew]/.test(d.h) && sizeOf(widgetOf(d.id)) === 'aspect';
   }
 
   /** An area as a widget's CSS variables (desktop, or the phone's; and where it is now). */
@@ -1012,7 +1027,7 @@ export function createOverlay({
       ['col', 'span'].every((k) => pos[k] === from[k]);
     const moved = !stray && ['col', 'span', 'row', 'rows'].some((k) => pos[k] !== from[k]);
     if (!moved) restore(); // a click changes nothing
-    const tall = /[ns]/.test(drag.h) && pos.rows !== from.rows;
+    const tall = /[ns]/.test(drag.h) && pos.rows !== from.rows && !aspectCorner(drag);
     const size = !phone && tall && sizeOf(widgetOf(id)) !== 'rows' ? 'rows' : undefined;
     const click = drag.click;
     stop();

@@ -60,3 +60,9 @@ export function resolveRows(items, sectionRows = 1) {
 
 /** Rows of `row` px that `px` needs (a hair under a whole row still counts as that row). */
 export const rowsFor = (px, row) => Math.max(1, Math.ceil(px / row - 0.01));
+
+/**
+ * The rows an Aspect widget `width` px wide needs at `ratio` ([w, h]), rows `step` px apart: an
+ * aspect widget's corner dragged keeps its ratio, its height follows the width (G7).
+ */
+export const aspectRows = (width, [w, h], step) => rowsFor((width * h) / w, step);

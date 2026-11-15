@@ -2,7 +2,7 @@
 import { lay } from '../scripts/test-layout.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveRows, rowsFor } from '../src/render/layout/flow.js';
+import { aspectRows, resolveRows, rowsFor } from '../src/render/layout/flow.js';
 import { rowsOf } from '../src/render/layout/index.js';
 import { createStore } from '../src/editor/store.js';
 import { placeWidget, placePhone, setSection } from '../src/editor/layout-ops.js';
@@ -125,4 +125,11 @@ test("a drag stores where the section's widgets are now (their real rows), one u
   assert.equal(store.current[F].sections[0].name, 'Intro');
   setSection(store, F, 0, { name: undefined });
   assert.equal('name' in store.current[F].sections[0], false);
+});
+
+test('aspectRows: an Aspect widget dragged by a corner needs the rows its width × ratio fills (G7)', () => {
+  // 328px wide at 3:2 is 218.7px: 33 rows of 6.6875px (not the 30 the pointer reached)
+  assert.equal(aspectRows(328, [3, 2], 6.6875), 33);
+  assert.equal(aspectRows(268, [3, 2], 6.6875), 27);
+  assert.equal(aspectRows(100, [1, 1], 10), 10);
 });
