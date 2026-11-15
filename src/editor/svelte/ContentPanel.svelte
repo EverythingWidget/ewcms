@@ -201,6 +201,8 @@
       await hooks.settled();
       selectWidgets([addWidget(live.store, file, at, type, { shown: shownRows(at) }).id]);
       autoPopup();
+      // the picker's search must not keep the keys: Enter starts Edit text (G17)
+      bridge?.doc?.defaultView?.focus();
     });
 
   /** Open the widget holding `edit` and scroll to it (a Header label: its field); list items open the Sources modal. */

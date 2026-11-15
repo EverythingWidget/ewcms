@@ -43,6 +43,7 @@
 
   function pick(t) {
     const { onpick } = args;
+    dialog.querySelector('.widgets-search')?.blur();
     closeModal('widgets');
     onpick(t.value, at);
   }

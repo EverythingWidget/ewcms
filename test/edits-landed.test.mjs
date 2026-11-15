@@ -61,3 +61,11 @@ test('save waits for edits on their way first; Add widget is one (F103)', () => 
     /const addTo = \(at, type\) =>\s*editComing\(async \(\) => \{\s*await hooks\.settled\(\);\s*selectWidgets\(\[addWidget\(/,
   );
 });
+
+
+test('G17: Add widget closes the picker and focuses the preview, so Enter edits the new widget', () => {
+  const modal = read('svelte/WidgetsModal.svelte');
+  assert.match(modal, /dialog\.querySelector\('\.widgets-search'\)\?\.blur\(\)/);
+  const panel = read('svelte/ContentPanel.svelte');
+  assert.match(panel, /bridge\?\.doc\?\.defaultView\?\.focus\(\)/);
+});
