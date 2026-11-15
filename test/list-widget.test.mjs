@@ -222,7 +222,13 @@ test('Grid; columns and gap; Row preset defaults to 1 column', () => {
     new URL('../src/render/widgets/list/style.scss', import.meta.url),
     'utf8',
   );
-  assert.match(css, /gap: calc\(var\(--list-gap, 0\) \* var\(--cell, 0px\)\)/);
+  assert.match(css, /--list-gap-px: calc\(var\(--list-gap, 0\) \* var\(--cell, 0px\)\);/);
+  assert.match(css, /gap: var\(--list-gap-px\);/);
+  // fewer columns when one would be narrower than an item can use (F106)
+  assert.match(
+    css,
+    /repeat\(\s*auto-fill,\s*minmax\(\s*max\(\s*min\(100%, var\(--list-item-min, 240px\)\)/,
+  );
   assert.doesNotMatch(css, /--gap-[sml]|list--gap/);
   // Row preset's default columns when columns is omitted
   assert.equal(

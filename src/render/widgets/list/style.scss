@@ -15,12 +15,28 @@
 // sits on (inline --list-gap; 0, the default: side by side). An item's own --cell (.sec--item)
 // is set inside it, so this is the page's
 .list__items {
+  --list-gap-px: calc(var(--list-gap, 0) * var(--cell, 0px));
+
   display: grid;
-  gap: calc(var(--list-gap, 0) * var(--cell, 0px));
+  gap: var(--list-gap-px);
   align-items: start;
 
+  // its columns, and fewer when a column would be narrower than an item can use (a List a
+  // third of the page wide in 3 columns: its titles wrapped word by word, F106)
   &--grid {
-    grid-template-columns: repeat(var(--list-cols, 3), minmax(0, 1fr));
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(
+        max(
+          min(100%, var(--list-item-min, 240px)),
+          // (a hair under: rounding never drops a column that fits)
+          calc(
+              (100% - (var(--list-cols, 3) - 1) * var(--list-gap-px)) / var(--list-cols, 3) - 0.5px
+            )
+        ),
+        1fr
+      )
+    );
 
     // a tablet: two (one stays one)
     @media (width <= $bp-md) {
