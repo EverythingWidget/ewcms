@@ -28,7 +28,7 @@ html.is-locked {
 body {
   margin: 0;
   min-height: 100svh;
-  font-family: var(--f-mono);
+  font-family: var(--f-body);
   font-size: var(--body-size, 14px);
   line-height: var(--body-lh, 1.55);
   font-weight: var(--body-weight, 400);
@@ -77,7 +77,7 @@ img.is-loaded {
   background-image: none !important;
 }
 sup {
-  font-family: var(--f-mono);
+  font-family: var(--f-body);
   font-size: 0.8rem;
   vertical-align: top;
   letter-spacing: 0;
@@ -120,7 +120,7 @@ html.anim-pending [data-motion] > * {
 
 // the chrome's small labels: the Label style's tracking and case (--type-label-tracking, -case)
 .label {
-  font-family: var(--f-mono);
+  font-family: var(--f-body);
   font-size: 11px;
   font-weight: 400;
   letter-spacing: var(--type-label-tracking, 0.08em);

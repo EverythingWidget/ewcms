@@ -75,6 +75,24 @@ test('F86: each text style reads its weight, tracking and colour', () => {
   }
 });
 
+test('F94: the body font is --f-body (no --f-mono left in the site CSS); check names the rename', () => {
+  assert.doesNotMatch(css, /--f-mono/);
+  assert.match(css, /body \{[^}]*font-family: var\(--f-body\)/);
+  assert.match(requiredPart(starter), /^ {2}--f-body: /m);
+  assert.doesNotMatch(starter, /--f-mono/);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-fbody-'));
+  fs.mkdirSync(path.join(dir, 'theme'));
+  fs.writeFileSync(
+    path.join(dir, 'theme/tokens.scss'),
+    requiredPart(starter).replace('--f-body:', '--f-mono:'),
+  );
+  assert.match(
+    themeWarning(loadSiteConfig(dir)),
+    /misses 1 token\(s\) of the look \(--f-body\).* --f-mono is now --f-body: rename it\./,
+  );
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 test('ewcms check asks only for the tokens before @optional', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-opt-'));
   fs.mkdirSync(path.join(dir, 'theme'));

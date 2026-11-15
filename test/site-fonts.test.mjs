@@ -17,7 +17,7 @@ const doc = {
       getPropertyValue: (n) =>
         ({
           '--f-display': ` Asap, 'Helvetica Neue', sans-serif`,
-          '--f-mono': `"Work Sans", Arial`,
+          '--f-body': `"Work Sans", Arial`,
         })[n],
     }),
   },

@@ -6,6 +6,15 @@ say what a site must do before it bumps its pin.
 
 ## Unreleased
 
+### Breaking: what a site must do before bumping
+
+- **Breaking: the body font token `--f-mono` is `--f-body`.** It was the body and UI font (the
+  body text, Labels, the chrome), whatever the font: a site with a sans body set "mono" to it.
+  There is no alias: the engine reads `--f-body` only, so a theme that still sets `--f-mono` gets
+  the browser's default font. Rename it in `theme/tokens.scss` (and anywhere `theme/overrides.scss`
+  reads `var(--f-mono)`) in the same commit as the pin bump; `ewcms check` names the rename.
+  (The editor's own `--f-mono`, its DM Mono, is the editor's and stays.)
+
 ### Editor
 
 - Show only: a List from a source (All or From URL) can show only the items whose field has one

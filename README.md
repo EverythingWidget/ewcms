@@ -152,7 +152,7 @@ resolves them; the build, the dev server, the editor endpoints, `src/cli/photos.
 `@site-content` alias; the editor's browser code gets its settings from `virtual:editor-config`.
 
 **Theme:** the look is the site's own `theme/` (`site.config.mjs` `themeDir`), each file
-optional: `tokens.scss` (`:root` tokens: the colours, fonts, radius, easing, the header's height,
+optional: `tokens.scss` (`:root` tokens: the colours, fonts (`--f-display`, `--f-body`), radius, easing, the header's height,
 the List's `--item-*` and the type scale `--type-<style>-min`, `-max`, `-lh`; every colour of the
 look is a token; after its `// @optional` line, as comments with the engine's defaults, the finer
 ones: each text style's weight, tracking and colour, the body text, the logo, the nav and its

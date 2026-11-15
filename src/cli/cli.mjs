@@ -296,10 +296,15 @@ export function themeWarning(site) {
   const rel =
     posixPath(path.relative(site.root, path.resolve(site.root, site.config.themeDir))) || '.';
   const out = [];
+  // a token renamed (no alias: the old name is read nowhere): the new name to set
+  const renamed = Object.entries(RENAMED_TOKENS)
+    .filter(([old, now]) => own.has(old) && look.includes(now))
+    .map(([old, now]) => ` ${old} is now ${now}: rename it.`)
+    .join('');
   if (look.length)
     out.push(
       `[check] ${rel}/tokens.scss misses ${look.length} token(s) of the look (${look.join(', ')}): ` +
-        `ewcms has no default theme, so its chrome and widgets read them unset. Copy them from ` +
+        `ewcms has no default theme, so its chrome and widgets read them unset.${renamed} Copy them from ` +
         `ewcms starter/theme/tokens.scss (and fonts.scss, theme.json): see ewcms docs/THEME-MIGRATION.md`,
     );
   // the type scale has the engine's defaults (site-core/_tokens.scss): a site sees it, not unset
@@ -312,6 +317,9 @@ export function themeWarning(site) {
     );
   return out.join('\n');
 }
+
+/** Tokens of the look renamed, old: new (CHANGELOG, Breaking): check names the new one. */
+export const RENAMED_TOKENS = { '--f-mono': '--f-body' };
 
 /** The type scale tokens a site's site.json "type" sets (--type-<style>-min, -max, -lh). */
 function siteTypeTokens(site) {

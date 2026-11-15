@@ -18,7 +18,7 @@ export const absoluteUrls = (css, base) =>
 
 /**
  * { css, display, body } of the preview's document: css the @font-face rules for the editor's
- * document, display and body the font stacks (--f-display, --f-mono) with the site's families
+ * document, display and body the font stacks (--f-display, --f-body) with the site's families
  * renamed as in css. null without a document.
  */
 export function siteFonts(doc) {
@@ -57,5 +57,5 @@ export function siteFonts(doc) {
       .filter(Boolean)
       .map((f) => (families.has(unquote(f)) ? `"${PREFIX}${unquote(f)}"` : f))
       .join(', ');
-  return { css: faces.join('\n'), display: stack('--f-display'), body: stack('--f-mono') };
+  return { css: faces.join('\n'), display: stack('--f-display'), body: stack('--f-body') };
 }

@@ -80,7 +80,7 @@
   color: var(--type-paragraph-color, var(--solid-faint));
 }
 .ts--label {
-  font-family: var(--f-mono);
+  font-family: var(--f-body);
   font-size: clamp(var(--type-label-min), 0.76vw, var(--type-label-max));
   line-height: var(--type-label-lh);
   font-weight: var(--type-label-weight, 400);

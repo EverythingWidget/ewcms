@@ -165,7 +165,8 @@
   --c-scrim: var(--black-a90);
 
   // ---- semantic: type and motion
-  --f-mono: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; // the editor's text
+  // the editor's text: its own mono (a site's body font is the site's --f-body)
+  --f-mono: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --f-display: 'Momo Trust Display', 'Didot', 'Times New Roman', serif; // window titles
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 

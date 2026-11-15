@@ -1,5 +1,13 @@
 # Theme migration
 
+## Unreleased: `--f-mono` is `--f-body`
+
+The body and UI font token is `--f-body` (it was `--f-mono`, whatever the font). No alias: rename
+it in `theme/tokens.scss`, and every `var(--f-mono)` in `theme/overrides.scss`, in the commit
+that bumps the pin. `npx ewcms check` says `--f-mono is now --f-body` until it's done. The
+optional tokens after the starter's `// @optional` line (the type styles' weight, tracking and
+colour, the body text, the nav, the button, …) need nothing: unset, a site looks as before.
+
 ## 0.8.0: the engine has no theme of its own
 
 `theme-default/` is gone. The look (its tokens, fonts and `theme.json`) moved to `starter/theme/`,
