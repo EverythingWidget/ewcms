@@ -51,6 +51,7 @@ import {
 import { WIDGET_TAB_KEY, widgetTabOf } from './widget-layout.js';
 import { popOrigin, pushOrigin } from './lib/template-origin.js';
 import { toast, undoToast } from './svelte/toasts.svelte.js';
+import { frameOr, within } from './lib/settle.js';
 import { createLive } from './svelte/live.svelte.js';
 import { connectMedia } from './svelte/media.svelte.js';
 import { createStore } from './store.js';
@@ -1186,10 +1187,16 @@ hooks.clicks = modeChanged;
 // a widget row clicked: it scrolls into view in the preview when out of it (overlay.js)
 hooks.reveal = (id) => overlay.reveal(id);
 // the preview caught up with the edits: the renders queued (an Auto size, typed text) swapped in,
-// then its rows flowed (rows.js) on the next frame
+// then its rows flowed (rows.js) on the next frame. Never forever: a background tab paints no
+// frames, a render may not answer (lib/settle.js; G1, F104)
 hooks.settled = async () => {
-  for (let last; last !== rendering;) await (last = rendering);
+  await within(
+    (async () => {
+      for (let last; last !== rendering;) await (last = rendering);
+    })(),
+    3000,
+  );
   const win = bridge.doc?.defaultView;
-  if (win) await new Promise((r) => win.requestAnimationFrame(() => r()));
+  if (win) await frameOr(win);
   bridge.api?.reflow?.();
 };
