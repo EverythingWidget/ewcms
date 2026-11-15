@@ -255,8 +255,11 @@
       view?.removeEventListener('keydown', esc, true);
     };
   });
+  // its id only: `where` is a new object per edit (live.version), and a style picked must not
+  // close its menu (G4)
+  const whereId = $derived(where?.id);
   $effect(() => {
-    where?.id;
+    void whereId;
     // another widget picked while the link box held the edit open: it lets go, the edit ends
     untrack(() => {
       if (open === 'link') bridge.releaseRich(null);
