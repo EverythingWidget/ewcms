@@ -291,7 +291,14 @@
       </div>
     {:else if part === 'placement'}
       <div class={['tf', placement.box && 'is-half']}>
-        <span class="tf__label">Placement</span>
+        <span class="tf__label"
+          >Placement<InfoHelp label="About Placement and moving widgets"
+            ><b>Placement</b>: where the content sits inside the widget's box. To move the widget
+            itself, drag it in the preview; drag a side handle to make it wider or narrower (it
+            snaps to the grid's 120 columns); arrow keys nudge it (Shift: 5). Side by side: narrow
+            each one, then drag them next to each other.</InfoHelp
+          ></span
+        >
         <Position
           label="Placement"
           options={placesOf(placement)}
