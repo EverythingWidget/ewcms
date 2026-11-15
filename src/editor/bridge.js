@@ -112,6 +112,8 @@ html.__ed-arrange [data-widget] :is([data-edit], [data-bound]):not(.__ed-invalid
 const MOTION_PICK = '[data-anim], [data-widget]';
 /** What would act on a click (follow, open, send): off with arrange clicks. */
 const ACTIVE = 'a, button, [role="button"], label, summary, input, select, textarea';
+/** How long a click on a link waits for a second click before its link box opens, ms. */
+const LINK_BOX_WAIT = 300;
 
 const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -122,8 +124,15 @@ const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').re
  * picked(): the element picked ({ el, kind }, or null) and hovered(): the one under the pointer
  * (ui.svelte.js: ui.picked, ui.hoverEl). The bridge draws their outlines; it keeps no selection
  * of its own: a pick is reported ('pick': el, kind, { quiet }), as is a hover ('hover': el).
+ * widget(): the id of the widget selected (ui.widget), or null.
  */
-export function createBridge({ store, labelFor, picked = () => null, hovered = () => null }) {
+export function createBridge({
+  store,
+  labelFor,
+  picked = () => null,
+  hovered = () => null,
+  widget = () => null,
+}) {
   const handlers = {
     connect: [],
     navigate: [],
@@ -561,6 +570,36 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
     });
   }
 
+  /** The link under x, y in the picked widget's Text, { a, body }, or null. */
+  function pickedLinkAt(x, y) {
+    const range = doc.caretRangeFromPoint?.(x, y);
+    const node = range?.startContainer;
+    const a = (node?.nodeType === 1 ? node : node?.parentElement)?.closest('a');
+    const body = a?.closest('[data-edit-type="rich"]');
+    const own = body?.closest('[data-tw], [data-widget]');
+    // selected before this click (a first click selects the widget), and not a drag's end
+    const id = own?.dataset.tw || own?.dataset.widget;
+    const moved = down && Math.hypot(x - down.x, y - down.y) > 4;
+    return body && id && down?.widget === id && !moved ? { a, body } : null;
+  }
+  let down = null; // the last press: where, and the widget selected then
+
+  // a click on a link while its Text is edited: the link box opens for it (its address in
+  // the field, a broken one with its note: F107), unless a second click follows (a double
+  // click selects a word of it, the box stays closed)
+  let linkBoxTimer = 0;
+  function linkBoxSoon() {
+    clearTimeout(linkBoxTimer);
+    linkBoxTimer = setTimeout(() => {
+      if (!rich) return;
+      const s = selectionOf(rich.el, win);
+      if (!s || !isCaret(s) || !linkRangeAt(store.get(rich.file, rich.ptr), s.to)) return;
+      richSel = s;
+      emit('rich', richState());
+      emit('richLink');
+    }, LINK_BOX_WAIT);
+  }
+
   /** A widget's Text body (the element edited in its edit mode), or null. */
   const richOf = (w) => w?.querySelector('[data-edit-type="rich"]') || null;
 
@@ -836,6 +875,17 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
         if (clicks === 'arrange') {
           if (t?.closest('[contenteditable]')) {
             if (t.closest('a, button')) e.preventDefault(); // the caret moves, nothing follows
+            if (rich && e.detail === 1 && t.closest('a')) linkBoxSoon();
+            return;
+          }
+          // a link in the picked Text widget (its links take no pointer, so a click there picks
+          // the widget): its text edited, the caret in the link, its link box opened (F108)
+          const link = e.detail === 1 ? pickedLinkAt(e.clientX, e.clientY) : null;
+          if (link) {
+            e.preventDefault();
+            e.stopPropagation();
+            startRich(link.body, e.clientX, e.clientY);
+            linkBoxSoon();
             return;
           }
           const hit = t?.closest('[data-edit], [data-bound]');
@@ -989,6 +1039,16 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
       true,
     );
 
+    // a press: where, and what was picked before it (the window hears it before the overlay
+    // picks); a double click opens no link box
+    win.addEventListener(
+      'pointerdown',
+      (e) => {
+        if (e.detail > 1) clearTimeout(linkBoxTimer);
+        down = { x: e.clientX, y: e.clientY, widget: widget() };
+      },
+      true,
+    );
     // the link box held the edit open: a click in the preview away from the widget lets go
     // and ends it (the toolbar's box closes with it)
     doc.addEventListener(

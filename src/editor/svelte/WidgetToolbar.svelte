@@ -35,7 +35,7 @@
   import { sampleSource } from '../../render/widgets/list/template-preview.js';
   import { innerTemplates } from '../../render/widgets/list/nested.js';
   import { schemaOf } from '../../render/schemas.js';
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { NEW_ROWS, setWidget } from '../layout-ops.js';
   import { DRAFT_HREF, isDraftHref, isSafeHref, UNSAFE_HREF } from '../../render/hrefs.js';
   import {
@@ -315,7 +315,12 @@
     linkText = linkDraft ? '' : href;
     bridge.holdRich(true);
     open = 'link';
+    // the address field takes the keys at once, however the box opened (a click on the link in
+    // the preview, Ctrl+K, the button; already open too): no click in it first, and what is
+    // typed replaces the address (F108)
+    tick().then(() => linkInput?.select());
   }
+  let linkInput = $state();
   const linkError = $derived(linkText.trim() && !isSafeHref(linkText.trim()) ? UNSAFE_HREF : '');
   function saveLink(e) {
     e?.preventDefault();
@@ -579,6 +584,7 @@
               class:is-invalid={!!linkError}
               aria-invalid={!!linkError}
               bind:value={linkText}
+              bind:this={linkInput}
               {@attach (el) => el.focus()}
               onkeydown={(e) => e.key === 'Escape' && (e.stopPropagation(), cancelLink())}
             />

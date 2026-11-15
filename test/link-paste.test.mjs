@@ -132,7 +132,10 @@ test("F50: the toolbar's Link opens on a caret in a link and empties a preview a
 
 test('Ctrl+K: a caret in a link opens the link box too, not only a selection', () => {
   const bridge = readFileSync(new URL('../src/editor/bridge.js', import.meta.url), 'utf8');
-  const k = bridge.slice(bridge.indexOf("k === 'k'"), bridge.indexOf("emit('richLink')") + 20);
+  const k = bridge.slice(
+    bridge.indexOf("k === 'k'"),
+    bridge.indexOf("emit('richLink')", bridge.indexOf("k === 'k'")) + 20,
+  );
   assert.match(k, /linkRangeAt\(store\.get\(rich\.file, rich\.ptr\), richSel\.to\)/);
   assert.match(k, /if \(richSel && \(!isCaret\(richSel\) \|\| inLink\)\) emit\('richLink'\)/);
   // a caret right inside a link has its range; one outside has none

@@ -136,6 +136,7 @@ const bridge = createBridge({
   labelFor: (p) => labelFor(store, p),
   picked: () => ui.picked,
   hovered: () => ui.hoverEl,
+  widget: () => ui.widget,
 });
 // the preview's layout overlay (arranging in the Sections tab, Grid; overlay.js): widgetAt and
 // placeWidget below
