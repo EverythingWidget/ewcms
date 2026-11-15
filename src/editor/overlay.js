@@ -930,8 +930,9 @@ export function createOverlay({
   }
 
   /**
-   * A drag held near the preview's top or bottom edge scrolls it, faster the closer (to 16px a
-   * frame), and the widget goes along: a long move or resize reaches past what shows (G6).
+   * A drag held near the preview's top or bottom edge scrolls it, faster the closer, one row
+   * a frame at most (phone rows are shorter: a 16px cap ran at about 61 rows, about 17 on
+   * desktop: G15), and the widget goes along: a long move or resize reaches past what shows (G6).
    */
   const EDGE = 48;
   function autoScroll() {
@@ -941,7 +942,9 @@ export function createOverlay({
       const top = EDGE - y;
       const bottom = y - (win.innerHeight - EDGE);
       const v = top > 0 ? -top : bottom > 0 ? bottom : 0;
-      return Math.round(Math.max(-16, Math.min(16, v / 3)));
+      const row = (drag.lines?.row || 0) + (drag.lines?.rowGap || 0) || 16;
+      const cap = Math.max(1, Math.round(row));
+      return Math.round(Math.max(-cap, Math.min(cap, v / 3)));
     };
     const step = () => {
       if (!drag) return;

@@ -120,3 +120,9 @@ test('G14: Ctrl+Z in the preview is preventDefault before the editor undo runs',
   assert.match(b, /e\.preventDefault\(\); \/\/ Ctrl\+Z after a drag/);
   assert.match(b, /e\.preventDefault\(\); \/\/ Ctrl\+Z: the editor's undo/);
 });
+
+test('G15: auto-scroll is capped at one row a frame, not 16px (phone rows are shorter)', () => {
+  assert.match(ov, /const cap = Math\.max\(1, Math\.round\(row\)\);/);
+  assert.match(ov, /drag\.lines\?\.row/);
+  assert.doesNotMatch(ov, /Math\.max\(-16, Math\.min\(16, v \/ 3\)\)/);
+});
