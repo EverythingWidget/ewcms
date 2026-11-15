@@ -185,8 +185,12 @@
     field.querySelector('.tf__input, button')?.focus({ preventScroll: true });
     field.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
-  // it waits for the files (a refresh opens it before they are loaded)
-  const ready = () => files.length > 0;
+  // it waits for the content (a refresh opens it before it is loaded), not for a source file:
+  // a site without one would keep it, and every modal above it, on the stack unshown (G1)
+  const ready = () => {
+    live.version;
+    return Object.keys(live.store.current).length > 0;
+  };
 </script>
 
 <dialog
@@ -235,6 +239,10 @@
               data-file={f}
               onclick={() => goTo(f)}
             />
+          </li>
+        {:else}
+          <li class="hint small sources-files__none">
+            No source files yet: add one as <code>content/en/sources/&lt;name&gt;.json</code>.
           </li>
         {/each}
       </ul>

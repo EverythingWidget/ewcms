@@ -253,3 +253,88 @@ test('Add page: a "/" in the name says to add the parent first (F36)', () => {
   assert.match(src, /slug\.includes\('\/'\)\s*\?\s*nestedHint\(slug\)/);
   assert.match(src, /<InfoHelp label="About the name in the URL"/);
 });
+
+test('Sources waits for the content, not for a source file: a site without one still opens it and every modal after it (G1)', () => {
+  const src = read('SourcesModal.svelte');
+  const ready = src.match(/const ready = \(\) => \{[\s\S]*?\n {2}\};/)?.[0];
+  assert.ok(ready, 'SourcesModal has a ready()');
+  assert.match(ready, /Object\.keys\(live\.store\.current\)\.length > 0/);
+  assert.doesNotMatch(ready, /files\.length/);
+  // the empty list says so (the window is not blank)
+  assert.match(src, /\{:else\}\s*<li class="hint small sources-files__none">\s*No source files yet/);
+  // Media waits for the same thing
+  assert.match(read('MediaModal.svelte'), /Object\.keys\(live\.store\.current\)\.length > 0/);
+});
+
+test('a modal not ready keeps the ones above it waiting, and they all show once it is (G1)', () => {
+  const log = [];
+  let loaded = false;
+  const sources = fakeDialog('sources', log);
+  const media = fakeDialog('media', log);
+  const addPage = fakeDialog('addPage', log);
+  const off = [
+    m.modal('sources', { ready: () => loaded })(sources),
+    m.modal('media')(media),
+    m.modal('addPage')(addPage),
+  ];
+  ui.modals = [];
+  m.openSources();
+  m.openModal('media', { key: '', filter: 'all', pick: '', multi: null });
+  m.syncModals();
+  assert.deepEqual(log, []); // waiting: none shown (the URL already says media=…)
+  loaded = true; // the content came
+  m.syncModals();
+  assert.deepEqual(log, ['show sources', 'show media']);
+  m.openAddPage();
+  m.syncModals();
+  assert.equal(addPage.open, true);
+  ui.modals = [];
+  m.syncModals();
+  off.forEach((f) => f());
+});
+
+test('a long session: hundreds of opens and closes (buttons, Esc, backdrop, Close, stacked), the dialogs always match the stack (G1)', async () => {
+  const log = [];
+  const names = ['publish', 'media', 'sources', 'widgets', 'addPage', 'itemModal'];
+  const d = Object.fromEntries(names.map((n) => [n, fakeDialog(n, log)]));
+  const off = names.map((n) => m.modal(n)(d[n]));
+  const flush = () => new Promise((r) => setTimeout(r));
+  const check = (step) => {
+    m.syncModals();
+    for (const n of names) assert.equal(d[n].open, ui.modals.includes(n), `${step}: ${n}`);
+  };
+  const open = {
+    publish: () => m.openPublish(),
+    media: () => m.openModal('media', { key: '', filter: 'all', pick: '', multi: null }),
+    sources: () => m.openSources(),
+    widgets: () => m.openWidgets({ at: 0, types: [], onpick() {} }),
+    addPage: () => m.openAddPage(),
+    itemModal: () => m.openItemModal({ mode: 'item', value: null }),
+  };
+  ui.modals = [];
+  let seed = 7;
+  const rnd = (n) => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) % n);
+  for (let step = 0; step < 600; step++) {
+    const what = rnd(6);
+    const top = m.topModal();
+    if (what < 3) open[names[rnd(names.length)]]();
+    else if (what === 3 && top) d[top].close(); // Esc or the backdrop: the browser closes the one in front
+    else if (what === 4 && top) m.closeModal(); // its Close button, or the editor's Esc
+    else if (what === 5) m.closeModal(ui.modals[0]); // a pick that closes them all (Media's use)
+    await flush(); // the close events come later
+    check(step);
+  }
+  // after all that, each one still opens on its own and closes again
+  for (const n of names) {
+    ui.modals = [];
+    check(`${n} closed`);
+    open[n]();
+    check(`${n} open`);
+    assert.deepEqual(ui.modals, [n]);
+    d[n].close();
+    await flush();
+    check(`${n} closed again`);
+    assert.deepEqual(ui.modals, []);
+  }
+  off.forEach((f) => f());
+});

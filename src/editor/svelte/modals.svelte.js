@@ -119,7 +119,9 @@ let mounted = $state(0); // bumped when one mounts or goes, for syncModals
 /**
  * The modal's <dialog>: {@attach modal('media', { onopen, ready })}. onopen(dialog): after it is
  * shown (not when only shown again for the order); ready(): may it show yet (its content
- * loaded; until then it and the ones above it wait).
+ * loaded; until then it and the ones above it wait). ready() must turn true once the content
+ * is loaded, whatever the site has: one that stays false keeps the modal on the stack unshown,
+ * and every modal opened after it with it (the URL says media=…, no window opens: G1).
  */
 export function modal(name, { onopen = null, ready = null } = {}) {
   return (dialog) => {
