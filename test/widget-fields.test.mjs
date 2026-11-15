@@ -80,3 +80,11 @@ test('Button square: 32×32, keeps the default fill and ring; iconOnly stays bar
   assert.match(b, /\.btn--icon \{[^}]*background: none;/);
 });
 
+test('Shrink to fit flips on its switch only, not a click on its row (F57)', () => {
+  const src = readFileSync(
+    new URL('../src/editor/svelte/WidgetLayout.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.match(src, /<div class="tf wl__scale">/);
+  assert.doesNotMatch(src, /<label class="tf wl__scale">/);
+});

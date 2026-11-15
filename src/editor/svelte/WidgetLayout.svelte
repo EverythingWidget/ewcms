@@ -33,6 +33,7 @@
   } from '../widget-layout.js';
 
   let { live, bridge, file, at, j, id, widget } = $props();
+  const uid = $props.id();
 
   const size = $derived(sizeOf(widget));
   const ratio = $derived(widget.aspect || '4:5');
@@ -309,20 +310,23 @@
         />
       </div>
     {:else if part === 'scale'}
-      <label class="tf wl__scale">
+      <!-- only the switch flips it, not a click anywhere on the row (a stray click from a
+           double click on the preview behind the pop-up switched it on: F57) -->
+      <div class="tf wl__scale">
         <span class="tf__label">
-          <span class="wl__scale-label">Shrink to fit</span>
+          <span class="wl__scale-label" id="{uid}-scale">Shrink to fit</span>
           <input
             type="checkbox"
             class="switch"
             role="switch"
-            title="Scale the whole text down to fit the widget"
+            aria-labelledby="{uid}-scale"
+            title="Shrink the whole text to fit the widget"
             checked={isScaled}
             onchange={(e) => set(scalePatch(e.currentTarget.checked))}
           />
         </span>
         <span class="hint small wl__scale-hint">{scaleHint(isScaled)}</span>
-      </label>
+      </div>
     {/if}
   {/each}
 </div>
