@@ -16,7 +16,6 @@
  * template     a preset (./presets.js): preset:card | preset:plain | preset:panel | preset:row | preset:photo,
  *              or a site template "t-…" (content/templates/t-….json: Duplicate preset makes one)
  * custom       true: items come from config.items (Custom); omit/false: from the source
- *              (config.handmade before 0.9: read as custom, ewcms check warns)
  * items        custom entries [{ title, photo?, link?, source?, unit? }]; kept when switching
  *              back to From a source (and source is kept when switching to Custom)
  * arrangement  Grid | Carousel (Layout tab: a button group).
@@ -298,11 +297,6 @@ export const list = {
     ...(widget.heading !== undefined
       ? [
           '"heading" is no longer used (a List has no heading): a Text widget above the List shows it; remove the key',
-        ]
-      : []),
-    ...(widget.config?.handmade !== undefined
-      ? [
-          'config.handmade is now config.custom (Source: Custom): rename the key; until then it is read as config.custom',
         ]
       : []),
     ...(widget.config?.seeAll !== undefined

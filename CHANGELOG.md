@@ -9,11 +9,10 @@ say what a site must do before it bumps its pin.
 ### Breaking: what a site must do before bumping
 
 - **Breaking: a List's `config.handmade` is `config.custom`.** The content key now matches the
-  editor's label (Source: **Custom**). Rename `"handmade": true` to `"custom": true` on every List
-  that has it (pages, item templates, inner Lists). Until then nothing breaks: content loading
-  reads a leftover `config.handmade` as `config.custom` (the editor saves it under the new key),
-  and the dev server and `ewcms check` warn about each file that still has it. A site pinned to
-  0.8.0 or older only reads `handmade`: convert its content in the same commit as the pin bump.
+  editor's label (Source: **Custom**). There is no fallback: a List that still says
+  `"handmade": true` is not Custom and shows none of its `config.items`. Rename it to `"custom": true`
+  on every List that has it (pages, item templates, inner Lists) in the same commit as the pin
+  bump.
 
 ### Editor
 

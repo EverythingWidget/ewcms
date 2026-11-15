@@ -821,8 +821,7 @@ values of a **source item** instead of its own, as **parts** (`src/render/layout
 
 A **List** (`src/render/widgets/list/`) shows items as the same **column of widgets**, the
 **preset**: either every item of its source (**From a source**: All or From URL), or items you
-add by hand (**Custom**: `config.custom` and `config.items`; `config.handmade` before 0.9, still
-read as `config.custom`, with a warning). Each item widget is a real widget (Photo, Text, Button), rendered by the same code as on a page, so bindings, formats and the hide
+add by hand (**Custom**: `config.custom` and `config.items`). Each item widget is a real widget (Photo, Text, Button), rendered by the same code as on a page, so bindings, formats and the hide
 rule work as anywhere.
 
 ```json

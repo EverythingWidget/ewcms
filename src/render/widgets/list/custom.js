@@ -8,42 +8,8 @@ import { hrefOf, linkProblem } from '../../hrefs.js';
 import { isObject } from '../../is.js';
 import { sourcePage } from '../data.js';
 
-/**
- * Is this List in Custom mode (config.custom)? A List from before 0.9 says config.handmade:
- * it is read as config.custom too (content loading renames it: renameOldCustom).
- */
-export const isCustom = (widget) =>
-  widget?.config?.custom === true ||
-  (widget?.config?.custom === undefined && widget?.config?.handmade === true);
-
-/** The List's key before 0.9 for Custom (config.handmade, now config.custom). */
-export const OLD_CUSTOM_KEY = 'handmade';
-
-/**
- * Content from before 0.9, in place: every List's config.handmade (in a page, a template, an
- * inner List) becomes config.custom, in the same place among its keys (config.custom wins when
- * both are there). Returns how many Lists had it, so the loader can warn.
- */
-export function renameOldCustom(data) {
-  let n = 0;
-  const walk = (v) => {
-    if (Array.isArray(v)) return v.forEach(walk);
-    if (!isObject(v)) return;
-    const c = v.config;
-    if (v.type === 'list' && isObject(c) && Object.hasOwn(c, OLD_CUSTOM_KEY)) {
-      const has = Object.hasOwn(c, 'custom');
-      const entries = Object.entries(c).flatMap(([k, x]) =>
-        k !== OLD_CUSTOM_KEY ? [[k, x]] : has ? [] : [['custom', x]],
-      );
-      for (const k of Object.keys(c)) delete c[k];
-      Object.assign(c, Object.fromEntries(entries));
-      n++;
-    }
-    Object.values(v).forEach(walk);
-  };
-  walk(data);
-  return n;
-}
+/** Is this List in Custom mode (config.custom)? */
+export const isCustom = (widget) => widget?.config?.custom === true;
 
 /** A new custom item (Add): empty texts; source left for the editor to pick. */
 export const CUSTOM_ITEM = Object.freeze({

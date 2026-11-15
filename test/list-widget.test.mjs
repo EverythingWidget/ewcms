@@ -657,7 +657,6 @@ test('ListLead: Source Custom is config.custom, no Items switch', () => {
   assert.doesNotMatch(lead, /tf__label">Items</);
   assert.doesNotMatch(lead, />From a source</);
   assert.doesNotMatch(lead, /tf__label">Custom</);
-  assert.doesNotMatch(lead, /handmade/i);
   assert.match(lead, /config\/custom/);
   assert.match(lead, /config\/items/);
   assert.doesNotMatch(lead, /ll__pane/);
@@ -952,28 +951,4 @@ test('Title: the declared title property only when its type fits', () => {
   const bare = withName('text');
   bare.schemas.shots = { ...bare.schemas.shots, title: undefined };
   assert.equal(title(bare), 'title'); // none declared: "title"
-});
-
-test('config.handmade (before 0.9): renamed config.custom in place, still read as Custom', async () => {
-  const { renameOldCustom, isCustom } = await import('../src/render/widgets/list/custom.js');
-  const old = { type: 'list', config: { handmade: true, template: 'preset:panel', items: [] } };
-  assert.equal(isCustom(old), true);
-  const page = {
-    sections: [{ widgets: [old, { type: 'text', config: { handmade: true } }] }],
-    tpl: { type: 'list', config: { custom: false, handmade: true } },
-  };
-  assert.equal(renameOldCustom(page), 2);
-  // same place among its keys; a text widget is not a List: left alone
-  assert.deepEqual(Object.keys(old.config), ['custom', 'template', 'items']);
-  assert.equal(old.config.custom, true);
-  assert.deepEqual(page.sections[0].widgets[1].config, { handmade: true });
-  // both there: config.custom wins
-  assert.deepEqual(page.tpl.config, { custom: false });
-  assert.equal(renameOldCustom(page), 0);
-  // ewcms check: a warning, not a problem
-  assert.match(
-    WIDGET_TYPES.list.warn({ config: { handmade: true } }).join(' '),
-    /config\.handmade is now config\.custom/,
-  );
-  assert.deepEqual(WIDGET_TYPES.list.check({ config: { handmade: true } }), []);
 });
