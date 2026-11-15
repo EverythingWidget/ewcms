@@ -119,6 +119,8 @@ const STYLE = `
 .edge { position: absolute; top: 0; bottom: 0; width: 12px; translate: -50% 0; pointer-events: auto; cursor: ew-resize; }
 .edge[data-h='w'] { left: 0; }
 .edge[data-h='e'] { left: 100%; }
+/* its text edited: the frame only, so the handles and edges don't cover its words (F109) */
+.sel.is-editing .handle, .sel.is-editing .edge { display: none; }
 .sel.is-free.is-phone .handle:not([data-h='e']):not([data-h='w']) { display: none; }
 /* Auto (its height follows its content): only its sides resize; its top or bottom edge dragged
    gives it rows (Size Rows, the toggle off) */
@@ -555,6 +557,8 @@ export function createOverlay({
         sizeOf(widget) === 'auto' &&
         !(dragging && /[ns]/.test(drag.h) && drag.pos.rows !== drag.from.rows);
       els.sel.classList.toggle('is-auto', sizeOf(widget) === 'auto' && !dragging);
+      // its text edited: no handles or edges over its words and links (F109)
+      els.sel.classList.toggle('is-editing', !!sel.querySelector('[contenteditable]'));
       const label = tagHtml(
         dragging ? drag.pos : shownPlace(sel, win),
         dragging ? drag.from : null,

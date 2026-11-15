@@ -30,3 +30,18 @@ test('F108: the link box address field has the focus (its address selected) when
   assert.match(open, /tick\(\)\.then\(\(\) => linkInput\?\.select\(\)\);/);
   assert.match(tb, /bind:this=\{linkInput\}/);
 });
+
+test('F109: while a Text is edited its handles and resize edges are gone: nothing covers its links', () => {
+  const o = read('editor/overlay.js');
+  assert.match(
+    o,
+    /els\.sel\.classList\.toggle\('is-editing', !!sel\.querySelector\('\[contenteditable\]'\)\);/,
+  );
+  assert.match(o, /\.sel\.is-editing \.handle, \.sel\.is-editing \.edge \{ display: none; \}/);
+  // (picked, not edited: its links take no pointer on purpose, the click is the widget's and
+  // a click on a link opens it: F108)
+  assert.match(
+    read('editor/bridge.js'),
+    /:not\(\[data-anim\], :has\(\[data-anim\], \[contenteditable\]\), \[contenteditable\] \*\) \{ pointer-events: none; \}/,
+  );
+});
