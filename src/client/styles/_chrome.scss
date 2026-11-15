@@ -26,7 +26,7 @@
     display: inline-flex;
     gap: 0.3em;
     font-family: var(--f-display);
-    font-size: 22px;
+    font-size: var(--logo-size, 22px);
     line-height: 1;
     font-weight: var(--logo-weight, inherit);
     letter-spacing: var(--logo-tracking, -0.01em);
