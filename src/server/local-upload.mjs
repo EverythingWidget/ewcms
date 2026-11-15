@@ -23,9 +23,16 @@ const EXTS = {
   'image/tiff': 'tiff',
 };
 
-/** "Noor Vermeer 01.JPG" -> "noor-vermeer-01.jpg"; a different photo by that name gets "-<hash>". */
+/** The other spellings a type's extension may have: kept as the file had it (F73). */
+const ALSO = { 'image/jpeg': ['jpeg'], 'image/tiff': ['tif'] };
+
+/**
+ * "Noor Vermeer 01.JPG" -> "noor-vermeer-01.jpg"; a different photo by that name gets "-<hash>".
+ * Its extension stays as it was when it is one of its type's ("x.jpeg" stays .jpeg, F73).
+ */
 export function localName(dir, name, type, body) {
-  const ext = EXTS[type] || 'jpg';
+  const own = /\.([a-z0-9]+)$/i.exec(String(name || ''))?.[1].toLowerCase();
+  const ext = (ALSO[type] || []).includes(own) ? own : EXTS[type] || 'jpg';
   const base = slugify(String(name || '').replace(/\.[a-z0-9]+$/i, '')).slice(0, 60) || 'photo';
   const plain = `${base}.${ext}`;
   const file = path.join(dir, plain);

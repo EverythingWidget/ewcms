@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
-import { uploadLocal } from '../src/server/local-upload.mjs';
+import { uploadLocal, localName } from '../src/server/local-upload.mjs';
 
 const site = () => fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-local-'));
 const jpeg = (r) =>
@@ -70,4 +70,14 @@ test('not an image: refused, nothing left in media/', async () => {
   assert.equal(bad.status, 415);
   assert.deepEqual(fs.readdirSync(path.join(root, 'media')), []);
   fs.rmSync(root, { recursive: true });
+});
+
+test('an upload keeps its .jpeg (or .tif): not renamed to .jpg (F73)', () => {
+  const dir = site();
+  const body = Buffer.from('x');
+  assert.equal(localName(dir, 'Salon 01.jpeg', 'image/jpeg', body), 'salon-01.jpeg');
+  assert.equal(localName(dir, 'Salon 01.JPG', 'image/jpeg', body), 'salon-01.jpg');
+  assert.equal(localName(dir, 'scan.TIF', 'image/tiff', body), 'scan.tif');
+  // a name without one of its type's extensions: the type's
+  assert.equal(localName(dir, 'odd.png', 'image/jpeg', body), 'odd.jpg');
 });
