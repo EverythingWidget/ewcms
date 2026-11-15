@@ -133,11 +133,14 @@ test('a Contact form or Button added on a Dutch site has Dutch texts (F62)', () 
   assert.equal(form.title, 'Neem contact op');
   assert.equal(form.submit, 'Verstuur');
   assert.ok(form.fields.some((f) => f.name === 'email' && f.type === 'email'));
-  assert.equal(addWidget(store, FT, 0, 'button').label, 'Neem contact op');
+  assert.equal(addWidget(store, FT, 0, 'button').label, 'Knop');
   assert.deepEqual(checkContent(FT, store.current[FT]), []);
   // another language: the defaults
   store.load({ 'site.json': { version: 1, name: 'X', lang: 'en' } });
   assert.equal(addWidget(store, FT, 0, 'form').title, 'Get in touch');
+  const btn = addWidget(store, FT, 0, 'button');
+  assert.equal(btn.label, 'Button');
+  assert.equal(btn.config?.link?.href, '');
 });
 
 test('a new Text is two thirds wide, not a third (F47)', () => {

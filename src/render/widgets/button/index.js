@@ -13,7 +13,7 @@ import { hrefOf } from '../../hrefs.js';
 export const button = {
   type: 'button',
   // added from the editor: Auto, as tall as what it holds
-  added: { size: 'auto', lang: { nl: { label: 'Neem contact op' } } },
+  added: { size: 'auto', lang: { nl: { label: 'Knop' } } },
   label: 'Button',
   icon: 'arrow-right',
   line: 'A link to a page or a site',
@@ -23,14 +23,17 @@ export const button = {
   settings: [{ key: 'label', label: 'Label' }],
   config: [{ key: 'link', label: 'Link', type: 'link' }],
   defaults: {
-    label: 'Get in touch',
-    config: { link: { href: '/about/' } },
+    label: 'Button',
+    config: { link: { href: '' } },
     motion: { animation: 'fade-in' },
   },
   render: (s, ctx) => {
-    const href = hrefOf(ctx, s.config?.link, 'a button') || '/';
+    const href = hrefOf(ctx, s.config?.link, 'a button');
+    const label = html`<span>${esc(s.label)}</span> <span aria-hidden="true">→</span>`;
     return html` <div class="buttonwidget">
-      <a class="btn glass" href="${esc(href)}"${extAttrs(href)}><span>${esc(s.label)}</span> <span aria-hidden="true">→</span></a>
+      ${href
+        ? html`<a class="btn glass" href="${esc(href)}"${extAttrs(href)}>${label}</a>`
+        : html`<span class="btn glass">${label}</span>`}
     </div>`;
   },
 };
