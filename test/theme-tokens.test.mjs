@@ -134,3 +134,15 @@ test('F88: the button reads its fill, blur, colours, type, padding and radius', 
   ])
     assert.ok(glass.includes(`var(${t},`), t);
 });
+
+test("F96: the current page's nav item reads its shape and colours", () => {
+  const active = rule('src/client/styles/_chrome.scss', '&.is-active {');
+  for (const t of [
+    '--nav-active-radius',
+    '--nav-active-bg, var(--fg)',
+    '--nav-active-fg, var(--on-fg)',
+  ])
+    assert.ok(active.includes(`var(${t}`), t);
+  const chrome = fs.readFileSync(path.join(root, 'src/client/styles/_chrome.scss'), 'utf8');
+  assert.ok(chrome.includes('color: var(--menu-active-fg, var(--brand))'));
+});

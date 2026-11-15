@@ -14,6 +14,6 @@ test('--brand is the site accent, fixed; theme.js tweens --accent only', () => {
   const theme = read('src/client/theme.js').replace(/\/\*\*[\s\S]*?\*\//, '');
   assert.doesNotMatch(theme, /--brand/);
   const chrome = read('src/client/styles/_chrome.scss');
-  assert.match(chrome, /&\.is-active \{\s*color: var\(--brand\);/);
+  assert.match(chrome, /&\.is-active \{\s*color: var\(--menu-active-fg, var\(--brand\)\);/); // the phone menu's current page (F96: a token, --brand its default)
   assert.match(read('src/client/styles/_glass.scss'), /var\(--accent\) 8%/); // album tint stays
 });

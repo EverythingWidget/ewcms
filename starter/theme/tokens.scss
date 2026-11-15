@@ -121,6 +121,13 @@
   // --nav-weight: inherit;
   // --nav-tracking: 0.06em;
   // --nav-case: uppercase;
+  // the nav items' corners (their hover fill's shape) and the current page's item: its shape,
+  // fill and text colour; the phone menu's current page's colour
+  // --nav-radius: 0;
+  // --nav-active-radius: var(--nav-radius, 0);
+  // --nav-active-bg: var(--fg);
+  // --nav-active-fg: var(--on-fg);
+  // --menu-active-fg: var(--brand);
 
   // the button (the Button widget, the Form's Send; src/client/styles/_glass.scss .btn): today a
   // glass pill. Its fill and hover fill (on the glass layer), their blur (none: a solid fill),

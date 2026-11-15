@@ -85,7 +85,8 @@
     align-items: center;
     gap: 7px;
     height: 36px;
-    padding: 0 16px; /* border-radius: 999px; */
+    padding: 0 16px;
+    border-radius: var(--nav-radius, 0);
     // the nav's type: tokens (--nav-size, -weight, -tracking, -case), the phone's Menu button too
     font-size: var(--nav-size, 12px);
     font-weight: var(--nav-weight, inherit);
@@ -110,9 +111,11 @@
       }
     }
 
+    // the current page's item: its fill, text colour and shape are tokens (a pill: 999px)
     &.is-active {
-      background: var(--fg);
-      color: var(--on-fg);
+      border-radius: var(--nav-active-radius, var(--nav-radius, 0));
+      background: var(--nav-active-bg, var(--fg));
+      color: var(--nav-active-fg, var(--on-fg));
     }
   }
 
@@ -330,7 +333,7 @@
     line-height: 0.95;
 
     &.is-active {
-      color: var(--brand);
+      color: var(--menu-active-fg, var(--brand));
     }
   }
 
