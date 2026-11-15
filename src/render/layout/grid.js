@@ -64,7 +64,7 @@ const ownPhone = (widget) => {
  * desktop top, then left), each following the one before with STACK_GAP rows between them (its
  * desktop gap halved when it follows that one on the desktop too: a caption over a photo), so an
  * Auto one that grows pushes the rest down (src/client/modules/rows.js); the first keeps its
- * desktop top halved. A Rows widget keeps its desktop shape (its rows over its width). Map
+ * desktop top halved (rounded up: a gap above it stays one). A Rows widget keeps its desktop shape (its rows over its width). Map
  * id -> { area, link } (link null: the first).
  */
 export function phoneStack(widgets) {
@@ -110,7 +110,11 @@ export function phoneStack(widgets) {
       prev && isObject(l) && l.to === prev.id && Number.isInteger(l.gap ?? 0)
         ? Math.sign(l.gap || 0) * Math.round(Math.abs(l.gap || 0) / 2)
         : STACK_GAP;
-    const row = prev ? Math.max(1, prev.area.row + prev.area.rows + gap) : halfArea(p).row;
+    // the first: its desktop top halved, rounded up, so a gap above it stays a gap (rounded
+    // down, row 2 became row 1: a heading flush under the phone's menu bar, F49)
+    const row = prev
+      ? Math.max(1, prev.area.row + prev.area.rows + gap)
+      : Math.ceil((p.row - 1) / 2) + 1;
     const area = { col: 1, span: MCOLS, row, rows };
     out.set(widget.id, (prev = { area, link: prev ? { to: prev.id, gap } : null, id: widget.id }));
   }
