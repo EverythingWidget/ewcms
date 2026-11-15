@@ -152,13 +152,18 @@ resolves them; the build, the dev server, the editor endpoints, `src/cli/photos.
 `@site-content` alias; the editor's browser code gets its settings from `virtual:editor-config`.
 
 **Theme:** the look is the site's own `theme/` (`site.config.mjs` `themeDir`), each file
-optional: `tokens.scss` (`:root` tokens: the colours, fonts, radius, easing, the header's height
-and the List's `--item-*`; every colour of the look is a token), `fonts.scss` (`@font-face`),
+optional: `tokens.scss` (`:root` tokens: the colours, fonts, radius, easing, the header's height,
+the List's `--item-*` and the type scale `--type-<style>-min`, `-max`, `-lh`; every colour of the
+look is a token; after its `// @optional` line, as comments with the engine's defaults, the finer
+ones: each text style's weight, tracking and colour, the body text, the logo, the nav and its
+current item, the button, selected text and the skip link), `fonts.scss` (`@font-face`),
 `overrides.scss` (rules after the engine's styles) and `theme.json` (`themeColor`, `colorScheme`
 and `preloads`, put in every page's head at `<!--theme-meta-->` and `<!--theme-preloads-->` in
 `index.html`; `site.json` `themeColor` wins). The engine has no theme of its own: `ewcms new-site`
 copies `starter/theme/` (tokens, fonts, theme.json) into the new site, which owns that copy, and
-`ewcms check` warns when a site's tokens miss any of the starter's (docs/THEME-MIGRATION.md). The
+`ewcms check` warns when a site's tokens miss any of the starter's before `// @optional` (the type
+scale on a line of its own: the engine has its defaults, and what `site.json` `type` sets counts;
+docs/THEME-MIGRATION.md). The
 files reach `main.scss` through the `site-layer` alias (`.generated/theme-layers`: a stub per
 file, the site's or empty: Sass has no optional `@use`); the site's tokens take the core's
 breakpoints as `site-core/tokens`. The engine's styles read the tokens: the core
@@ -569,7 +574,8 @@ every section is a grid of **widgets** (`src/render/layout/`):
   **Type scale** (`site.json` `type`, Site Settings › **Type**; `src/render/layout/type.js`): each
   style's usual font size grows with the window between `min` and `max` (px; equal: fixed),
   with a line height `line` (× the size): `{ "heading": { "min": 38, "max": 104, "line": 0.92 } }`.
-  Each left out is the theme's (`--type-<style>-min`, `-max`, `-lh` in `_tokens.scss`, used by
+  Each left out is the theme's (`--type-<style>-min`, `-max`, `-lh`: the site's
+  `theme/tokens.scss`, the starter lists them; unset, the engine's in `_tokens.scss`; used by
   `_text.scss`); what `site.json` sets goes on the page's `:root`, so it changes the preview
   and the built site, never the editor. Defaults: title 72–250 / 0.82, heading 38–104 / 0.92,
   subheading 22–36 / 1.15, statement 30–72 / 1.06, paragraph 16 / 1.75, label 11 / 1.55,

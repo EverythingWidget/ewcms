@@ -275,24 +275,58 @@ const tokensSet = (scss) => [...new Set(scss.match(/(?<![\w-])--[\w-]+(?=\s*:)/g
 /**
  * A warning for a site whose theme misses tokens of the look (ewcms starter/theme/tokens.scss):
  * the engine has no theme of its own, so the chrome and widgets would read them unset. The
- * site's tokens.scss and overrides.scss count. '' when none is missing. Not a failure.
+ * site's tokens.scss and overrides.scss count. The type scale (--type-*) on its own line: the
+ * engine has defaults for it, and what site.json "type" sets counts. '' when none is missing.
+ * Not a failure.
  */
 export function themeWarning(site) {
   const read = (f) =>
     site.themeDir && fs.existsSync(path.join(site.themeDir, f))
       ? fs.readFileSync(path.join(site.themeDir, f), 'utf8')
       : '';
-  const own = new Set(tokensSet(read('tokens.scss') + read('overrides.scss')));
+  const own = new Set([
+    ...tokensSet(read('tokens.scss') + read('overrides.scss')),
+    ...siteTypeTokens(site),
+  ]);
   const starter = fs.readFileSync(path.join(STARTER_THEME, 'tokens.scss'), 'utf8');
   // (the starter's @optional tokens have the engine's defaults: not asked for)
   const missing = tokensSet(requiredPart(starter)).filter((t) => !own.has(t));
-  if (!missing.length) return '';
+  const look = missing.filter((t) => !t.startsWith('--type-'));
+  const type = missing.filter((t) => t.startsWith('--type-'));
   const rel =
     posixPath(path.relative(site.root, path.resolve(site.root, site.config.themeDir))) || '.';
-  return (
-    `[check] ${rel}/tokens.scss misses ${missing.length} token(s) of the look (${missing.join(', ')}): ` +
-    `ewcms has no default theme, so its chrome and widgets read them unset. Copy them from ` +
-    `ewcms starter/theme/tokens.scss (and fonts.scss, theme.json): see ewcms docs/THEME-MIGRATION.md`
+  const out = [];
+  if (look.length)
+    out.push(
+      `[check] ${rel}/tokens.scss misses ${look.length} token(s) of the look (${look.join(', ')}): ` +
+        `ewcms has no default theme, so its chrome and widgets read them unset. Copy them from ` +
+        `ewcms starter/theme/tokens.scss (and fonts.scss, theme.json): see ewcms docs/THEME-MIGRATION.md`,
+    );
+  // the type scale has the engine's defaults (site-core/_tokens.scss): a site sees it, not unset
+  if (type.length)
+    out.push(
+      `[check] ${rel}/tokens.scss doesn't set ${type.length} token(s) of the type scale ` +
+        `(${type.join(', ')}): the engine's defaults apply. Copy them from ewcms ` +
+        `starter/theme/tokens.scss (with those defaults) and set the sizes there, or per site ` +
+        `in site.json "type"`,
+    );
+  return out.join('\n');
+}
+
+/** The type scale tokens a site's site.json "type" sets (--type-<style>-min, -max, -lh). */
+function siteTypeTokens(site) {
+  const file = path.join(site.contentRootDir || '', 'site.json');
+  let type;
+  try {
+    type = JSON.parse(fs.readFileSync(file, 'utf8')).type;
+  } catch {
+    return [];
+  }
+  const suffix = { min: 'min', max: 'max', line: 'lh' };
+  return Object.entries(type && typeof type === 'object' ? type : {}).flatMap(([k, s]) =>
+    Object.keys(suffix)
+      .filter((key) => s && typeof s === 'object' && s[key] !== undefined)
+      .map((key) => `--type-${k}-${suffix[key]}`),
   );
 }
 

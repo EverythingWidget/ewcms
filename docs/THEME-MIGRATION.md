@@ -21,8 +21,11 @@ colours, fonts and head meta go missing:
 3. `theme/theme.json`: it is no longer merged over an engine one. Add any key the site took from
    the engine (`colorScheme`, `themeColor`, `preloads`) from `starter/theme/theme.json`.
 4. `npx ewcms check`: no theme warning (it lists any token of the starter's that the site's
-   `tokens.scss` / `overrides.scss` misses), then compare every page, desktop and phone, before
-   and after (screenshots).
+   `tokens.scss` / `overrides.scss` misses, the type scale `--type-<style>-min`, `-max`, `-lh`
+   on its own line: those have the engine's defaults, and what `site.json` `type` sets counts),
+   then compare every page, desktop and phone, before and after (screenshots). The tokens after
+   the starter's `// @optional` line (each text style's weight, tracking and colour, the body
+   text, the nav, the button, …) are comments with the engine's defaults: not asked for.
 
 An old full-copy theme (`theme/styles/_look.scss`, below) is no longer special: its `styles/`
 are not loaded. Move what differs into `tokens.scss`, `fonts.scss` and `overrides.scss` first.
