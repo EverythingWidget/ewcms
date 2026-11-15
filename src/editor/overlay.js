@@ -901,6 +901,12 @@ export function createOverlay({
       pos: from,
       x: e.clientX,
       y: e.clientY,
+      // the preview's scroll at the start: a drag that scrolls it (autoScroll) counts it in
+      sy: win.scrollY,
+      // and how far it scrolls then: no further (the section grows as a widget goes down)
+      maxY: Math.max(0, doc.documentElement.scrollHeight - win.innerHeight),
+      last: null,
+      raf: 0,
       phone,
       saved,
       cols: phone ? MCOLS : COLS,
@@ -919,11 +925,42 @@ export function createOverlay({
     win.addEventListener('keydown', cancel, true);
   }
 
+  /**
+   * A drag held near the preview's top or bottom edge scrolls it, faster the closer (to 16px a
+   * frame), and the widget goes along: a long move or resize reaches past what shows (G6).
+   */
+  const EDGE = 48;
+  function autoScroll() {
+    if (!drag || drag.raf || !drag.last) return;
+    const speed = () => {
+      const y = drag?.last?.clientY ?? EDGE;
+      const top = EDGE - y;
+      const bottom = y - (win.innerHeight - EDGE);
+      const v = top > 0 ? -top : bottom > 0 ? bottom : 0;
+      return Math.round(Math.max(-16, Math.min(16, v / 3)));
+    };
+    const step = () => {
+      if (!drag) return;
+      drag.raf = 0;
+      const v = speed();
+      if (!v) return;
+      const before = win.scrollY;
+      const to = Math.max(0, Math.min(drag.maxY, before + v));
+      if (to === before) return; // at the top or the page's end (as the drag started)
+      win.scrollTo(win.scrollX, to);
+      move(drag.last);
+      drag.raf = win.requestAnimationFrame(step);
+    };
+    drag.raf = win.requestAnimationFrame(step);
+  }
+
   function move(e) {
     const { lines, from, h } = drag;
     const { cols, rows, row, rowGap } = lines;
+    drag.last = { clientX: e.clientX, clientY: e.clientY };
+    autoScroll();
     const dx = e.clientX - drag.x;
-    const dy = e.clientY - drag.y;
+    const dy = e.clientY - drag.y + (win.scrollY - drag.sy);
     const step = row + rowGap;
     const colStart = cols.starts[from.col - 1];
     const colEnd = cols.ends[from.col + from.span - 2];
@@ -1001,6 +1038,7 @@ export function createOverlay({
   }
 
   function stop() {
+    if (drag?.raf) win.cancelAnimationFrame(drag.raf);
     noSelect(false);
     doc.documentElement.removeAttribute('data-flow-hold');
     win.removeEventListener('pointermove', move, true);
