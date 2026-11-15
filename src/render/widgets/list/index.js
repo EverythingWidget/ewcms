@@ -54,7 +54,15 @@ import { hideMissing, missingState } from '../../layout/missing.js';
 import { isParts, partEmpty } from '../../layout/parts.js';
 import { WIDGET_TYPES } from '../index.js';
 import { sourcePage } from '../data.js';
-import { PRESETS, PRESET_IDS, factsRuns, presetWidgets, presetOf, templateOf } from './presets.js';
+import {
+  PRESETS,
+  PRESET_IDS,
+  factsRuns,
+  joinedRuns,
+  presetWidgets,
+  presetOf,
+  templateOf,
+} from './presets.js';
 import { isTemplateId } from '../../files.js';
 import { CUSTOM_ITEM, customItemProblem, customItemsOf, isCustom } from './custom.js';
 import { presetStyle, styleMarkup } from './item-style.js';
@@ -181,15 +189,14 @@ function forItem(w, scope, link, sep, { custom = false, href = '' } = {}) {
       ...w,
       body: [{ ...w.body[0], text: factsRuns(w.facts, (p) => partEmpty(p, scope), sep) }],
     };
-  // a template's joined line ("join": " · "): its properties with a value, the join between
-  // them only (an empty one takes no separator with it)
+  // a template's joined line ("join": " · "): its properties with a value and the text typed
+  // between them (none typed: the join); an empty one takes no separator with it
   if (typeof w.join === 'string' && w.body?.[0]) {
-    const names = (w.body[0].text || []).filter((r) => r?.property).map((r) => r.property);
     const { join, ...rest } = w;
     return {
       ...rest,
       body: [
-        { ...w.body[0], text: factsRuns(names, (p) => partEmpty(p, scope), join) },
+        { ...w.body[0], text: joinedRuns(w.body[0].text, (p) => partEmpty(p, scope), join) },
         ...w.body.slice(1),
       ],
     };

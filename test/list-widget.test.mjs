@@ -952,3 +952,32 @@ test('Title: the declared title property only when its type fits', () => {
   bare.schemas.shots = { ...bare.schemas.shots, title: undefined };
   assert.equal(title(bare), 'title'); // none declared: "title"
 });
+
+test('a joined template line keeps the text typed around its properties (F40: "€")', async () => {
+  const { joinedRuns } = await import('../src/render/widgets/list/presets.js');
+  const runs = [{ t: '\n' }, { property: 'duration' }, { t: ' · €' }, { property: 'price' }];
+  const none = () => false;
+  assert.deepEqual(joinedRuns(runs, none), [
+    { property: 'duration' },
+    { t: ' · €' },
+    { property: 'price' },
+  ]);
+  // no text typed between: the join
+  assert.deepEqual(joinedRuns([{ property: 'a' }, { property: 'b' }], none, ' / '), [
+    { property: 'a' },
+    { t: ' / ' },
+    { property: 'b' },
+  ]);
+  // an empty one takes the text before it along; the first shown has none before it
+  const empty = (p) => p.property === 'duration';
+  assert.deepEqual(joinedRuns(runs, empty), [{ property: 'price' }]);
+  const three = [{ property: 'a' }, { t: ', ' }, { property: 'b' }, { t: ' €' }, { property: 'c' }];
+  assert.deepEqual(
+    joinedRuns(three, (p) => p.property === 'b'),
+    [{ property: 'a' }, { t: ' €' }, { property: 'c' }],
+  );
+  assert.deepEqual(
+    joinedRuns(three, () => true),
+    [{ property: 'a' }, { property: 'b' }, { property: 'c' }],
+  );
+});

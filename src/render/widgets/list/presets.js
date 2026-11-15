@@ -145,6 +145,40 @@ export function factsRuns(facts, isEmpty = () => false, sep = ' · ') {
 }
 
 /**
+ * A joined line's runs for one item (a template widget's "join"), keeping what was typed
+ * around its properties (F40: " · €" before a price): the text between two properties is
+ * their separator (none typed: `join`); the text before a property goes with it, so one
+ * without a value takes its separator along (the first shown one: none before it). Text before the first or after
+ * the last property stays (whitespace alone is dropped). None has a value: the properties
+ * alone (as factsRuns), so the hide rule sees the line as empty.
+ */
+export function joinedRuns(runs, isEmpty = () => false, join = ' · ') {
+  const props = [];
+  const between = []; // between[i]: the text runs before props[i]
+  let pending = [];
+  for (const r of runs || []) {
+    if (r?.property) {
+      between.push(pending);
+      props.push(r);
+      pending = [];
+    } else if (r) pending.push(r);
+  }
+  const lead = between[0] || [];
+  const tail = pending;
+  const shown = props.map((p, i) => [p, i]).filter(([p]) => !isEmpty(p));
+  if (!shown.length) return props.map((p) => ({ ...p }));
+  const sepBefore = (i) => (between[i]?.length ? between[i] : [{ t: join }]);
+  const blank = (rs) => rs.every((r) => typeof r.t === 'string' && !r.t.trim());
+  const out = blank(lead) ? [] : [...lead];
+  shown.forEach(([p, i], k) => {
+    if (k) out.push(...sepBefore(i)); // the text typed before it goes with it ("€" with the price)
+    out.push(p);
+  });
+  if (!blank(tail)) out.push(...tail);
+  return out;
+}
+
+/**
  * A preset's widgets for a source (ctx: the content), once per List. Each has its `role`
  * (style.scss .li__<role>); facts carry `facts` (their names, joined per item: factsRuns), the
  * button `itemLink` (its link is the item's page, set per item). Unknown id: Card's.
