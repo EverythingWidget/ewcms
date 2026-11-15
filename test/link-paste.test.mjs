@@ -129,3 +129,24 @@ test("F50: the toolbar's Link opens on a caret in a link and empties a preview a
   const bridge = readFileSync(new URL('../src/editor/bridge.js', import.meta.url), 'utf8');
   assert.match(bridge, /htmlLines\(parsed\.body, \(h\) => isSafeHref\(h\) && !isDraftHref\(h\)\)/);
 });
+
+test('Ctrl+K: a caret in a link opens the link box too, not only a selection', () => {
+  const bridge = readFileSync(new URL('../src/editor/bridge.js', import.meta.url), 'utf8');
+  const k = bridge.slice(bridge.indexOf("k === 'k'"), bridge.indexOf("emit('richLink')") + 20);
+  assert.match(k, /linkRangeAt\(store\.get\(rich\.file, rich\.ptr\), richSel\.to\)/);
+  assert.match(k, /if \(richSel && \(!isCaret\(richSel\) \|\| inLink\)\) emit\('richLink'\)/);
+  // a caret right inside a link has its range; one outside has none
+  const body = [
+    { style: 'paragraph', text: [{ t: 'Mail ' }, { t: 'ons', link: { href: 'mailto:a@b.nl' } }] },
+  ];
+  assert.ok(linkRangeAt(body, { line: 0, at: 6 }));
+  assert.equal(linkRangeAt(body, { line: 0, at: 2 }), null);
+  const tb = readFileSync(
+    new URL('../src/editor/svelte/WidgetToolbar.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    tb,
+    /bridge\.on\('richLink', \(\) => \{\s*if \(rich\?\.selected \|\| rich\?\.link\) openLink\(\);/,
+  );
+});

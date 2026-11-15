@@ -675,7 +675,10 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
     if (mod && !e.altKey && k === 'k') {
       e.preventDefault();
       e.stopPropagation();
-      if (richSel && !isCaret(richSel)) emit('richLink');
+      // a selection, or a caret in a link (the box takes the whole link)
+      const inLink =
+        richSel && isCaret(richSel) && linkRangeAt(store.get(rich.file, rich.ptr), richSel.to);
+      if (richSel && (!isCaret(richSel) || inLink)) emit('richLink');
       return true;
     }
     return false;
