@@ -213,21 +213,32 @@
   />
 
   {#if !file}
-    <ul class="list sources-files" aria-label="Source files">
-      {#each files as f (f)}
-        {@const items = live.current(f)?.items}
-        <li>
-          <ExplorerRow
-            icon="fa-file-lines"
-            name={baseName(f)}
-            meta={Array.isArray(items) ? `${items.length} items` : 'not a list'}
-            changed={fileChanged(f)}
-            data-file={f}
-            onclick={() => goTo(f)}
-          />
-        </li>
-      {/each}
-    </ul>
+    <div class="sources-files-wrap">
+      <p class="hint small sources-files__about">
+        Your lists, one file each<InfoHelp label="About source files"
+          >Each is <code>content/en/sources/&lt;name&gt;.json</code>:
+          <code>{'{ "version": 1, "items": [ … ] }'}</code>, not a bare array. Every item has an
+          <b>id</b> like <code>p-k3x9</code> (<code>p-</code> and 4–12 lowercase letters or digits),
+          given once and never changed; <b>Add</b> makes one. What an item has:
+          <code>&lt;name&gt;.schema.json</code> next to it.</InfoHelp
+        >
+      </p>
+      <ul class="list sources-files" aria-label="Source files">
+        {#each files as f (f)}
+          {@const items = live.current(f)?.items}
+          <li>
+            <ExplorerRow
+              icon="fa-file-lines"
+              name={baseName(f)}
+              meta={Array.isArray(items) ? `${items.length} items` : 'not a list'}
+              changed={fileChanged(f)}
+              data-file={f}
+              onclick={() => goTo(f)}
+            />
+          </li>
+        {/each}
+      </ul>
+    </div>
   {:else}
     <nav class="sources-list" aria-label="Items">
       {#if isList}
@@ -355,7 +366,19 @@
     }
   }
 
-  // the list of files, across the whole modal
+  // the list of files, across the whole modal, under a line about them (F32)
+  .sources-files-wrap {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .sources-files__about {
+    margin: 0;
+    padding: var(--space-4) var(--space-3) 0;
+  }
+
   .sources-files {
     grid-column: 1 / -1;
     align-content: start;

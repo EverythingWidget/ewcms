@@ -270,7 +270,8 @@ whose data is a list or a map keeps it under one key next to it: a source's `"it
 redirects.json's `"redirects"`, photos.json's `"photos"`. A change of shape bumps the version and
 converts the content in the same commit.
 
-**Item ids.** Every source item has a stable `id` (`"p-k3x9"`, given once, never changed): widgets
+**Item ids.** Every source item has a stable `id` (`"p-k3x9"`: `p-` and 4–12 lowercase letters or
+digits, unique in its source; given once, never changed; the editor's Add makes one): widgets
 and links point at items by it; its `slug` is only its URL and can change. A `cover` is the path
 of one of the item's own photos (empty: the first).
 
@@ -328,6 +329,19 @@ Add a person: drop photos into `media/people/<slug>/`, add an entry to `sources/
 Routes, menu, dropdowns, grids and sitemap update automatically.
 
 ### Sources & schemas
+
+A source is `content/en/sources/<id>.json`, an object (not a bare array): its items under
+`"items"`, each with its own `id` (`p-` and 4–12 lowercase letters or digits, see "Item ids"):
+
+```json
+{
+  "version": 1,
+  "items": [
+    { "id": "p-k3x9", "slug": "noor", "name": "Noor", "role": "Model" },
+    { "id": "p-7m2q", "slug": "sam", "name": "Sam" }
+  ]
+}
+```
 
 Each list in `content/en/sources/` can have a schema next to it, `<id>.schema.json`
 (`people.schema.json`): what an item has, in a small format of its own (not JSON Schema),

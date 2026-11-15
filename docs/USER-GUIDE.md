@@ -71,6 +71,9 @@ A page is a stack of **sections**; each holds **widgets** (text, photo, button, 
 
 ## Sources and media
 **Sources** (database icon) holds your lists, e.g. people or albums; a list widget shows one.
+Written by hand, a list is `content/en/sources/<name>.json`: `{ "version": 1, "items": [...] }`
+(not a bare array), each item with an `id` like `p-k3x9` (`p-` and 4–12 lowercase letters or
+digits, never changed; **Add** in Sources makes one).
 **Media** holds your photos; a photo field's **Change** opens it to pick or upload one.
 
 ## Menu and footer
