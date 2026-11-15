@@ -4,7 +4,6 @@
   "url": "https://example.com",
   "mediaUrl": "",
   "lang": "en",
-  "title": "Your site title",
   "titleTemplate": "{page} | {site}",
   "description": "A new site built with ewcms.",
   "robots": "index",

@@ -108,6 +108,8 @@
     return containedOf(live.get(SITE, '') || {});
   });
   const WINDOWS = [1280, 1366, 1440, 1536, 1920];
+  // the (i) tips of Name & Details and SEO fields, by key (the snippets below)
+  const TIPS = { name: nameTip, title: titleTip };
   // the preview follows as it is typed (the page's head has it after Save)
   $effect(() => {
     ui.previewVersion;
@@ -118,6 +120,12 @@
     set('layout/containedCols', value);
   }
 </script>
+
+{#snippet nameTip()}<b>Site name</b>: your site's name, for the header's logo text, share cards and
+  search engines. It also fills <b>{'{site}'}</b> in the other pages' titles, and is Home's title
+  while <b>Home page title</b> (SEO) is empty.{/snippet}
+{#snippet titleTip()}<b>Home page title</b>: the browser tab and search result of your Home page,
+  used as written. Empty: the <b>Site name</b>. Home's own Title (its SEO tab) wins over both.{/snippet}
 
 <section class="ed-body">
   <MotionSettings {live} {bridge} {gsap} />
@@ -132,6 +140,7 @@
         edit="{SITE}#/{key}"
         {label}
         {type}
+        tip={TIPS[key]}
         value={live.get(SITE, `/${key}`)}
         changed={live.changed(SITE, `/${key}`)}
         onvalue={(value) => set(key, value)}
@@ -149,6 +158,8 @@
         edit="{SITE}#/{key}"
         {label}
         {type}
+        tip={TIPS[key]}
+        placeholder={key === 'title' ? live.get(SITE, '/name') || undefined : undefined}
         value={live.get(SITE, `/${key}`)}
         changed={live.changed(SITE, `/${key}`)}
         onvalue={(value) => set(key, value)}
