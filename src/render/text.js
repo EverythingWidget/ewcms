@@ -323,6 +323,29 @@ export function setLink(body, from, to, link) {
 /** The link of a range's first text run, or null. */
 export const linkIn = (body, from, to) => runsIn(body, from, to).find((r) => r.link)?.link ?? null;
 
+/**
+ * The whole link the caret `at` ({ line, at }) is in or at the edge of: { from, to } over its
+ * runs (side by side, the same link), or null. The link box edits a link from a caret too.
+ */
+export function linkRangeAt(body, at) {
+  const runs = body?.[at?.line]?.text || [];
+  const same = (a, b) => !!a && !!b && JSON.stringify(a) === JSON.stringify(b);
+  const spans = []; // [start, end, link] of each link, its runs joined
+  let n = 0;
+  for (const r of runs) {
+    const len = runLength(r);
+    const link = isText(r) ? r.link : null;
+    const last = spans.at(-1);
+    if (link && last && last[1] === n && same(last[2], link)) last[1] = n + len;
+    else if (link) spans.push([n, n + len, link]);
+    n += len;
+  }
+  const hit =
+    spans.find(([a, b]) => a < at.at && at.at < b) ||
+    spans.find(([a, b]) => a <= at.at && at.at <= b);
+  return hit ? { from: { line: at.line, at: hit[0] }, to: { line: at.line, at: hit[1] } } : null;
+}
+
 /** Line `i`'s style set (the whole line: a style is a paragraph's). */
 export function setStyle(body, i, style) {
   const out = clone(body.length ? body : [{ style: 'paragraph', text: [] }]);
@@ -549,11 +572,23 @@ const SKIP_TAGS = new Set(
   'SCRIPT STYLE META TITLE HEAD LINK NOSCRIPT TEMPLATE IFRAME OBJECT SVG IMG'.split(' '),
 );
 
+/** The link an editor <a data-ts-link> carries (renderRun: editing), or null. */
+export function ownLink(n) {
+  let own;
+  try {
+    own = JSON.parse(n.getAttribute?.('data-ts-link') || 'null');
+  } catch {
+    return null;
+  }
+  return own && !linkProblem(own) ? own : null;
+}
+
 /**
  * Pasted HTML (a parsed DOM tree: any node with nodeType, tagName, childNodes, getAttribute,
  * style) as lines: every block (a paragraph, a heading, a list item, …) its own Paragraph
  * line, <br> a line break in it; only bold, italic and safe links kept (no styles, fonts,
  * colours or sizes). `safe(href)`: is the link allowed (hrefs.js isSafeHref).
+ * A link copied from the editor (data-ts-link) is read as itself.
  */
 export function htmlLines(root, safe) {
   const lines = [];
@@ -626,8 +661,10 @@ export function htmlLines(root, safe) {
       next.push('i');
     let nl = link;
     if (tag === 'A') {
+      // a link copied from the editor carries itself (data-ts-link): its href is the editor's
+      // "#" made absolute by the copy (http://…/?draft=…#), never the link
       const href = (n.getAttribute?.('href') || '').trim();
-      nl = href && safe(href) ? { href } : null;
+      nl = ownLink(n) || (href && safe(href) ? { href } : null);
     }
     // newlines kept: a <pre>, or an element whose white-space keeps them (pre, pre-wrap, …)
     const keeps =

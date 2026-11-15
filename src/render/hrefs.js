@@ -29,6 +29,21 @@ export function isSafeHref(href) {
   const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(s);
   return !scheme || ['http', 'https', 'mailto', 'tel'].includes(scheme[1].toLowerCase());
 }
+/**
+ * Is `href` the editor's own preview address (http://localhost:5173/contact/?draft=<session>#):
+ * what a copied editor link resolves to (its rendered href="#" made absolute by the browser),
+ * never a link anyone meant. A paste drops it; a link already saved as one stays editable (the
+ * link box opens empty) and the build warns.
+ */
+export function isDraftHref(href) {
+  return (
+    typeof href === 'string' &&
+    /^https?:\/\/[^/?#]+\/[^?#]*\?(?:[^#]*&)?draft=[0-9a-f-]{8,}/i.test(href.trim())
+  );
+}
+export const DRAFT_HREF =
+  "This link held the editor's own preview address, not yours: type its address again";
+
 export const UNSAFE_HREF =
   'a link must be a web address (https://…), mailto:, tel:, a path (/about/) or #anchor';
 
@@ -65,6 +80,8 @@ export const pageRoute = (ctx, id) =>
 export function hrefOf(ctx, link, where = 'a link') {
   // bound: the item's own link text; never an unsafe URL (javascript:, …)
   const safe = (href) => {
+    if (isDraftHref(href))
+      warnOnce(`${where} points at the editor's preview: set its link again`, 'links');
     if (isSafeHref(href)) return href;
     warnOnce(`${where} has an unsafe URL: "#"`, 'links');
     return '#';

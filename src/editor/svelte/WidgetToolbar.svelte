@@ -37,7 +37,7 @@
   import { schemaOf } from '../../render/schemas.js';
   import { untrack } from 'svelte';
   import { NEW_ROWS, setWidget } from '../layout-ops.js';
-  import { isSafeHref, UNSAFE_HREF } from '../../render/hrefs.js';
+  import { DRAFT_HREF, isDraftHref, isSafeHref, UNSAFE_HREF } from '../../render/hrefs.js';
   import {
     LINE_STYLES,
     insertRun,
@@ -270,7 +270,7 @@
   // Ctrl+K while editing: the link box
   $effect(() =>
     bridge.on('richLink', () => {
-      if (rich?.selected) openLink();
+      if (rich?.selected || rich?.link) openLink();
     }),
   );
 
@@ -300,10 +300,16 @@
     apply((body, sel) => (sel ? { body: toggleMark(body, sel.from, sel.to, m) } : null));
 
   let linkText = $state('');
+  let linkDraft = $state(false);
   let linkBtn = $state();
   function openLink(e) {
     anchor = e?.currentTarget?.offsetLeft ?? linkBtn?.offsetLeft ?? anchor;
-    linkText = rich?.link?.href ?? '';
+    // a caret in a link: the whole link is what the box edits
+    if (!rich?.selected) bridge.selectLink();
+    const href = rich?.link?.href ?? '';
+    // a link saved as the editor's own preview address (F50): the box opens empty, and says why
+    linkDraft = isDraftHref(href);
+    linkText = linkDraft ? '' : href;
     bridge.holdRich(true);
     open = 'link';
   }
@@ -439,10 +445,10 @@
   <button
     type="button"
     class={['btb__btn btb__icon', rich?.link && 'is-on']}
-    disabled={!rich?.selected}
+    disabled={!rich?.selected && !rich?.link}
     aria-label="Link"
     bind:this={linkBtn}
-    title="Link ({MOD}+K): the selected text"
+    title="Link ({MOD}+K): the selected text, or the link the caret is in"
     onclick={openLink}><i class="fa-solid fa-link" aria-hidden="true"></i></button
   >
   <button
@@ -575,7 +581,10 @@
             />
             <button type="submit" class="btb__btn" disabled={!!linkError}>Link</button>
           </form>
-          {#if linkError}<p class="btb__err" role="alert">{linkError}</p>{/if}
+          {#if linkError}<p class="btb__err" role="alert">{linkError}</p>
+          {:else if linkDraft && !linkText.trim()}<p class="btb__err" role="status">
+              {DRAFT_HREF}
+            </p>{/if}
         {:else if open === 'property'}
           <span class="btb__grp"
             >{from

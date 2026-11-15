@@ -36,6 +36,7 @@ import {
   insertLines,
   lineLength,
   linkIn,
+  linkRangeAt,
   plainLines,
   splitLine,
   oneLineBody,
@@ -44,7 +45,7 @@ import {
   autoList,
   typedProperty,
 } from '../render/text.js';
-import { isSafeHref } from '../render/hrefs.js';
+import { isDraftHref, isSafeHref } from '../render/hrefs.js';
 
 const INJECTED_CSS = `
 html { scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / .2) transparent; }
@@ -429,6 +430,17 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
         emit('rich', richState());
       } else store.set(target.file, target.ptr, out.body, { source: 'panel', structure: true });
     },
+    /** The caret in a link: all of the link selected (the link box edits it). False: no link. */
+    selectLink() {
+      if (!rich) return false;
+      const sel = selectionOf(rich.el, win) || richSel;
+      const r = sel && linkRangeAt(store.get(rich.file, rich.ptr) || [], sel.to);
+      if (!r) return false;
+      selectAt(rich.el, win, r);
+      richSel = r;
+      emit('rich', richState());
+      return true;
+    },
     /** Keep the edit going while the toolbar's own field (a link, a ratio) has the focus. */
     holdRich(on) {
       if (rich) rich.hold = !!on;
@@ -488,7 +500,8 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
     const htmlText = data.getData('text/html');
     if (htmlText) {
       const parsed = new w.DOMParser().parseFromString(htmlText, 'text/html');
-      const lines = htmlLines(parsed.body, isSafeHref);
+      // (a copied editor link: data-ts-link; its href, the preview's "#" made absolute, is dropped)
+      const lines = htmlLines(parsed.body, (h) => isSafeHref(h) && !isDraftHref(h));
       if (lines.length) return lines;
     }
     return plainLines(data.getData('text/plain'));
@@ -511,8 +524,15 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
       selected: !!range,
       bold: range ? hasMark(body, sel.from, sel.to, 'b') : false,
       italic: range ? hasMark(body, sel.from, sel.to, 'i') : false,
-      link: range ? linkIn(body, sel.from, sel.to) : null,
+      // a caret in a link: that link (the link box takes all of it: selectLink)
+      link: range ? linkIn(body, sel.from, sel.to) : sel ? caretLink(body, sel.to) : null,
     };
+  }
+
+  /** The link around a caret, or null. */
+  function caretLink(body, at) {
+    const r = linkRangeAt(body, at);
+    return r ? linkIn(body, r.from, r.to) : null;
   }
 
   /** Render the lines for editing (chips named). */

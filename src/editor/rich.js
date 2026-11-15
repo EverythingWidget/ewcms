@@ -12,8 +12,8 @@
  * ([data-property]: atomic, contenteditable=false). Anything else the browser
  * makes (a pasted <div>, a <span style>) is read as its text, so the model stays clean.
  */
-import { MARKS, lineLength, renderBody, tidyBody } from '../render/text.js';
-import { isSafeHref, linkProblem } from '../render/hrefs.js';
+import { MARKS, lineLength, ownLink, renderBody, tidyBody } from '../render/text.js';
+import { isDraftHref, isSafeHref } from '../render/hrefs.js';
 
 const LINE = '[data-line]';
 const isChip = (n) => n.nodeType === 1 && n.dataset.property !== undefined;
@@ -69,15 +69,10 @@ function readRuns(node, marks = [], link = null, self = false) {
     if ((tag === 'EM' || tag === 'I') && !next.includes('i')) next.push('i');
     let nl = l;
     if (tag === 'A') {
-      // our own links carry theirs; one the browser made: its href, when it is a safe one
-      let own = null;
-      try {
-        own = n.dataset.tsLink ? JSON.parse(n.dataset.tsLink) : null;
-      } catch {
-        /* not ours */
-      }
+      // our own links carry theirs; one the browser made: its href (getAttribute, never the
+      // resolved a.href), when it is a safe one and not the editor's own preview address
       const href = (n.getAttribute('href') || '').trim();
-      nl = own && !linkProblem(own) ? own : href && isSafeHref(href) ? { href } : null;
+      nl = ownLink(n) || (href && isSafeHref(href) && !isDraftHref(href) ? { href } : null);
     }
     for (const c of n.childNodes) walk(c, next, nl);
   };
