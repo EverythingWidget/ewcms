@@ -7,7 +7,7 @@
   once (actions.pagesOp); In the menu adds its menu item (an undo step, saved with Save).
 -->
 <script>
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { closeOnBackdrop } from '../lib/modal.js';
   import { argsOf, closeModal, modal } from './modals.svelte.js';
   import Button from './Button.svelte';
@@ -49,6 +49,13 @@
   const files = $derived(live.files);
   const ids = $derived(Object.keys(files).map(pageIdOf).filter(Boolean));
   const sources = $derived(sourceIds(files));
+  // the name in the URL follows the title (as its field's value, not a grey placeholder: easy
+  // to miss) until it is typed in itself (F101)
+  let nameTyped = $state(false);
+  $effect(() => {
+    const auto = slugify(title);
+    if (!untrack(() => nameTyped)) name = auto;
+  });
   const slug = $derived(name || slugify(title));
   // a "/" in the name (F36): one level at a time, the parent page first, then its +
   const nestedHint = (typed) => {
@@ -112,10 +119,17 @@
     level = at;
     linked = lastLinked;
     kind = isTemplate(at) ? 'template' : 'page';
-    title = name = param = '';
     source = sources[0] || '';
     await tick();
-    dialog.querySelector('input')?.focus();
+    // typing may have started already (the fields are emptied when it closes, not now: what
+    // was typed stays, F101)
+    if (!dialog.contains(document.activeElement) || !document.activeElement.matches('input'))
+      dialog.querySelector('input')?.focus();
+  }
+  // closed: empty for the next time
+  function reset() {
+    title = name = param = '';
+    nameTyped = false;
   }
 
   // the folder's other pages (not [param] or template ones), in name order, for a dropdown made
@@ -167,6 +181,7 @@
   bind:this={dialog}
   {@attach closeOnBackdrop}
   {@attach modal('addPage', { onopen })}
+  onclose={reset}
 >
   <form onsubmit={add}>
     <h3 class="modal__title">Add page</h3>
@@ -212,7 +227,8 @@
             class={['tf__input', error && 'is-invalid']}
             spellcheck="false"
             bind:value={name}
-            placeholder={slugify(title) || 'my-page'}
+            oninput={() => (nameTyped = name !== '')}
+            placeholder="my-page"
           />
         </label>
         <p class={['hint small add-page-modal__note', error && 'is-error']}>

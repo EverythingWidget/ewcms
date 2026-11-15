@@ -261,7 +261,10 @@ test('Sources waits for the content, not for a source file: a site without one s
   assert.match(ready, /Object\.keys\(live\.store\.current\)\.length > 0/);
   assert.doesNotMatch(ready, /files\.length/);
   // the empty list says so (the window is not blank)
-  assert.match(src, /\{:else\}\s*<li class="hint small sources-files__none">\s*No source files yet/);
+  assert.match(
+    src,
+    /\{:else\}\s*<li class="hint small sources-files__none">\s*No source files yet/,
+  );
   // Media waits for the same thing
   assert.match(read('MediaModal.svelte'), /Object\.keys\(live\.store\.current\)\.length > 0/);
 });
@@ -313,13 +316,15 @@ test('a long session: hundreds of opens and closes (buttons, Esc, backdrop, Clos
   };
   ui.modals = [];
   let seed = 7;
-  const rnd = (n) => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) % n);
+  const rnd = (n) => (seed = (seed * 1103515245 + 12345) % 2 ** 31) % n;
   for (let step = 0; step < 600; step++) {
     const what = rnd(6);
     const top = m.topModal();
     if (what < 3) open[names[rnd(names.length)]]();
-    else if (what === 3 && top) d[top].close(); // Esc or the backdrop: the browser closes the one in front
-    else if (what === 4 && top) m.closeModal(); // its Close button, or the editor's Esc
+    else if (what === 3 && top)
+      d[top].close(); // Esc or the backdrop: the browser closes the one in front
+    else if (what === 4 && top)
+      m.closeModal(); // its Close button, or the editor's Esc
     else if (what === 5) m.closeModal(ui.modals[0]); // a pick that closes them all (Media's use)
     await flush(); // the close events come later
     check(step);
@@ -337,4 +342,17 @@ test('a long session: hundreds of opens and closes (buttons, Esc, backdrop, Clos
     assert.deepEqual(ui.modals, []);
   }
   off.forEach((f) => f());
+});
+
+test('Add page: what was typed as it opened stays; the URL name is a value that follows the title (F101)', () => {
+  const src = readFileSync(
+    new URL('../src/editor/svelte/AddPageModal.svelte', import.meta.url),
+    'utf8',
+  );
+  // emptied when it closes, not as it opens
+  assert.doesNotMatch(src, /async function onopen\(\) \{[^}]*title = name/);
+  assert.match(src, /onclose=\{reset\}/);
+  // the slug: the field's value (not a placeholder) until typed in itself
+  assert.match(src, /if \(!untrack\(\(\) => nameTyped\)\) name = auto;/);
+  assert.doesNotMatch(src, /placeholder=\{slugify\(title\)/);
 });
