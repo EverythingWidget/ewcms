@@ -60,6 +60,16 @@ const setLang = (shell, lang) =>
     /<html lang="[^"]*"/,
     `<html lang="${String(lang || 'en').replace(/[^\w-]/g, '')}"`,
   );
+/**
+ * Dev: the site's stylesheet as a <link> in the page's <head>, so it shows styled from the
+ * start. Vite's dev server adds it from JS only once src/client/main.js runs (its first load
+ * compiles the SCSS: seconds of unstyled HTML, F64). main.js removes the link once its own
+ * style is in (HMR updates that one).
+ */
+export const DEV_CSS_ID = 'ew-dev-css';
+const DEV_CSS = `<link rel="stylesheet" id="${DEV_CSS_ID}" href="${fsUrl(enginePath('src/client/styles/main.scss'))}?direct" />`;
+export const withDevCss = (html) => html.replace('</head>', `${DEV_CSS}\n</head>`);
+
 /** The core's stylesheets (src/client/styles): the theme's styles use them as site-core. */
 const CORE_STYLES = enginePath('src/client/styles');
 
@@ -329,10 +339,12 @@ export default function staticSite() {
           const shell = readShell(shellFile(root));
           const html = await server.transformIndexHtml(
             req.url,
-            fill(
-              shell,
-              renderRoute(route, shown, { editable: true, unbuilt: !!draft }),
-              loadSiteConfig(root).theme,
+            withDevCss(
+              fill(
+                shell,
+                renderRoute(route, shown, { editable: true, unbuilt: !!draft }),
+                loadSiteConfig(root).theme,
+              ),
             ),
           );
           res.statusCode = status;

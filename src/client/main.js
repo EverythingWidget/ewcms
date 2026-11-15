@@ -30,6 +30,10 @@ import listClient from '../render/widgets/list/client.js';
 // the site's own widgets (site.config.mjs widgets): their styles and client modules
 import siteWidgets from 'virtual:site-widgets/client';
 
+// dev: the page's early stylesheet link (src/cli/vite-plugin-static-site.mjs withDevCss) gives
+// way to Vite's own style, in now (that one gets the HMR updates) (F64)
+if (import.meta.env.DEV) document.getElementById('ew-dev-css')?.remove();
+
 /** A site widget's client module as a page module: run on each of its elements. */
 const widgetModule =
   ({ type, init }) =>
