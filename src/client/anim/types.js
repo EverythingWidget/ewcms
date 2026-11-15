@@ -48,10 +48,17 @@ const scrollVars = (spec, trigger) => {
     };
   }
   const start = reach(spec.start, trigger);
+  // clamp() puts the start of a widget already on screen at load at 0, where scrolling never
+  // passes it: it played only once scrolled (a Photo at the top of a phone page stayed
+  // hidden: F48). At the top of the page with it reached: play.
+  const onRefresh = (self) => {
+    if (self.start <= 0 && self.scroll() <= 0 && !self.animation?.progress())
+      self.animation?.play();
+  };
   return {
     scrollTrigger: flags.preview
-      ? { trigger, start, toggleActions: 'play none none reset' }
-      : { trigger, start, once: true },
+      ? { trigger, start, toggleActions: 'play none none reset', onRefresh }
+      : { trigger, start, once: true, onRefresh },
   };
 };
 

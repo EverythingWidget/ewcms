@@ -162,3 +162,12 @@ test('a scroll reveal fades with opacity, so waiting content stays in the page t
   assert.match(t, /return \{ \.\.\.rest, opacity: autoAlpha \};/);
   assert.equal((t.match(/readable\(spec, spec\.(from|to)\)/g) || []).length, 4);
 });
+
+test('a one-shot scroll reveal already on screen at load plays without scrolling (F48)', () => {
+  const t = read('client/anim/types.js');
+  assert.match(
+    t,
+    /if \(self\.start <= 0 && self\.scroll\(\) <= 0 && !self\.animation\?\.progress\(\)\)/,
+  );
+  assert.match(t, /\{ trigger, start, once: true, onRefresh \}/);
+});
