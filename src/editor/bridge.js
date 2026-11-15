@@ -76,6 +76,8 @@ html.__ed-arrange .hero__title { z-index: 5; }
 :is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])[data-ed-open]::before { background: ${T.accent}; color: ${T.onAccent}; }
 html.__ed-animate [data-anim], html.__ed-animate [data-anim] *, html.__ed-animate [data-widget], html.__ed-animate [data-widget] * { cursor: pointer !important; }
 /* a press on a widget's link or button only picks the widget: the press misses it (no :active, :hover or focus look), the widget gets it; Alt+click still clicks through (__ed-alt); a clickable template item's widgets: overlay.js finds them by position */
+/* a link saved as the editor's own preview address (F50): marked, a click asks for it again (F107) */
+html:is(.__ed-arrange, .__ed-animate) a:is([href*="?draft="], [href*="&draft="], [data-ts-link*="draft="]) { text-decoration: underline wavy ${T.error} !important; text-decoration-thickness: 1.5px !important; text-underline-offset: 3px; }
 html:is(.__ed-arrange, .__ed-animate):not(.__ed-alt) [data-widget] :is(a, button, [role="button"], summary, label):not([data-anim], :has([data-anim], [contenteditable]), [contenteditable] *) { pointer-events: none; }
 .__ed-box { position: fixed; z-index: 2147483646; pointer-events: none; border-radius: ${T.radiusSm}; opacity: 0; transition: opacity .15s; left: 0; top: 0; }
 .__ed-box.is-on { opacity: 1; }
@@ -577,12 +579,24 @@ export function createBridge({
     const a = (node?.nodeType === 1 ? node : node?.parentElement)?.closest('a');
     const body = a?.closest('[data-edit-type="rich"]');
     const own = body?.closest('[data-tw], [data-widget]');
-    // selected before this click (a first click selects the widget), and not a drag's end
+    // selected before this click (a first click selects the widget), and not a drag's end; a
+    // broken link (the editor's preview address: F50) at once, its box saying why (F107)
     const id = own?.dataset.tw || own?.dataset.widget;
     const moved = down && Math.hypot(x - down.x, y - down.y) > 4;
-    return body && id && down?.widget === id && !moved ? { a, body } : null;
+    const asks = down?.widget === id || brokenLink(a);
+    return body && id && asks && !moved ? { a, body } : null;
   }
   let down = null; // the last press: where, and the widget selected then
+  /** Is <a> a link saved as the editor's preview address (its own link, or its href)? */
+  function brokenLink(a) {
+    let own;
+    try {
+      own = JSON.parse(a.dataset.tsLink || 'null');
+    } catch {
+      own = null;
+    }
+    return isDraftHref(own?.href) || isDraftHref(a.getAttribute('href'));
+  }
 
   // a click on a link while its Text is edited: the link box opens for it (its address in
   // the field, a broken one with its note: F107), unless a second click follows (a double

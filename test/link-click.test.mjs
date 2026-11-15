@@ -13,7 +13,7 @@ test('F108: a click on a link in the selected Text edits it there and opens its 
   // the selected widget's link (selected before the press, not a drag's end): edit, then the box
   assert.match(b, /const link = e\.detail === 1 \? pickedLinkAt\(e\.clientX, e\.clientY\) : null;/);
   assert.match(b, /startRich\(link\.body, e\.clientX, e\.clientY\);\s*linkBoxSoon\(\);/);
-  assert.match(b, /return body && id && down\?\.widget === id && !moved \? \{ a, body \} : null;/);
+  assert.match(b, /return body && id && asks && !moved \? \{ a, body \} : null;/);
   // already edited: a click in a link opens it too
   assert.match(b, /if \(rich && e\.detail === 1 && t\.closest\('a'\)\) linkBoxSoon\(\);/);
   // a double click (a word of the link selected) opens no box; the box opens on a caret in a link
@@ -44,4 +44,32 @@ test('F109: while a Text is edited its handles and resize edges are gone: nothin
     read('editor/bridge.js'),
     /:not\(\[data-anim\], :has\(\[data-anim\], \[contenteditable\]\), \[contenteditable\] \*\) \{ pointer-events: none; \}/,
   );
+});
+
+test("F107: a link saved as the editor's preview address is marked, and one click on it asks again", () => {
+  const b = read('editor/bridge.js');
+  assert.match(
+    b,
+    /a:is\(\[href\*="\?draft="\], \[href\*="&draft="\], \[data-ts-link\*="draft="\]\) \{ text-decoration: underline wavy/,
+  );
+  // its first click (the widget not selected yet) opens its box: empty, with the note (DRAFT_HREF)
+  assert.match(b, /const asks = down\?\.widget === id \|\| brokenLink\(a\);/);
+  assert.match(
+    b,
+    /return isDraftHref\(own\?\.href\) \|\| isDraftHref\(a\.getAttribute\('href'\)\);/,
+  );
+  const tb = read('editor/svelte/WidgetToolbar.svelte');
+  assert.match(tb, /linkDraft = isDraftHref\(href\);\s*linkText = linkDraft \? '' : href;/);
+  assert.match(
+    tb,
+    /\{:else if linkDraft && !linkText\.trim\(\)\}<p class="btb__err" role="status">\s*\{DRAFT_HREF\}/,
+  );
+});
+
+test('F107: the mark matches the preview address in either form the preview renders', () => {
+  const draft = 'http://127.0.0.1:5173/contact/?draft=64941176-6a50-4c3e-8755-00c2d1d0a1f7#';
+  // shown: the href itself; edited: href="#" and the link as data-ts-link (JSON)
+  assert.ok(draft.includes('?draft='));
+  assert.ok(JSON.stringify({ href: draft }).includes('draft='));
+  assert.ok(!'https://wa.me/31643740408'.includes('draft='));
 });
