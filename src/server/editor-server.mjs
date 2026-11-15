@@ -342,15 +342,13 @@ export function pagesOp(
       const t = String(title || '').trim() || titleCase(name);
       const file = pageFile(join(parent, name));
       onWrite();
-      // a new page starts with a Text widget: its label and title (src/render/layout/), below the header: sections have
+      // a new page starts with a Text widget: its title, the page's one H1, and no Label line
+      // over it nobody asked for (F105) (src/render/layout/), below the header: sections have
       // no space above, so the rows above it are empty (HEAD_ROW)
       const ids = new Set();
       const heading = {
         ...newWidget('text', ids, { row: HEAD_ROW, rows: 1 }),
-        body: [
-          { style: 'label', text: [{ t }] },
-          { style: 'title', text: [{ t }] },
-        ],
+        body: [{ style: 'title', text: [{ t }] }],
       };
       const section = newSection(ids, [heading]);
       write(file, {

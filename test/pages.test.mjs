@@ -51,10 +51,8 @@ test('add: a folder with its index.json, valid slugs only, no overwrites', () =>
     [
       {
         type: 'text',
-        body: [
-          { style: 'label', text: [{ t: 'New one' }] },
-          { style: 'title', text: [{ t: 'New one' }] },
-        ],
+        // its title (the H1) only: no Label line over it (F105)
+        body: [{ style: 'title', text: [{ t: 'New one' }] }],
         layout: { base: { row: 17 } },
       },
     ],

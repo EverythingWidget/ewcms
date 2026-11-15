@@ -1328,7 +1328,7 @@ move. A page's own file is
 - **Views:** a page is its sections of widgets. Its view name (`view--<name>` on `<main>`, `data-page` on
   `<html>`, for styles and scripts) is its `view` key, else its own name for the built-in
   pages (`home`, `photography`, `people`, `places`, `projects`, `about`, `404`), else `page`.
-  A template's is `album`. New pages start with a section holding a Text widget (a label and a title line).
+  A template's is `album`. New pages start with a section holding a Text widget (its title line, the H1).
 - **Head:** title, description, share photo and robots come from the page's `meta` and the
   site's defaults; see "SEO".
 - Links to an item (menu dropdowns, grids, next) come from the routes, and an item's `{back}`

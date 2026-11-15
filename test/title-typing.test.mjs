@@ -65,13 +65,10 @@ test('F56: a new page has its own name (meta.title): typing its heading does not
   assert.deepEqual(page.meta, { title: 'Contact' });
   assert.deepEqual(
     page.sections[0].widgets[0].body.map((l) => [l.style, l.text[0].t]),
-    [
-      ['label', 'Contact'],
-      ['title', 'Contact'],
-    ],
+    [['title', 'Contact']], // no Label line over it (F105)
   );
   // the heading typed: the panel and the tab title keep the page's name
-  page.sections[0].widgets[0].body[1].text = [{ t: 'Kom langs, ontspan en geniet' }];
+  page.sections[0].widgets[0].body[0].text = [{ t: 'Kom langs, ontspan en geniet' }];
   const files = { 'pages/contact/index.json': page };
   assert.equal(titleOf(files, 'contact'), 'Contact');
   // and the page is valid content
