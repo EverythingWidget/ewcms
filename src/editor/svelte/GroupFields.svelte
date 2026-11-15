@@ -306,10 +306,10 @@
       changed={live.changed(g.file, missingPtr)}
       onvalue={setMissing}
     >
-      {#snippet tip()}<b>When a value is missing</b>: a property this widget shows is empty.
-        <b>Hide</b> leaves the widget out of the published page when all its properties are empty (a
-        button: its link or label). <b>Show empty</b> keeps it, empty. The editor shows it either way,
-        dimmed. On a List: its items follow this, unless one sets its own.{/snippet}
+      {#snippet tip()}<b>When a value is missing</b>: what happens on the published page when the
+        values this widget takes from its Source are all empty. <b>Hide</b>: the widget is left out
+        (a button too when its label or link is empty). <b>Show empty</b>: it stays, empty. The
+        editor always shows it, dimmed. A List's items follow the List unless they set their own.{/snippet}
     </Field>
   {/if}
 </div>

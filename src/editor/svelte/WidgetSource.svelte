@@ -283,9 +283,11 @@
     {#if !oncustom}
       <span class="tf__label"
         >Source<InfoHelp label="About Source"
-          ><b>Source</b>: the item whose properties this widget shows. <b>From URL</b>: the item the
-          page's address names (only on a [param] page). <b>Item</b>: one item you pick from
-          Sources. <b>None</b>: no item, only its own text.</InfoHelp
+          ><b>Source</b>: where this widget can take values from instead of you typing them, e.g. a
+          name from a list in Sources, shown where its text has <b>{'{name}'}</b>. <b>None</b>: only
+          what you type (most widgets). <b>Item</b>: one entry you pick from a list in Sources.
+          <b>From URL</b>: the entry the page's address names (only on a [param] page, such as
+          /team/[person]/).</InfoHelp
         ></span
       >
     {/if}

@@ -145,6 +145,13 @@
       {#if itemTpl}
         <TemplateWidgetFields {live} {bridge} file={g.file} {j} />
       {:else}
+        <!-- a Text's words aren't a field here: say where they are (always shown: no shift) -->
+        {#if widget.type === 'text'}
+          <p class="hint" data-text-hint>
+            Type the text in the preview: double-click it (or Edit text in its toolbar). Styles,
+            bold, links and Fit width are in that toolbar.
+          </p>
+        {/if}
         <!-- its source first (a widget whose type shows items), then its settings and fields -->
         {#snippet lead()}
           {#if type.customItems}

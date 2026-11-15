@@ -27,7 +27,7 @@ test('placed on Source, Height / Width and the Curtain', () => {
   const ws = src('WidgetSource.svelte');
   assert.match(ws, /<InfoHelp label="About Source"/);
   // a single-item widget's options: From URL, Item, None (All and Custom are the List's)
-  assert.match(ws, /<b>Item<\/b>: one item you pick/);
+  assert.match(ws, /<b>Item<\/b>: one entry you pick/);
   assert.doesNotMatch(ws, /<b>All<\/b>|<b>Custom<\/b>/);
   // Layer's (v0.1.50): gone, its buttons' tooltips say it; the link line has one
   assert.doesNotMatch(src('WidgetLayout.svelte'), /label="About Layer"/);
@@ -72,4 +72,11 @@ test('names: Auto height in both places, Edit text on the widget, Pages > Templa
   assert.match(src('ListLead.svelte'), /template editor \(Pages > Templates\)/);
   assert.doesNotMatch(src('App.svelte'), /people, places, projects/);
   assert.doesNotMatch(src('EntrancePageCurtain.svelte'), /Curtain for this page'/);
+});
+
+test("a Text's Content tab says its words are typed in the preview (F06, F15)", () => {
+  const ins = src('WidgetInspector.svelte');
+  assert.match(ins, /widget\.type === 'text'[\s\S]*Type the text in the preview: double-click it/);
+  assert.match(src('WidgetSource.svelte'), /<b>None<\/b>: only\s+what you type/);
+  assert.match(src('GroupFields.svelte'), /<b>Hide<\/b>: the widget is left out/);
 });
