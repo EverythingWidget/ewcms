@@ -20,6 +20,8 @@
  *              back to From a source (and source is kept when switching to Custom)
  * arrangement  Grid | Carousel (Layout tab: a button group).
  * columns      "1"–"6" (two on a tablet, one on a phone). Row preset defaults to "1", others "3".
+ * showOnly     { field, value }: only the source's items whose field has that value (Show
+ *              only, ./show-only.js); one condition, values compared as text
  * gap          between the items: a whole number of the page's cells (the grid the List sits
  *              on: --cell), 0 (default) the items side by side; the space inside an item is its
  *              template's
@@ -64,6 +66,7 @@ import {
   templateOf,
 } from './presets.js';
 import { isTemplateId } from '../../files.js';
+import { showOnlyItems, showOnlyOf, showOnlyProblem } from './show-only.js';
 import { CUSTOM_ITEM, customItemProblem, customItemsOf, isCustom } from './custom.js';
 import { presetStyle, styleMarkup } from './item-style.js';
 import { itemGridHtml } from './item-grid-render.js';
@@ -218,6 +221,8 @@ export const list = {
   customItems: true,
   // widgetItems (../../layout/source.js): custom items instead of the source's
   items: (ctx, widget) => (isCustom(widget) ? customItemsOf(ctx, widget) : undefined),
+  // widgetItems: Show only (config.showOnly), the source's items whose field has its value
+  showOnly: (widget, items) => showOnlyItems(items, showOnlyOf(widget)),
   label: 'List',
   icon: 'table-list',
   line: 'An item per entry of a source, or items you add by hand, in a look you pick',
@@ -322,6 +327,8 @@ export const list = {
     out.push(...carouselProblems(widget.config));
     const gp = gapProblem(widget.config?.gap);
     if (gp) out.push(gp);
+    const so = showOnlyProblem(widget.config?.showOnly);
+    if (so) out.push(so);
     if (
       widget.config?.custom !== undefined &&
       widget.config.custom !== true &&

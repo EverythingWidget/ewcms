@@ -4,6 +4,16 @@ Releases are tagged `vX.Y.Z` on main; a site pins one in its `package.json`
 (`"ewcms": "github:EverythingWidget/ewcms#vX.Y.Z"`). Breaking changes are marked **Breaking** and
 say what a site must do before it bumps its pin.
 
+## Unreleased
+
+### Editor
+
+- Show only: a List from a source (All or From URL) can show only the items whose field has one
+  value, "Show only items where category is uitstraling", with an ⓘ. The field comes from the
+  source's schema (else its items), the value from a dropdown of the values its items have.
+  Content: `config.showOnly: { "field", "value" }`, values compared as text. One condition only;
+  a List without it shows every item, as before.
+
 ## 0.9.0 (2026-11-15)
 
 ### Breaking: what a site must do before bumping to 0.9.0

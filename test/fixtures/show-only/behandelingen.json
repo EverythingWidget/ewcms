@@ -1,0 +1,259 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "p-ok63",
+      "name": "Verven Wenkbrauwen",
+      "duration": "15 Minuten",
+      "price": 13,
+      "category": "uitstraling"
+    },
+    {
+      "id": "p-915y",
+      "name": "Verven Wimpers",
+      "duration": "15 Minuten",
+      "price": 15,
+      "category": "uitstraling"
+    },
+    {
+      "id": "p-m4fy",
+      "name": "Verven Wenkbrauwen + Wimpers + Epileren",
+      "duration": "30 Minuten",
+      "price": 40,
+      "category": "uitstraling",
+      "note": "Source wording: \"Verven Wenkbrauwen\" then \"+ Wimpers + Epileren, 30 Minuten\"."
+    },
+    {
+      "id": "p-begm",
+      "name": "ONTHAREN GEZICHT",
+      "duration": "30 Minuten",
+      "price": 25,
+      "category": "uitstraling"
+    },
+    {
+      "id": "p-8gi7",
+      "name": "Ontharen Bovenlip + Kin",
+      "duration": "15 Minuten",
+      "price": 15,
+      "category": "uitstraling"
+    },
+    {
+      "id": "p-2tas",
+      "name": "Epileren Wenkbrauwen",
+      "duration": "30 Minuten",
+      "price": 20,
+      "category": "uitstraling"
+    },
+    {
+      "id": "p-sn2c",
+      "name": "Wimpers-lifting",
+      "duration": "60 Minuten",
+      "price": 50,
+      "category": "uitstraling"
+    },
+    {
+      "id": "p-0w4a",
+      "name": "Brow-lifting",
+      "duration": "60 Minuten",
+      "price": 50,
+      "category": "uitstraling"
+    },
+    {
+      "id": "p-3ivo",
+      "name": "Wimpers + Brow-lifting",
+      "duration": "70 Minuten",
+      "price": 80,
+      "category": "uitstraling"
+    },
+    {
+      "id": "p-wiab",
+      "name": "Luxe gezicht behandeling, alle huidtypen",
+      "duration": "60 MINUTEN",
+      "price": 120,
+      "category": "gezichtsbehandeling"
+    },
+    {
+      "id": "p-a4l8",
+      "name": "Gezicht Massage + Reinigen + Mask + Naverzorging",
+      "duration": "60 MINUTEN",
+      "price": 99,
+      "category": "gezichtsbehandeling"
+    },
+    {
+      "id": "p-6bwv",
+      "name": "Microneedeling behandeling voor heel gezicht en nek",
+      "duration": "60 MINUTEN",
+      "price": 150,
+      "category": "gezichtsbehandeling"
+    },
+    {
+      "id": "p-v6ua",
+      "name": "Microneedeling behandeling alleen gezicht",
+      "duration": "60 MINUTEN",
+      "price": 100,
+      "category": "gezichtsbehandeling"
+    },
+    {
+      "id": "p-a525",
+      "name": "Microdermabrasie Gezicht",
+      "duration": "60 MINUTEN",
+      "price": 100,
+      "category": "gezichtsbehandeling"
+    },
+    {
+      "id": "p-7mmu",
+      "name": "Microdermabrasie Gezicht + Nek",
+      "duration": "60 MINUTEN",
+      "price": 120,
+      "category": "gezichtsbehandeling"
+    },
+    {
+      "id": "p-omke",
+      "name": "Microdermabrasie Gezicht + Laser & Ultrasoon Lifting",
+      "duration": "70 MINUTEN",
+      "price": 140,
+      "category": "gezichtsbehandeling"
+    },
+    {
+      "id": "p-b2ul",
+      "name": "Acnebehandeling",
+      "duration": "60 MINUTEN",
+      "price": 80,
+      "category": "gezichtsbehandeling"
+    },
+    {
+      "id": "p-w3bt",
+      "name": "Hydrafacial",
+      "duration": "60 MINUTEN",
+      "price": 99,
+      "category": "gezichtsbehandeling"
+    },
+    {
+      "id": "p-aymi",
+      "name": "Medische peeling",
+      "duration": "60 MINUTEN",
+      "price": 120,
+      "category": "gezichtsbehandeling"
+    },
+    {
+      "id": "p-anlu",
+      "name": "Laser & Ultrasoon Lifting",
+      "duration": "60 MINUTEN",
+      "price": 80,
+      "category": "gezichtsbehandeling"
+    },
+    {
+      "id": "p-wcl2",
+      "name": "Men facial",
+      "duration": "60 MINUTEN",
+      "price": 90,
+      "category": "gezichtsbehandeling",
+      "note": "Source wording: \"Men facial\" then \"Heren gezicht behandeling facial\"."
+    },
+    {
+      "id": "p-b8ei",
+      "name": "Relaxing massage",
+      "duration": "60 MINUTEN",
+      "price": 90,
+      "category": "gezichtsbehandeling"
+    },
+    {
+      "id": "p-gc42",
+      "name": "BOVEN LIP",
+      "price": 30,
+      "category": "laserontharing",
+      "note": "Listed under DAMES. No duration on the source page."
+    },
+    {
+      "id": "p-k9oq",
+      "name": "KIN",
+      "price": 15,
+      "category": "laserontharing",
+      "note": "Listed under DAMES. No duration on the source page."
+    },
+    {
+      "id": "p-sm34",
+      "name": "HEEL GEZICHT",
+      "price": 50,
+      "category": "laserontharing",
+      "note": "Listed under DAMES. No duration on the source page."
+    },
+    {
+      "id": "p-yqte",
+      "name": "BUIK",
+      "price": 40,
+      "category": "laserontharing",
+      "note": "Listed under DAMES. No duration on the source page."
+    },
+    {
+      "id": "p-60hp",
+      "name": "OKSEL",
+      "price": 60,
+      "category": "laserontharing",
+      "note": "Listed under DAMES. No duration on the source page."
+    },
+    {
+      "id": "p-8neg",
+      "name": "BIKINI-LIJN KLEIN",
+      "price": 40,
+      "category": "laserontharing",
+      "note": "Listed under DAMES. No duration on the source page."
+    },
+    {
+      "id": "p-d4z9",
+      "name": "BIKINI-LIJN GROOT",
+      "price": 75,
+      "category": "laserontharing",
+      "note": "Listed under DAMES. No duration on the source page."
+    },
+    {
+      "id": "p-pzs1",
+      "name": "HELE HANDEN",
+      "price": 70,
+      "category": "laserontharing",
+      "note": "Listed under DAMES. No duration on the source page."
+    },
+    {
+      "id": "p-7cd7",
+      "name": "HELE BENEN",
+      "price": 140,
+      "category": "laserontharing",
+      "note": "Listed under DAMES. No duration on the source page."
+    },
+    {
+      "id": "p-thzf",
+      "name": "FULL BODY + GEZICHT",
+      "price": 300,
+      "category": "laserontharing",
+      "note": "Listed under DAMES. No duration on the source page."
+    },
+    {
+      "id": "p-5y0g",
+      "name": "ONDER BENEN + HELE BIKINI + OKSEL",
+      "price": 160,
+      "category": "laserontharing",
+      "note": "Listed under DAMES. No duration on the source page."
+    },
+    {
+      "id": "p-wqil",
+      "name": "HELE BENEN + HELE BIKINI + OKSEL + BOVEN LIP",
+      "price": 200,
+      "category": "laserontharing",
+      "note": "Listed under DAMES. No duration on the source page."
+    },
+    {
+      "id": "p-y1l5",
+      "name": "8 KEER OKSEL + BIKINI-LIJN KLEIN",
+      "price": 480,
+      "category": "laserontharing",
+      "note": "Listed under PAKKETTEN. No duration on the source page."
+    },
+    {
+      "id": "p-okzg",
+      "name": "8 KEER BIKINI-LIJN GROOT + OKSEL",
+      "price": 600,
+      "category": "laserontharing",
+      "note": "Listed under PAKKETTEN. No duration on the source page."
+    }
+  ]
+}

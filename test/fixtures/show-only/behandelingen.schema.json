@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "label": "Behandelingen",
+  "title": "name",
+  "properties": [
+    {
+      "key": "name",
+      "label": "Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "duration",
+      "label": "Duration",
+      "type": "text",
+      "width": "half",
+      "list": true,
+      "help": "As on the price list, e.g. 15 Minuten. Leave empty when the source lists none."
+    },
+    {
+      "key": "price",
+      "label": "Price",
+      "type": "number",
+      "width": "half",
+      "list": true,
+      "required": true,
+      "help": "Amount in euros, without a currency symbol."
+    },
+    {
+      "key": "category",
+      "label": "Category",
+      "type": "choice",
+      "options": [
+        "uitstraling",
+        "gezichtsbehandeling",
+        "laserontharing"
+      ],
+      "required": true,
+      "list": true
+    },
+    {
+      "key": "note",
+      "label": "Note",
+      "type": "multiline",
+      "help": "Optional. Use for source wording when an entry is ambiguous."
+    }
+  ]
+}

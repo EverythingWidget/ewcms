@@ -2,7 +2,8 @@
   A List widget's Content lead (WidgetInspector.svelte): Template, then Source
   (From URL | All | None | Custom). Custom only flips config.custom; source and config.items are
   kept for switching back. From a source:
-  WidgetSource.svelte (the template names the properties it shows: no mapping). Custom:
+  WidgetSource.svelte (the template names the properties it shows: no mapping), then Show only
+  (config.showOnly { field, value }, All or From URL: one row, always laid out). Custom:
   ListField on config.items. Only the active pane is in the flow (the other is unmounted)
   so the pop-up is content-height.
   Template (config.template, both modes): the presets, then the site's templates
@@ -34,6 +35,14 @@
   import { saveDev, templatesOp } from '../source.js';
   import { toast } from './toasts.svelte.js';
   import { setListCustom } from '../layout-ops.js';
+  import Select from './Select.svelte';
+  import { schemaFor } from './source-items.js';
+  import { sourceOf } from '../../render/layout/source.js';
+  import {
+    showOnlyFields,
+    showOnlyItems,
+    showOnlyValues,
+  } from '../../render/widgets/list/show-only.js';
 
   let { g, live, base, list = false, shown, sourceIds, onsource, bindings = null } = $props();
 
@@ -50,6 +59,41 @@
     const list = live.get(sourceFile(id), '/items');
     return Array.isArray(list) ? list : [];
   };
+  // ---- Show only (config.showOnly { field, value }: ../../render/widgets/list/show-only.js)
+  const showOnlyPtr = $derived(`${base}/config/showOnly`);
+  const listSource = $derived.by(() => {
+    live.version;
+    const v = live.get(g.file, `${base}/source`);
+    return sourceOf({ source: v }) ? v : null;
+  });
+  // a List from a source showing several items: All or From URL (not Item, None or Custom)
+  const showOnlyOn = $derived(!custom && !!listSource && listSource.mode !== 'item');
+  const showOnly = $derived.by(() => {
+    live.version;
+    const v = live.get(g.file, showOnlyPtr);
+    return { field: typeof v?.field === 'string' ? v.field : '', value: v?.value ?? '' };
+  });
+  const soSchema = $derived.by(() => {
+    live.version;
+    return listSource ? schemaFor(live.store, sourceFile(listSource.from)) : null;
+  });
+  const soItems = $derived(listSource ? itemsOf(listSource.from) : []);
+  const soFields = $derived(showOnlyFields(soSchema, soItems));
+  const soValues = $derived(
+    showOnly.field ? showOnlyValues(soSchema, soItems, showOnly.field) : [],
+  );
+  const count = (field, value) => showOnlyItems(soItems, { field, value }).length;
+  const setShowOnly = (next) =>
+    live.store.set(g.file, showOnlyPtr, next, {
+      key: `config:${g.file}${showOnlyPtr}`,
+      source: 'panel',
+      structure: true,
+    });
+  // another field: its value picked again (none yet: every item still shows)
+  const pickShowOnlyField = (field) => setShowOnly(field ? { field } : undefined);
+  const pickShowOnlyValue = (value) =>
+    showOnly.field && setShowOnly({ field: showOnly.field, value: String(value) });
+
   const listDef = $derived(
     (g.config || []).find((c) => c.key === 'items') || {
       list: {
@@ -294,6 +338,43 @@
     oncustom={() => setListCustom(live.store, g.file, base)}
   />
 
+  {#if showOnlyOn}
+    <div class="ll__show-only" data-show-only>
+      <span class="tf__label"
+        >Show only items where<InfoHelp label="About Show only"
+          ><b>Show only</b>: of the source's items, only those whose field has the value you pick
+          (one field, one value). <b>All items</b> shows every item. Changing the items in Sources changes
+          what the List shows.</InfoHelp
+        ></span
+      >
+      <!-- one row, always laid out: picking a field fills the value next to it (no shift) -->
+      <div class="ll__show-only-row">
+        <Select
+          aria-label="Show only: field"
+          value={showOnly.field}
+          options={[
+            { value: '', label: 'All items' },
+            ...soFields.map((f) => ({ value: f.key, label: f.label })),
+          ]}
+          onchange={pickShowOnlyField}
+        />
+        <span class="ll__is">is</span>
+        <Select
+          aria-label="Show only: value"
+          value={String(showOnly.value)}
+          placeholder={showOnly.field ? 'Pick a value' : '—'}
+          disabled={!showOnly.field}
+          options={soValues.map((v) => ({
+            value: v,
+            label: v,
+            hint: `${count(showOnly.field, v)}`,
+          }))}
+          onchange={pickShowOnlyValue}
+        />
+      </div>
+    </div>
+  {/if}
+
   {#if custom}
     <ListField
       label=""
@@ -327,6 +408,22 @@
   .ll__actions {
     @include row(var(--space-2));
     flex-wrap: wrap;
+  }
+
+  .ll__show-only {
+    @include stack(var(--gap-rows));
+    min-width: 0;
+  }
+
+  .ll__show-only-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .ll__is {
+    color: var(--c-text-muted);
   }
 
   .ll__source-head {

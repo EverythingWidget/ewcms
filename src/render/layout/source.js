@@ -67,6 +67,8 @@ export function widgetItems(ctx, route, widget, type) {
       schema: schemaOf(ctx, s.from),
       refs: refsOf(route),
     });
+  // the type's own narrowing of them (a List's Show only, config.showOnly)
+  if (s.mode !== 'item' && type?.showOnly) items = type.showOnly(widget, items);
   const item = items[0] ?? null;
   const indexOf = (it) => list.indexOf(it);
   return { source: s.from, items, item, index: item ? indexOf(item) : -1, indexOf };
