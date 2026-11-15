@@ -1052,6 +1052,8 @@ async function save({ quiet = false } = {}) {
       site: dirty.includes(SITE) && siteKey(store.base) !== siteKey({ ...store.base, ...sent }),
     });
     await source.saveDev(sent);
+    // Saved first: markSaved emits, and the badge must not flash "Unsaved changes" (G16)
+    ui.saved = true;
     store.markSaved(dirty, sent);
     saves++;
     ui.saved = !store.dirtyFiles().length;

@@ -495,7 +495,7 @@
   }
 
   .ed-pending {
-    min-width: 0;
+    min-width: 16ch; // "Unsaved changes": Saved must not shrink the row (G16)
     margin: 0;
     @include row(var(--space-2));
     @include muted;
