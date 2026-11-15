@@ -131,3 +131,9 @@ test('Media: one summary after several uploads, file names on tiles, a prompt fo
   assert.match(m, /class="media-alt-missing">None yet: please add one/);
   assert.match(m, /toast\('This photo has no alt text yet'/);
 });
+
+
+test('G19: the grid tip says Shift+Arrow pushes the linked widgets below', () => {
+  const tb = src('WidgetToolbar.svelte');
+  assert.match(tb, /<b>Shift\+Arrow<\/b> also pushes the linked widgets below/);
+});

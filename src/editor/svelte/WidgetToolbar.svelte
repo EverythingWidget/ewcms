@@ -575,8 +575,9 @@
       <InfoHelp label="About the grid"
         ><b>The grid</b>: a section is 120 columns wide on Desktop, 60 on Phone; rows are cells as
         tall as they are wide. It shows while a widget is selected. Drag the widget to move it, its
-        handles to resize it: it snaps to the cells. Esc deselects. Here: width × height ·
-        row:column.</InfoHelp
+        handles to resize it: it snaps to the cells. Arrow keys nudge it (Shift: 5).
+        <b>Shift+Arrow</b> also pushes the linked widgets below: that is how you make room between
+        sections. Esc deselects. Here: width × height · row:column.</InfoHelp
       >
     </div>
 
