@@ -43,7 +43,8 @@ test('placed on Source, Height / Width and the Curtain', () => {
 test('the audit tips: each in an existing row, with its label', () => {
   const lead = src('ListLead.svelte');
   assert.match(lead, /<InfoHelp label="About Source"[\s\S]*<b>All<\/b>[\s\S]*<b>Custom<\/b>/);
-  assert.match(lead, /\{#snippet tip\(\)\}<b>Template<\/b>/);
+  assert.match(lead, /\{#snippet tip\(\)\}A <b>List<\/b> shows one copy of its template/);
+  assert.match(lead, /<b>Template<\/b>: how each item looks/);
   assert.match(
     src('WidgetToolbar.svelte'),
     /<InfoHelp label="About the grid"[\s\S]*120 columns wide on Desktop, 60 on Phone/,

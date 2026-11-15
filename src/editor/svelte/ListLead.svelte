@@ -236,10 +236,12 @@
         setTemplate(v);
       }}
     >
-      {#snippet tip()}<b>Template</b>: how each item looks. A preset fills each part from the
-        source's property of the same name: <b>photo</b>, <b>body</b>, and the source's title
-        property for <b>title</b>. A part the source has no property for is left out. To show other
-        properties, <b>Duplicate</b> it and pick them in the template.{/snippet}
+      {#snippet tip()}A <b>List</b> shows one copy of its template per item: the items of a list in
+        Sources (Source: All, From URL) or the ones you add here (Custom); none: “Nothing here yet.”
+        <b>Template</b>: how each item looks. A preset fills each part from the source's property of
+        the same name: <b>photo</b>, <b>body</b>, and the source's title property for <b>title</b>.
+        A part the source has no property for is left out. To show other properties,
+        <b>Duplicate</b> it and pick them in the template.{/snippet}
     </Field>
     <div class="ll__actions">
       <Button
