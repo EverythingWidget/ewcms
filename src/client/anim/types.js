@@ -34,7 +34,8 @@ const reach = (pos) =>
 /** A scrubbed animation's scrub: true (locked to the scroll) or seconds of smoothing. */
 const scrubOf = (spec) => (spec.scrub === true ? true : Number(spec.scrub) || true);
 
-const scrollVars = (spec, trigger) => {
+// (exported for test/reveal-plays.test.mjs)
+export const scrollVars = (spec, trigger) => {
   if (spec.trigger !== 'scroll') return {};
   if (spec.scrub) {
     const scrub = scrubOf(spec);
@@ -55,9 +56,15 @@ const scrollVars = (spec, trigger) => {
     if (self.start <= 0 && self.scroll() <= 0 && !self.animation?.progress())
       self.animation?.play();
   };
+  // The editor preview resets a reveal scrolled back above its start, to watch it again. A
+  // start clamped to 0 (on screen at load, or a short page) is never above the top: back at the
+  // top it was reset and stayed blank (F97). There it plays again instead.
+  const onLeaveBack = (self) => {
+    if (self.start <= 0) self.animation?.restart();
+  };
   return {
     scrollTrigger: flags.preview
-      ? { trigger, start, toggleActions: 'play none none reset', onRefresh }
+      ? { trigger, start, toggleActions: 'play none none reset', onRefresh, onLeaveBack }
       : { trigger, start, once: true, onRefresh },
   };
 };
