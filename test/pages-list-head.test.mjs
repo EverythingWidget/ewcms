@@ -37,3 +37,8 @@ test('G18: the whole page row drags, and Remove from menu unlinks without deleti
   assert.match(src, /if \(e\.target\.closest\('\.btn, \.prow__in, \.prow__own, \.prow__ask, input, select, a, label'\)\)/);
   assert.match(src, /onpointerdown=\{\(e\) => \{\s*if \(j < 0\) return;/);
 });
+
+test('F114: picking Header or Footer under Site opens it for editing', () => {
+  assert.match(src, /if \(row\.part && !row\.itemTemplate\) return open\(row\);/);
+  assert.match(src, /title=\{r\.part\s*\? `Open the \$\{r\.title\}`/);
+});

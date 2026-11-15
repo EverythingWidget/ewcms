@@ -130,11 +130,11 @@ test('pages list: no edit pens (their 24px slot kept), the page in the preview i
     list,
     /&\.is-active \{\s*background: color-mix\(\s*in srgb,\s*var\(--c-page-accent\) 9%,\s*color-mix\(in srgb, var\(--c-text\) 14%, var\(--c-page-card\)\)\s*\);/,
   );
-  // browse: a click only selects and shows; a double click / Enter opens (edit)
+  // browse: a click only selects and shows; Header or Footer open for editing (F114)
   assert.match(list, /function open\(row\) \{\s*show\(row\);\s*setMode\('edit'\);/);
   assert.match(
     list,
-    /function pick\(row\) \{\s*sel = row\.id;\s*if \(!row\.part \|\| row\.itemTemplate\) show\(row\);/,
+    /if \(row\.part && !row\.itemTemplate\) return open\(row\);/,
   );
 });
 

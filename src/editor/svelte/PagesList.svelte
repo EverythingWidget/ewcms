@@ -134,10 +134,12 @@
     show(row);
     setMode('edit');
   }
-  // browse: a click only selects the row and shows its page (a site part: no page, only selected)
+  // browse: a click only selects the row and shows its page; Header or Footer (Site): opens it
+  // for editing, as a click on its chip in the preview does (F114)
   function pick(row) {
     sel = row.id;
-    if (!row.part || row.itemTemplate) show(row);
+    if (row.part && !row.itemTemplate) return open(row);
+    show(row);
   }
   // the row of the page the preview shows (its fill; the ring is the row selected)
   const isActive = (row) => entryShows(entryFor(ui.pages, row), ui.path);
@@ -387,7 +389,7 @@
       type="button"
       class="prow__open"
       title={r.part
-        ? `Double click: open the ${r.title}`
+        ? `Open the ${r.title}`
         : `content/${pageFile(r.id)} · double click: ${inside(r) ? 'go inside' : 'open'}`}
       onclick={(e) => onclick(e, r)}
       ondblclick={() => into(r)}
