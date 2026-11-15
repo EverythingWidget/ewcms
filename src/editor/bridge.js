@@ -66,14 +66,12 @@ html.__ed-arrange [data-widget], html.__ed-arrange [data-widget] *:not([contente
 [data-bound-missing] { opacity: .4; }
 html.__ed-arrange .hero__title { z-index: 5; }
 :is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]):not([data-ed-open]) *, :is(html.__ed-arrange, html.__ed-animate):has([data-ed-open]) [data-router-view] * { pointer-events: none !important; }
-:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]):not([data-ed-open]) { cursor: pointer; pointer-events: auto; }
-:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]):not([data-ed-open]):hover { outline: 1px dashed rgb(255 255 255 / .6); outline-offset: -1px; }
+:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]):not([data-ed-open]) { pointer-events: none; }
 :is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])[data-ed-open] { outline: 2px solid ${T.accent}; outline-offset: -2px; }
 :is(html.__ed-arrange, html.__ed-animate) [data-footer]:not(:has([data-sec])) { min-height: 96px; }
-:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])::before { position: absolute; left: 8px; top: 8px; z-index: 30; padding: 4px 8px; border-radius: ${T.radiusSm}; font: 500 ${T.fsXs}/1 ${T.font}; letter-spacing: .04em; background: ${T.black}; color: ${T.white}; pointer-events: none; }
-:is(html.__ed-arrange, html.__ed-animate) [data-footer]::before { content: 'Footer'; }
-:is(html.__ed-arrange, html.__ed-animate) [data-header]:is(:hover, [data-ed-open])::before { content: 'Header'; top: auto; bottom: -28px; }
-:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])[data-ed-open]::before { background: ${T.accent}; color: ${T.onAccent}; }
+:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]) > .__ed-part-open { position: absolute; left: 8px; top: 8px; z-index: 30; padding: 4px 8px; border: 0; border-radius: ${T.radiusSm}; font: 500 ${T.fsXs}/1 ${T.font}; letter-spacing: .04em; background: ${T.black}; color: ${T.white}; cursor: pointer; pointer-events: auto !important; }
+:is(html.__ed-arrange, html.__ed-animate) [data-header] > .__ed-part-open { top: auto; bottom: -28px; }
+:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])[data-ed-open] > .__ed-part-open { background: ${T.accent}; color: ${T.onAccent}; pointer-events: none !important; }
 html.__ed-animate [data-anim], html.__ed-animate [data-anim] *, html.__ed-animate [data-widget], html.__ed-animate [data-widget] * { cursor: pointer !important; }
 /* a press on a widget's link or button only picks the widget: the press misses it (no :active, :hover or focus look), the widget gets it; Alt+click still clicks through (__ed-alt); a clickable template item's widgets: overlay.js finds them by position */
 /* a link saved as the editor's own preview address (F50): marked, a click asks for it again (F107) */
@@ -572,32 +570,24 @@ export function createBridge({
     });
   }
 
-  /** The link under x, y in the picked widget's Text, { a, body }, or null. */
+  /** The link under x, y in a Text, { a, body }, or null. */
   function pickedLinkAt(x, y) {
-    const range = doc.caretRangeFromPoint?.(x, y);
-    const node = range?.startContainer;
-    const a = (node?.nodeType === 1 ? node : node?.parentElement)?.closest('a');
+    // the link's box (its links take no pointer: caretRangeFromPoint can miss and hit the
+    // paragraph instead: G12); a first click opens it too, not only once the widget is picked
+    const hit = doc.elementFromPoint?.(x, y);
+    const body = hit?.closest?.('[data-edit-type="rich"]');
+    if (!body) return null;
+    const a = [...body.querySelectorAll('a')].find((el) => {
+      const r = el.getBoundingClientRect();
+      return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+    });
     if (!a) return null;
-    const body = a.closest('[data-edit-type="rich"]');
-    const own = body?.closest('[data-tw], [data-widget]');
-    // selected before this click (a first click selects the widget), and not a drag's end; a
-    // broken link (the editor's preview address: F50) at once, its box saying why (F107)
+    const own = body.closest('[data-tw], [data-widget]');
     const id = own?.dataset.tw || own?.dataset.widget;
     const moved = down && Math.hypot(x - down.x, y - down.y) > 4;
-    const asks = down?.widget === id || brokenLink(a);
-    return body && id && asks && !moved ? { a, body } : null;
+    return body && id && !moved ? { a, body } : null;
   }
   let down = null; // the last press: where, and the widget selected then
-  /** Is <a> a link saved as the editor's preview address (its own link, or its href)? */
-  function brokenLink(a) {
-    let own;
-    try {
-      own = JSON.parse(a.dataset.tsLink || 'null');
-    } catch {
-      own = null;
-    }
-    return isDraftHref(own?.href) || isDraftHref(a.getAttribute('href'));
-  }
 
   // a click on a link while its Text is edited: the link box opens for it (its address in
   // the field, a broken one with its note: F107), unless a second click follows (a double
@@ -826,6 +816,19 @@ export function createBridge({
     // (its colours: ui-tokens.js, read from the editor's styles/_tokens.scss)
     style.textContent = INJECTED_CSS;
     doc.head.append(style);
+    for (const [id, sel] of [
+      ['header', '[data-header]'],
+      ['footer', '[data-footer]'],
+    ]) {
+      const part = doc.querySelector(sel);
+      if (!part || part.querySelector(':scope > .__ed-part-open')) continue;
+      const b = doc.createElement('button');
+      b.type = 'button';
+      b.className = '__ed-part-open';
+      b.textContent = id === 'header' ? 'Header' : 'Footer';
+      b.setAttribute('aria-label', `Edit the ${b.textContent}`);
+      part.prepend(b);
+    }
     const mk = (cls) => {
       const b = doc.createElement('div');
       b.className = `__ed-box ${cls}`;
@@ -871,8 +874,9 @@ export function createBridge({
       (e) => {
         if (clicks === 'visitor' || e.altKey) return;
         const t = e.target instanceof win.Element ? e.target : null;
-        // A site part (the header, the footer): a click on it (locked) opens it, picking
-        // nothing in it yet; a click outside it (open) locks it again (the page is picked
+        // A site part (the header, the footer): a click on its chip (locked) opens it, picking
+        // nothing in it yet (the whole box used to take the click: a stray one left the page's
+        // edit mode, G12); a click outside it (open) locks it again (the page is picked
         // from the next click)
         for (const [id, sel] of [
           ['header', '[data-header]'],
@@ -880,7 +884,7 @@ export function createBridge({
         ]) {
           const part = doc.querySelector(sel);
           const open = !!part?.hasAttribute('data-ed-open');
-          if (part && (open ? !part.contains(t) : t === part)) {
+          if (part && (open ? !part.contains(t) : t?.closest?.('.__ed-part-open') && part.contains(t))) {
             e.preventDefault();
             e.stopPropagation();
             emit('part', id, !open);

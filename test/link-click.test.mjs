@@ -13,7 +13,7 @@ test('F108: a click on a link in the selected Text edits it there and opens its 
   // the selected widget's link (selected before the press, not a drag's end): edit, then the box
   assert.match(b, /const link = e\.detail === 1 \? pickedLinkAt\(e\.clientX, e\.clientY\) : null;/);
   assert.match(b, /startRich\(link\.body, e\.clientX, e\.clientY\);\s*linkBoxSoon\(\);/);
-  assert.match(b, /return body && id && asks && !moved \? \{ a, body \} : null;/);
+  assert.match(b, /return body && id && !moved \? \{ a, body \} : null;/);
   // already edited: a click in a link opens it too
   assert.match(b, /if \(rich && e\.detail === 1 && t\.closest\('a'\)\) linkBoxSoon\(\);/);
   // a double click (a word of the link selected) opens no box; the box opens on a caret in a link
@@ -53,11 +53,8 @@ test("F107: a link saved as the editor's preview address is marked, and one clic
     /a:is\(\[href\*="\?draft="\], \[href\*="&draft="\], \[data-ts-link\*="draft="\]\) \{ text-decoration: underline wavy/,
   );
   // its first click (the widget not selected yet) opens its box: empty, with the note (DRAFT_HREF)
-  assert.match(b, /const asks = down\?\.widget === id \|\| brokenLink\(a\);/);
-  assert.match(
-    b,
-    /return isDraftHref\(own\?\.href\) \|\| isDraftHref\(a\.getAttribute\('href'\)\);/,
-  );
+  // a first click on a link opens it too (the widget need not be picked first: G12)
+  assert.match(b, /return body && id && !moved \? \{ a, body \} : null;/);
   const tb = read('editor/svelte/WidgetToolbar.svelte');
   assert.match(tb, /linkDraft = isDraftHref\(href\);\s*linkText = linkDraft \? '' : href;/);
   assert.match(
@@ -77,8 +74,18 @@ test('F107: the mark matches the preview address in either form the preview rend
 test('F107: a click off any link is no link (pickedLinkAt never reads a missing <a>)', () => {
   const src = read('editor/bridge.js');
   const fn = src.slice(src.indexOf('function pickedLinkAt('), src.indexOf('let down = null'));
-  assert.ok(
-    fn.indexOf('if (!a) return null;') > 0 &&
-      fn.indexOf('if (!a) return null;') < fn.indexOf('brokenLink(a)'),
+  assert.ok(fn.includes('if (!a) return null;'));
+  // the link's box, not the caret: a paragraph must not take a click meant for the link (G12)
+  assert.match(fn, /body\.querySelectorAll\('a'\)/);
+  assert.match(fn, /getBoundingClientRect\(\)/);
+});
+
+test('G12: a locked Header or Footer opens only from its chip, not a stray click on the box', () => {
+  const b = read('editor/bridge.js');
+  assert.match(b, /b\.className = '__ed-part-open'/);
+  assert.match(b, /__ed-part-open'\) && part\.contains\(t\)/);
+  assert.match(
+    b,
+    /:is\(\[data-header\], \[data-footer\]\):not\(\[data-ed-open\]\) \{ pointer-events: none; \}/,
   );
 });
