@@ -115,6 +115,8 @@ import { sectionsUsing } from '../render/widgets/list/template-uses.js';
 import { needsReload, routesFile, routesKey, siteKey } from './lib/needs-reload.js';
 import { TYPE_SPECIMEN, isTypeSpecimen } from '../render/layout/type-specimen.js';
 import { keepUnsaved, restoreUnsaved } from './keep-unsaved.js';
+import { applyDraft, clearDraft, draftKey, readDraft, writeDraft } from './draft-copy.js';
+import { closeModal, isOpen, openSaveFailed, openUnsavedEdits } from './svelte/modals.svelte.js';
 
 // the site's content folder (site.config.mjs), for the paths the editor shows
 setContentDir(editorConfig.contentDir);
@@ -977,7 +979,7 @@ store.on(({ files, source: src, structure }) => {
     const fromPreview = src && src.nodeType === 1;
     bridge.applyTexts({
       skip: fromPreview ? src : null,
-      force: ['undo', 'redo', 'rebase'].includes(src),
+      force: ['undo', 'redo', 'rebase', 'restore'].includes(src),
     });
   }
   if (files.includes(ANIMATIONS)) {
@@ -1033,6 +1035,8 @@ async function save({ quiet = false } = {}) {
     store.markSaved(dirty, sent);
     saves++;
     ui.saved = !store.dirtyFiles().length;
+    if (isOpen('saveFailed')) closeModal('saveFailed');
+    flushDraft(); // nothing unsaved: the copy goes
     // the preview's item page moved (its slug changed): show it at its new path; else only
     // the preview reloads (when it needs to), at the same scroll and selection
     const moved = followed?.moves.get(ui.path);
@@ -1043,7 +1047,10 @@ async function save({ quiet = false } = {}) {
     ui.status = `Saved ${plural(dirty.length, 'file')} · ${new Date().toLocaleTimeString()}`;
     return true;
   } catch (err) {
-    toast(`Save failed: ${err.message}`, { kind: 'error', timeout: 0 });
+    // loud: a window that stays until it is dismissed, naming what wasn't saved (F80); the
+    // edits stay, and so does their copy in localStorage (draft-copy.js)
+    openSaveFailed({ message: err.message, files: dirty });
+    flushDraft();
     return false;
   } finally {
     ui.saving = false;
@@ -1096,6 +1103,43 @@ import.meta.hot?.on('site:changed', onDiskChange);
 // are kept and put back (keep-unsaved.js)
 import.meta.hot?.on('vite:beforeFullReload', () => keepUnsaved(store, sessionStorage));
 
+// ---------------------------------------------------------------- unsaved copy (F80)
+/** The localStorage key of this site's unsaved copy (draft-copy.js); set at boot. */
+let draftAt = '';
+let offering = false; // kept edits offered back: the copy waits for Restore or Discard
+let copyTimer = 0;
+/** The unsaved edits copied now (none: the copy goes); not while one is offered back. */
+function flushDraft() {
+  clearTimeout(copyTimer);
+  if (!draftAt || offering) return;
+  writeDraft(store, localStorage, draftAt, { page: ui.path || '' });
+}
+store.on(() => {
+  clearTimeout(copyTimer);
+  copyTimer = setTimeout(flushDraft, 400);
+});
+window.addEventListener('pagehide', flushDraft);
+/** Restore: the kept edits on top of the files, one undo step; files changed since are said. */
+function restoreDraft() {
+  const draft = readDraft(localStorage, draftAt);
+  offering = false;
+  if (!draft) return;
+  const { restored, skipped } = applyDraft(store, draft);
+  flushDraft();
+  refreshStatus();
+  updatePages();
+  if (restored.length)
+    toast('Unsaved edits restored', { files: restored, note: 'Ctrl+S saves them' });
+  if (skipped.length)
+    toast('Not restored: changed since', { kind: 'error', timeout: 0, files: skipped });
+}
+/** Discard: the kept edits thrown away. */
+function discardDraft() {
+  offering = false;
+  clearDraft(localStorage, draftAt);
+  flushDraft();
+}
+
 // ---------------------------------------------------------------- boot
 async function boot() {
   ui.status = 'Loading content…';
@@ -1108,6 +1152,20 @@ async function boot() {
   }
   store.load(loaded.files);
   const kept = restoreUnsaved(store, sessionStorage);
+  draftAt = draftKey(location.origin, store.base[SITE]?.name);
+  // edits kept from an earlier visit (a reload, a closed tab): offered back, not put back
+  // unasked. The dev server's own reload (kept, above) has them back already.
+  const draft = kept.length ? null : readDraft(localStorage, draftAt);
+  if (draft) {
+    offering = true;
+    openUnsavedEdits({
+      t: draft.t,
+      page: draft.page || '',
+      files: Object.keys(draft.files),
+      onrestore: restoreDraft,
+      ondiscard: discardDraft,
+    });
+  }
   routesSeen = routesKey(store.current); // what the preview's first load shows
   siteSeen = siteKey(store.current);
   if (kept.length)

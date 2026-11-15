@@ -12,6 +12,8 @@
  *   addPage        AddPageModal.svelte     openAddPage({ level })
  *   itemModal      ItemModal.svelte        openItemModal({ mode, value, ..., onpick, onsource })
  *   previewModal   PreviewModal.svelte     openPreviewModal({ id, onpick })
+ *   saveFailed     SaveFailedModal.svelte  openSaveFailed({ message, files })
+ *   unsavedEdits   UnsavedEditsModal.svelte  openUnsavedEdits({ t, page, files, onrestore, ondiscard })
  *
  * The stack is the open modals, bottom first. The top one is in front; closing it shows the one
  * below again, as it was (Media opened from a photo field in Sources, Sources opened from a
@@ -35,6 +37,8 @@ export const MODALS = [
   'addPage',
   'itemModal',
   'previewModal',
+  'saveFailed',
+  'unsavedEdits',
 ];
 
 /** The stack with `name` on top: when it is open already, the ones above it close. */
@@ -97,6 +101,14 @@ export const openItemModal = (params) =>
 
 /** The item selector of a [param] page's Preview line: page `id`, onpick(path). */
 export const openPreviewModal = ({ id, onpick }) => openModal('previewModal', { id, onpick });
+
+/** A save that failed (F80): `message`, the `files` not saved. */
+export const openSaveFailed = ({ message, files = [] }) =>
+  openModal('saveFailed', { message, files });
+
+/** Unsaved edits kept from an earlier visit (draft-copy.js, F80): Restore or Discard. */
+export const openUnsavedEdits = ({ t, page = '', files = [], onrestore, ondiscard }) =>
+  openModal('unsavedEdits', { t, page, files, onrestore, ondiscard });
 
 // ---- the dialogs
 

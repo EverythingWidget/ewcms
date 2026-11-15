@@ -169,6 +169,8 @@ const MODALS = {
   addPage: 'AddPageModal',
   itemModal: 'ItemModal',
   previewModal: 'PreviewModal',
+  saveFailed: 'SaveFailedModal',
+  unsavedEdits: 'UnsavedEditsModal',
 };
 
 test('each modal is mounted once, in App.svelte, and is a <dialog> on the stack', () => {

@@ -37,6 +37,8 @@
   } from './modals.svelte.js';
   import { toast } from './toasts.svelte.js';
   import Toasts from './Toasts.svelte';
+  import SaveFailedModal from './SaveFailedModal.svelte';
+  import UnsavedEditsModal from './UnsavedEditsModal.svelte';
   import UpdateNotice from './UpdateNotice.svelte';
   import WidgetToolbar from './WidgetToolbar.svelte';
   import TemplateCols from './TemplateCols.svelte';
@@ -347,6 +349,8 @@
   <AddPageModal {live} {actions} />
   <ItemModal />
   <PreviewModal {live} />
+  <SaveFailedModal />
+  <UnsavedEditsModal />
   <Toasts />
 {/if}
 
