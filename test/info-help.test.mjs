@@ -116,3 +116,10 @@ test("the editor's preview pauses the header clock's endless pulse (F65, F66, F8
   const bridge = readFileSync(new URL('../src/editor/bridge.js', import.meta.url), 'utf8');
   assert.match(bridge, /html \.header__clock-dot \{ animation-play-state: paused; \}/);
 });
+
+test('a disabled Rename says to type a new name first (F82)', () => {
+  assert.match(
+    src('PageAddress.svelte'),
+    /title=\{value === name \? 'Type a new name in the field first' : undefined\}/,
+  );
+});

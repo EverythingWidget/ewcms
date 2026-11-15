@@ -82,6 +82,7 @@
         size="small"
         icon="pen"
         disabled={value === name || !!error || busy}
+        title={value === name ? 'Type a new name in the field first' : undefined}
         label="Rename">Rename</Button
       >
     {/if}
