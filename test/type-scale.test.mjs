@@ -98,7 +98,8 @@ test("the page's head: site.json type as :root variables", () => {
   };
   const { route } = render.typeSpecimen(shown);
   const { head } = render.renderRoute(route, render.typeSpecimen(shown).content);
-  assert.match(head, /:root \{[^}]*--type-heading-min: 44px;/);
+  // :root:root: over the theme's :root defaults, whichever stylesheet loads later (G11)
+  assert.match(head, /:root:root \{[^}]*--type-heading-min: 44px;/);
   const plain = render.renderRoute(
     route,
     render.typeSpecimen({ ...content, site: site() }).content,

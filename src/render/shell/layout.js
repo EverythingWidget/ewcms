@@ -12,7 +12,9 @@ export function head(ctx, route, accent) {
   const seo = seoOf(ctx, route);
   const photo = seo.photo;
   // site.json type (the text styles' sizes: layout/type.js) and layout (a contained section's
-  // columns: layout/contain.js), only what it sets
+  // columns: layout/contain.js), only what it sets; :root:root, so it beats the theme's own
+  // defaults (_tokens.scss :root) whichever stylesheet comes later: in dev the theme's CSS is
+  // added after this head, and its 250px title max won until Site Settings set them inline (G11)
   const type = [typeVars(site), layoutVars(site)].filter(Boolean).join('; ');
   const ld =
     route.page === 'home'
@@ -59,12 +61,14 @@ export function head(ctx, route, accent) {
     <style id="accent-init">
       :root {
         --accent: ${esc(accent)};
-        --site-accent: ${esc(ctx.site.accent || accent)};${
-          type
-            ? `
-        ${esc(type)};`
-            : ''
-        }
+        --site-accent: ${esc(ctx.site.accent || accent)};
+      }${
+        type
+          ? `
+      :root:root {
+        ${esc(type)};
+      }`
+          : ''
       }
     </style>
     ${ld}`;
