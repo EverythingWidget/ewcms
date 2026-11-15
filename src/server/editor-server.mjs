@@ -318,6 +318,33 @@ export function pagesOp(
     };
   }
 
+  /**
+   * Duplicate (F99, as a widget's or a section's Duplicate): page `id`'s own file copied next
+   * to it, its sub pages not: a new page id, "<name>-copy" (-copy-2, … when taken) and its
+   * name with " copy". Not in the menu (a page is linked by the menu, the copy isn't). Not
+   * home, 404 or a [param] page.
+   */
+  function duplicateOp() {
+    if (PROTECTED.has(id) || isTemplate(id))
+      return fail(400, `${id} can't be duplicated: add a page instead`);
+    const data = readJSON(pageFile(id));
+    if (!data) return fail(400, `Fix ${pageFile(id)} first: it isn't JSON`);
+    const at = parentOf(id);
+    const base = `${id.slice(at ? at.length + 1 : 0)}-copy`;
+    let name = base;
+    for (let n = 2; checkName(at, name); n++) name = `${base}-${n}`;
+    const pid = join(at, name);
+    const before = readContentDir(root);
+    const was = String(data.meta?.title || titleOf(before, id)).trim();
+    onWrite();
+    write(pageFile(pid), {
+      ...data,
+      id: newPageId(),
+      meta: { ...data.meta, title: `${was} copy` },
+    });
+    return done({ id: pid, created: [pageFile(pid)] });
+  }
+
   /** A page id no page has (the content on disk): links point at pages by it. */
   const newPageId = () =>
     newId(
@@ -329,7 +356,7 @@ export function pagesOp(
       ),
     );
 
-  if (!['add', 'template', 'rename', 'move', 'delete'].includes(op))
+  if (!['add', 'template', 'rename', 'move', 'delete', 'duplicate'].includes(op))
     return fail(400, `Unknown pages op "${op ?? ''}"`);
   if (op === 'add' || op === 'template') {
     if (parent !== '' && (PROTECTED.has(parent) || !isPage(parent)))
@@ -396,6 +423,7 @@ export function pagesOp(
   }
 
   if (!isPage(id)) return fail(404, `No page "${id ?? ''}"`);
+  if (op === 'duplicate') return duplicateOp();
   if (PROTECTED.has(id)) return fail(400, `${id} can't be renamed, moved or deleted`);
   const template = isTemplate(id);
 

@@ -297,6 +297,13 @@
     busy = false;
     asking = '';
   }
+  // a copy of the page next to it (its own file; F99), listed under Not linked
+  async function duplicate(row) {
+    busy = true;
+    const res = await actions.pagesOp({ op: 'duplicate', id: row.id });
+    busy = false;
+    if (res) toast(`“${row.title}” duplicated: ${shownPath(res.id)}`, { kind: 'ok' });
+  }
   // an item template: its file goes (the server refuses while a List uses it), G10
   async function removeTemplate(row) {
     const file = templateFile(row.id);
@@ -403,10 +410,23 @@
         aria-label="Hidden from search engines"
       ></i>
     {/if}
-    <!-- [ slot | trash | › ]: the first 24px slot is empty (the edit pen's, gone: Edit is in
+    <!-- [ copy | trash | › ]: the first 24px slot Duplicate (it was the edit pen's; Edit is in
          the header), kept so the columns line up and nothing shifts; a level's root row: the
          slot, then its Own page switch -->
-    <span class="prow__slot" aria-hidden="true"></span>
+    {#if !r.self && !r.part && !r.fixed && !r.template}
+      <!-- the first slot (the columns line up): Duplicate, as a widget's or a section's (F99) -->
+      <Button
+        size="small"
+        icon="copy"
+        iconOnly
+        label="Duplicate {r.title}"
+        title="Duplicate: a copy next to it, not in the menu"
+        disabled={busy}
+        onclick={() => duplicate(r)}
+      />
+    {:else}
+      <span class="prow__slot" aria-hidden="true"></span>
+    {/if}
     {#if r.self && L.canOwn}
       <label
         class="prow__own"

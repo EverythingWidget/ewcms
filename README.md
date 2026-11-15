@@ -1421,6 +1421,9 @@ The editor keeps them up to date by itself (`src/render/redirects.js`):
   follow the new name, matching the same property), and redirects that name it in a pattern under it follow
   (`/p/:person/` -> `/people/:person/` becomes `:model`). Not a name already in its URL, above
   or in it.
+- **Duplicate a page** (a row's copy button): its own file copied next to it (not its sub
+  pages), with a new page id, the address `<name>-copy` (`-copy-2`, … when taken) and its name
+  with " copy". The copy isn't in the menu (Not linked). Not Home, 404 or a `[param]` page.
 - **Delete a page**: its paths redirect to its parent page (the default), another page, or
   nowhere ("No redirect": the 404 page; links to it stay and the toast counts them). Page links
   to it go to the page picked; item links to a deleted `[param]` page's items stay (broken, the
@@ -1736,7 +1739,7 @@ titles and paths as written. A click selects a row and shows it in the preview; 
 pages yet"), and on a level's root row, Home, 404, Header or Footer opens it (its Sections, Element motion,
 Page motion, SEO tabs; Header and Footer have their own). Every row also has a quiet **edit** button (a pen, 30% until hovered or
 focused, like the trash) that opens that page's Sections the same way in one click (no select,
-no drag; Header and Footer open theirs; a `[param]` page that builds no pages too, to fix its main widget). A row's end is fixed 24px slots, `edit | trash | ›`
+no drag; Header and Footer open theirs; a `[param]` page that builds no pages too, to fix its main widget). A row's end is fixed 24px slots, `copy | trash | ›` (copy: Duplicate; `›`: a click goes inside)
 (an empty slot where a row has no trash, as Home, 404 and Site), so the buttons line up; the
 `›` (muted) marks a page with pages inside (there are no counts of sub pages). A level's root
 row ends with edit, then its Own page switch (or its empty place). A dot after a

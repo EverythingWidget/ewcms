@@ -323,3 +323,23 @@ test('delete without a redirect: its menu items go too (dropdown moves up); with
     { label: 'Team', page: 'pg-t037' },
   ]);
 });
+
+test('duplicate: a copy next to it, a new id, "-copy" and " copy", not its sub pages (F99)', () => {
+  const root = site();
+  const r = pagesOp(root, { op: 'duplicate', id: 'people' });
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.equal(r.body.id, 'people-copy');
+  assert.deepEqual(r.body.created, ['pages/people-copy/index.json']);
+  const copy = read(root, 'pages/people-copy/index.json');
+  assert.match(copy.id, /^pg-[a-z0-9]{4}$/);
+  assert.notEqual(copy.id, 'pg-t038');
+  assert.equal(copy.meta.title, 'People copy');
+  assert.ok(!pages(root).some((f) => f.startsWith('pages/people-copy/team')));
+  // again: the next free name; a sub page next to itself
+  assert.equal(pagesOp(root, { op: 'duplicate', id: 'people' }).body.id, 'people-copy-2');
+  assert.equal(pagesOp(root, { op: 'duplicate', id: 'people/team' }).body.id, 'people/team-copy');
+  // not home, 404 or a [param] page
+  for (const id of ['home', '404', 'people/[person]'])
+    assert.equal(pagesOp(root, { op: 'duplicate', id }).status, 400, id);
+  fs.rmSync(root, { recursive: true, force: true });
+});

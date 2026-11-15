@@ -499,7 +499,8 @@ const pagesQueued = oneAtATime(async (body) => {
       )
     : [];
   const dirty = store.dirtyFiles().filter((f) => touched.includes(f));
-  if (dirty.length && ['rename', 'move', 'delete'].includes(body.op)) {
+  // (a duplicate copies the file on disk: its unsaved edits wouldn't go with it)
+  if (dirty.length && ['rename', 'move', 'delete', 'duplicate'].includes(body.op)) {
     toast('Save or undo the unsaved changes first', { kind: 'error', files: dirty });
     return null;
   }
@@ -528,7 +529,7 @@ const pagesQueued = oneAtATime(async (body) => {
   const oldPath = body.id && pathOfId(body.id);
   const routes = live.routes;
   let to = null;
-  if (body.op === 'add') to = pathOfId(res.id);
+  if (body.op === 'add' || body.op === 'duplicate') to = pathOfId(res.id);
   else if (body.op === 'template') to = routes.find((r) => r.id === res.id)?.path;
   else if (['rename', 'move'].includes(body.op) && shown.startsWith(oldPath))
     to = pathOfId(res.id) + shown.slice(oldPath.length);
