@@ -82,9 +82,10 @@ sup {
   vertical-align: top;
   letter-spacing: 0;
 }
+// selected text and the skip link's colours: tokens (a theme's tokens.scss), these defaults
 ::selection {
-  background: var(--accent);
-  color: #000;
+  background: var(--selection-bg, var(--accent));
+  color: var(--selection-fg, #000);
 }
 
 :focus-visible {
@@ -109,8 +110,8 @@ html.anim-pending [data-motion] > * {
   top: -60px;
   z-index: $z-skip;
   padding: 10px 14px;
-  background: var(--fg);
-  color: #000;
+  background: var(--skip-link-bg, var(--fg));
+  color: var(--skip-link-fg, #000);
   border-radius: 999px;
   &:focus {
     top: 12px;

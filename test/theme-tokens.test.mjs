@@ -146,3 +146,14 @@ test("F96: the current page's nav item reads its shape and colours", () => {
   const chrome = fs.readFileSync(path.join(root, 'src/client/styles/_chrome.scss'), 'utf8');
   assert.ok(chrome.includes('color: var(--menu-active-fg, var(--brand))'));
 });
+
+test('F93: selected text and the skip link read their colours', () => {
+  const base = fs.readFileSync(path.join(root, 'src/client/styles/_base.scss'), 'utf8');
+  for (const t of [
+    '--selection-bg, var(--accent)',
+    '--selection-fg, #000',
+    '--skip-link-bg, var(--fg)',
+    '--skip-link-fg, #000',
+  ])
+    assert.ok(base.includes(`var(${t})`), t);
+});
