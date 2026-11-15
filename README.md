@@ -1988,7 +1988,7 @@ Change in its field, see the Media window above). Edit
 - Inspiration: Gregor Collienne and Hannah Miles (home hero), Faint Film (album slider/grid),
   House of Yellow (a proper website with sections and a big footer).
 
-## Breaking content changes (next)
+## Breaking content changes 0.8.0
 
 The shared files moved out of the language folder: `content/en/settings/` is gone, its files
 sit at the content root, next to `templates/` (they are the same in every language), and
@@ -2011,6 +2011,12 @@ Then, in `en/strings.json`, rename the `"nav"` key to `"header"` (the files' oth
 don't change). In the engine: `NAV` is `HEADER` (src/render/files.js), the
 render content's `nav` is `header`, `ROOT_FILES` lists the shared files (the language folder's
 are `LANG_FILES`), and `@site-content` is the content root (`@site-content/animations.json`).
+
+Also in 0.8.0 (see CHANGELOG.md): a site needs its own `theme/` (docs/THEME-MIGRATION.md); the
+contact form imports `ewcms/server/contact` (was `ewcms/functions/contact`); a List's `heading`,
+`config.seeAll` and `config.properties` are gone (a Text and a Button widget next to the List;
+leftovers only warn); an item template is one section (`name`, `clickable`, `preview.from`,
+`layer`, `config.gap` in cells).
 
 ## Breaking content changes 0.4.0
 

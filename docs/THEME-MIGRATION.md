@@ -1,6 +1,6 @@
 # Theme migration
 
-## Next release: the engine has no theme of its own
+## 0.8.0: the engine has no theme of its own
 
 `theme-default/` is gone. The look (its tokens, fonts and `theme.json`) moved to `starter/theme/`,
 which `ewcms new-site` copies into a new site; the site owns that copy. The rest of the old
