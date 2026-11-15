@@ -16,7 +16,7 @@
   import { addSection } from '../layout-ops.js';
   import { locate } from '../locate.js';
 
-  let { live, bridge, file, onopen, onsection } = $props();
+  let { live, bridge, file, onopen, onsection, onadd } = $props();
 
   const sections = $derived.by(() => {
     const list = live.current(file)?.sections;
@@ -88,6 +88,7 @@
       onsection(s.id);
     }}
     {onopen}
+    onadd={onadd && (() => onadd(at))}
   />
 {/each}
 

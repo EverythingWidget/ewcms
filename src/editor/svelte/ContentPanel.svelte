@@ -270,6 +270,8 @@
   $effect(() => {
     if (ui.widget) untrack(() => setMode('edit'));
   });
+  // Add widget (the section toolbar's, an empty section card's): the widget types, then section `at`
+  const pickWidget = (at) => openWidgets({ at, types, onpick: (type, to) => addTo(to, type) });
 </script>
 
 <div class="ed-view" bind:this={view}>
@@ -294,13 +296,7 @@
       />
     {/if}
     {#if file && !waiting && shownTab === 'sections'}
-      <SectionToolbar
-        {live}
-        {file}
-        {bridge}
-        onsection={enterSection}
-        onadd={(at) => openWidgets({ at, types, onpick: (type, to) => addTo(to, type) })}
-      />
+      <SectionToolbar {live} {file} {bridge} onsection={enterSection} onadd={pickWidget} />
     {/if}
     <!-- (a click on its empty space deselects the section card: a pointer shortcut, Esc too) -->
     <section
@@ -314,7 +310,14 @@
         <p class="hint">Waiting for the preview…</p>
       {:else if file && shownTab === 'sections'}
         <div class="list">
-          <SectionsList {live} {bridge} {file} onopen={openWidget} onsection={openSectionPopup} />
+          <SectionsList
+            {live}
+            {bridge}
+            {file}
+            onopen={openWidget}
+            onsection={openSectionPopup}
+            onadd={pickWidget}
+          />
         </div>
       {:else}
         {#if isPage && shownTab === 'element-motion'}

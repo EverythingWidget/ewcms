@@ -3,7 +3,8 @@
     title row  the changed dot, its title (its name, else "Section N"; one line, cut with …);
                a click selects it, a double click opens its settings (onsection)
     its widgets always shown under the title (not collapsible): WidgetRow.svelte each, in their
-               order (drag a row's grip to reorder, within the section; their grid areas stay); none: the title alone (no placeholder)
+               order (drag a row's grip to reorder, within the section; their grid areas stay); none:
+               a dashed + Add widget (onadd; F12), else the title alone
   12px inside on every side. Its tools (Add widget, pen, move, ⋯) are the tab's section toolbar
   (SectionToolbar.svelte), for the selected card (Delete: its trash, at once; undo brings it
   back). A Ctrl/Cmd or Shift click adds it to the selected sections (ui.selSections).
@@ -13,6 +14,7 @@
     section    optional: show this section ({ id, name, widgets }) instead of file.sections[at]
                (the template editor: its one section, its rows titled by their roles)
     onreorder  optional: (from, to) when a row is dragged; the default moves a page widget
+    onadd      optional: Add widget, shown in an empty section
 -->
 <script>
   import { ui, selectWidgets, reveal, setAnchor, hotWidget } from './ui.svelte.js';
@@ -34,6 +36,7 @@
     onopen,
     section: sectionProp,
     onreorder,
+    onadd = undefined,
   } = $props();
 
   const s = $derived.by(() => {
@@ -97,11 +100,22 @@
   changed={changed ??
     (s?.id ? live.changedItem(file, '/sections', s.id) : live.changed(file, `/sections/${at}`))}
   class={peek && !selected ? 'is-peek' : ''}
-  foot={n ? list : undefined}
+  foot={n ? list : onadd ? empty : undefined}
   {selected}
   {onselect}
   onenter={onsection}
 ></Collapsible>
+
+{#snippet empty()}
+  <button
+    type="button"
+    class="empty-add"
+    onclick={(e) => {
+      e.stopPropagation();
+      onadd();
+    }}><i class="fa-solid fa-plus" aria-hidden="true"></i>Add widget</button
+  >
+{/snippet}
 
 {#snippet list()}
   <ul class="widgets" aria-label="Widgets of {title}" bind:this={listEl}>
@@ -126,6 +140,28 @@
 
 <style lang="scss">
   @use '../styles/mixins' as *;
+
+  // an empty section: how to fill it, the widget types (a small filled button)
+  .empty-add {
+    @include row(var(--space-2));
+    justify-content: center;
+    width: 100%;
+    height: 32px;
+    margin-bottom: var(--space-3);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--c-fill-hover);
+    color: var(--c-text);
+    font: inherit;
+    font-size: var(--fs-sm);
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--c-fill-active);
+      color: var(--c-text-strong);
+    }
+  }
 
   // ---- the card (Collapsible.svelte, data-card): 12px inside on the sides (its bar and foot), the
   // widgets 8px under the title row; the title on one line
