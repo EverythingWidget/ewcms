@@ -45,6 +45,8 @@ export const ui = $state({
   /** 'desktop' | 'phone' preview size */
   viewport: 'desktop',
   saving: false,
+  /** Just saved, nothing edited since: the footer says "Saved · …" (F60). */
+  saved: false,
   publishing: false,
   /** Last /__editor/status: saved files not published yet ({ files, ahead, branch, ... }). */
   pub: null,

@@ -147,3 +147,11 @@ test('PageHead: a square back button beside a two-line title, shared site-part l
   assert.match(list, /from '\.\.\/lib\/site-parts\.js'/);
   assert.doesNotMatch(list, /const SITE_PARTS/);
 });
+
+test('after a save the footer says Saved until the next edit (F60)', () => {
+  const app = readFileSync(new URL('../src/editor/svelte/App.svelte', import.meta.url), 'utf8');
+  assert.match(app, /if \(unpublished\.length && ui\.saved\) return line\('pending', 'Saved'\);/);
+  assert.match(app, /if \(live\.changes\) ui\.saved = false;/);
+  const main = readFileSync(new URL('../src/editor/main.js', import.meta.url), 'utf8');
+  assert.match(main, /ui\.saved = !store\.dirtyFiles\(\)\.length;/);
+});

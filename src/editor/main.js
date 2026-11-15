@@ -1023,6 +1023,7 @@ async function save({ quiet = false } = {}) {
     await source.saveDev(sent);
     store.markSaved(dirty, sent);
     saves++;
+    ui.saved = !store.dirtyFiles().length;
     // the preview's item page moved (its slug changed): show it at its new path; else only
     // the preview reloads (when it needs to), at the same scroll and selection
     const moved = followed?.moves.get(ui.path);

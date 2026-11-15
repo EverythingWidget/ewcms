@@ -112,12 +112,20 @@
     if (live.changes) return line('unsaved', 'Unsaved changes');
     if (!ui.pub) return line('none', 'Checking…');
     if (ui.pub.error) return line('none', 'Publish unavailable');
+    // just saved (nothing edited since): say so, not one count swapped for another (F60);
+    // Publish · N says how many to publish
+    if (unpublished.length && ui.saved) return line('pending', 'Saved');
     if (unpublished.length)
       return line('pending', `${plural(unpublishedChanges, 'change')} to publish`);
     if (ahead) return line('pending', `${plural(ahead, 'commit')} to push`);
     return line('clean', 'All published');
   });
   const branch = $derived(ui.pub?.branch ? `origin/${ui.pub.branch}` : 'GitHub');
+
+  // an edit after a save: the footer no longer says "Saved"
+  $effect(() => {
+    if (live.changes) ui.saved = false;
+  });
 
   // The tab, Header/Footer, the open Sources item and library animation in the URL (persist.js).
   $effect(writeUrl);
