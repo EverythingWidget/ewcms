@@ -47,13 +47,21 @@ const optionalTokens = () =>
     [...optional.matchAll(/^\s*\/\/ (--[\w-]+): (.+);$/gm)].map((m) => [m[1], m[2].trim()]),
   );
 
+// a default of their own, said so in the starter's comment: the Form's Send (--fg, as before)
+const own = {
+  '--btn-fg': ['var(--fg)'],
+  '--btn-hover-fg': ['var(--btn-fg, var(--fg))'],
+};
+
 test("the starter's optional tokens: each read by the engine with that default (today's look)", () => {
   const listed = optionalTokens();
   const used = fallbacks(css);
   assert.ok(Object.keys(listed).length >= 20);
   for (const [name, value] of Object.entries(listed)) {
     assert.ok(used[name], `${name} is read by the engine's CSS`);
-    for (const f of used[name]) assert.equal(f, value, `${name}: the engine's default`);
+    assert.ok(used[name].includes(value), `${name}: the engine's default`);
+    for (const f of used[name])
+      assert.ok(f === value || own[name]?.includes(f), `${name}: ${f}, not ${value}`);
   }
 });
 
@@ -102,4 +110,27 @@ test('F89: the body text and the nav read their size, weight, tracking (and case
     for (const t of ['--nav-size, 12px', '--nav-weight', '--nav-tracking, 0.06em', '--nav-case'])
       assert.ok(nav.includes(`var(${t}`), `${sel} ${t}`);
   }
+});
+
+test('F88: the button reads its fill, blur, colours, type, padding and radius', () => {
+  const btn = rule('src/client/styles/_glass.scss', '\n.btn {');
+  for (const t of [
+    '--btn-pad-y',
+    '--btn-pad-x',
+    '--btn-radius',
+    '--btn-fg',
+    '--btn-size',
+    '--btn-weight',
+  ])
+    assert.ok(btn.includes(`var(${t},`), t);
+  const glass = fs.readFileSync(path.join(root, 'src/client/styles/_glass.scss'), 'utf8');
+  for (const t of [
+    '--btn-bg',
+    '--btn-hover-bg',
+    '--btn-backdrop',
+    '--btn-hover-fg',
+    '--btn-tracking',
+    '--btn-case',
+  ])
+    assert.ok(glass.includes(`var(${t},`), t);
 });

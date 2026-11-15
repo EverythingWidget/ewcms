@@ -79,8 +79,12 @@
   }
   &__submit {
     border: 0;
-    color: var(--fg);
-    font-family: inherit;
+    // the button's text colour (.btn: --btn-fg, --btn-hover-fg), --fg unset
+    color: var(--btn-fg, var(--fg));
+    font-family: var(--btn-font, inherit);
+    &:hover {
+      color: var(--btn-hover-fg, var(--btn-fg, var(--fg)));
+    }
     cursor: pointer;
     &:disabled {
       cursor: progress;

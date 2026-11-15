@@ -121,6 +121,24 @@
   // --nav-weight: inherit;
   // --nav-tracking: 0.06em;
   // --nav-case: uppercase;
+
+  // the button (the Button widget, the Form's Send; src/client/styles/_glass.scss .btn): today a
+  // glass pill. Its fill and hover fill (on the glass layer), their blur (none: a solid fill),
+  // its text colour (inherit: the text around it; the Form's: --fg) and hover colour, its type and
+  // padding. A solid button: --btn-bg: var(--brand); --btn-backdrop: none; --btn-fg: #fff;
+  // --btn-bg: var(--glass-fill);
+  // --btn-hover-bg: var(--glass-fill-hover);
+  // --btn-backdrop: blur(22px) saturate(180%);
+  // --btn-fg: inherit;
+  // --btn-hover-fg: var(--btn-fg, inherit);
+  // --btn-font: inherit;
+  // --btn-size: 12px;
+  // --btn-weight: inherit;
+  // --btn-tracking: 0.06em;
+  // --btn-case: uppercase;
+  // --btn-pad-y: 12px;
+  // --btn-pad-x: 20px;
+  // --btn-radius: 999px;
   // --type-small-weight: inherit;
   // --type-small-tracking: inherit;
   // --type-small-color: var(--muted);

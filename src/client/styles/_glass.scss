@@ -37,22 +37,35 @@
   }
 }
 
+// A button (the Button widget, the Form's Send: .btn.glass). Its look is tokens (--btn-*, a theme's
+// tokens.scss), the defaults today's glass pill: the fill and its blur on the glass ::before
+// (--btn-bg, --btn-backdrop: none for a solid fill), the text colour inherited (the Form's: --fg).
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 20px;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  padding: var(--btn-pad-y, 12px) var(--btn-pad-x, 20px);
+  border-radius: var(--btn-radius, 999px);
+  color: var(--btn-fg, inherit);
+  font-family: var(--btn-font, inherit);
+  font-size: var(--btn-size, 12px);
+  font-weight: var(--btn-weight, inherit);
+  letter-spacing: var(--btn-tracking, 0.06em);
+  text-transform: var(--btn-case, uppercase);
   white-space: nowrap;
   transition: transform 0.5s var(--ease-out);
+  &::before {
+    background: var(--btn-bg, var(--glass-fill));
+    -webkit-backdrop-filter: var(--btn-backdrop, blur(22px) saturate(180%));
+    backdrop-filter: var(--btn-backdrop, blur(22px) saturate(180%));
+  }
   span {
     transition: transform 0.5s var(--ease-out);
   }
   &:hover {
+    color: var(--btn-hover-fg, var(--btn-fg, inherit));
     &::before {
-      background: var(--glass-fill-hover);
+      background: var(--btn-hover-bg, var(--glass-fill-hover));
     }
     span:last-child {
       transform: translateX(3px);
