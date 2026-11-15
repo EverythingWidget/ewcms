@@ -217,8 +217,16 @@
 
   <aside class="ed-panel">
     <header class="ed-head">
-      <!-- [ status line | Edit / Done | Publish ]: Edit and Done share one 80px slot -->
+      <!-- [ (i) status line | Edit / Done | Publish ]: Edit and Done share one 80px slot -->
       <div class="ed-actions">
+        <!-- the tip leads the row (always there: nothing moves when the status changes) -->
+        <InfoHelp label="About saving and publishing"
+          ><b>{MOD}+S</b> saves your edits as a draft: the preview shows them, the live site
+          doesn't.
+          <b>Publish</b> puts every saved change live in one commit; edits not saved yet it offers to
+          save first. The number counts edits (a widget added, moved or restyled, a section removed, a
+          setting), not files.</InfoHelp
+        >
         <!-- one short line; the details in its tooltip -->
         <p class="ed-pending" data-kind={pending.kind} title={pending.details} role="status">
           {#if pending.kind !== 'none'}<i class="ed-pending__dot"></i>{/if}
@@ -410,9 +418,10 @@
     @include stack(var(--space-2));
   }
 
+  // (i) [ status | Edit / Done | Publish ]
   .ed-actions {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     align-items: center;
     gap: var(--space-2);
     min-height: 40px;
@@ -422,6 +431,11 @@
   // Edit / Done and Publish: 32px (size small, --size-control), as the back arrow and the icon
   // buttons; the row keeps its 40px, so the tabs and the panel under it don't move.
   // Edit and Done share one slot: both are 4 letters, this min-width stops any shift
+  // its tip on the 16px edge, 8px (the gap) before the status (no label to keep 4px from)
+  .ed-actions > :global(.ih) {
+    margin: 0;
+  }
+
   .ed-actions :global([data-edit-toggle]) {
     min-width: 80px;
   }
