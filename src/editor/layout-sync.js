@@ -151,7 +151,7 @@ function applyLayout(el, s, moved = [], touched = { layout: false }) {
 /**
  * Sync the preview's sections (`root`'s: the page's view, or the footer) with the store's file: order, layout, removed sections.
  * Returns the ids of the sections to render again (`structure`: also those whose content
- * changed; otherwise only missing ones, e.g. a section added in another tab is not), with
+ * or config changed, keyOf; otherwise only missing ones), with
  * `remount` set when a widget's animated elements changed (the view's modules need mounting again), `motion`: the
  * widget elements whose motion changed, and `layout`: whether anything the rows and scroll
  * triggers measure changed (a name alone changes the id only).

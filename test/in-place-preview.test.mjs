@@ -255,3 +255,9 @@ test('the editor: in place by default, a reload only by the rule, on Save too', 
       f,
     );
 });
+
+test('G13: a content change re-renders the section in place, not only a flagged structure edit', () => {
+  const main = read('src/editor/main.js');
+  assert.match(main, /syncSections\(\{ structure: !typed \}, root\);/);
+  assert.doesNotMatch(main, /structure && !typed/);
+});

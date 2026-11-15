@@ -960,7 +960,7 @@ function followTemplate() {
 }
 
 let animTimer = 0;
-store.on(({ files, source: src, structure }) => {
+store.on(({ files, source: src, structure: _structure }) => {
   const page = previewFile(bridge.doc);
   // the files whose sections the preview swaps in place: the page's and the footer's
   const roots = syncRoots(bridge.doc);
@@ -988,7 +988,9 @@ store.on(({ files, source: src, structure }) => {
   if ((src === 'undo' || src === 'redo') && bridge.richEditing) bridge.endRich();
   for (const root of roots)
     if (files.includes(root.dataset.pageFile))
-      syncSections({ structure: structure && !typed }, root);
+      // content or config too (keyOf), not only a flagged structure edit: else the preview
+      // can stay stale until a reload (G13). Not while a Text is being typed (that would end it).
+      syncSections({ structure: !typed }, root);
   if (files.includes(page)) syncBackdrop();
   if (textChanged) {
     pushCurtains();
