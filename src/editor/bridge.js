@@ -48,7 +48,10 @@ import {
 } from '../render/text.js';
 import { isDraftHref, isSafeHref } from '../render/hrefs.js';
 
+// the preview's styles. The header clock's endless pulse is paused (the editor's motion is
+// still too): it repainted the preview every frame, idle or not (F65, F66, F83)
 const INJECTED_CSS = `
+html .header__clock-dot { animation-play-state: paused; }
 html { scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / .2) transparent; }
 html::-webkit-scrollbar { width: 8px; height: 8px; }
 html::-webkit-scrollbar-track, html::-webkit-scrollbar-corner { background: transparent; }

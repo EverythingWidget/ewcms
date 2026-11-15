@@ -111,3 +111,8 @@ test('a photo picked renders its widget again: its <img> shows at once (F75)', (
   );
   assert.match(src('GroupFields.svelte'), /const structure =\s+f\.type === 'photo' \|\|/);
 });
+
+test("the editor's preview pauses the header clock's endless pulse (F65, F66, F83)", () => {
+  const bridge = readFileSync(new URL('../src/editor/bridge.js', import.meta.url), 'utf8');
+  assert.match(bridge, /html \.header__clock-dot \{ animation-play-state: paused; \}/);
+});
