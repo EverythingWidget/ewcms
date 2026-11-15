@@ -266,6 +266,9 @@ export async function lintSite(root, log = console) {
   return out;
 }
 
+/** A starter tokens.scss up to its `// @optional` line: the tokens a theme must set. */
+export const requiredPart = (scss) => scss.split(/^\s*\/\/ @optional\b/m)[0];
+
 /** The custom properties a stylesheet sets (`--name:`), in order, once each. */
 const tokensSet = (scss) => [...new Set(scss.match(/(?<![\w-])--[\w-]+(?=\s*:)/g) || [])];
 
@@ -281,7 +284,8 @@ export function themeWarning(site) {
       : '';
   const own = new Set(tokensSet(read('tokens.scss') + read('overrides.scss')));
   const starter = fs.readFileSync(path.join(STARTER_THEME, 'tokens.scss'), 'utf8');
-  const missing = tokensSet(starter).filter((t) => !own.has(t));
+  // (the starter's @optional tokens have the engine's defaults: not asked for)
+  const missing = tokensSet(requiredPart(starter)).filter((t) => !own.has(t));
   if (!missing.length) return '';
   const rel =
     posixPath(path.relative(site.root, path.resolve(site.root, site.config.themeDir))) || '.';

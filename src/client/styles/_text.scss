@@ -5,6 +5,9 @@
  * same at any widget width; a fit line (Full-width line)
  * and Shrink to fit: _layout.scss ([data-fit], .wgt--scale). A word longer than the line still
  * breaks rather than spill out of the widget (not under Shrink to fit: it scales down instead).
+ * Each style's weight, tracking and colour are tokens too (--type-<style>-weight, -tracking,
+ * -color; the Label's case: --type-label-case): unset, the fallback here is today's look (inherit:
+ * what is around the line, as before). A theme sets them (ewcms starter/theme/tokens.scss).
  */
 .text {
   min-width: 0;
@@ -25,57 +28,66 @@
 }
 .ts--title {
   font-family: var(--f-display);
-  font-weight: 400;
+  font-weight: var(--type-title-weight, 400);
   // the old page title's size
   font-size: clamp(var(--type-title-min), 15vw, var(--type-title-max));
   line-height: var(--type-title-lh);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--type-title-tracking, -0.02em);
+  color: var(--type-title-color, inherit);
   @media (width <= 480px) {
     font-size: min(13vw, var(--type-title-max));
   }
 }
 .ts--heading {
   font-family: var(--f-display);
-  font-weight: 400;
+  font-weight: var(--type-heading-weight, 400);
   font-size: clamp(var(--type-heading-min), 6vw, var(--type-heading-max));
   line-height: var(--type-heading-lh);
+  letter-spacing: var(--type-heading-tracking, inherit);
+  color: var(--type-heading-color, inherit);
 }
 .ts--subheading {
   font-family: var(--f-display);
-  font-weight: 400;
+  font-weight: var(--type-subheading-weight, 400);
   font-size: clamp(var(--type-subheading-min), 2.4vw, var(--type-subheading-max));
   line-height: var(--type-subheading-lh);
-  letter-spacing: -0.005em;
+  letter-spacing: var(--type-subheading-tracking, -0.005em);
+  color: var(--type-subheading-color, inherit);
 }
 .ts--statement {
   max-width: 1280px;
   font-family: var(--f-display);
-  font-weight: 400;
+  font-weight: var(--type-statement-weight, 400);
   font-size: clamp(var(--type-statement-min), 4.3vw, var(--type-statement-max));
   line-height: var(--type-statement-lh);
-  letter-spacing: -0.005em;
+  letter-spacing: var(--type-statement-tracking, -0.005em);
+  color: var(--type-statement-color, inherit);
 }
 .ts--paragraph {
   max-width: 64ch;
   // (fixed by default: min = max; 1.11vw is max at 1440px wide)
   font-size: clamp(var(--type-paragraph-min), 1.11vw, var(--type-paragraph-max));
   line-height: var(--type-paragraph-lh);
-  color: var(--solid-faint);
+  font-weight: var(--type-paragraph-weight, inherit);
+  letter-spacing: var(--type-paragraph-tracking, inherit);
+  color: var(--type-paragraph-color, var(--solid-faint));
 }
 .ts--label {
   font-family: var(--f-mono);
   font-size: clamp(var(--type-label-min), 0.76vw, var(--type-label-max));
   line-height: var(--type-label-lh);
-  font-weight: 400;
+  font-weight: var(--type-label-weight, 400);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--type-label-color, var(--muted));
 }
 .ts--small {
   max-width: 64ch;
   font-size: clamp(var(--type-small-min), 0.83vw, var(--type-small-max));
   line-height: var(--type-small-lh);
-  color: var(--muted);
+  font-weight: var(--type-small-weight, inherit);
+  letter-spacing: var(--type-small-tracking, inherit);
+  color: var(--type-small-color, var(--muted));
 }
 .text__body a {
   text-decoration: underline;
