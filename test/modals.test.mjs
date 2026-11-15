@@ -242,3 +242,12 @@ test('Add page: In the menu starts off, keeps the last pick; Add says what is mi
   assert.doesNotMatch(src.match(/const ready = \$derived\([\s\S]*?\);/)[0], /linked/);
   assert.match(src, /title=\{ready \? 'Add the page' : why\}/);
 });
+
+test('Add page: a "/" in the name says to add the parent first (F36)', () => {
+  const src = readFileSync(
+    new URL('../src/editor/svelte/AddPageModal.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.match(src, /slug\.includes\('\/'\)\s*\?\s*nestedHint\(slug\)/);
+  assert.match(src, /<InfoHelp label="About the name in the URL"/);
+});

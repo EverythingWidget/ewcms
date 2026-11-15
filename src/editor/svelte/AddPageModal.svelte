@@ -12,6 +12,7 @@
   import { argsOf, closeModal, modal } from './modals.svelte.js';
   import Button from './Button.svelte';
   import Select from './Select.svelte';
+  import InfoHelp from './InfoHelp.svelte';
   import {
     HEADER,
     isParamName,
@@ -49,16 +50,25 @@
   const ids = $derived(Object.keys(files).map(pageIdOf).filter(Boolean));
   const sources = $derived(sourceIds(files));
   const slug = $derived(name || slugify(title));
+  // a "/" in the name (F36): one level at a time, the parent page first, then its +
+  const nestedHint = (typed) => {
+    const parent = childId(level, typed.split('/').find(Boolean) || '');
+    return ids.includes(parent)
+      ? `One level at a time: double-click ${shownPath(parent)} in the pages list, then use its +`
+      : `One level at a time: add ${shownPath(parent)} first, then double-click it in the list and use its +`;
+  };
   const error = $derived(
     !slug
       ? ''
-      : !isSlug(slug)
-        ? 'Use a-z, 0-9 and dashes'
-        : ids.includes(childId(level, slug))
-          ? `${pathOfId(childId(level, slug))} already exists`
-          : isReserved(level, slug)
-            ? `"${slug}" is reserved`
-            : '',
+      : slug.includes('/')
+        ? nestedHint(slug)
+        : !isSlug(slug)
+          ? 'Use a-z, 0-9 and dashes'
+          : ids.includes(childId(level, slug))
+            ? `${pathOfId(childId(level, slug))} already exists`
+            : isReserved(level, slug)
+              ? `"${slug}" is reserved`
+              : '',
   );
   // a [param] folder: only another [param] page in it
   const noPage = $derived(
@@ -170,7 +180,13 @@
           <input class="tf__input" bind:value={title} placeholder="My page" />
         </label>
         <label class="tf">
-          <span class="tf__label">Name in the URL</span>
+          <span class="tf__label"
+            >Name in the URL<InfoHelp label="About the name in the URL"
+              >The last part of its address, in {shownPath(level || 'home')}. A page inside another
+              (/behandelingen/uitstraling/) is added one level at a time: add the parent page first,
+              then double-click it in the pages list and use its <b>+</b>.</InfoHelp
+            ></span
+          >
           <input
             class={['tf__input', error && 'is-invalid']}
             spellcheck="false"
