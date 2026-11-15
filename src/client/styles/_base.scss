@@ -140,7 +140,7 @@ html.anim-pending [data-motion] > * {
   display: inline-flex;
   align-items: center;
   padding: 3px 8px;
-  border: 1px dashed rgb(255 255 255 / 0.3);
+  border: 1px var(--tag-border-style, dashed) var(--tag-border-color, rgb(255 255 255 / 0.3));
   border-radius: 999px;
   font-size: 10px;
   letter-spacing: 0.08em;
