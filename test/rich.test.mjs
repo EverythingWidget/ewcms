@@ -2,7 +2,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseHTML } from 'linkedom';
-import { readBody, renderEditing, posOf, pointOf, isCaret } from '../src/editor/rich.js';
+import {
+  readBody,
+  renderEditing,
+  posOf,
+  pointOf,
+  isCaret,
+  oneLineSelection,
+} from '../src/editor/rich.js';
 import { htmlLines, renderBody } from '../src/render/text.js';
 import { isSafeHref } from '../src/render/hrefs.js';
 
@@ -110,4 +117,21 @@ test('rich: pasted HTML parsed by a DOM: lines, marks, safe links only', () => {
     },
     { style: 'paragraph', text: [{ t: 'Nested' }] },
   ]);
+});
+
+test('rich: a triple click (to the next line, offset 0) stays on its own line (F25)', () => {
+  const root = dom();
+  renderEditing(root, body);
+  // the browser's triple click ends on the next line element itself, offset 0: its start
+  assert.deepEqual(posOf(root, root.children[1], 0), { line: 1, at: 0 });
+  assert.deepEqual(posOf(root, root.children[0], 1), { line: 0, at: 3 }); // "Hi "
+  const sel = { from: { line: 0, at: 0 }, to: { line: 1, at: 0 } };
+  assert.deepEqual(oneLineSelection(sel, body), {
+    from: { line: 0, at: 0 },
+    to: { line: 0, at: 8 }, // "Hi there"
+  });
+  // backwards too; anything else is left alone
+  assert.deepEqual(oneLineSelection({ from: sel.to, to: sel.from }, body).to, { line: 0, at: 8 });
+  assert.equal(oneLineSelection({ from: { line: 0, at: 0 }, to: { line: 1, at: 2 } }, body), null);
+  assert.equal(oneLineSelection({ from: { line: 0, at: 1 }, to: { line: 0, at: 4 } }, body), null);
 });

@@ -23,6 +23,7 @@ import { photoSrcset, photoUrl } from './svelte/media.svelte.js';
 import { T } from './ui-tokens.js';
 import {
   isCaret,
+  oneLineSelection,
   posOf,
   readBody,
   renderEditing,
@@ -964,6 +965,15 @@ export function createBridge({ store, labelFor, picked = () => null, hovered = (
       },
       true,
     );
+    // a triple click selects its paragraph only (not up to the next one: typed over, the two merged)
+    doc.addEventListener('mouseup', (e) => {
+      if (!rich || e.detail !== 3 || !rich.el.contains(e.target)) return;
+      const one = oneLineSelection(selectionOf(rich.el, win), store.get(rich.file, rich.ptr));
+      if (!one) return;
+      selectAt(rich.el, win, one);
+      richSel = one;
+      emit('rich', richState());
+    });
     // the caret moved: the toolbar's style and B / I state follow
     doc.addEventListener('selectionchange', () => {
       if (!rich) return;

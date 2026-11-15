@@ -12,7 +12,7 @@
  * ([data-property]: atomic, contenteditable=false). Anything else the browser
  * makes (a pasted <div>, a <span style>) is read as its text, so the model stays clean.
  */
-import { MARKS, renderBody, tidyBody } from '../render/text.js';
+import { MARKS, lineLength, renderBody, tidyBody } from '../render/text.js';
 import { isSafeHref, linkProblem } from '../render/hrefs.js';
 
 const LINE = '[data-line]';
@@ -139,8 +139,14 @@ export function posOf(root, node, offset) {
     }
     for (const c of n.childNodes) walk(c);
   };
+  // the point is the line element itself (a triple click's end: the next line, offset 0): its
+  // first `offset` children (walking them all gave the line's end)
+  if (lineEl === node) {
+    for (let k = 0; k < offset && k < node.childNodes.length; k++)
+      at += lengthOf(node.childNodes[k]);
+    return { line, at };
+  }
   for (const c of lineEl.childNodes) walk(c);
-  if (lineEl === node) found = true;
   return { line, at };
 }
 
@@ -211,3 +217,18 @@ export function renderEditing(root, body) {
 
 /** Is a selection collapsed (a caret)? */
 export const isCaret = (s) => !!s && s.from.line === s.to.line && s.from.at === s.to.at;
+
+/**
+ * A triple click's selection kept to its line: the browser selects a paragraph up to the start
+ * of the next one ({ line + 1, at: 0 }), so typing over it merged the two lines and took the
+ * other's style. Returns that selection ending at its own line's end, or null (anything else).
+ */
+export function oneLineSelection(sel, body) {
+  if (!sel || !Array.isArray(body)) return null;
+  const [a, b] =
+    sel.from.line < sel.to.line || (sel.from.line === sel.to.line && sel.from.at <= sel.to.at)
+      ? [sel.from, sel.to]
+      : [sel.to, sel.from];
+  if (b.line !== a.line + 1 || b.at !== 0 || !body[a.line]) return null;
+  return { from: a, to: { line: a.line, at: lineLength(body[a.line]) } };
+}
