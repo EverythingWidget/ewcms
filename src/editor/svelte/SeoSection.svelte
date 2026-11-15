@@ -14,8 +14,8 @@
   import PageAddress from './PageAddress.svelte';
   import { ui } from './ui.svelte.js';
   import { photoSrcset, photoUrl, media } from './media.svelte.js';
-  import { DESCRIPTION_MAX, TITLE_MAX, seoOf } from '../../render/seo.js';
-  import { contentFromFiles, isTemplate, pageIdOf } from '../../render/files.js';
+  import { DESCRIPTION_MAX, TITLE_MAX, fillTitle, seoOf } from '../../render/seo.js';
+  import { SITE, contentFromFiles, isTemplate, pageIdOf } from '../../render/files.js';
 
   // live: reactive store (live.svelte.js); file: the page file of the preview
   // actions: pagesOp (main.js: the Address renames the page on disk)
@@ -35,6 +35,11 @@
   });
   const host = $derived(seo ? seo.url.replace(/^\w+:\/\//, '').replace(/\/$/, '') : '');
 
+  // what the site adds to every title (its titleTemplate: "… | Site name")
+  const added = $derived.by(() => {
+    const site = live.get(SITE, '') || {};
+    return site.name ? fillTitle(site, '…') : '';
+  });
   const get = (key) => live.get(file, `/meta/${key}`);
   const changed = (key) => live.changed(file, `/meta/${key}`);
   // an empty value is removed: the page uses its default
@@ -51,6 +56,9 @@
       ? 'Defaults for every item page. Each item page is titled with its name and uses its own summary and cover first.'
       : 'Search engines and share cards. Empty fields use the site defaults (Site Settings > SEO).'}
   </p>
+  {#snippet tip()}<b>Title</b>: the browser tab and search result. The site name is added
+    automatically ({added ? `“${added}”` : 'Site Settings › Name'}), so leave it out; typed anyway,
+    it is not added twice.{/snippet}
   <PageAddress {live} {file} {actions} />
   {#if !template}
     <Field
@@ -60,6 +68,7 @@
       value={get('title')}
       changed={changed('title')}
       onvalue={(v) => set('title', v.trim())}
+      {tip}
     />
   {/if}
   <Field

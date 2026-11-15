@@ -30,11 +30,24 @@ const siteBase = (site) => String(site?.url || '').replace(/\/+$/, '');
 /** A path or URL made absolute on the site ("/about/" -> "https://eeliyarasta.com/about/"). */
 export const absolute = (site, url) => (isExternal(url) ? url : siteBase(site) + url);
 
-/** A page's title: the site's titleTemplate around the page's own title (route.js). */
-export const fillTitle = (site, page) =>
-  String(site?.titleTemplate || '{page} | {site}')
-    .replaceAll('{page}', page)
-    .replaceAll('{site}', site?.name ?? '');
+/**
+ * A page's title: the site's titleTemplate around the page's own title (route.js). What the
+ * template adds is added once: a title already ending (or starting) with it keeps it as typed
+ * ("Uitstraling | Unic Derma" stays, F41).
+ */
+export function fillTitle(site, page) {
+  const tpl = String(site?.titleTemplate || '{page} | {site}').replaceAll(
+    '{site}',
+    site?.name ?? '',
+  );
+  const at = tpl.indexOf('{page}');
+  if (at < 0) return tpl;
+  const [before, after] = [tpl.slice(0, at), tpl.slice(at + '{page}'.length)];
+  let own = String(page ?? '');
+  if (after.trim() && own.endsWith(after)) own = own.slice(0, -after.length);
+  if (before.trim() && own.startsWith(before)) own = own.slice(before.length);
+  return tpl.replaceAll('{page}', own);
+}
 
 /**
  * A share photo: { url (absolute), width, height, alt } of photo `src` (media/ path, R2 key or

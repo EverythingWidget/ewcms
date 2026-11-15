@@ -214,3 +214,13 @@ test('validation: page meta and site defaults', () => {
   assert.deepEqual(s({ robots: 'index', titleTemplate: '{page}', lang: 'en' }), []);
   assert.deepEqual(s({ robots: 'nofollow' }), ['"robots" must be "index" or "noindex"']);
 });
+
+test('a page title that already has the site name gets it once (F41)', async () => {
+  const { fillTitle } = await import('../src/render/seo.js');
+  const site = { name: 'Unic Derma' };
+  assert.equal(fillTitle(site, 'Uitstraling'), 'Uitstraling | Unic Derma');
+  assert.equal(fillTitle(site, 'Uitstraling | Unic Derma'), 'Uitstraling | Unic Derma');
+  const pre = { name: 'X', titleTemplate: '{site} – {page}' };
+  assert.equal(fillTitle(pre, 'X – About'), 'X – About');
+  assert.equal(fillTitle(pre, 'About'), 'X – About');
+});
