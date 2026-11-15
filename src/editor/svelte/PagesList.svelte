@@ -12,8 +12,9 @@
     Not linked  every page not in the menu (All), or the ones under this folder (This folder;
                 no filter at the top: every page is under /), in the site's order
     Site        at the top: the Header and Footer (no grip, no delete)
-  The grips drag: in the menu list to another place (the menu's order); from it into Not
-  linked (out of the menu); from Not linked into it (into the menu there). The row in hand
+  The whole row drags (the path no longer grabs the pointer: G18): in the menu list to another
+  place (the menu's order); from it into Not linked (out of the menu); from Not linked into it
+  (into the menu there). Remove from menu does the same, and does not delete the page. The row in hand
   leaves its place, a dashed placeholder card shows where it lands (red with why: refused). A page of another
   folder dropped there moves here (its address changes, links follow, no redirect), unless
   its name is taken here. 404 and [param] pages don't move. A click selects a row (its ring)
@@ -151,6 +152,9 @@
       return void toast(`Can't move ${what} there: dropdowns go one level deep`, { kind: 'error' });
     live.store.set(HEADER, '/header', next.header, { source: 'panel' });
   }
+  // out of the menu, still a page, under Not linked (G18); not a delete
+  const removeFromMenu = (row) =>
+    setNav(unlinkPage(live.current(HEADER) || {}, row.pid), row.title);
   const pidOf = (id) => files[pageFile(id)]?.id;
   function setOwn(on) {
     live.store.set(pageFile(level), '/ownPage', on ? undefined : false, { source: 'panel' });
@@ -351,16 +355,23 @@
     style:top={lifted ? `${drag.top}px` : null}
     style:translate={lifted ? `0 ${drag.dy}px` : null}
     data-prow={j >= 0 ? j : undefined}
+    onpointerdown={(e) => {
+      if (j < 0) return;
+      // actions (copy, trash, Remove from menu, go inside, Own page) keep the pointer
+      if (e.target.closest('.btn, .prow__in, .prow__own, .prow__ask, input, select, a, label'))
+        return;
+      grab(e, j, at);
+    }}
   >
     {#if j >= 0}
       <button
         type="button"
         class="prow__lead prow__grip"
+        tabindex="-1"
         aria-label={at === 0
           ? `Move ${r.title} (drag: its place in the menu, or into Not linked)`
           : `Move ${r.title} (drag into the list above: into the menu)`}
-        title={at === 0 ? 'Drag to reorder, or into Not linked' : 'Drag into the menu list'}
-        onpointerdown={(e) => grab(e, j, at)}
+        title={at === 0 ? 'Drag the row to reorder, or into Not linked' : 'Drag the row into the menu list'}
         ><i class="fa-solid fa-grip-vertical" aria-hidden="true"></i></button
       >
     {:else if r.self || r.template}
@@ -425,6 +436,19 @@
         onclick={() => duplicate(r)}
       />
     {:else}
+      <span class="prow__slot" aria-hidden="true"></span>
+    {/if}
+    {#if j >= 0 && at === 0}
+      <Button
+        size="small"
+        icon="link-slash"
+        iconOnly
+        label="Remove {r.title} from menu"
+        title="Remove from menu: the page stays, under Not linked"
+        disabled={busy}
+        onclick={() => removeFromMenu(r)}
+      />
+    {:else if at === 0 && !r.part && !r.itemTemplate}
       <span class="prow__slot" aria-hidden="true"></span>
     {/if}
     {#if r.self && L.canOwn}

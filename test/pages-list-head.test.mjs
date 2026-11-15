@@ -29,3 +29,11 @@ test("BackHead is the page head's square back beside a two-line title, with the 
   // the arrow is Button's icon, same control the page head uses
   assert.match(head, /<Button icon="arrow-left" square/);
 });
+
+
+test('G18: the whole page row drags, and Remove from menu unlinks without deleting', () => {
+  assert.match(src, /Remove from menu: the page stays, under Not linked/);
+  assert.match(src, /const removeFromMenu = \(row\) =>\s*setNav\(unlinkPage\(/);
+  assert.match(src, /if \(e\.target\.closest\('\.btn, \.prow__in, \.prow__own, \.prow__ask, input, select, a, label'\)\)/);
+  assert.match(src, /onpointerdown=\{\(e\) => \{\s*if \(j < 0\) return;/);
+});
