@@ -95,6 +95,11 @@ export function createLive(store) {
       version;
       return store.changedAt(file, ptr);
     },
+    /** Does the list item `id` at file#ptr differ from the saved one (store.changedItem)? */
+    changedItem(file, ptr, id) {
+      version;
+      return store.changedItem(file, ptr, id);
+    },
     get canUndo() {
       version;
       return store.canUndo();

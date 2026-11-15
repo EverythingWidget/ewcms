@@ -94,7 +94,8 @@
   id={s.id}
   {title}
   off={!on}
-  changed={changed ?? live.changed(file, `/sections/${at}`)}
+  changed={changed ??
+    (s?.id ? live.changedItem(file, '/sections', s.id) : live.changed(file, `/sections/${at}`))}
   class={peek && !selected ? 'is-peek' : ''}
   foot={n ? list : undefined}
   {selected}

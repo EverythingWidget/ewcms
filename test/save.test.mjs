@@ -49,3 +49,15 @@ test('store.batch inside a batch joins it: one undo step, no error (F20: Custom 
   store.undo();
   assert.deepEqual(store.current['a.json'], { x: 1, y: 1, z: 1 });
 });
+
+test('deleting one section marks no other section changed (F10: the changed dot)', () => {
+  const store = createStore();
+  const sec = (id) => ({ id, widgets: [] });
+  store.load({ [FILE]: { ...page(), sections: [sec('s-a'), sec('s-b'), sec('s-c')] } });
+  store.remove(FILE, '/sections/0');
+  assert.equal(store.changedItem(FILE, '/sections', 's-b'), false);
+  assert.equal(store.changedItem(FILE, '/sections', 's-c'), false);
+  assert.equal(store.changedAt(FILE, '/sections/0'), true); // by index it would be
+  store.set(FILE, '/sections/0/name', 'B');
+  assert.equal(store.changedItem(FILE, '/sections', 's-b'), true);
+});

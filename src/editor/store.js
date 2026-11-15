@@ -84,6 +84,14 @@ export function createStore() {
     /** Does file#ptr differ from the saved value, defaults left out on both sides? */
     changedAt: (file, ptr) =>
       !equal(get(tidy(file, current[file]), ptr), get(tidy(file, base[file]), ptr)),
+    /**
+     * Does the item `id` of the list at file#ptr differ from the saved one (found by its id, so
+     * deleting or moving another item doesn't mark it)? New: changed.
+     */
+    changedItem(file, ptr, id) {
+      const find = (data) => (get(tidy(file, data), ptr) || []).find((x) => x?.id === id);
+      return !equal(find(current[file]), find(base[file]));
+    },
     getBase: (file, ptr) => get(base[file], ptr),
 
     /** Set (or with value === undefined, remove) a value. */
