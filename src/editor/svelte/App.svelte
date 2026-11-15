@@ -225,6 +225,7 @@
           <span>{pending.text}</span>
         </p>
         <Button
+          size="small"
           data-edit-toggle
           title={editing
             ? `Done: save the changes (${MOD}+S) and browse`
@@ -233,6 +234,7 @@
           onclick={editing ? done : edit}>{editing ? 'Done' : 'Edit'}</Button
         >
         <Button
+          size="small"
           variant="primary"
           title="Commit all saved content changes in one commit and push to {branch}"
           disabled={ui.publishing || (!unpublished.length && !ahead && !live.changes)}
@@ -417,6 +419,8 @@
     padding: 0 var(--space-4);
   }
 
+  // Edit / Done and Publish: 32px (size small, --size-control), as the back arrow and the icon
+  // buttons; the row keeps its 40px, so the tabs and the panel under it don't move.
   // Edit and Done share one slot: both are 4 letters, this min-width stops any shift
   .ed-actions :global([data-edit-toggle]) {
     min-width: 80px;
