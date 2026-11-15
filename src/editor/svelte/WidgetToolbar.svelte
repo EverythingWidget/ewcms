@@ -50,6 +50,7 @@
     toggleMark,
   } from '../../render/text.js';
   import { MOD } from '../lib/format.js';
+  import { siteFonts } from '../lib/site-fonts.js';
   import { sizeOf } from '../../render/layout/index.js';
   import { hasFitWidth, hasScaleToFit, scaledToFit } from '../../render/layout/type.js';
   import { autoPatch, scaleHint, scalePatch, shownRows } from '../widget-layout.js';
@@ -200,6 +201,22 @@
 
   // ---- menus: one open at a time; a click elsewhere (here or in the preview) closes it
   let open = $state(null);
+  // The Style list's previews in the site's fonts (F95): read from the preview each time it
+  // opens, its faces added to the editor's document (renamed: ../lib/site-fonts.js). An exception
+  // to "the editor's chrome never uses the site's theme": the list shows the styles as they look.
+  let styFonts = $state('');
+  $effect(() => {
+    if (open !== 'style') return;
+    const f = untrack(() => siteFonts(bridge.doc));
+    if (!f) return;
+    let el = document.getElementById('ed-site-fonts');
+    if (!el) {
+      el = document.head.appendChild(document.createElement('style'));
+      el.id = 'ed-site-fonts';
+    }
+    if (el.textContent !== f.css) el.textContent = f.css;
+    styFonts = `--sty-display: ${f.display || 'inherit'}; --sty-body: ${f.body || 'inherit'}`;
+  });
   // under its own button: the button's left edge in the toolbar
   let anchor = $state(0);
   // its menu over the bar when there's more room there than under it (a caret low in the
@@ -393,7 +410,7 @@
 </script>
 
 {#snippet styleMenu()}
-  <div class="btb__menu" role="listbox" aria-label="Style of this line">
+  <div class="btb__menu" role="listbox" aria-label="Style of this line" style={styFonts}>
     <span class="btb__grp"
       >{editing ? 'This line' : 'Its first line'} · Site Settings › Typography</span
     >
@@ -906,7 +923,21 @@
     color: var(--c-widget-accent);
   }
 
-  // the styles as they look, small
+  // the styles as they look, small: in the site's fonts (--sty-display, --sty-body: the exception
+  // to the editor's own fonts, at styFonts above), each size the editor's
+  .sty--title,
+  .sty--heading,
+  .sty--subheading,
+  .sty--statement {
+    font-family: var(--sty-display, inherit);
+  }
+
+  .sty--paragraph,
+  .sty--label,
+  .sty--small {
+    font-family: var(--sty-body, inherit);
+  }
+
   .sty--title {
     font-size: var(--fs-xl);
     font-weight: 600;
