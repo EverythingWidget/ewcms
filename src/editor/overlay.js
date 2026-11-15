@@ -868,6 +868,10 @@ export function createOverlay({
     e.preventDefault();
     e.stopPropagation();
     selectLink(null);
+    // a resize (its handle) or a move ends a text edit: the next press on the widget drags it,
+    // it doesn't select its text (it stayed editable after a resize); and no text selected meanwhile
+    if (doc.activeElement?.isContentEditable) doc.activeElement.blur();
+    noSelect(true);
     const sec = secOf(el);
     const phone = isPhone();
     const saved = new Map([sec, ...widgetsIn(sec)].map((n) => [n, n.style.cssText]));
@@ -979,6 +983,7 @@ export function createOverlay({
   }
 
   function stop() {
+    noSelect(false);
     doc.documentElement.removeAttribute('data-flow-hold');
     win.removeEventListener('pointermove', move, true);
     win.removeEventListener('pointerup', end, true);
