@@ -73,3 +73,12 @@ test('F107: the mark matches the preview address in either form the preview rend
   assert.ok(JSON.stringify({ href: draft }).includes('draft='));
   assert.ok(!'https://wa.me/31643740408'.includes('draft='));
 });
+
+test('F107: a click off any link is no link (pickedLinkAt never reads a missing <a>)', () => {
+  const src = read('editor/bridge.js');
+  const fn = src.slice(src.indexOf('function pickedLinkAt('), src.indexOf('let down = null'));
+  assert.ok(
+    fn.indexOf('if (!a) return null;') > 0 &&
+      fn.indexOf('if (!a) return null;') < fn.indexOf('brokenLink(a)'),
+  );
+});

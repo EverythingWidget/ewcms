@@ -577,7 +577,8 @@ export function createBridge({
     const range = doc.caretRangeFromPoint?.(x, y);
     const node = range?.startContainer;
     const a = (node?.nodeType === 1 ? node : node?.parentElement)?.closest('a');
-    const body = a?.closest('[data-edit-type="rich"]');
+    if (!a) return null;
+    const body = a.closest('[data-edit-type="rich"]');
     const own = body?.closest('[data-tw], [data-widget]');
     // selected before this click (a first click selects the widget), and not a drag's end; a
     // broken link (the editor's preview address: F50) at once, its box saying why (F107)
