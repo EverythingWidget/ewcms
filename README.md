@@ -719,7 +719,8 @@ That's all: the registry (`registerWidgets` in `src/render/widgets/index.js`) ad
 built-ins for the prerender, content validation (its `settings` types and `check`), and, through
 `virtual:site-widgets`, the editor: the Add widget modal, the inspector (from `settings`/`config`),
 Motion and the widget/layout toolbars need no code of their own. `widget.ed(key)` makes a field
-editable in place on the preview. A bad definition or a built-in's type stops the build/dev
+editable in place on the preview; `widget.top` is true in the page's first section (load its
+photos at once: `img(ctx, src, { priority: widget.top })`). A bad definition or a built-in's type stops the build/dev
 server with a message. Example and tests: `test/fixtures/site-b`, `test/site-widgets.test.mjs`.
 After editing a widget's `index.js`, restart `npm run dev` (the editor's server endpoints load it once).
 

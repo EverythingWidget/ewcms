@@ -394,3 +394,14 @@ test('undo: typing in one field is one step until it is left (seal) or a pause',
   assert.equal(store.get('a.json', '/n'), 1);
   assert.equal(store.canUndo(), false);
 });
+
+test('a Photo in the first section loads at once; further down it loads lazily (F48)', () => {
+  const ids = new Set();
+  const photo = (src) => ({ ...newWidget('photo', ids), src });
+  const page = [newSection(ids, [photo('media/a.jpg')]), newSection(ids, [photo('media/b.jpg')])];
+  const html = renderSections(content, { id: 'x' }, 'pages/x/index.json', page);
+  const tags = html.match(/<img[^>]*>/g);
+  assert.equal(tags.length, 2);
+  assert.match(tags[0], /loading="eager"[\s\S]*fetchpriority="high"/);
+  assert.match(tags[1], /loading="lazy"/);
+});

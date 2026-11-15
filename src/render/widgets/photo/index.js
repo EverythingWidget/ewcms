@@ -10,7 +10,8 @@ import { html, esc, img, sizes } from '../../helpers.js';
  * place (../../layout/place.js, media), through --fit / --pos on the widget
  * (src/client/styles/_layout.scss, the fill mixin). Its caption is edited in its settings popup
  * only (no widget.ed on it: only a Text widget's content is edited in the preview); the photo itself
- * keeps widget.ed('src', 'photo') for picking.
+ * keeps widget.ed('src', 'photo') for picking. In the page's first section (widget.top) it
+ * loads at once, not lazily: it is likely on screen (F48).
  */
 export const photo = {
   type: 'photo',
@@ -27,7 +28,7 @@ export const photo = {
   render: (s, ctx, widget) =>
     html` <div class="photowidget">
       <figure class="photowidget__figure">
-        ${s.src ? img(ctx, s.src, { sizes: sizes('100vw', '60vw'), attrs: widget.ed('src', 'photo') }) : ''}
+        ${s.src ? img(ctx, s.src, { sizes: sizes('100vw', '60vw'), priority: !!widget.top, attrs: widget.ed('src', 'photo') }) : ''}
         ${s.caption ? html`<figcaption class="label muted">${esc(s.caption)}</figcaption>` : ''}
       </figure>
     </div>`,

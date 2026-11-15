@@ -66,7 +66,7 @@ import { COLS, baseOf, phoneAreaOf, placeOf, setBase } from './grid.js';
 import { linkOf } from './links.js';
 import { scaledToFit } from './type.js';
 import { placeClass, placeVars } from './place.js';
-import { contentPath } from '../files.js';
+import { contentPath, FOOTER } from '../files.js';
 
 export {
   COLS,
@@ -322,6 +322,8 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
   const api = {
     id: widget.id,
     file,
+    // in the page's first section: likely on screen at load, its photos load first (F48)
+    top: at === 0 && file !== FOOTER,
     ...shown,
     scopeItems: items,
     ed: (path, type) => {
