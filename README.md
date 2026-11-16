@@ -197,7 +197,7 @@ functions/api/contact.js ← one line: export { onRequestPost } from 'ewcms/serv
 — in ewcms —
 bin/ewcms.mjs       ← the ewcms command (src/cli/cli.mjs: dev, build, check, …)
 vite.js             ← the Vite preset (ewcms/vite)
-starter/site/       ← what ewcms new-site copies (with starter/theme/, starter/content/, and empty starter/media/ and starter/widgets/)
+starter/            ← what ewcms new-site copies: the same layout as the site (content/, theme/, public/, functions/, site.config.mjs, package.json, empty media/ and widgets/)
 starter/content/    ← the starter site's content: Home (a short guide), About, 404; empty templates/ and sources/ folders, no photos
 src/cli/            ← the command, its build pipeline and photos (Node)
   cli.mjs           ← the commands

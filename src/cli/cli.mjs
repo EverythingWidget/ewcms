@@ -9,7 +9,7 @@
  *                  the site's own JS) when ESLint / Stylelint are installed; --links: the build's links
  *   photos         media/ → public/media sizes + .generated/media.json
  *   publish-media  upload media/ photos to Cloudflare R2 (.env.local R2_* keys), like the editor
- *   new-site <dir> a new site: its own theme (a copy of starter/theme), starter content, package.json
+ *   new-site <dir> a new site: a copy of starter/ (theme, content, public, functions, package.json)
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -408,22 +408,16 @@ export async function publishMedia(root) {
   if (failed) throw new Error(`${failed} photo(s) not uploaded`);
 }
 
-/** A new site in `dir`: its own theme (a copy of starter/theme), a starter content (Home, About and 404; no sources or photos), package.json. */
+/** A new site in `dir`: a copy of starter/ (the same layout as the site: theme, content, public, functions, package.json). */
 export function newSite(dir, { name = path.basename(path.resolve(dir)) } = {}) {
   dir = path.resolve(dir);
   if (fs.existsSync(dir) && fs.readdirSync(dir).length) throw new Error(`${dir} is not empty`);
   // copy the starter, including the README and the .gitkeep files that hold empty dirs in git
-  const copy = (from, to) => fs.cpSync(from, path.join(dir, to), { recursive: true });
-  copy(enginePath('starter', 'site'), '.');
-  copy(enginePath('starter', 'README.md'), 'README.md');
+  fs.cpSync(enginePath('starter'), dir, { recursive: true });
   // the theme: the site's own copy of the look (tokens, fonts, theme.json), named after it
-  copy(STARTER_THEME, 'theme');
   const themeFile = path.join(dir, 'theme', 'theme.json');
   const theme = JSON.parse(fs.readFileSync(themeFile, 'utf8'));
   fs.writeFileSync(themeFile, `${JSON.stringify({ ...theme, name }, null, 2)}\n`);
-  copy(enginePath('starter', 'content'), 'content');
-  copy(enginePath('starter', 'media'), 'media');
-  copy(enginePath('starter', 'widgets'), 'widgets');
   fs.renameSync(path.join(dir, 'gitignore'), path.join(dir, '.gitignore'));
   const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
   pkg.name = name.toLowerCase().replace(/[^a-z0-9-]+/g, '-');
