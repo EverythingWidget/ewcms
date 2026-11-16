@@ -30,6 +30,19 @@ import { createRequire } from 'node:module';
 import { enginePath } from './engine.mjs';
 
 export const CONFIG_FILE = 'ewcms.config.mjs';
+export const LEGACY_CONFIG_FILE = 'site.config.mjs';
+
+/** A warning when the site still has site.config.mjs and no ewcms.config.mjs, else ''. */
+export function legacyConfigWarning(root) {
+  root = path.resolve(root);
+  if (
+    fs.existsSync(path.join(root, LEGACY_CONFIG_FILE)) &&
+    !fs.existsSync(path.join(root, CONFIG_FILE))
+  ) {
+    return `${LEGACY_CONFIG_FILE} is now ${CONFIG_FILE}: git mv ${LEGACY_CONFIG_FILE} ${CONFIG_FILE}`;
+  }
+  return '';
+}
 
 export const DEFAULTS = Object.freeze({
   contentDir: 'content/en',
