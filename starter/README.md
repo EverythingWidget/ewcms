@@ -6,4 +6,4 @@ This site's folders:
 - `widgets/` — this site's own widgets; empty until you add some.
 - `public/` — files served as-is, such as the favicon and fonts.
 - `functions/` — server endpoints, such as the contact form.
-- `site.config.mjs` — this site's config.
+- `ewcms.config.mjs` — this site's config.

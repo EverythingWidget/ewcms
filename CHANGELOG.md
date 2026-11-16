@@ -15,6 +15,11 @@ say what a site must do before it bumps its pin.
   reads `var(--f-mono)`) in the same commit as the pin bump; `ewcms check` names the rename.
   (The editor's own `--f-mono`, its DM Mono, is the editor's and stays.)
 
+- **Breaking: `site.config.mjs` is `ewcms.config.mjs`.** Rename the file at the site's root
+  in the same commit as the pin bump (eeliyarasta-website, godzillaworx, unicderma-website).
+  There is no fallback: a site that still has `site.config.mjs` is read as having no config
+  (the defaults only).
+
 ### Editor
 
 - Show only: a List from a source (All or From URL) can show only the items whose field has one

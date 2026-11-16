@@ -26,7 +26,7 @@ import { isObject } from './is.js';
 export const FOLDERS = ['pages', 'sources'];
 
 /**
- * The content folder from the site's root ("content/en", site.config.mjs), for the paths in
+ * The content folder from the site's root ("content/en", ewcms.config.mjs), for the paths in
  * messages. src/cli/content.mjs sets it when it loads a site, the editor from its config.
  */
 export let CONTENT_DIR = 'content/en';

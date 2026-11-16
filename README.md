@@ -10,7 +10,7 @@ A **site** is only its own things; ewcms is everything else:
 
 | The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                                            | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                                                                                                            |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content/` (JSON), `media/` (photos), `theme/` (`tokens.scss`, `fonts.scss`, `theme.json`), `public/` (fonts, favicon), `site.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `src/cli` (the command, Vite plugin, build, photos, R2), `src/server` (the contact form's Pages Function, the dev server's editor API), `starter/` (what `new-site` copies, its theme too), `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
+| `content/` (JSON), `media/` (photos), `theme/` (`tokens.scss`, `fonts.scss`, `theme.json`), `public/` (fonts, favicon), `ewcms.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor`, `src/cli` (the command, Vite plugin, build, photos, R2), `src/server` (the contact form's Pages Function, the dev server's editor API), `starter/` (what `new-site` copies, its theme too), `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
 | `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/server/contact';`                                                                  | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                                                                                                                |
 | `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                                        |                                                                                                                                                                                                                                                                                                                                                                               |
 
@@ -102,7 +102,7 @@ Requires Node `^20.19.0 || >=22.12.0` (Vite 8's engines). `npm run mock` passes
 `--experimental-websocket`, which only Node 20 needs.
 
 The sections below call the engine's files by their path in this repo and the site's files by
-theirs in a site (`content/`, `theme/`, `site.config.mjs`).
+theirs in a site (`content/`, `theme/`, `ewcms.config.mjs`).
 
 ### Linting
 
@@ -143,7 +143,7 @@ inputs (its definition's `settings:`, the pop-up's Content and Layout tabs); **s
 settings** are one section's (its gear). Never "the settings" alone. A **source** is a list of
 items; a **property** is one value of an item (`{ "property": "title" }`).
 
-**Site config:** `site.config.mjs` names the site's folders: `contentDir` (`content/en`),
+**Site config:** `ewcms.config.mjs` names the site's folders: `contentDir` (`content/en`),
 `mediaDir` (`media`), `publicDir` and `publicMediaDir` (`public/media`), `generatedDir`
 (`.generated`, the media manifest), `outDir` (`dist`), and `repo` (GitHub links when the git
 remote is not on GitHub). Every key is optional. `src/cli/site-config.mjs` (`loadSiteConfig`)
@@ -151,7 +151,7 @@ resolves them; the build, the dev server, the editor endpoints, `src/cli/photos.
 `check:links` all read their paths from it. Client code imports content through the
 `@site-content` alias; the editor's browser code gets its settings from `virtual:editor-config`.
 
-**Theme:** the look is the site's own `theme/` (`site.config.mjs` `themeDir`), each file
+**Theme:** the look is the site's own `theme/` (`ewcms.config.mjs` `themeDir`), each file
 optional: `tokens.scss` (`:root` tokens: the colours, fonts (`--f-display`, `--f-body`), radius, easing, the header's height,
 the List's `--item-*` and the type scale `--type-<style>-min`, `-max`, `-lh`; every colour of the
 look is a token; after its `// @optional` line, as comments with the engine's defaults, the finer
@@ -191,13 +191,13 @@ content/            ← all text, albums, projects, animation config (JSON)
   strings.json      ← UI text of the templates: the menu's Menu / Close / clock label (header.*)
 media/              ← source photos (jpg), committed
 theme/              ← the site's look: tokens.scss, fonts.scss, overrides.scss, theme.json (new-site copies ewcms's starter/theme/)
-site.config.mjs     ← the site's folders
+ewcms.config.mjs     ← the site's folders
 functions/api/contact.js ← one line: export { onRequestPost } from 'ewcms/server/contact'
 
 — in ewcms —
 bin/ewcms.mjs       ← the ewcms command (src/cli/cli.mjs: dev, build, check, …)
 vite.js             ← the Vite preset (ewcms/vite)
-starter/            ← what ewcms new-site copies: the same layout as the site (content/, theme/, public/, functions/, site.config.mjs, package.json, empty media/ and widgets/)
+starter/            ← what ewcms new-site copies: the same layout as the site (content/, theme/, public/, functions/, ewcms.config.mjs, package.json, empty media/ and widgets/)
 starter/content/    ← the starter site's content: Home (a short guide), About, 404; empty templates/ and sources/ folders, no photos
 src/cli/            ← the command, its build pipeline and photos (Node)
   cli.mjs           ← the commands
@@ -205,8 +205,8 @@ src/cli/            ← the command, its build pipeline and photos (Node)
   locate.mjs        ← which ewcms runs a site's commands (EWCMS_ENGINE, the workspace's, its own)
   resolve-hook.mjs  ← the site's own ewcms/… imports load the running engine's files
   term.mjs          ← ASCII output where a terminal isn't UTF-8
-  site-config.mjs   ← site.config.mjs and its defaults (loadSiteConfig)
-  site-widgets.mjs  ← a site's own widget types (site.config.mjs widgets)
+  site-config.mjs   ← ewcms.config.mjs and its defaults (loadSiteConfig)
+  site-widgets.mjs  ← a site's own widget types (ewcms.config.mjs widgets)
   content.mjs       ← loads content/en/<folder>/*.json and strings.json + media manifest (Node)
   photos.mjs        ← media/ → public/media/*.webp sizes + .generated/media.json
   photo-variants.mjs ← the webp sizes (sharp), for photos.mjs and r2.mjs
@@ -674,7 +674,7 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
 ### Custom widgets
 
 Built-in widgets live in `src/render/widgets/<type>/index.js`, one module each (always on). A site
-can add its own the same way: a folder with an `index.js`, listed in `site.config.mjs`:
+can add its own the same way: a folder with an `index.js`, listed in `ewcms.config.mjs`:
 
 ```js
 export default { widgets: ['./widgets/quote'] };
@@ -1956,7 +1956,7 @@ for multi-line text (`\n` ⇄ `<br>`), `'number'` for numbers and `'words'` for 
 `<span>` per word (the hero name: edited as plain text, re-split into words and re-animated after the edit). Page copy (titles, intros) lives
 in each page's `pages/<page>/index.json`, shared copy (nav) in `site.json`, for this reason. The editor only ever writes
 existing JSON files in `content/en/pages/`, `content/en/sources/`, `content/en/strings.json`, the shared files at `content/` and `content/templates/` (the
-content folder: `site.config.mjs`; the folders: `src/render/files.js`); only the pages list (and Address) creates, moves or deletes files, and only page files.
+content folder: `ewcms.config.mjs`; the folders: `src/render/files.js`); only the pages list (and Address) creates, moves or deletes files, and only page files.
 These editor markers (`data-edit`, `data-edit-type`, `data-sec`, `data-widget`,
 `data-curtain-edit`) are only rendered by the dev server; `npm run build` leaves them out
 (`renderRoute(route, content, { editable })`), which makes the built HTML about 9% smaller.
@@ -1992,7 +1992,7 @@ These editor markers (`data-edit`, `data-edit-type`, `data-sec`, `data-widget`,
 The endpoints live in `src/server/editor-server.mjs` (`/__editor/content`, `/save`, `/draft`,
 `/render`, `/status`, `/upload`, `/media`, `/pages`, `/publish`). They exist only on the dev server, accept **only requests from this machine**
 (loopback address, localhost `Host`, same-origin `Origin`), and only touch the content files in
-those folders. The GitHub links come from the git remote, else from `site.config.mjs` `repo`. Git runs without a shell and never prompts in the terminal, so pushing
+those folders. The GitHub links come from the git remote, else from `ewcms.config.mjs` `repo`. Git runs without a shell and never prompts in the terminal, so pushing
 needs a working git login for GitHub on the machine running `npm run dev` (e.g. `gh auth login`
 then `gh auth setup-git`).
 

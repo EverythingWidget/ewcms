@@ -182,13 +182,13 @@ function filesIn(root, dir, re, out = []) {
 /**
  * The site's own code a missing linter would leave unchecked: { js, scss } (relative paths).
  * js: .js / .mjs outside content, public, dist, node_modules, .generated and the like, and
- * not site.config.mjs (settings) or functions/ (the small server functions ewcms scaffolds):
+ * not ewcms.config.mjs (settings) or functions/ (the small server functions ewcms scaffolds):
  * those alone are no reason to warn. scss: the theme's and the site's widgets' (what Stylelint
  * lints). ESLint, when installed, still lints them all.
  */
 export function siteCode(root, site = loadSiteConfig(root)) {
   const js = filesIn(root, root, /\.(m?js)$/).filter(
-    (f) => f !== 'site.config.mjs' && !f.startsWith('functions/'),
+    (f) => f !== 'ewcms.config.mjs' && !f.startsWith('functions/'),
   );
   const dirs = [
     site.themeDir,

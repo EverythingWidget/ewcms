@@ -1,5 +1,5 @@
 /**
- * The site's config, site.config.mjs at the site's root, and the paths it resolves to. Node only.
+ * The site's config, ewcms.config.mjs at the site's root, and the paths it resolves to. Node only.
  *
  *   export default {
  *     contentDir: 'content/en',        // pages/, sources/, strings.json (its parent, the content
@@ -29,7 +29,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { enginePath } from './engine.mjs';
 
-export const CONFIG_FILE = 'site.config.mjs';
+export const CONFIG_FILE = 'ewcms.config.mjs';
 
 export const DEFAULTS = Object.freeze({
   contentDir: 'content/en',

@@ -121,7 +121,7 @@ import { keepUnsaved, restoreUnsaved } from './keep-unsaved.js';
 import { applyDraft, clearDraft, draftKey, readDraft, writeDraft } from './draft-copy.js';
 import { closeModal, isOpen, openSaveFailed, openUnsavedEdits } from './svelte/modals.svelte.js';
 
-// the site's content folder (site.config.mjs), for the paths the editor shows
+// the site's content folder (ewcms.config.mjs), for the paths the editor shows
 setContentDir(editorConfig.contentDir);
 
 /** The page to open: the URL's path (/about/?edit). */

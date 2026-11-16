@@ -37,7 +37,7 @@ export { staticSite, mocksPlugin };
 /** Vite's config for the site at `root` (default: the working folder). */
 export function siteConfig({ root = process.cwd() } = {}) {
   root = path.resolve(root);
-  // the site's folders (site.config.mjs): public files and the build
+  // the site's folders (ewcms.config.mjs): public files and the build
   const site = loadSiteConfig(root);
   const engine = posixPath(ENGINE);
   return {

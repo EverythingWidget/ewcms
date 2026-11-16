@@ -1,5 +1,5 @@
 /**
- * A site's own widgets: the widget modules site.config.mjs lists in `widgets` (paths from the
+ * A site's own widgets: the widget modules ewcms.config.mjs lists in `widgets` (paths from the
  * site's root, a folder or its index.js), after the built-ins (src/render/widgets/index.js has
  * the format). Node only. A widget module's folder:
  *
@@ -22,7 +22,7 @@ import { registerWidgets } from '../render/widgets/index.js';
 export function widgetModulesOf(root) {
   const site = loadSiteConfig(root);
   const list = site.config.widgets || [];
-  if (!Array.isArray(list)) throw new Error('site.config.mjs: "widgets" must be a list of paths');
+  if (!Array.isArray(list)) throw new Error('ewcms.config.mjs: "widgets" must be a list of paths');
   return list.map((spec) => {
     const at = path.resolve(site.root, String(spec));
     const isFile = /\.m?js$/.test(at);
@@ -30,7 +30,7 @@ export function widgetModulesOf(root) {
     const index = isFile ? at : path.join(dir, 'index.js');
     if (!fs.existsSync(index))
       throw new Error(
-        `site.config.mjs widgets: "${spec}" has no ${path.relative(site.root, index)}`,
+        `ewcms.config.mjs widgets: "${spec}" has no ${path.relative(site.root, index)}`,
       );
     const opt = (name) => (fs.existsSync(path.join(dir, name)) ? path.join(dir, name) : null);
     return { spec, dir, index, style: opt('style.scss'), client: opt('client.js') };
@@ -50,7 +50,7 @@ export async function loadSiteWidgets(root, load = (file) => import(pathToFileUR
 /** Load the site's widgets and add them to the registry (register: registerWidgets). */
 export async function registerSiteWidgets(root, { load, register = registerWidgets } = {}) {
   const defs = await loadSiteWidgets(root, load);
-  register(defs, `${path.basename(loadSiteConfig(root).root)}/site.config.mjs widgets`);
+  register(defs, `${path.basename(loadSiteConfig(root).root)}/ewcms.config.mjs widgets`);
   return defs;
 }
 

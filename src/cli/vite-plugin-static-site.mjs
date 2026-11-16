@@ -112,7 +112,7 @@ const fill = (shell, { head, body, lang, themeColor }, theme) =>
 export const EDITOR_CONFIG = 'virtual:editor-config';
 /**
  * Client code imports the content root's files (the shared ones, next to the language folders:
- * site.config.mjs contentDir's parent) through this alias:
+ * ewcms.config.mjs contentDir's parent) through this alias:
  * `import config from '@site-content/animations.json'`.
  */
 export const CONTENT_ALIAS = '@site-content';
@@ -126,7 +126,7 @@ export const editorConfigModule = (site) =>
     repo: site.config.repo,
   })};\n`;
 
-/** The site's own widgets (site.config.mjs widgets): definitions for the editor, styles and
+/** The site's own widgets (ewcms.config.mjs widgets): definitions for the editor, styles and
  * client modules for the public site (src/cli/site-widgets.mjs). */
 export const SITE_WIDGETS = 'virtual:site-widgets';
 export const SITE_WIDGET_CLIENTS = 'virtual:site-widgets/client';

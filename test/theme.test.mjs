@@ -1,4 +1,4 @@
-// The theme (site.config.mjs themeDir: theme.json, tokens.scss, fonts.scss, overrides.scss): its
+// The theme (ewcms.config.mjs themeDir: theme.json, tokens.scss, fonts.scss, overrides.scss): its
 // part of the page head, and where loadSiteConfig finds it.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -44,10 +44,10 @@ test('loadSiteConfig: the site theme folder, its style files and theme.json', ()
     /@use '\.\.\/\.\.\/theme\/tokens';/,
   );
   assert.doesNotMatch(fs.readFileSync(path.join(dir, '_overrides.scss'), 'utf8'), /@use/);
-  // another folder (site.config.mjs themeDir)
+  // another folder (ewcms.config.mjs themeDir)
   const other = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-'));
   fs.writeFileSync(
-    path.join(other, 'site.config.mjs'),
+    path.join(other, 'ewcms.config.mjs'),
     "export default { themeDir: 'looks/a' };\n",
   );
   fs.mkdirSync(path.join(other, 'looks/a'), { recursive: true });

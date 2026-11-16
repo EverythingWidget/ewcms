@@ -58,6 +58,6 @@ export const ENGINE_VERSION = JSON.parse(
  */
 export function mockSite(cwd = process.cwd()) {
   if (process.env.MOCK_SITE) return path.resolve(process.env.MOCK_SITE);
-  const isSite = ['site.config.mjs', 'content'].some((f) => fs.existsSync(path.join(cwd, f)));
+  const isSite = ['ewcms.config.mjs', 'content'].some((f) => fs.existsSync(path.join(cwd, f)));
   return isSite ? cwd : enginePath('test', 'fixtures', 'site-a');
 }

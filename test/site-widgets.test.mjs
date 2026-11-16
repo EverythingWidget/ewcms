@@ -1,5 +1,5 @@
 // A site's own widgets (src/cli/site-widgets.mjs, widgets/index.js registerWidgets): loaded from
-// site.config.mjs, rendered, validated and added in the editor like built-ins. test/fixtures/site-b.
+// ewcms.config.mjs, rendered, validated and added in the editor like built-ins. test/fixtures/site-b.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
@@ -28,7 +28,7 @@ const QUOTE = path.join(SITE_B, 'widgets/quote');
 await registerSiteWidgets(SITE_B);
 const about = () => structuredClone(readContentDir(SITE_B)['pages/about/index.json']);
 
-test('site.config.mjs widgets: their folders, with the optional style and client', () => {
+test('ewcms.config.mjs widgets: their folders, with the optional style and client', () => {
   assert.deepEqual(widgetModulesOf(SITE_A), []);
   assert.deepEqual(widgetModulesOf(SITE_B), [
     {

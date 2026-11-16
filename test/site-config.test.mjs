@@ -1,4 +1,4 @@
-// site.config.mjs and its paths (src/cli/site-config.mjs), and the GitHub link from a remote.
+// ewcms.config.mjs and its paths (src/cli/site-config.mjs), and the GitHub link from a remote.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -9,7 +9,7 @@ import { loadContent } from '../src/cli/content.mjs';
 import { CONTENT_DIR } from '../src/render/files.js';
 import { SITE_A } from './fixtures/index.mjs';
 
-test('no site.config.mjs: the defaults, resolved from the root', () => {
+test('no ewcms.config.mjs: the defaults, resolved from the root', () => {
   const site = loadSiteConfig(SITE_A);
   assert.deepEqual(site.config, { ...DEFAULTS, repo: { ...DEFAULTS.repo } });
   assert.equal(site.contentDir, path.join(SITE_A, 'content/en'));
@@ -20,10 +20,10 @@ test('no site.config.mjs: the defaults, resolved from the root', () => {
   assert.equal(site.mediaUrl, '/media');
 });
 
-test('a site.config.mjs moves the folders: content, manifest, media URL, messages', () => {
+test('an ewcms.config.mjs moves the folders: content, manifest, media URL, messages', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'site-config-'));
   fs.writeFileSync(
-    path.join(root, 'site.config.mjs'),
+    path.join(root, 'ewcms.config.mjs'),
     `export default { contentDir: 'site/nl', generatedDir: 'gen', publicDir: 'static', publicMediaDir: 'static/img', outDir: 'out', repo: { owner: 'o' } };\n`,
   );
   fs.cpSync(path.join(SITE_A, 'content/en'), path.join(root, 'site/nl'), { recursive: true });

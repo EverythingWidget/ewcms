@@ -53,7 +53,7 @@ test('new-site: a site folder that passes check', async () => {
   const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-new-')), 'My Site');
   newSite(dir);
   for (const f of [
-    'site.config.mjs',
+    'ewcms.config.mjs',
     'package.json',
     '.gitignore',
     'README.md',
@@ -144,7 +144,7 @@ test('siteCode: config, functions/ and content are no reason to warn; own JS and
     return root;
   };
   const base = {
-    'site.config.mjs': 'export default {};\n',
+    'ewcms.config.mjs': 'export default {};\n',
     'functions/api/contact.js': '// x\n',
     'content/en/x.js': '',
     'public/a.js': '',
