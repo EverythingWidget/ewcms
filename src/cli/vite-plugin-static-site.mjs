@@ -32,7 +32,7 @@ import { createRequire } from 'node:module';
 import { loadEnv, searchForWorkspaceRoot } from 'vite';
 import { loadContent } from './content.mjs';
 import { DRAFT_PARAM, draftsFor, editorMiddleware } from '../server/editor-server.mjs';
-import { contactMiddleware } from '../server/contact-dev.mjs';
+import { contactMiddleware } from '../functions/contact-dev.mjs';
 import { pageFile } from '../render/files.js';
 import { EDITOR_HTML, legacyRedirect, wantsEditor } from '../editor/lib/editor-url.js';
 import { checkSources } from '../render/schemas.js';
@@ -274,7 +274,7 @@ export default function staticSite() {
         }),
       );
 
-      // The contact form's POST /api/contact (src/server/contact.js): checked, logged, not sent
+      // The contact form's POST /api/contact (src/functions/contact.js): checked, logged, not sent
       server.middlewares.use('/api/contact', contactMiddleware(config.logger));
 
       server.middlewares.use(async (req, res, next) => {

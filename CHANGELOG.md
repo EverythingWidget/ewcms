@@ -20,6 +20,10 @@ say what a site must do before it bumps its pin.
   There is no fallback: a site that still has `site.config.mjs` is read as having no config
   (the defaults only).
 
+- **Breaking: the contact form import is `ewcms/functions/contact`** (was `ewcms/server/contact`).
+  A site's `functions/api/contact.js` must import the new path in the same commit as the pin
+  bump (eeliyarasta-website, godzillaworx, unicderma-website). The old export is gone.
+
 ### Editor
 
 - Show only: a List from a source (All or From URL) can show only the items whose field has one

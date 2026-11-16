@@ -13,7 +13,7 @@
     ".": "./index.js",
     "./vite": "./vite.js",
     "./widget-api": "./src/render/widget-api.js",
-    "./server/contact": "./src/server/contact.js",
+    "./functions/contact": "./src/functions/contact.js",
     "./stylelint-config": "./stylelint.config.mjs",
     "./package.json": "./package.json"
   },

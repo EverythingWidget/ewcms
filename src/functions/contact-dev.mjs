@@ -1,6 +1,6 @@
 /**
  * The dev server's POST /api/contact: the contact form's Cloudflare Pages Function
- * (src/server/contact.js) with stand-in settings and a fetch that logs the email instead
+ * (src/functions/contact.js) with stand-in settings and a fetch that logs the email instead
  * of sending it, so the form can be tried in `npm run dev` and the editor preview without
  * keys. ?contact-fail in the page's URL (or ?fail on the request) answers like a failed send.
  * Turnstile is not checked here.

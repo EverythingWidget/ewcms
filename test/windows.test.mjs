@@ -110,8 +110,8 @@ test("resolve hook: ewcms/… from a site's files is the running engine's", asyn
   const r = await resolve('ewcms/widget-api', {}, next);
   assert.equal(r.url, pathToFileURL(enginePath('src/render/widget-api.js')).href);
   assert.equal(
-    (await resolve('ewcms/server/contact', {}, next)).url,
-    pathToFileURL(enginePath('src/server/contact.js')).href,
+    (await resolve('ewcms/functions/contact', {}, next)).url,
+    pathToFileURL(enginePath('src/functions/contact.js')).href,
   );
   assert.equal(await resolve('vite', {}, (s) => `next:${s}`), 'next:vite');
 });
