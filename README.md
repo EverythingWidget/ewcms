@@ -10,7 +10,7 @@ A **site** is only its own things; ewcms is everything else:
 
 | The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                                            | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                                                                                                            |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content/` (JSON), `media/` (photos), `theme/` (`tokens.scss`, `fonts.scss`, `theme.json`), `public/` (fonts, favicon), `ewcms.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor` (the editor app and its Node `server/`), `src/cli` (the command, Vite plugin, build, photos, R2), `src/functions` (the contact form's Pages Function), `src/server` (the editor's update notice), `starter/` (what `new-site` copies, its theme too), `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
+| `content/` (JSON), `media/` (photos), `theme/` (`tokens.scss`, `fonts.scss`, `theme.json`), `public/` (fonts, favicon), `ewcms.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor` (the editor app and its Node `server/`), `src/cli` (the command, Vite plugin, build, photos, R2), `src/functions` (the contact form's Pages Function), `starter/` (what `new-site` copies, its theme too), `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
 | `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                                                  | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                                                                                                                |
 | `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                                        |                                                                                                                                                                                                                                                                                                                                                                               |
 
@@ -107,7 +107,7 @@ theirs in a site (`content/`, `theme/`, `ewcms.config.mjs`).
 ### Linting
 
 - **ESLint** (`eslint.config.js`): JS recommended + Svelte recommended (Svelte 5, a11y checks),
-  browser globals in `src/`, Node globals in `src/cli/`, `src/editor/server/` (`.mjs`), `src/server/` (the update notice), `src/functions/` (`contact-dev.mjs`), `scripts/` and
+  browser globals in `src/`, Node globals in `src/cli/`, `src/editor/server/` (`.mjs`), `src/functions/` (`contact-dev.mjs`), `scripts/` and
   configs. `console.log` warns in `src/` browser code (`console.warn`/`error` are fine), anything
   goes in the Node files.
 - **Stylelint** (`stylelint.config.mjs`): standard SCSS rules, relaxed (blank lines, alpha notation
@@ -216,8 +216,6 @@ src/cli/            ← the command, its build pipeline and photos (Node)
 src/functions/      ← Cloudflare Pages Functions
   contact.js        ← the contact form's Cloudflare Pages Function (emails via Resend; contactHandler(options))
   contact-dev.mjs   ← the dev server's POST /api/contact (the same handler, logs instead of sending)
-src/server/         ← the editor's update notice (Node, not a Cloudflare function)
-  update.mjs        ← /__editor/update
 scripts/            ← this repo's own tooling, not the engine
   hooks.mjs         ← postinstall: the git hooks (an ewcms checkout only)
   mock.mjs          ← npm run mock: screenshots of sandbox/mocks
@@ -266,6 +264,7 @@ src/
       editor-server.mjs ← dev-only: content / save / draft / render / status / upload / media / pages / publish (localhost only)
       local-upload.mjs  ← uploads without R2 keys: saved in media/, resized at once
       git-env.mjs       ← git's environment without a hook's GIT_DIR & co. (Publish)
+      update.mjs        ← the editor's update notice: /__editor/update
     index.html      ← editor shell (served by `npm run dev` for ?edit only)
 index.html          ← HTML shell (a site may keep its own) with <!--ssr-head--> / <!--ssr-body--> markers
 ```

@@ -38,7 +38,7 @@ import { EDITOR_HTML, legacyRedirect, wantsEditor } from '../editor/lib/editor-u
 import { checkSources } from '../render/schemas.js';
 import { FOLDERS, ROOT_FILES } from '../render/files.js';
 import { THEME_LAYERS, loadSiteConfig } from './site-config.mjs';
-import { createUpdater } from '../server/update.mjs';
+import { createUpdater } from '../editor/server/update.mjs';
 import { registerSiteWidgets, widgetClientsModule, widgetsModule } from './site-widgets.mjs';
 import { ENGINE, enginePath, fsUrl, posixPath, sameFile, withEngineUrls } from './engine.mjs';
 

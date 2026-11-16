@@ -1,10 +1,10 @@
-// The editor's update notice (src/server/update.mjs).
+// The editor's update notice (src/editor/server/update.mjs).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { newestTag, engineDep, changeLine, createUpdater, BOOT } from '../src/server/update.mjs';
+import { newestTag, engineDep, changeLine, createUpdater, BOOT } from '../src/editor/server/update.mjs';
 
 function site(spec) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'upd-'));

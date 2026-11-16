@@ -11,7 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
-import { ENGINE_VERSION } from '../cli/engine.mjs';
+import { ENGINE_VERSION } from '../../cli/engine.mjs';
 
 /** This process's id: a restarted dev server answers with another (the editor's "done"). */
 export const BOOT = `${process.pid}-${Date.now()}`;

@@ -1301,7 +1301,7 @@ export function editorMiddleware({
 
       if (route === 'GET /status') return sendJSON(res, 200, await contentStatus(root));
 
-      // the update notice (src/server/update.mjs): newer ewcms, the update and its progress
+      // the update notice (src/editor/server/update.mjs): newer ewcms, the update and its progress
       if (updater && route === 'GET /update') {
         const force = /[?&]force=1/.test(req.url || '');
         return sendJSON(res, 200, await updater.check(force));
