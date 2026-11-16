@@ -14,6 +14,34 @@ A **site** is only its own things; ewcms is everything else:
 | `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                                                  | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                                                                                                                |
 | `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                                        |                                                                                                                                                                                                                                                                                                                                                                               |
 
+## How ewcms works
+
+```mermaid
+flowchart LR
+  C["content/ (JSON)"] --> E["editor (?edit, dev only)"]
+  E -- "save" --> S["editor server (Node, local)"] --> C
+  C --> R["render"]
+  R --> P["preview in the editor"]
+  R --> B["build (static HTML)"]
+  B --> V["client (visitor's browser)"]
+```
+
+- **content**: the site's pages, header, footer and sources as JSON files in its own repo
+  ([Content](#content)).
+- **editor** (`src/editor`): the in-page visual editor, in the dev server only. Its small Node
+  server (`src/editor/server`) writes your edits back to the JSON files
+  ([Visual editor](#visual-editor-edit-dev-only)).
+- **render** (`src/render`): turns content into HTML. The editor's preview and the build use the
+  same code, so what you see while editing is what ships ([Layout](#layout)).
+- **build** (`src/cli`): `ewcms build` prerenders every page to static HTML
+  ([Build / prerender](#build--prerender-ssr-but-static)).
+- **client** (`src/client`): the JS and styles in the visitor's browser: page transitions,
+  animations, Lists ([SPA behaviour](#spa-behaviour)).
+- **functions** (`src/functions`): code that runs on Cloudflare, today only the contact form
+  ([Contact form](#contact-form)).
+- **cli** (`src/cli`): the `ewcms` commands (`dev`, `build`, `check`, `new-site`)
+  ([A site's commands](#a-sites-commands)).
+
 ## A site's commands
 
 ```bash
