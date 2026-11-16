@@ -1,5 +1,5 @@
 /**
- * The Media window's dev-server ops (mediaOp in src/server/editor-server.mjs): alt text in
+ * The Media window's dev-server ops (mediaOp in src/editor/server/editor-server.mjs): alt text in
  * photos.json, and deleting unused photos (local media/ files, R2 photos against a mock).
  */
 import { test, before, after } from 'node:test';
@@ -8,7 +8,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { mediaOp } from '../src/server/editor-server.mjs';
+import { mediaOp } from '../src/editor/server/editor-server.mjs';
 import { photoUses } from '../src/editor/lib/photo-uses.js';
 
 let server;

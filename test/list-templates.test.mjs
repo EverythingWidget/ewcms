@@ -8,7 +8,7 @@ import path from 'node:path';
 import { parseHTML } from 'linkedom';
 import { warnings } from '../scripts/test-layout.mjs';
 import { loadContent, readContentDir } from '../src/cli/content.mjs';
-import { templatesOp, editableFiles } from '../src/server/editor-server.mjs';
+import { templatesOp, editableFiles } from '../src/editor/server/editor-server.mjs';
 import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { WIDGET_TYPES } from '../src/render/widgets/index.js';

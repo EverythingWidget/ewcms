@@ -9,7 +9,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { parseHTML } from 'linkedom';
 import { lineToSelect, readBody, renderEditing } from '../src/editor/rich.js';
-import { pagesOp } from '../src/server/editor-server.mjs';
+import { pagesOp } from '../src/editor/server/editor-server.mjs';
 import { titleOf } from '../src/editor/lib/page-tree.js';
 import { checkContent } from '../src/render/validate.js';
 

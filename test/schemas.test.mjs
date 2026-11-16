@@ -15,7 +15,7 @@ import {
 import { buildRoutes } from '../src/render/routes.js';
 import { contentFromFiles, isContentFile, schemaIdOf, sourceIdOf } from '../src/render/files.js';
 import { checkContent } from '../src/render/validate.js';
-import { save } from '../src/server/editor-server.mjs';
+import { save } from '../src/editor/server/editor-server.mjs';
 
 const PEOPLE = {
   version: 1,

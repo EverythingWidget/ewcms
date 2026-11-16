@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { pagesOp, editableFiles } from '../src/server/editor-server.mjs';
+import { pagesOp, editableFiles } from '../src/editor/server/editor-server.mjs';
 import { rowsOf } from '../src/render/layout/index.js';
 import { checkContent } from '../src/render/validate.js';
 import { read, paramPage } from '../scripts/test-layout.mjs';

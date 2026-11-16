@@ -5,7 +5,7 @@
  * "/new/:person/") or a URL. The build writes
  * them to dist/_redirects (Cloudflare Pages and Netlify read it); the dev server ignores them.
  *
- * Kept up to date by the editor (src/server/editor-server.mjs, src/editor/main.js), with the
+ * Kept up to date by the editor (src/editor/server/editor-server.mjs, src/editor/main.js), with the
  * functions here:
  *   a page renamed   every path of its folder (its pages, and a pattern for the item pages of
  *                    a [param] page in it) redirects to the new path

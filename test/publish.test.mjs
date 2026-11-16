@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { useTestEnv } from '../scripts/test-layout.mjs';
-import { contentStatus, publish } from '../src/server/editor-server.mjs';
+import { contentStatus, publish } from '../src/editor/server/editor-server.mjs';
 
 // Run from a git hook (pre-push), GIT_DIR & co. point at the real repo: every git here (and the
 // editor's, which inherits this process's environment) must only see the temp repos.

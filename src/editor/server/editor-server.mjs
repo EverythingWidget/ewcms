@@ -14,7 +14,7 @@
  *   POST /__editor/upload   → one photo (the raw bytes, its Content-Type, X-Filename): resized,
  *                             stored in Cloudflare R2 and added to photos.json
  *                             (src/cli/r2.mjs), answers { key, photo }; without the R2 keys
- *                             it is saved in media/ and resized there (src/server/local-upload.mjs),
+ *                             it is saved in media/ and resized there (src/editor/server/local-upload.mjs),
  *                             answers { key, local: true, media }
  *   POST /__editor/publish  → { message }: git add + commit ONLY the changed content files in
  *                             one commit, then git push origin <current branch>
@@ -35,9 +35,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { repoEnv } from './git-env.mjs';
-import { formatJSON } from '../editor/lib/json-format.js';
-import { loadSiteConfig, repoUrl } from '../cli/site-config.mjs';
-import { countEdits } from '../editor/lib/edit-count.js';
+import { formatJSON } from '../lib/json-format.js';
+import { loadSiteConfig, repoUrl } from '../../cli/site-config.mjs';
+import { countEdits } from '../lib/edit-count.js';
 import {
   ANIMATIONS,
   HEADER,
@@ -67,14 +67,14 @@ import {
   sourceIdOf,
   contentFromFiles,
   FOLDERS,
-} from '../render/files.js';
-import { templateOfPath, templatePreview } from '../render/widgets/list/template-preview.js';
-import { isTypeSpecimen, typeSpecimen } from '../render/layout/type-specimen.js';
-import { checkItems, photoChecker, schemaOf } from '../render/schemas.js';
-import { NAMED_VIEWS, getRoutes, pathOfId, titleCase } from '../render/routes.js';
-import { MAX_UPLOAD, deletePhoto, r2Config, uploadPhoto, writePhotos } from '../cli/r2.mjs';
+} from '../../render/files.js';
+import { templateOfPath, templatePreview } from '../../render/widgets/list/template-preview.js';
+import { isTypeSpecimen, typeSpecimen } from '../../render/layout/type-specimen.js';
+import { checkItems, photoChecker, schemaOf } from '../../render/schemas.js';
+import { NAMED_VIEWS, getRoutes, pathOfId, titleCase } from '../../render/routes.js';
+import { MAX_UPLOAD, deletePhoto, r2Config, uploadPhoto, writePhotos } from '../../cli/r2.mjs';
 import { uploadLocal } from './local-upload.mjs';
-import { photoUses } from '../editor/lib/photo-uses.js';
+import { photoUses } from '../lib/photo-uses.js';
 import {
   loadContent,
   readContentDir,
@@ -84,9 +84,9 @@ import {
   readContentFile,
   walkJson,
   writeFileAtomic,
-} from '../cli/content.mjs';
-import { set as setAt } from '../editor/lib/pointer.js';
-import { linkAt, linksTo, titleOf, unlinkPage } from '../editor/lib/page-tree.js';
+} from '../../cli/content.mjs';
+import { set as setAt } from '../lib/pointer.js';
+import { linkAt, linksTo, titleOf, unlinkPage } from '../lib/page-tree.js';
 import {
   moveLinks,
   moveRedirects,
@@ -96,18 +96,18 @@ import {
   redirectsOf,
   renameParam,
   sitePaths,
-} from '../render/redirects.js';
-import { checkContent } from '../render/validate.js';
-import { omitDefaults } from '../render/defaults.js';
-import { newWidget, newSection } from '../render/layout/index.js';
-import { eachWidget } from '../render/layout/ids.js';
-import { pageSourceOf, sourceOf } from '../render/layout/source.js';
-import { defaultWhere, rulesOf } from '../render/query.js';
-import { newId } from '../render/layout/ids.js';
-import { bindingProblems } from '../render/layout/bindings.js';
-import { motionProblems } from '../render/layout/motion.js';
-import { WIDGET_TYPES } from '../render/widgets/index.js';
-import { usesOf } from '../render/widgets/list/template-uses.js';
+} from '../../render/redirects.js';
+import { checkContent } from '../../render/validate.js';
+import { omitDefaults } from '../../render/defaults.js';
+import { newWidget, newSection } from '../../render/layout/index.js';
+import { eachWidget } from '../../render/layout/ids.js';
+import { pageSourceOf, sourceOf } from '../../render/layout/source.js';
+import { defaultWhere, rulesOf } from '../../render/query.js';
+import { newId } from '../../render/layout/ids.js';
+import { bindingProblems } from '../../render/layout/bindings.js';
+import { motionProblems } from '../../render/layout/motion.js';
+import { WIDGET_TYPES } from '../../render/widgets/index.js';
+import { usesOf } from '../../render/widgets/list/template-uses.js';
 
 /** A new page's heading row: below the header (16 empty rows, ~180px at 1440 wide). */
 const HEAD_ROW = 17;
@@ -1269,7 +1269,7 @@ export function editorMiddleware({
           .trim();
         const name = decodeURIComponent(String(req.headers['x-filename'] || ''));
         const body = await readRaw(req, MAX_UPLOAD);
-        // no R2 keys: the photo goes to media/, resized at once (src/server/local-upload.mjs)
+        // no R2 keys: the photo goes to media/, resized at once (src/editor/server/local-upload.mjs)
         if (r2Config(env).missing) {
           const { status, body: out } = await uploadLocal(root, { name, type, body });
           if (out.ok) {

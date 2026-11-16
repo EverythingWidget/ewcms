@@ -55,7 +55,7 @@ export function withDraft(path) {
 
 /**
  * The unsaved edits this tab's preview renders from (POST /__editor/draft, draftOp in
- * src/server/editor-server.mjs): { "pages/index.json": data, ... }; {} after a save.
+ * src/editor/server/editor-server.mjs): { "pages/index.json": data, ... }; {} after a save.
  */
 export const draft = (files) =>
   json('/__editor/draft', {
@@ -66,7 +66,7 @@ export const draft = (files) =>
 
 /**
  * The HTML of sections `ids` of the preview's page, rendered from `data`, its file's edited
- * copy (POST /__editor/render, renderOp in src/server/editor-server.mjs): { html: { id: html } }.
+ * copy (POST /__editor/render, renderOp in src/editor/server/editor-server.mjs): { html: { id: html } }.
  */
 export const render = ({ path, file, data, ids }) =>
   json('/__editor/render', {
@@ -77,7 +77,7 @@ export const render = ({ path, file, data, ids }) =>
 
 /**
  * Add, rename or delete pages and folders in content/en/pages/ (POST /__editor/pages, see
- * pagesOp in src/server/editor-server.mjs): { op: 'add', parent, name, title }, ...
+ * pagesOp in src/editor/server/editor-server.mjs): { op: 'add', parent, name, title }, ...
  * Resolves to { id, created, removed } (content file names).
  */
 export const pagesOp = (body) =>
@@ -88,7 +88,7 @@ export const pagesOp = (body) =>
   });
 
 /**
- * A new item template (POST /__editor/templates, templatesOp in src/server/editor-server.mjs):
+ * A new item template (POST /__editor/templates, templatesOp in src/editor/server/editor-server.mjs):
  * { op: 'add', data } answers { id, file, data }; { op: 'delete', id } answers { removed }.
  */
 export const templatesOp = (body) =>
@@ -99,7 +99,7 @@ export const templatesOp = (body) =>
   });
 
 /**
- * The Media window's photo ops (POST /__editor/media, mediaOp in src/server/editor-server.mjs):
+ * The Media window's photo ops (POST /__editor/media, mediaOp in src/editor/server/editor-server.mjs):
  * { op: 'alt', key, alt } or { op: 'delete', key }. Takes the fresh photo lists it answers.
  */
 export async function mediaOp(body) {

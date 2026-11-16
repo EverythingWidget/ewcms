@@ -14,7 +14,7 @@
  *  dev   → any page with ?edit (/?edit, /about/?edit&tab=settings: src/editor/lib/editor-url.js)
  *          gets the editor app instead (its preview iframe, ?draft=…, always gets the site; the
  *          old /edit/?path=… redirects there, /edit/sandbox/ to /sandbox/), and /__editor/*
- *          (src/server/editor-server.mjs, localhost only) loads, saves and publishes the content JSON files and uploads photos to
+ *          (src/editor/server/editor-server.mjs, localhost only) loads, saves and publishes the content JSON files and uploads photos to
  *          Cloudflare R2 with the R2_* keys from .env.local (read here, never sent to a page).
  *
  * Dev reloads: a change in content/, .generated/ or src/render/ sends the custom HMR event
@@ -31,7 +31,7 @@ import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import { loadEnv, searchForWorkspaceRoot } from 'vite';
 import { loadContent } from './content.mjs';
-import { DRAFT_PARAM, draftsFor, editorMiddleware } from '../server/editor-server.mjs';
+import { DRAFT_PARAM, draftsFor, editorMiddleware } from '../editor/server/editor-server.mjs';
 import { contactMiddleware } from '../functions/contact-dev.mjs';
 import { pageFile } from '../render/files.js';
 import { EDITOR_HTML, legacyRedirect, wantsEditor } from '../editor/lib/editor-url.js';

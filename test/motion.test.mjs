@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { loadContent } from '../src/cli/content.mjs';
-import { save } from '../src/server/editor-server.mjs';
+import { save } from '../src/editor/server/editor-server.mjs';
 import { motionChecks } from '../src/render/render.js';
 import { checkContent } from '../src/render/validate.js';
 import { WIDGET_TYPES } from '../src/render/widgets/index.js';

@@ -40,6 +40,7 @@ export default [
     files: [
       'scripts/**/*.{js,mjs}',
       'src/server/**/*.mjs',
+      'src/editor/server/**/*.mjs',
       'src/functions/**/*.mjs',
       'src/cli/**/*.mjs',
       'test/**/*.{js,mjs}',

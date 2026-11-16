@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { REPO_VARS, repoEnv } from '../src/server/git-env.mjs';
+import { REPO_VARS, repoEnv } from '../src/editor/server/git-env.mjs';
 import { testEnv } from '../scripts/test-layout.mjs';
 
 const git = (cwd, ...args) =>

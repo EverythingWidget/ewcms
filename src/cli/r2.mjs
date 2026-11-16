@@ -1,6 +1,6 @@
 /**
  * Photo uploads to Cloudflare R2 (S3-compatible API), for the editor's upload endpoint
- * (POST /__editor/upload, src/server/editor-server.mjs). Node only, dev server only.
+ * (POST /__editor/upload, src/editor/server/editor-server.mjs). Node only, dev server only.
  *
  * The keys come from .env.local (git-ignored, see .env.example), read on the Node side by
  * the static-site plugin with Vite's loadEnv. They never reach the browser: only VITE_*
