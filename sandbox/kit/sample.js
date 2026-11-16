@@ -15,7 +15,7 @@ export const SECTIONS = [
   { id: 's-1', name: 'Eeliya Rasta', widgets: [widget('b-1', 'hero')] },
   { id: 's-2', widgets: [widget('b-2', 'text')] },
   { id: 's-3', name: 'Work', widgets: [widget('b-3', 'grid', 'People'), widget('b-4', 'button')] },
-  { id: 's-4', widgets: [widget('b-5', 'albums', 'Albums')] },
+  { id: 's-4', widgets: [widget('b-5', 'list', 'Albums')] },
   { id: 's-5', widgets: [widget('b-6', 'projects', 'Things I build')] },
   {
     id: 's-6',
@@ -37,7 +37,7 @@ export const labelOf = (b) => WIDGET_TYPES[b.type]?.label || b.type;
 /**
  * Ready-made pages for section-card mocks (pass the name to sampleLive). `at` is the index:
  *   short   0 unnamed (text) · 1 "Work" (grid People, button)
- *   full    0 unnamed (text) · 1 "Work" (grid People, button) · 2 "Albums" (albums) ·
+ *   full    0 unnamed (text) · 1 "Work" (grid People, button) · 2 "Albums" (list) ·
  *           3 a very long name (projects, grid Places) · 4 unnamed (projects, button)
  *   states  0 "Work" (grid People, button) · 1 "Contact", switched off (button) · 2 unnamed, no widgets
  */
@@ -58,7 +58,7 @@ export const samplePage = {
       name: 'Work',
       widgets: [widget('b-2', 'grid', 'People'), widget('b-3', 'button')],
     },
-    { id: 's-3', name: 'Albums', widgets: [widget('b-4', 'albums', 'Albums')] },
+    { id: 's-3', name: 'Albums', widgets: [widget('b-4', 'list', 'Albums')] },
     {
       id: 's-4',
       name: LONG,

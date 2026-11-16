@@ -90,9 +90,6 @@
     {:else if name === 'hero'}<b class="sc s1"></b><b class="sc s2"></b><b class="sc s3"></b><b
         class="w70 h12 mid"
       ></b>
-    {:else if name === 'albums'}<span class="g g3"
-        >{#each Array(3) as _, i (i)}<b></b>{/each}</span
-      >
     {:else if name === 'list'}<span class="g g3"
         >{#each Array(3) as _, i (i)}<b></b>{/each}</span
       ><b class="w40 h4"></b>
@@ -349,8 +346,4 @@
     }
   }
 
-  .widgets-sk--grid,
-  .widgets-sk--albums {
-    padding: 8px;
-  }
 </style>

@@ -37,9 +37,9 @@
       "widgets": [
         {
           "id": "w-grz4",
-          "type": "albums",
+          "type": "list",
           "source": { "mode": "all", "from": "people" },
-          "config": { "layout": "portrait" },
+          "config": { "template": "preset:card", "columns": "3" },
           "motion": { "animation": "grid-reveal", "trigger": "load", "delay": 0.3 }
         }
       ]

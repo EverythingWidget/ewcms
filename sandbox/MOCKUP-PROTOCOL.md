@@ -165,13 +165,13 @@ link colour, eye, Duplicate, Delete; no grip, no order). Put it in a `<ul>`.
 - `sampleLive(name | sections?)` → a fresh live editor state. `sampleLive()` = `SECTIONS`;
   `sampleLive('short' | 'full' | 'states')` = a `samplePage`; `sampleLive([...])` = your own.
 - `samplePage.short`: 0 unnamed (intro) · 1 "Work" (grid "People", button)
-- `samplePage.full`: 0 unnamed (intro) · 1 "Work" (grid, button) · 2 "Albums" (albums) ·
+- `samplePage.full`: 0 unnamed (intro) · 1 "Work" (grid, button) · 2 "Albums" (list) ·
   3 "Selected portrait and editorial work from the last three years" (projects, grid "Places") ·
   4 unnamed (projects, button)
 - `samplePage.states`: 0 "Work" (grid, button) · 1 "Contact" hidden (button) · 2 unnamed, no widgets
 - `SECTIONS`: the six-section home page · `PAGES`: the page menu items · `FILE`: `'pages/index.json'`
 - `widget(id, type, title?)` builds a widget; `labelOf(widget)` its editor name. Widget types:
-  `hero`, `intro` ("Statement"), `button`, `albums`, `list`, …
+  `hero`, `intro` ("Statement"), `button`, `list`, …
   (`src/render/widgets/index.js`).
 
 Own data: `sampleLive([{ id: 's-1', name: 'Work', enabled: false, widgets: [widget('b-1', 'grid', 'People')] }])`.

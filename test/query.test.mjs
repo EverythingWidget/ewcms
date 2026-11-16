@@ -156,7 +156,7 @@ test('main widget: a list widget decides too (a page exists if at least one item
         widgets: [
           {
             id: 'w-main',
-            type: 'albums',
+            type: 'list',
             source: {
               mode: 'url',
               from: 'shoots',
@@ -231,9 +231,9 @@ test('source shapes: modes per widget kind, where rules', () => {
   const check = (...a) => checkContent(F, page(...a));
   assert.deepEqual(check({ mode: 'item', from: 'people', id: 'p-3pdk' }), []);
   assert.deepEqual(check({ mode: 'url', from: 'people', where: and() }), []);
-  assert.deepEqual(check({ mode: 'all', from: 'people' }, 'albums'), []);
+  assert.deepEqual(check({ mode: 'all', from: 'people' }, 'list'), []);
   assert.match(check({ mode: 'all', from: 'people' }).join(), /for list widgets/);
-  assert.match(check({ mode: 'item', from: 'people', id: 'p-3pdk' }, 'albums').join(), /a list/);
+  assert.match(check({ mode: 'item', from: 'people', id: 'p-3pdk' }, 'list').join(), /a list/);
   assert.match(check({ mode: 'nope', from: 'people' }).join(), /"source" must be/);
   const twice = and({ param: 'person', property: 'slug' }, { param: 'person', property: 'name' });
   assert.match(check({ mode: 'url', from: 'people', where: twice }).join(), /one rule per param/);

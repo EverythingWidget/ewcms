@@ -73,7 +73,7 @@ test('the starter theme: every colour in its tokens; the engine styles none of i
   const files = [
     'src/client/styles/_chrome.scss',
     'src/client/styles/_glass.scss',
-    ...['hero', 'albums', 'photo', 'form', 'album'].map(
+    ...['hero', 'photo', 'form', 'album'].map(
       (w) => `src/render/widgets/${w}/style.scss`,
     ),
   ].map((f) => enginePath(f));

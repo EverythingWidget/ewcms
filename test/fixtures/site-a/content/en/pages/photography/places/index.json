@@ -37,9 +37,9 @@
       "widgets": [
         {
           "id": "w-syyw",
-          "type": "albums",
+          "type": "list",
           "source": { "mode": "all", "from": "places" },
-          "config": { "layout": "landscape" },
+          "config": { "template": "preset:card", "columns": "2" },
           "motion": { "animation": "grid-reveal", "trigger": "load", "delay": 0.3 }
         }
       ]

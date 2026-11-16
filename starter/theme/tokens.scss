@@ -53,7 +53,7 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   // items: one entry of a source as a list shows it (a card, a tile, a row). Defaults are
-  // today's cards (Album cards, the places' cards): no box, a 4px photo radius, 16px between
+  // today's cards (the places' cards): no box, a 4px photo radius, 16px between
   // the photo and the text. Change them here to restyle every List. The List widget's
   // presets use them (ewcms src/render/widgets/list/style.scss):
   // every item takes --item-radius, -border, -shadow, -pad, -gap, -bg, -bg-hover and its

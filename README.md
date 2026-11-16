@@ -197,7 +197,7 @@ file, the site's or empty: Sass has no optional `@use`); the site's tokens take 
 breakpoints as `site-core/tokens`. The engine's styles read the tokens: the core
 (`src/client/styles`: the grid, breakpoints, text styles, base, backdrop, layout), the engine's UI
 there too (`_glass.scss`, `_chrome.scss`: the header, the phone menu, the curtain, the footer) and
-each built-in widget's look next to it (`src/render/widgets/<type>/style.scss`: hero, albums,
+each built-in widget's look next to it (`src/render/widgets/<type>/style.scss`: hero,
 photo, form, album, list). The editor has its own tokens and fonts
 (`src/editor/styles/_tokens.scss`, `_fonts.scss`, `src/editor/fonts`): it never reads the site's
 theme, so a theme can change and the editor stays.
@@ -659,7 +659,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
 **Widgets.** The widget types live in **one registry**, `src/render/widgets/` (`index.js` explains the
 shape): the build renders with it, and the editor reads it for each widget's settings and config
 and for **Add widget**. A type is `{ type, label, icon, settings, config, defaults, render(data,
-ctx, widget) }`; `list` makes it show a list of items (grid, albums, projects), `item` one item it
+ctx, widget) }`; `list` makes it show a list of items, `item` one item it
 needs (album). Which items a widget shows is its `source` (see "Widget sources"). A widget's content
 sits next to its type, how it works under `config` (`enabled`: on/off; look, …):
 
@@ -670,9 +670,7 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
 | `button`   | a button: `label`; config `link` (see Links); `box` (`fit`: hugs its label / `fill`: the whole widget) and `place` (nine)                                                    |
 | `form`     | a contact form (see "Contact form")                                                                                                                                          |
 | `hero`     | the home hero: `title` (one word per line), `eyebrow`, `body`, scattered `photos`; as tall as its widget (Rows / Aspect), Auto: its section's preset height under the navbar |
-| `grid`     | **list**: a head + tiles of its source's items; config `layout` (`staggered` / `even`); `places` shows cards                                                                 |
-| `albums`   | **list**: album cards of its items (the people/places index); config `layout` (`portrait` / `landscape`)                                                                     |
-| `projects` | **list**: the project accordion of its items; with a `title` it gets a head (home)                                                                                           |
+| `list`     | **list**: its source's items, each with a template (`config.template`: a preset such as `preset:card`, or a site template `t-…`); `columns`, `gap`, `phoneColumns`           |
 | `album`    | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped                                                              |
 
 - **Text widget** (`src/render/text.js`): `body` is a list of lines `{ style, list?, text: [runs] }`; a
@@ -772,7 +770,7 @@ Which items a widget shows is its `source` (`src/render/layout/source.js`), one 
 ```
 
 - **Item** (one-item widgets: heading, text, album, …): one item, picked. **All** (list widgets:
-  grid, albums, projects): every item, in order.
+  List): every item, in order.
 - **From URL** (any widget, on a `[param]` page): the items that match the page's address. Every
   param of the address (`/people/[person]/[year]/`) has a row: the source property it matches
   (`where.rules`, `{ param, property }`); a param with no rule is **Any** (doesn't filter). A
@@ -1270,7 +1268,7 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
   (`layoutOptions()` in `src/editor/widget-layout.js`), the rest in Content. The pickers and
   - Property offer `{items}` under **Count of this List** on a List
     (`src/editor/property-groups.js`).
-- Album cards remain; Photo grid and Project list are gone (use a List with a template).
+- Album cards, Photo grid and Project list are gone (use a List with a template).
 
 ### Menu
 

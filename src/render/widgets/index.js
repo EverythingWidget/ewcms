@@ -57,7 +57,6 @@ import photo from './photo/index.js';
 import button from './button/index.js';
 import form from './form/index.js';
 import hero from './hero/index.js';
-import albums from './albums/index.js';
 import album from './album/index.js';
 import list from './list/index.js';
 import { details } from './list/details.js';
@@ -69,7 +68,6 @@ export const BUILTIN_WIDGETS = Object.freeze([
   button,
   form,
   hero,
-  albums,
   album,
   list,
 ]);
@@ -84,6 +82,8 @@ export const RETIRED_WIDGETS = Object.freeze({
   grid: 'Photo grid ("grid") is gone: use a List ("list") with a template (Album card: "t-acrp" / "t-acrl", or a preset)',
   projects:
     'Project list ("projects") is gone: use a List ("list") with "config": { "template": "t-prow", "columns": "1" } (or a row preset)',
+  albums:
+    'Album cards ("albums") is gone: use a List ("list") with a Card template ("preset:card", or "t-acrp" / "t-acrl")',
 });
 
 /**

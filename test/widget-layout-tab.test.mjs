@@ -40,7 +40,6 @@ test('each type: what its Layout tab shows (its definition)', () => {
     photo: ['size', 'layer', 'link', 'box', 'placement'],
     hero: ['size', 'layer', 'link'],
     album: ['size', 'layer', 'link'],
-    albums: ['size', 'layer', 'link'],
     form: ['size', 'layer', 'link'],
     list: ['size', 'layer', 'link', 'options'],
   };

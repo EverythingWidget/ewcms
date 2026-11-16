@@ -25,6 +25,10 @@ say what a site must do before it bumps its pin.
   A site's `functions/api/contact.js` must import the new path in the same commit as the pin
   bump (eeliyarasta-website, godzillaworx, unicderma-website). The old export is gone.
 
+- **Breaking: Album cards (`albums`) is gone.** Use a List (`list`) with a Card template
+  (`"config": { "template": "preset:card" }`, or a site template such as `t-acrp` / `t-acrl`).
+  `ewcms check` names the replacement. There is no conversion.
+
 ### Editor
 
 - Show only: a List from a source (All or From URL) can show only the items whose field has one

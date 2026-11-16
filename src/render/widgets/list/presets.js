@@ -15,7 +15,7 @@
  * Nothing is guessed (no "first photo property"): a role with neither is left out.
  * `role` names each widget's place in the preset's look (style.scss: .li__<role>).
  *
- *   Card   photo on top, title, facts (Album cards, the places' cards)
+ *   Card   photo on top, title, facts (the old Album cards, the places' cards)
  *   Plain  photo, title, body, a button to the item's page; no box
  *   Panel  a big photo, title and count over it (photo tiles, Photo panels)
  *   Row    a small photo left, title and facts right (project rows)

@@ -103,7 +103,7 @@ test("a widget whose source or item is cleared (the editor's ✕) still renders,
 });
 
 test('a list widget without a source: no link, no items (not a default list)', () => {
-  for (const type of ['albums', 'list']) {
+  for (const type of ['list']) {
     const ids = new Set();
     const widget = newWidget(type, ids);
     delete widget.source; // None
@@ -280,6 +280,7 @@ test('validation: the layout, then each widget against its type', () => {
   assert.equal(WIDGET_TYPES.about, undefined); // the Bio widget is gone (v0.1.17)
   assert.match(one({ type: 'grid' })[0], /Photo grid \("grid"\) is gone/);
   assert.match(one({ type: 'projects' })[0], /Project list \("projects"\) is gone/);
+  assert.match(one({ type: 'albums' })[0], /Album cards \("albums"\) is gone: use a List/);
   assert.match(one({ type: 'text', config: { enabled: 1 } })[0], /true or false/);
   const twice = section([widget('text'), widget('text')]);
   twice.widgets[1].id = twice.widgets[0].id;
@@ -486,7 +487,7 @@ test('add widget: its source fits the page; removing the main widget leaves the 
   });
   // off one: no params to match, so its source's first item; a list keeps All
   assert.deepEqual(widget(A, 'album').source, { mode: 'item', from: 'people', id: 'p-noor' });
-  assert.deepEqual(widget(A, 'albums').source, { mode: 'all', from: 'people' });
+  assert.equal(widget(A, 'list').source, undefined); // a List starts on None (F20)
   assert.equal(widget(A, 'text').source, undefined);
   // the main widget removed: "main" goes with it, one undo step
   const main = store.get(P, '/sections/0/widgets/0/id');

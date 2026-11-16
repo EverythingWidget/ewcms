@@ -54,10 +54,10 @@ test('added text, button, form, lists: Auto (no rows); photo and hero as before'
   const store = createStore();
   store.load({ [FT]: { version: 1, kind: 'page', id: 'pg-t047', sections: [] } });
   addSection(store, FT, 'text');
-  for (const t of ['button', 'form', 'albums', 'list', 'photo', 'hero']) addWidget(store, FT, 0, t);
+  for (const t of ['button', 'form', 'list', 'photo', 'hero']) addWidget(store, FT, 0, t);
   const ws = store.current[FT].sections[0].widgets;
   const by = Object.fromEntries(ws.map((w) => [w.type, w]));
-  for (const t of ['text', 'button', 'form', 'list', 'albums']) {
+  for (const t of ['text', 'button', 'form', 'list']) {
     assert.equal(by[t].size, undefined, t);
     assert.equal(by[t].layout.base.rows, undefined, t);
   }
@@ -84,11 +84,8 @@ test('a new List starts on None (its empty state); a default source only when th
   const store = fresh();
   addSection(store, F);
   assert.equal(addWidget(store, F, 0, 'list').source, undefined);
-  // no "people" list on this site: the Albums widget's default source is left out too
-  assert.equal(addWidget(store, F, 0, 'albums').source, undefined);
   store.load({ ...store.current, 'sources/people.json': { version: 1, items: [] } });
   assert.equal(addWidget(store, F, 0, 'list').source, undefined);
-  assert.deepEqual(addWidget(store, F, 0, 'albums').source, { mode: 'all', from: 'people' });
 });
 
 test('the widget pop-up stays closed after the user closes it (F14, F30)', () => {
