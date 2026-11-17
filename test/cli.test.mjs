@@ -185,3 +185,23 @@ test('siteCode: config, functions/ and content are no reason to warn; own JS and
     for (const r of [a, b]) fs.rmSync(r, { recursive: true, force: true });
   }
 });
+
+test('site.json lang: its content/<lang>/ folder when there is one, else content/en/ and a warning', () => {
+  const site = (lang, dirs = []) => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-lang-'));
+    for (const d of ['en', ...dirs])
+      fs.mkdirSync(path.join(root, 'content', d), { recursive: true });
+    fs.writeFileSync(path.join(root, 'content/site.json'), JSON.stringify({ version: 1, lang }));
+    return loadSiteConfig(root);
+  };
+  const nl = site('nl', ['nl']);
+  assert.equal(nl.contentRel, 'content/nl');
+  assert.equal(nl.langWarning, '');
+  assert.equal(site('nl-BE', ['nl']).contentRel, 'content/nl');
+  const missing = site('de');
+  assert.equal(missing.contentRel, 'content/en');
+  assert.match(missing.langWarning, /lang "de" has no content\/de\/ folder: using content\/en\//);
+  assert.ok(!fs.existsSync(path.join(missing.root, 'content/de'))); // nothing made
+  assert.equal(site('en').langWarning, '');
+  assert.equal(site('en-GB').contentRel, 'content/en');
+});

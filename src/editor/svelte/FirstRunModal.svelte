@@ -9,7 +9,7 @@
   import { closeModal, modal } from './modals.svelte.js';
   import Button from './Button.svelte';
   import Select from './Select.svelte';
-  import { SITE } from '../../render/files.js';
+  import { CONTENT_DIR, SITE, contentRoot } from '../../render/files.js';
 
   // live: reactive store (live.svelte.js); actions: save (main.js)
   let { live, actions } = $props();
@@ -34,6 +34,13 @@
   let lang = $state('en');
   let accent = $state(LOOKS[0][0]);
   let busy = $state(false);
+  // a language without its folder: the pages stay in the one in use (src/cli/site-config.mjs)
+  const folder = CONTENT_DIR.split('/').pop();
+  const langHint = $derived(
+    lang === folder || lang.split('-')[0] === folder
+      ? ''
+      : `Pages stay in ${CONTENT_DIR}/: ${contentRoot()}/${lang}/ is used only once that folder exists.`,
+  );
 
   function onopen() {
     lang = live.get(SITE, '/lang') || 'en';
@@ -76,9 +83,11 @@
         bind:value={lang}
         options={LANGUAGES.map(([value, label]) => ({ value, label, hint: value }))}
       />
+      <!-- two lines kept free: the hint moves nothing -->
+      <p class="hint small first-run__note">{langHint}</p>
     </div>
     <div class="tf">
-      <span class="tf__label" id="{uid}-look">Look (accent colour)</span>
+      <span class="tf__label" id="{uid}-look">Accent colour</span>
       <div class="first-run__looks" role="radiogroup" aria-labelledby="{uid}-look">
         {#each LOOKS as [color, label] (color)}
           <button
@@ -129,6 +138,11 @@
 
   .first-run .modal__actions {
     margin-top: 0;
+  }
+
+  .first-run__note {
+    min-height: 32px;
+    margin: var(--space-1) 0 0;
   }
 
   .first-run__looks {

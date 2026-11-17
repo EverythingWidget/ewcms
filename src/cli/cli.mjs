@@ -41,6 +41,9 @@ const photos = async (root, opts) => {
 function warnLegacyConfig(root) {
   const warning = legacyConfigWarning(root);
   if (warning) console.warn(warning);
+  // site.json lang without its language folder: content/en/ (site-config.mjs langContentDir)
+  const lang = loadSiteConfig(root).langWarning;
+  if (lang) console.warn(`! ${lang}`);
 }
 
 export async function dev(root, opts = {}) {

@@ -16,7 +16,9 @@
  *     repo: { owner, name },           // GitHub links when the git remote names none
  *   };
  *
- * Every key is optional (DEFAULTS); paths are relative to the root. loadSiteConfig(root) gives
+ * Every key is optional (DEFAULTS); paths are relative to the root. Without contentDir the language
+ * folder follows site.json lang: content/<lang>/ when it exists, else content/en/ (langWarning
+ * says so; no folder is made or moved). loadSiteConfig(root) gives
  * the merged config (config) and the absolute paths (contentDir, mediaDir, publicDir,
  * publicMediaDir, generatedDir, manifest, outDir), themeDir and themeLayers (the site's theme
  * folder and its style files, null and [] without), theme (its theme.json, {} without),
@@ -67,13 +69,44 @@ const cache = new Map();
 const posix = (p) => p.split(path.sep).join('/');
 const readJson = (file) => (fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {});
 
+/**
+ * The language folder for site.json's lang (contentLang): content/<lang>/, or content/<primary>/
+ * ("nl" for "nl-BE"), when it exists; else the default, content/en/, and a warning.
+ */
+export function langContentDir(root) {
+  const contentRoot = path.dirname(DEFAULTS.contentDir);
+  let lang = '';
+  try {
+    lang = String(readJson(path.join(root, contentRoot, 'site.json')).lang || '').trim();
+  } catch {
+    // a broken site.json: the default folder (ewcms check names the file)
+  }
+  const fallback = { contentDir: DEFAULTS.contentDir, warning: '' };
+  if (!lang) return fallback;
+  for (const l of new Set([lang, lang.split('-')[0]])) {
+    const dir = `${contentRoot}/${l}`;
+    if (dir === DEFAULTS.contentDir || fs.existsSync(path.join(root, dir)))
+      return { ...fallback, contentDir: dir };
+  }
+  return {
+    ...fallback,
+    warning: `site.json lang "${lang}" has no ${contentRoot}/${lang}/ folder: using ${DEFAULTS.contentDir}/`,
+  };
+}
+
 /** The site at root (default: the working folder): its config and paths. Cached per root. */
 export function loadSiteConfig(root = process.cwd()) {
   root = path.resolve(root);
   if (cache.has(root)) return cache.get(root);
   const file = path.join(root, CONFIG_FILE);
   const own = fs.existsSync(file) ? require(file).default || {} : {};
-  const config = { ...DEFAULTS, ...own, repo: { ...DEFAULTS.repo, ...own.repo } };
+  const lang = own.contentDir ? { warning: '' } : langContentDir(root);
+  const config = {
+    ...DEFAULTS,
+    ...(lang.contentDir && { contentDir: lang.contentDir }),
+    ...own,
+    repo: { ...DEFAULTS.repo, ...own.repo },
+  };
   const abs = (p) => path.resolve(root, p);
   // The look is the site's own: its theme folder's tokens.scss, fonts.scss, overrides.scss
   // (themeLayers, each optional) and theme.json. The engine has no theme of its own: its chrome
@@ -82,6 +115,7 @@ export function loadSiteConfig(root = process.cwd()) {
   const site = {
     root,
     config,
+    langWarning: lang.warning,
     contentDir: abs(config.contentDir),
     // the content root: the shared files (files.js ROOT_FILES), next to the language folders
     contentRootDir: path.dirname(abs(config.contentDir)),

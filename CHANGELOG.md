@@ -16,6 +16,9 @@ say what a site must do before it bumps its pin.
   `site.json` has an empty `name` until then. A script that called `ewcms new-site <dir>` runs
   `ewcms dev --root <dir>` instead; `newSite` is no longer exported (`scaffoldSite` is). Existing
   sites need nothing.
+- The language folder follows `site.json` `lang` (without a `contentDir` in `ewcms.config.mjs`):
+  `content/<lang>/` when it exists, else `content/en/`, with a warning in `ewcms check`, `dev` and
+  `build`. No folder is made or moved. Sites with `lang: "en"` see no change.
 
 - **Breaking: the body font token `--f-mono` is `--f-body`.** It was the body and UI font (the
   body text, Labels, the chrome), whatever the font: a site with a sans body set "mono" to it.
