@@ -59,9 +59,42 @@ export function installedCommit(engine = ENGINE) {
 /**
  * The ref a new site pins (github:EverythingWidget/ewcms#<ref>): the engine that runs. A git
  * checkout: its release tag when HEAD is exactly v<version>, else HEAD's commit; an npm
- * install: the commit it came from (installedCommit); else the version's tag (exact: false).
+ * install: the commit it came from (installedCommit), as v<version> when the remote's tag is that
+ * commit (remoteTagCommit; offline: the commit); else the version's tag (exact: false).
  */
-export function enginePin(engine = ENGINE, version = ENGINE_VERSION) {
+export const ENGINE_REPO = 'https://github.com/EverythingWidget/ewcms.git';
+
+/** The commit the remote's tag points at ('' offline or without it): `git ls-remote`, 4s at most. */
+export function remoteTagCommit(tag, repo = ENGINE_REPO) {
+  try {
+    const out = execFileSync(
+      'git',
+      ['ls-remote', '--tags', repo, `refs/tags/${tag}`, `refs/tags/${tag}^{}`],
+      {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: 4000,
+        env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
+      },
+    );
+    const refs = Object.fromEntries(
+      out
+        .trim()
+        .split('\n')
+        .map((l) => l.split('\t').reverse()),
+    );
+    // an annotated tag: its commit is the peeled ^{} line
+    return refs[`refs/tags/${tag}^{}`] || refs[`refs/tags/${tag}`] || '';
+  } catch {
+    return '';
+  }
+}
+
+export function enginePin(
+  engine = ENGINE,
+  version = ENGINE_VERSION,
+  { tagCommit = remoteTagCommit } = {},
+) {
   const tag = `v${version}`;
   if (git(engine, 'rev-parse', '--show-toplevel') === engine) {
     const tags = git(engine, 'tag', '--points-at', 'HEAD').split('\n');
@@ -70,7 +103,8 @@ export function enginePin(engine = ENGINE, version = ENGINE_VERSION) {
     if (SHA.test(head)) return { ref: head, exact: true };
   }
   const sha = installedCommit(engine);
-  if (sha) return { ref: sha, exact: true };
+  // the release's own commit (npx of #main right after a release): its tag, else the commit
+  if (sha) return { ref: tagCommit(tag) === sha ? tag : sha, exact: true };
   return { ref: tag, exact: false };
 }
 

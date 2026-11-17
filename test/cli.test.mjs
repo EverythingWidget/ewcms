@@ -224,7 +224,10 @@ test('the pin of a new site: the running engine (a checkout, an npm install), el
   fs.mkdirSync(engine, { recursive: true });
   fs.writeFileSync(path.join(engine, 'package.json'), '{"name":"ewcms","version":"0.9.0"}');
   assert.equal(installedCommit(engine), '');
-  assert.deepEqual(enginePin(engine, '0.9.0'), { ref: 'v0.9.0', exact: false });
+  assert.deepEqual(enginePin(engine, '0.9.0', { tagCommit: () => '' }), {
+    ref: 'v0.9.0',
+    exact: false,
+  });
   const sha = 'a'.repeat(40);
   fs.writeFileSync(
     path.join(tmp, 'node_modules', '.package-lock.json'),
@@ -236,7 +239,11 @@ test('the pin of a new site: the running engine (a checkout, an npm install), el
       },
     }),
   );
-  assert.deepEqual(enginePin(engine, '0.9.0'), { ref: sha, exact: true });
+  // the remote's tag: another commit (or offline, ''), the commit; that commit, the tag
+  const pin = (tagged) => enginePin(engine, '0.9.0', { tagCommit: () => tagged });
+  assert.deepEqual(pin(''), { ref: sha, exact: true });
+  assert.deepEqual(pin('b'.repeat(40)), { ref: sha, exact: true });
+  assert.deepEqual(pin(sha), { ref: 'v0.9.0', exact: true });
   // scaffold writes the pin it is given
   const site = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-pinned-'));
   scaffoldSite(site, { pin: { ref: sha } });
