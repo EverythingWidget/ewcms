@@ -9,20 +9,13 @@
   import { closeModal, modal } from './modals.svelte.js';
   import Button from './Button.svelte';
   import Select from './Select.svelte';
-  import { CONTENT_DIR, SITE, contentRoot } from '../../render/files.js';
+  import { SITE } from '../../render/files.js';
+  import { languageOptions, langHint } from '../lib/languages.js';
 
   // live: reactive store (live.svelte.js); actions: save (main.js)
   let { live, actions } = $props();
 
   const uid = $props.id();
-  const LANGUAGES = [
-    ['en', 'English'],
-    ['nl', 'Nederlands'],
-    ['de', 'Deutsch'],
-    ['fr', 'Français'],
-    ['es', 'Español'],
-    ['it', 'Italiano'],
-  ];
   // the look: the accent colour (site.json accent), the starter's first
   const LOOKS = [
     ['#cfc8b8', 'Sand'],
@@ -34,13 +27,7 @@
   let lang = $state('en');
   let accent = $state(LOOKS[0][0]);
   let busy = $state(false);
-  // a language without its folder: the pages stay in the one in use (src/cli/site-config.mjs)
-  const folder = CONTENT_DIR.split('/').pop();
-  const langHint = $derived(
-    lang === folder || lang.split('-')[0] === folder
-      ? ''
-      : `Pages stay in ${CONTENT_DIR}/: ${contentRoot()}/${lang}/ is used only once that folder exists.`,
-  );
+  const hint = $derived(langHint(lang));
 
   function onopen() {
     lang = live.get(SITE, '/lang') || 'en';
@@ -78,13 +65,9 @@
     </label>
     <div class="tf">
       <label class="tf__label" for="{uid}-lang">Language</label>
-      <Select
-        id="{uid}-lang"
-        bind:value={lang}
-        options={LANGUAGES.map(([value, label]) => ({ value, label, hint: value }))}
-      />
+      <Select id="{uid}-lang" bind:value={lang} options={languageOptions()} />
       <!-- two lines kept free: the hint moves nothing -->
-      <p class="hint small first-run__note">{langHint}</p>
+      <p class="hint small first-run__note">{hint}</p>
     </div>
     <div class="tf">
       <span class="tf__label" id="{uid}-look">Accent colour</span>

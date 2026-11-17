@@ -24,6 +24,7 @@
   import EntranceFade from './EntranceFade.svelte';
   import { ui } from './ui.svelte.js';
   import { SEO_SETTINGS, SITE_SETTINGS } from './content-groups.js';
+  import { languageOptions, langHint } from '../lib/languages.js';
   import { TARGETS } from '../../render/widgets/form/index.js';
   import { SITE } from '../../render/files.js';
   import { COLS } from '../../render/layout/grid.js';
@@ -146,6 +147,17 @@
         onvalue={(value) => set(key, value)}
       />
     {/each}
+    <div class={['tf', live.changed(SITE, '/lang') && 'is-changed']}>
+      <label class="tf__label" for="{uid}-lang">Language</label>
+      <Select
+        id="{uid}-lang"
+        value={live.get(SITE, '/lang') || 'en'}
+        options={languageOptions(live.get(SITE, '/lang'))}
+        onchange={(value) => set('lang', value)}
+      />
+      <!-- its lines kept free: the hint moves nothing -->
+      <p class="hint small lang-note">{langHint(live.get(SITE, '/lang') || 'en')}</p>
+    </div>
   </Collapsible>
 
   <Collapsible key="settings:seo" title="SEO">
@@ -302,6 +314,11 @@
 
 <style lang="scss">
   @use '../styles/mixins' as *;
+
+  .lang-note {
+    min-height: 48px;
+    margin: var(--space-1) 0 0;
+  }
 
   // Type: a style's Min, Max and Line in one row
   .scale {

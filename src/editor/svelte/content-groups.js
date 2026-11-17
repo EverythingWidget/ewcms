@@ -29,7 +29,6 @@ export const SEO_SETTINGS = [
   ['description', 'Description (pages without their own)', 'multiline'],
   ['ogPhoto', 'Share photo (pages without their own)', 'photo'],
   ['url', 'Site URL (canonical links, og:url, sitemap.xml)', 'text'],
-  ['lang', 'Language (<html lang>, e.g. en)', 'text'],
 ];
 
 /** Lists in content/en/sources/ (people, places, projects, ...). */
