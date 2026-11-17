@@ -20,7 +20,7 @@ import { loadSiteConfig, CONFIG_FILE, STARTER_THEME, legacyConfigWarning } from 
 import { buildPhotos } from './photos.mjs';
 import { checkLinks } from './check-links.mjs';
 import { registerSiteWidgets } from './site-widgets.mjs';
-import { isSiteFolder, scaffoldSite } from './scaffold.mjs';
+import { isSiteFolder, scaffoldSite, enginePin, installSite } from './scaffold.mjs';
 import { assertNoSettingsFolder, walkJson, loadContent } from './content.mjs';
 
 const VITE_CONFIGS = ['vite.config.js', 'vite.config.mjs', 'vite.config.ts'];
@@ -49,10 +49,15 @@ function warnLegacyConfig(root) {
 export async function dev(root, opts = {}) {
   // the first run in a folder with no site: the starter (the editor asks for the name, language, look)
   if (!isSiteFolder(root)) {
-    const made = scaffoldSite(root);
+    const pin = enginePin();
+    if (!pin.exact)
+      console.warn(`! the running ewcms's commit is unknown: package.json pins #${pin.ref}`);
+    const made = scaffoldSite(root, { pin });
     console.log(
-      `New site in ${root}: ${made.length} starter file(s) (${CONFIG_FILE}, content/, theme/, public/, functions/)`,
+      `New site in ${root}: ${made.length} starter file(s) (${CONFIG_FILE}, content/, theme/, public/, functions/), ewcms #${pin.ref}`,
     );
+    // its packages, once: only the run that made package.json (later runs find a site)
+    if (made.includes('package.json')) installSite(root);
   }
   warnLegacyConfig(root);
   await photos(root, opts);

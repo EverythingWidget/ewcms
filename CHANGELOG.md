@@ -11,7 +11,9 @@ say what a site must do before it bumps its pin.
 - **Breaking: `ewcms new-site` is gone; `ewcms dev` makes the site.** Run `npx ewcms dev` in a
   folder with no site files (no `ewcms.config.mjs`, `site.config.mjs` or `content/site.json`): it
   copies the starter first, only the files that are missing (a `package.json`, `README.md` or
-  `.gitignore` already there stays as it is), then starts the editor, which asks once for the
+  `.gitignore` already there stays as it is), pins the ewcms that runs (its release tag, else its
+  commit) in a new `package.json` and runs `npm install` once (that run only; `EWCMS_NO_INSTALL=1`
+  skips it), then starts the editor, which asks once for the
   site's name, language and accent and writes them to `content/site.json`. The starter's
   `site.json` has an empty `name` until then. A script that called `ewcms new-site <dir>` runs
   `ewcms dev --root <dir>` instead; `newSite` is no longer exported (`scaffoldSite` is). Existing

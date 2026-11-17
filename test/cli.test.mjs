@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { checkContentOf, siteCode, themeWarning } from '../src/cli/cli.mjs';
-import { isSiteFolder, scaffoldSite } from '../src/cli/scaffold.mjs';
+import { enginePin, installedCommit, isSiteFolder, scaffoldSite } from '../src/cli/scaffold.mjs';
 import { loadSiteConfig } from '../src/cli/site-config.mjs';
 import { ENGINE, enginePath, fsUrl, withEngineUrls, ENGINE_MARK } from '../src/cli/engine.mjs';
 
@@ -76,7 +76,11 @@ test('dev in a folder with no site: the starter, a site folder that passes check
     assert.ok(fs.existsSync(path.join(dir, f)), f);
   const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
   assert.equal(pkg.name, 'my-site');
-  assert.match(pkg.dependencies.ewcms, /^github:EverythingWidget\/ewcms#v\d/);
+  // the engine that runs: this checkout's commit (or its release tag when HEAD is one)
+  assert.match(
+    pkg.dependencies.ewcms,
+    /^github:EverythingWidget\/ewcms#(v\d+\.\d+\.\d+|[0-9a-f]{40})$/,
+  );
   assert.deepEqual(await checkContentOf(dir), []);
   // the theme: the site's own copy of the starter's look (tokens, fonts, theme.json), named
   assert.deepEqual(fs.readdirSync(path.join(dir, 'theme')).sort(), [
@@ -204,4 +208,35 @@ test('site.json lang: its content/<lang>/ folder when there is one, else content
   assert.ok(!fs.existsSync(path.join(missing.root, 'content/de'))); // nothing made
   assert.equal(site('en').langWarning, '');
   assert.equal(site('en-GB').contentRel, 'content/en');
+});
+
+test('the pin of a new site: the running engine (a checkout, an npm install), else its tag', () => {
+  // a checkout: HEAD's commit or its tag
+  const here = enginePin();
+  assert.ok(here.exact);
+  assert.match(here.ref, /^(v\d+\.\d+\.\d+|[0-9a-f]{40})$/);
+  // an npm install (npx too): the commit in node_modules/.package-lock.json
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-pin-'));
+  const engine = path.join(tmp, 'node_modules', 'ewcms');
+  fs.mkdirSync(engine, { recursive: true });
+  fs.writeFileSync(path.join(engine, 'package.json'), '{"name":"ewcms","version":"0.9.0"}');
+  assert.equal(installedCommit(engine), '');
+  assert.deepEqual(enginePin(engine, '0.9.0'), { ref: 'v0.9.0', exact: false });
+  const sha = 'a'.repeat(40);
+  fs.writeFileSync(
+    path.join(tmp, 'node_modules', '.package-lock.json'),
+    JSON.stringify({
+      packages: {
+        'node_modules/ewcms': {
+          resolved: `git+ssh://git@github.com/EverythingWidget/ewcms.git#${sha}`,
+        },
+      },
+    }),
+  );
+  assert.deepEqual(enginePin(engine, '0.9.0'), { ref: sha, exact: true });
+  // scaffold writes the pin it is given
+  const site = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-pinned-'));
+  scaffoldSite(site, { pin: { ref: sha } });
+  const pkg = JSON.parse(fs.readFileSync(path.join(site, 'package.json'), 'utf8'));
+  assert.equal(pkg.dependencies.ewcms, `github:EverythingWidget/ewcms#${sha}`);
 });
