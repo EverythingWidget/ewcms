@@ -30,6 +30,7 @@
   import {
     closeModal,
     isOpen,
+    openFirstRun,
     openPublish,
     openSources,
     syncModals,
@@ -39,6 +40,7 @@
   import Toasts from './Toasts.svelte';
   import SaveFailedModal from './SaveFailedModal.svelte';
   import UnsavedEditsModal from './UnsavedEditsModal.svelte';
+  import FirstRunModal from './FirstRunModal.svelte';
   import UpdateNotice from './UpdateNotice.svelte';
   import WidgetToolbar from './WidgetToolbar.svelte';
   import TemplateCols from './TemplateCols.svelte';
@@ -131,6 +133,16 @@
 
   // The tab, Header/Footer, the open Sources item and library animation in the URL (persist.js).
   $effect(writeUrl);
+
+  // a new site (site.json with no name: the starter's, src/cli/scaffold.mjs): its name,
+  // language and look, asked once per visit (FirstRunModal.svelte; Later asks again next time)
+  let askedFirstRun = false;
+  $effect(() => {
+    const site = live.get(SITE, '');
+    if (askedFirstRun || !site || site.name) return;
+    askedFirstRun = true;
+    untrack(openFirstRun);
+  });
 
   $effect(() => {
     // the site's name (site.json), like the page's own title (src/cli/vite-plugin-static-site.mjs)
@@ -351,6 +363,7 @@
   <PreviewModal {live} />
   <SaveFailedModal />
   <UnsavedEditsModal />
+  <FirstRunModal {live} {actions} />
   <Toasts />
 {/if}
 

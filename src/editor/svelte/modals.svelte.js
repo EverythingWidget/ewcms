@@ -14,6 +14,7 @@
  *   previewModal   PreviewModal.svelte     openPreviewModal({ id, onpick })
  *   saveFailed     SaveFailedModal.svelte  openSaveFailed({ message, files })
  *   unsavedEdits   UnsavedEditsModal.svelte  openUnsavedEdits({ t, page, files, onrestore, ondiscard })
+ *   firstRun       FirstRunModal.svelte    openFirstRun()   (a new site: its name, language, look)
  *
  * The stack is the open modals, bottom first. The top one is in front; closing it shows the one
  * below again, as it was (Media opened from a photo field in Sources, Sources opened from a
@@ -39,6 +40,7 @@ export const MODALS = [
   'previewModal',
   'saveFailed',
   'unsavedEdits',
+  'firstRun',
 ];
 
 /** The stack with `name` on top: when it is open already, the ones above it close. */
@@ -82,6 +84,7 @@ export function closeModal(name = topModal()) {
 }
 
 export const openPublish = () => openModal('publish');
+export const openFirstRun = () => openModal('firstRun');
 
 /** Sources on file `file` ('' = the list of files), item `index`, field `edit`. */
 export const openSources = ({ file = '', index = 0, edit = null } = {}) =>
