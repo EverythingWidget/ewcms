@@ -8,11 +8,11 @@ with GSAP page transitions. The editor (Svelte 5) runs in the dev server only an
 
 A **site** is only its own things; ewcms is everything else:
 
-| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                                            | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                                                                                                            |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content/` (JSON), `media/` (photos), `theme/` (`tokens.scss`, `fonts.scss`, `theme.json`), `public/` (fonts, favicon), `ewcms.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor` (the editor app and its Node `server/`), `src/cli` (the command, Vite plugin, build, photos, R2), `src/functions` (the contact form's Pages Function), `starter/` (what `new-site` copies, its theme too), `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
-| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                                                  | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                                                                                                                |
-| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                                        |                                                                                                                                                                                                                                                                                                                                                                               |
+| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                                             | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                                                                                                                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `content/` (JSON), `media/` (photos), `theme/` (`tokens.scss`, `fonts.scss`, `theme.json`), `public/` (fonts, favicon), `ewcms.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor` (the editor app and its Node `server/`), `src/cli` (the command, Vite plugin, build, photos, R2), `src/functions` (the contact form's Pages Function), `starter/` (what `ewcms dev` copies into a folder with no site, its theme too), `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
+| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                                                | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                                                                                                                                                          |
+| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                                         |                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 ## How ewcms works
 
@@ -39,19 +39,19 @@ flowchart LR
   animations, Lists ([SPA behaviour](#spa-behaviour)).
 - **functions** (`src/functions`): code that runs on Cloudflare, today only the contact form
   ([Contact form](#contact-form)).
-- **cli** (`src/cli`): the `ewcms` commands (`dev`, `build`, `check`, `new-site`)
-  ([A site's commands](#a-sites-commands)).
+- **cli** (`src/cli`): the `ewcms` commands (`dev`, `build`, `check`; `dev` makes the site from
+  `starter/` in a folder with none) ([A site's commands](#a-sites-commands)).
 
 ## A site's commands
 
 ```bash
 ewcms dev [--port N] [--host] [--no-photos]   # photo sizes, then http://localhost:5173 (pages on the fly, hot reload; editor: ?edit)
+                                              # in a folder with no site: first the starter (only what is missing), then the editor asks for the name, language and look
 ewcms build [--no-photos]                     # photo sizes, then dist/ (one index.html per route + 404.html, sitemap.xml, _redirects)
 ewcms preview [--port N]                      # serve dist/ on http://localhost:4173
 ewcms check [--links] [--no-lint]             # content (every file, sources, bindings, motion) + the site's JS/SCSS; --links: dist/'s links
 ewcms photos                                  # media/ → public/media/*.webp sizes + .generated/media.json
 ewcms publish-media                           # media/ photos → Cloudflare R2 (.env.local R2_* keys), like the editor's uploads
-ewcms new-site <dir>                          # a new site: its own theme (a copy of starter/theme), starter content, package.json
 ```
 
 A site's `package.json` maps them (`npm run dev`, `npm run build`, `npm run check`). It needs no
@@ -187,8 +187,9 @@ ones: each text style's weight, tracking and colour, the body text, the logo, th
 current item, the button, selected text and the skip link), `fonts.scss` (`@font-face`),
 `overrides.scss` (rules after the engine's styles) and `theme.json` (`themeColor`, `colorScheme`
 and `preloads`, put in every page's head at `<!--theme-meta-->` and `<!--theme-preloads-->` in
-`index.html`; `site.json` `themeColor` wins). The engine has no theme of its own: `ewcms new-site`
-copies `starter/theme/` (tokens, fonts, theme.json) into the new site, which owns that copy, and
+`index.html`; `site.json` `themeColor` wins). The engine has no theme of its own: `ewcms dev`, in a
+folder with no site, copies `starter/theme/` (tokens, fonts, theme.json) into the new site, which
+owns that copy, and
 `ewcms check` warns when a site's tokens miss any of the starter's before `// @optional` (the type
 scale on a line of its own: the engine has its defaults, and what `site.json` `type` sets counts;
 docs/THEME-MIGRATION.md). The
@@ -218,14 +219,14 @@ content/            ← all text, albums, projects, animation config (JSON)
                       plus <id>.schema.json: the properties of its items (see "Sources & schemas")
   strings.json      ← UI text of the templates: the menu's Menu / Close / clock label (header.*)
 media/              ← source photos (jpg), committed
-theme/              ← the site's look: tokens.scss, fonts.scss, overrides.scss, theme.json (new-site copies ewcms's starter/theme/)
+theme/              ← the site's look: tokens.scss, fonts.scss, overrides.scss, theme.json (ewcms dev copies ewcms's starter/theme/ into a new site)
 ewcms.config.mjs     ← the site's folders
 functions/api/contact.js ← one line: export { onRequestPost } from 'ewcms/functions/contact'
 
 — in ewcms —
 bin/ewcms.mjs       ← the ewcms command (src/cli/cli.mjs: dev, build, check, …)
 vite.js             ← the Vite preset (ewcms/vite)
-starter/            ← what ewcms new-site copies: the same layout as the site (content/, theme/, public/, functions/, ewcms.config.mjs, package.json, empty media/ and widgets/)
+starter/            ← what ewcms dev copies into a folder with no site (only what is missing): the same layout as the site (content/, theme/, public/, functions/, ewcms.config.mjs, package.json, empty media/ and widgets/)
 starter/content/    ← the starter site's content: Home (a short guide), About, 404; empty templates/ and sources/ folders, no photos
 src/cli/            ← the command, its build pipeline and photos (Node)
   cli.mjs           ← the commands
@@ -663,15 +664,15 @@ ctx, widget) }`; `list` makes it show a list of items, `item` one item it
 needs (album). Which items a widget shows is its `source` (see "Widget sources"). A widget's content
 sits next to its type, how it works under `config` (`enabled`: on/off; look, …):
 
-| type       | what                                                                                                                                                                         |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `text`     | rich text: `body` lines (see "Text widget"); `place` top to bottom (`top` / `center` / `bottom`)                                                                             |
-| `photo`    | one photo (`src`) with an optional `caption`; in an Aspect or Rows widget its `box` (`fill`: cover / `fit`: contain) and `place` (one of nine, `left top` … `right bottom`)  |
-| `button`   | a button: `label`; config `link` (see Links); `box` (`fit`: hugs its label / `fill`: the whole widget) and `place` (nine)                                                    |
-| `form`     | a contact form (see "Contact form")                                                                                                                                          |
-| `hero`     | the home hero: `title` (one word per line), `eyebrow`, `body`, scattered `photos`; as tall as its widget (Rows / Aspect), Auto: its section's preset height under the navbar |
-| `list`     | **list**: its source's items, each with a template (`config.template`: a preset such as `preset:card`, or a site template `t-…`); `columns`, `gap`, `phoneColumns`           |
-| `album`    | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped                                                              |
+| type     | what                                                                                                                                                                         |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `text`   | rich text: `body` lines (see "Text widget"); `place` top to bottom (`top` / `center` / `bottom`)                                                                             |
+| `photo`  | one photo (`src`) with an optional `caption`; in an Aspect or Rows widget its `box` (`fill`: cover / `fit`: contain) and `place` (one of nine, `left top` … `right bottom`)  |
+| `button` | a button: `label`; config `link` (see Links); `box` (`fit`: hugs its label / `fill`: the whole widget) and `place` (nine)                                                    |
+| `form`   | a contact form (see "Contact form")                                                                                                                                          |
+| `hero`   | the home hero: `title` (one word per line), `eyebrow`, `body`, scattered `photos`; as tall as its widget (Rows / Aspect), Auto: its section's preset height under the navbar |
+| `list`   | **list**: its source's items, each with a template (`config.template`: a preset such as `preset:card`, or a site template `t-…`); `columns`, `gap`, `phoneColumns`           |
+| `album`  | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped                                                              |
 
 - **Text widget** (`src/render/text.js`): `body` is a list of lines `{ style, list?, text: [runs] }`; a
   style (title, heading, subheading, statement, paragraph, label, small: the site's type scale)

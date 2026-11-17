@@ -8,6 +8,15 @@ say what a site must do before it bumps its pin.
 
 ### Breaking: what a site must do before bumping
 
+- **Breaking: `ewcms new-site` is gone; `ewcms dev` makes the site.** Run `npx ewcms dev` in a
+  folder with no site files (no `ewcms.config.mjs`, `site.config.mjs` or `content/site.json`): it
+  copies the starter first, only the files that are missing (a `package.json`, `README.md` or
+  `.gitignore` already there stays as it is), then starts the editor, which asks once for the
+  site's name, language and accent and writes them to `content/site.json`. The starter's
+  `site.json` has an empty `name` until then. A script that called `ewcms new-site <dir>` runs
+  `ewcms dev --root <dir>` instead; `newSite` is no longer exported (`scaffoldSite` is). Existing
+  sites need nothing.
+
 - **Breaking: the body font token `--f-mono` is `--f-body`.** It was the body and UI font (the
   body text, Labels, the chrome), whatever the font: a site with a sans body set "mono" to it.
   There is no alias: the engine reads `--f-body` only, so a theme that still sets `--f-mono` gets

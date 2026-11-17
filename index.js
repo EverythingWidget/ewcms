@@ -10,8 +10,8 @@ export {
   checkContentOf,
   lintSite,
   publishMedia,
-  newSite,
 } from './src/cli/cli.mjs';
+export { scaffoldSite, isSiteFolder } from './src/cli/scaffold.mjs';
 export { buildPhotos } from './src/cli/photos.mjs';
 export { checkLinks } from './src/cli/check-links.mjs';
 export { loadSiteConfig } from './src/cli/site-config.mjs';

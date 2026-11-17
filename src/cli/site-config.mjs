@@ -59,7 +59,7 @@ export const DEFAULTS = Object.freeze({
 /** A site theme's style files, each optional (src/client/styles/main.scss: the site-layer alias). */
 export const THEME_LAYERS = Object.freeze(['fonts.scss', 'tokens.scss', 'overrides.scss']);
 
-/** The theme a new site starts from (ewcms new-site copies it): the look's tokens, fonts, theme.json. */
+/** The theme a new site starts from (ewcms dev copies it into a folder with no site: scaffold.mjs): the look's tokens, fonts, theme.json. */
 export const STARTER_THEME = enginePath('starter', 'theme');
 
 const require = createRequire(import.meta.url);

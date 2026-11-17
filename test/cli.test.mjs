@@ -5,7 +5,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { checkContentOf, newSite, siteCode, themeWarning } from '../src/cli/cli.mjs';
+import { checkContentOf, siteCode, themeWarning } from '../src/cli/cli.mjs';
+import { isSiteFolder, scaffoldSite } from '../src/cli/scaffold.mjs';
 import { loadSiteConfig } from '../src/cli/site-config.mjs';
 import { ENGINE, enginePath, fsUrl, withEngineUrls, ENGINE_MARK } from '../src/cli/engine.mjs';
 
@@ -49,9 +50,11 @@ test('check: a leftover content/en/settings/ folder is an error that says where 
   assert.match(problems[0], /nav\.json is now header\.json/);
 });
 
-test('new-site: a site folder that passes check', async () => {
+test('dev in a folder with no site: the starter, a site folder that passes check', async () => {
   const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-new-')), 'My Site');
-  newSite(dir);
+  assert.equal(isSiteFolder(dir), false);
+  scaffoldSite(dir);
+  assert.equal(isSiteFolder(dir), true);
   for (const f of [
     'ewcms.config.mjs',
     'package.json',
@@ -89,7 +92,25 @@ test('new-site: a site folder that passes check', async () => {
     fs.readFileSync(enginePath('starter/theme/tokens.scss'), 'utf8'),
   );
   assert.equal(themeWarning(loadSiteConfig(dir)), '');
-  assert.throws(() => newSite(dir), /not empty/);
+  // no name yet: the editor asks for it (FirstRunModal.svelte)
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'content/site.json'), 'utf8')).name, '');
+  // again: nothing left to make
+  assert.deepEqual(scaffoldSite(dir), []);
+});
+
+test('dev in a folder with some files: only what is missing, nothing overwritten', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-part-'));
+  fs.writeFileSync(path.join(dir, 'package.json'), '{"name":"mine"}\n');
+  fs.writeFileSync(path.join(dir, 'README.md'), 'mine\n');
+  fs.writeFileSync(path.join(dir, '.gitignore'), 'mine\n');
+  const made = scaffoldSite(dir);
+  for (const f of ['package.json', 'README.md', '.gitignore']) {
+    assert.ok(!made.includes(f), f);
+    assert.match(fs.readFileSync(path.join(dir, f), 'utf8'), /mine/);
+  }
+  assert.ok(made.includes('ewcms.config.mjs'));
+  assert.ok(made.includes('content/site.json'));
+  assert.ok(!fs.existsSync(path.join(dir, 'gitignore')));
 });
 
 test('check: a warning for a theme that misses tokens of the look, none for a whole one', () => {

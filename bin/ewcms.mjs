@@ -2,13 +2,12 @@
 /**
  * ewcms: the site's commands (src/cli/cli.mjs). Run in the site's folder (npm scripts do):
  *
- *   ewcms dev [--port N] [--host] [--no-photos]
+ *   ewcms dev [--port N] [--host] [--no-photos]   (in an empty folder: a new site first)
  *   ewcms build [--no-photos]
  *   ewcms preview [--port N]
  *   ewcms check [--links] [--no-lint]
  *   ewcms photos
  *   ewcms publish-media
- *   ewcms new-site <dir>
  *
  * --root <dir> runs it for another site's folder. In a workspace with ewcms checked out, the
  * workspace's ewcms runs (src/cli/locate.mjs), whichever copy npm put in the site's node_modules.
@@ -63,7 +62,7 @@ async function main() {
   const root = path.resolve(opts.root || process.cwd());
 
   const USAGE = `ewcms ${ENGINE_VERSION}
-usage: ewcms <dev | build | preview | check | photos | publish-media | new-site <dir>> [options]`;
+usage: ewcms <dev | build | preview | check | photos | publish-media> [options]`;
 
   try {
     switch (command) {
@@ -86,10 +85,6 @@ usage: ewcms <dev | build | preview | check | photos | publish-media | new-site 
       }
       case 'publish-media':
         await cli.publishMedia(root);
-        break;
-      case 'new-site':
-        if (!args[0]) throw new Error('usage: ewcms new-site <dir>');
-        cli.newSite(args[0]);
         break;
       case '--version':
       case '-v':

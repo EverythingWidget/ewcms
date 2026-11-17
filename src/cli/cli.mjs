@@ -2,14 +2,14 @@
  * The ewcms command (bin/ewcms.mjs), one function per command; each takes the site's root.
  * Plain Node and Vite's JavaScript API: no shell, the same in PowerShell, cmd, WSL and macOS.
  *
- *   dev            photo sizes, then the dev server (pages, the editor at ?edit, /sandbox/)
+ *   dev            photo sizes, then the dev server (pages, the editor at ?edit, /sandbox/); in a
+ *                  folder with no site yet, first the starter (scaffold.mjs: only what is missing)
  *   build          photo sizes, then the static build (outDir, dist/)
  *   preview        serve the build
  *   check          content (every file, sources, bindings, motion), then lint (the theme's SCSS,
  *                  the site's own JS) when ESLint / Stylelint are installed; --links: the build's links
  *   photos         media/ → public/media sizes + .generated/media.json
  *   publish-media  upload media/ photos to Cloudflare R2 (.env.local R2_* keys), like the editor
- *   new-site <dir> a new site: a copy of starter/ (theme, content, public, functions, package.json)
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,6 +20,7 @@ import { loadSiteConfig, CONFIG_FILE, STARTER_THEME, legacyConfigWarning } from 
 import { buildPhotos } from './photos.mjs';
 import { checkLinks } from './check-links.mjs';
 import { registerSiteWidgets } from './site-widgets.mjs';
+import { isSiteFolder, scaffoldSite } from './scaffold.mjs';
 import { assertNoSettingsFolder, walkJson, loadContent } from './content.mjs';
 
 const VITE_CONFIGS = ['vite.config.js', 'vite.config.mjs', 'vite.config.ts'];
@@ -43,6 +44,13 @@ function warnLegacyConfig(root) {
 }
 
 export async function dev(root, opts = {}) {
+  // the first run in a folder with no site: the starter (the editor asks for the name, language, look)
+  if (!isSiteFolder(root)) {
+    const made = scaffoldSite(root);
+    console.log(
+      `New site in ${root}: ${made.length} starter file(s) (${CONFIG_FILE}, content/, theme/, public/, functions/)`,
+    );
+  }
   warnLegacyConfig(root);
   await photos(root, opts);
   const { createServer } = await import('vite');
@@ -414,23 +422,4 @@ export async function publishMedia(root) {
     `[publish-media] ${sent} new photo(s) in R2, ${failed} failed; their sizes: ${posixPath(path.relative(root, photosFile))}`,
   );
   if (failed) throw new Error(`${failed} photo(s) not uploaded`);
-}
-
-/** A new site in `dir`: a copy of starter/ (the same layout as the site: theme, content, public, functions, package.json). */
-export function newSite(dir, { name = path.basename(path.resolve(dir)) } = {}) {
-  dir = path.resolve(dir);
-  if (fs.existsSync(dir) && fs.readdirSync(dir).length) throw new Error(`${dir} is not empty`);
-  // copy the starter, including the README and the .gitkeep files that hold empty dirs in git
-  fs.cpSync(enginePath('starter'), dir, { recursive: true });
-  // the theme: the site's own copy of the look (tokens, fonts, theme.json), named after it
-  const themeFile = path.join(dir, 'theme', 'theme.json');
-  const theme = JSON.parse(fs.readFileSync(themeFile, 'utf8'));
-  fs.writeFileSync(themeFile, `${JSON.stringify({ ...theme, name }, null, 2)}\n`);
-  fs.renameSync(path.join(dir, 'gitignore'), path.join(dir, '.gitignore'));
-  const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
-  pkg.name = name.toLowerCase().replace(/[^a-z0-9-]+/g, '-');
-  pkg.dependencies.ewcms = `github:EverythingWidget/ewcms#v${ENGINE_VERSION}`;
-  fs.writeFileSync(path.join(dir, 'package.json'), `${JSON.stringify(pkg, null, 2)}\n`);
-  console.log(`New site in ${dir} (${CONFIG_FILE}, content/, theme/, public/).
-Next: add it to the workspace (or cd into it), npm install, npx ewcms dev`);
 }

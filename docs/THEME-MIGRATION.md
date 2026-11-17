@@ -11,7 +11,7 @@ colour, the body text, the nav, the button, …) need nothing: unset, a site loo
 ## 0.8.0: the engine has no theme of its own
 
 `theme-default/` is gone. The look (its tokens, fonts and `theme.json`) moved to `starter/theme/`,
-which `ewcms new-site` copies into a new site; the site owns that copy. The rest of the old
+which `ewcms dev` copies into a new site (a folder with no site files); the site owns that copy. The rest of the old
 theme was engine UI and now lives with the engine's code: the chrome (header, phone menu,
 curtain, footer, glass) in `src/client/styles/`, each built-in widget's look next to the widget
 (`src/render/widgets/<type>/style.scss`: hero, photo, form, album, list). Those read the site's
