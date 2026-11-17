@@ -3,7 +3,7 @@
  * Plain Node and Vite's JavaScript API: no shell, the same in PowerShell, cmd, WSL and macOS.
  *
  *   dev            photo sizes, then the dev server (pages, the editor at ?edit, /sandbox/); in a
- *                  folder with no site yet, first the starter (scaffold.mjs: only what is missing)
+ *                  folder with no site yet, first the default site (scaffold.mjs: only what is missing)
  *   build          photo sizes, then the static build (outDir, dist/)
  *   preview        serve the build
  *   check          content (every file, sources, bindings, motion), then lint (the theme's SCSS,
@@ -16,7 +16,12 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { ENGINE, enginePath, posixPath, ENGINE_VERSION } from './engine.mjs';
-import { loadSiteConfig, CONFIG_FILE, STARTER_THEME, legacyConfigWarning } from './site-config.mjs';
+import {
+  loadSiteConfig,
+  CONFIG_FILE,
+  DEFAULT_SITE_THEME,
+  legacyConfigWarning,
+} from './site-config.mjs';
 import { buildPhotos } from './photos.mjs';
 import { checkLinks } from './check-links.mjs';
 import { registerSiteWidgets } from './site-widgets.mjs';
@@ -47,14 +52,14 @@ function warnLegacyConfig(root) {
 }
 
 export async function dev(root, opts = {}) {
-  // the first run in a folder with no site: the starter (the editor asks for the name, language, look)
+  // the first run in a folder with no site: the default site (the editor asks for the name, language, look)
   if (!isSiteFolder(root)) {
     const pin = enginePin();
     if (!pin.exact)
       console.warn(`! the running ewcms's commit is unknown: package.json pins #${pin.ref}`);
     const made = scaffoldSite(root, { pin });
     console.log(
-      `New site in ${root}: ${made.length} starter file(s) (${CONFIG_FILE}, content/, theme/, public/, functions/), ewcms #${pin.ref}`,
+      `New site in ${root}: ${made.length} default-site file(s) (${CONFIG_FILE}, content/, theme/, public/, functions/), ewcms #${pin.ref}`,
     );
     // its packages, once: only the run that made package.json (later runs find a site)
     if (made.includes('package.json')) installSite(root);
@@ -289,14 +294,14 @@ export async function lintSite(root, log = console) {
   return out;
 }
 
-/** A starter tokens.scss up to its `// @optional` line: the tokens a theme must set. */
+/** The default site's tokens.scss up to its `// @optional` line: the tokens a theme must set. */
 export const requiredPart = (scss) => scss.split(/^\s*\/\/ @optional\b/m)[0];
 
 /** The custom properties a stylesheet sets (`--name:`), in order, once each. */
 const tokensSet = (scss) => [...new Set(scss.match(/(?<![\w-])--[\w-]+(?=\s*:)/g) || [])];
 
 /**
- * A warning for a site whose theme misses tokens of the look (ewcms starter/theme/tokens.scss):
+ * A warning for a site whose theme misses tokens of the look (ewcms default-site/theme/tokens.scss):
  * the engine has no theme of its own, so the chrome and widgets would read them unset. The
  * site's tokens.scss and overrides.scss count. The type scale (--type-*) on its own line: the
  * engine has defaults for it, and what site.json "type" sets counts. '' when none is missing.
@@ -311,9 +316,9 @@ export function themeWarning(site) {
     ...tokensSet(read('tokens.scss') + read('overrides.scss')),
     ...siteTypeTokens(site),
   ]);
-  const starter = fs.readFileSync(path.join(STARTER_THEME, 'tokens.scss'), 'utf8');
-  // (the starter's @optional tokens have the engine's defaults: not asked for)
-  const missing = tokensSet(requiredPart(starter)).filter((t) => !own.has(t));
+  const defaultSite = fs.readFileSync(path.join(DEFAULT_SITE_THEME, 'tokens.scss'), 'utf8');
+  // (the default site's @optional tokens have the engine's defaults: not asked for)
+  const missing = tokensSet(requiredPart(defaultSite)).filter((t) => !own.has(t));
   const look = missing.filter((t) => !t.startsWith('--type-'));
   const type = missing.filter((t) => t.startsWith('--type-'));
   const rel =
@@ -328,14 +333,14 @@ export function themeWarning(site) {
     out.push(
       `[check] ${rel}/tokens.scss misses ${look.length} token(s) of the look (${look.join(', ')}): ` +
         `ewcms has no default theme, so its chrome and widgets read them unset.${renamed} Copy them from ` +
-        `ewcms starter/theme/tokens.scss (and fonts.scss, theme.json): see ewcms docs/THEME-MIGRATION.md`,
+        `ewcms default-site/theme/tokens.scss (and fonts.scss, theme.json): see ewcms docs/THEME-MIGRATION.md`,
     );
   // the type scale has the engine's defaults (site-core/_tokens.scss): a site sees it, not unset
   if (type.length)
     out.push(
       `[check] ${rel}/tokens.scss doesn't set ${type.length} token(s) of the type scale ` +
         `(${type.join(', ')}): the engine's defaults apply. Copy them from ewcms ` +
-        `starter/theme/tokens.scss (with those defaults) and set the sizes there, or per site ` +
+        `default-site/theme/tokens.scss (with those defaults) and set the sizes there, or per site ` +
         `in site.json "type"`,
     );
   return out.join('\n');

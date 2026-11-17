@@ -3,7 +3,7 @@
 // (this folder: tokens, base, backdrop, layout, text), the engine's UI (glass, chrome: header,
 // phone menu, curtain, footer), the built-in widgets' looks (each widget module's style.scss),
 // then the site's overrides.scss. The look itself (colours, fonts) is the site's tokens: a new
-// site gets a copy of ewcms starter/theme/.
+// site gets a copy of ewcms default-site/theme/.
 @use 'site-layer/fonts' as site-fonts;
 @use 'tokens';
 @use 'site-layer/tokens' as site-tokens;

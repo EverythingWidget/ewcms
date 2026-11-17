@@ -1,5 +1,5 @@
 // The look's finer tokens (F86–F96): each look value in the engine's CSS reads a token whose
-// default is today's value, so a theme without them looks exactly as before. The starter's
+// default is today's value, so a theme without them looks exactly as before. The default site's
 // tokens.scss lists each one after its `// @optional` line, as a comment with that default;
 // ewcms check doesn't ask a theme for them.
 import { test } from 'node:test';
@@ -11,8 +11,8 @@ import { requiredPart, themeWarning } from '../src/cli/cli.mjs';
 import { loadSiteConfig } from '../src/cli/site-config.mjs';
 
 const root = new URL('..', import.meta.url).pathname;
-const starter = fs.readFileSync(path.join(root, 'starter/theme/tokens.scss'), 'utf8');
-const optional = starter.slice(requiredPart(starter).length);
+const defaultSite = fs.readFileSync(path.join(root, 'default-site/theme/tokens.scss'), 'utf8');
+const optional = defaultSite.slice(requiredPart(defaultSite).length);
 
 // the engine's own stylesheets: the core, the chrome and the built-in widgets' looks
 const styles = [
@@ -47,13 +47,13 @@ const optionalTokens = () =>
     [...optional.matchAll(/^\s*\/\/ (--[\w-]+): (.+);$/gm)].map((m) => [m[1], m[2].trim()]),
   );
 
-// a default of their own, said so in the starter's comment: the Form's Send (--fg, as before)
+// a default of their own, said so in the default site's comment: the Form's Send (--fg, as before)
 const own = {
   '--btn-fg': ['var(--fg)'],
   '--btn-hover-fg': ['var(--btn-fg, var(--fg))'],
 };
 
-test("the starter's optional tokens: each read by the engine with that default (today's look)", () => {
+test("the default site's optional tokens: each read by the engine with that default (today's look)", () => {
   const listed = optionalTokens();
   const used = fallbacks(css);
   assert.ok(Object.keys(listed).length >= 20);
@@ -78,13 +78,13 @@ test('F86: each text style reads its weight, tracking and colour', () => {
 test('F94: the body font is --f-body (no --f-mono left in the site CSS); check names the rename', () => {
   assert.doesNotMatch(css, /--f-mono/);
   assert.match(css, /body \{[^}]*font-family: var\(--f-body\)/);
-  assert.match(requiredPart(starter), /^ {2}--f-body: /m);
-  assert.doesNotMatch(starter, /--f-mono/);
+  assert.match(requiredPart(defaultSite), /^ {2}--f-body: /m);
+  assert.doesNotMatch(defaultSite, /--f-mono/);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-fbody-'));
   fs.mkdirSync(path.join(dir, 'theme'));
   fs.writeFileSync(
     path.join(dir, 'theme/tokens.scss'),
-    requiredPart(starter).replace('--f-body:', '--f-mono:'),
+    requiredPart(defaultSite).replace('--f-body:', '--f-mono:'),
   );
   assert.match(
     themeWarning(loadSiteConfig(dir)),
@@ -96,7 +96,7 @@ test('F94: the body font is --f-body (no --f-mono left in the site CSS); check n
 test('ewcms check asks only for the tokens before @optional', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-opt-'));
   fs.mkdirSync(path.join(dir, 'theme'));
-  fs.writeFileSync(path.join(dir, 'theme/tokens.scss'), requiredPart(starter));
+  fs.writeFileSync(path.join(dir, 'theme/tokens.scss'), requiredPart(defaultSite));
   assert.equal(themeWarning(loadSiteConfig(dir)), '');
   fs.rmSync(dir, { recursive: true, force: true });
 });
@@ -176,13 +176,13 @@ test('F93: selected text and the skip link read their colours', () => {
     assert.ok(base.includes(`var(${t})`), t);
 });
 
-test('F85: the starter has the type scale, the engine\'s defaults; check asks for it, site.json "type" counts', () => {
+test('F85: the default site has the type scale, the engine\'s defaults; check asks for it, site.json "type" counts', () => {
   const core = fs.readFileSync(path.join(root, 'src/client/styles/_tokens.scss'), 'utf8');
   const scale = [...core.matchAll(/^\s*(--type-[\w-]+): ([^;]+);/gm)];
   assert.equal(scale.length, 21);
-  const required = requiredPart(starter);
+  const required = requiredPart(defaultSite);
   for (const [, name, value] of scale)
-    assert.ok(required.includes(`  ${name}: ${value};`), `${name}: ${value} in the starter`);
+    assert.ok(required.includes(`  ${name}: ${value};`), `${name}: ${value} in the default site`);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-type-'));
   fs.mkdirSync(path.join(dir, 'theme'));
   fs.writeFileSync(

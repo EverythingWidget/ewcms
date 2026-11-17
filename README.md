@@ -8,11 +8,11 @@ with GSAP page transitions. The editor (Svelte 5) runs in the dev server only an
 
 A **site** is only its own things; ewcms is everything else:
 
-| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                                             | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                                                                                                                                                      |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content/` (JSON), `media/` (photos), `theme/` (`tokens.scss`, `fonts.scss`, `theme.json`), `public/` (fonts, favicon), `ewcms.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor` (the editor app and its Node `server/`), `src/cli` (the command, Vite plugin, build, photos, R2), `src/functions` (the contact form's Pages Function), `starter/` (what `ewcms dev` copies into a folder with no site, its theme too), `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
-| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                                                | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                                                                                                                                                          |
-| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                                         |                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                                             | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                                                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `content/` (JSON), `media/` (photos), `theme/` (`tokens.scss`, `fonts.scss`, `theme.json`), `public/` (fonts, favicon), `ewcms.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor` (the editor app and its Node `server/`), `src/cli` (the command, Vite plugin, build, photos, R2), `src/functions` (the contact form's Pages Function), `default-site/` (what `ewcms dev` copies into a folder with no site, its theme too), `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
+| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                                                | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                                                                                                                                                               |
+| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                                         |                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ## How ewcms works
 
@@ -40,13 +40,13 @@ flowchart LR
 - **functions** (`src/functions`): code that runs on Cloudflare, today only the contact form
   ([Contact form](#contact-form)).
 - **cli** (`src/cli`): the `ewcms` commands (`dev`, `build`, `check`; `dev` makes the site from
-  `starter/` in a folder with none) ([A site's commands](#a-sites-commands)).
+  `default-site/` in a folder with none) ([A site's commands](#a-sites-commands)).
 
 ## A site's commands
 
 ```bash
 ewcms dev [--port N] [--host] [--no-photos]   # photo sizes, then http://localhost:5173 (pages on the fly, hot reload; editor: ?edit)
-                                              # in a folder with no site: first the starter (only what is missing), then the editor asks for the name, language and look
+                                              # in a folder with no site: first the default site (only what is missing), then the editor asks for the name, language and look
 ewcms build [--no-photos]                     # photo sizes, then dist/ (one index.html per route + 404.html, sitemap.xml, _redirects)
 ewcms preview [--port N]                      # serve dist/ on http://localhost:4173
 ewcms check [--links] [--no-lint]             # content (every file, sources, bindings, motion) + the site's JS/SCSS; --links: dist/'s links
@@ -188,9 +188,9 @@ current item, the button, selected text and the skip link), `fonts.scss` (`@font
 `overrides.scss` (rules after the engine's styles) and `theme.json` (`themeColor`, `colorScheme`
 and `preloads`, put in every page's head at `<!--theme-meta-->` and `<!--theme-preloads-->` in
 `index.html`; `site.json` `themeColor` wins). The engine has no theme of its own: `ewcms dev`, in a
-folder with no site, copies `starter/theme/` (tokens, fonts, theme.json) into the new site, which
+folder with no site, copies `default-site/theme/` (tokens, fonts, theme.json) into the new site, which
 owns that copy, and
-`ewcms check` warns when a site's tokens miss any of the starter's before `// @optional` (the type
+`ewcms check` warns when a site's tokens miss any of the default site's before `// @optional` (the type
 scale on a line of its own: the engine has its defaults, and what `site.json` `type` sets counts;
 docs/THEME-MIGRATION.md). The
 files reach `main.scss` through the `site-layer` alias (`.generated/theme-layers`: a stub per
@@ -219,15 +219,15 @@ content/            ← all text, albums, projects, animation config (JSON)
                       plus <id>.schema.json: the properties of its items (see "Sources & schemas")
   strings.json      ← UI text of the templates: the menu's Menu / Close / clock label (header.*)
 media/              ← source photos (jpg), committed
-theme/              ← the site's look: tokens.scss, fonts.scss, overrides.scss, theme.json (ewcms dev copies ewcms's starter/theme/ into a new site)
+theme/              ← the site's look: tokens.scss, fonts.scss, overrides.scss, theme.json (ewcms dev copies ewcms's default-site/theme/ into a new site)
 ewcms.config.mjs     ← the site's folders
 functions/api/contact.js ← one line: export { onRequestPost } from 'ewcms/functions/contact'
 
 — in ewcms —
 bin/ewcms.mjs       ← the ewcms command (src/cli/cli.mjs: dev, build, check, …)
 vite.js             ← the Vite preset (ewcms/vite)
-starter/            ← what ewcms dev copies into a folder with no site (only what is missing): the same layout as the site (content/, theme/, public/, functions/, ewcms.config.mjs, package.json, empty media/ and widgets/)
-starter/content/    ← the starter site's content: Home (a short guide), About, 404; empty templates/ and sources/ folders, no photos
+default-site/            ← what ewcms dev copies into a folder with no site (only what is missing): the same layout as the site (content/, theme/, public/, functions/, ewcms.config.mjs, package.json, empty media/ and widgets/)
+default-site/content/    ← the default site site's content: Home (a short guide), About, 404; empty templates/ and sources/ folders, no photos
 src/cli/            ← the command, its build pipeline and photos (Node)
   cli.mjs           ← the commands
   engine.mjs        ← where the engine is; %EWCMS% / /@fs/ paths to its files
@@ -604,7 +604,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
   style's usual font size grows with the window between `min` and `max` (px; equal: fixed),
   with a line height `line` (× the size): `{ "heading": { "min": 38, "max": 104, "line": 0.92 } }`.
   Each left out is the theme's (`--type-<style>-min`, `-max`, `-lh`: the site's
-  `theme/tokens.scss`, the starter lists them; unset, the engine's in `_tokens.scss`; used by
+  `theme/tokens.scss`, the default site lists them; unset, the engine's in `_tokens.scss`; used by
   `_text.scss`); what `site.json` sets goes on the page's `:root`, so it changes the preview
   and the built site, never the editor. Defaults: title 72–250 / 0.82, heading 38–104 / 0.92,
   subheading 22–36 / 1.15, statement 30–72 / 1.06, paragraph 16 / 1.75, label 11 / 1.55,

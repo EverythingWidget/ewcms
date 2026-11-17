@@ -61,10 +61,10 @@ test("home's title: its own, else Site Settings' Home page title, else the site 
   assert.equal(home({}, { title: '' }), 'Site');
 });
 
-test('the starter Home has no title of its own: Site Settings names it (F08)', async () => {
+test('the default site Home has no title of its own: Site Settings names it (F08)', async () => {
   const { readFileSync } = await import('node:fs');
   const page = JSON.parse(
-    readFileSync(new URL('../starter/content/en/pages/index.json', import.meta.url), 'utf8'),
+    readFileSync(new URL('../default-site/content/en/pages/index.json', import.meta.url), 'utf8'),
   );
   assert.equal(page.meta?.title, undefined);
 });

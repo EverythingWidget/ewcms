@@ -7,7 +7,7 @@
  * breaks rather than spill out of the widget (not under Shrink to fit: it scales down instead).
  * Each style's weight, tracking and colour are tokens too (--type-<style>-weight, -tracking,
  * -color; the Label's case: --type-label-case): unset, the fallback here is today's look (inherit:
- * what is around the line, as before). A theme sets them (ewcms starter/theme/tokens.scss).
+ * what is around the line, as before). A theme sets them (ewcms default-site/theme/tokens.scss).
  */
 .text {
   min-width: 0;

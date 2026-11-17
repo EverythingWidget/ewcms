@@ -50,7 +50,7 @@ test('check: a leftover content/en/settings/ folder is an error that says where 
   assert.match(problems[0], /nav\.json is now header\.json/);
 });
 
-test('dev in a folder with no site: the starter, a site folder that passes check', async () => {
+test('dev in a folder with no site: the default site, a site folder that passes check', async () => {
   const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-new-')), 'My Site');
   assert.equal(isSiteFolder(dir), false);
   scaffoldSite(dir);
@@ -82,7 +82,7 @@ test('dev in a folder with no site: the starter, a site folder that passes check
     /^github:EverythingWidget\/ewcms#(v\d+\.\d+\.\d+|[0-9a-f]{40})$/,
   );
   assert.deepEqual(await checkContentOf(dir), []);
-  // the theme: the site's own copy of the starter's look (tokens, fonts, theme.json), named
+  // the theme: the site's own copy of the default site's look (tokens, fonts, theme.json), named
   assert.deepEqual(fs.readdirSync(path.join(dir, 'theme')).sort(), [
     'fonts.scss',
     'theme.json',
@@ -90,10 +90,10 @@ test('dev in a folder with no site: the starter, a site folder that passes check
   ]);
   const theme = JSON.parse(fs.readFileSync(path.join(dir, 'theme/theme.json'), 'utf8'));
   assert.equal(theme.name, 'My Site');
-  assert.equal(theme.colorScheme, 'dark'); // the starter's
+  assert.equal(theme.colorScheme, 'dark'); // the default site's
   assert.equal(
     fs.readFileSync(path.join(dir, 'theme/tokens.scss'), 'utf8'),
-    fs.readFileSync(enginePath('starter/theme/tokens.scss'), 'utf8'),
+    fs.readFileSync(enginePath('default-site/theme/tokens.scss'), 'utf8'),
   );
   assert.equal(themeWarning(loadSiteConfig(dir)), '');
   // no name yet: the editor asks for it (FirstRunModal.svelte)
@@ -123,12 +123,15 @@ test('check: a warning for a theme that misses tokens of the look, none for a wh
   const bare = tmp();
   assert.match(
     themeWarning(loadSiteConfig(bare)),
-    /theme\/tokens\.scss misses \d+ token\(s\) of the look \(--bg, --bg-2, .*starter\/theme.*THEME-MIGRATION/,
+    /theme\/tokens\.scss misses \d+ token\(s\) of the look \(--bg, --bg-2, .*default-site\/theme.*THEME-MIGRATION/,
   );
-  // a whole copy of the starter's tokens
+  // a whole copy of the default site's tokens
   const part = tmp();
   fs.mkdirSync(path.join(part, 'theme'));
-  fs.copyFileSync(enginePath('starter/theme/tokens.scss'), path.join(part, 'theme/tokens.scss'));
+  fs.copyFileSync(
+    enginePath('default-site/theme/tokens.scss'),
+    path.join(part, 'theme/tokens.scss'),
+  );
   assert.equal(themeWarning(loadSiteConfig(part)), '');
   // a partial layer (a site of before: only what differed from the engine's theme)
   const partial = tmp();
@@ -143,7 +146,7 @@ test('check: a warning for a theme that misses tokens of the look, none for a wh
   // overrides.scss counts too
   fs.writeFileSync(
     path.join(partial, 'theme/overrides.scss'),
-    fs.readFileSync(enginePath('starter/theme/tokens.scss'), 'utf8'),
+    fs.readFileSync(enginePath('default-site/theme/tokens.scss'), 'utf8'),
   );
   assert.equal(themeWarning(loadSiteConfig(partial)), '');
   for (const d of [bare, part, partial]) fs.rmSync(d, { recursive: true, force: true });

@@ -5,7 +5,7 @@ import * as sass from 'sass';
 
 const dir = (p) => new URL(p, import.meta.url).pathname;
 const css = sass.compileString("@use 'tokens';", {
-  loadPaths: [dir('../starter/theme/')],
+  loadPaths: [dir('../default-site/theme/')],
   importers: [
     {
       findFileUrl: (u) =>

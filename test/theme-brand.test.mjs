@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 
 test('--brand is the site accent, fixed; theme.js tweens --accent only', () => {
-  assert.match(read('starter/theme/tokens.scss'), /--brand: var\(--site-accent, #cfc8b8\);/);
+  assert.match(read('default-site/theme/tokens.scss'), /--brand: var\(--site-accent, #cfc8b8\);/);
   assert.match(
     read('src/render/shell/layout.js'),
     /--site-accent: \$\{esc\(ctx\.site\.accent \|\| accent\)\}/,

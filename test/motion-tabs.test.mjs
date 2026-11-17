@@ -7,7 +7,7 @@ import { DEFAULT_TIMING, defaultsProblems } from '../src/render/layout/motion.js
 
 const read = (p) => readFileSync(new URL(`../src/${p}`, import.meta.url), 'utf8');
 const anims = JSON.parse(
-  readFileSync(new URL('../starter/content/animations.json', import.meta.url)),
+  readFileSync(new URL('../default-site/content/animations.json', import.meta.url)),
 );
 const esrc = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
 
@@ -172,8 +172,7 @@ test('a one-shot scroll reveal already on screen at load plays without scrolling
   assert.match(t, /\{ trigger, start, once: true, onRefresh \}/);
 });
 
-
-test('G16: Saved is set before markSaved, and the badge keeps Unsaved changes\' width', () => {
+test("G16: Saved is set before markSaved, and the badge keeps Unsaved changes' width", () => {
   const main = readFileSync(new URL('../src/editor/main.js', import.meta.url), 'utf8');
   const save = main.slice(main.indexOf('await source.saveDev(sent);'), main.indexOf('saves++;'));
   assert.ok(save.indexOf('ui.saved = true;') < save.indexOf('store.markSaved('));

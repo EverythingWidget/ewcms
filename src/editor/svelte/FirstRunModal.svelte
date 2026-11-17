@@ -1,6 +1,6 @@
 <!--
-  First run (a site ewcms dev just made from the starter, src/cli/scaffold.mjs): the site's name,
-  language and look, asked once. Opened by App.svelte when site.json has no name (the starter's
+  First run (a site ewcms dev just made from the default site, src/cli/scaffold.mjs): the site's name,
+  language and look, asked once. Opened by App.svelte when site.json has no name (the default site's
   is empty): the files say whether it was asked, nothing else does. Start writes them to
   content/site.json (name, lang, accent) and saves; Later closes it (asked again next time,
   while the name is empty). openFirstRun() (modals.svelte.js), mounted once in App.svelte.
@@ -16,7 +16,7 @@
   let { live, actions } = $props();
 
   const uid = $props.id();
-  // the look: the accent colour (site.json accent), the starter's first
+  // the look: the accent colour (site.json accent), the default site's first
   const LOOKS = [
     ['#cfc8b8', 'Sand'],
     ['#b8c8cf', 'Mist'],

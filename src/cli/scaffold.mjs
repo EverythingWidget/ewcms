@@ -1,10 +1,10 @@
 /**
- * A new site from the engine's starter/ (the same flat layout as a site: ewcms.config.mjs,
+ * A new site from the engine's default-site/ (the same flat layout as a site: ewcms.config.mjs,
  * package.json, gitignore, content/, theme/, public/, functions/, empty media/ and widgets/).
  * `ewcms dev` runs it in a folder with no site files yet (isSiteFolder): the first run makes
  * the site. Only what is missing is copied, nothing is overwritten (a package.json or README
  * already there stays as it is). The editor then asks once for the name, language and look
- * (FirstRunModal.svelte): starter/content/site.json has no name until then.
+ * (FirstRunModal.svelte): default-site/content/site.json has no name until then.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -12,9 +12,9 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { ENGINE, enginePath, ENGINE_VERSION } from './engine.mjs';
 import { CONFIG_FILE, LEGACY_CONFIG_FILE, DEFAULTS } from './site-config.mjs';
 
-export const STARTER = enginePath('starter');
+export const DEFAULT_SITE = enginePath('default-site');
 
-// starter files named otherwise in the site (npm drops a package's .gitignore)
+// default-site files named otherwise in the site (npm drops a package's .gitignore)
 const RENAMED = { gitignore: '.gitignore' };
 
 const SHA = /^[0-9a-f]{40}$/;
@@ -101,18 +101,18 @@ export function isSiteFolder(root) {
   ].some((f) => fs.existsSync(path.join(root, f)));
 }
 
-/** The starter's files, from the starter's root, "/"-separated. */
-function starterFiles(dir = STARTER, rel = '', out = []) {
+/** The default site's files, from the default site's root, "/"-separated. */
+function defaultSiteFiles(dir = DEFAULT_SITE, rel = '', out = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const r = rel ? `${rel}/${e.name}` : e.name;
-    if (e.isDirectory()) starterFiles(path.join(dir, e.name), r, out);
+    if (e.isDirectory()) defaultSiteFiles(path.join(dir, e.name), r, out);
     else out.push(r);
   }
   return out;
 }
 
 /**
- * The starter's files root misses, copied (nothing overwritten): the files made, "/"-separated.
+ * The default site's files root misses, copied (nothing overwritten): the files made, "/"-separated.
  * A package.json made is named after the folder and pins this engine (enginePin: the code that
  * runs, not an older release); theme.json too is named.
  */
@@ -122,13 +122,13 @@ export function scaffoldSite(
 ) {
   root = path.resolve(root);
   const made = [];
-  for (const rel of starterFiles()) {
+  for (const rel of defaultSiteFiles()) {
     const parts = rel.split('/');
     const to = parts.map((p, i) => (i === parts.length - 1 ? RENAMED[p] || p : p)).join('/');
     const dest = path.join(root, to);
     if (fs.existsSync(dest)) continue;
     fs.mkdirSync(path.dirname(dest), { recursive: true });
-    fs.copyFileSync(path.join(STARTER, rel), dest, fs.constants.COPYFILE_EXCL);
+    fs.copyFileSync(path.join(DEFAULT_SITE, rel), dest, fs.constants.COPYFILE_EXCL);
     made.push(to);
   }
   const edit = (rel, fn) => {

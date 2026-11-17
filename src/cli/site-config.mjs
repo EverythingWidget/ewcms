@@ -11,7 +11,7 @@
  *     outDir: 'dist',                  // the build
  *     themeDir: 'theme',               // the site's look: tokens.scss, fonts.scss,
  *                                      // overrides.scss, theme.json (each optional; a new site
- *                                      // gets a copy of the engine's starter/theme/)
+ *                                      // gets a copy of the engine's default-site/theme/)
  *     widgets: ['./widgets/quote'],    // the site's own widgets (widget modules), after the built-ins
  *     repo: { owner, name },           // GitHub links when the git remote names none
  *   };
@@ -62,7 +62,7 @@ export const DEFAULTS = Object.freeze({
 export const THEME_LAYERS = Object.freeze(['fonts.scss', 'tokens.scss', 'overrides.scss']);
 
 /** The theme a new site starts from (ewcms dev copies it into a folder with no site: scaffold.mjs): the look's tokens, fonts, theme.json. */
-export const STARTER_THEME = enginePath('starter', 'theme');
+export const DEFAULT_SITE_THEME = enginePath('default-site', 'theme');
 
 const require = createRequire(import.meta.url);
 const cache = new Map();

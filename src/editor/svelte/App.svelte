@@ -134,7 +134,7 @@
   // The tab, Header/Footer, the open Sources item and library animation in the URL (persist.js).
   $effect(writeUrl);
 
-  // a new site (site.json with no name: the starter's, src/cli/scaffold.mjs): its name,
+  // a new site (site.json with no name: the default site's, src/cli/scaffold.mjs): its name,
   // language and look, asked once per visit (FirstRunModal.svelte; Later asks again next time)
   let askedFirstRun = false;
   $effect(() => {

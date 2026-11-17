@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { themeHead, writeThemeLayers } from '../src/cli/vite-plugin-static-site.mjs';
-import { loadSiteConfig, STARTER_THEME } from '../src/cli/site-config.mjs';
+import { loadSiteConfig, DEFAULT_SITE_THEME } from '../src/cli/site-config.mjs';
 import { enginePath } from '../src/cli/engine.mjs';
 
 const theme = {
@@ -65,17 +65,17 @@ test('loadSiteConfig: the site theme folder, its style files and theme.json', ()
   for (const d of [root, other, bare]) fs.rmSync(d, { recursive: true, force: true });
 });
 
-test('the starter theme: every colour in its tokens; the engine styles none of its own', () => {
-  const starter = JSON.parse(fs.readFileSync(path.join(STARTER_THEME, 'theme.json'), 'utf8'));
-  assert.equal(starter.version, 1);
-  assert.equal(starter.colorScheme, 'dark');
+test('the default site theme: every colour in its tokens; the engine styles none of its own', () => {
+  const defaultSite = JSON.parse(
+    fs.readFileSync(path.join(DEFAULT_SITE_THEME, 'theme.json'), 'utf8'),
+  );
+  assert.equal(defaultSite.version, 1);
+  assert.equal(defaultSite.colorScheme, 'dark');
   // what was the engine's theme-default: its chrome and the widgets' looks read the site's tokens
   const files = [
     'src/client/styles/_chrome.scss',
     'src/client/styles/_glass.scss',
-    ...['hero', 'photo', 'form', 'album'].map(
-      (w) => `src/render/widgets/${w}/style.scss`,
-    ),
+    ...['hero', 'photo', 'form', 'album'].map((w) => `src/render/widgets/${w}/style.scss`),
   ].map((f) => enginePath(f));
   for (const f of files) {
     const code = fs.readFileSync(f, 'utf8').replace(/\/\/.*$/gm, '');

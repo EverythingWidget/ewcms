@@ -5,12 +5,12 @@
 The body and UI font token is `--f-body` (it was `--f-mono`, whatever the font). No alias: rename
 it in `theme/tokens.scss`, and every `var(--f-mono)` in `theme/overrides.scss`, in the commit
 that bumps the pin. `npx ewcms check` says `--f-mono is now --f-body` until it's done. The
-optional tokens after the starter's `// @optional` line (the type styles' weight, tracking and
+optional tokens after the default site's `// @optional` line (the type styles' weight, tracking and
 colour, the body text, the nav, the button, …) need nothing: unset, a site looks as before.
 
 ## 0.8.0: the engine has no theme of its own
 
-`theme-default/` is gone. The look (its tokens, fonts and `theme.json`) moved to `starter/theme/`,
+`theme-default/` is gone. The look (its tokens, fonts and `theme.json`) moved to `default-site/theme/`,
 which `ewcms dev` copies into a new site (a folder with no site files); the site owns that copy. The rest of the old
 theme was engine UI and now lives with the engine's code: the chrome (header, phone menu,
 curtain, footer, glass) in `src/client/styles/`, each built-in widget's look next to the widget
@@ -21,18 +21,18 @@ tokens, exactly as before. Nothing is layered over an engine theme anymore: a si
 **Before you bump a site's ewcms pin to it**, give the site its own copy of the look, or its
 colours, fonts and head meta go missing:
 
-1. `theme/tokens.scss`: copy `starter/theme/tokens.scss` from this release (it is the old
+1. `theme/tokens.scss`: copy `default-site/theme/tokens.scss` from this release (it is the old
    `theme-default/styles/_tokens.scss`), then put the site's own values back over it (a site
    that only set what differed keeps those lines; every other token comes from the copy).
 2. `theme/fonts.scss`: if the site used the engine's DM Mono / Momo Trust Display, copy
-   `starter/theme/fonts.scss` (its own `@font-face` rules stay).
+   `default-site/theme/fonts.scss` (its own `@font-face` rules stay).
 3. `theme/theme.json`: it is no longer merged over an engine one. Add any key the site took from
-   the engine (`colorScheme`, `themeColor`, `preloads`) from `starter/theme/theme.json`.
-4. `npx ewcms check`: no theme warning (it lists any token of the starter's that the site's
+   the engine (`colorScheme`, `themeColor`, `preloads`) from `default-site/theme/theme.json`.
+4. `npx ewcms check`: no theme warning (it lists any token of the default site's that the site's
    `tokens.scss` / `overrides.scss` misses, the type scale `--type-<style>-min`, `-max`, `-lh`
    on its own line: those have the engine's defaults, and what `site.json` `type` sets counts),
    then compare every page, desktop and phone, before and after (screenshots). The tokens after
-   the starter's `// @optional` line (each text style's weight, tracking and colour, the body
+   the default site's `// @optional` line (each text style's weight, tracking and colour, the body
    text, the nav, the button, …) are comments with the engine's defaults: not asked for.
 
 An old full-copy theme (`theme/styles/_look.scss`, below) is no longer special: its `styles/`
