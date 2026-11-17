@@ -4,9 +4,9 @@ Releases are tagged `vX.Y.Z` on main; a site pins one in its `package.json`
 (`"ewcms": "github:EverythingWidget/ewcms#vX.Y.Z"`). Breaking changes are marked **Breaking** and
 say what a site must do before it bumps its pin.
 
-## Unreleased
+## 0.10.0 (2026-11-17)
 
-### Breaking: what a site must do before bumping
+### Breaking: what a site must do before bumping to 0.10.0
 
 - **Breaking: `starter/` is `default-site/`.** The engine's default site (what `ewcms dev` copies
   into a folder with no site) moved; `STARTER_THEME` is `DEFAULT_SITE_THEME` and the scaffold's
