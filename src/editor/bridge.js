@@ -69,9 +69,6 @@ html.__ed-arrange .hero__title { z-index: 5; }
 :is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]):not([data-ed-open]) { pointer-events: none; }
 :is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])[data-ed-open] { outline: 2px solid ${T.accent}; outline-offset: -2px; }
 :is(html.__ed-arrange, html.__ed-animate) [data-footer]:not(:has([data-sec])) { min-height: 96px; }
-:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]) > .__ed-part-open { position: absolute; left: 8px; top: 8px; z-index: 30; padding: 4px 8px; border: 0; border-radius: ${T.radiusSm}; font: 500 ${T.fsXs}/1 ${T.font}; letter-spacing: .04em; background: ${T.black}; color: ${T.white}; cursor: pointer; pointer-events: auto !important; }
-:is(html.__ed-arrange, html.__ed-animate) [data-header] > .__ed-part-open { top: auto; bottom: -28px; }
-:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])[data-ed-open] > .__ed-part-open { background: ${T.accent}; color: ${T.onAccent}; pointer-events: none !important; }
 html.__ed-animate [data-anim], html.__ed-animate [data-anim] *, html.__ed-animate [data-widget], html.__ed-animate [data-widget] * { cursor: pointer !important; }
 /* a press on a widget's link or button only picks the widget: the press misses it (no :active, :hover or focus look), the widget gets it; Alt+click still clicks through (__ed-alt); a clickable template item's widgets: overlay.js finds them by position */
 /* a link saved as the editor's own preview address (F50): marked, a click asks for it again (F107) */
@@ -816,19 +813,6 @@ export function createBridge({
     // (its colours: ui-tokens.js, read from the editor's styles/_tokens.scss)
     style.textContent = INJECTED_CSS;
     doc.head.append(style);
-    for (const [id, sel] of [
-      ['header', '[data-header]'],
-      ['footer', '[data-footer]'],
-    ]) {
-      const part = doc.querySelector(sel);
-      if (!part || part.querySelector(':scope > .__ed-part-open')) continue;
-      const b = doc.createElement('button');
-      b.type = 'button';
-      b.className = '__ed-part-open';
-      b.textContent = id === 'header' ? 'Header' : 'Footer';
-      b.setAttribute('aria-label', `Edit the ${b.textContent}`);
-      part.prepend(b);
-    }
     const mk = (cls) => {
       const b = doc.createElement('div');
       b.className = `__ed-box ${cls}`;
@@ -874,22 +858,14 @@ export function createBridge({
       (e) => {
         if (clicks === 'visitor' || e.altKey) return;
         const t = e.target instanceof win.Element ? e.target : null;
-        // A site part (the header, the footer): a click on its chip (locked) opens it, picking
-        // nothing in it yet (the whole box used to take the click: a stray one left the page's
-        // edit mode, G12); a click outside it (open) locks it again (the page is picked
-        // from the next click)
-        for (const [id, sel] of [
-          ['header', '[data-header]'],
-          ['footer', '[data-footer]'],
-        ]) {
-          const part = doc.querySelector(sel);
-          const open = !!part?.hasAttribute('data-ed-open');
-          if (part && (open ? !part.contains(t) : t?.closest?.('.__ed-part-open') && part.contains(t))) {
-            e.preventDefault();
-            e.stopPropagation();
-            emit('part', id, !open);
-            return;
-          }
+        // A site part (the header, the footer) opens only from the pages list (Edit mode) and
+        // locks again with Done: a locked one takes no click (CSS: no pointer events); while
+        // one is open, a click outside it does nothing (finish it first, then pick the page)
+        const open = doc.querySelector('[data-header][data-ed-open], [data-footer][data-ed-open]');
+        if (open && !open.contains(t)) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
         }
         if (clicks === 'arrange') {
           if (t?.closest('[contenteditable]')) {

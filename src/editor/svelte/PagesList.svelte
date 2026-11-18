@@ -135,7 +135,7 @@
     setMode('edit');
   }
   // browse: a click only selects the row and shows its page; Header or Footer (Site): opens it
-  // for editing, as a click on its chip in the preview does (F114)
+  // for editing, the only way to open it (F114; the preview has no chip)
   function pick(row) {
     sel = row.id;
     if (row.part && !row.itemTemplate) return open(row);
@@ -373,7 +373,9 @@
         aria-label={at === 0
           ? `Move ${r.title} (drag: its place in the menu, or into Not linked)`
           : `Move ${r.title} (drag into the list above: into the menu)`}
-        title={at === 0 ? 'Drag the row to reorder, or into Not linked' : 'Drag the row into the menu list'}
+        title={at === 0
+          ? 'Drag the row to reorder, or into Not linked'
+          : 'Drag the row into the menu list'}
         ><i class="fa-solid fa-grip-vertical" aria-hidden="true"></i></button
       >
     {:else if r.self || r.template}

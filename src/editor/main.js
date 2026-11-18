@@ -444,7 +444,7 @@ function applyPart() {
   overlay.refresh();
 }
 
-/** Esc or a click outside it: the site part locks again, the page shown is the target. */
+/** Esc or Done: the site part locks again, the page shown is the target. */
 function lockPart() {
   if (ui.target?.kind !== 'part') return false;
   ui.target = shownPage();
@@ -825,11 +825,6 @@ bridge.on('richDone', (edit) => {
   // a template Text: Lists that use it (the template preview too) render once the edit ends
   const id = templateIdOf(String(edit || '').split('#')[0]);
   if (id) pushDraft({ templates: [id] });
-});
-// a click on a locked site part opens it (the Header or Footer is the target), one outside locks it
-bridge.on('part', (id, open) => {
-  if (!open) return void lockPart();
-  pickTarget(ui.pages.find((i) => i.kind === 'part' && i.id === id));
 });
 // After the handlers above: the selection and scroll from before a reload.
 bridge.on('navigate', restorePlace);
