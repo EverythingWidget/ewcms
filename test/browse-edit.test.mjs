@@ -128,7 +128,7 @@ test('pages list: no edit pens (their 24px slot kept), the page in the preview i
   );
   // browse: a click only selects and shows; Header or Footer open for editing (F114)
   assert.match(list, /function open\(row\) \{\s*show\(row\);\s*setMode\('edit'\);/);
-  assert.match(list, /if \(row\.part && !row\.itemTemplate\) return open\(row\);/);
+  // (a Header or Footer row opens it: pages-list-head.test.mjs)
 });
 
 test('entryShows: the page entry the preview shows (a page, an item page, a template)', () => {

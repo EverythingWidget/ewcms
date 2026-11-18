@@ -278,9 +278,7 @@ test('validation: the layout, then each widget against its type', () => {
     /"body\.0\.style" must be one of title[\s\S]*"body\.0\.text\.0\.marks" must/,
   );
   assert.equal(WIDGET_TYPES.about, undefined); // the Bio widget is gone (v0.1.17)
-  assert.match(one({ type: 'grid' })[0], /Photo grid \("grid"\) is gone/);
-  assert.match(one({ type: 'projects' })[0], /Project list \("projects"\) is gone/);
-  assert.match(one({ type: 'albums' })[0], /Album cards \("albums"\) is gone: use a List/);
+  // Photo grid, Project list, Album cards: list-widget.test.mjs
   assert.match(one({ type: 'text', config: { enabled: 1 } })[0], /true or false/);
   const twice = section([widget('text'), widget('text')]);
   twice.widgets[1].id = twice.widgets[0].id;

@@ -56,7 +56,7 @@ test("F107: a link saved as the editor's preview address is marked, and one clic
   // a first click on a link opens it too (the widget need not be picked first: G12)
   assert.match(b, /return body && id && !moved \? \{ a, body \} : null;/);
   const tb = read('editor/svelte/WidgetToolbar.svelte');
-  assert.match(tb, /linkDraft = isDraftHref\(href\);\s*linkText = linkDraft \? '' : href;/);
+  // (its box empties a preview address: link-paste.test.mjs F50)
   assert.match(
     tb,
     /\{:else if linkDraft && !linkText\.trim\(\)\}<p class="btb__err" role="status">\s*\{DRAFT_HREF\}/,

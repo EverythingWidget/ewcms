@@ -12,7 +12,6 @@ test('InfoHelp: 16px circle, 11px icon, the surface roles, a 232px note of its o
   assert.match(s, /font-size: var\(--fs-sm\)/); // 11px
   assert.match(s, /color: var\(--text-quiet\);/);
   assert.match(s, /color: var\(--text-strong\);\s*background: var\(--field-hover\);/);
-  assert.match(s, /@include surface\(var\(--c-help-note\)\);/);
   assert.doesNotMatch(s, /ih-bg|\bbg\b =/, 'no bg prop');
   assert.match(s, /width: 232px/);
   assert.match(s, /font: 400 var\(--fs-base\) \/ 18px var\(--f-mono\)/);
@@ -21,6 +20,21 @@ test('InfoHelp: 16px circle, 11px icon, the surface roles, a 232px note of its o
   assert.match(s, /e\.key !== 'Escape'/);
   assert.match(s, /'pointerdown', away/);
   assert.match(s, /const up = /, 'flips above near the bottom');
+});
+
+test("the help note: a slate-blue surface, a 1px ring (also on the arrow), the pop-ups' shadow", () => {
+  const t = readFileSync(new URL('../src/editor/styles/_tokens.scss', import.meta.url), 'utf8');
+  assert.match(t, /--c-help-note: #16202e;/);
+  assert.match(t, /--c-help-note-ring: #26324a;/);
+  assert.match(t, /--c-text: var\(--sand-50\);/);
+  assert.match(t, /--sand-50: #f2efe9;/);
+  const s = src('InfoHelp.svelte');
+  assert.match(s, /@include surface\(var\(--c-help-note\)\);/);
+  assert.match(s, /box-shadow:\s*0 0 0 1px var\(--c-help-note-ring\),\s*var\(--shadow-pop\);/);
+  assert.match(s, /box-shadow: -1px -1px 0 0 var\(--c-help-note-ring\);/);
+  assert.match(s, /box-shadow: 1px 1px 0 0 var\(--c-help-note-ring\);/);
+  assert.match(s, /:global\(b\) \{\s*color: var\(--text-strong\);/);
+  assert.doesNotMatch(s, /border: 1px|border: solid/);
 });
 
 test('placed on Source, Height / Width and the Curtain', () => {
@@ -131,7 +145,6 @@ test('Media: one summary after several uploads, file names on tiles, a prompt fo
   assert.match(m, /class="media-alt-missing">None yet: please add one/);
   assert.match(m, /toast\('This photo has no alt text yet'/);
 });
-
 
 test('G19: the grid tip says Shift+Arrow pushes the linked widgets below', () => {
   const tb = src('WidgetToolbar.svelte');

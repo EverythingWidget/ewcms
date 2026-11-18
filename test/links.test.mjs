@@ -246,7 +246,7 @@ test('editor: phone links are separate; the first phone move brings the desktop 
   assert.equal(flat(widget()).pos.row, 30);
 });
 
-test('fit text: per widget, one boolean; no site typography', () => {
+test('fit text: per widget, one boolean', () => {
   const t = (more) => ({
     id: 'w-aaaa',
     type: 'text',
@@ -269,9 +269,4 @@ test('fit text: per widget, one boolean; no site typography', () => {
   assert.deepEqual(checkScale({ type: 'text' }), []);
   assert.equal(checkScale({ type: 'text', fit: true }).length, 1);
   assert.match(checkScale({ type: 'text', fit: true })[0], /a line's now/);
-  // the cell-based "typography" is gone: site.json "type" sizes the styles (type-scale.test.mjs)
-  assert.match(
-    checkContent('site.json', { version: 1, name: 'x', url: 'y', typography: {} })[0],
-    /"typography" is gone/,
-  );
 });
