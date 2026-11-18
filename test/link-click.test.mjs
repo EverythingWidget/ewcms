@@ -84,6 +84,8 @@ test('G12: a locked Header or Footer takes no click; it opens from the pages lis
   const b = read('editor/bridge.js');
   assert.doesNotMatch(b, /__ed-part-open/);
   assert.doesNotMatch(read('editor/main.js'), /bridge\.on\('part'/);
+  // nor Esc: Done is the way out
+  assert.doesNotMatch(read('editor/svelte/App.svelte'), /lockPart/);
   // open: a click outside it does nothing (Done locks it)
   assert.match(
     b,

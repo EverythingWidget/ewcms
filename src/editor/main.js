@@ -236,7 +236,6 @@ mount(App, {
       showSpecimen,
       pickTarget,
       returnToOrigin,
-      lockPart,
       save,
       refreshStatus,
       pagesOp,
@@ -444,7 +443,7 @@ function applyPart() {
   overlay.refresh();
 }
 
-/** Esc or Done: the site part locks again, the page shown is the target. */
+/** Done (toBrowse): the site part locks again, the page shown is the target. */
 function lockPart() {
   if (ui.target?.kind !== 'part') return false;
   ui.target = shownPage();

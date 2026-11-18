@@ -201,8 +201,8 @@
         if (previewClicks() === 'arrange' && !inField) {
           if (ui.link) selectLink(null);
           else if (ui.widget || ui.section || ui.multi.length || ui.selSection) deselect();
-          else if (!picked) actions.lockPart(); // nothing picked, a site part open: locked
-        } else if (previewClicks() === 'animate' && !inField && !picked) actions.lockPart();
+        }
+        // an open Header or Footer stays open: Done is the way out
       }
     }
   }
