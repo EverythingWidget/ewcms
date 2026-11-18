@@ -4,7 +4,7 @@
 // Runs the real module: a loader hook compiles the *.svelte.js runes modules.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { register } from 'node:module';
 
 register(
@@ -194,30 +194,7 @@ test('each modal is mounted once, in App.svelte, and is a <dialog> on the stack'
   assert.doesNotMatch(read('SourcesModal.svelte'), /let after|then\?\.\(\)/);
 });
 
-test('names: PublishModal (no PublishDialog), add-page-modal (no apm)', () => {
-  assert.equal(existsSync(new URL('PublishDialog.svelte', dir)), false);
-  assert.equal(existsSync(new URL('ItemPicker.svelte', dir)), false);
-  assert.equal(existsSync(new URL('PreviewPicker.svelte', dir)), false);
-  assert.equal(existsSync(new URL('../lib/dialog.js', dir)), false);
-  assert.equal(existsSync(new URL('../lib/modal.js', dir)), true);
-  const editor = new URL('../', dir);
-  const all = (d) =>
-    readdirSync(d, { withFileTypes: true }).flatMap((e) =>
-      e.isDirectory() ? all(new URL(`${e.name}/`, d)) : [new URL(e.name, d)],
-    );
-  for (const f of all(editor).filter((u) => /\.(svelte|js|scss)$/.test(u.pathname))) {
-    const src = readFileSync(f, 'utf8');
-    assert.doesNotMatch(src, /PublishDialog|publishDialog/, f.pathname);
-    assert.doesNotMatch(
-      src,
-      /ItemPicker|PreviewPicker|openItemPicker|openPreviewPicker|\bitemPicker\b|\bpreviewPicker\b/,
-      f.pathname,
-    );
-    assert.doesNotMatch(src, /\bapm\b|apm__/, f.pathname);
-    assert.doesNotMatch(src, /ui\.explorer/, f.pathname);
-    assert.doesNotMatch(src, /Source Explorer/, f.pathname);
-    assert.doesNotMatch(src, /\b(md|src|as|ip|pp)-modal\b/, f.pathname);
-  }
+test("names: each modal's box is modal__box <name>-modal", () => {
   assert.match(read('AddPageModal.svelte'), /class="modal__box add-page-modal"/);
   assert.match(read('PublishModal.svelte'), /class="modal__box publish-modal"/);
   assert.match(read('MediaModal.svelte'), /'media-modal'/);

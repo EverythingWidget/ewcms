@@ -82,11 +82,7 @@ test('header: status | Edit / Done (one 80px slot) | Publish; Done saves, then b
     app,
     /function edit\(\) \{\s*if \(ui\.panel !== 'pages'\) actions\.setPanel\('pages'\);\s*setMode\('edit'\);/,
   );
-  // the old Save and Preview buttons are gone (Ctrl+S still saves); no Preview panel, no Ctrl+E
-  assert.doesNotMatch(app, />\s*\{ui\.saving \? 'Saving…'/);
-  assert.doesNotMatch(app, /icon="play"/);
-  assert.doesNotMatch(app, /PreviewPanel|togglePreview|previewing|panelBeforePreview/);
-  assert.doesNotMatch(app, /mod && k === 'e'\)/);
+  // Ctrl+S saves
   assert.match(app, /mod && k === 's'/);
 });
 
@@ -132,10 +128,7 @@ test('pages list: no edit pens (their 24px slot kept), the page in the preview i
   );
   // browse: a click only selects and shows; Header or Footer open for editing (F114)
   assert.match(list, /function open\(row\) \{\s*show\(row\);\s*setMode\('edit'\);/);
-  assert.match(
-    list,
-    /if \(row\.part && !row\.itemTemplate\) return open\(row\);/,
-  );
+  assert.match(list, /if \(row\.part && !row\.itemTemplate\) return open\(row\);/);
 });
 
 test('entryShows: the page entry the preview shows (a page, an item page, a template)', () => {

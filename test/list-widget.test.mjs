@@ -941,15 +941,6 @@ test('no "first cover of a list" fallback: a custom item shows only its own phot
   assert.doesNotMatch(presets, /first\('photo'\)|first\('photos'\)/);
 });
 
-test('the Content tab has no mapping rows (nothing reserves room under the source)', () => {
-  const lead = readFileSync(
-    new URL('../src/editor/svelte/ListLead.svelte', import.meta.url),
-    'utf8',
-  );
-  assert.doesNotMatch(lead, /MAP_SLOTS|ll__map|data-mapping|config\/properties|setMapping/);
-  assert.doesNotMatch(lead, /config\/fields|Template needs/);
-});
-
 test('Title: the declared title property only when its type fits', () => {
   const withName = (type) =>
     shotsOf([

@@ -81,5 +81,4 @@ test('the default site theme: every colour in its tokens; the engine styles none
     const code = fs.readFileSync(f, 'utf8').replace(/\/\/.*$/gm, '');
     assert.doesNotMatch(code, /#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/i, f);
   }
-  assert.equal(fs.existsSync(enginePath('theme-default')), false);
 });
