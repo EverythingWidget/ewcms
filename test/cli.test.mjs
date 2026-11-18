@@ -50,7 +50,7 @@ test('check: a leftover content/en/settings/ folder is an error that says where 
   assert.match(problems[0], /nav\.json is now header\.json/);
 });
 
-test('dev in a folder with no site: the default site, a site folder that passes check', async () => {
+test("scaffold (dev's first run): the default site in a folder with no site, a site that passes check", async () => {
   const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-new-')), 'My Site');
   assert.equal(isSiteFolder(dir), false);
   scaffoldSite(dir);
@@ -102,7 +102,7 @@ test('dev in a folder with no site: the default site, a site folder that passes 
   assert.deepEqual(scaffoldSite(dir), []);
 });
 
-test('dev in a folder with some files: only what is missing, nothing overwritten', () => {
+test("scaffold (dev's first run) in a folder with some files: only what is missing, nothing overwritten", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-part-'));
   fs.writeFileSync(path.join(dir, 'package.json'), '{"name":"mine"}\n');
   fs.writeFileSync(path.join(dir, 'README.md'), 'mine\n');

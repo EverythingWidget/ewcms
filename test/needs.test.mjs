@@ -127,26 +127,21 @@ test('pages: config.needs on a page widget', () => {
   assert.equal(missingState(ctx, w, WIDGET_TYPES.text, { item: {} }, { edit: false }).skip, true);
 });
 
-test('validator: missing, needs, toggle / Side by side, the href bug', () => {
-  const p = (w) => checkContent('templates/t-need.json', tpl([title, w])).join(' | ');
+const tplProblems = (w) => checkContent('templates/t-need.json', tpl([title, w])).join(' | ');
+
+test('validator: config.missing is "hide" or "show"', () => {
   assert.match(
-    p({ ...tag, config: { missing: 'never' } }),
+    tplProblems({ ...tag, config: { missing: 'never' } }),
     /config.missing must be "hide" or "show"/,
   );
+});
+
+test('validator: config.needs is a list of property names (template and page widgets)', () => {
   assert.match(
-    p({ ...tag, config: { needs: 'placeholder' } }),
+    tplProblems({ ...tag, config: { needs: 'placeholder' } }),
     /config.needs must be a list of property names/,
   );
-  assert.match(p({ ...tag, config: { needs: ['a b'] } }), /config.needs must be a list/);
-  assert.match(
-    p({ type: 'button', label: 'Visit', config: { link: { href: P('url') } } }),
-    /a property goes in the link itself: write "link": \[\{ "property": "url" \}\]/,
-  );
-  assert.match(
-    p({ type: 'sideBySide', config: { needs: ['x'] }, widgets: [title, title] }),
-    /Side by side is gone: place its widgets next to each other on the template's grid/,
-  );
-  // a page widget
+  assert.match(tplProblems({ ...tag, config: { needs: ['a b'] } }), /config.needs must be a list/);
   const page = {
     version: 1,
     kind: 'page',
@@ -159,6 +154,20 @@ test('validator: missing, needs, toggle / Side by side, the href bug', () => {
     ],
   };
   assert.ok(checkContent('pages/x/index.json', page).some((m) => /config.needs/.test(m)));
+});
+
+test("validator: a property in a link's href says to put it in the link itself (the href bug)", () => {
+  assert.match(
+    tplProblems({ type: 'button', label: 'Visit', config: { link: { href: P('url') } } }),
+    /a property goes in the link itself: write "link": \[\{ "property": "url" \}\]/,
+  );
+});
+
+test("validator: Side by side is gone, pointing to the template's grid", () => {
+  assert.match(
+    tplProblems({ type: 'sideBySide', config: { needs: ['x'] }, widgets: [title, title] }),
+    /Side by side is gone: place its widgets next to each other on the template's grid/,
+  );
 });
 
 test('warning: a summary that can be empty', () => {
@@ -182,7 +191,10 @@ test('editor: Inherit is the left-out missing option; Also needs is not in the p
   assert.match(fields, /label="When a value is missing"/);
   assert.match(fields, /options=\{TEMPLATE_MISSING\}/);
   assert.doesNotMatch(fields, /Also needs|needsValue|needsFrom|config\/needs/);
-  assert.doesNotMatch(read('src/editor/svelte/TemplatePanel.svelte'), /Also needs|needsValue|needsFrom|config\/needs/);
+  assert.doesNotMatch(
+    read('src/editor/svelte/TemplatePanel.svelte'),
+    /Also needs|needsValue|needsFrom|config\/needs/,
+  );
   const gf = read('src/editor/svelte/GroupFields.svelte');
   assert.match(gf, /When a value is missing/);
   assert.doesNotMatch(gf, /Also needs|needsValue|needsFrom|needsPtr/);

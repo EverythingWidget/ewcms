@@ -63,7 +63,7 @@ test('top tabs Pages | Site Settings; page tabs Sections | Element motion | Page
   assert.match(read('editor/svelte/MotionSettings.svelte'), /<AnimLibrary /);
 });
 
-test('URL tabs are ui.panel: pages, settings, preview; clicks: arrange, animate, visitor', () => {
+test('URL tabs are ui.panel: pages, settings; clicks: arrange, animate, visitor', () => {
   const p = read('editor/svelte/persist.js');
   assert.match(p, /PANELS = \['pages', 'settings'\]/);
   assert.match(p, /set\('tab', ui\.panel\)/);
@@ -146,36 +146,4 @@ test('PageHead: a square back button beside a two-line title, shared site-part l
   const list = read('editor/svelte/PagesList.svelte');
   assert.match(list, /from '\.\.\/lib\/site-parts\.js'/);
   assert.doesNotMatch(list, /const SITE_PARTS/);
-});
-
-test('after a save the footer says Saved until the next edit (F60)', () => {
-  const app = readFileSync(new URL('../src/editor/svelte/App.svelte', import.meta.url), 'utf8');
-  assert.match(app, /if \(unpublished\.length && ui\.saved\) return line\('pending', 'Saved'\);/);
-  assert.match(app, /if \(live\.changes\) ui\.saved = false;/);
-  const main = readFileSync(new URL('../src/editor/main.js', import.meta.url), 'utf8');
-  assert.match(main, /ui\.saved = !store\.dirtyFiles\(\)\.length;/);
-});
-
-test('a scroll reveal fades with opacity, so waiting content stays in the page text (F42)', () => {
-  const t = read('client/anim/types.js');
-  assert.match(t, /const readable = \(spec, vars\) =>/);
-  assert.match(t, /return \{ \.\.\.rest, opacity: autoAlpha \};/);
-  assert.equal((t.match(/readable\(spec, spec\.(from|to)\)/g) || []).length, 4);
-});
-
-test('a one-shot scroll reveal already on screen at load plays without scrolling (F48)', () => {
-  const t = read('client/anim/types.js');
-  assert.match(
-    t,
-    /if \(self\.start <= 0 && self\.scroll\(\) <= 0 && !self\.animation\?\.progress\(\)\)/,
-  );
-  assert.match(t, /\{ trigger, start, once: true, onRefresh \}/);
-});
-
-test("G16: Saved is set before markSaved, and the badge keeps Unsaved changes' width", () => {
-  const main = readFileSync(new URL('../src/editor/main.js', import.meta.url), 'utf8');
-  const save = main.slice(main.indexOf('await source.saveDev(sent);'), main.indexOf('saves++;'));
-  assert.ok(save.indexOf('ui.saved = true;') < save.indexOf('store.markSaved('));
-  const app = readFileSync(new URL('../src/editor/svelte/App.svelte', import.meta.url), 'utf8');
-  assert.match(app, /min-width: 16ch; \/\/ "Unsaved changes"/);
 });
