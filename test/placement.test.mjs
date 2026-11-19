@@ -99,3 +99,22 @@ test('stylesheet and the editor form', () => {
   assert.match(form, /disabled=\{fill && !placement\.media\}/);
   assert.match(form, /boxLabels\(placement\)/);
 });
+
+test('a button can be smaller than its label: the pill clips, nowrap kept', () => {
+  const scss = readFileSync('src/client/styles/_layout.scss', 'utf8');
+  const i = scss.indexOf('.buttonwidget {');
+  assert.ok(i >= 0, '.buttonwidget rule');
+  const block = scss.slice(i, scss.indexOf('.wgt--fill > .buttonwidget', i));
+  for (const bit of [
+    'min-width: 0',
+    'min-height: 0',
+    'max-width: 100%',
+    'max-height: 100%',
+    'overflow: hidden',
+  ])
+    assert.ok(block.includes(bit), bit);
+  const glass = readFileSync('src/client/styles/_glass.scss', 'utf8');
+  const btn = glass.slice(glass.indexOf('\n.btn {'), glass.indexOf('\n  &:hover'));
+  assert.match(btn, /white-space: nowrap/);
+  assert.doesNotMatch(btn, /text-overflow:/);
+});

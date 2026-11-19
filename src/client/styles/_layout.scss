@@ -172,6 +172,24 @@
 .wgt--placed.wgt--fill {
   place-items: stretch;
 }
+// a button narrower or shorter than its label: the pill stays inside the widget and clips
+// the text (nowrap, overflow hidden). Fit still hugs the label until the widget's edge;
+// Fill still stretches. min-width/min-height 0 so a flex or grid item can shrink below
+// its text (the default min-size is min-content).
+.buttonwidget {
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  > .btn {
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
+}
 // a Fill button: the button over the whole box, its label centred
 .wgt--fill > .buttonwidget {
   display: flex;
