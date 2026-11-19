@@ -52,7 +52,7 @@ test('reveal: the bridge and the overlay scroll through it; Locate lives beside 
   assert.match(b, /reveal\(el, \{ when: 'play', smooth: false \}\)/);
   assert.doesNotMatch(b, /api\.scrollTo\(|scrollIntoView/);
   const o = src('overlay.js');
-  assert.match(o, /reveal\(doc && widgetEl\(id\), \{ when: 'part' \}\);/);
+  assert.match(o, /reveal\(S\.doc && widgetEl\(id\), \{ when: 'part' \}\);/);
   assert.doesNotMatch(o, /scrollIntoView/);
   assert.match(src('main.js'), /hooks\.reveal = \(id\) => overlay\.reveal\(id\);/);
   for (const f of ['ViewTop', 'SectionToolbar', 'ContentPanel', 'WidgetPopup', 'SectionPopup'])

@@ -20,7 +20,7 @@ test('a hovered row: no dimming boxes, its outline only; the Ctrl dimming stays'
   assert.doesNotMatch(ov, /class="dims"|\.dim \{|els\.dims/);
   const peek = ov.slice(ov.indexOf('function drawPeek'), ov.indexOf('function frame()'));
   assert.doesNotMatch(peek, /createElement|others/);
-  assert.match(peek, /place\(els\.peek, r\)/);
+  assert.match(peek, /place\(S\.els\.peek, r\)/);
   assert.match(
     ov,
     /ui\.hot\?\.from === 'panel' \? widgetEl\(ui\.hot\.id\)/,

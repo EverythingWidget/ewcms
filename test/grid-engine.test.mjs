@@ -157,7 +157,7 @@ test("a template's Text has one line: a second one is refused", () => {
 
 test('a reload of the preview: the loop starts again, the text sizes skip a document gone', async () => {
   // a frame asked of the old document never comes: attach() starts the loop afresh
-  assert.match(read('src/editor/overlay.js'), /attach\(siteWin\) \{\s*\/\/[^\n]*\n\s*raf = 0;/);
+  assert.match(read('src/editor/overlay.js'), /attach\(siteWin\) \{\s*\/\/[^\n]*\n\s*S\.raf = 0;/);
   const { textSizes } = await import('../src/editor/lib/small-text.js');
   const gone = { querySelectorAll: () => [{}], defaultView: null };
   assert.deepEqual(textSizes(gone), {});

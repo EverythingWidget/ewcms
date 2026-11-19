@@ -39,10 +39,10 @@ test('links: kept paths by id, d set on change, no innerHTML; the loop idles', (
   assert.match(ov, /attr\(e\.line, 'd', d\)/);
   assert.match(ov, /if \(size !== svgSize\)/);
   assert.match(ov, /text-anchor', 'end'/, 'the gap label left of the line, clear of the tag');
-  assert.match(ov, /anims > 0 \|\| now\(\) < idleUntil/);
-  assert.match(ov, /new win\.MutationObserver\(kick\)/);
-  assert.match(ov, /new win\.ResizeObserver\(kick\)/);
-  assert.doesNotMatch(ov, /if \(shown\(\)\) raf = win\.requestAnimationFrame/);
+  assert.match(ov, /S\.anims > 0 \|\|\s*now\(\) < S\.idleUntil/);
+  assert.match(ov, /new S\.win\.MutationObserver\(kick\)/);
+  assert.match(ov, /new S\.win\.ResizeObserver\(kick\)/);
+  assert.doesNotMatch(ov, /if \(shown\(\)\) (S\.)?raf = (S\.)?win\.requestAnimationFrame/);
 });
 
 test('the link svg collapses before it reads the page size', () => {
@@ -129,15 +129,15 @@ test('G15: auto-scroll is capped at one row a frame, not 16px (phone rows are sh
 test("a press on a widget's body hides its handles and the toolbar; a resize keeps them", () => {
   const o = read('src/editor/overlay.js');
   // Auto: is-auto uses the already computed flag, so a side resize keeps the side-only handles
-  assert.match(o, /els\.sel\.classList\.toggle\('is-auto', auto\)/);
+  assert.match(o, /S\.els\.sel\.classList\.toggle\('is-auto', auto\)/);
   assert.doesNotMatch(o, /toggle\('is-auto', sizeOf\(widget\) === 'auto' && !dragging\)/);
   // a body move: is-moving at pointerdown (no threshold); a handle resize does not
   assert.match(o, /setAttribute\('data-flow-hold', h \? 'resize' : 'move'\)/);
   assert.match(
     o,
-    /els\.sel\.classList\.add\('is-dragging'\);\s*if \(!h\) els\.sel\.classList\.add\('is-moving'\);/,
+    /S\.els\.sel\.classList\.add\('is-dragging'\);\s*if \(!h\) S\.els\.sel\.classList\.add\('is-moving'\);/,
   );
-  assert.match(o, /els\.sel\.classList\.remove\('is-dragging', 'is-moving'\)/);
+  assert.match(o, /S\.els\.sel\.classList\.remove\('is-dragging', 'is-moving'\)/);
   // hidden in place: no layout shift
   assert.match(
     o,
@@ -153,12 +153,12 @@ test("one draw loop: the preview's boxes are drawn in the overlay's frame, its o
   // every frame: the boxes (draw()) while they ask for one, the overlay's own only while due
   assert.match(
     o,
-    /function frame\(\) \{\s*raf = 0;\s*if \(!root\?\.isConnected\) return;\s*const more = draw\(\);\s*if \(due\) layout\(\);\s*if \(more \|\| due\) raf = win\.requestAnimationFrame\(frame\);/,
+    /function frame\(\) \{\s*S\.raf = 0;\s*if \(!S\.root\?\.isConnected\) return;\s*const more = draw\(\);\s*if \(S\.due\) layout\(\);\s*if \(more \|\| S\.due\) S\.raf = S\.win\.requestAnimationFrame\(frame\);/,
   );
-  assert.match(o, /function kick\(\) \{\s*idleUntil = now\(\) \+ IDLE;\s*due = true;\s*wake\(\);/);
+  assert.match(o, /function kick\(\) \{\s*S\.idleUntil = now\(\) \+ IDLE;\s*S\.due = true;\s*wake\(\);/);
   assert.match(
     o,
-    /due =\s*!!shown\(\) &&\s*!!\(drag \|\| group \|\| boxing \|\| sizing \|\| linking \|\| anims > 0 \|\| now\(\) < idleUntil\);/,
+    /S\.due =\s*!!shown\(\) &&\s*!!\(\s*S\.drag \|\|\s*S\.group \|\|\s*S\.boxing \|\|\s*S\.sizing \|\|\s*S\.linking \|\|\s*S\.anims > 0 \|\|\s*now\(\) < S\.idleUntil\s*\);/,
   );
   // the preview runtime asks for frames (wake), it runs no loop of its own
   const b = src('preview-runtime.js');

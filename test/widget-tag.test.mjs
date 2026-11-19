@@ -33,7 +33,7 @@ test('tag: size and place only, a changed part highlighted while dragged', () =>
 
 test('the tag shows the place; the pop-up links to the leader', () => {
   assert.match(src('svelte/WidgetLayout.svelte'), /Follows \{leader\}/);
-  assert.match(src('overlay.js'), /tagHtml\(\s*dragging \? drag\.pos : shownPlace\(sel, win\)/);
+  assert.match(src('overlay.js'), /tagHtml\(\s*dragging \? S\.drag\.pos : shownPlace\(sel, S\.win\)/);
 });
 
 test('the preview tag starts with the Auto toggle: off, on (`64×auto`), a fixed box', () => {
