@@ -1,6 +1,6 @@
 /**
  * The editor's keyboard shortcuts, all in one place: pressed in the editor's own window, or
- * in the preview (preview-runtime.js forwards the keys isShortcut lets through: its 'key').
+ * in the preview (preview-edit.js attach() forwards the keys isShortcut lets through: its 'key').
  *
  *   Ctrl+S          save
  *   Ctrl+Shift+E    the site as visitors see it (this page)

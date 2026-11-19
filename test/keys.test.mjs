@@ -60,7 +60,7 @@ test('keys: one handler, in the editor window and for the preview (its forwarded
   const ov = src('overlay.js');
   assert.doesNotMatch(ov, /trackMod|function onkeydown|addEventListener\('keyup'/);
   assert.doesNotMatch(ov, /setMod/);
-  // the bridge forwards what keys.js calls a shortcut
+  // preview-edit.js attach() forwards what keys.js calls a shortcut
   assert.match(src('preview-edit.js'), /import \{ isShortcut \} from '\.\/keys\.js';/);
   for (const f of ['preview-runtime.js', 'preview-edit.js', 'preview-pointer.js'])
     assert.doesNotMatch(src(f), /const isShortcut =|const typing =/, f);

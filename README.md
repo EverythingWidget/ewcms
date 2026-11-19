@@ -283,7 +283,6 @@ src/
     ui/             ← menu (click-only), clock
     styles/         ← SCSS: the core (tokens, base, backdrop, layout, text) and the chrome (glass, header, menus, curtain, footer); main.scss bundles them with the widgets' style.scss and the site's theme
   editor/           ← the visual editor app (any page + ?edit), dev server only, never built or shipped
-    config.js       ← content files the editor may write and publish
     store.js        ← in-memory content copies, dirty state, undo/redo, rebase
     main.js         ← the controller: store, preview, overlay and UI wired together, saving and loading
     keys.js         ← every keyboard shortcut (the editor's and the preview's keys, in one place)
@@ -291,7 +290,7 @@ src/
     preview-edit.js ← a text edited in place in the preview (plain and rich, its link box)
     preview-pointer.js ← the preview's clicks, double clicks and presses (to the editing, then the overlay)
     overlay.js      ← the preview's layout layer: picking, dragging, resizing widgets; the one draw loop
-    reveal.js       ← an element scrolled into view (only when out of view)
+    reveal.js       ← reveal() and locate(): scroll into view when out of view, or Locate to its top
     source.js       ← talks to the dev-server endpoints (load, save, status, publish)
     svelte/         ← the editor UI (Svelte 5): panels, fields, modals
     lib/            ← small editor helpers (pointers, diff, format, show-value, dialog, editor-url)

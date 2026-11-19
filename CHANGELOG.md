@@ -12,6 +12,13 @@ say what a site must do before it bumps its pin.
   and a template (`"config": { "template": "preset:plain", "columns": "1" }`, or a site template
   such as `t-albp` / `t-albl`). `ewcms check` names the replacement. There is no conversion.
 
+### Editor
+
+- The old `/edit/?path=…` redirect is gone. The editor is `?edit` only.
+- The `site.config.mjs` warning is gone (`ewcms.config.mjs` is the one config). Sites that have
+  not yet renamed do so on their next pin bump (`git mv site.config.mjs ewcms.config.mjs`).
+  There is no fallback: a site that still has `site.config.mjs` is read as having no config.
+
 ## 0.10.0 (2026-11-17)
 
 ### Breaking: what a site must do before bumping to 0.10.0

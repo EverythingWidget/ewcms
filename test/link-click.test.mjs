@@ -110,7 +110,7 @@ test('G12: a locked Header or Footer takes no click; it opens from the pages lis
 });
 
 test('F115: Ctrl+K opens the link box from the editor window too, every rich-text field', () => {
-  // the preview forwards Ctrl+K (keys.js isShortcut, used by the bridge)
+  // the preview forwards Ctrl+K (keys.js isShortcut, used by preview-edit.js attach())
   assert.match(read('editor/keys.js'), /\^\[sezyk\]\$/);
   assert.match(read('editor/preview-edit.js'), /import \{ isShortcut \} from '\.\/keys\.js';/);
   const tb = read('editor/svelte/WidgetToolbar.svelte');
