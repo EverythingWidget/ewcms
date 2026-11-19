@@ -94,9 +94,11 @@
   // ---- where it is drawn: the widget's box in the frame, on the stage, every frame
   let box = $state(null); // { x, y, w, h, frameTop, frameBottom }
   let place = $state(null); // { col, span, row, rows }: shownPlace
-  // a drag in the preview (move, resize, link): the bar stays (its size readout updates live)
-  // but lets the pointer through, so it never takes the drag from a handle under it
+  // a drag in the preview: a resize keeps the bar (its size readout updates live) but lets
+  // the pointer through, so it never takes the drag from a handle under it; a move hides it
+  // in place (visibility) until release
   let dragging = $state(false);
+  let moving = $state(false);
   // its section shown from the panel (the widget's section card hovered): none, as the frame
   const peeking = $derived(ui.peek?.from === 'panel');
   // shown: a widget picked, its box known, no peek (else hidden, still mounted)
@@ -131,9 +133,13 @@
       // its size and place in cells as the preview shows it (the tag's, widget-tag.js)
       const p = shownPlace(el, doc.defaultView);
       if (!place || ['col', 'span', 'row', 'rows'].some((k) => p[k] !== place[k])) place = p;
-      // a drag in the preview (overlay.js holds the rows): see-through for the pointer
-      const drag = doc.documentElement.hasAttribute('data-flow-hold');
+      // a drag in the preview (overlay.js holds the rows): see-through for the pointer;
+      // a body move (data-flow-hold=move) hides the bar in place
+      const hold = doc.documentElement.getAttribute('data-flow-hold');
+      const drag = hold !== null;
       if (drag !== dragging) dragging = drag;
+      const move = hold === 'move';
+      if (move !== moving) moving = move;
     };
     tick();
     return () => cancelAnimationFrame(raf);
@@ -499,7 +505,7 @@
 
 <!-- one element for the whole session: hidden when nothing shows, only its content swaps -->
 <div
-  class={['btb', pos?.flip && 'is-below', !shown && 'is-hidden', dragging && 'is-dragging']}
+  class={['btb', pos?.flip && 'is-below', !shown && 'is-hidden', dragging && 'is-dragging', moving && 'is-moving']}
   style:left="{pos?.x ?? 0}px"
   style:top="{pos?.y ?? 0}px"
   aria-hidden={!shown}
@@ -687,8 +693,14 @@
       pointer-events: none;
     }
 
-    // while the widget is dragged: shown, but the pointer goes through to the preview
+    // a resize: shown, but the pointer goes through to the preview
     &.is-dragging {
+      pointer-events: none;
+    }
+
+    // a move of the widget's body: hidden in place (no layout shift)
+    &.is-moving {
+      visibility: hidden;
       pointer-events: none;
     }
   }

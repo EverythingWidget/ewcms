@@ -10,9 +10,11 @@
  *   Arrange   arrange clicks (ui.svelte.js previewClicks: Pages, not a page's Element motion tab): a click picks a widget (the widget inspector opens),
  *             a click on empty space (no widget, handle, circle or link line) or Esc (main /
  *             App.svelte) drops the selection (the panel shows the sections again),
- *             a drag moves it and the handles on its edges and corners resize it; a double
- *             click edits a text in place (bridge.js), the page's own clicks are off. A drag
- *             snaps to the cells and shows its area live (the widget's CSS variables, and the
+ *             a drag moves it and the handles on its edges and corners resize it. A press
+ *             on its body hides the handles and the toolbar until release (a resize from a
+ *             handle keeps them); a double click edits a text in place (bridge.js), the
+ *             page's own clicks are off. A drag snaps to the cells and shows its area live
+ *             (the widget's CSS variables, and the
  *             widgets that follow it move along); on release it is one edit, one undo step
  *             (onplace), which also stores where the section's other widgets are now (their
  *             real rows). A linked widget dragged up or down keeps its link: its gap changes.
@@ -129,6 +131,8 @@ const STYLE = `
 .edge[data-h='n'], .edge[data-h='s'] { display: none; left: 0; right: 0; top: 0; bottom: auto; width: auto; height: 8px; translate: 0; cursor: ns-resize; }
 .edge[data-h='s'] { top: 100%; translate: 0 -100%; }
 .sel.is-auto:not(.is-phone) .edge[data-h='n'], .sel.is-auto:not(.is-phone) .edge[data-h='s'] { display: block; }
+/* a move (the body pressed or dragged, not a resize): handles and edges hidden in place */
+.sel.is-moving .handle, .sel.is-moving .edge { visibility: hidden; pointer-events: none; }
 .dot { position: absolute; left: 50%; width: 12px; height: 12px; translate: -50% -50%; box-sizing: border-box; border: 2px solid ${T.accent}; border-radius: 50%; background: ${T.black}; pointer-events: auto; }
 .dot[data-dot='top'] { top: -${DOT}px; background: ${T.accent}; cursor: grab; }
 .dot[data-dot='top']:hover { box-shadow: 0 0 0 4px rgb(${T.accentRgb} / .35); }
@@ -556,7 +560,7 @@ export function createOverlay({
       const auto =
         sizeOf(widget) === 'auto' &&
         !(dragging && /[ns]/.test(drag.h) && drag.pos.rows !== drag.from.rows);
-      els.sel.classList.toggle('is-auto', sizeOf(widget) === 'auto' && !dragging);
+      els.sel.classList.toggle('is-auto', auto);
       // its text edited: no handles or edges over its words and links (F109)
       els.sel.classList.toggle('is-editing', !!sel.querySelector('[contenteditable]'));
       const label = tagHtml(
@@ -677,7 +681,8 @@ export function createOverlay({
     e.stopPropagation();
     const { sec, phone, flow } = g;
     const rows = Number(sec.style.getPropertyValue('--frows')) || 0;
-    doc.documentElement.setAttribute('data-flow-hold', '');
+    doc.documentElement.setAttribute('data-flow-hold', 'move');
+    els.sel.classList.add('is-dragging', 'is-moving');
     group = {
       ...g,
       el,
@@ -737,6 +742,7 @@ export function createOverlay({
 
   function stopGroup() {
     doc.documentElement.removeAttribute('data-flow-hold');
+    els.sel.classList.remove('is-dragging', 'is-moving');
     noSelect(false);
     win.removeEventListener('pointermove', moveGroup, true);
     win.removeEventListener('pointerup', endGroup, true);
@@ -885,7 +891,7 @@ export function createOverlay({
     // where the section's widgets are now (stored with the drag), then hold them there
     const flow = flowOf(sec, phone);
     const rows = Number(sec.style.getPropertyValue('--frows')) || 0;
-    doc.documentElement.setAttribute('data-flow-hold', '');
+    doc.documentElement.setAttribute('data-flow-hold', h ? 'resize' : 'move');
     const from = flow[id];
     // the section's widgets and links, to move the widgets that follow this one along
     const items = widgetsIn(sec)
@@ -924,6 +930,7 @@ export function createOverlay({
       min: minOf(sec, phone),
     };
     els.sel.classList.add('is-dragging');
+    if (!h) els.sel.classList.add('is-moving');
     win.addEventListener('pointermove', move, true);
     win.addEventListener('pointerup', end, true);
     win.addEventListener('keydown', cancel, true);
@@ -1051,7 +1058,7 @@ export function createOverlay({
     win.removeEventListener('pointermove', move, true);
     win.removeEventListener('pointerup', end, true);
     win.removeEventListener('keydown', cancel, true);
-    els.sel.classList.remove('is-dragging');
+    els.sel.classList.remove('is-dragging', 'is-moving');
   }
 
   /** The section and its widgets as they were before the drag. */

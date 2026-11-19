@@ -126,3 +126,22 @@ test('G15: auto-scroll is capped at one row a frame, not 16px (phone rows are sh
   assert.match(ov, /drag\.lines\?\.row/);
   assert.doesNotMatch(ov, /Math\.max\(-16, Math\.min\(16, v \/ 3\)\)/);
 });
+
+test("a press on a widget's body hides its handles and the toolbar; a resize keeps them", () => {
+  const o = read('src/editor/overlay.js');
+  // Auto: is-auto uses the already computed flag, so a side resize keeps the side-only handles
+  assert.match(o, /els\.sel\.classList\.toggle\('is-auto', auto\)/);
+  assert.doesNotMatch(o, /toggle\('is-auto', sizeOf\(widget\) === 'auto' && !dragging\)/);
+  // a body move: is-moving at pointerdown (no threshold); a handle resize does not
+  assert.match(o, /setAttribute\('data-flow-hold', h \? 'resize' : 'move'\)/);
+  assert.match(o, /els\.sel\.classList\.add\('is-dragging'\);\s*if \(!h\) els\.sel\.classList\.add\('is-moving'\);/);
+  assert.match(o, /els\.sel\.classList\.remove\('is-dragging', 'is-moving'\)/);
+  // hidden in place: no layout shift
+  assert.match(
+    o,
+    /\.sel\.is-moving \.handle, \.sel\.is-moving \.edge \{ visibility: hidden; pointer-events: none; \}/,
+  );
+  assert.doesNotMatch(o, /\.sel\.is-moving [^'{]*display: none/);
+  // a group move is a body move too
+  assert.match(o, /setAttribute\('data-flow-hold', 'move'\)/);
+});

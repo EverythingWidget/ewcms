@@ -59,14 +59,23 @@ test('every widget gets the toolbar: divider (text only), Auto, its size', () =>
   assert.match(s, /width: 16ch;/);
 });
 
-test('the toolbar stays shown while a widget is dragged', () => {
+test('the toolbar stays mounted while a widget is dragged', () => {
   assert.match(bar, /const shown = \$derived\(!!\(where && widget && pos && !peeking\)\);/);
   assert.match(bar, /if \(drag !== dragging\) dragging = drag;/);
 });
 
-test('while dragging the bar is see-through for the pointer', () => {
+test('while resizing the bar is see-through for the pointer', () => {
   assert.match(bar, /dragging && 'is-dragging'/);
   assert.match(bar, /&\.is-dragging \{\s*pointer-events: none;\s*\}/);
+});
+
+test("a press on a widget's body hides the toolbar in place; a resize keeps it", () => {
+  assert.match(bar, /getAttribute\('data-flow-hold'\)/);
+  assert.match(bar, /hold === 'move'/);
+  assert.match(bar, /if \(move !== moving\) moving = move;/);
+  assert.match(bar, /moving && 'is-moving'/);
+  assert.match(bar, /&\.is-moving \{\s*visibility: hidden;\s*pointer-events: none;\s*\}/);
+  assert.doesNotMatch(bar, /&\.is-moving \{[^}]*display:\s*none/);
 });
 
 test('the text toolbar menu: out of the flow, over the bar when there is no room under it', () => {
