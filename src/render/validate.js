@@ -9,8 +9,8 @@
  * A source's items against its schema (required properties, types, photos) are checked by
  * checkItems (src/render/schemas.js): that needs the schema and the photos, not one file.
  */
-import { detailsProblems, detailsWidgetProblems } from './widgets/list/details.js';
-import { CAROUSEL_KEYS, carouselProblems } from './widgets/list/carousel.js';
+import { detailsProblems, detailsWidgetProblems } from '../widgets/list/details.js';
+import { CAROUSEL_KEYS, carouselProblems } from '../widgets/list/carousel.js';
 import { AREA_KEYS, storesRows } from './layout/grid.js';
 import { storedDefaults } from './defaults.js';
 import {
@@ -35,7 +35,7 @@ import {
 } from './files.js';
 import { CORE_STRINGS } from './strings.js';
 import { checkSchema } from './schemas.js';
-import { RETIRED_WIDGETS, WIDGET_TYPES } from './widgets/index.js';
+import { RETIRED_WIDGETS, WIDGET_TYPES } from '../widgets/index.js';
 import {
   COLS,
   HEIGHTS,
@@ -58,9 +58,9 @@ import { bindTypeOf } from './layout/bindings.js';
 import { isPropertyPart, isParts, isWhole, NAME } from './layout/parts.js';
 import { FORMAT_TYPES, storedAs } from './property-types.js';
 import { isObject } from './is.js';
-import { styleProblems } from './widgets/list/item-style.js';
-import { innerSourceProblems } from './widgets/list/nested.js';
-import { gapProblem } from './widgets/list/index.js';
+import { styleProblems } from '../widgets/list/item-style.js';
+import { innerSourceProblems } from '../widgets/list/nested.js';
+import { gapProblem } from '../widgets/list/index.js';
 
 const typeOf = (v) =>
   v === null
@@ -135,7 +135,7 @@ function checkSite(d) {
   ];
 }
 
-/** site.json "forms": where contact forms send (src/render/widgets/form/index.js). */
+/** site.json "forms": where contact forms send (src/widgets/form/index.js). */
 function checkForms(f) {
   if (!isObject(f)) return [];
   const out = optional(f, { target: 'string', endpoint: 'string', turnstileSiteKey: 'string' });
@@ -660,7 +660,7 @@ export function checkContent(file, data) {
   return [];
 }
 
-/** Presets a template can come from (src/render/widgets/list/presets.js PRESETS ids). */
+/** Presets a template can come from (src/widgets/list/presets.js PRESETS ids). */
 const PRESET_FROM = ['preset:card', 'preset:plain', 'preset:panel', 'preset:row', 'preset:photo'];
 const ROLE = /^[a-z][a-z0-9-]*$/;
 

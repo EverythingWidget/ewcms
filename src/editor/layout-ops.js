@@ -34,7 +34,7 @@ import {
 import { resolveRows } from '../render/layout/flow.js';
 import { idsOf, newId } from '../render/layout/ids.js';
 import { fitSource } from '../render/layout/source.js';
-import { WIDGET_TYPES } from '../render/widgets/index.js';
+import { WIDGET_TYPES } from '../widgets/index.js';
 import { contentFromFiles, isTemplate, pageIdOf, paramsOf, templateIdOf } from '../render/files.js';
 
 const listOf = (store, file) => {
@@ -54,7 +54,7 @@ const write = (store, file, list, structure = true) =>
  * (grid.js phoneStack) gets that place as its own (its area and link), so the one edited
  * leaves the stack without the others moving. An item template's (`file` a template's) has no
  * stack: a widget without a phone area shows its desktop area halved (and its link, the gap
- * halved: src/render/widgets/list/item-grid.js), and gets that as its own.
+ * halved: src/widgets/list/item-grid.js), and gets that as its own.
  */
 function ownPhoneLayout(section, file) {
   if (templateIdOf(file)) {

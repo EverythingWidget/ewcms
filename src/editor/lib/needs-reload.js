@@ -2,7 +2,7 @@
  * When the preview has to load its page again instead of updating in place (src/editor/main.js).
  * Everything updates in place by default: a page's or the footer's sections are swapped in
  * (layout-sync.js), an item template's Lists and a source's sections rendered again where they
- * show (render/widgets/list/template-uses.js), animations updated live. Only what changes routes
+ * show (widgets/list/template-uses.js), animations updated live. Only what changes routes
  * or navigation, which every page around the sections shows, needs a reload:
  *
  *   a source, its schema or a page     only when the site's routes changed (routesKey): an item

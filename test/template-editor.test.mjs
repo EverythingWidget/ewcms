@@ -7,7 +7,7 @@ import { parseHTML } from 'linkedom';
 import { loadContent } from '../src/cli/content.mjs';
 import { renderRoute } from '../src/render/render.js';
 import { checkContent } from '../src/render/validate.js';
-import { cloneTemplate } from '../src/render/widgets/list/presets.js';
+import { cloneTemplate } from '../src/widgets/list/presets.js';
 import {
   templateOfPath,
   templatePreview,
@@ -15,7 +15,7 @@ import {
   sampleSource,
   previewColumns,
   previewWithColumns,
-} from '../src/render/widgets/list/template-preview.js';
+} from '../src/widgets/list/template-preview.js';
 import {
   keepMarks,
   moveStack,
@@ -354,7 +354,7 @@ test('a selected template widget uses the page pop-up and toolbar delete, in pla
   assert.match(bar, /run\(removeWidgets\)/);
   // locate finds a template widget
   assert.match(locate, /\[data-tw="\$\{q\}"\]/);
-  const render = read('src/render/widgets/list/item-grid-render.js');
+  const render = read('src/widgets/list/item-grid-render.js');
   assert.match(render, /w\.config\?\.enabled === false \? ' hidden'/);
   const ops = read('src/editor/layout-ops.js');
   assert.match(ops, /if \(templateIdOf\(file\)\) \{\s*const list = listOf\(store, file\);/);
@@ -390,7 +390,7 @@ test('a template Text is edited in the preview, like a page Text: no Style/Text 
   assert.ok(title, 'template Text has a rich data-edit in the preview');
   assert.match(title.getAttribute('data-edit'), /^templates\/t-ab12\.json#\/sections\/0\/widgets\/\d+\/body$/);
   // a List on a page is still one widget (itemEd only when the preview is this template)
-  const list = read('src/render/widgets/list/index.js');
+  const list = read('src/widgets/list/index.js');
   assert.match(list, /templateOfPath\(ctx\.route\?\.path/);
   assert.match(list, /function itemEd\(/);
   assert.match(list, /ed: itemEd\(editFile, j, filled\)/);
@@ -413,13 +413,13 @@ test('a template is one section: the editor edits its file, its widgets at /sect
   assert.equal(targetFile({ kind: 'item-template', id: 't-ab12' }, null), T);
   assert.equal(targetFile({ kind: 'part', id: 'header' }, null), '');
   const { ITEM_WIDGETS, itemSection, itemWidgets } = await import(
-    '../src/render/widgets/list/item-grid.js'
+    '../src/widgets/list/item-grid.js'
   );
   assert.equal(ITEM_WIDGETS, '/sections/0/widgets');
   assert.equal(itemSection(card()).id, 's-item');
   assert.equal(itemWidgets(card()).length, 3);
   assert.deepEqual(itemWidgets({ widgets: [{ type: 'text' }] }), []); // the old shape: none
-  assert.doesNotMatch(read('src/render/widgets/list/item-grid.js'), /asPageWidget/);
+  assert.doesNotMatch(read('src/widgets/list/item-grid.js'), /asPageWidget/);
 });
 
 test("an item: its section's custom height and its widgets' layer, as a page section's", () => {

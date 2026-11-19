@@ -2,7 +2,7 @@
  * The built-in Photo widget (photo): a widget module like any custom one (../index.js has
  * the format), its default export the definition.
  */
-import { html, esc, img, sizes } from '../../helpers.js';
+import { html, esc, img, sizes } from '../../render/helpers.js';
 
 /**
  * One photo, as wide as the text column, with an optional caption. In an Aspect or Rows widget

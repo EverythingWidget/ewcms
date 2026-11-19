@@ -105,7 +105,7 @@ export async function checkContentOf(root, { warnings = [] } = {}) {
   const problems = [];
   // the render module as Node loads it (the registry its checks use) + the site's widgets
   const { registerWidgets } = await import(
-    pathToFileURL(enginePath('src/render/widgets/index.js')).href
+    pathToFileURL(enginePath('src/widgets/index.js')).href
   );
   await registerSiteWidgets(root, { register: registerWidgets });
   const { setContentDir, ROOT_FILES } = await import(

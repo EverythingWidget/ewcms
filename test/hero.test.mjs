@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as sass from 'sass';
-import { longestWord, hero, HERO_STYLES } from '../src/render/widgets/hero/index.js';
+import { longestWord, hero, HERO_STYLES } from '../src/widgets/hero/index.js';
 import { bindTypeOf } from '../src/render/layout/bindings.js';
 import { createStore } from '../src/editor/store.js';
 import { addSection, addWidget } from '../src/editor/layout-ops.js';
@@ -34,8 +34,8 @@ test('longestWord: characters in the longest word (accents count once)', () => {
 
 test('the hero wraps the name and caps its size by the longest word', () => {
   const dir = new URL('../', import.meta.url).pathname;
-  const src = readFileSync(`${dir}src/render/widgets/hero/style.scss`, 'utf8').replace(
-    "@use '../../../client/styles/tokens' as *;",
+  const src = readFileSync(`${dir}src/widgets/hero/style.scss`, 'utf8').replace(
+    "@use '../../client/styles/tokens' as *;",
     '$bp-sm: 640px;',
   );
   const css = sass.compileString(src).css;
@@ -83,11 +83,11 @@ test('beside / behind: the first photo with a file, alone, no scatter', () => {
 
 test('the hero lays out beside (right half, 4px corners) and behind (gradient)', () => {
   const src = readFileSync(
-    new URL('../src/render/widgets/hero/style.scss', import.meta.url),
+    new URL('../src/widgets/hero/style.scss', import.meta.url),
     'utf8',
   );
   const css = sass.compileString(
-    src.replace("@use '../../../client/styles/tokens' as *;", '$bp-sm: 640px;'),
+    src.replace("@use '../../client/styles/tokens' as *;", '$bp-sm: 640px;'),
   ).css;
   assert.match(css, /\.hero--beside \.hero__photo \{[^}]*border-radius: 4px/);
   assert.match(css, /\.hero--beside \.hero__photo \{[^}]*width: calc\(50% - var\(--pad\) - 12px\)/);
@@ -99,7 +99,7 @@ test('the hero lays out beside (right half, 4px corners) and behind (gradient)',
 });
 
 test('the hero takes its widget area; an Auto hero what its section leaves', () => {
-  const home = read('src/render/widgets/hero/style.scss');
+  const home = read('src/widgets/hero/style.scss');
   const hero = block(home, '\n.hero');
   assert.match(hero, /height: 100%;/);
   assert.doesNotMatch(hero, /svh|min-height/);

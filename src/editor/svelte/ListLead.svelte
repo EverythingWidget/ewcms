@@ -25,12 +25,12 @@
   import SourceField from './SourceField.svelte';
   import { pairedHalves } from './source-items.js';
   import { sourceFile } from '../../render/files.js';
-  import { CUSTOM_ITEM } from '../../render/widgets/list/custom.js';
+  import { CUSTOM_ITEM } from '../../widgets/list/custom.js';
   import { TEXT_TYPES } from '../../render/property-types.js';
   import { pointer } from '../../render/helpers.js';
   import Button from './Button.svelte';
   import { ui } from './ui.svelte.js';
-  import { PRESETS, cloneTemplate } from '../../render/widgets/list/presets.js';
+  import { PRESETS, cloneTemplate } from '../../widgets/list/presets.js';
   import { t } from '../../render/strings.js';
   import { saveDev, templatesOp } from '../source.js';
   import { toast } from './toasts.svelte.js';
@@ -42,7 +42,7 @@
     showOnlyFields,
     showOnlyItems,
     showOnlyValues,
-  } from '../../render/widgets/list/show-only.js';
+  } from '../../widgets/list/show-only.js';
 
   let { g, live, base, list = false, shown, sourceIds, onsource, bindings = null } = $props();
 
@@ -59,7 +59,7 @@
     const list = live.get(sourceFile(id), '/items');
     return Array.isArray(list) ? list : [];
   };
-  // ---- Show only (config.showOnly { field, value }: ../../render/widgets/list/show-only.js)
+  // ---- Show only (config.showOnly { field, value }: ../../widgets/list/show-only.js)
   const showOnlyPtr = $derived(`${base}/config/showOnly`);
   const listSource = $derived.by(() => {
     live.version;

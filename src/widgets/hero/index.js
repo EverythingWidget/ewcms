@@ -2,9 +2,9 @@
  * The built-in Hero widget (hero): a widget module like any custom one (../index.js has
  * the format), its default export the definition.
  */
-import { html, esc, img, lines, words, firstPhotos, sizes } from '../../helpers.js';
-import { t } from '../../strings.js';
-import { hrefOf } from '../../hrefs.js';
+import { html, esc, img, lines, words, firstPhotos, sizes } from '../../render/helpers.js';
+import { t } from '../../render/strings.js';
+import { hrefOf } from '../../render/hrefs.js';
 
 const heroPhoto = (ctx, widget, p, i) => {
   // phone: its own x / y / w over the desktop's (partly or all); null: hidden on phones

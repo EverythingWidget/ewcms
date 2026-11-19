@@ -45,7 +45,7 @@ import { ENGINE, enginePath, fsUrl, posixPath, sameFile, withEngineUrls } from '
 // the engine's modules the server loads itself (render, registry): absolute, the engine is
 // not inside the site's root (node_modules/ewcms, or a workspace folder next to it)
 const RENDER_FILE = enginePath('src/render/render.js');
-const WIDGETS_FILE = enginePath('src/render/widgets/index.js');
+const WIDGETS_FILE = enginePath('src/widgets/index.js');
 const RENDER_MODULE = fsUrl(RENDER_FILE);
 const WIDGETS_MODULE = fsUrl(WIDGETS_FILE);
 

@@ -18,8 +18,8 @@ const optional = defaultSite.slice(requiredPart(defaultSite).length);
 const styles = [
   ...fs.readdirSync(path.join(root, 'src/client/styles')).map((f) => `src/client/styles/${f}`),
   ...fs
-    .readdirSync(path.join(root, 'src/render/widgets'))
-    .map((w) => `src/render/widgets/${w}/style.scss`)
+    .readdirSync(path.join(root, 'src/widgets'))
+    .map((w) => `src/widgets/${w}/style.scss`)
     .filter((f) => fs.existsSync(path.join(root, f))),
 ].filter((f) => f.endsWith('.scss'));
 const css = styles.map((f) => fs.readFileSync(path.join(root, f), 'utf8')).join('\n');

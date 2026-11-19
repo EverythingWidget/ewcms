@@ -19,10 +19,10 @@ import {
   lines,
   photosOf,
   sizes,
-} from '../../helpers.js';
-import { sourceFile } from '../../files.js';
-import { t } from '../../strings.js';
-import { titleCase } from '../../routes.js';
+} from '../../render/helpers.js';
+import { sourceFile } from '../../render/files.js';
+import { t } from '../../render/strings.js';
+import { titleCase } from '../../render/routes.js';
 import { sourcePage } from '../data.js';
 
 export const album = {

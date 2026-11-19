@@ -212,7 +212,7 @@ export function createOverlay({
   /**
    * The Grid Engine: an item template open (ui.target.kind 'item-template'), the overlay arranges
    * its item instead of the page: the preview's one item (the first .sec--item, the template's one
-   * section: src/render/widgets/list/item-grid.js) is the section, its own widgets
+   * section: src/widgets/list/item-grid.js) is the section, its own widgets
    * (.sec--item > .wgt[data-tw]) the widgets, dragged, resized and linked as a page's (the
    * writes go to the template's file: main.js widgetAt, its /sections/0). The preview page
    * around it (its List) is never picked, and a List on a page is one widget: a template's

@@ -12,6 +12,6 @@
  *   t(ctx, 'group.key', vars)  UI text (strings.json over the core's English)
  *   warnOnce(message)          a build/dev warning, once
  */
-export { html, esc, lines, words, img, sizes, pad, extAttrs, warnOnce } from './helpers.js';
-export { hrefOf } from './hrefs.js';
-export { t } from './strings.js';
+export { html, esc, lines, words, img, sizes, pad, extAttrs, warnOnce } from '../render/helpers.js';
+export { hrefOf } from '../render/hrefs.js';
+export { t } from '../render/strings.js';

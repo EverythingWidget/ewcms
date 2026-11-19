@@ -1,4 +1,4 @@
-// The List's Carousel arrangement (src/render/widgets/list/carousel.js, carousel-client.js):
+// The List's Carousel arrangement (src/widgets/list/carousel.js, carousel-client.js):
 // markup and accessibility, keys only on focus, the deep link, credits, {back}, the checks.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,21 +10,21 @@ import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { checkContent } from '../src/render/validate.js';
 import { bindingProblems } from '../src/render/layout/bindings.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../src/widgets/index.js';
 import {
   carouselOf,
   carouselProblems,
   slideRatioOf,
   withArrangement,
-} from '../src/render/widgets/list/carousel.js';
+} from '../src/widgets/list/carousel.js';
 import {
   carouselClient,
   carouselKey,
   showSlide,
   slideFromHash,
-} from '../src/render/widgets/list/carousel-client.js';
+} from '../src/widgets/list/carousel-client.js';
 import { creditText } from '../src/render/helpers.js';
-import { sourcePage } from '../src/render/widgets/data.js';
+import { sourcePage } from '../src/widgets/data.js';
 import { SITE_A, withPhoto } from './fixtures/index.mjs';
 import { template } from '../scripts/grid-helper.mjs';
 

@@ -47,13 +47,13 @@ import {
   warnOnce,
   creditOf,
   creditText,
-} from '../../helpers.js';
-import { contentPath, templateFile } from '../../files.js';
-import { isObject } from '../../is.js';
-import { t } from '../../strings.js';
-import { keysOf, resolveWidget } from '../../layout/bindings.js';
-import { hideMissing, missingState } from '../../layout/missing.js';
-import { isParts, partEmpty } from '../../layout/parts.js';
+} from '../../render/helpers.js';
+import { contentPath, templateFile } from '../../render/files.js';
+import { isObject } from '../../render/is.js';
+import { t } from '../../render/strings.js';
+import { keysOf, resolveWidget } from '../../render/layout/bindings.js';
+import { hideMissing, missingState } from '../../render/layout/missing.js';
+import { isParts, partEmpty } from '../../render/layout/parts.js';
 import { WIDGET_TYPES } from '../index.js';
 import { sourcePage } from '../data.js';
 import {
@@ -65,7 +65,7 @@ import {
   presetOf,
   templateOf,
 } from './presets.js';
-import { isTemplateId } from '../../files.js';
+import { isTemplateId } from '../../render/files.js';
 import { showOnlyItems, showOnlyOf, showOnlyProblem } from './show-only.js';
 import { CUSTOM_ITEM, customItemProblem, customItemsOf, isCustom } from './custom.js';
 import { presetStyle, styleMarkup } from './item-style.js';

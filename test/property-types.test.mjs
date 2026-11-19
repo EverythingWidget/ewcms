@@ -12,7 +12,7 @@ import {
   storedAs,
 } from '../src/render/property-types.js';
 import { checkSchema, newItemOf } from '../src/render/schemas.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../src/widgets/index.js';
 
 test('property types: one list; schemas and widget settings use its names', () => {
   assert.deepEqual(Object.keys(PROPERTY_TYPES), [

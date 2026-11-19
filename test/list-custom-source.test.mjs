@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { createStore } from '../src/editor/store.js';
 import { setListCustom } from '../src/editor/layout-ops.js';
 import { bindingProblems } from '../src/render/layout/bindings.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../src/widgets/index.js';
 
 const F = 'pages/index.json';
 const list = (extra) => ({

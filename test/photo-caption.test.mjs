@@ -2,9 +2,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { photo } from '../src/render/widgets/photo/index.js';
+import { photo } from '../src/widgets/photo/index.js';
 
-const src = readFileSync(new URL('../src/render/widgets/photo/index.js', import.meta.url), 'utf8');
+const src = readFileSync(new URL('../src/widgets/photo/index.js', import.meta.url), 'utf8');
 
 test('photo caption has no inline-edit marker, the photo keeps its picker', () => {
   assert.doesNotMatch(src, /widget\.ed\('caption'\)/);

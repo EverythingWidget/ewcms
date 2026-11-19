@@ -19,8 +19,8 @@
  * Swipe and the wheel (one step per gesture) too. Slides that aren't shown are inert; reduced
  * motion: no fade. The grid and the carousel are both rendered: switching moves nothing else.
  */
-import { esc, img, pad, ratio } from '../../helpers.js';
-import { isObject } from '../../is.js';
+import { esc, img, pad, ratio } from '../../render/helpers.js';
+import { isObject } from '../../render/is.js';
 
 export const CAROUSEL = {
   counter: [true, false],

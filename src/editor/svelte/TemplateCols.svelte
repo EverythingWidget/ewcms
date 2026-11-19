@@ -12,7 +12,7 @@
     previewColumns,
     previewWithColumns,
     templateOfPath,
-  } from '../../render/widgets/list/template-preview.js';
+  } from '../../widgets/list/template-preview.js';
 
   let { live } = $props();
 

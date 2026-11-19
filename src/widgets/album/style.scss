@@ -1,7 +1,7 @@
 // The Album widget's look (./index.js, src/client/modules/album.js): the album page's slider,
 // its thumbs, the grid and the view toggle. Bundled into the site's stylesheet
 // (src/client/styles/main.scss).
-@use '../../../client/styles/tokens' as *;
+@use '../../client/styles/tokens' as *;
 
 /* Album page: Faint Film style slider ⇄ grid */
 .view--album {

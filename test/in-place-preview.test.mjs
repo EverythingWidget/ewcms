@@ -1,6 +1,6 @@
 // The preview updates in place: only an edit that changes the routes or the menu reloads it
 // (src/editor/lib/needs-reload.js); an item template's or a source's sections are rendered
-// again where they show (src/render/widgets/list/template-uses.js), the template editor's
+// again where they show (src/widgets/list/template-uses.js), the template editor's
 // preview too (renderOp, swapSections); Save reloads only when needsReload says so.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -23,8 +23,8 @@ import {
   templateFile,
 } from '../src/render/files.js';
 import { needsReload, routesFile, routesKey } from '../src/editor/lib/needs-reload.js';
-import { sectionsUsing, usesOf } from '../src/render/widgets/list/template-uses.js';
-import { PREVIEW_PAGE, templatePreviewPath } from '../src/render/widgets/list/template-preview.js';
+import { sectionsUsing, usesOf } from '../src/widgets/list/template-uses.js';
+import { PREVIEW_PAGE, templatePreviewPath } from '../src/widgets/list/template-preview.js';
 import { swapSections, swapWidget } from '../src/editor/layout-sync.js';
 import { SITE_A } from './fixtures/index.mjs';
 

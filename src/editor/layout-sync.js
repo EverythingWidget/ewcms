@@ -19,7 +19,7 @@ import {
   sectionClass,
   sectionVars,
 } from '../render/layout/index.js';
-import { kindOf } from '../render/widgets/index.js';
+import { kindOf } from '../widgets/index.js';
 import { templateFile } from '../render/files.js';
 
 /**

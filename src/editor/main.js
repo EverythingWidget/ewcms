@@ -113,8 +113,8 @@ import {
   templateOfPath,
   templatePreview,
   templatePreviewPath,
-} from '../render/widgets/list/template-preview.js';
-import { sectionsUsing } from '../render/widgets/list/template-uses.js';
+} from '../widgets/list/template-preview.js';
+import { sectionsUsing } from '../widgets/list/template-uses.js';
 import { needsReload, routesFile, routesKey, siteKey } from './lib/needs-reload.js';
 import { TYPE_SPECIMEN, isTypeSpecimen } from '../render/layout/type-specimen.js';
 import { keepUnsaved, restoreUnsaved } from './keep-unsaved.js';
@@ -723,7 +723,7 @@ function syncBackdrop() {
 /**
  * The preview's sections that show edited item templates or sources rendered again in place
  * (after their draft reached the dev server, see pushDraft): those whose Lists use the template
- * (render/widgets/list/template-uses.js; the template editor's preview: its one List), and, for a
+ * (widgets/list/template-uses.js; the template editor's preview: its one List), and, for a
  * source, those that list it or show bound values (src/render/layout/bindings.js).
  */
 function renderUses({ templates = [], sources = [] }) {

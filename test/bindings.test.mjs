@@ -10,7 +10,7 @@ import * as render from '../src/render/render.js';
 import { buildRoutes } from '../src/render/routes.js';
 import { setEditable } from '../src/render/helpers.js';
 import { checkContent } from '../src/render/validate.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../src/widgets/index.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import {
   bindTypeOf,

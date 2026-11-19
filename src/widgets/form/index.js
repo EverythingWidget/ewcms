@@ -15,8 +15,8 @@
  * A plain <form method="post"> that works without JavaScript; src/client/modules/form.js
  * sends it with fetch and shows the messages in place.
  */
-import { html, esc, warnOnce } from '../../helpers.js';
-import { t } from '../../strings.js';
+import { html, esc, warnOnce } from '../../render/helpers.js';
+import { t } from '../../render/strings.js';
 
 export const FIELD_TYPES = [
   ['text', 'Text'],

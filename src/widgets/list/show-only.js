@@ -9,7 +9,7 @@
  * the List shows every item, as before. Used where the List's items are made
  * (../../layout/source.js widgetItems), so the editor's preview and the build agree.
  */
-import { isObject } from '../../is.js';
+import { isObject } from '../../render/is.js';
 
 // the property types a value can be picked from (not photos, long texts or links)
 const PICKABLE = ['text', 'number', 'choice', 'boolean', 'reference', 'date'];

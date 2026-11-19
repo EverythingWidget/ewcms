@@ -5,7 +5,7 @@
  * tab (WidgetLayout.svelte) and its toolbar shortcut (WidgetToolbar.svelte) call these, so a
  * setting has one code path, one content key and one state.
  */
-import { WIDGET_TYPES } from '../render/widgets/index.js';
+import { WIDGET_TYPES } from '../widgets/index.js';
 import { placementOf } from '../render/layout/place.js';
 import { hasScaleToFit } from '../render/layout/type.js';
 import { baseOf } from '../render/layout/index.js';

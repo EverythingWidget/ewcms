@@ -24,7 +24,7 @@
   import { resolve } from '../../render/layout/bindings.js';
   import { BIND_TYPES } from '../../render/property-types.js';
   import { widgetItems, sourceOf } from '../../render/layout/source.js';
-  import { WIDGET_TYPES } from '../../render/widgets/index.js';
+  import { WIDGET_TYPES } from '../../widgets/index.js';
   import { ui } from './ui.svelte.js';
   import ViewTop from './ViewTop.svelte';
   import WidgetLayout from './WidgetLayout.svelte';

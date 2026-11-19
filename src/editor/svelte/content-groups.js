@@ -7,7 +7,7 @@ import { parse } from '../lib/pointer.js';
 import { sourceIdOf, sourceIds } from '../../render/files.js';
 import { pointer } from '../../render/helpers.js';
 import { labelOf } from '../../render/schemas.js';
-import { widgetType } from '../../render/widgets/index.js';
+import { widgetType } from '../../widgets/index.js';
 import { bindTypeOf } from '../../render/layout/bindings.js';
 import { targetFile } from '../layout-sync.js';
 import { itemName, schemaFor } from './source-items.js';
@@ -95,7 +95,7 @@ export function nameOf(s) {
  * photo item ('' for a list of photos, null for none) so Add can open the Media window.
  */
 function registryFields(file, base, s, t) {
-  // a list item's subkey type can be { type, label, options } (src/render/widgets/index.js).
+  // a list item's subkey type can be { type, label, options } (src/widgets/index.js).
   // bindType: what it can show of an item as a whole (src/render/layout/bindings.js; a list
   // item's text subkey binds as text, other list items can't, null); textual: a bound one
   // can have a format ("{value} photos")

@@ -1,5 +1,5 @@
 /**
- * POST /api/contact: the contact form (src/render/widgets/form/index.js) on Cloudflare Pages.
+ * POST /api/contact: the contact form (src/widgets/form/index.js) on Cloudflare Pages.
  * A Pages Function: Cloudflare runs it for the site's functions/api/contact.js, which is one line:
  *
  *   export { onRequestPost } from 'ewcms/functions/contact';

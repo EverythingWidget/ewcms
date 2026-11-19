@@ -5,6 +5,6 @@
  * the editor needs: the Add widget modal, the inspector, Motion and the toolbars read them.
  */
 import defs from 'virtual:site-widgets';
-import { registerWidgets } from '../render/widgets/index.js';
+import { registerWidgets } from '../widgets/index.js';
 
 registerWidgets(defs);

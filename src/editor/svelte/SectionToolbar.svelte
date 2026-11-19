@@ -31,7 +31,7 @@
   import { ui, selectWidgets, selectSection, openPopup } from './ui.svelte.js';
   import { locate } from '../locate.js';
   import { shownRows } from '../shown-rows.js';
-  import { widgetType } from '../../render/widgets/index.js';
+  import { widgetType } from '../../widgets/index.js';
   import {
     duplicateSection,
     duplicateWidgets,

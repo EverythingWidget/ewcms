@@ -12,11 +12,11 @@
 @use 'layout';
 @use 'text';
 // the built-in widgets' own looks (their widget modules' style.scss) and the chrome
-@use '../../render/widgets/list/style' as list-widget;
+@use '../../widgets/list/style' as list-widget;
 @use 'glass';
 @use 'chrome';
-@use '../../render/widgets/hero/style' as hero-widget;
-@use '../../render/widgets/photo/style' as photo-widget;
-@use '../../render/widgets/form/style' as form-widget;
-@use '../../render/widgets/album/style' as album-widget;
+@use '../../widgets/hero/style' as hero-widget;
+@use '../../widgets/photo/style' as photo-widget;
+@use '../../widgets/form/style' as form-widget;
+@use '../../widgets/album/style' as album-widget;
 @use 'site-layer/overrides' as site-overrides;

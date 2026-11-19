@@ -11,12 +11,12 @@ import { buildRoutes } from '../src/render/routes.js';
 import { setEditable } from '../src/render/helpers.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { bindingProblems } from '../src/render/layout/bindings.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../src/widgets/index.js';
 import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { CORE_STRINGS } from '../src/render/strings.js';
-import { PRESETS, factsRuns, namesOf } from '../src/render/widgets/list/presets.js';
-import { nextItemIndex } from '../src/render/widgets/list/client.js';
-import { resolveCustomItem } from '../src/render/widgets/list/custom.js';
+import { PRESETS, factsRuns, namesOf } from '../src/widgets/list/presets.js';
+import { nextItemIndex } from '../src/widgets/list/client.js';
+import { resolveCustomItem } from '../src/widgets/list/custom.js';
 import { widgetItems } from '../src/render/layout/source.js';
 import { countGroups, THIS_LIST } from '../src/editor/property-groups.js';
 import { layoutOptions, layoutParts, MISSING_OPTIONS } from '../src/editor/widget-layout.js';
@@ -219,7 +219,7 @@ test('Grid; columns and gap; Row preset defaults to 1 column', () => {
     assert.match(check(bad), /config\.gap must be a whole number of cells/, String(bad));
   assert.equal(gw.config.gap, undefined, 'a new List: no gap (0)');
   const css = readFileSync(
-    new URL('../src/render/widgets/list/style.scss', import.meta.url),
+    new URL('../src/widgets/list/style.scss', import.meta.url),
     'utf8',
   );
   assert.match(css, /--list-gap-px: calc\(var\(--list-gap, 0\) \* var\(--cell, 0px\)\);/);
@@ -928,14 +928,14 @@ test('no heading, no See all: a leftover heading or config.seeAll renders nothin
 
 test('no "first cover of a list" fallback: a custom item shows only its own photo', () => {
   const custom = readFileSync(
-    new URL('../src/render/widgets/list/custom.js', import.meta.url),
+    new URL('../src/widgets/list/custom.js', import.meta.url),
     'utf8',
   );
   assert.doesNotMatch(custom, /sourceCover|coverOf/);
   const it = resolveCustomItem(base, { title: 'P', source: 'people' });
   assert.equal(it.photo, '');
   const presets = readFileSync(
-    new URL('../src/render/widgets/list/presets.js', import.meta.url),
+    new URL('../src/widgets/list/presets.js', import.meta.url),
     'utf8',
   );
   assert.doesNotMatch(presets, /first\('photo'\)|first\('photos'\)/);
@@ -956,7 +956,7 @@ test('Title: the declared title property only when its type fits', () => {
 });
 
 test('a joined template line keeps the text typed around its properties (F40: "€")', async () => {
-  const { joinedRuns } = await import('../src/render/widgets/list/presets.js');
+  const { joinedRuns } = await import('../src/widgets/list/presets.js');
   const runs = [{ t: '\n' }, { property: 'duration' }, { t: ' · €' }, { property: 'price' }];
   const none = () => false;
   assert.deepEqual(joinedRuns(runs, none), [

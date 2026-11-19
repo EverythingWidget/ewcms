@@ -26,7 +26,7 @@
  * A fit line's size is in cells × its own factor (_layout.scss .ts[data-fit]).
  */
 import { isObject } from '../is.js';
-import { WIDGET_TYPES } from '../widgets/index.js';
+import { WIDGET_TYPES } from '../../widgets/index.js';
 
 /** The text styles and a full-width line's starting sizes (in cells; at 1440px a cell is ~11.3px). */
 export const TEXT_STYLES = {

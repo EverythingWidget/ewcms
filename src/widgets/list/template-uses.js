@@ -8,8 +8,8 @@
  * It uses source S when one of its widgets lists or shows S (a "source" with from S, at any
  * depth), or a template it uses does.
  */
-import { isTemplateId } from '../../files.js';
-import { isObject } from '../../is.js';
+import { isTemplateId } from '../../render/files.js';
+import { isObject } from '../../render/is.js';
 
 /** The template ids and source ids named in `value` (any depth), into the two sets. */
 function collect(value, out) {

@@ -29,7 +29,7 @@
   import SourceField from './SourceField.svelte';
   import { sourceFile } from '../../render/files.js';
   import { isParts } from '../../render/layout/parts.js';
-  import { presetOf } from '../../render/widgets/list/presets.js';
+  import { presetOf } from '../../widgets/list/presets.js';
   import { MISSING_OPTIONS } from '../widget-layout.js';
 
   let { g, live, bridge, sourceIds, onsource, bindings = null, lead } = $props();

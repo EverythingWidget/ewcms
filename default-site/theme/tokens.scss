@@ -55,12 +55,12 @@
   // items: one entry of a source as a list shows it (a card, a tile, a row). Defaults are
   // today's cards (the places' cards): no box, a 4px photo radius, 16px between
   // the photo and the text. Change them here to restyle every List. The List widget's
-  // presets use them (ewcms src/render/widgets/list/style.scss):
+  // presets use them (ewcms src/widgets/list/style.scss):
   // every item takes --item-radius, -border, -shadow, -pad, -gap, -bg, -bg-hover and its
   // photo's -photo-ratio and -photo-fit; the --item-pad-s/-m/-l steps space its text.
   // --item-border is an inset box-shadow ring (no layout shift) and --item-shadow a shadow:
   // both box-shadow values, never "none" (they are listed together). A template's item style
-  // (ewcms src/render/widgets/list/item-style.js) overrides them per item.
+  // (ewcms src/widgets/list/item-style.js) overrides them per item.
   --item-radius: 4px;
   --item-border: inset 0 0 0 0 transparent;
   --item-shadow: 0 0 0 0 transparent;

@@ -198,7 +198,7 @@ file, the site's or empty: Sass has no optional `@use`); the site's tokens take 
 breakpoints as `site-core/tokens`. The engine's styles read the tokens: the core
 (`src/client/styles`: the grid, breakpoints, text styles, base, backdrop, layout), the engine's UI
 there too (`_glass.scss`, `_chrome.scss`: the header, the phone menu, the curtain, the footer) and
-each built-in widget's look next to it (`src/render/widgets/<type>/style.scss`: hero,
+each built-in widget's look next to it (`src/widgets/<type>/style.scss`: hero,
 photo, form, album, list). The editor has its own tokens and fonts
 (`src/editor/styles/_tokens.scss`, `_fonts.scss`, `src/editor/fonts`): it never reads the site's
 theme, so a theme can change and the editor stays.
@@ -620,7 +620,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
   In the editor: the toolbar's **Full-width line** icon (edit mode, after Style: the caret's line)
   and the **Shrink to fit** switch in the widget's pop-up (Layout tab, after Placement; also a
   toolbar shortcut after Auto height). A type opts in through its definition: `fitWidth: true`,
-  `scaleToFit: true` (the Text widget; `src/render/widgets/index.js`).
+  `scaleToFit: true` (the Text widget; `src/widgets/index.js`).
 
 - **The widget pop-up** has two tabs, the same for every widget: **Content** (source,
   settings, texts) and **Layout** (what its type's definition supports, in order: Size Auto /
@@ -657,7 +657,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
   config values). An unknown widget type isn't an error: it logs a build warning and is skipped.
 - **Bindings:** a widget's setting can show a source item's value instead of its own (below).
 
-**Widgets.** The widget types live in **one registry**, `src/render/widgets/` (`index.js` explains the
+**Widgets.** The widget types live in **one registry**, `src/widgets/` (`index.js` explains the
 shape): the build renders with it, and the editor reads it for each widget's settings and config
 and for **Add widget**. A type is `{ type, label, icon, settings, config, defaults, render(data,
 ctx, widget) }`; `list` makes it show a list of items, `item` one item it
@@ -695,12 +695,12 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
   from the registry, e.g. text `lines-up`, photo `photo-reveal`, grid `grid-reveal`). Composite
   widgets (hero, heading, album) keep `data-anim` **elements** inside them
   for their own pieces (see Animations).
-- **A new type:** add it to a file in `src/render/widgets/` and to `WIDGET_TYPES` in `index.js`
+- **A new type:** add it to a file in `src/widgets/` and to `WIDGET_TYPES` in `index.js`
   (and its styles); the editor shows it with no editor code.
 
 ### Custom widgets
 
-Built-in widgets live in `src/render/widgets/<type>/index.js`, one module each (always on). A site
+Built-in widgets live in `src/widgets/<type>/index.js`, one module each (always on). A site
 can add its own the same way: a folder with an `index.js`, listed in `ewcms.config.mjs`:
 
 ```js
@@ -750,7 +750,7 @@ export default {
 };
 ```
 
-That's all: the registry (`registerWidgets` in `src/render/widgets/index.js`) adds it next to the
+That's all: the registry (`registerWidgets` in `src/widgets/index.js`) adds it next to the
 built-ins for the prerender, content validation (its `settings` types and `check`), and, through
 `virtual:site-widgets`, the editor: the Add widget modal, the inspector (from `settings`/`config`),
 Motion and the widget/layout toolbars need no code of their own. `widget.ed(key)` makes a field
@@ -869,7 +869,7 @@ values of a **source item** instead of its own, as **parts** (`src/render/layout
 
 ### List widget
 
-A **List** (`src/render/widgets/list/`) shows items as the same **column of widgets**, the
+A **List** (`src/widgets/list/`) shows items as the same **column of widgets**, the
 **preset**: either every item of its source (**From a source**: All or From URL), or items you
 add by hand (**Custom**: `config.custom` and `config.items`). Each item widget is a real widget (Photo, Text, Button), rendered by the same code as on a page, so bindings, formats and the hide
 rule work as anywhere.
@@ -1032,7 +1032,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
   gets that photo's credit from `photos.json` ("Photo: Name / Unsplash") and its `source` link.
   An item's own wins.
 - **Arrangement Carousel** (`config.arrangement`: `"grid"` default | `"carousel"`,
-  `src/render/widgets/list/carousel.js`, `carousel-client.js`): the items one at a time in a fixed
+  `src/widgets/list/carousel.js`, `carousel-client.js`): the items one at a time in a fixed
   slide box. Layout tab, and an inner List's rows in the template editor; the rows show only
   with Carousel (Grid hides them, and picking Grid drops them):
 
@@ -1057,7 +1057,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
   `thumbnails: "photos"` with no photo in the template warns (numbers show). The Album widget
   stays for now.
 
-- **The template grid** (`src/render/widgets/list/item-grid.js`, `item-grid-render.js`): each
+- **The template grid** (`src/widgets/list/item-grid.js`, `item-grid-render.js`): each
   item is a grid of its own, as a page's section (`.sec.sec--item`, 120 columns, 60 on a phone)
   and its widgets are placed as page widgets are, with the same keys and the same mechanism
   (`src/client/modules/rows.js` flows it with the page; `data-tw` names a widget): `id`,
@@ -1091,7 +1091,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
     | `style.align`, `style.titleSize`                                           | each text's own alignment and style                                    |
     | `opens`, `{ "type": "toggle" }`, `"details": true`                         | a `details` widget (Summary and details, below)                        |
 
-- **Summary and details** (`"type": "details"`, `src/render/widgets/list/details.js`): an item
+- **Summary and details** (`"type": "details"`, `src/widgets/list/details.js`): an item
   that opens. The template is the **summary** (always shown); the `details` widget sits on its
   grid where the +/× goes and names the **details' template**, shown below once opened, on its
   own grid and filled from the same item.
@@ -1199,7 +1199,7 @@ A List is a simple list: only its items, no heading and no See all link. A headi
 
   A border is an inset box-shadow ring (`--item-border`, listed with `--item-shadow`), so it
   never shifts the layout. The presets are style values only (`PRESET_STYLES` in
-  `src/render/widgets/list/item-style.js`): Card `photoRatio 4/5, photoPlacement above,
+  `src/widgets/list/item-style.js`): Card `photoRatio 4/5, photoPlacement above,
 hoverEffect accent, titleSize m, textBody lines`; Plain `photoRatio 4/3, photoPlacement above,
 padding 0, border none, shadow none, background none, hoverEffect accent, titleSize s,
 textBody prose`; Panel `photoRatio 4/5, photoPlacement above, padding 0, textOverPhoto bottom,
@@ -1381,7 +1381,7 @@ that every internal `href` / `src` in `dist/` points at a file.
 
 ### Contact form
 
-A **Contact form** widget (Add widget > Contact form; `src/render/widgets/form/index.js`): title,
+A **Contact form** widget (Add widget > Contact form; `src/widgets/form/index.js`): title,
 intro, its fields, the button and the messages are content, edited in the Content panel. Each
 field: label, placeholder, name (what the email calls it; `name`, `email` and `phone` get the
 browser's autofill), type (text, email, phone, long text, choice), required, and a choice's
@@ -1871,7 +1871,7 @@ added, copied, moved or deleted, a setting that changes what a widget shows) the
 renders just the sections it touched from the editor's copy of the page (`POST
 /__editor/render`) and the preview swaps them in and mounts the page again, without a reload.
 An item template or a source edited: the sections whose Lists use it (or show its values) are
-rendered again the same way (`src/render/widgets/list/template-uses.js`), the template editor's
+rendered again the same way (`src/widgets/list/template-uses.js`), the template editor's
 preview too. The preview loads again only for an edit that changes the routes or the menu
 (`src/editor/lib/needs-reload.js`, by file: an item or page added, removed or moved, a slug, a
 name the menu lists; the menu, the site settings, photos and UI strings); templates, the footer,

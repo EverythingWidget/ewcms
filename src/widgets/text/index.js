@@ -2,11 +2,11 @@
  * The built-in Text widget (text): a widget module like any custom one (../index.js has
  * the format), its default export the definition.
  */
-import { html, editable } from '../../helpers.js';
-import { checkBody, renderBody } from '../../text.js';
-import { knownName, partLabel, partText } from '../../layout/parts.js';
-import { keysOf } from '../../layout/bindings.js';
-import { hrefOf } from '../../hrefs.js';
+import { html, editable } from '../../render/helpers.js';
+import { checkBody, renderBody } from '../../render/text.js';
+import { knownName, partLabel, partText } from '../../render/layout/parts.js';
+import { keysOf } from '../../render/layout/bindings.js';
+import { hrefOf } from '../../render/hrefs.js';
 
 /**
  * Text: lines in the site's text styles (a label, a title, paragraphs, ...), with bold,

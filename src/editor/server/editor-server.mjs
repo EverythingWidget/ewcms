@@ -68,7 +68,7 @@ import {
   contentFromFiles,
   FOLDERS,
 } from '../../render/files.js';
-import { templateOfPath, templatePreview } from '../../render/widgets/list/template-preview.js';
+import { templateOfPath, templatePreview } from '../../widgets/list/template-preview.js';
 import { isTypeSpecimen, typeSpecimen } from '../../render/layout/type-specimen.js';
 import { checkItems, photoChecker, schemaOf } from '../../render/schemas.js';
 import { NAMED_VIEWS, getRoutes, pathOfId, titleCase } from '../../render/routes.js';
@@ -106,8 +106,8 @@ import { defaultWhere, rulesOf } from '../../render/query.js';
 import { newId } from '../../render/layout/ids.js';
 import { bindingProblems } from '../../render/layout/bindings.js';
 import { motionProblems } from '../../render/layout/motion.js';
-import { WIDGET_TYPES } from '../../render/widgets/index.js';
-import { usesOf } from '../../render/widgets/list/template-uses.js';
+import { WIDGET_TYPES } from '../../widgets/index.js';
+import { usesOf } from '../../widgets/list/template-uses.js';
 
 /** A new page's heading row: below the header (16 empty rows, ~180px at 1440 wide). */
 const HEAD_ROW = 17;

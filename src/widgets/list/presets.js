@@ -22,9 +22,9 @@
  *   Photo  a photo only: no text, no box (a photo grid, an inner List of an item's photos)
  */
 import { gridStyle, itemSection, stackToGrid } from './item-grid.js';
-import { newId } from '../../layout/ids.js';
-import { schemaOf } from '../../schemas.js';
-import { isObject } from '../../is.js';
+import { newId } from '../../render/layout/ids.js';
+import { schemaOf } from '../../render/schemas.js';
+import { isObject } from '../../render/is.js';
 import { presetStyle } from './item-style.js';
 
 /**

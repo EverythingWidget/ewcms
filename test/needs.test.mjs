@@ -11,7 +11,7 @@ import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { checkContent } from '../src/render/validate.js';
 import { bindingProblems } from '../src/render/layout/bindings.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../src/widgets/index.js';
 import { goneOf, missingState } from '../src/render/layout/missing.js';
 import { TEMPLATE_MISSING } from '../src/editor/lib/item-template.js';
 import { SITE_A } from './fixtures/index.mjs';

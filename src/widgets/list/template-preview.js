@@ -6,7 +6,7 @@
  * is as wide as in a List of that many columns (the preview's only: a List keeps its own).
  * Never built: the dev middleware alone serves it.
  */
-import { isTemplateId } from '../../files.js';
+import { isTemplateId } from '../../render/files.js';
 
 export const TEMPLATE_PREVIEW = '/__template/';
 /** The preview's address for template `id`. */

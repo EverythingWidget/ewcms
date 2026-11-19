@@ -10,10 +10,10 @@
   import Field from './Field.svelte';
   import { sourceIds as sourceIdsOf, templateIdOf } from '../../render/files.js';
   import { schemaOf } from '../../render/schemas.js';
-  import { sampleSource } from '../../render/widgets/list/template-preview.js';
-  import { ITEM_WIDGETS, itemSection } from '../../render/widgets/list/item-grid.js';
-  import { PRESETS } from '../../render/widgets/list/presets.js';
-  import { innerChoice, innerTemplates } from '../../render/widgets/list/nested.js';
+  import { sampleSource } from '../../widgets/list/template-preview.js';
+  import { ITEM_WIDGETS, itemSection } from '../../widgets/list/item-grid.js';
+  import { PRESETS } from '../../widgets/list/presets.js';
+  import { innerChoice, innerTemplates } from '../../widgets/list/nested.js';
   import { MIN_TEXT_PX, sizeLine, textSizes } from '../lib/small-text.js';
   import {
     ITEMS_FROM,

@@ -11,9 +11,9 @@ import { loadContent, readContentDir } from '../src/cli/content.mjs';
 import { templatesOp, editableFiles } from '../src/editor/server/editor-server.mjs';
 import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../src/widgets/index.js';
 import { checkContent } from '../src/render/validate.js';
-import { cloneTemplate, presetWidgets } from '../src/render/widgets/list/presets.js';
+import { cloneTemplate, presetWidgets } from '../src/widgets/list/presets.js';
 import { contentPath, isContentFile, templateFile, templateIdOf } from '../src/render/files.js';
 import { SITE_A, withPhoto } from './fixtures/index.mjs';
 

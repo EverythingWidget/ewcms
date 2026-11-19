@@ -25,7 +25,7 @@
   import { ui } from './ui.svelte.js';
   import { SEO_SETTINGS, SITE_SETTINGS } from './content-groups.js';
   import { languageOptions, langHint } from '../lib/languages.js';
-  import { TARGETS } from '../../render/widgets/form/index.js';
+  import { TARGETS } from '../../widgets/form/index.js';
   import { SITE } from '../../render/files.js';
   import { COLS } from '../../render/layout/grid.js';
   import { TYPE_KEYS, TYPE_SCALE, TYPE_VARS, typeVarList } from '../../render/layout/type.js';

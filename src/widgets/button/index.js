@@ -2,8 +2,8 @@
  * The built-in Button widget (button): a widget module like any custom one (../index.js has
  * the format), its default export the definition.
  */
-import { html, esc, extAttrs } from '../../helpers.js';
-import { hrefOf } from '../../hrefs.js';
+import { html, esc, extAttrs } from '../../render/helpers.js';
+import { hrefOf } from '../../render/hrefs.js';
 
 /**
  * A button linking somewhere (config.link: a page, an item or a URL; src/render/hrefs.js). Its

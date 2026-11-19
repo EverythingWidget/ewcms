@@ -5,7 +5,7 @@
  */
 import { createStore } from '../../src/editor/store.js';
 import { createLive } from '../../src/editor/svelte/live.svelte.js';
-import { WIDGET_TYPES } from '../../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../../src/widgets/index.js';
 
 export const FILE = 'pages/index.json';
 

@@ -1,4 +1,4 @@
-// Summary and details (src/render/widgets/list/details.js, ./client.js): items that open.
+// Summary and details (src/widgets/list/details.js, ./client.js): items that open.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -9,10 +9,10 @@ import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { checkContent } from '../src/render/validate.js';
 import { bindingProblems } from '../src/render/layout/bindings.js';
-import { innerChoice } from '../src/render/widgets/list/nested.js';
-import listClient, { setOpen, opensKey } from '../src/render/widgets/list/client.js';
+import { innerChoice } from '../src/widgets/list/nested.js';
+import listClient, { setOpen, opensKey } from '../src/widgets/list/client.js';
 import { addAt, newStackWidget } from '../src/editor/lib/item-template.js';
-import { WIDGET_TYPES, widgetType } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES, widgetType } from '../src/widgets/index.js';
 import { createStore } from '../src/editor/store.js';
 import { contentGroups } from '../src/editor/svelte/content-groups.js';
 import { templateFile } from '../src/render/files.js';
@@ -286,7 +286,7 @@ test('the editor: Add Summary and details, its rows; no shift', () => {
     assert.ok(panel.includes(label), label);
   assert.ok(read('src/editor/lib/item-template.js').includes("['details', 'Summary and details']"));
   // no shift: the transition is the details' grid row, nothing measured
-  const css = read('src/render/widgets/list/style.scss');
+  const css = read('src/widgets/list/style.scss');
   assert.match(css, /grid-template-rows: 0fr/);
   assert.match(css, /prefers-reduced-motion: reduce/);
 });
@@ -329,7 +329,7 @@ test('the editor shows Summary and details, not Unknown type', () => {
 });
 
 test('an item is as wide as the List gives it, never its content (a resize re-measures it)', () => {
-  const css = read('src/render/widgets/list/style.scss');
+  const css = read('src/widgets/list/style.scss');
   const block = css.slice(css.indexOf('.li--template {'));
   assert.match(block, /grid-template-columns: minmax\(0, 1fr\)/);
   assert.match(block, /\.li__details-in \{[^}]*justify-items: stretch/);

@@ -25,8 +25,8 @@
  * ("clickable": false); no button in the summary (a button in a button); the details' template
  * exists and holds no "details" of its own; not in an inner List's template.
  */
-import { isObject } from '../../is.js';
-import { isTemplateId } from '../../files.js';
+import { isObject } from '../../render/is.js';
+import { isTemplateId } from '../../render/files.js';
 import { itemWidgets } from './item-grid.js';
 
 export const DETAILS_KEYS = ['template', 'several', 'icon', 'screenReaderName', 'open'];

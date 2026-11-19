@@ -1,22 +1,22 @@
-// List step 9: item style (a template's "style", src/render/widgets/list/item-style.js).
+// List step 9: item style (a template's "style", src/widgets/list/item-style.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { GRID_STYLE_KEYS, gridStyle } from '../src/render/widgets/list/item-grid.js';
+import { GRID_STYLE_KEYS, gridStyle } from '../src/widgets/list/item-grid.js';
 import { onGrid, template } from '../scripts/grid-helper.mjs';
 import fs from 'node:fs';
 import * as sass from 'sass';
 import { loadContent } from '../src/cli/content.mjs';
 import { checkContent } from '../src/render/validate.js';
-import { cloneTemplate } from '../src/render/widgets/list/presets.js';
+import { cloneTemplate } from '../src/widgets/list/presets.js';
 import {
   PRESET_STYLES,
   STYLE_KEYS,
   presetStyle,
   styleMarkup,
   styleProblems,
-} from '../src/render/widgets/list/item-style.js';
+} from '../src/widgets/list/item-style.js';
 import { STYLE_ROWS } from '../src/editor/lib/item-style-rows.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../src/widgets/index.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 const base = loadContent(SITE_A);
@@ -130,7 +130,7 @@ test('presets are style values; Duplicate writes them out; a template copy keeps
   assert.deepEqual(m.cls, ['li--beside', 'li--prose']);
   assert.equal(m.vars, '--li-title-size:clamp(34px, 4.4vw, 76px)');
   // the look data is gone: presets are style values only
-  assert.doesNotMatch(read('src/render/widgets/list/presets.js'), /\blook:|shapeOf/);
+  assert.doesNotMatch(read('src/widgets/list/presets.js'), /\blook:|shapeOf/);
   assert.equal(PRESET_STYLES['preset:panel'].textOverPhoto, 'bottom');
   const card = cloneTemplate(base, 'people', 'preset:card');
   assert.deepEqual(card.style, gridStyle(presetStyle('preset:card')));
@@ -145,7 +145,7 @@ test('presets are style values; Duplicate writes them out; a template copy keeps
 });
 
 test('no preset-only CSS: the List stylesheet names no preset', () => {
-  const scss = read('src/render/widgets/list/style.scss');
+  const scss = read('src/widgets/list/style.scss');
   assert.doesNotMatch(scss, /\.li--(card|plain|panel|row)\b/);
   assert.doesNotMatch(scss, /^\s*border:/m); // borders are inset box-shadow rings
   const css = sass.compileString(scss.replace(/@use[^;]+;/, '$bp-md: 900px; $bp-sm: 760px;')).css;

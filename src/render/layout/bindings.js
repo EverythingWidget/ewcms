@@ -17,7 +17,7 @@
  * the published page (./index.js). Values are escaped by the widgets as before: the resolver
  * only swaps values (resolveWidget, applied to every widget before it renders).
  *
- * Which settings can bind: every setting of a widget type (src/render/widgets/index.js
+ * Which settings can bind: every setting of a widget type (src/widgets/index.js
  * `settings`) and its config's links; a list of { src } binds to a photos property as a whole;
  * in a list of objects, each text subkey can be bound; the Text widget's lines hold property
  * runs (../text.js). BIND_TYPES (../property-types.js) says which property types fit each
@@ -28,10 +28,10 @@ import { contentPath, isTemplateId, pageFile, templateIdOf } from '../files.js';
 import { isObject } from '../is.js';
 import { eachWidget } from './ids.js';
 import { MODES, sourceOf } from './source.js';
-import { isCustom } from '../widgets/list/custom.js';
+import { isCustom } from '../../widgets/list/custom.js';
 import { BIND_TYPES, TEXT_TYPES } from '../property-types.js';
-import { flatWidgets, holdsCarousel, nestingProblems } from '../widgets/list/nested.js';
-import { detailsOf, detailsWarnings } from '../widgets/list/details.js';
+import { flatWidgets, holdsCarousel, nestingProblems } from '../../widgets/list/nested.js';
+import { detailsOf, detailsWarnings } from '../../widgets/list/details.js';
 import {
   ITEMS,
   isPropertyPart,

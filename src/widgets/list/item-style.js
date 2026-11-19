@@ -24,7 +24,7 @@
  *   textBody         "lines" | "prose"         the body text as lines, or a readable paragraph
  *   align            "start" | "center" | "end"   the text
  */
-import { isObject } from '../../is.js';
+import { isObject } from '../../render/is.js';
 
 const PX = (...n) => n;
 export const STYLE_KEYS = {

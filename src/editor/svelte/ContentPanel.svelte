@@ -67,7 +67,7 @@
   import { parse } from '../lib/pointer.js';
   import { targetFile } from '../layout-sync.js';
   import { sourceIds as sourceIdsOf } from '../../render/files.js';
-  import { WIDGET_TYPES } from '../../render/widgets/index.js';
+  import { WIDGET_TYPES } from '../../widgets/index.js';
   import { addWidget } from '../layout-ops.js';
   import { shownRows as shownRowsIn } from '../shown-rows.js';
   import { swapView } from '../lib/slide.js';

@@ -10,12 +10,12 @@ import { renderSections, renderSection, sectionAnchor } from './layout/index.js'
 import { docKindOf, docOf, pageFile } from './files.js';
 import { bindingProblems } from './layout/bindings.js';
 import { motionProblems } from './layout/motion.js';
-import { WIDGET_TYPES } from './widgets/index.js';
+import { WIDGET_TYPES } from '../widgets/index.js';
 import { BACKDROP, renderBackdrop } from './backdrop.js';
 import { getRoutes, buildRoutes, curtainOverrides, sitemapXml } from './routes.js';
 
 export { getRoutes, buildRoutes, sitemapXml };
-export { templatePreview, templateOfPath } from './widgets/list/template-preview.js';
+export { templatePreview, templateOfPath } from '../widgets/list/template-preview.js';
 export { typeSpecimen, isTypeSpecimen } from './layout/type-specimen.js';
 export { seoWarnings } from './seo.js';
 export {

@@ -4,7 +4,7 @@
 // here names a preset). Items read the theme's --item-*
 // tokens (the site's theme/tokens.scss; ewcms default-site/theme/tokens.scss), so a theme restyles
 // every List at once. Bundled into the site's stylesheet (src/client/styles/main.scss).
-@use '../../../client/styles/tokens' as *;
+@use '../../client/styles/tokens' as *;
 
 .list {
   display: grid;

@@ -59,7 +59,7 @@
   import { plural } from '../lib/format.js';
   import { swapView } from '../lib/slide.js';
   import { templatesOp } from '../source.js';
-  import { usesOf } from '../../render/widgets/list/template-uses.js';
+  import { usesOf } from '../../widgets/list/template-uses.js';
   import { SITE_PARTS } from '../lib/site-parts.js';
 
   // live: reactive store (live.svelte.js); actions: pickTarget, pagesOp (main.js)

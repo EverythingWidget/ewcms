@@ -17,7 +17,7 @@ import {
   registerWidgets,
   widgetProblems,
   isCustomWidget,
-} from '../src/render/widgets/index.js';
+} from '../src/widgets/index.js';
 import { renderRoute, getRoutes } from '../src/render/render.js';
 import { checkContent } from '../src/render/validate.js';
 import { newWidget } from '../src/render/layout/index.js';

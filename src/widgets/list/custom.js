@@ -3,9 +3,9 @@
  * { title, photo, link, source?, unit }; a pointed source fills the link when it is empty and
  * supplies the Panel count (how many items + unit). The photo is the item's own.
  */
-import { pad } from '../../helpers.js';
-import { hrefOf, linkProblem } from '../../hrefs.js';
-import { isObject } from '../../is.js';
+import { pad } from '../../render/helpers.js';
+import { hrefOf, linkProblem } from '../../render/hrefs.js';
+import { isObject } from '../../render/is.js';
 import { sourcePage } from '../data.js';
 
 /** Is this List in Custom mode (config.custom)? */

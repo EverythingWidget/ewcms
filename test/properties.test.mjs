@@ -8,7 +8,7 @@ import { setEditable } from '../src/render/helpers.js';
 import { checkContent } from '../src/render/validate.js';
 import { checkSchema } from '../src/render/schemas.js';
 import { checkBody, typedProperty } from '../src/render/text.js';
-import { widgetProblems } from '../src/render/widgets/index.js';
+import { widgetProblems } from '../src/widgets/index.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { resolve } from '../src/render/layout/bindings.js';
 import { isEmpty, partEmpty, propertyValue } from '../src/render/layout/parts.js';

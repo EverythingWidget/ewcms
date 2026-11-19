@@ -11,8 +11,8 @@
  * Its widgets reach the outer item with { "property": "title", "of": "parent" } (the chip
  * {parent: title}). The property form is the shape a later top-level "per" can reuse.
  */
-import { isObject } from '../../is.js';
-import { isTemplateId } from '../../files.js';
+import { isObject } from '../../render/is.js';
+import { isTemplateId } from '../../render/files.js';
 import { detailsOf } from './details.js';
 import { itemWidgets } from './item-grid.js';
 

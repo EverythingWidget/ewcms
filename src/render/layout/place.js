@@ -1,6 +1,6 @@
 /**
  * Content-box placement: every widget is a container (its grid area) with a content box (what it
- * renders). A widget type opts in with `placement` (src/render/widgets/index.js):
+ * renders). A widget type opts in with `placement` (src/widgets/index.js):
  *
  *   placement: { axes: 'both' | 'v' | 'h', box: true | false, fill: false, place: 'left top' }
  *     axes   the grid of places the editor offers: 3 x 3 ('both'), one column ('v': top / middle
@@ -21,7 +21,7 @@
  * Rendered as classes and variables of the widget's element (./index.js widgetClass /
  * widgetVars; src/client/styles/_layout.scss .wgt--placed).
  */
-import { WIDGET_TYPES } from '../widgets/index.js';
+import { WIDGET_TYPES } from '../../widgets/index.js';
 
 /** The 3 x 3 places, row by row: [value, label]. */
 export const PLACES = [

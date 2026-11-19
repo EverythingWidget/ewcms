@@ -10,7 +10,7 @@ import { loadContent } from '../src/cli/content.mjs';
 import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { widgetItems } from '../src/render/layout/source.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../src/widgets/index.js';
 import { checkContent } from '../src/render/validate.js';
 import {
   showOnlyFields,
@@ -18,7 +18,7 @@ import {
   showOnlyOf,
   showOnlyProblem,
   showOnlyValues,
-} from '../src/render/widgets/list/show-only.js';
+} from '../src/widgets/list/show-only.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 const json = (f) => JSON.parse(readFileSync(new URL(`./fixtures/show-only/${f}`, import.meta.url)));
@@ -153,7 +153,7 @@ test('F39: the editor: one Show only row under Source, with an (i), never named 
     /const showOnlyOn = \$derived\(!custom && !!listSource && listSource\.mode !== 'item'\)/,
   );
   const mod = readFileSync(
-    new URL('../src/render/widgets/list/show-only.js', import.meta.url),
+    new URL('../src/widgets/list/show-only.js', import.meta.url),
     'utf8',
   );
   for (const src of [lead, mod]) assert.doesNotMatch(src, /\bfilter[A-Z]\w*|\bFilter\b/);

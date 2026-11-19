@@ -1,13 +1,13 @@
 /**
  * The template editor's (TemplatePanel.svelte) edits of an item template
- * (content/templates/t-….json, src/render/widgets/list/presets.js): its stack of widgets and
+ * (content/templates/t-….json, src/widgets/list/presets.js): its stack of widgets and
  * the {property} parts in them. Pure: each returns a new value.
  */
 import { isObject } from '../../render/is.js';
-import { widgetType } from '../../render/widgets/index.js';
+import { widgetType } from '../../widgets/index.js';
 import { isPropertyPart } from '../../render/layout/parts.js';
 import { newId } from '../../render/layout/ids.js';
-import { STACK_ROWS_GAP } from '../../render/widgets/list/item-grid.js';
+import { STACK_ROWS_GAP } from '../../widgets/list/item-grid.js';
 
 /** The widget types a template stacks (no List inside one: nested Lists come later). */
 export const STACK_TYPES = [
@@ -21,7 +21,7 @@ export const typeLabel = (type) => widgetType(type)?.label || STACK_TYPES.find((
 
 /** A new widget for the stack (Add): its first line, photo or button bound to `property`. */
 export function newStackWidget(type, property = 'title', open = 'View', listProperty = 'photos') {
-  // an inner List (two levels: src/render/widgets/list/nested.js): the item's list property
+  // an inner List (two levels: src/widgets/list/nested.js): the item's list property
   if (type === 'list')
     return {
       type: 'list',
@@ -29,7 +29,7 @@ export function newStackWidget(type, property = 'title', open = 'View', listProp
       source: { mode: 'property', property: listProperty },
       config: { template: 'preset:card', columns: '4', gap: 1 },
     };
-  // Summary and details (src/render/widgets/list/details.js): its +/×; the details' template is
+  // Summary and details (src/widgets/list/details.js): its +/×; the details' template is
   // picked next
   if (type === 'details') return { type: 'details', config: { several: false, icon: 'plus' } };
   if (type === 'photo') return { type: 'photo', src: [{ property }] };
@@ -139,7 +139,7 @@ export function innerSourceFor(
 }
 
 /**
- * A new widget on the template's grid (src/render/widgets/list/item-grid.js): its own id, full
+ * A new widget on the template's grid (src/widgets/list/item-grid.js): its own id, full
  * width, below the lowest widget as the preview shows it (`shown`: { id: { row, rows } }, the
  * preview's rows; without: the last one), following it (a link, STACK_ROWS_GAP rows under it:
  * every item's content differs, so an Auto one above that grows pushes it down), last in

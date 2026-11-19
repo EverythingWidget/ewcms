@@ -1,5 +1,5 @@
 /** An item's grid markup (./item-grid.js has the model): a section of its own. */
-import { esc } from '../../helpers.js';
+import { esc } from '../../render/helpers.js';
 import {
   minRowsOf,
   phoneRowsOf,
@@ -7,7 +7,7 @@ import {
   widgetClass,
   widgetLinks,
   widgetVars,
-} from '../../layout/index.js';
+} from '../../render/layout/index.js';
 
 /**
  * The template's rows (desktop, phone): down to its lowest widget, as a section's; a custom

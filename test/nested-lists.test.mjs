@@ -1,8 +1,8 @@
-// List step 10: nested Lists (two levels; src/render/widgets/list/nested.js).
+// List step 10: nested Lists (two levels; src/widgets/list/nested.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { onGrid, template } from '../scripts/grid-helper.mjs';
-import { gridStyle } from '../src/render/widgets/list/item-grid.js';
+import { gridStyle } from '../src/widgets/list/item-grid.js';
 import fs from 'node:fs';
 import { parseHTML } from 'linkedom';
 import { warnings } from '../scripts/test-layout.mjs';
@@ -11,15 +11,15 @@ import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { checkContent } from '../src/render/validate.js';
 import { bindingProblems } from '../src/render/layout/bindings.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../src/widgets/index.js';
 import {
   innerChoice,
   innerItems,
   innerSourceProblems,
   nestingProblems,
-} from '../src/render/widgets/list/nested.js';
-import { presetOf, cloneTemplate } from '../src/render/widgets/list/presets.js';
-import { PRESET_STYLES, styleProblems } from '../src/render/widgets/list/item-style.js';
+} from '../src/widgets/list/nested.js';
+import { presetOf, cloneTemplate } from '../src/widgets/list/presets.js';
+import { PRESET_STYLES, styleProblems } from '../src/widgets/list/item-style.js';
 import { partLabel, partText } from '../src/render/layout/parts.js';
 import { chipHtml, partOfName } from '../src/editor/lib/parts-input.js';
 import { innerSourceFor, newStackWidget } from '../src/editor/lib/item-template.js';

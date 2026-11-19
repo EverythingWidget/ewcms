@@ -44,7 +44,7 @@
   import UpdateNotice from './UpdateNotice.svelte';
   import WidgetToolbar from './WidgetToolbar.svelte';
   import TemplateCols from './TemplateCols.svelte';
-  import { templateOfPath } from '../../render/widgets/list/template-preview.js';
+  import { templateOfPath } from '../../widgets/list/template-preview.js';
   import { layerWidget } from '../layout-ops.js';
   import { targetFile } from '../layout-sync.js';
   import {

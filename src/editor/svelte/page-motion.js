@@ -5,7 +5,7 @@
  *   list   the page file's sections; doc  the preview's document; items  bridge.animElements()
  */
 import { nameOf } from './content-groups.js';
-import { widgetType } from '../../render/widgets/index.js';
+import { widgetType } from '../../widgets/index.js';
 
 export function motionSections(list, doc, items) {
   if (!Array.isArray(list) || !doc) return [];

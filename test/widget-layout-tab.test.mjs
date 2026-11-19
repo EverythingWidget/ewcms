@@ -12,7 +12,7 @@ import {
   sizePatch,
   widgetTabOf,
 } from '../src/editor/widget-layout.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../src/widgets/index.js';
 import { placementOf } from '../src/render/layout/place.js';
 import { hasFitWidth, hasScaleToFit } from '../src/render/layout/type.js';
 

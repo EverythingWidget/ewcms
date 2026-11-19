@@ -26,7 +26,7 @@ import { backdrop } from './modules/backdrop.js';
 import { fitText } from './modules/fit.js';
 import { watchNavHeight } from './modules/navbar.js';
 // the built-in List widget's client module (its widget module's client.js)
-import listClient from '../render/widgets/list/client.js';
+import listClient from '../widgets/list/client.js';
 // the site's own widgets (ewcms.config.mjs widgets): their styles and client modules
 import siteWidgets from 'virtual:site-widgets/client';
 

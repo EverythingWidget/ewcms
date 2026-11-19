@@ -9,7 +9,7 @@ import { loadContent } from '../src/cli/content.mjs';
 import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { checkContent } from '../src/render/validate.js';
-import { WIDGET_TYPES } from '../src/render/widgets/index.js';
+import { WIDGET_TYPES } from '../src/widgets/index.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 const base = loadContent(SITE_A);
@@ -40,7 +40,7 @@ test('rendered: --list-mcols only when set; left out, a phone shows one column a
   assert.match(two.getAttribute('style'), /--list-cols:3;--list-mcols:2/);
   const none = list({}).el.querySelector('.list__items');
   assert.equal(none.getAttribute('style'), '--list-cols:3');
-  const css = read('src/render/widgets/list/style.scss');
+  const css = read('src/widgets/list/style.scss');
   assert.match(css, /repeat\(var\(--list-mcols, 1\), minmax\(0, 1fr\)\)/);
 });
 
@@ -72,7 +72,7 @@ test('the editor: the Columns row per layout, in the same place (no shift)', () 
 
 // the List's grid rules, cascaded at a viewport width (media max-width, specificity, then order)
 const GRID_CSS = sass.compileString(
-  read('src/render/widgets/list/style.scss').replace(
+  read('src/widgets/list/style.scss').replace(
     /@use[^;]+;/g,
     '$bp-md: 900px; $bp-sm: 760px;',
   ),

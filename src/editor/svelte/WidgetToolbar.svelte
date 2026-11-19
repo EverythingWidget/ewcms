@@ -28,12 +28,12 @@
   import { ui, previewClicks } from './ui.svelte.js';
   import { targetFile } from '../layout-sync.js';
   import { schemaFor } from './source-items.js';
-  import { WIDGET_TYPES } from '../../render/widgets/index.js';
+  import { WIDGET_TYPES } from '../../widgets/index.js';
   import { countGroups } from '../property-groups.js';
   import { sourceFile, sourceIds as sourceIdsOf, templateIdOf } from '../../render/files.js';
   import { sourceOf } from '../../render/layout/source.js';
-  import { sampleSource } from '../../render/widgets/list/template-preview.js';
-  import { innerTemplates } from '../../render/widgets/list/nested.js';
+  import { sampleSource } from '../../widgets/list/template-preview.js';
+  import { innerTemplates } from '../../widgets/list/nested.js';
   import { schemaOf } from '../../render/schemas.js';
   import { tick, untrack } from 'svelte';
   import { NEW_ROWS, setWidget } from '../layout-ops.js';

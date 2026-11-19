@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { photo } from '../src/render/widgets/photo/index.js';
+import { photo } from '../src/widgets/photo/index.js';
 import { widgetVars } from '../src/render/layout/index.js';
 import { PLACES } from '../src/render/layout/place.js';
 

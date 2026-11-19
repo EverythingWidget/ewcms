@@ -14,7 +14,7 @@ colour, the body text, the nav, the button, …) need nothing: unset, a site loo
 which `ewcms dev` copies into a new site (a folder with no site files); the site owns that copy. The rest of the old
 theme was engine UI and now lives with the engine's code: the chrome (header, phone menu,
 curtain, footer, glass) in `src/client/styles/`, each built-in widget's look next to the widget
-(`src/render/widgets/<type>/style.scss`: hero, photo, form, album, list). Those read the site's
+(`src/widgets/<type>/style.scss`: hero, photo, form, album, list). Those read the site's
 tokens, exactly as before. Nothing is layered over an engine theme anymore: a site's
 `theme/tokens.scss`, `fonts.scss` and `theme.json` are the whole look.
 

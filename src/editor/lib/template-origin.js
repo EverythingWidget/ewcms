@@ -7,7 +7,7 @@
  * to the pages list, as before), and going anywhere else clears it.
  *
  * At most two deep: a page's List opens template A, A's inner List opens template B, and B
- * holds no List (the nested-list rule, src/render/widgets/list/nested.js).
+ * holds no List (the nested-list rule, src/widgets/list/nested.js).
  *
  * The page head's second line is the path back (originCrumbs), never the template's own name,
  * and its title row says how many Lists use the template (listUses, usesLabel).

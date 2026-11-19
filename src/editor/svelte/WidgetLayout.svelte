@@ -12,7 +12,7 @@
 <script>
   import { NEW_ROWS, layerWidget, setWidget } from '../layout-ops.js';
   import { ASPECTS, linkOf, ratioOf, sizeOf } from '../../render/layout/index.js';
-  import { widgetType } from '../../render/widgets/index.js';
+  import { widgetType } from '../../widgets/index.js';
   import { nameOf } from './content-groups.js';
   import { ui } from './ui.svelte.js';
   import Popover from './Popover.svelte';
@@ -21,7 +21,7 @@
   import { scaledToFit } from '../../render/layout/type.js';
   import Field from './Field.svelte';
   import InfoHelp from './InfoHelp.svelte';
-  import { CAROUSEL, withArrangement } from '../../render/widgets/list/carousel.js';
+  import { CAROUSEL, withArrangement } from '../../widgets/list/carousel.js';
   import {
     boxLabels,
     layoutOptions,
