@@ -238,3 +238,43 @@ test("a gesture's Esc is heard wherever the focus is, before keys.js (the select
       );
   }
 });
+
+test("the overlay's parts are wired in order: each reads only what ctx has when it is made", () => {
+  const o = src('overlay.js');
+  const lit = o.match(/const ctx = \{([^}]*)\};/)[1];
+  const have = new Set(
+    lit
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
+  // the parts in the order overlay.js makes them
+  const order = [...o.matchAll(/Object\.assign\(\s*ctx,\s*(createOverlay\w+)\(ctx\)/g)].map(
+    (m) => m[1],
+  );
+  assert.deepEqual(order, [
+    'createOverlayRows',
+    'createOverlayDrag',
+    'createOverlaySelect',
+    'createOverlayLinks',
+  ]);
+  for (const name of order) {
+    const f = `overlay-${name.slice(13).replace(/[A-Z]/g, (c, i) => (i ? '-' : '') + c.toLowerCase())}.js`;
+    const p = src(f);
+    const reads = p.match(/export function \w+\(ctx\) \{\s*const \{([^}]*)\} = ctx;/)[1];
+    for (const k of reads
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean))
+      assert.ok(have.has(k), `${f} reads ${k} before ctx has it`);
+    const gives = p.match(/\n {2}return \{([^}]*)\};\n\}/)[1];
+    for (const k of gives
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean))
+      have.add(k);
+  }
+  // drag reads minOf (rows), select reads minOf and setArea (drag)
+  assert.ok(order.indexOf('createOverlayRows') < order.indexOf('createOverlayDrag'));
+  assert.ok(order.indexOf('createOverlayDrag') < order.indexOf('createOverlaySelect'));
+});
