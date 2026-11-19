@@ -121,7 +121,7 @@ test("a press on a widget's link or button only picks it: no pressed look, Alt s
   assert.match(read('src/client/styles/_glass.scss'), /&:active \{\s*transform: scale\(0\.97\);/);
 });
 
-test('G14: Ctrl+Z in the preview is preventDefault before the editor undo runs', () => {
+test("G14: a preview key reaches keys.js before its default is prevented (Ctrl+Z still the store's undo)", () => {
   const b = src('preview-edit.js'); // (the preview's keydown: its editing, then the forward)
   // (forwarded first, then prevented: keys.js sees an arrow or Enter as one in the editor)
   assert.match(

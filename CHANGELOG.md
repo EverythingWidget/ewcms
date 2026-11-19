@@ -21,8 +21,14 @@ say what a site must do before it bumps its pin.
 - The preview's layout layer (`src/editor/overlay.js`) is split: `overlay.js` keeps what shows,
   the pointer's dispatch and the one draw loop; `overlay-drag.js` (one widget's move and resize),
   `overlay-select.js` (group move, nudge, selection box), `overlay-links.js` (link lines and link
-  drag) and `overlay-rows.js` (a Custom section's rows) share its one state. Nothing changes in
-  how it works.
+  drag) and `overlay-rows.js` (a Custom section's rows) share its one state. The split itself
+  changes nothing in how it works.
+- Esc cancels any drag in the preview (a widget's move or resize, a group move, the selection
+  box, a link, a Custom section's rows) wherever the focus is, in the editor or the preview. It no
+  longer also drops the selection.
+- Arrows, Enter and letters pressed in the preview act as they do in the editor (G14): the arrows
+  nudge the picked widgets, Enter or a letter edits a picked Text. A text edited in place keeps
+  them (the caret, a line break, typing).
 
 ## 0.10.0 (2026-11-17)
 

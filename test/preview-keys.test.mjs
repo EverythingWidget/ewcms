@@ -34,8 +34,9 @@ function preview() {
   const doc = {
     addEventListener: (t, fn) => ((on[t] ??= []), on[t].push(fn)),
     createElement: () => ({}),
+    execCommand: (c) => did.exec.push(c),
   };
-  const did = { nudge: [], edit: [], undo: 0 };
+  const did = { nudge: [], edit: [], undo: 0, exec: [] };
   const onKey = createKeys({
     store: { undo: () => did.undo++, redo: () => {} },
     bridge: { path: () => '/', doc, editWidget: (id, t) => (did.edit.push([id, t]), true) },
@@ -96,7 +97,7 @@ test('Enter or a letter in the preview edits a picked Text (G14), as in the edit
   assert.ok(z.defaultPrevented);
 });
 
-test('a text edited in place keeps its arrows (the caret) and its Enter', () => {
+test('a text edited in place keeps its arrows (the caret), its Enter and its letters', () => {
   Object.assign(ui, { mode: 'edit', pageTab: 'sections', widget: 'w-9', multi: [], link: null });
   const { did, press } = preview();
   const text = {
@@ -107,6 +108,14 @@ test('a text edited in place keeps its arrows (the caret) and its Enter', () => 
     const e = press(k, text);
     assert.equal(e.defaultPrevented, false, `${k}: the caret moves`);
   }
+  // Enter: a line break in the text; a letter: typed into it (the browser's own)
+  const enter = press('Enter', text);
+  assert.ok(enter.defaultPrevented);
+  assert.deepEqual(did.exec, ['insertLineBreak']);
+  const q = press('q', text);
+  assert.equal(q.defaultPrevented, false, 'q: typed');
+  // none of them nudges, starts another edit or drops the pick
   assert.deepEqual(did.nudge, []);
   assert.deepEqual(did.edit, []);
+  assert.equal(ui.widget, 'w-9');
 });
