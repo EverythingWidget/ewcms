@@ -4,11 +4,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { DEFAULTS, loadSiteConfig, repoUrl, legacyConfigWarning } from '../src/cli/site-config.mjs';
+import * as siteConfig from '../src/cli/site-config.mjs';
 import { check } from '../src/cli/cli.mjs';
 import { loadContent } from '../src/cli/content.mjs';
 import { CONTENT_DIR } from '../src/render/files.js';
 import { SITE_A } from './fixtures/index.mjs';
+
+const { DEFAULTS, loadSiteConfig, repoUrl } = siteConfig;
 
 test('no ewcms.config.mjs: the defaults, resolved from the root', () => {
   const site = loadSiteConfig(SITE_A);
@@ -60,23 +62,12 @@ test('repoUrl: the git remote first, then the config, else none', () => {
   assert.equal(repoUrl(''), '');
 });
 
-test('a leftover site.config.mjs warns to git mv it to ewcms.config.mjs', async () => {
-  const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-legacy-config-'));
-  const leftover = tmp();
-  const renamed = tmp();
-  const both = tmp();
-  const bare = tmp();
-  fs.writeFileSync(path.join(leftover, 'site.config.mjs'), 'export default {};\n');
-  fs.writeFileSync(path.join(renamed, 'ewcms.config.mjs'), 'export default {};\n');
-  fs.writeFileSync(path.join(both, 'site.config.mjs'), 'export default {};\n');
-  fs.writeFileSync(path.join(both, 'ewcms.config.mjs'), 'export default {};\n');
-  const message = 'site.config.mjs is now ewcms.config.mjs: git mv site.config.mjs ewcms.config.mjs';
+test('a leftover site.config.mjs: not read, no warning (ewcms.config.mjs only)', async () => {
+  const leftover = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-legacy-config-'));
+  fs.writeFileSync(path.join(leftover, 'site.config.mjs'), "export default { outDir: 'old' };\n");
   try {
-    assert.equal(legacyConfigWarning(leftover), message);
-    assert.equal(legacyConfigWarning(renamed), '');
-    assert.equal(legacyConfigWarning(both), '');
-    assert.equal(legacyConfigWarning(bare), '');
-    // ewcms check prints it (dev and build print the same warning at startup)
+    assert.equal('legacyConfigWarning' in siteConfig, false);
+    assert.equal(loadSiteConfig(leftover).config.outDir, DEFAULTS.outDir);
     const warned = [];
     const orig = console.warn;
     console.warn = (m) => warned.push(String(m));
@@ -85,8 +76,8 @@ test('a leftover site.config.mjs warns to git mv it to ewcms.config.mjs', async 
     } finally {
       console.warn = orig;
     }
-    assert.equal(warned[0], message);
+    assert.equal(warned.filter((m) => m.includes('site.config.mjs')).length, 0);
   } finally {
-    for (const d of [leftover, renamed, both, bare]) fs.rmSync(d, { recursive: true, force: true });
+    fs.rmSync(leftover, { recursive: true, force: true });
   }
 });

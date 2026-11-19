@@ -16,12 +16,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { ENGINE, enginePath, posixPath, ENGINE_VERSION } from './engine.mjs';
-import {
-  loadSiteConfig,
-  CONFIG_FILE,
-  DEFAULT_SITE_THEME,
-  legacyConfigWarning,
-} from './site-config.mjs';
+import { loadSiteConfig, CONFIG_FILE, DEFAULT_SITE_THEME } from './site-config.mjs';
 import { buildPhotos } from './photos.mjs';
 import { checkLinks } from './check-links.mjs';
 import { registerSiteWidgets } from './site-widgets.mjs';
@@ -43,9 +38,7 @@ const photos = async (root, opts) => {
   await buildPhotos(root);
 };
 
-function warnLegacyConfig(root) {
-  const warning = legacyConfigWarning(root);
-  if (warning) console.warn(warning);
+function warnLang(root) {
   // site.json lang without its language folder: content/en/ (site-config.mjs langContentDir)
   const lang = loadSiteConfig(root).langWarning;
   if (lang) console.warn(`! ${lang}`);
@@ -64,7 +57,7 @@ export async function dev(root, opts = {}) {
     // its packages, once: only the run that made package.json (later runs find a site)
     if (made.includes('package.json')) installSite(root);
   }
-  warnLegacyConfig(root);
+  warnLang(root);
   await photos(root, opts);
   const { createServer } = await import('vite');
   const server = await createServer(
@@ -82,7 +75,7 @@ export async function dev(root, opts = {}) {
 }
 
 export async function build(root, opts = {}) {
-  warnLegacyConfig(root);
+  warnLang(root);
   await photos(root, opts);
   const { build: viteBuild } = await import('vite');
   await viteBuild(await viteConfig(root));
@@ -367,7 +360,7 @@ function siteTypeTokens(site) {
 }
 
 export async function check(root, opts = {}) {
-  warnLegacyConfig(root);
+  warnLang(root);
   let failed = false;
   const report = (what, problems) => {
     if (problems.length) {
