@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { editorHref, legacyRedirect, wantsEditor } from '../src/editor/lib/editor-url.js';
+import fs from 'node:fs';
+import * as editorUrl from '../src/editor/lib/editor-url.js';
+
+const { editorHref, wantsEditor } = editorUrl;
 
 const u = (s) => new URL(s, 'http://localhost');
 
@@ -23,15 +26,17 @@ test('editorHref puts a bare edit flag first', () => {
   assert.equal(editorHref(u('/x/?edit&source=people#a')), '/x/?edit&source=people#a');
 });
 
-test('old /edit addresses move to ?edit, the sandbox to /sandbox/', () => {
-  assert.equal(legacyRedirect(u('/edit')), '/?edit');
-  assert.equal(legacyRedirect(u('/edit/')), '/?edit');
-  assert.equal(
-    legacyRedirect(u('/edit/?path=%2Fphotography%2Fpeople%2F&tab=content&item=noor')),
-    '/photography/people/?edit&tab=content&item=noor',
+test('the old /edit/?path=… addresses are gone: no redirect, the editor is ?edit only', () => {
+  assert.equal('legacyRedirect' in editorUrl, false);
+  assert.equal(wantsEditor(u('/edit/?path=%2Fabout%2F')), false);
+  const plugin = fs.readFileSync(
+    new URL('../src/cli/vite-plugin-static-site.mjs', import.meta.url),
+    'utf8',
   );
-  assert.equal(legacyRedirect(u('/edit/sandbox/?mock=a')), '/sandbox/?mock=a');
-  assert.equal(legacyRedirect(u('/edit/sandbox')), '/sandbox/');
-  assert.equal(legacyRedirect(u('/editorial/')), null);
-  assert.equal(legacyRedirect(u('/about/')), null);
+  assert.doesNotMatch(plugin, /legacyRedirect|\/edit\//);
+  // /sandbox still moves to /sandbox/
+  assert.match(
+    plugin,
+    /if \(url\.pathname === '\/sandbox'\) \{\s*res\.writeHead\(302, \{ Location: '\/sandbox\/' \+ url\.search \}\);/,
+  );
 });

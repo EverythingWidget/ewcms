@@ -12,8 +12,7 @@
  *
  * Visual editor (src/editor/index.html → src/editor) is DEV ONLY:
  *  dev   → any page with ?edit (/?edit, /about/?edit&tab=settings: src/editor/lib/editor-url.js)
- *          gets the editor app instead (its preview iframe, ?draft=…, always gets the site; the
- *          old /edit/?path=… redirects there, /edit/sandbox/ to /sandbox/), and /__editor/*
+ *          gets the editor app instead (its preview iframe, ?draft=…, always gets the site), and /__editor/*
  *          (src/editor/server/editor-server.mjs, localhost only) loads, saves and publishes the content JSON files and uploads photos to
  *          Cloudflare R2 with the R2_* keys from .env.local (read here, never sent to a page).
  *
@@ -34,7 +33,7 @@ import { loadContent } from './content.mjs';
 import { DRAFT_PARAM, draftsFor, editorMiddleware } from '../editor/server/editor-server.mjs';
 import { contactMiddleware } from '../functions/contact-dev.mjs';
 import { pageFile } from '../render/files.js';
-import { EDITOR_HTML, legacyRedirect, wantsEditor } from '../editor/lib/editor-url.js';
+import { EDITOR_HTML, wantsEditor } from '../editor/lib/editor-url.js';
 import { checkSources } from '../render/schemas.js';
 import { FOLDERS, ROOT_FILES } from '../render/files.js';
 import { THEME_LAYERS, loadSiteConfig } from './site-config.mjs';
@@ -283,9 +282,8 @@ export default function staticSite() {
         if (!wantsPage(url.pathname, req.headers.accept)) return next();
         if (url.pathname.startsWith('/@') || url.pathname.startsWith('/node_modules'))
           return next();
-        const moved = legacyRedirect(url); // the old /edit/?path=… addresses
-        if (moved || url.pathname === '/sandbox') {
-          res.writeHead(302, { Location: moved || '/sandbox/' + url.search });
+        if (url.pathname === '/sandbox') {
+          res.writeHead(302, { Location: '/sandbox/' + url.search });
           return res.end();
         }
         if (url.pathname === '/sandbox/') {

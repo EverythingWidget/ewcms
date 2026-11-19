@@ -33,17 +33,3 @@ export function editorHref(url) {
   const rest = q.toString();
   return `${url.pathname}?${EDIT_PARAM}${rest ? `&${rest}` : ''}${url.hash}`;
 }
-
-/**
- * The old editor URLs (dev, before the `edit` param): /edit/?path=/about/&tab=settings ->
- * /about/?edit&tab=settings, /edit/sandbox/… -> /sandbox/…; null for anything else.
- */
-export function legacyRedirect(url) {
-  const p = url.pathname;
-  if (p === '/edit/sandbox' || p.startsWith('/edit/sandbox/'))
-    return `/sandbox/${p.slice('/edit/sandbox/'.length)}${url.search}`;
-  if (p !== '/edit' && !p.startsWith('/edit/')) return null;
-  const to = new URL(url.searchParams.get('path') || '/', 'http://localhost');
-  for (const [k, v] of url.searchParams) if (k !== 'path') to.searchParams.append(k, v);
-  return editorHref(to);
-}

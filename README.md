@@ -1719,8 +1719,7 @@ params come after it (`/about/?edit&tab=motion`). Shortcut: **Ctrl/⌘ + Shift +
 of the dev site opens that page in the editor (and from the editor goes back to the page). The
 dev server serves the editor for `?edit` only to a top-level page: the preview iframe (which
 loads pages with `?draft=…`) always gets the site, so the editor never opens inside itself
-(`src/editor/lib/editor-url.js`). The old `/edit/?path=/about/` addresses redirect to
-`/about/?edit` in dev.
+(`src/editor/lib/editor-url.js`).
 
 Layout: the real site in a same-origin iframe, with a glass side panel. The page (or site part)
 being edited is named over its page tabs (`PageHead.svelte`), a column on
