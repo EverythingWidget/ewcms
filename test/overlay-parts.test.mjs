@@ -21,6 +21,18 @@ register(
 );
 const { createOverlayRows } = await import('../src/editor/overlay-rows.js');
 const { createOverlayLinks, DOT } = await import('../src/editor/overlay-links.js');
+const { createOverlayDrag } = await import('../src/editor/overlay-drag.js');
+
+/** A classList: its classes in a Set. */
+function classes() {
+  const set = new Set();
+  return {
+    set,
+    add: (...c) => c.forEach((k) => set.add(k)),
+    remove: (...c) => c.forEach((k) => set.delete(k)),
+    contains: (c) => set.has(c),
+  };
+}
 
 /** An element's style: its properties, cssText read and written as a whole. */
 function style(css = '') {
@@ -67,7 +79,7 @@ function page() {
   const on = new Set();
   const docOn = new Set();
   const attrs = new Map();
-  const html = { style: { userSelect: '', webkitUserSelect: '' } };
+  const html = { style: { userSelect: '', webkitUserSelect: '' }, scrollHeight: 2000 };
   html.setAttribute = (k, v) => attrs.set(k, v);
   html.removeAttribute = (k) => attrs.delete(k);
   const doc = {
@@ -86,8 +98,10 @@ function page() {
     innerHeight: 800,
     addEventListener: (t, f) => on.add(`${t}:${f.name}`),
     removeEventListener: (t, f) => on.delete(`${t}:${f.name}`),
-    requestAnimationFrame: () => 1,
-    cancelAnimationFrame: () => {},
+    frames: [],
+    cancelled: [],
+    requestAnimationFrame: (f) => win.frames.push(f),
+    cancelAnimationFrame: (id) => win.cancelled.push(id),
     getSelection: () => ({ removeAllRanges() {} }),
     getComputedStyle: () => ({
       gridTemplateColumns: cells,
@@ -227,6 +241,68 @@ test("a link's drag: Esc drops it, the key stopped, the targets gone; a drop lin
   fire(h, 'pointermove', near);
   fire(h, 'pointerup', ev());
   assert.deepEqual(calls, [['b', 'a', 2, { phone: false }]]);
+  assert.equal(p.on.size, 0);
+  assert.equal(held, 0);
+});
+
+test("a widget's drag: Esc puts the section back, the key stopped, the auto-scroll stopped", () => {
+  const p = page();
+  const sec = el('--frows: 10;');
+  const a = el('--c: 1; --s: 4;', [0, 0, 32, 24]);
+  const b = el('--c: 5;', [32, 0, 32, 24]);
+  a.dataset.widget = 'a';
+  b.dataset.widget = 'b';
+  const sel = { classList: classes() };
+  let held = 0;
+  const S = { doc: p.doc, win: p.win, els: { sel }, drag: null };
+  const placed = [];
+  const flow = { a: { col: 1, span: 4, row: 1, rows: 3 }, b: { col: 5, span: 4, row: 1, rows: 3 } };
+  const drag = createOverlayDrag({
+    S,
+    idOf: (n) => n.dataset.widget,
+    widgetOf: (id) => ({ id, size: 'rows' }),
+    secOf: () => sec,
+    isPhone: () => false,
+    widgetsIn: () => [a, b],
+    flowOf: () => flow,
+    linkOfEl: () => null,
+    minOf: () => 0,
+    noSelect: (on) => (held += on ? 1 : -1),
+    onplace: (...x) => placed.push(x),
+    onpick: () => {},
+  });
+  const h = spy(p.win);
+  const before = [sec, a, b].map((n) => n.style.cssText);
+  drag.start(ev({ clientX: 10, clientY: 10 }), a);
+  assert.ok(S.drag);
+  assert.deepEqual([...sel.classList.set], ['is-dragging', 'is-moving'], 'a body move');
+  assert.equal(p.attrs.get('data-flow-hold'), 'move');
+  assert.equal(held, 1);
+  fire(h, 'pointermove', ev({ clientX: 26, clientY: 790 })); // 2 columns right, at the bottom edge
+  assert.equal(a.style.getPropertyValue('--c'), '3');
+  assert.equal(S.drag.raf, 1, "the auto-scroll's frame, on the one state");
+  const esc = ev({ key: 'Escape' });
+  fire(h, 'keydown', esc);
+  assert.ok(esc.prevented && esc.stopped);
+  assert.deepEqual(p.win.cancelled, [1]);
+  assert.deepEqual(
+    [sec, a, b].map((n) => n.style.cssText),
+    before,
+  );
+  assert.equal(S.drag, null);
+  assert.equal(sel.classList.set.size, 0);
+  assert.equal(p.attrs.has('data-flow-hold'), false);
+  assert.equal(p.on.size, 0, 'its listeners off');
+  assert.equal(held, 0);
+  assert.deepEqual(placed, []);
+  // a resize from a handle keeps the handles (no is-moving); a release places it
+  drag.start(ev({ clientX: 30, clientY: 10 }), a, 'e');
+  assert.deepEqual([...sel.classList.set], ['is-dragging']);
+  assert.equal(p.attrs.get('data-flow-hold'), 'resize');
+  fire(h, 'pointermove', ev({ clientX: 46, clientY: 10 }));
+  fire(h, 'pointerup', ev());
+  assert.equal(placed.length, 1);
+  assert.deepEqual(placed[0].slice(0, 2), ['a', { col: 1, span: 6, row: 1, rows: 3 }]);
   assert.equal(p.on.size, 0);
   assert.equal(held, 0);
 });

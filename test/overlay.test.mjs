@@ -7,7 +7,6 @@ import { createStore } from '../src/editor/store.js';
 import { addSection, placeWidget } from '../src/editor/layout-ops.js';
 
 const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
-const ov = readFileSync(new URL('../src/editor/overlay.js', import.meta.url), 'utf8');
 const lk = readFileSync(new URL('../src/editor/overlay-links.js', import.meta.url), 'utf8');
 const draw = lk.slice(lk.indexOf('function drawLinks()'), lk.indexOf('const seen = new Set();'));
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
@@ -85,7 +84,11 @@ test("every handle shows on a selected widget; an Auto one's height dragged: Row
 test('the selected widget is dragged where widgets overlap; a click picks the top one', () => {
   const o = read('src/editor/overlay.js');
   assert.match(o, /const el = selectedUnder\(e, mod\) \|\| top;/);
-  assert.match(o, /else if \(click\) \(setAnchor\(click\), onpick\(click\)\);/);
+  assert.match(o, /if \(S\.drag && top && top !== el\) S\.drag\.click = idOf\(top\);/);
+  assert.match(
+    read('src/editor/overlay-drag.js'),
+    /else if \(click\) \(setAnchor\(click\), onpick\(click\)\);/,
+  );
   // Size -> Rows from the shown rows (the phone's: doubled)
   assert.match(read('src/editor/widget-layout.js'), /phone \? n \* 2 : n/);
 });
@@ -125,9 +128,10 @@ test('G14: Ctrl+Z in the preview is preventDefault before the editor undo runs',
 });
 
 test('G15: auto-scroll is capped at one row a frame, not 16px (phone rows are shorter)', () => {
-  assert.match(ov, /const cap = Math\.max\(1, Math\.round\(row\)\);/);
-  assert.match(ov, /drag\.lines\?\.row/);
-  assert.doesNotMatch(ov, /Math\.max\(-16, Math\.min\(16, v \/ 3\)\)/);
+  const dg = src('overlay-drag.js');
+  assert.match(dg, /const cap = Math\.max\(1, Math\.round\(row\)\);/);
+  assert.match(dg, /drag\.lines\?\.row/);
+  assert.doesNotMatch(dg, /Math\.max\(-16, Math\.min\(16, v \/ 3\)\)/);
 });
 
 test("a press on a widget's body hides its handles and the toolbar; a resize keeps them", () => {
@@ -136,12 +140,13 @@ test("a press on a widget's body hides its handles and the toolbar; a resize kee
   assert.match(o, /S\.els\.sel\.classList\.toggle\('is-auto', auto\)/);
   assert.doesNotMatch(o, /toggle\('is-auto', sizeOf\(widget\) === 'auto' && !dragging\)/);
   // a body move: is-moving at pointerdown (no threshold); a handle resize does not
-  assert.match(o, /setAttribute\('data-flow-hold', h \? 'resize' : 'move'\)/);
+  const dg = read('src/editor/overlay-drag.js');
+  assert.match(dg, /setAttribute\('data-flow-hold', h \? 'resize' : 'move'\)/);
   assert.match(
-    o,
+    dg,
     /S\.els\.sel\.classList\.add\('is-dragging'\);\s*if \(!h\) S\.els\.sel\.classList\.add\('is-moving'\);/,
   );
-  assert.match(o, /S\.els\.sel\.classList\.remove\('is-dragging', 'is-moving'\)/);
+  assert.match(dg, /S\.els\.sel\.classList\.remove\('is-dragging', 'is-moving'\)/);
   // hidden in place: no layout shift
   assert.match(
     o,

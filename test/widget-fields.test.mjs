@@ -90,7 +90,7 @@ test('Shrink to fit flips on its switch only, not a click on its row (F57)', () 
 });
 
 test("a stray drag of an Auto widget's edge keeps Auto height; a real one says so, with Undo (F58)", () => {
-  const ov = readFileSync(new URL('../src/editor/overlay.js', import.meta.url), 'utf8');
+  const ov = readFileSync(new URL('../src/editor/overlay-drag.js', import.meta.url), 'utf8');
   assert.match(ov, /const STRAY_ROWS = 2;/);
   assert.match(ov, /const moved = !stray &&/);
   const main = readFileSync(new URL('../src/editor/main.js', import.meta.url), 'utf8');
