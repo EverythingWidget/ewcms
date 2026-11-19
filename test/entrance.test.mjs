@@ -34,12 +34,14 @@ test('page entrance: validation and the editor modes', () => {
   assert.ok(!('transition' in store.current[F]));
 });
 
-test('Page entrance: one Settings section (curtain, page fade); the page card links to it', () => {
-  const sp = esrc('svelte/SettingsPanel.svelte');
+test('Page entrance: one Animations section (curtain, page fade); the page card links to it', () => {
+  const sp = esrc('svelte/AnimationsPanel.svelte');
   assert.match(
     sp,
-    /key="settings:entrance"[\s\S]*?id="page-entrance"[\s\S]*?title="Page entrance"/,
+    /key="animations:entrance"[\s\S]*?id="page-entrance"[\s\S]*?title="Page entrance"/,
   );
+  // no longer in Site settings
+  assert.doesNotMatch(esrc('svelte/SettingsPanel.svelte'), /EntranceCurtain|EntranceFade/);
   assert.match(sp, /<EntranceCurtain[^>]*\/>\s*<EntranceFade[^>]*\/>\s*<\/Collapsible>/);
   for (const [f, head] of [
     ['EntranceCurtain', 'Curtain'],
@@ -66,6 +68,9 @@ test('Page entrance: one Settings section (curtain, page fade); the page card li
     /<ScrollBackdropCard \{live\} \{file\} \/>\s*<EntranceCard /,
   );
   const mp = esrc('svelte/PageMotionPanel.svelte');
-  assert.match(mp, /ui\.sections\['settings:entrance'\] = true;/);
+  assert.match(
+    mp,
+    /ui\.sections\['animations:entrance'\] = true;\s*actions\.setPanel\('animations'\);/,
+  );
   assert.match(mp, /\[data-section="page-entrance"\]/);
 });

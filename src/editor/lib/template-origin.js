@@ -40,10 +40,10 @@ export const originCrumbs = (stack, nameOf = () => '') =>
     at,
   }));
 
-/** Back's tooltip: "Back to People" with an origin, else the pages list's. */
+/** Back's tooltip: "Back to People" with an origin, else Theme's (its Templates). */
 export const backLabelOf = (stack, nameOf) => {
   const top = originCrumbs(stack, nameOf).at(-1);
-  return top ? `Back to ${top.label}` : 'Back to pages';
+  return top ? `Back to ${top.label}` : 'Back to theme';
 };
 
 /** The Lists in `value` (any depth) whose config.template is `id`. */

@@ -7,7 +7,7 @@
   tab's (PageMotionPanel.svelte). The widget or element picked (ui.anim, from the preview or the list; a second click
   on its row drops it) opens in place, under its row: a widget's motion (WidgetMotion), an
   element's animation (AnimEditor).
-  The animations themselves (the library) and the default timing are in Site Settings
+  The animations themselves (the library) and the default timing are in Animations
   (MotionSettings.svelte). The widget picked is the Sections tab's widget too.
 -->
 <script>
@@ -23,10 +23,10 @@
   // file: the page file
   let { live, bridge, actions, file } = $props();
 
-  /** Open animation `name` in the library (Site Settings > Motion). */
+  /** Open animation `name` in the library (Animations > Motion). */
   function openLibrary(name = '') {
     ui.library = { name };
-    actions.setPanel('settings');
+    actions.setPanel('animations');
   }
 
   const cfg = $derived(live.current(ANIMATIONS));

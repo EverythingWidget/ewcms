@@ -1,5 +1,5 @@
 <!--
-  Site Settings > Motion: what every page's animations share (animations.json).
+  Animations > Motion: what every page's animations share (animations.json).
     Default timing  `defaults` { duration, delay, ease }: what an animation plays with when it
                     sets none itself (src/client/anim/engine.js). Empty: GSAP's own (the
                     placeholders), as before there was a setting. Checked by src/render/validate.js.
@@ -61,7 +61,7 @@
 </script>
 
 <!-- closed until opened (long: it pushed Name & Details off screen); remembered once toggled -->
-<Collapsible key="settings:motion" title="Motion" open={false}>
+<Collapsible key="animations:motion" title="Motion" open={false}>
   <p class="hint">Used on every page: the default timing and the animations every widget can use</p>
   {#each FIELDS as [key, label, placeholder] (key)}
     <Field

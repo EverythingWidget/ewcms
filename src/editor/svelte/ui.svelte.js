@@ -3,15 +3,20 @@ import { popupStays } from '../multi-select.js';
  * Where the editor is, in four names (no others):
  *
  *   ui.mode       'browse' | 'edit', the one source of truth for editing:
- *                   'browse'    the site as visitors see it: the pages list (Pages), Site
- *                               Settings; a page row's click only shows it
+ *                   'browse'    the site as visitors see it: the areas, the pages list (Pages),
+ *                               Theme, Animations, Site settings; a page row's click only
+ *                               shows it
  *                   'edit'      the page in the preview (or a site part, a template) open in
- *                               the Pages tab with its page tabs: Edit, or a page opened
- *                 Done (it saves first) and Back to pages go back to browse; another panel
+ *                               Pages with its page tabs: Edit, or a page opened
+ *                 Done (it saves first) and Back to pages go back to browse; another area
  *                 than Pages is always browse (setMode, setPanel in main.js).
- *   ui.panel      what the side panel shows, its top tab:
- *                   'pages'     the Pages tab: the pages list (browse), or the page open (edit)
- *                   'settings'  what is the same on every page
+ *   ui.panel      the area the side panel shows (../areas.js):
+ *                   'areas'       the areas' list (AreaList.svelte), where each one opens
+ *                   'pages'       Pages: the pages list (browse), or the page open (edit)
+ *                   'theme'       Theme: the item templates
+ *                   'animations'  Animations: the default timing, the library, the page entrance
+ *                   'settings'    Site settings: what is the same on every page
+ *                 (Media and Sources open their windows over it: ui.modals)
  *   ui.pageTab    the open page's tab, under Pages: 'sections' | 'element-motion' (Element
  *                 motion) | 'page-motion' (Page motion) | 'seo'; null when no
  *                 page is open (the pages list, the Header or Footer). Kept per page in
@@ -38,8 +43,8 @@ export const ui = $state({
   loadError: '',
   /** 'browse' | 'edit': see "Where the editor is" above (setMode). */
   mode: 'browse',
-  /** What the side panel shows: see "Where the editor is" above. */
-  panel: 'pages',
+  /** The area the side panel shows: see "Where the editor is" above. */
+  panel: 'areas',
   /** The open page's tab, or null when no page is open (the pages list, Header, Footer). */
   pageTab: null,
   /** 'desktop' | 'phone' preview size */
@@ -69,7 +74,7 @@ export const ui = $state({
    */
   focusParam: null,
   /**
-   * The page the type specimen (Site Settings › Type › Preview, /__type/) replaced in the
+   * The page the type specimen (Site settings › Type › Preview, /__type/) replaced in the
    * preview: Close preview and the Pages tab go back to it ('' when it isn't shown).
    */
   specimenFrom: '',
@@ -172,7 +177,7 @@ export const ui = $state({
   media: { key: '', filter: 'all', pick: '', multi: null },
   /** The pages list (Pages tab, browse): the folder it shows ('' = content/en/pages/ itself). */
   pagesWin: { folder: '' },
-  /** Site Settings > Motion, the Animations library: the animation open ('' = the list). */
+  /** Animations > Motion, the Animations library: the animation open ('' = the list). */
   library: { name: '' },
 });
 

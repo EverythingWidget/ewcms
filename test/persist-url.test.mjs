@@ -82,15 +82,15 @@ test('&property= in the editor URL is written and read back', async () => {
   assert.equal(urlNow().searchParams.has('property'), false);
 });
 
-test('an old ?tab=nav falls back to the Pages tab', async () => {
+test('an old ?tab=nav falls back to the areas', async () => {
   const urlNow = browser('/x/?edit&tab=nav');
   const { restoreUi, writeUrl } = await import('../src/editor/svelte/persist.js');
   const { ui } = await import('../src/editor/svelte/ui.svelte.js');
 
   restoreUi(bridge, live);
-  assert.equal(ui.panel, 'pages');
+  assert.equal(ui.panel, 'areas');
   writeUrl();
-  assert.equal(urlNow().searchParams.get('tab'), 'pages');
+  assert.equal(urlNow().searchParams.get('tab'), 'areas');
 });
 
 test('Media over Sources comes back in that order after a refresh, and in the URL', async () => {
@@ -115,4 +115,38 @@ test('Media over Sources comes back in that order after a refresh, and in the UR
   ui.modals = [];
   writeUrl();
   assert.equal(urlNow().searchParams.has('source'), false);
+});
+
+test('areas in the URL: a library link from before them opens Animations, a site part Pages', async () => {
+  const { restoreUi, writeUrl } = await import('../src/editor/svelte/persist.js');
+  const { ui } = await import('../src/editor/svelte/ui.svelte.js');
+
+  // the Animations library was in Site settings: its old links open it in Animations
+  let urlNow = browser('/x/?edit&tab=settings&animation=fade-up');
+  restoreUi(bridge, live);
+  assert.equal(ui.panel, 'animations');
+  assert.equal(ui.library.name, 'fade-up');
+  writeUrl();
+  assert.equal(urlNow().searchParams.get('tab'), 'animations');
+  assert.equal(urlNow().searchParams.get('animation'), 'fade-up');
+
+  // Site settings itself stays 'settings'
+  urlNow = browser('/x/?edit&tab=settings');
+  restoreUi(bridge, live);
+  assert.equal(ui.panel, 'settings');
+  writeUrl();
+  assert.equal(urlNow().searchParams.has('animation'), false);
+
+  // the Header open without a tab: in Pages, edit
+  browser('/x/?edit&view=header');
+  restoreUi(bridge, live);
+  assert.equal(ui.panel, 'pages');
+  assert.equal(ui.mode, 'edit');
+  assert.equal(ui.target?.id, 'header');
+
+  for (const tab of ['areas', 'theme', 'animations']) {
+    browser(`/x/?edit&tab=${tab}`);
+    restoreUi(bridge, live);
+    assert.equal(ui.panel, tab);
+  }
 });

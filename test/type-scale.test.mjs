@@ -1,5 +1,5 @@
 // The type scale (src/render/layout/type.js): site.json "type" over the theme's sizes, as CSS
-// variables on the page's :root; Site Settings › Type and its Preview, the type specimen
+// variables on the page's :root; Site settings › Type and its Preview, the type specimen
 // (src/render/layout/type-specimen.js, /__type/); the preview follows Type without a reload.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -177,7 +177,7 @@ test('needsReload: site.json reloads unless only its type changed (siteKey)', ()
   assert.match(main, /site: dirty\.includes\(SITE\) && siteKey\(store\.base\) !== siteKey/);
 });
 
-test('Site Settings › Type: a row per style with its tag, Preview / Close preview, live in the preview', () => {
+test('Site settings › Type: a row per style with its tag, Preview / Close preview, live in the preview', () => {
   const panel = read('src/editor/svelte/SettingsPanel.svelte');
   assert.match(panel, /title="Type"/);
   assert.doesNotMatch(panel, /typography|Size \(cells\)|Tracking/);
@@ -190,8 +190,8 @@ test('Site Settings › Type: a row per style with its tag, Preview / Close prev
   assert.match(panel, /root\.style\.removeProperty\(name\)/);
   assert.match(panel, /bridge\.doc\?\.documentElement/);
   const main = read('src/editor/main.js');
-  // the Pages tab closes the specimen, back to the page it replaced
-  assert.match(main, /if \(panel === 'pages'\) showSpecimen\(false\);/);
+  // another area closes the specimen, back to the page it replaced
+  assert.match(main, /if \(panel !== 'settings'\) showSpecimen\(false\);/);
   assert.match(
     main,
     /ui\.specimenFrom = bridge\.path\(\) \|\| ui\.path;\s*bridge\.navigate\(TYPE_SPECIMEN\)/,

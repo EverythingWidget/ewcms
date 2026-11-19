@@ -2,14 +2,15 @@
  * Keeps the editor where it was across a refresh, in two places:
  *
  *   The URL (shareable): /photography/people/?edit&tab=settings (src/editor/lib/editor-url.js)
- *     tab     ui.panel: pages | settings (the page's own tab, ui.pageTab, is kept per
- *             page in sessionStorage; an unknown tab: pages)
+ *     tab     ui.panel, the area open: areas | pages | theme | animations | settings
+ *             (../areas.js; the page's own tab, ui.pageTab, is kept per page in
+ *             sessionStorage; an unknown tab: the areas)
  *     (path)  the URL's own path is the page in the preview (main.js keeps it up to date)
  *     view    header | footer, when a site part (Header, Footer) is edited instead of a page
  *     source  + item (+ property): Sources (SourcesModal), open on that file and item, with that
  *             property highlighted (&source=people&item=noor-vermeer&property=summary; item is the
  *             slug, or the number without one)
- *     animation    Site Settings > Motion's Animations library, open on that animation (&animation=fade-up)
+ *     animation    Animations > Motion's Animations library, open on that animation (&animation=fade-up)
  *     pages   the pages list (the Pages tab, browse), open on that folder (&pages=/people/; / is
  *             the root); tab=pages without it: the page in the preview open (edit)
  *     media   + pick: the Media window, on that photo (&media=photos/x-1600.webp; / for none),
@@ -33,12 +34,12 @@ import { editorHref } from '../lib/editor-url.js';
 import { ui, previewClicks, pickElement, selectText } from './ui.svelte.js';
 import { sourceIdOf } from '../../render/files.js';
 import { isOpen, pushed } from './modals.svelte.js';
+import { PANELS } from '../areas.js';
 
 const KEY = 'editor:ui';
 // the modals open again after a refresh (the others are opened with callbacks: modals.svelte.js)
 const KEPT = ['sources', 'media'];
-// the URL's tab is ui.panel (ui.svelte.js)
-const PANELS = ['pages', 'settings'];
+// the URL's tab is ui.panel (ui.svelte.js): one of PANELS (../areas.js)
 const PAGE_TABS = ['sections', 'element-motion', 'page-motion', 'seo'];
 const VIEWS = { header: 'Header', footer: 'Footer' };
 
@@ -58,13 +59,15 @@ function readState() {
   const state = readSession();
   const q = new URLSearchParams(location.search);
   // the page's tab stays the session's (ui.pageTab)
-  if (q.has('tab')) state.panel = PANELS.includes(q.get('tab')) ? q.get('tab') : 'pages';
-  if (q.has('view'))
+  if (q.has('tab')) state.panel = PANELS.includes(q.get('tab')) ? q.get('tab') : 'areas';
+  if (q.has('view')) {
     state.part = VIEWS[q.get('view')] && {
       kind: 'part',
       id: q.get('view'),
       title: VIEWS[q.get('view')],
     };
+    if (state.part && !q.has('tab')) state.panel = 'pages'; // a site part is in Pages
+  }
   if (q.has('source')) {
     state.sources = {
       file: `sources/${q.get('source')}.json`,
@@ -84,15 +87,16 @@ function readState() {
     state.modals = pushed(state.modals || [], 'media');
   }
   if (q.has('pages')) {
-    if (!q.has('tab')) state.panel = 'pages'; // the pages list is in the Pages tab
+    if (!q.has('tab')) state.panel = 'pages'; // the pages list is in Pages
     state.mode = 'browse';
     state.pagesWin = { folder: q.get('pages').replace(/^\/+|\/+$/g, '') };
   } else if (q.get('tab') === 'pages' || state.part) state.mode = 'edit'; // a page or part open
   if (state.panel && state.panel !== 'pages') state.mode = 'browse'; // only Pages edits
   if (q.has('animation')) {
-    if (!q.has('tab')) state.panel = 'settings'; // the library is in Site Settings > Motion
+    // the library is in Animations > Motion (a link from before the areas: tab=settings)
+    if (!q.has('tab') || q.get('tab') === 'settings') state.panel = 'animations';
     state.library = { name: q.get('animation') }; // an unknown name: the list
-  } else if (q.get('tab') === 'settings') state.library = { name: '' };
+  } else if (q.get('tab') === 'animations') state.library = { name: '' };
   return state;
 }
 
@@ -108,7 +112,7 @@ export function restoreUi(preview, content) {
   // Header or Footer open (pages: the URL's path; browse: the page in the preview)
   if (saved.part && ui.mode === 'edit') ui.target = saved.part;
   ui.sections = saved.sections || {};
-  // Site Settings > Motion's library, on an animation
+  // Animations > Motion's library, on an animation
   if (typeof saved.library?.name === 'string') ui.library = { name: saved.library.name };
   // the pages list's folder (PagesList)
   if (typeof saved.pagesWin?.folder === 'string') ui.pagesWin = { folder: saved.pagesWin.folder };
@@ -199,7 +203,7 @@ export function writeUrl() {
   set('source', list && sourceIdOf(file));
   set('item', Array.isArray(list) && list[index] && itemId(list[index], index));
   set('property', Array.isArray(list) && list[index] && ui.sources.property);
-  set('animation', ui.panel === 'settings' && ui.library.name);
+  set('animation', ui.panel === 'animations' && ui.library.name);
   set(
     'pages',
     ui.panel === 'pages' && ui.mode === 'browse' && `/${ui.pagesWin.folder}/`.replace('//', '/'),

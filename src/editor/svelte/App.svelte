@@ -1,9 +1,10 @@
 <!--
   The editor shell: the site preview on the left, the side panel on the right with the
-  header (the status line | Edit / Done | Publish; the top tabs Pages | Site Settings), the
-  current tab's panel (Pages: the pages list in browse, or the page open with its tabs
-  Sections | Motion | SEO in edit, ContentPanel.svelte; Site Settings: SettingsPanel.svelte) and
-  the footer (Desktop | Phone, Sources, Media; undo, redo in edit). Also the modals, each
+  header (the status line | Edit / Done | Publish), the area open (ui.panel, ../areas.js: the
+  areas' list, AreaList.svelte; Pages: the pages list in browse, or the page open with its tabs
+  Sections | Motion | SEO in edit, ContentPanel.svelte; Theme: ThemePanel.svelte; Animations:
+  AnimationsPanel.svelte; Site settings: SettingsPanel.svelte; Media and Sources open their
+  windows from the list) and the footer (Desktop | Phone; undo, redo in edit). Also the modals, each
   mounted once here and opened through state (modals.svelte.js) and the toasts (the keyboard
   shortcuts: ../keys.js).
   Browse or edit is ui.mode (ui.svelte.js): Edit opens the page in the preview; Done saves
@@ -13,11 +14,13 @@
 <script>
   import { keptForReload } from '../keep-unsaved.js';
   import InfoHelp from './InfoHelp.svelte';
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import Button from './Button.svelte';
-  import Tabs from './Tabs.svelte';
-  import { SITE, contentPath } from '../../render/files.js';
+  import { SITE } from '../../render/files.js';
+  import AreaList from './AreaList.svelte';
   import ContentPanel from './ContentPanel.svelte';
+  import ThemePanel from './ThemePanel.svelte';
+  import AnimationsPanel from './AnimationsPanel.svelte';
   import SettingsPanel from './SettingsPanel.svelte';
   import PublishModal from './PublishModal.svelte';
   import MediaModal from './MediaModal.svelte';
@@ -26,8 +29,7 @@
   import AddPageModal from './AddPageModal.svelte';
   import ItemModal from './ItemModal.svelte';
   import PreviewModal from './PreviewModal.svelte';
-  import { openMedia } from './media.svelte.js';
-  import { isOpen, openFirstRun, openPublish, openSources, syncModals } from './modals.svelte.js';
+  import { isOpen, openFirstRun, openPublish, syncModals } from './modals.svelte.js';
   import { toast } from './toasts.svelte.js';
   import Toasts from './Toasts.svelte';
   import SaveFailedModal from './SaveFailedModal.svelte';
@@ -40,6 +42,7 @@
   import { ui, closePopup, setMode } from './ui.svelte.js';
   import { writeUrl } from './persist.js';
   import { MOD, plural } from '../lib/format.js';
+  import { swapView } from '../lib/slide.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../preview-runtime.js);
   // actions: setPanel, setPageTab, setMode, pickTarget, save, refreshStatus, pagesOp
@@ -56,12 +59,21 @@
   // the modals' dialogs follow the stack (ui.modals)
   $effect(syncModals);
 
-  // [panel, label, icon]: a tab with an icon shows only the icon (ui.panel, ui.svelte.js)
-  const TABS = [
-    ['pages', 'Pages'],
-    ['settings', 'Site Settings'],
-  ];
-  const pages = $derived(ui.panel === 'pages');
+  // an area opened comes in from the right, Back to areas brings the list from the left (the
+  // pages list's slide, lib/slide.js); one area to another (Edit, a link) comes in the same way,
+  // but a template's ← or Done (Pages to Theme) goes back, from the left
+  let areaView = $state();
+  let shownArea = untrack(() => ui.panel);
+  $effect.pre(() => {
+    const next = ui.panel;
+    untrack(() => {
+      if (next === shownArea || !areaView) return void (shownArea = next);
+      const dir = next === 'areas' || (shownArea === 'pages' && next === 'theme') ? -1 : 1;
+      shownArea = next;
+      const play = swapView(areaView);
+      tick().then(() => play(dir));
+    });
+  });
   const phone = $derived(ui.viewport === 'phone');
   // the item template editor: a row above the frame holds its Columns control; on pages
   // the frame takes that space (the frame moving when a template opens is accepted)
@@ -74,7 +86,10 @@
     setMode('edit');
   }
   async function done() {
-    if (await actions.save()) setMode('browse');
+    if (!(await actions.save())) return;
+    // an item template: back to its list, in Theme (setPanel browses)
+    if (ui.target?.kind === 'item-template') actions.setPanel('theme');
+    else setMode('browse');
   }
   const VIEWPORTS = [
     ['desktop', 'Desktop', 'desktop'],
@@ -186,7 +201,7 @@
           data-edit-toggle
           title={editing
             ? `Done: save the changes (${MOD}+S) and go back to browsing`
-            : 'Edit the page shown in the preview (opens it in the Pages tab)'}
+            : 'Edit the page shown in the preview (opens it in Pages)'}
           disabled={editing && (ui.saving || ui.publishing)}
           onclick={editing ? done : edit}>{editing ? 'Done' : 'Edit'}</Button
         >
@@ -202,25 +217,24 @@
             : `Publish${unpublished.length ? ` · ${unpublishedChanges}` : ''}`}
         </Button>
       </div>
-      <!-- the modes: evenly spread, the picked one with a white line; their line ends the header -->
-      <Tabs
-        class="ed-panels"
-        role="navigation"
-        fill
-        label="Panel"
-        tabs={TABS}
-        value={ui.panel}
-        onpick={(panel) => panel !== ui.panel && actions.setPanel(panel)}
-      />
     </header>
 
-    {#if pages}
-      <ContentPanel {live} {bridge} {actions} />
-    {:else}
-      <SettingsPanel {live} {bridge} {actions} />
-    {/if}
+    <!-- the area open (ui.panel), or the areas' list -->
+    <div class="ed-area" bind:this={areaView}>
+      {#if ui.panel === 'pages'}
+        <ContentPanel {live} {bridge} {actions} />
+      {:else if ui.panel === 'theme'}
+        <ThemePanel {live} {actions} />
+      {:else if ui.panel === 'animations'}
+        <AnimationsPanel {live} {bridge} {actions} />
+      {:else if ui.panel === 'settings'}
+        <SettingsPanel {live} {bridge} {actions} />
+      {:else}
+        <AreaList {live} {actions} />
+      {/if}
+    </div>
 
-    <!-- (i) [ Desktop | Phone ] Sources Media ... (the tip leads, before the toggle it explains;
+    <!-- (i) [ Desktop | Phone ] ... (the tip leads, before the toggle it explains;
          undo redo: edit only, at the end, so nothing before them moves) -->
     <footer class="ed-foot">
       <InfoHelp label="About Desktop and Phone"
@@ -243,22 +257,6 @@
           </button>
         {/each}
       </div>
-      <Button
-        icon="database"
-        iconOnly
-        label="Sources"
-        title="Sources: your lists of items, such as products, team members or events (in {contentPath(
-          'sources/',
-        )})"
-        onclick={() => openSources()}
-      />
-      <Button
-        icon="images"
-        iconOnly
-        label="Media"
-        title="Media: every photo, upload, alt text"
-        onclick={() => openMedia({ key: ui.media.key })}
-      />
       <span class="ed-foot__gap"><UpdateNotice /></span>
       {#if editing}
         <Button
@@ -362,12 +360,24 @@
     min-width: 0;
   }
 
-  // [ status | Edit / Done | Publish ], then the modes; 16px edges
+  // [ status | Edit / Done | Publish ]: 16px edges, 12px under it (the areas have no tabs)
   .ed-head {
     flex: none;
-    padding-top: var(--space-4);
+    padding: var(--space-4) 0 var(--space-3);
     background: var(--c-panel-head);
     @include stack(var(--space-2));
+  }
+
+  // the area open: it fills the panel between the head and the foot, and clips its slide
+  // (lib/slide.js) to the panel's edge
+  .ed-area {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: clip;
+    position: relative;
   }
 
   // (i) [ status | Edit / Done | Publish ]
@@ -386,13 +396,13 @@
   }
 
   // Edit / Done and Publish: 32px (size small, --size-control), as the back arrow and the icon
-  // buttons; the row keeps its 40px, so the tabs and the panel under it don't move.
+  // buttons; the row keeps its 40px, so the area under it doesn't move.
   // Edit and Done share one slot: both are 4 letters, this min-width stops any shift
   .ed-actions :global([data-edit-toggle]) {
     min-width: 80px;
   }
 
-  // (i) [ Desktop | Phone ] Sources Media ... undo redo: 16px edges, 8px apart
+  // (i) [ Desktop | Phone ] ... undo redo: 16px edges, 8px apart
   .ed-foot {
     position: relative; // the update card's anchor
     border-top: 1px solid transparent; // borderless: no line, its 1px kept (no shift)

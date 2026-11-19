@@ -118,7 +118,7 @@ kbd {
 // ------------------------------------------------------------ controls
 // tabs (.seg), inputs, buttons
 // A segmented selector in the panel (Global / Custom / Off, ...): shaped like the input
-// fields below (8px corners). The editor's panel tabs: App.svelte .ed-panels.
+// fields below (8px corners). Tabs (a page's Sections | Motion | SEO): Tabs.svelte.
 .seg {
   display: flex;
   border-radius: var(--radius-md);

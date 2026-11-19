@@ -1,4 +1,4 @@
-// Pages | Site Settings, a page's Sections | Motion | SEO, and the site's default animation timing.
+// The areas (no top tabs), a page's Sections | Motion | SEO, and the site's default animation timing.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -41,9 +41,9 @@ test("the engine starts every spec from the defaults (not the scroll types' ease
   assert.match(e, /SCROLLED = new Set\(\['scroll', 'scrub-words', 'parallax'\]\)/);
 });
 
-test('top tabs Pages | Site Settings; page tabs Sections | Element motion | Page motion | SEO', () => {
+test('no top tabs (the areas instead); page tabs Sections | Element motion | Page motion | SEO', () => {
   const app = read('editor/svelte/App.svelte');
-  assert.match(app, /\['pages', 'Pages'\],\s*\['settings', 'Site Settings'\],\s*\];/);
+  assert.doesNotMatch(app, /<Tabs|TABS/);
   assert.doesNotMatch(app, /MotionPanel/);
   const c = read('editor/svelte/ContentPanel.svelte');
   assert.match(
@@ -53,19 +53,22 @@ test('top tabs Pages | Site Settings; page tabs Sections | Element motion | Page
   assert.match(c, /shownTab === 'element-motion'\}\s*<MotionPanel /);
   assert.match(c, /shownTab === 'page-motion'\}\s*<PageMotionPanel /);
   assert.match(read('editor/svelte/PageHead.svelte'), /: 'Back to pages',?\s*\)?;/);
+  // the Animations library: in Animations (its own area), not Site settings
+  assert.match(read('editor/svelte/MotionPanel.svelte'), /actions\.setPanel\('animations'\);/);
   assert.doesNotMatch(c, /transitions/);
   const m = read('editor/svelte/MotionPanel.svelte');
   assert.doesNotMatch(m, /AnimLibrary|Tabs/);
   assert.doesNotMatch(m, /<EntranceCard |<ScrollBackdropCard /);
   const pm = read('editor/svelte/PageMotionPanel.svelte');
   assert.match(pm, /<ScrollBackdropCard \{live\} \{file\} \/>\s*<EntranceCard /);
-  assert.match(read('editor/svelte/SettingsPanel.svelte'), /<MotionSettings /);
+  assert.match(read('editor/svelte/AnimationsPanel.svelte'), /<MotionSettings /);
+  assert.doesNotMatch(read('editor/svelte/SettingsPanel.svelte'), /MotionSettings/);
   assert.match(read('editor/svelte/MotionSettings.svelte'), /<AnimLibrary /);
 });
 
-test('URL tabs are ui.panel: pages, settings; clicks: arrange, animate, visitor', () => {
+test('URL tabs are ui.panel: areas, pages, theme, animations, settings; clicks: arrange, animate, visitor', () => {
   const p = read('editor/svelte/persist.js');
-  assert.match(p, /PANELS = \['pages', 'settings'\]/);
+  assert.match(p, /import \{ PANELS \} from '\.\.\/areas\.js';/);
   assert.match(p, /set\('tab', ui\.panel\)/);
   const u = read('editor/svelte/ui.svelte.js');
   // browse or edit (ui.mode) is the one source: browse is visitor clicks

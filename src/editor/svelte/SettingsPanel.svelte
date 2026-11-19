@@ -1,16 +1,16 @@
 <!--
-  Site Settings tab: what is the same on every page. First Motion (MotionSettings.svelte: the
-  default timing and the Animations library), then where contact forms send (Forms), the site's
-  name and details
-  (site.json), its search and share defaults (SEO: titles, description, share photo,
-  address, robots, language; a page's own are in Nav > SEO), the Page entrance section (the site's curtain
-  and the page fade, animations.json), where uploaded photos are served from (site.json mediaUrl)
+  Site settings (ui.panel 'settings', an area: ../areas.js): what is the same on every page.
+  Under its head (AreaHead.svelte: Back to areas) the site's name and details (site.json), its
+  search and share defaults (SEO: titles, description, share photo, address, robots, language;
+  a page's own are in its SEO tab), where contact forms send (Forms), where uploaded photos are
+  served from (site.json mediaUrl)
   and the text styles' sizes (Type: site.json type, px, src/render/layout/type.js; the preview
   follows them as they are typed, and its Preview shows every style: the type specimen,
-  render/layout/type-specimen.js, until Close preview or the Pages tab).
-  Per-page things stay in Nav, on the page (sections; Motion: its animations, scroll
-  backdrop and curtain; SEO); the header's menu and labels are the Header site part in Content
-  (HeaderPart.svelte). redirects.json is in Redirects (RedirectSettings.svelte).
+  render/layout/type-specimen.js, until Close preview or another area opens).
+  Per-page things stay on the page (sections; Motion: its animations, scroll backdrop and
+  curtain; SEO); the header's menu and labels are the Header site part in Pages
+  (HeaderPart.svelte). redirects.json is in Redirects (RedirectSettings.svelte). The default
+  timing, the Animations library and the Page entrance are in Animations (AnimationsPanel.svelte).
 -->
 <script>
   import { untrack } from 'svelte';
@@ -19,9 +19,7 @@
   import RedirectSettings from './RedirectSettings.svelte';
   import Collapsible from './Collapsible.svelte';
   import Select from './Select.svelte';
-  import EntranceCurtain from './EntranceCurtain.svelte';
-  import MotionSettings from './MotionSettings.svelte';
-  import EntranceFade from './EntranceFade.svelte';
+  import AreaHead from './AreaHead.svelte';
   import { ui } from './ui.svelte.js';
   import { SEO_SETTINGS, SITE_SETTINGS } from './content-groups.js';
   import { languageOptions, langHint } from '../lib/languages.js';
@@ -40,16 +38,10 @@
   } from '../../render/layout/contain.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../preview-runtime.js);
-  // actions: showSpecimen (main.js)
+  // actions: showSpecimen, setPanel (main.js)
   let { live, bridge, actions } = $props();
 
   const uid = $props.id();
-
-  // The preview's GSAP, for the ease curves.
-  const gsap = $derived.by(() => {
-    ui.previewVersion;
-    return bridge.api?.gsap;
-  });
 
   function set(key, value) {
     live.store.set(SITE, `/${key}`, value, { key: `text:${SITE}#/${key}`, source: 'panel' });
@@ -128,8 +120,8 @@
 {#snippet titleTip()}<b>Home page title</b>: the browser tab and search result of your Home page,
   used as written. Empty: the <b>Site name</b>. Home's own Title (its SEO tab) wins over both.{/snippet}
 
-<section class="ed-body" aria-label="Site Settings">
-  <MotionSettings {live} {bridge} {gsap} />
+<section class="ed-body" aria-label="Site settings">
+  <AreaHead id="settings" {actions} />
 
   <Collapsible key="settings:site" title="Name & Details">
     <p class="hint">
@@ -300,16 +292,6 @@
       onvalue={(value) => set('mediaUrl', value.trim())}
     />
   </Collapsible>
-
-  {#if gsap}
-    <!-- one Page entrance section: the curtain, then the page fade (no curtain, or behind it) -->
-    <Collapsible class="entrance" key="settings:entrance" id="page-entrance" title="Page entrance">
-      <EntranceCurtain {live} {bridge} {gsap} />
-      <EntranceFade {live} {gsap} />
-    </Collapsible>
-  {:else}
-    <p class="hint">Waiting for the preview…</p>
-  {/if}
 </section>
 
 <style lang="scss">

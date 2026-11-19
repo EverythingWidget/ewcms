@@ -1,6 +1,6 @@
 // Browse and edit (ui.mode): the one source of what a preview click does (previewClicks), Edit
-// / Done in the header (Done saves first), the footer's Desktop | Phone, Sources, Media and
-// undo / redo (edit only), and the pages list's active row (the page in the preview).
+// / Done in the header (Done saves first), the footer's Desktop | Phone and undo / redo (edit
+// only), and the pages list's active row (the page in the preview).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -12,7 +12,7 @@ const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 
 test('previewClicks comes from ui.mode only: browse is visitor, edit arranges or animates', async () => {
   const { ui, previewClicks } = await loadUi();
   assert.equal(ui.mode, 'browse', 'the editor opens in browse');
-  for (const panel of ['pages', 'settings']) {
+  for (const panel of ['areas', 'pages', 'theme', 'animations', 'settings']) {
     ui.panel = panel;
     for (const tab of [null, 'sections', 'element-motion']) {
       ui.pageTab = tab;
@@ -74,9 +74,10 @@ test('header: status | Edit / Done (one 80px slot) | Publish; Done saves, then b
   );
   assert.ok(head.indexOf('data-edit-toggle') < head.indexOf('variant="primary"'));
   assert.match(app, /\[data-edit-toggle\]\) \{\s*min-width: 80px;/);
+  // Done: saved, then browse (an item template: back to Theme, setPanel browses)
   assert.match(
     app,
-    /async function done\(\) \{\s*if \(await actions\.save\(\)\) setMode\('browse'\);/,
+    /async function done\(\) \{\s*if \(!\(await actions\.save\(\)\)\) return;[\s\S]*?if \(ui\.target\?\.kind === 'item-template'\) actions\.setPanel\('theme'\);\s*else setMode\('browse'\);/,
   );
   assert.match(
     app,
@@ -86,7 +87,7 @@ test('header: status | Edit / Done (one 80px slot) | Publish; Done saves, then b
   assert.match(src('keys.js'), /mod && k === 's'\) \{\s*e\.preventDefault\(\);\s*save\(\);/);
 });
 
-test('footer: the Desktop / Phone tip, Desktop | Phone (32px icon cells), Sources, Media; undo / redo only in edit, last', () => {
+test('footer: the Desktop / Phone tip, Desktop | Phone (32px icon cells); undo / redo only in edit, last', () => {
   const app = src('svelte/App.svelte');
   const foot = app.slice(app.indexOf('<footer class="ed-foot">'), app.indexOf('</footer>'));
   assert.match(app, /\['desktop', 'Desktop', 'desktop'\]/);
@@ -96,8 +97,6 @@ test('footer: the Desktop / Phone tip, Desktop | Phone (32px icon cells), Source
   const order = [
     'label="About Desktop and Phone"',
     'ed-vp',
-    'label="Sources"',
-    'label="Media"',
     'ed-foot__gap',
     '{#if editing}',
     'icon="rotate-left"',
@@ -112,6 +111,8 @@ test('footer: the Desktop / Phone tip, Desktop | Phone (32px icon cells), Source
     app,
     /\.ed-vp \.seg__btn \{[^}]*width: var\(--size-control\);[^}]*height: var\(--size-control\);/,
   );
+  // Sources and Media open from the areas' list only (AreaList.svelte), not from here
+  assert.doesNotMatch(foot, /label="Sources"|label="Media"|openSources|openMedia/);
   // the update pill moved here with the tools; its card floats above the footer
   assert.match(foot, /<UpdateNotice \/>/);
   assert.match(src('svelte/UpdateNotice.svelte'), /bottom: calc\(100% \+ var\(--space-1\)\);/);
@@ -127,7 +128,11 @@ test('pages list: no edit pens (their 24px slot kept), the page in the preview i
     /&\.is-active \{\s*background: color-mix\(\s*in srgb,\s*var\(--c-page-accent\) 9%,\s*color-mix\(in srgb, var\(--c-text\) 14%, var\(--c-page-card\)\)\s*\);/,
   );
   // browse: a click only selects and shows; Header or Footer open for editing (F114)
-  assert.match(list, /function open\(row\) \{\s*show\(row\);\s*setMode\('edit'\);/);
+  // (edit is in Pages: a template opened from Theme moves there first)
+  assert.match(
+    list,
+    /function open\(row\) \{\s*show\(row\);\s*if \(ui\.panel !== 'pages'\) actions\.setPanel\('pages'\);\s*setMode\('edit'\);/,
+  );
   // (a Header or Footer row opens it: pages-list-head.test.mjs)
 });
 

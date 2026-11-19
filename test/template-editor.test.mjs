@@ -33,23 +33,23 @@ const base = loadContent(SITE_A);
 const T = 'templates/t-ab12.json';
 const card = (more = {}) =>
   template({
-  name: 'People card',
-  basedOn: 'preset:card',
-  clickable: true,
-  widgets: onGrid([
-    { type: 'photo', role: 'photo', src: [{ property: 'cover' }] },
-    { type: 'text', role: 'title', body: [{ style: 'heading', text: [{ property: 'title' }] }] },
-    {
-      type: 'text',
-      role: 'facts',
-      join: ' · ',
-      body: [
-        { style: 'label', text: [{ property: 'location' }, { t: ' · ' }, { property: 'title' }] },
-      ],
-    },
-  ]),
-  ...more,
-});
+    name: 'People card',
+    basedOn: 'preset:card',
+    clickable: true,
+    widgets: onGrid([
+      { type: 'photo', role: 'photo', src: [{ property: 'cover' }] },
+      { type: 'text', role: 'title', body: [{ style: 'heading', text: [{ property: 'title' }] }] },
+      {
+        type: 'text',
+        role: 'facts',
+        join: ' · ',
+        body: [
+          { style: 'label', text: [{ property: 'location' }, { t: ' · ' }, { property: 'title' }] },
+        ],
+      },
+    ]),
+    ...more,
+  });
 const withTemplate = (tpl, id = 't-ab12') => ({
   ...base,
   templates: { ...base.templates, [id]: tpl },
@@ -98,7 +98,10 @@ test('the preview: one List of the first item of its source, else a custom sampl
   assert.equal(previewWithColumns(undefined, 1), undefined);
   assert.deepEqual(previewWithColumns(undefined, 2), { columns: 2 });
   for (const n of [1, 6]) {
-    const p = templatePreview(withTemplate(card({ preview: { from: 'people', columns: n } })), 't-ab12');
+    const p = templatePreview(
+      withTemplate(card({ preview: { from: 'people', columns: n } })),
+      't-ab12',
+    );
     const html = renderRoute(p.route, p.content, { editable: true }).body;
     assert.match(html, new RegExp(`--list-cols:${n}[;"]`));
     assert.equal(parseHTML(`<body>${html}`).document.querySelectorAll('.li').length, 1);
@@ -175,15 +178,26 @@ test('the binds a template uses are listed once, first use first', () => {
   assert.doesNotMatch(read('src/editor/lib/item-template.js'), /renameProperty/);
 });
 
-test('the editor: a Templates group under Site, its own target, Edit template, no shift', () => {
-  // Pages > Templates: an entry per template file (main.js), its row opens it
+test('the editor: a Templates group in Theme, its own target, Edit template, no shift', () => {
+  // Theme > Templates: an entry per template file (main.js), its row opens it
   const pages = [
     { kind: 'item-template', id: 't-ab12', title: 'People card', path: '/__template/t-ab12/' },
   ];
   assert.equal(entryFor(pages, { id: 't-ab12', part: true, itemTemplate: true }), pages[0]);
   const list = read('src/editor/svelte/PagesList.svelte');
   assert.match(list, /head\('Templates', templates\.length\)/);
-  assert.ok(list.indexOf("head('Site')") < list.indexOf("head('Templates'"));
+  // Templates are Theme's (area 'theme'), the site parts Pages'
+  const theme = list.slice(
+    list.indexOf('{#if theme}\n    <!--'),
+    list.indexOf('{:else}\n    {#if !level}'),
+  );
+  assert.match(theme, /head\('Templates'/);
+  assert.match(theme, /Coming soon/);
+  assert.doesNotMatch(theme, /SITE_PARTS/);
+  assert.match(
+    read('src/editor/svelte/ThemePanel.svelte'),
+    /<PagesList \{live\} \{actions\} area="theme" \/>/,
+  );
   const main = read('src/editor/main.js');
   assert.match(main, /kind: 'item-template'/);
   assert.match(main, /item\.kind === 'item-template'\) bridge\.navigate\(item\.path\)/);
@@ -215,10 +229,7 @@ test('the editor: a Templates group under Site, its own target, Edit template, n
   );
   assert.match(app, /templating = \$derived\(!!templateOfPath\(ui\.path \|\| ''\)\)/);
   assert.match(app, /\.ed-stage \{[^}]*grid-template-rows: minmax\(0, 1fr\);/);
-  assert.match(
-    app,
-    /&\.has-cols \{\s*grid-template-rows: var\(--size-control\) minmax\(0, 1fr\);/,
-  );
+  assert.match(app, /&\.has-cols \{\s*grid-template-rows: var\(--size-control\) minmax\(0, 1fr\);/);
   assert.doesNotMatch(app, /reserved row/);
   assert.match(cols, /label="Columns"\s+type="seg"/);
   assert.match(cols, /type="seg"\s+bare/);
@@ -327,8 +338,6 @@ test('the template panel hides what a template section does not have', () => {
   assert.match(overlay, /const top = widgetAt\(hit\)/);
 });
 
-
-
 test('a selected template widget uses the page pop-up and toolbar delete, in place and undoable', () => {
   const panel = read('src/editor/svelte/TemplatePanel.svelte');
   const bar = read('src/editor/svelte/SectionToolbar.svelte');
@@ -360,7 +369,6 @@ test('a selected template widget uses the page pop-up and toolbar delete, in pla
   assert.match(ops, /if \(templateIdOf\(file\)\) \{\s*const list = listOf\(store, file\);/);
 });
 
-
 test('a template Text is edited in the preview, like a page Text: no Style/Text in the pop-up', async () => {
   const fields = read('src/editor/svelte/TemplateWidgetFields.svelte');
   assert.doesNotMatch(fields, /label="Style"|label="Text"/);
@@ -388,7 +396,10 @@ test('a template Text is edited in the preview, like a page Text: no Style/Text 
   const { document } = parseHTML(`<body>${renderRoute(route, content, { editable: true }).body}`);
   const title = document.querySelector('[data-tw] [data-edit-type="rich"]');
   assert.ok(title, 'template Text has a rich data-edit in the preview');
-  assert.match(title.getAttribute('data-edit'), /^templates\/t-ab12\.json#\/sections\/0\/widgets\/\d+\/body$/);
+  assert.match(
+    title.getAttribute('data-edit'),
+    /^templates\/t-ab12\.json#\/sections\/0\/widgets\/\d+\/body$/,
+  );
   // a List on a page is still one widget (itemEd only when the preview is this template)
   const list = read('src/widgets/list/index.js');
   assert.match(list, /templateOfPath\(ctx\.route\?\.path/);
@@ -412,9 +423,8 @@ test('a template is one section: the editor edits its file, its widgets at /sect
   const { targetFile } = await import('../src/editor/layout-sync.js');
   assert.equal(targetFile({ kind: 'item-template', id: 't-ab12' }, null), T);
   assert.equal(targetFile({ kind: 'part', id: 'header' }, null), '');
-  const { ITEM_WIDGETS, itemSection, itemWidgets } = await import(
-    '../src/widgets/list/item-grid.js'
-  );
+  const { ITEM_WIDGETS, itemSection, itemWidgets } =
+    await import('../src/widgets/list/item-grid.js');
   assert.equal(ITEM_WIDGETS, '/sections/0/widgets');
   assert.equal(itemSection(card()).id, 's-item');
   assert.equal(itemWidgets(card()).length, 3);

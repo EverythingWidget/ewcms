@@ -1,11 +1,14 @@
 /**
  * Visual editor (any page with ?edit: /?edit, /about/?edit&tab=settings): the real site in an iframe + a side panel.
  *
- * The side panel (ui.panel; the names are explained in svelte/ui.svelte.js):
- *   Pages    - the pages list, or a page with its tabs: Sections (arrange: pick and move
- *              widgets, double click a text to type it; animations paused), Motion (animate:
- *              click a widget or an animated element to edit its animation), SEO
- *   Settings - site-wide values: site name and meta, the animations, the curtain
+ * The side panel shows an area (ui.panel; the names are explained in svelte/ui.svelte.js and
+ * areas.js), opened from the areas' list:
+ *   Pages         - the pages list, or a page with its tabs: Sections (arrange: pick and move
+ *                   widgets, double click a text to type it; animations paused), Motion
+ *                   (animate: click a widget or an animated element to edit its animation), SEO
+ *   Theme         - the item templates
+ *   Animations    - the default timing, the Animations library, the page entrance
+ *   Site settings - site-wide values: site name and meta, forms, type, redirects
  *   Preview  - the toolbar's toggle: the site as visitors see it (links work); the panel
  *              shows the unsaved and unpublished changes
  *
@@ -563,7 +566,7 @@ const pagesQueued = oneAtATime(async (body) => {
 function movedToast({ links = 0, added = [], broken = 0, pruned = [] }) {
   const done = [
     links && `${plural(links, 'link')} updated`,
-    added.length && `${plural(added.length, 'redirect')} added (Site Settings > Redirects)`,
+    added.length && `${plural(added.length, 'redirect')} added (Site settings > Redirects)`,
   ].filter(Boolean);
   if (done.length) toast(done.join(', '), { kind: 'ok', files: added.length ? [REDIRECTS] : [] });
   if (broken)
@@ -602,11 +605,11 @@ function applyClicks(before) {
 }
 
 /**
- * Show a panel: 'pages' | 'settings' (ui.svelte.js); Pages closes the type
- * specimen. Only Pages edits: another panel is browse (ui.mode).
+ * Show an area: ui.panel (ui.svelte.js, ../areas.js). Leaving Site settings closes the type
+ * specimen. Only Pages edits: another area is browse (ui.mode).
  */
 function setPanel(panel) {
-  if (panel === 'pages') showSpecimen(false);
+  if (panel !== 'settings') showSpecimen(false);
   const before = previewClicks();
   ui.panel = panel;
   if (panel !== 'pages') ui.originStack = [];
@@ -633,8 +636,8 @@ function toBrowse() {
 }
 
 /**
- * Site Settings › Type's Preview: the type specimen (/__type/, render/layout/type-specimen.js) in
- * the preview (on), or the page it replaced back (off: Close preview, the Pages tab).
+ * Site settings › Type's Preview: the type specimen (/__type/, render/layout/type-specimen.js) in
+ * the preview (on), or the page it replaced back (off: Close preview, another area).
  */
 function showSpecimen(on) {
   const shown = isTypeSpecimen(bridge.path() || ui.path);

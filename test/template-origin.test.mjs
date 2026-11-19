@@ -70,7 +70,8 @@ test('the path back: the origins only (never the template open), a template by i
   assert.deepEqual(originCrumbs([]), []);
   assert.equal(backLabelOf([people]), 'Back to People');
   assert.equal(backLabelOf([people, album]), 'Back to Album card (portrait)');
-  assert.equal(backLabelOf([]), 'Back to pages');
+  // opened from Theme's Templates: back there
+  assert.equal(backLabelOf([]), 'Back to theme');
 });
 
 test('Used in N lists: Lists on pages, the header, the footer and in templates; not other widgets', () => {

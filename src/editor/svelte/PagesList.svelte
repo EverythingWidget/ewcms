@@ -1,17 +1,21 @@
 <!--
-  Pages (the Pages tab, browse: ui.mode): the site's pages one folder at a time
+  Pages (the Pages area, browse: ui.mode): the site's pages one folder at a time
   (src/editor/lib/page-tree.js), its rows on the pages' card colour (--c-page-card). Another
   level slides in (lib/slide.js): a deeper one from the right, a higher one from the left.
     header      in a folder: the page head's square ← (up one level, Esc) beside the folder
                 path, a quiet "Back to /parent/" under it, and a square + (Add page; off
-                where only a [param] page could go and it has one); at the top: the path and +
+                where only a [param] page could go and it has one); at the top: the area's
+                head (AreaHead.svelte: ← Back to areas, "Pages") and the same +
+    Site parts  at the top: the Header and Footer (no grip, no delete)
     menu list   one list in the menu's order (header.json): at the top home and the other pages;
                 in a folder its root row first (locked: its own page, the Own page switch
                 when it has a normal sub page; off: quieter, its first sub page "As /"), then
                 its pages, its [param] page pinned last (a lock)
     Not linked  every page not in the menu (All), or the ones under this folder (This folder;
                 no filter at the top: every page is under /), in the site's order
-    Site        at the top: the Header and Footer (no grip, no delete)
+  The Theme area (area 'theme', ThemePanel.svelte) is this list's other face: its head (Back
+  to areas), Fonts and styles (Coming soon), then the item templates (Templates: open, delete),
+  in the same rows.
   The whole row drags (the path no longer grabs the pointer: G18): in the menu list to another
   place (the menu's order); from it into Not linked (out of the menu); from Not linked into it
   (into the menu there). Remove from menu does the same, and does not delete the page. The row in hand
@@ -31,6 +35,7 @@
   import { tick, untrack } from 'svelte';
   import Button from './Button.svelte';
   import BackHead from './BackHead.svelte';
+  import AreaHead from './AreaHead.svelte';
   import Select from './Select.svelte';
   import { openAddPage } from './modals.svelte.js';
   import { ui, setMode } from './ui.svelte.js';
@@ -39,7 +44,6 @@
   import { HEADER, pageFile, templateFile } from '../../render/files.js';
   import { parentId, pathOfId } from '../../render/routes.js';
   import {
-    crumbsOf,
     dropOf,
     entryFor,
     entryShows,
@@ -62,8 +66,10 @@
   import { usesOf } from '../../widgets/list/template-uses.js';
   import { SITE_PARTS } from '../lib/site-parts.js';
 
-  // live: reactive store (live.svelte.js); actions: pickTarget, pagesOp (main.js)
-  let { live, actions } = $props();
+  // live: reactive store (live.svelte.js); actions: pickTarget, pagesOp, setPanel (main.js);
+  // area: 'pages' (the pages, Header and Footer) or 'theme' (the item templates)
+  let { live, actions, area = 'pages' } = $props();
+  const theme = $derived(area === 'theme');
 
   const GONE = '(gone)';
   const FULL = 'Only one [param] page per folder: it has one';
@@ -88,7 +94,8 @@
   let subList = $state();
   let nlZone = $state();
 
-  const level = $derived(ui.pagesWin.folder);
+  // Theme has no folders
+  const level = $derived(theme ? '' : ui.pagesWin.folder);
   // a folder that is gone (deleted, undone, a stale URL): the top (once the pages are there:
   // a ?pages=/folder/ URL opens before the content is loaded)
   $effect(() => {
@@ -98,7 +105,7 @@
   // another level slides in (lib/slide.js): a deeper one from the right, a higher one (←, a
   // path part, Esc) from the left; a still copy of the body before (.ed-body, padding and
   // all) slides out, clipped to the panel's edge like a page
-  let shown = untrack(() => ui.pagesWin.folder);
+  let shown = untrack(() => level);
   const depth = (id) => (id ? id.split('/').length : 0);
   $effect.pre(() => {
     const next = level;
@@ -130,8 +137,10 @@
     const entry = entryFor(ui.pages, row);
     if (entry) actions.pickTarget(entry);
   }
+  // edit is in Pages (a template opened from Theme too: its ← and Done come back to Theme)
   function open(row) {
     show(row);
+    if (ui.panel !== 'pages') actions.setPanel('pages');
     setMode('edit');
   }
   // browse: a click only selects the row and shows its page; Header or Footer (Site): opens it
@@ -384,8 +393,6 @@
         title={r.self ? 'Always first: the folder’s own page' : 'Always last: one page per item'}
         ><i class="fa-solid fa-lock" aria-hidden="true"></i></span
       >
-    {:else}
-      <span class="prow__lead" aria-hidden="true"></span>
     {/if}
     <button
       type="button"
@@ -553,7 +560,7 @@
                 : 'No redirect: its address shows the 404 page; its menu item goes, links to it stay.'
               : r.nested
                 ? `Each ${r.title} page goes to its own ${r.nested} page; links follow.`
-                : `A redirect (Site Settings › Redirects) sends ${shownPath(r.id)} there; links to it are updated.`}
+                : `A redirect (Site settings › Redirects) sends ${shownPath(r.id)} there; links to it are updated.`}
           </p>
           <span class="ask-btns">
             <Button
@@ -623,11 +630,28 @@
   </div>
 {/snippet}
 
+<!-- Add page: a square + (off where only a [param] page could go and it has one: the title says
+     so, a disabled button shows none of its own) -->
+{#snippet addPage()}
+  <span class="pl-top__add" title={L.full ? FULL : null}>
+    <Button
+      icon="plus"
+      square
+      label="Add page"
+      title={L.full ? FULL : undefined}
+      disabled={level === '404' || L.full}
+      onclick={() => openAddPage({ level })}
+    />
+  </span>
+{/snippet}
+
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="pl" bind:this={root} {onkeydown}>
   <!-- in a folder: the page head's square ←, the path as the name, "Back to /parent/", a
-       square +; at the top: / and the bare + -->
-  {#if level}
+       square +; at the top: the area's head (← Back to areas, "Pages") and the same + -->
+  {#if theme}
+    <AreaHead id="theme" {actions} />
+  {:else if level}
     <div class="pl-folder">
       <BackHead
         backLabel="Up one level"
@@ -636,82 +660,23 @@
         onback={() => go(parentId(level))}
       >
         <span class="pl-folder__to">Back to {shownPath(parentId(level) || 'home')}</span>
-        {#snippet trailing()}
-          <!-- off: a [param] folder takes only a [param] page, and it has one (the title says so:
-               a disabled button shows none of its own) -->
-          <span class="pl-top__add" title={L.full ? FULL : null}>
-            <Button
-              icon="plus"
-              square
-              label="Add page"
-              title={L.full ? FULL : undefined}
-              disabled={level === '404' || L.full}
-              onclick={() => openAddPage({ level })}
-            />
-          </span>
-        {/snippet}
+        {#snippet trailing()}{@render addPage()}{/snippet}
       </BackHead>
     </div>
   {:else}
-    <div class="pl-top">
-      <nav class="pl-top__path" aria-label="Where you are">
-        {#each crumbsOf(level) as c, i (c.level)}
-          {#if i === crumbsOf(level).length - 1}
-            <span class="pl-top__crumb is-current" aria-current="location">{c.label}</span>
-          {:else}
-            <button type="button" class="pl-top__crumb" onclick={() => go(c.level)}
-              >{c.label}</button
-            >
-          {/if}
-        {/each}
-      </nav>
-      <span class="pl-top__add" title={L.full ? FULL : null}>
-        <Button
-          size="small"
-          icon="plus"
-          iconOnly
-          label="Add page"
-          title={L.full ? FULL : undefined}
-          disabled={level === '404' || L.full}
-          onclick={() => openAddPage({ level })}
-        />
-      </span>
-    </div>
+    <AreaHead id="pages" {actions} trailing={addPage} />
   {/if}
 
-  <ul class="pl-rows" bind:this={subList}>
-    {#if L.own}{@render row(L.own)}{/if}
-    {#if !lastMovable}{#each slotsAt(0, null) as p, i (i)}{@render slot(p)}{/each}{/if}
-    {#each L.sub as r (r.id)}
-      {#each slotsAt(0, r.id) as p, i (i)}{@render slot(p)}{/each}
-      {@render row(r, { j: movable.indexOf(r) })}
-      {#if r.id === lastMovable}
-        {#each slotsAt(0, null) as p, i (i)}{@render slot(p)}{/each}
-      {/if}
-    {/each}
-  </ul>
-  {#if level && !L.sub.length}<p class="hint small">No sub pages yet: + adds one.</p>{/if}
-
-  <div class="pl-zone" bind:this={nlZone}>
-    {@render head('Not linked', L.notLinked.length, !!level)}
+  {#if theme}
+    <!-- the theme's own look as a form: not built yet -->
     <ul class="pl-rows">
-      {#each L.notLinked as r (r.id)}
-        {#each slotsAt(1, r.id) as p, i (i)}{@render slot(p)}{/each}
-        {@render row(r, { j: nlMovable.indexOf(r), at: 1 })}
-      {/each}
-      {#each slotsAt(1, null) as p, i (i)}{@render slot(p)}{/each}
-    </ul>
-    {#if !L.notLinked.length && !slotsAt(1, null).length}
-      <p class="hint small">
-        {filter === 'here' && level ? `None under ${L.path}` : 'Every page is in the menu'}
-      </p>
-    {/if}
-  </div>
-
-  {#if !level}
-    {@render head('Site')}
-    <ul class="pl-rows">
-      {#each SITE_PARTS as p (p.id)}{@render row({ ...p, part: true })}{/each}
+      <li class="prow is-soon">
+        <button type="button" class="prow__open" disabled>
+          <span class="prow__title"><span>Fonts and styles</span></span>
+          <span class="prow__path is-muted">The theme's look</span>
+        </button>
+        <span class="prow__soon">Coming soon</span>
+      </li>
     </ul>
     {@render head('Templates', templates.length)}
     <ul class="pl-rows" data-templates>
@@ -720,6 +685,41 @@
     {#if !templates.length}
       <p class="hint small">No templates yet: a List’s Duplicate makes one.</p>
     {/if}
+  {:else}
+    {#if !level}
+      {@render head('Site parts')}
+      <ul class="pl-rows">
+        {#each SITE_PARTS as p (p.id)}{@render row({ ...p, part: true })}{/each}
+      </ul>
+    {/if}
+    <ul class="pl-rows" bind:this={subList}>
+      {#if L.own}{@render row(L.own)}{/if}
+      {#if !lastMovable}{#each slotsAt(0, null) as p, i (i)}{@render slot(p)}{/each}{/if}
+      {#each L.sub as r (r.id)}
+        {#each slotsAt(0, r.id) as p, i (i)}{@render slot(p)}{/each}
+        {@render row(r, { j: movable.indexOf(r) })}
+        {#if r.id === lastMovable}
+          {#each slotsAt(0, null) as p, i (i)}{@render slot(p)}{/each}
+        {/if}
+      {/each}
+    </ul>
+    {#if level && !L.sub.length}<p class="hint small">No sub pages yet: + adds one.</p>{/if}
+
+    <div class="pl-zone" bind:this={nlZone}>
+      {@render head('Not linked', L.notLinked.length, !!level)}
+      <ul class="pl-rows">
+        {#each L.notLinked as r (r.id)}
+          {#each slotsAt(1, r.id) as p, i (i)}{@render slot(p)}{/each}
+          {@render row(r, { j: nlMovable.indexOf(r), at: 1 })}
+        {/each}
+        {#each slotsAt(1, null) as p, i (i)}{@render slot(p)}{/each}
+      </ul>
+      {#if !L.notLinked.length && !slotsAt(1, null).length}
+        <p class="hint small">
+          {filter === 'here' && level ? `None under ${L.path}` : 'Every page is in the menu'}
+        </p>
+      {/if}
+    </div>
   {/if}
 </div>
 
@@ -733,13 +733,6 @@
     align-content: start;
   }
 
-  // at the top: [ path | + ], one 32px row
-  .pl-top {
-    @include row(var(--space-2));
-    min-height: var(--size-control);
-    margin-bottom: var(--space-1);
-  }
-
   // in a folder: BackHead (the page head's square ←, the path, "Back to /parent/", a square +);
   // its ← on the 12px edge where the page head's back arrow is
   .pl-folder {
@@ -749,46 +742,6 @@
   .pl-folder__to {
     @include ellipsis;
     color: var(--c-text-muted);
-  }
-
-  // one line, never wrapping (the header stays 32px): the parts above shrink first, cut with
-  // "…", the current one stays whole
-  .pl-top__path {
-    @include row(0);
-    flex: 1;
-    min-width: 0;
-    font-size: var(--fs-base);
-    line-height: 20px;
-    white-space: nowrap;
-  }
-
-  .pl-top__crumb {
-    @include ellipsis;
-    flex: 0 1 auto;
-    min-width: 1ch;
-    padding: 0;
-    border: 0;
-    border-radius: var(--radius-sm);
-    background: none;
-    color: var(--c-page-accent);
-    font: inherit;
-    cursor: pointer;
-
-    &:hover {
-      text-decoration: underline;
-    }
-
-    &:focus-visible {
-      @include focus-ring;
-    }
-
-    &.is-current {
-      flex: none;
-      max-width: 100%;
-      color: var(--c-text-muted);
-      cursor: default;
-      text-decoration: none;
-    }
   }
 
   .pl-top__add {
@@ -1085,6 +1038,31 @@
     .prow__pin {
       @include muted;
     }
+  }
+
+  // no empty icon column: a row without a grip or a lock starts its text 12px in
+  .prow:not(:has(.prow__lead)) .prow__open {
+    padding-left: var(--space-3);
+  }
+
+  // not built yet (Theme's Fonts and styles): quieter, no hover ring, no pointer
+  .prow.is-soon {
+    box-shadow: none;
+
+    .prow__open {
+      cursor: default;
+    }
+
+    .prow__title {
+      color: var(--c-text-faint);
+    }
+  }
+
+  .prow__soon {
+    flex: none;
+    padding-right: var(--space-2);
+    @include muted;
+    white-space: nowrap;
   }
 
   // the root row's Own page switch, at its end where the buttons are
