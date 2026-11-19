@@ -78,8 +78,8 @@ export const read = (root, f) =>
   JSON.parse(fs.readFileSync(path.join(root, isRootFile(f) ? 'content' : 'content/en', f), 'utf8'));
 
 /**
- * A [param] page's content (src/render/layout/source.js) for page `id` ("people/[person]"): an
- * album widget as its main widget, From URL `from`, each param of the address matching the property
+ * A [param] page's content (src/render/layout/source.js) for page `id` ("people/[person]"): a
+ * From URL List as its main widget, From URL `from`, each param of the address matching the property
  * `properties` names for it, else slug. extra: more keys of the page (meta, ...).
  */
 export function paramPage(id, from, properties = {}, extra = {}) {
@@ -96,8 +96,9 @@ export function paramPage(id, from, properties = {}, extra = {}) {
         widgets: [
           {
             id: 'w-main',
-            type: 'album',
+            type: 'list',
             source: { mode: 'url', from, where: { op: 'and', rules } },
+            config: { template: 'preset:plain', columns: '1' },
           },
         ],
       },

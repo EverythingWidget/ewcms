@@ -199,7 +199,7 @@ breakpoints as `site-core/tokens`. The engine's styles read the tokens: the core
 (`src/client/styles`: the grid, breakpoints, text styles, base, backdrop, layout), the engine's UI
 there too (`_glass.scss`, `_chrome.scss`: the header, the phone menu, the curtain, the footer) and
 each built-in widget's look next to it (`src/widgets/<type>/style.scss`: hero,
-photo, form, album, list). The editor has its own tokens and fonts
+photo, form, list). The editor has its own tokens and fonts
 (`src/editor/styles/_tokens.scss`, `_fonts.scss`, `src/editor/fonts`): it never reads the site's
 theme, so a theme can change and the editor stays.
 
@@ -279,7 +279,7 @@ src/
     scroll.js       ← native scroll and ScrollTrigger
     anim/engine.js  ← reads content/animations.json, wires every [data-anim]
     anim/types.js   ← animation types (reveal, split, parallax, scatter, …)
-    modules/        ← real rows, album slider, project accordion, card hover, misc
+    modules/        ← real rows, card hover, misc
     ui/             ← menu (click-only), clock
     styles/         ← SCSS: the core (tokens, base, backdrop, layout, text) and the chrome (glass, header, menus, curtain, footer); main.scss bundles them with the widgets' style.scss and the site's theme
   editor/           ← the visual editor app (any page + ?edit), dev server only, never built or shipped
@@ -660,8 +660,8 @@ every section is a grid of **widgets** (`src/render/layout/`):
 **Widgets.** The widget types live in **one registry**, `src/widgets/` (`index.js` explains the
 shape): the build renders with it, and the editor reads it for each widget's settings and config
 and for **Add widget**. A type is `{ type, label, icon, settings, config, defaults, render(data,
-ctx, widget) }`; `list` makes it show a list of items, `item` one item it
-needs (album). Which items a widget shows is its `source` (see "Widget sources"). A widget's content
+ctx, widget) }`; `list` makes it show a list of items, `item` skips the widget when it has no item.
+Which items a widget shows is its `source` (see "Widget sources"). A widget's content
 sits next to its type, how it works under `config` (`enabled`: on/off; look, …):
 
 | type     | what                                                                                                                                                                                                                     |
@@ -671,8 +671,7 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
 | `button` | a button: `label`; config `link` (see Links), `textOverflow` (`clip`, the default: one line, cut at the widget's edge / `wrap`: more lines); `box` (`fit`: hugs its label / `fill`: the whole widget) and `place` (nine) |
 | `form`   | a contact form (see "Contact form")                                                                                                                                                                                      |
 | `hero`   | the home hero: `title` (one word per line), `eyebrow`, `body`, scattered `photos`; as tall as its widget (Rows / Aspect), Auto: its section's preset height under the navbar                                             |
-| `list`   | **list**: its source's items, each with a template (`config.template`: a preset such as `preset:card`, or a site template `t-…`); `columns`, `gap`, `phoneColumns`                                                       |
-| `album`  | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped                                                                                                          |
+| `list`   | **list**: its source's items, each with a template (`config.template`: a preset such as `preset:card` or `preset:plain`, or a site template `t-…`); `columns`, `gap`, `phoneColumns`                                     |
 
 - **Text widget** (`src/render/text.js`): `body` is a list of lines `{ style, list?, text: [runs] }`; a
   style (title, heading, subheading, statement, paragraph, label, small: the site's type scale)
@@ -689,11 +688,11 @@ sits next to its type, how it works under `config` (`enabled`: on/off; look, …
   an empty item ends it, Backspace at an item's start takes its list off. Pasted HTML lists
   become list lines.
 - **Item pages:** a `[param]/index.json`'s widgets render once per page it builds. A widget From
-  URL shows the items matching that page's address; a type marked `item` (the `album` widget)
-  reads its first for its photos, and its texts, like any widget's, are bindings to it (below).
+  URL shows the items matching that page's address (a List with a template is the usual main
+  widget: its items, title and body come from that match).
 - **Animations:** a widget's `motion` picks its animation (a new widget gets its type's default
   from the registry, e.g. text `lines-up`, photo `photo-reveal`, grid `grid-reveal`). Composite
-  widgets (hero, heading, album) keep `data-anim` **elements** inside them
+  widgets (hero) keep `data-anim` **elements** inside them
   for their own pieces (see Animations).
 - **A new type:** add it to a file in `src/widgets/` and to `WIDGET_TYPES` in `index.js`
   (and its styles); the editor shows it with no editor code.
@@ -772,7 +771,7 @@ Which items a widget shows is its `source` (`src/render/layout/source.js`), one 
 { "mode": "url", "from": "shoots", "where": { "op": "and", "rules": [{ "param": "person", "property": "person" }] } }
 ```
 
-- **Item** (one-item widgets: heading, text, album, …): one item, picked. **All** (list widgets:
+- **Item** (one-item widgets: text, photo, …): one item, picked. **All** (list widgets:
   List): every item, in order.
 - **From URL** (any widget, on a `[param]` page): the items that match the page's address. Every
   param of the address (`/people/[person]/[year]/`) has a row: the source property it matches
@@ -843,11 +842,9 @@ values of a **source item** instead of its own, as **parts** (`src/render/layout
   `bindingProblems()`: an unknown name, a whole value of a type that doesn't fit, or a source
   that isn't one is an error (Save refuses, the build stops; a changed schema that breaks a
   page's property too). An item that isn't in its source is a build warning.
-- **The `[param]` pages** are built this way: the album widget's title is `[{ "property": "title" }]`, its
-  facts are `{ "label": "Role", "value": [{ "property": "role" }] }`, … (a fact whose value is empty is left
-  out; the photo count comes last), its body `[{ "property": "body" }]`. Their output is the
-  same as before. A new `[param]` page binds the source's title property, its list properties as facts
-  and its first long text.
+- **The `[param]` pages** are built this way: a From URL List is the main widget, with a template
+  (`preset:plain` on a new page, or a site template such as `t-albp` / `t-albl`) whose texts and
+  photo are bindings to the matching item (`[{ "property": "title" }]`, `[{ "property": "body" }]`, …).
 - **In the editor:** bound values aren't typed in the preview; a click selects them and opens
   their widget on the setting. The widget's Content tab starts with its **Source**
   (`WidgetSource.svelte`): From URL, Item / All, None (From URL greyed on a page without
@@ -1271,7 +1268,7 @@ hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBod
   (`layoutOptions()` in `src/editor/widget-layout.js`), the rest in Content. The pickers and
   - Property offer `{items}` under **Count of this List** on a List
     (`src/editor/property-groups.js`).
-- Album cards, Photo grid and Project list are gone (use a List with a template).
+- Album (the item), Album cards, Photo grid and Project list are gone (use a List with a template).
 
 ### Menu
 
@@ -1630,8 +1627,8 @@ Markup only says **what** an element is: `data-anim="hero.title"`. All the **how
     "hero.title": { "animation": "hero-title" },
     "page.title": { "animation": "split-chars", "trigger": "load", "delay": 0.1 },
   },
-  "interactions": { "...": "card cycle, album wheel/drag thresholds" },
-  "transitions": { "...": "page curtain, accent tween, album slide, menu" },
+  "interactions": { "...": "card cycle" },
+  "transitions": { "...": "page curtain, accent tween, menu" },
 }
 ```
 
@@ -1685,10 +1682,9 @@ scroll, scrub-words, parallax); `scatter`, `hero-title` and `hover-preview` stay
 `data-anim` elements.
 
 `data-anim` is still used for what is not a widget (curtain, header, menu) and for the
-**elements** of composite widgets (hero photos/title/meta, a heading's title and intro,
-album). The old per-element hooks widgets replace (text, photo, form title,
-intro, grids, album grids/panels, projects list) are gone: their targets were removed from
-`animations.json`.
+**elements** of composite widgets (hero photos/title/meta). The old per-element hooks widgets
+replace (text, photo, form title, intro, grids, album grids/panels, projects list, the Album
+widget) are gone: their targets were removed from `animations.json`.
 
 **Validation.** A widget's `motion` must have that shape (`checkMotion`); an animation id that
 isn't in the library (or a markup-only type) is a **Save error** in the editor and fails the
@@ -1696,7 +1692,7 @@ build (`motionProblems`). Saving `animations.json` checks every page, so removin
 that widgets still use is refused.
 
 `prefers-reduced-motion` is respected everywhere: no widget motion, drift/parallax/splits or
-scroll scrubs (content is simply shown), instant album slides, a quick crossfade
+scroll scrubs (content is simply shown), a quick crossfade
 between pages.
 
 ### Visual editor (`?edit`, dev only)

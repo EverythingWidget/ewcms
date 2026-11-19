@@ -4,6 +4,14 @@ Releases are tagged `vX.Y.Z` on main; a site pins one in its `package.json`
 (`"ewcms": "github:EverythingWidget/ewcms#vX.Y.Z"`). Breaking changes are marked **Breaking** and
 say what a site must do before it bumps its pin.
 
+## Unreleased
+
+### Breaking: what a site must do before bumping
+
+- **Breaking: Album (the item) (`album`) is gone.** Use a List (`list`) with a From URL source
+  and a template (`"config": { "template": "preset:plain", "columns": "1" }`, or a site template
+  such as `t-albp` / `t-albl`). `ewcms check` names the replacement. There is no conversion.
+
 ## 0.10.0 (2026-11-17)
 
 ### Breaking: what a site must do before bumping to 0.10.0

@@ -9,8 +9,7 @@
  *                                                          address (src/render/query.js)
  *   no "source"                                            None: the widget's own texts
  *
- * Item widgets (a type without `list`) offer Item / From URL / None, list widgets (`list: true`:
- * album cards, grids, project lists) All / From URL / None. From URL only on a [param] page:
+ * Item widgets (a type without `list`) offer Item / From URL / None, list widgets (`list: true`: the List) All / From URL / None. From URL only on a [param] page:
  * every param of its address has a row (a rule) or is Any (no rule).
  *
  * The main widget of a [param] page ("main": "<widget id>" in its index.json) decides which pages

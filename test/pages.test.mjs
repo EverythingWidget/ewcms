@@ -80,7 +80,7 @@ test('template: [param]/index.json in a page folder, one per folder, not at the 
   assert.equal(pagesOp(root, { op: 'template', parent: 'about', source: 'nope' }).status, 400);
   const r = pagesOp(root, { op: 'template', parent: 'about', source: 'people' });
   assert.deepEqual(r.body.created, ['pages/about/[slug]/index.json']);
-  // its main widget: the album, From URL, [slug] matching slug (people has no "slug" param field)
+  // its main widget: a From URL List, [slug] matching slug (people has no "slug" param field)
   const made = read(root, 'pages/about/[slug]/index.json');
   const main = made.sections[0].widgets[0];
   assert.equal(made.main, main.id);
@@ -94,12 +94,13 @@ test('template: [param]/index.json in a page folder, one per folder, not at the 
     checkContent('pages/about/[slug]/index.json', read(root, 'pages/about/[slug]/index.json')),
     [],
   );
-  const [album] = read(root, 'pages/about/[slug]/index.json').sections;
+  const [section] = read(root, 'pages/about/[slug]/index.json').sections;
   assert.deepEqual(
-    album.widgets.map((widget) => widget.type),
-    ['album'],
+    section.widgets.map((widget) => widget.type),
+    ['list'],
   );
-  assert.deepEqual([album.height, album.width, album.align], ['full', 'full', undefined]);
+  assert.deepEqual(section.widgets[0].config, { template: 'preset:plain', columns: '1' });
+  assert.deepEqual([section.height, section.width, section.align], ['full', 'full', undefined]);
   assert.equal(pagesOp(root, { op: 'template', parent: 'about', source: 'people' }).status, 400);
 });
 

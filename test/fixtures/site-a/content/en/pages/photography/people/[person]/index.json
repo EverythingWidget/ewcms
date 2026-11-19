@@ -11,7 +11,7 @@
       "widgets": [
         {
           "id": "w-j8hg",
-          "type": "album",
+          "type": "list",
           "source": {
             "mode": "url",
             "from": "people",
@@ -20,26 +20,7 @@
               "rules": [{ "param": "person", "property": "slug" }]
             }
           },
-          "title": [{ "property": "title" }],
-          "meta": [
-            {
-              "label": "Role",
-              "value": [{ "property": "role" }]
-            },
-            {
-              "label": "Agency",
-              "value": [{ "property": "agency" }]
-            },
-            {
-              "label": "Location",
-              "value": [{ "property": "location" }]
-            },
-            {
-              "label": "Year",
-              "value": [{ "property": "year" }]
-            }
-          ],
-          "body": [{ "property": "body" }]
+          "config": { "template": "preset:plain", "columns": "1" }
         }
       ]
     }

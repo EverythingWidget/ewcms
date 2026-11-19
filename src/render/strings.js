@@ -3,8 +3,8 @@
  * strings.json (content folder). A site sets only what it changes; a missing key falls back
  * to these. Placeholders in braces ("Show photo {n}") are filled by t().
  *
- *   t(ctx, 'album.prev')               "Previous photo"
- *   t(ctx, 'album.show', { n: 3 })     "Show photo 3"
+ *   t(ctx, 'carousel.prev')            "Previous slide"
+ *   t(ctx, 'carousel.show', { n: 3 })  "Show slide 3"
  *
  * Widget content (titles, buttons a widget's settings hold) is not here: it is the page's.
  */
@@ -22,17 +22,6 @@ export const CORE_STRINGS = Object.freeze({
   },
   tag: { placeholder: 'Placeholder' },
   hero: { scroll: 'Scroll' },
-  album: {
-    photos: '{title} photos',
-    slide: '{n} of {total}',
-    prev: 'Previous photo',
-    next: 'Next photo',
-    show: 'Show photo {n}',
-    open: 'Open photo {n}',
-    view: 'View mode',
-    slider: 'Slider',
-    grid: 'Grid',
-  },
   // the List's Carousel arrangement (widgets/list/carousel.js)
   carousel: {
     carousel: 'Carousel',

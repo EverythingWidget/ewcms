@@ -258,21 +258,18 @@ test('render: editor markers point into the widgets, only when editable', () => 
   }
 });
 
-test('render: an unknown type, or an item type without an item, warns and is skipped', () => {
+test('render: an unknown type warns and is skipped; a From URL List still renders its item', () => {
   const [out, seen] = warnings(() =>
     renderSections(ctxOf(page), page, F, [
       section([
         widget('nope'),
-        widget('album', { source: undefined }),
         widget('text', { body: lines('x') }),
       ]),
     ]),
   );
-  assert.doesNotMatch(out, /data-album/);
   assert.match(out, /<p class="ts ts--paragraph" data-line="paragraph">x<\/p>/);
   assert.match(seen.join('\n'), /unknown widget type "nope"/);
-  assert.match(seen.join('\n'), /"album" widget shows an item: it has none/);
-  assert.match(render.renderRoute(item, content).body, /data-album/);
+  assert.match(render.renderRoute(item, content).body, /class="list/);
 });
 
 test('validation: the layout, then each widget against its type', () => {
@@ -483,7 +480,7 @@ test('render endpoint: one section of a page, from the editor copy over the draf
       ids: [tpl.sections[0].id],
     },
   );
-  assert.match(Object.values(out.body.html)[0], /data-album/);
+  assert.match(Object.values(out.body.html)[0], /class="list/);
   // wrong page, bad data, no ids
   assert.equal(renderOp(render, SITE_A, {}, { path: '/', file, data, ids: [] }).status, 400);
   const bad = { sections: [{ id: 'x', widgets: [] }] };
@@ -494,7 +491,7 @@ test('render endpoint: one section of a page, from the editor copy over the draf
   assert.equal(renderOp(render, SITE_A, {}, { path: '/about/', file }).status, 400);
 });
 
-test('add widget: its source fits the page; removing the main widget leaves the page without one', () => {
+test('add widget: a List and a Text start with no source; removing the main widget leaves the page without one', () => {
   const store = createStore();
   const P = 'pages/people/[person]/index.json';
   const A = 'pages/about/index.json';
@@ -512,15 +509,9 @@ test('add widget: its source fits the page; removing the main widget leaves the 
     [A]: page('pg-t301'),
   });
   const widget = (file, type) => addWidget(store, file, 0, type);
-  // an album on a [param] page: From URL, [person] on slug (people has no "person" field)
-  assert.deepEqual(widget(P, 'album').source, {
-    mode: 'url',
-    from: 'people',
-    where: { op: 'and', rules: [{ param: 'person', property: 'slug' }] },
-  });
-  // off one: no params to match, so its source's first item; a list keeps All
-  assert.deepEqual(widget(A, 'album').source, { mode: 'item', from: 'people', id: 'p-noor' });
-  assert.equal(widget(A, 'list').source, undefined); // a List starts on None (F20)
+  // a List starts on None, even on a [param] page (F20); a Text has no default source
+  assert.equal(widget(P, 'list').source, undefined);
+  assert.equal(widget(A, 'list').source, undefined);
   assert.equal(widget(A, 'text').source, undefined);
   // the main widget removed: "main" goes with it, one undo step
   const main = store.get(P, '/sections/0/widgets/0/id');

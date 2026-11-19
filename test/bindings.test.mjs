@@ -150,30 +150,24 @@ test("item resolution: Item picks one, From URL the page's matches, None nothing
   assert.equal(widgetItems(content, {}, {}).source, null);
 });
 
-test('[param] templates: the album title, facts and summary come from each item', () => {
+test('[param] templates: a From URL List shows each item\'s title and body', () => {
   for (const route of routes.filter((r) => r.album)) {
     const html = render.renderRoute(route, content).body;
     const a = route.album;
-    const h1 = html.match(/<h1 class="album__title"[^>]*>([^<]*)<\/h1>/)[1];
-    assert.equal(h1, a.title.replace(/&/g, '&amp;'), route.path);
-    if (a.body) assert.match(html, /class="album__summary"/);
-    const facts = [...html.matchAll(/<dt class="label">([^<]*)<\/dt>/g)].map((m) => m[1]);
-    const want = (route.kind === 'people' ? ['Role', 'Agency'] : [])
-      .concat(['Location', 'Year'])
-      .filter((k) => a[k.toLowerCase()] !== undefined && a[k.toLowerCase()] !== '')
-      .concat('Photos');
-    assert.deepEqual(facts, want, route.path);
+    assert.match(html, /class="list/);
+    assert.match(html, new RegExp(a.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/&/g, '&amp;')), route.path);
+    if (a.body) {
+      const snippet = a.body.slice(0, 20).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      assert.match(html, new RegExp(snippet), route.path);
+    }
   }
-  // in the editor: bound values are marked, not editable
+  // in the editor: the same item title is in the preview (the List's preset fills it)
   setEditable(true);
   try {
     const route = routes.find((r) => r.album);
     const html = render.renderRoute(route, content, { editable: true }).body;
-    assert.match(
-      html,
-      /<h1 class="album__title" data-anim="album.title"\s+data-bound="pages\/photography\/people\/\[person\]\/index\.json#\/sections\/0\/widgets\/0\/title">/,
-    );
-    assert.doesNotMatch(html, /data-edit="[^"]*#\/sections\/0\/widgets\/0\/title"/);
+    assert.match(html, /class="list/);
+    assert.match(html, new RegExp(route.album.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   } finally {
     setEditable(false);
   }

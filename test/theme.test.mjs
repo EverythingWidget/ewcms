@@ -75,7 +75,7 @@ test('the default site theme: every colour in its tokens; the engine styles none
   const files = [
     'src/client/styles/_chrome.scss',
     'src/client/styles/_glass.scss',
-    ...['hero', 'photo', 'form', 'album'].map((w) => `src/widgets/${w}/style.scss`),
+    ...['hero', 'photo', 'form'].map((w) => `src/widgets/${w}/style.scss`),
   ].map((f) => enginePath(f));
   for (const f of files) {
     const code = fs.readFileSync(f, 'utf8').replace(/\/\/.*$/gm, '');

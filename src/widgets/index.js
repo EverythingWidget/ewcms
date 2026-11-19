@@ -18,7 +18,7 @@
  *   type      its name in the content
  *   label     its name in the editor; icon: a Font Awesome icon name (no "fa-")
  *   line      one line on what it is, under its name in the editor's Add widget modal
- *   sketch    the modal's drawing of it: a type's name (album draws as 'photo')
+ *   sketch    the modal's drawing of it: a type's name, or another type's
  *   placement optional { axes, box, fill, place, media }: its content box's Fit / Fill and
  *             place in the widget (../layout/place.js)
  *   fitWidth  optional true: its text lines can each fill its width (a line's "fit", the
@@ -57,7 +57,6 @@ import photo from './photo/index.js';
 import button from './button/index.js';
 import form from './form/index.js';
 import hero from './hero/index.js';
-import album from './album/index.js';
 import list from './list/index.js';
 import { details } from './list/details.js';
 
@@ -68,7 +67,6 @@ export const BUILTIN_WIDGETS = Object.freeze([
   button,
   form,
   hero,
-  album,
   list,
 ]);
 
@@ -84,6 +82,8 @@ export const RETIRED_WIDGETS = Object.freeze({
     'Project list ("projects") is gone: use a List ("list") with "config": { "template": "t-prow", "columns": "1" } (or a row preset)',
   albums:
     'Album cards ("albums") is gone: use a List ("list") with a Card template ("preset:card", or "t-acrp" / "t-acrl")',
+  album:
+    'Album (the item) ("album") is gone: use a List ("list") with a From URL source and a template ("preset:plain", or a site template such as "t-albp" / "t-albl")',
 });
 
 /**

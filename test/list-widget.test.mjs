@@ -725,10 +725,11 @@ test('resolveCustomItem: every key always present, empty when missing', () => {
   assert.deepEqual(Object.keys(shown.items[0]).sort(), keys);
 });
 
-test('Photo grid, Project list and Album cards are gone: rejected, pointing to List', () => {
+test('Photo grid, Project list, Album cards and Album (the item) are gone: rejected, pointing to List', () => {
   assert.equal(WIDGET_TYPES.grid, undefined);
   assert.equal(WIDGET_TYPES.projects, undefined);
   assert.equal(WIDGET_TYPES.albums, undefined);
+  assert.equal(WIDGET_TYPES.album, undefined);
   const page = (type) => ({
     version: 1,
     kind: 'page',
@@ -746,6 +747,10 @@ test('Photo grid, Project list and Album cards are gone: rejected, pointing to L
   assert.match(
     checkContent('pages/x/index.json', page('albums')).join('; '),
     /Album cards \("albums"\) is gone: use a List/,
+  );
+  assert.match(
+    checkContent('pages/x/index.json', page('album')).join('; '),
+    /Album \(the item\) \("album"\) is gone: use a List/,
   );
 });
 

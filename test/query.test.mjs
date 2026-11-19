@@ -221,7 +221,7 @@ test('main widget: none, not From URL, Any or a missing property: no pages, says
 });
 
 test('source shapes: modes per widget kind, where rules', () => {
-  const page = (source, type = 'album') => ({
+  const page = (source, type = 'text') => ({
     version: 1,
     kind: 'page',
     id: 'pg-t201',
