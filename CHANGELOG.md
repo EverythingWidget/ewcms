@@ -18,6 +18,11 @@ say what a site must do before it bumps its pin.
 - The `site.config.mjs` warning is gone (`ewcms.config.mjs` is the one config). Sites that have
   not yet renamed do so on their next pin bump (`git mv site.config.mjs ewcms.config.mjs`).
   There is no fallback: a site that still has `site.config.mjs` is read as having no config.
+- The preview's layout layer (`src/editor/overlay.js`) is split: `overlay.js` keeps what shows,
+  the pointer's dispatch and the one draw loop; `overlay-drag.js` (one widget's move and resize),
+  `overlay-select.js` (group move, nudge, selection box), `overlay-links.js` (link lines and link
+  drag) and `overlay-rows.js` (a Custom section's rows) share its one state. Nothing changes in
+  how it works.
 
 ## 0.10.0 (2026-11-17)
 

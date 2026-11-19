@@ -49,6 +49,12 @@
  * The overlay follows the page with a frame loop while it shows something; it reads `ui`
  * (clicks(), widget, link) every frame, and the section metrics once per drag, so the grid
  * doesn't move under the pointer while the page reflows.
+ *
+ * This file is the layer, what it draws (in the one loop: frame(), layout()), the pointer's
+ * dispatch and the API. The gestures are its parts, each a factory on its one state (S, never a
+ * copy) that never imports this file: overlay-drag.js (one widget moved or resized),
+ * overlay-select.js (a group moved, the nudge, the selection box), overlay-links.js (the link
+ * lines and the link drag) and overlay-rows.js (a Custom section's rows).
  */
 import { sizeOf } from '../render/layout/index.js';
 import { templateHit } from './lib/template-hit.js';
@@ -590,8 +596,9 @@ export function createOverlay({
 
   const secIdOf = (id) => secKey(secOf(widgetEl(id)));
 
-  // no page text selected while a circle is dragged: user-select off on the page, a selection
-  // already there cleared (not a text being edited: its caret stays), selectstart stopped
+  // no page text selected while a widget, a group, a selection box or a circle is dragged (the
+  // parts call it): user-select off on the page, a selection already there cleared (not a text
+  // being edited: its caret stays), selectstart stopped
   const stopSelect = (e) => e.preventDefault();
   let savedSelect = null;
   function noSelect(on) {

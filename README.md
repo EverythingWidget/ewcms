@@ -289,7 +289,11 @@ src/
     preview-runtime.js ← talks to the site inside the iframe (text overrides, selection, replay)
     preview-edit.js ← a text edited in place in the preview (plain and rich, its link box)
     preview-pointer.js ← the preview's clicks, double clicks and presses (to the editing, then the overlay)
-    overlay.js      ← the preview's layout layer: picking, dragging, resizing widgets; the one draw loop
+    overlay.js      ← the preview's layout layer: what shows, the pointer's dispatch, the one draw loop (its parts below, on one state)
+    overlay-drag.js ← one widget moved or resized (snapped to the cells, auto-scroll, Esc)
+    overlay-select.js ← several widgets moved together, the arrow keys' nudge, the selection box
+    overlay-links.js ← the link lines and gaps, a top circle dragged onto another widget's bottom one
+    overlay-rows.js ← a Custom section's bottom edge dragged (its rows)
     reveal.js       ← reveal() and locate(): scroll into view when out of view, or Locate to its top
     source.js       ← talks to the dev-server endpoints (load, save, status, publish)
     svelte/         ← the editor UI (Svelte 5): panels, fields, modals
