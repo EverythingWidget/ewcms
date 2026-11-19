@@ -66,7 +66,8 @@ import {
   tracksOf,
 } from '../render/layout/geometry.js';
 import { PHONE_MAX } from '../render/layout/grid.js';
-import { clampDelta, hits, offscreen, selectedIds, toggle } from './multi-select.js';
+import { clampDelta, hits, selectedIds, toggle } from './multi-select.js';
+import { reveal } from './reveal.js';
 import { T } from './ui-tokens.js';
 import { hotWidget, peekSection, selectLink, setAnchor, setSecRows } from './svelte/ui.svelte.js';
 import { shownPlace, tagHtml } from './widget-tag.js';
@@ -1449,9 +1450,7 @@ export function createOverlay({
     },
     /** Widget `id` scrolled to (centred) only when it is out of the preview's view. */
     reveal(id) {
-      const el = doc && widgetEl(id);
-      if (el && offscreen(el.getBoundingClientRect(), win.innerHeight))
-        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      reveal(doc && widgetEl(id), { when: 'part' });
     },
     /** previewClicks(), ui.widget or ui.link changed: show or hide what they ask for. */
     refresh() {

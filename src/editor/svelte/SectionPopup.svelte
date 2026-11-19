@@ -14,7 +14,7 @@
 <script>
   import { tick } from 'svelte';
   import SectionSettings from './SectionSettings.svelte';
-  import { locate } from '../locate.js';
+  import { locate } from '../reveal.js';
   import { clampPos } from '../widget-popup.js';
 
   let { live, bridge, file, id, popup, onclose } = $props();

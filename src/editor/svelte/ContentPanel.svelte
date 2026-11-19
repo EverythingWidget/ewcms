@@ -59,7 +59,7 @@
   import SectionPopup from './SectionPopup.svelte';
   import SectionsList from './SectionsList.svelte';
   import SectionToolbar from './SectionToolbar.svelte';
-  import { locate } from '../locate.js';
+  import { locate } from '../reveal.js';
   import SeoSection from './SeoSection.svelte';
   import { openSources, openWidgets } from './modals.svelte.js';
   import { allFields, contentGroups, groupFor } from './content-groups.js';

@@ -6,7 +6,7 @@
 -->
 <script>
   import Button from './Button.svelte';
-  import { locate } from '../locate.js';
+  import { locate } from '../reveal.js';
 
   let { bridge, id, onback } = $props();
 </script>

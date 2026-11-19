@@ -334,7 +334,7 @@ test('a selected template widget uses the page pop-up and toolbar delete, in pla
   const bar = read('src/editor/svelte/SectionToolbar.svelte');
   const inspector = read('src/editor/svelte/WidgetInspector.svelte');
   const content = read('src/editor/svelte/ContentPanel.svelte');
-  const locate = read('src/editor/locate.js');
+  const locate = read('src/editor/reveal.js');
   // no inline Content | Layout or Remove widget: those live in the pop-up and the toolbar
   assert.doesNotMatch(panel, /data-template-widget/);
   assert.doesNotMatch(panel, /Remove widget/);

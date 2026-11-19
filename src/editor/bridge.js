@@ -25,6 +25,7 @@ import { ANIMATIONS, templateIdOf } from '../render/files.js';
 import { photoSrcset, photoUrl } from './svelte/media.svelte.js';
 import { T } from './ui-tokens.js';
 import { isShortcut } from './keys.js';
+import { reveal } from './reveal.js';
 import {
   isCaret,
   oneLineSelection,
@@ -342,8 +343,7 @@ export function createBridge({
      */
     replayOne(el) {
       if (!api || !el) return;
-      const r = el.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > win.innerHeight * 0.8) api.scrollTo(el, { smooth: false });
+      reveal(el, { when: 'play', smooth: false });
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           if (!api?.replay(el)) api?.remount();
@@ -354,11 +354,7 @@ export function createBridge({
     /** Re-run the page's animations, optionally bringing `el` into view first. */
     replay(el, { scroll = true } = {}) {
       if (!api) return;
-      if (el && scroll) {
-        const r = el.getBoundingClientRect();
-        const vh = win.innerHeight;
-        if (r.bottom < 0 || r.top > vh * 0.8) api.scrollTo(el, { smooth: false });
-      }
+      if (el && scroll) reveal(el, { when: 'play', smooth: false });
       // (api is null again if a save reloads the preview in between)
       requestAnimationFrame(() => requestAnimationFrame(() => api?.remount()));
     },
@@ -375,10 +371,9 @@ export function createBridge({
       return end > start ? Math.max(0, Math.min(1, (api.scrollTop() - start) / (end - start))) : 0;
     },
 
+    /** A text (focused, picked) centred when it is out of view (reveal.js). */
     reveal(el) {
-      if (!el || !api) return;
-      const r = el.getBoundingClientRect();
-      if (r.bottom < 60 || r.top > win.innerHeight - 60) api.scrollTo(el, { smooth: true });
+      if (el && api) reveal(el);
     },
     /**
      * Where the widget toolbar sits ('above' | 'below' | 'inside', null: none): the selected

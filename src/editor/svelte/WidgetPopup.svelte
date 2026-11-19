@@ -14,7 +14,7 @@
 <script>
   import { tick } from 'svelte';
   import WidgetInspector from './WidgetInspector.svelte';
-  import { locate } from '../locate.js';
+  import { locate } from '../reveal.js';
   import { clampPos } from '../widget-popup.js';
 
   let { g, live, bridge, sourceIds, onsource, popup, onclose } = $props();

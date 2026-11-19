@@ -4,7 +4,7 @@
   tools are SectionToolbar.svelte's, over the body), then the dashed Add section card, which adds an empty
   section after the last one. A click on a card selects it (ui.selSection: its section shown in
   the preview, overlay.js); a double click (or the toolbar's gear) opens its settings pop-up (onsection); both
-  scroll the preview to the section (locate.js, as Locate does; only from here, never for a
+  scroll the preview to the section (reveal.js locate, as Locate does; only from here, never for a
   selection made in the preview); a widget's
   row opens its settings (onopen), as a click on the widget in the preview does. Widgets have no
   order here: they are placed in the preview. Every change is one undo step (layout-ops.js).
@@ -14,7 +14,7 @@
   import SectionCard from './SectionCard.svelte';
   import { ui, selectSection, selectSections, peekSection } from './ui.svelte.js';
   import { addSection } from '../layout-ops.js';
-  import { locate } from '../locate.js';
+  import { locate } from '../reveal.js';
 
   let { live, bridge, file, onopen, onsection, onadd } = $props();
 

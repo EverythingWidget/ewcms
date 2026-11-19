@@ -29,7 +29,7 @@
   import Button from './Button.svelte';
   import { undoToast } from './toasts.svelte.js';
   import { ui, selectWidgets, selectSection, openPopup } from './ui.svelte.js';
-  import { locate } from '../locate.js';
+  import { locate } from '../reveal.js';
   import { shownRows } from '../shown-rows.js';
   import { widgetType } from '../../widgets/index.js';
   import {
