@@ -20,6 +20,7 @@ register(
   import.meta.url,
 );
 const { createOverlayRows } = await import('../src/editor/overlay-rows.js');
+const { createOverlayLinks, DOT } = await import('../src/editor/overlay-links.js');
 
 /** An element's style: its properties, cssText read and written as a whole. */
 function style(css = '') {
@@ -72,6 +73,7 @@ function page() {
   const doc = {
     documentElement: html,
     activeElement: null,
+    createElement: () => ({ style: {}, className: '', classList: { toggle() {} } }),
     addEventListener: (t, f) => docOn.add(`${t}:${f.name}`),
     removeEventListener: (t, f) => docOn.delete(`${t}:${f.name}`),
   };
@@ -113,8 +115,8 @@ function ev(props = {}) {
   e.stopPropagation = () => (e.stopped = true);
   return e;
 }
-/** Each listener the gesture put on the window, called as the window would. */
-const fire = (p, handlers, type, e) => handlers[type]?.(e);
+/** The listener a gesture put on the window for `type`, called as the window would. */
+const fire = (handlers, type, e) => handlers[type]?.(e);
 
 /** The window's listeners, by name, as a gesture adds them (to call them as the page would). */
 function spy(win) {
@@ -148,12 +150,12 @@ test("a Custom section's rows: Esc puts its height back, the key stopped, nothin
   rows.startRows(ev({ clientY: 100 }));
   assert.ok(S.sizing);
   assert.equal(p.attrs.get('data-flow-hold'), '');
-  fire(p, h, 'pointermove', ev({ clientY: 140 })); // 5 rows down
+  fire(h, 'pointermove', ev({ clientY: 140 })); // 5 rows down
   assert.equal(sec.style.getPropertyValue('--frows'), '15');
-  fire(p, h, 'keydown', ev({ key: 'a' })); // another key: the drag goes on
+  fire(h, 'keydown', ev({ key: 'a' })); // another key: the drag goes on
   assert.ok(S.sizing);
   const esc = ev({ key: 'Escape' });
-  fire(p, h, 'keydown', esc);
+  fire(h, 'keydown', esc);
   assert.ok(esc.prevented && esc.stopped);
   assert.equal(sec.style.cssText, before);
   assert.equal(S.sizing, null);
@@ -162,8 +164,69 @@ test("a Custom section's rows: Esc puts its height back, the key stopped, nothin
   assert.deepEqual(calls, []);
   // a drag released: one onrows
   rows.startRows(ev({ clientY: 100 }));
-  fire(p, h, 'pointermove', ev({ clientY: 116 }));
-  fire(p, h, 'pointerup', ev());
+  fire(h, 'pointermove', ev({ clientY: 116 }));
+  fire(h, 'pointerup', ev());
   assert.deepEqual(calls, [['s1', 12, { phone: false }]]);
   assert.equal(p.on.size, 0);
+});
+
+test("a link's drag: Esc drops it, the key stopped, the targets gone; a drop links, keeping the gap", () => {
+  const p = page();
+  const a = el('', [0, 0, 80, 24]);
+  const b = el('', [0, 48, 80, 16]);
+  a.dataset.widget = 'a';
+  b.dataset.widget = 'b';
+  const sec = el();
+  let targets = [];
+  let held = 0;
+  const S = {
+    doc: p.doc,
+    win: p.win,
+    els: { targets: { replaceChildren: (...k) => (targets = k) } },
+    linking: null,
+    drag: null,
+  };
+  const calls = [];
+  const links = createOverlayLinks({
+    S,
+    ui: { widget: 'b', link: null },
+    arranging: () => true,
+    tplOpen: () => false,
+    tplSec: () => null,
+    live: () => true,
+    widgetsIn: () => [a, b],
+    widgetEl: (id) => ({ a, b })[id],
+    idOf: (n) => n.dataset.widget,
+    secOf: () => sec,
+    isPhone: () => false,
+    widgetOf: (id) => ({ id }),
+    flowOf: () => ({ a: { row: 1, rows: 3 }, b: { row: 6, rows: 2 } }),
+    linkOfEl: () => null,
+    place: () => {},
+    noSelect: (on) => (held += on ? 1 : -1),
+    kick: () => {},
+    onlink: (...x) => calls.push(x),
+  });
+  const h = spy(p.win);
+  const near = ev({ clientX: 40, clientY: 24 + DOT }); // a's bottom circle
+  links.startLink(ev(), b);
+  assert.ok(S.linking);
+  assert.equal(targets.length, 2, "a's frame and circle");
+  assert.equal(held, 1, 'no page text selected meanwhile');
+  fire(h, 'pointermove', near);
+  assert.equal(S.linking.near?.id, 'a');
+  const esc = ev({ key: 'Escape' });
+  fire(h, 'keydown', esc);
+  assert.ok(esc.prevented && esc.stopped);
+  assert.equal(S.linking, null);
+  assert.deepEqual(targets, []);
+  assert.equal(p.on.size, 0, 'its listeners off');
+  assert.equal(held, 0);
+  assert.deepEqual(calls, []);
+  links.startLink(ev(), b);
+  fire(h, 'pointermove', near);
+  fire(h, 'pointerup', ev());
+  assert.deepEqual(calls, [['b', 'a', 2, { phone: false }]]);
+  assert.equal(p.on.size, 0);
+  assert.equal(held, 0);
 });

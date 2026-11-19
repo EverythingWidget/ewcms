@@ -8,7 +8,8 @@ import { addSection, placeWidget } from '../src/editor/layout-ops.js';
 
 const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
 const ov = readFileSync(new URL('../src/editor/overlay.js', import.meta.url), 'utf8');
-const draw = ov.slice(ov.indexOf('function drawLinks()'), ov.indexOf('const seen = new Set();'));
+const lk = readFileSync(new URL('../src/editor/overlay-links.js', import.meta.url), 'utf8');
+const draw = lk.slice(lk.indexOf('function drawLinks()'), lk.indexOf('const seen = new Set();'));
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 const F = 'pages/index.json';
 
@@ -33,12 +34,15 @@ test('boxes wrap what shows: a child over the edge counts, a clipping one does n
 
 test('links: kept paths by id, d set on change, no innerHTML; the loop idles', () => {
   const ov = src('overlay.js');
-  const draw = ov.slice(ov.indexOf('function drawLinks'), ov.indexOf('function drawLinks') + 3000);
+  const lk = src('overlay-links.js');
+  const draw = lk.slice(lk.indexOf('function drawLinks'), lk.indexOf('function drawLinks') + 3000);
   assert.doesNotMatch(draw, /innerHTML/);
-  assert.match(ov, /const linkEls = new Map\(\)/);
-  assert.match(ov, /attr\(e\.line, 'd', d\)/);
-  assert.match(ov, /if \(size !== svgSize\)/);
-  assert.match(ov, /text-anchor', 'end'/, 'the gap label left of the line, clear of the tag');
+  assert.match(lk, /const linkEls = new Map\(\)/);
+  assert.match(lk, /attr\(e\.line, 'd', d\)/);
+  assert.match(lk, /if \(size !== svgSize\)/);
+  assert.match(lk, /text-anchor', 'end'/, 'the gap label left of the line, clear of the tag');
+  // a new layer: the lines kept for the one before dropped
+  assert.match(ov, /resetLinks\(\);\s*shadow\.innerHTML = /);
   assert.match(ov, /S\.anims > 0 \|\|\s*now\(\) < S\.idleUntil/);
   assert.match(ov, /new S\.win\.MutationObserver\(kick\)/);
   assert.match(ov, /new S\.win\.ResizeObserver\(kick\)/);
@@ -87,7 +91,7 @@ test('the selected widget is dragged where widgets overlap; a click picks the to
 });
 
 test('a link drag keeps the widget where it is (the gap: the rows between them)', () => {
-  const o = read('src/editor/overlay.js');
+  const o = read('src/editor/overlay-links.js');
   assert.match(o, /onlink\(id, near\.id, b\.row - \(a\.row \+ a\.rows\), \{ phone \}\)/);
   assert.doesNotMatch(o, /onlink\(id, near\.id, 0,/);
 });
@@ -185,8 +189,12 @@ test("the overlay's parts (overlay-*.js): factories over its one state, none imp
     const p = src(f);
     const name = `createOverlay${f.slice(8, -3).replace(/(^|-)(\w)/g, (_, _d, c) => c.toUpperCase())}`;
     assert.match(p, new RegExp(`export function ${name}\\(ctx\\) \\{`), f);
-    assert.match(o, new RegExp(`import \\{ ${name} \\} from '\\./${f.replace('.', '\\.')}';`), f);
-    assert.match(o, new RegExp(`Object\\.assign\\(ctx, ${name}\\(ctx\\)\\)`), f);
+    assert.match(
+      o,
+      new RegExp(`import \\{ ${name}\\b[^}]*\\} from '\\./${f.replace('.', '\\.')}';`),
+      f,
+    );
+    assert.match(o, new RegExp(`Object\\.assign\\(\\s*ctx,\\s*${name}\\(ctx\\),?\\s*\\)`), f);
     // no import of the overlay (no cycle), no state of its own beside S (never a copy)
     assert.doesNotMatch(p, /from '\.\/overlay(-[\w-]+)?\.js'/, f);
     assert.doesNotMatch(
