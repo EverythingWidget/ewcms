@@ -22,6 +22,7 @@ register(
 const { createOverlayRows } = await import('../src/editor/overlay-rows.js');
 const { createOverlayLinks, DOT } = await import('../src/editor/overlay-links.js');
 const { createOverlayDrag } = await import('../src/editor/overlay-drag.js');
+const { createOverlaySelect } = await import('../src/editor/overlay-select.js');
 
 /** A classList: its classes in a Set. */
 function classes() {
@@ -305,4 +306,104 @@ test("a widget's drag: Esc puts the section back, the key stopped, the auto-scro
   assert.deepEqual(placed[0].slice(0, 2), ['a', { col: 1, span: 6, row: 1, rows: 3 }]);
   assert.equal(p.on.size, 0);
   assert.equal(held, 0);
+});
+
+/** The selection's part on a section of widgets a (cols 1-4) and b (cols 5-8), both selected. */
+function selectPart() {
+  const p = page();
+  const sec = el('--frows: 10;');
+  const a = el('--c: 1;', [0, 0, 32, 24]);
+  const b = el('--c: 5;', [32, 0, 32, 24]);
+  a.dataset.widget = 'a';
+  b.dataset.widget = 'b';
+  const sel = { classList: classes() };
+  const t = { p, sec, a, b, sel, held: 0, calls: [] };
+  const flow = { a: { col: 1, span: 4, row: 1, rows: 3 }, b: { col: 5, span: 4, row: 1, rows: 3 } };
+  t.S = { doc: p.doc, win: p.win, els: { sel }, group: null, boxing: null };
+  t.ui = { widget: null, multi: ['a', 'b'] };
+  const setArea = (st, at) => (st.setProperty('--c', at.col), st.setProperty('--r', at.row));
+  t.part = createOverlaySelect({
+    S: t.S,
+    ui: t.ui,
+    arranging: () => true,
+    tplOpen: () => false,
+    idOf: (n) => n.dataset.widget,
+    secOf: () => sec,
+    widgetEl: (id) => ({ a, b })[id],
+    widgetsIn: () => [a, b],
+    widgetOf: (id) => ({ id }),
+    isPhone: () => false,
+    flowOf: () => flow,
+    linkOfEl: () => null,
+    minOf: () => 0,
+    setArea,
+    noSelect: (on) => (t.held += on ? 1 : -1),
+    kick: () => {},
+    onpick: (id) => t.calls.push(['pick', id]),
+    onselect: (ids) => t.calls.push(['select', ids]),
+    onsectionpick: (id) => t.calls.push(['section', id]),
+    ongroupmove: (...x) => t.calls.push(['move', ...x.slice(0, 3)]),
+  });
+  t.h = spy(p.win);
+  return t;
+}
+
+test('a group move: Esc puts the section back, the key stopped; a release is one move', () => {
+  const t = selectPart();
+  const before = [t.sec, t.a, t.b].map((n) => n.style.cssText);
+  t.part.startGroup(ev({ clientX: 10, clientY: 10 }), ['a', 'b'], t.a);
+  assert.ok(t.S.group);
+  assert.deepEqual([...t.sel.classList.set], ['is-dragging', 'is-moving']);
+  assert.equal(t.p.attrs.get('data-flow-hold'), 'move');
+  fire(t.h, 'pointermove', ev({ clientX: 26, clientY: 26 })); // 2 columns, 2 rows
+  assert.equal(t.a.style.getPropertyValue('--c'), '3');
+  const esc = ev({ key: 'Escape' });
+  fire(t.h, 'keydown', esc);
+  assert.ok(esc.prevented && esc.stopped);
+  assert.deepEqual(
+    [t.sec, t.a, t.b].map((n) => n.style.cssText),
+    before,
+  );
+  assert.equal(t.S.group, null);
+  assert.equal(t.sel.classList.set.size, 0);
+  assert.equal(t.p.attrs.has('data-flow-hold'), false);
+  assert.equal(t.p.on.size, 0, 'its listeners off');
+  assert.equal(t.held, 0);
+  assert.deepEqual(t.calls, []);
+  t.part.startGroup(ev({ clientX: 10, clientY: 10 }), ['a', 'b'], t.a);
+  fire(t.h, 'pointermove', ev({ clientX: 26, clientY: 26 }));
+  fire(t.h, 'pointerup', ev());
+  assert.deepEqual(t.calls, [['move', ['a', 'b'], 2, 2]]);
+  assert.equal(t.p.on.size, 0);
+  assert.equal(t.held, 0);
+  // the arrow keys: one move, clamped to the grid (b ends at column 8 of 120)
+  t.calls.length = 0;
+  assert.equal(t.part.nudge(-1, 0), true);
+  assert.deepEqual(t.calls, [], 'a at column 1: no move left');
+  t.part.nudge(1, 0);
+  assert.deepEqual(t.calls, [['move', ['a', 'b'], 1, 0]]);
+});
+
+test('a selection box: Esc gives the selection back, the key stopped; a click picks the section', () => {
+  const t = selectPart();
+  t.sec.dataset.sec = 's1';
+  t.ui.multi = [];
+  t.part.startBox(ev({ pageX: 25, pageY: 70 }), t.sec, []);
+  assert.ok(t.S.boxing);
+  assert.equal(t.held, 1);
+  fire(t.h, 'pointermove', ev({ pageX: 20, pageY: 20 })); // over a
+  assert.deepEqual(t.calls, [['select', ['a']]]);
+  const esc = ev({ key: 'Escape' });
+  fire(t.h, 'keydown', esc);
+  assert.ok(esc.prevented && esc.stopped);
+  assert.deepEqual(t.calls.at(-1), ['select', []]);
+  assert.equal(t.S.boxing, null);
+  assert.equal(t.p.on.size, 0, 'its listeners off');
+  assert.equal(t.held, 0);
+  t.calls.length = 0;
+  t.part.startBox(ev({ pageX: 70, pageY: 70 }), t.sec, []);
+  fire(t.h, 'pointerup', ev());
+  assert.deepEqual(t.calls, [['section', 's1']]);
+  assert.equal(t.p.on.size, 0);
+  assert.equal(t.held, 0);
 });

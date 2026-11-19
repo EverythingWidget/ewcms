@@ -154,7 +154,7 @@ test("a press on a widget's body hides its handles and the toolbar; a resize kee
   );
   assert.doesNotMatch(o, /\.sel\.is-moving [^'{]*display: none/);
   // a group move is a body move too
-  assert.match(o, /setAttribute\('data-flow-hold', 'move'\)/);
+  assert.match(read('src/editor/overlay-select.js'), /setAttribute\('data-flow-hold', 'move'\)/);
 });
 
 test("one draw loop: the preview's boxes are drawn in the overlay's frame, its own drawing idles", () => {
