@@ -36,7 +36,7 @@ test('the widget pop-up: Content | Layout, the last tab kept once for every widg
 test('each type: what its Layout tab shows (its definition)', () => {
   const want = {
     text: ['size', 'layer', 'link', 'placement', 'scale'],
-    button: ['size', 'layer', 'link', 'box', 'placement'],
+    button: ['size', 'layer', 'link', 'options', 'box', 'placement'],
     photo: ['size', 'layer', 'link', 'box', 'placement'],
     hero: ['size', 'layer', 'link'],
     album: ['size', 'layer', 'link'],

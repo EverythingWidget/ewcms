@@ -21,7 +21,22 @@ export const button = {
   // its content box (the button): Fit hugs its label, Fill fills the widget; placed in it
   placement: { axes: 'both', box: true, place: 'left top' },
   settings: [{ key: 'label', label: 'Label' }],
-  config: [{ key: 'link', label: 'Link', type: 'link' }],
+  config: [
+    { key: 'link', label: 'Link', type: 'link' },
+    // a label longer than the widget is wide: cut at its edge (Clip, unset) or broken onto more
+    // lines, the pill taller (Wrap: buttonwidget--wrap, src/client/styles/_layout.scss)
+    {
+      key: 'textOverflow',
+      label: 'Text',
+      type: 'seg',
+      tab: 'layout',
+      default: 'clip',
+      options: [
+        ['wrap', 'Wrap'],
+        ['clip', 'Clip'],
+      ],
+    },
+  ],
   defaults: {
     label: 'Button',
     config: { link: { href: '' } },
@@ -30,7 +45,8 @@ export const button = {
   render: (s, ctx, widget) => {
     const href = hrefOf(ctx, s.config?.link, 'a button');
     const label = html`<span${widget?.ed('label') ?? ''}>${esc(s.label)}</span> <span aria-hidden="true">→</span>`;
-    return html` <div class="buttonwidget">
+    const wrap = s.config?.textOverflow === 'wrap' ? ' buttonwidget--wrap' : '';
+    return html` <div class="buttonwidget${wrap}">
       ${href
         ? html`<a class="btn glass" href="${esc(href)}"${extAttrs(href)}>${label}</a>`
         : html`<span class="btn glass">${label}</span>`}

@@ -271,7 +271,8 @@ test('the pop-up: Arrangement, Columns, Gap in Layout; Content has Preset and Wh
   );
   assert.deepEqual(layoutParts('list'), ['size', 'layer', 'link', 'options']);
   assert.ok(!layoutParts('button').includes('missing'));
-  assert.ok(!layoutParts('button').includes('options'));
+  // a Button's Layout options: its Text (Wrap | Clip) only
+  assert.ok(layoutParts('button').includes('options'));
   assert.deepEqual(MISSING_OPTIONS, [
     ['hide', 'Hide'],
     ['show', 'Show empty'],

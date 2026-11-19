@@ -118,3 +118,51 @@ test('a button can be smaller than its label: the pill clips, nowrap kept', () =
   assert.match(btn, /white-space: nowrap/);
   assert.doesNotMatch(btn, /text-overflow:/);
 });
+
+test('Button Text: Wrap | Clip in the Layout tab; Wrap a class, Clip (unset) as before', async () => {
+  const { button } = await import('../src/widgets/button/index.js');
+  const { layoutOptions } = await import('../src/editor/widget-layout.js');
+  const { checkContent } = await import('../src/render/validate.js');
+  const opt = button.config.find((c) => c.key === 'textOverflow');
+  assert.deepEqual(
+    { label: opt.label, type: opt.type, tab: opt.tab, default: opt.default, options: opt.options },
+    {
+      label: 'Text',
+      type: 'seg',
+      tab: 'layout',
+      default: 'clip',
+      options: [
+        ['wrap', 'Wrap'],
+        ['clip', 'Clip'],
+      ],
+    },
+  );
+  assert.deepEqual(
+    layoutOptions('button').map((c) => c.key),
+    ['textOverflow'],
+  );
+  const ctx = { routes: [], sources: {} };
+  const html = (config) => button.render({ label: 'Go', config }, ctx, { ed: () => '' });
+  assert.match(html({ textOverflow: 'wrap' }), /class="buttonwidget buttonwidget--wrap"/);
+  for (const config of [{}, { textOverflow: 'clip' }])
+    assert.match(html(config), /class="buttonwidget"/);
+  // only its two values pass the content check
+  const { newWidget, newSection } = await import('../src/render/layout/index.js');
+  const ids = new Set();
+  const w = newWidget('button', ids);
+  const page = (v) => ({
+    version: 1,
+    kind: 'page',
+    id: 'pg-bt01',
+    sections: [newSection(ids, [{ ...w, config: { ...w.config, textOverflow: v } }])],
+  });
+  for (const v of ['wrap', 'clip'])
+    assert.deepEqual(checkContent('pages/x/index.json', page(v)), []);
+  assert.match(
+    checkContent('pages/x/index.json', page('ellipsis')).join('; '),
+    /config\.textOverflow.*one of wrap, clip/,
+  );
+  const scss = readFileSync('src/client/styles/_layout.scss', 'utf8');
+  const wrap = scss.slice(scss.indexOf('.buttonwidget--wrap > .btn {'));
+  assert.match(wrap, /^\.buttonwidget--wrap > \.btn \{\s*white-space: normal;/);
+});

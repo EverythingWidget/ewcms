@@ -664,15 +664,15 @@ ctx, widget) }`; `list` makes it show a list of items, `item` one item it
 needs (album). Which items a widget shows is its `source` (see "Widget sources"). A widget's content
 sits next to its type, how it works under `config` (`enabled`: on/off; look, …):
 
-| type     | what                                                                                                                                                                         |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `text`   | rich text: `body` lines (see "Text widget"); `place` top to bottom (`top` / `center` / `bottom`)                                                                             |
-| `photo`  | one photo (`src`) with an optional `caption`; in an Aspect or Rows widget its `box` (`fill`: cover / `fit`: contain) and `place` (one of nine, `left top` … `right bottom`)  |
-| `button` | a button: `label`; config `link` (see Links); `box` (`fit`: hugs its label / `fill`: the whole widget) and `place` (nine)                                                    |
-| `form`   | a contact form (see "Contact form")                                                                                                                                          |
-| `hero`   | the home hero: `title` (one word per line), `eyebrow`, `body`, scattered `photos`; as tall as its widget (Rows / Aspect), Auto: its section's preset height under the navbar |
-| `list`   | **list**: its source's items, each with a template (`config.template`: a preset such as `preset:card`, or a site template `t-…`); `columns`, `gap`, `phoneColumns`           |
-| `album`  | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped                                                              |
+| type     | what                                                                                                                                                                                                                     |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `text`   | rich text: `body` lines (see "Text widget"); `place` top to bottom (`top` / `center` / `bottom`)                                                                                                                         |
+| `photo`  | one photo (`src`) with an optional `caption`; in an Aspect or Rows widget its `box` (`fill`: cover / `fit`: contain) and `place` (one of nine, `left top` … `right bottom`)                                              |
+| `button` | a button: `label`; config `link` (see Links), `textOverflow` (`clip`, the default: one line, cut at the widget's edge / `wrap`: more lines); `box` (`fit`: hugs its label / `fill`: the whole widget) and `place` (nine) |
+| `form`   | a contact form (see "Contact form")                                                                                                                                                                                      |
+| `hero`   | the home hero: `title` (one word per line), `eyebrow`, `body`, scattered `photos`; as tall as its widget (Rows / Aspect), Auto: its section's preset height under the navbar                                             |
+| `list`   | **list**: its source's items, each with a template (`config.template`: a preset such as `preset:card`, or a site template `t-…`); `columns`, `gap`, `phoneColumns`                                                       |
+| `album`  | **item**: its item's album (slider, grid, info): `title`, `meta` (facts), `body`; without an item it is skipped                                                                                                          |
 
 - **Text widget** (`src/render/text.js`): `body` is a list of lines `{ style, list?, text: [runs] }`; a
   style (title, heading, subheading, statement, paragraph, label, small: the site's type scale)

@@ -190,6 +190,15 @@
     overflow: hidden;
   }
 }
+// Text: Wrap (config.textOverflow): the label breaks onto more lines and the pill grows taller,
+// still inside the widget's width (a long word breaks too: nothing is cut sideways)
+.buttonwidget--wrap > .btn {
+  white-space: normal;
+  > span:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
 // a Fill button: the button over the whole box, its label centred
 .wgt--fill > .buttonwidget {
   display: flex;
