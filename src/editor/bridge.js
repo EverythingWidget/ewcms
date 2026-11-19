@@ -126,7 +126,8 @@ const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').re
  * picked(): the element picked ({ el, kind }, or null) and hovered(): the one under the pointer
  * (ui.svelte.js: ui.picked, ui.hoverEl). The bridge draws their outlines; it keeps no selection
  * of its own: a pick is reported ('pick': el, kind, { quiet }), as is a hover ('hover': el).
- * widget(): the id of the widget selected (ui.widget), or null.
+ * widget(): the id of the widget selected (ui.widget), or null. clicks(): what a click in the
+ * preview does (ui.svelte.js previewClicks, its one copy): clicksChanged() when it changes.
  */
 export function createBridge({
   store,
@@ -134,6 +135,7 @@ export function createBridge({
   picked = () => null,
   hovered = () => null,
   widget = () => null,
+  clicks = () => 'visitor',
 }) {
   const handlers = {
     connect: [],
@@ -152,7 +154,6 @@ export function createBridge({
   let api = null;
   let win = null;
   let doc = null;
-  let clicks = 'visitor'; // what a click in the preview does (ui.svelte.js: previewClicks)
   let boxes = null;
   let raf = 0;
   let plaintext = true;
@@ -232,18 +233,18 @@ export function createBridge({
       else if (!api) iframe.src = withDraft(path);
     },
 
-    setClickMode(next) {
-      clicks = next;
+    /** What a click in the preview does changed (clicks(): ui.svelte.js previewClicks). */
+    clicksChanged() {
       if (!doc) return;
-      doc.documentElement.classList.toggle('__ed-arrange', clicks === 'arrange');
-      doc.documentElement.classList.toggle('__ed-animate', clicks === 'animate');
+      doc.documentElement.classList.toggle('__ed-arrange', clicks() === 'arrange');
+      doc.documentElement.classList.toggle('__ed-animate', clicks() === 'animate');
       // Freeze first: reverting split-text animations re-creates their inner elements,
       // which would drop contenteditable from editable text inside them (page titles, hero name).
       if (api) {
-        if (clicks === 'arrange') api.freeze();
+        if (clicks() === 'arrange') api.freeze();
         else api.unfreeze();
       }
-      if (clicks !== 'arrange') endEdits();
+      if (clicks() !== 'arrange') endEdits();
       loop();
     },
 
@@ -306,7 +307,7 @@ export function createBridge({
         for (const [el, value] of pending) writeText(el, value);
       };
       // Without arrange clicks, split-text animations own the DOM: revert, write, re-mount.
-      if (!plain && clicks !== 'arrange' && api) {
+      if (!plain && clicks() !== 'arrange' && api) {
         api.freeze();
         run();
         api.unfreeze();
@@ -333,7 +334,7 @@ export function createBridge({
     updateAnimations(cfg, { replay = true } = {}) {
       if (!api) return;
       api.setAnimations(cfg);
-      if (replay && clicks !== 'arrange')
+      if (replay && clicks() !== 'arrange')
         bridge.replay(picked()?.kind === 'anim' ? picked().el : null, { scroll: false });
     },
 
@@ -773,7 +774,7 @@ export function createBridge({
 
   function placeBox(box, el, kind) {
     const r = el?.isConnected ? el.getBoundingClientRect() : null;
-    const on = !!r && (r.width > 0 || r.height > 0) && clicks !== 'visitor';
+    const on = !!r && (r.width > 0 || r.height > 0) && clicks() !== 'visitor';
     box.classList.toggle('is-on', on);
     if (!on) return;
     box.style.transform = `translate(${r.left - 4}px, ${r.top - 4}px)`;
@@ -793,14 +794,14 @@ export function createBridge({
       const hoverEl = hovered();
       const sameAsSel = selected && hoverEl === selected.el;
       // a text in a widget (arrange clicks): the overlay's frame on the widget is its one border
-      const own = (el) => (clicks === 'arrange' && el?.closest?.('[data-widget]') ? null : el);
+      const own = (el) => (clicks() === 'arrange' && el?.closest?.('[data-widget]') ? null : el);
       placeBox(
         boxes.hover,
         sameAsSel ? null : own(hoverEl),
-        clicks === 'arrange' ? 'text' : 'anim',
+        clicks() === 'arrange' ? 'text' : 'anim',
       );
       placeBox(boxes.sel, own(selected?.el), selected?.kind);
-      if (clicks !== 'visitor') raf = requestAnimationFrame(tick);
+      if (clicks() !== 'visitor') raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
   }
@@ -832,7 +833,7 @@ export function createBridge({
       'pointermove',
       (e) => {
         // (arrange clicks: the overlay shows the widget under the pointer, CSS the text)
-        if (clicks !== 'animate') return;
+        if (clicks() !== 'animate') return;
         const t = e.target instanceof win.Element ? e.target : null;
         const el = t?.closest(MOTION_PICK) || null;
         if (el !== hovered()) emit('hover', el);
@@ -854,7 +855,7 @@ export function createBridge({
     win.addEventListener(
       'click',
       (e) => {
-        if (clicks === 'visitor' || e.altKey) return;
+        if (clicks() === 'visitor' || e.altKey) return;
         const t = e.target instanceof win.Element ? e.target : null;
         // A site part (the header, the footer) opens only from the pages list (Edit mode) and
         // locks again with Done: a locked one takes no click (CSS: no pointer events); while
@@ -865,7 +866,7 @@ export function createBridge({
           e.stopPropagation();
           return;
         }
-        if (clicks === 'arrange') {
+        if (clicks() === 'arrange') {
           if (t?.closest('[contenteditable]')) {
             if (t.closest('a, button')) e.preventDefault(); // the caret moves, nothing follows
             if (rich && e.detail === 1 && t.closest('a')) linkBoxSoon();
@@ -904,7 +905,7 @@ export function createBridge({
     doc.addEventListener(
       'submit',
       (e) => {
-        if (clicks === 'visitor') return;
+        if (clicks() === 'visitor') return;
         e.preventDefault();
         e.stopPropagation();
       },
@@ -916,7 +917,7 @@ export function createBridge({
     doc.addEventListener(
       'dblclick',
       (e) => {
-        if (clicks !== 'arrange' || e.altKey) return;
+        if (clicks() !== 'arrange' || e.altKey) return;
         const t = e.target instanceof win.Element ? e.target : null;
         const found = t?.closest('[data-edit], [data-bound]');
         // a widget's text: anywhere on the widget (its own edit mode, as its toolbar's Edit)
@@ -938,7 +939,7 @@ export function createBridge({
 
     doc.addEventListener('focusin', (e) => {
       const el = e.target.closest?.('[data-edit-inline]');
-      if (clicks !== 'arrange' || !el) return;
+      if (clicks() !== 'arrange' || !el) return;
       // Word-split text (hero name) is edited as plain text and re-split on blur.
       if (el.dataset.editType === 'words') {
         const { file, ptr } = splitEdit(el.dataset.edit);
@@ -991,7 +992,7 @@ export function createBridge({
         return;
       }
       const el = e.target.closest?.('[data-edit-inline]');
-      if (clicks !== 'arrange' || !el) return;
+      if (clicks() !== 'arrange' || !el) return;
       const value = readValue(el);
       el.classList.toggle('__ed-invalid', value === undefined);
       if (value === undefined) return;
@@ -1128,11 +1129,11 @@ export function createBridge({
       boxes = null;
       raf = 0;
       api.setAnimations(store.current[ANIMATIONS]);
-      if (clicks === 'arrange') api.freeze();
+      if (clicks() === 'arrange') api.freeze();
       api.hooks.beforeMount.add(() => bridge.applyTexts({ force: true, plain: true }));
       api.hooks.afterMount.add(() => {
-        doc.documentElement.classList.toggle('__ed-arrange', clicks === 'arrange');
-        doc.documentElement.classList.toggle('__ed-animate', clicks === 'animate');
+        doc.documentElement.classList.toggle('__ed-arrange', clicks() === 'arrange');
+        doc.documentElement.classList.toggle('__ed-animate', clicks() === 'animate');
         emit('pick', null);
         emit('navigate', win.location.pathname);
         restore?.();

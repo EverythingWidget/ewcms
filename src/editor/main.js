@@ -136,6 +136,7 @@ const bridge = createBridge({
   picked: () => ui.picked,
   hovered: () => ui.hoverEl,
   widget: () => ui.widget,
+  clicks: previewClicks,
 });
 // the preview's layout overlay (arranging in the Sections tab, Grid; overlay.js): widgetAt and
 // placeWidget below
@@ -579,7 +580,7 @@ async function refreshStatus() {
 /** Tell the preview what a click does now (previewClicks); entering animate picks the widget. */
 function applyClicks(before) {
   const clicks = previewClicks();
-  bridge.setClickMode(clicks);
+  bridge.clicksChanged();
   clearPick();
   overlay.refresh();
   if (clicks === 'animate' && before !== 'animate') {
@@ -658,7 +659,7 @@ function widgetAt(id) {
 
 // ---------------------------------------------------------------- preview events
 bridge.on('connect', () => {
-  bridge.setClickMode(previewClicks());
+  bridge.clicksChanged();
   clearPick();
   overlay.attach(bridge.doc.defaultView);
   watchMod(bridge.doc.defaultView);

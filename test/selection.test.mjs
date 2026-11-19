@@ -104,7 +104,11 @@ test('the preview pick and hover live in ui only: the bridge reports them, keeps
   const m = src('main.js');
   assert.doesNotMatch(m, /bridge\.(select|selected)\b|on\('select'/);
   assert.match(m, /bridge\.on\('hover', hoverElement\)/);
-  assert.match(m, /bridge\.setClickMode\(clicks\);\s*clearPick\(\);/);
+  assert.match(m, /bridge\.clicksChanged\(\);\s*clearPick\(\);/);
+  // what a click does: previewClicks() only, read by the bridge (no copy of its own)
+  assert.match(m, /widget: \(\) => ui\.widget,\s*clicks: previewClicks,/);
+  assert.match(b, /clicks = \(\) => 'visitor',/);
+  assert.doesNotMatch(b, /let clicks|clicks = next|setClickMode|\bclicks (===|!==)/);
   const u = src('svelte/ui.svelte.js');
   for (const fn of ['pickElement', 'hoverElement', 'clearPick', 'clearSelection', 'pickAnim'])
     assert.match(u, new RegExp(`export function ${fn}\\(`));
