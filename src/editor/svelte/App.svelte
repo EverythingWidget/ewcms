@@ -4,8 +4,8 @@
   current tab's panel (Pages: the pages list in browse, or the page open with its tabs
   Sections | Motion | SEO in edit, ContentPanel.svelte; Site Settings: SettingsPanel.svelte) and
   the footer (Desktop | Phone, Sources, Media; undo, redo in edit). Also the modals, each
-  mounted once here and opened through state (modals.svelte.js), the toasts and the keyboard
-  shortcuts.
+  mounted once here and opened through state (modals.svelte.js) and the toasts (the keyboard
+  shortcuts: ../keys.js).
   Browse or edit is ui.mode (ui.svelte.js): Edit opens the page in the preview; Done saves
   the changes (the save behind Ctrl+S), then goes back to browse.
   main.js holds the logic: it changes `ui` (ui.svelte.js) and passes `actions`.
@@ -27,15 +27,7 @@
   import ItemModal from './ItemModal.svelte';
   import PreviewModal from './PreviewModal.svelte';
   import { openMedia } from './media.svelte.js';
-  import {
-    closeModal,
-    isOpen,
-    openFirstRun,
-    openPublish,
-    openSources,
-    syncModals,
-    topModal,
-  } from './modals.svelte.js';
+  import { isOpen, openFirstRun, openPublish, openSources, syncModals } from './modals.svelte.js';
   import { toast } from './toasts.svelte.js';
   import Toasts from './Toasts.svelte';
   import SaveFailedModal from './SaveFailedModal.svelte';
@@ -45,17 +37,7 @@
   import WidgetToolbar from './WidgetToolbar.svelte';
   import TemplateCols from './TemplateCols.svelte';
   import { templateOfPath } from '../../widgets/list/template-preview.js';
-  import { layerWidget } from '../layout-ops.js';
-  import { targetFile } from '../layout-sync.js';
-  import {
-    ui,
-    previewClicks,
-    pickElement,
-    selectLink,
-    deselect,
-    closePopup,
-    setMode,
-  } from './ui.svelte.js';
+  import { ui, closePopup, setMode } from './ui.svelte.js';
   import { writeUrl } from './persist.js';
   import { MOD, plural } from '../lib/format.js';
 
@@ -150,63 +132,7 @@
     document.title = `${live.changes ? '● ' : ''}Editor${name ? ` · ${name}` : ''}`;
   });
 
-  /** Keyboard shortcuts, also while the preview has focus (it forwards them: bridge 'key'). */
-  function onKey(e) {
-    const mod = e.metaKey || e.ctrlKey;
-    const k = e.key.toLowerCase();
-    // Ctrl+Z in a text field of the panel undoes the typing there, not an editor step
-    // (switches, sliders and selects have none: there it is the editor's undo).
-    const inField =
-      e.target instanceof Element &&
-      e.target.matches?.('textarea, input:not([type="checkbox"], [type="range"])') &&
-      e.target.ownerDocument === document;
-    if (mod && k === 's') {
-      e.preventDefault();
-      actions.save();
-    } else if (mod && k === 'e' && e.shiftKey) {
-      e.preventDefault();
-      location.href = bridge.path() || '/';
-    } else if (mod && (k === 'z' || k === 'y') && !inField) {
-      e.preventDefault();
-      if (k === 'y' || e.shiftKey) live.store.redo();
-      else live.store.undo();
-    } else if ((e.key === '[' || e.key === ']') && !e.metaKey && (!e.ctrlKey || e.altKey)) {
-      // a widget's layer: [ down, ] up (by character: AltGr / Ctrl+Alt on other layouts),
-      // a widget picked in the Sections tab, not while typing, the desktop layout
-      const typing =
-        e.target instanceof Element &&
-        e.target.closest?.('input, textarea, select, [contenteditable]');
-      if (typing || previewClicks() !== 'arrange' || !ui.widget || phone) return;
-      const file = targetFile(ui.target, bridge.doc);
-      const list = live.get(file, '/sections') || [];
-      for (const [at, s] of list.entries()) {
-        const j = (s?.widgets || []).findIndex((widget) => widget?.id === ui.widget);
-        if (j < 0) continue;
-        e.preventDefault();
-        layerWidget(live.store, file, at, j, e.key === ']' ? 1 : -1);
-        break;
-      }
-    } else if (e.key === 'Escape') {
-      // in the widget pop-up: its own (an open menu first, then the pop-up; WidgetPopup.svelte)
-      if (e.target instanceof Element && e.target.closest('.wpop')) return;
-      // A modal closes itself on Esc (the one in front); this also covers Esc pressed in the
-      // preview. arrange clicks: then the selected link, else the selected widget (the panel
-      // shows the sections again, the grid hides); not while typing in a field of the panel.
-      if (topModal()) {
-        e.preventDefault();
-        closeModal();
-      } else {
-        const picked = !!ui.picked;
-        if (picked) pickElement(null);
-        if (previewClicks() === 'arrange' && !inField) {
-          if (ui.link) selectLink(null);
-          else if (ui.widget || ui.section || ui.multi.length || ui.selSection) deselect();
-        }
-        // an open Header or Footer stays open: Done is the way out
-      }
-    }
-  }
-  $effect(() => bridge.on('key', onKey)); // once: the bridge never changes
+  // the keyboard shortcuts, here and in the preview: ../keys.js
   // a widget opened anywhere (a row, Add widget, the page head): the one selected
   $effect(() => {
     if (ui.widget && untrack(() => ui.multi.length)) ui.multi = [];
@@ -225,7 +151,7 @@
   }
 </script>
 
-<svelte:window onkeydown={onKey} onbeforeunload={onBeforeUnload} />
+<svelte:window onbeforeunload={onBeforeUnload} />
 
 {#if ui.loadError}
   <p class="ed-boot">Could not load content: {ui.loadError}</p>

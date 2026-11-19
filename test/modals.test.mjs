@@ -205,9 +205,11 @@ test("names: each modal's box is modal__box <name>-modal", () => {
 });
 
 test('Esc in the editor closes the modal in front only', () => {
-  const app = read('App.svelte');
-  assert.match(app, /if \(topModal\(\)\) \{\s*e\.preventDefault\(\);\s*closeModal\(\);/);
-  assert.doesNotMatch(app, /querySelector\('dialog\[open\]'\)/);
+  // (the editor's shortcuts: keys.js)
+  const keys = readFileSync(new URL('../src/editor/keys.js', import.meta.url), 'utf8');
+  assert.match(keys, /if \(topModal\(\)\) \{\s*e\.preventDefault\(\);\s*closeModal\(\);/);
+  assert.doesNotMatch(keys, /querySelector\('dialog\[open\]'\)/);
+  assert.doesNotMatch(read('App.svelte'), /onkeydown=\{onKey\}/);
 });
 
 test('Add page: In the menu starts off, keeps the last pick; Add says what is missing (F37, F43, F61)', () => {

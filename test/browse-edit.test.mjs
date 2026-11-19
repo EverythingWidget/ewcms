@@ -83,7 +83,7 @@ test('header: status | Edit / Done (one 80px slot) | Publish; Done saves, then b
     /function edit\(\) \{\s*if \(ui\.panel !== 'pages'\) actions\.setPanel\('pages'\);\s*setMode\('edit'\);/,
   );
   // Ctrl+S saves
-  assert.match(app, /mod && k === 's'/);
+  assert.match(src('keys.js'), /mod && k === 's'\) \{\s*e\.preventDefault\(\);\s*save\(\);/);
 });
 
 test('footer: the Desktop / Phone tip, Desktop | Phone (32px icon cells), Sources, Media; undo / redo only in edit, last', () => {

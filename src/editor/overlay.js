@@ -68,14 +68,7 @@ import {
 import { PHONE_MAX } from '../render/layout/grid.js';
 import { clampDelta, hits, offscreen, selectedIds, toggle } from './multi-select.js';
 import { T } from './ui-tokens.js';
-import {
-  hotWidget,
-  peekSection,
-  selectLink,
-  setAnchor,
-  setMod,
-  setSecRows,
-} from './svelte/ui.svelte.js';
+import { hotWidget, peekSection, selectLink, setAnchor, setSecRows } from './svelte/ui.svelte.js';
 import { shownPlace, tagHtml } from './widget-tag.js';
 
 const PHONE_W = PHONE_MAX;
@@ -1302,20 +1295,6 @@ export function createOverlay({
     if (el && linkOfEl(el)) onlink(id, null, 0, { phone: isPhone(), row: shownRow(el) });
     return true;
   }
-  // Ctrl/Cmd held: the other sections show blocked (drawBlocks)
-  const trackMod = (e) => {
-    const on = e.ctrlKey || e.metaKey;
-    setMod(on);
-    if (on && win) kick();
-  };
-  function onkeydown(e) {
-    trackMod(e);
-    if (!['Delete', 'Backspace'].includes(e.key) || !ui.link || editing(e.target)) return;
-    if (e.target.closest?.('input, textarea, select')) return;
-    e.preventDefault();
-    deleteLink();
-  }
-
   // Arrange: clicks pick and drag widgets; the page's own clicks (links, buttons) are off. A
   // text being edited in place (contenteditable, bridge.js) keeps its clicks (the caret).
   const editing = (t) => !!t.closest?.('[contenteditable]');
@@ -1432,9 +1411,6 @@ export function createOverlay({
         unpeek();
         hotAt(null);
       });
-      doc.addEventListener('keydown', onkeydown, true);
-      doc.addEventListener('keyup', trackMod, true);
-      win.addEventListener('blur', () => setMod(false));
       // what moves the page: the loop runs for it, then idles
       anims = 0;
       const opts = { capture: true, passive: true };
@@ -1484,7 +1460,7 @@ export function createOverlay({
       if (!shown()) els.grids.replaceChildren();
       kick();
     },
-    /** The editor's Delete with a link selected (its focus outside the preview). */
+    /** Delete with a link selected (keys.js). */
     deleteLink,
     /** The loop run for a moment (the editor's panel changed what shows: main.js). */
     kick,

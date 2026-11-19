@@ -24,6 +24,7 @@ import { splitEdit, words } from '../render/helpers.js';
 import { ANIMATIONS, templateIdOf } from '../render/files.js';
 import { photoSrcset, photoUrl } from './svelte/media.svelte.js';
 import { T } from './ui-tokens.js';
+import { isShortcut } from './keys.js';
 import {
   isCaret,
   oneLineSelection,
@@ -808,21 +809,6 @@ export function createBridge({
     };
     raf = requestAnimationFrame(tick);
   }
-
-  /** Is the key's target somewhere typing goes (a field, a text edited in place)? */
-  const typing = (t) => !!t?.closest?.('input, textarea, select, [contenteditable]');
-  // Ctrl+S / E / Z / Y, Esc, and [ ] (a widget's layer: by character, AltGr included) when not typing
-  const isShortcut = (e) =>
-    ((e.metaKey || e.ctrlKey) && /^[sezyk]$/i.test(e.key)) ||
-    // Enter or a character on a picked Text widget: its text edited (main.js selectionKey)
-    ((e.key === 'Enter' || e.key.length === 1) &&
-      !e.metaKey &&
-      !e.ctrlKey &&
-      !e.altKey &&
-      !typing(e.target)) ||
-    e.key === 'Escape' ||
-    ((e.key === '[' || e.key === ']') && !typing(e.target)) ||
-    (/^(Arrow(Left|Right|Up|Down)|Delete|Backspace)$/.test(e.key) && !typing(e.target));
 
   function attachListeners() {
     const style = doc.createElement('style');

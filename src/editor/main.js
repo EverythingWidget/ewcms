@@ -17,8 +17,8 @@
  * Both go through the dev server (src/editor/server/editor-server.mjs). The editor only exists
  * under `npm run dev`.
  *
- * The whole UI is Svelte: svelte/App.svelte shows `ui` (svelte/ui.svelte.js) and has the
- * keyboard shortcuts. This file mounts it and holds the glue: the preview (bridge.js) and
+ * The whole UI is Svelte: svelte/App.svelte shows `ui` (svelte/ui.svelte.js); the keyboard
+ * shortcuts are keys.js. This file mounts it and holds the glue: the preview (bridge.js) and
  * store (store.js) events, saving and loading the content.
  */
 // the site's own widgets join the registry first (before any module reads it)
@@ -46,7 +46,6 @@ import {
   clearAnim,
   setMode,
   deselect,
-  setMod,
 } from './svelte/ui.svelte.js';
 import { WIDGET_TAB_KEY, widgetTabOf } from './widget-layout.js';
 import { popOrigin, pushOrigin } from './lib/template-origin.js';
@@ -99,12 +98,11 @@ import {
   moveWidgets,
   placeWidget,
   setWidget,
-  removeWidgets,
   placePhone,
   setSectionRows,
 } from './layout-ops.js';
 import { createOverlay } from './overlay.js';
-import { nudgeStep, selectedIds } from './multi-select.js';
+import { createKeys, watchMod } from './keys.js';
 import { restoreUi, restorePlace } from './svelte/persist.js';
 import { editorHref } from './lib/editor-url.js';
 import editorConfig from 'virtual:editor-config';
@@ -663,6 +661,7 @@ bridge.on('connect', () => {
   bridge.setClickMode(previewClicks());
   clearPick();
   overlay.attach(bridge.doc.defaultView);
+  watchMod(bridge.doc.defaultView);
   applyPart();
   pushCurtains();
   ui.previewVersion++;
@@ -838,55 +837,11 @@ document.addEventListener(
   (e) => e.key === 'Enter' && e.target.matches?.('input') && store.seal(),
   true,
 );
-// a link selected in the preview (overlay.js) and Delete pressed here: the link is removed
-document.addEventListener('keydown', (e) => {
-  if (!['Delete', 'Backspace'].includes(e.key) || !ui.link) return;
-  if (e.target.closest?.('input, textarea, select, [contenteditable]')) return;
-  e.preventDefault();
-  overlay.deleteLink();
-});
-// multi-select (multi-select.js): Ctrl/Cmd held shows the other sections blocked; the arrow
-// keys move the selection by a cell (Shift: NUDGE_BIG), Delete removes several selected (one
-// undo step); here and in the preview (the bridge's 'key')
-const trackMod = (e) => {
-  setMod(e.ctrlKey || e.metaKey);
-};
-document.addEventListener('keydown', trackMod, true);
-document.addEventListener('keyup', trackMod, true);
-window.addEventListener('blur', () => setMod(false));
-const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
-function selectionKey(e) {
-  if (e.defaultPrevented || previewClicks() !== 'arrange' || e.altKey || e.ctrlKey || e.metaKey)
-    return;
-  if (
-    e.target.closest?.('input, textarea, select, [contenteditable], dialog, .wpop, [role="menu"]')
-  )
-    return;
-  if (ARROWS[e.key] && selectedIds(ui).length) {
-    const [x, y] = ARROWS[e.key];
-    const n = nudgeStep(e.shiftKey);
-    if (overlay.nudge(x * n, y * n)) e.preventDefault();
-  } else if (
-    (e.key === 'Enter' || (e.key.length === 1 && !'[]'.includes(e.key))) &&
-    selectedIds(ui).length === 1 &&
-    !e.target.closest?.('button, a, [role="button"]')
-  ) {
-    // a picked Text widget: Enter edits its text, a character typed starts typing at its end
-    // (it went to the browser: F45, F54)
-    const typed = e.key === 'Enter' || e.key === ' ' ? '' : e.key;
-    if (bridge.editWidget(selectedIds(ui)[0], typed)) e.preventDefault();
-  } else if (['Delete', 'Backspace'].includes(e.key) && ui.multi.length > 1 && !ui.link) {
-    const found = widgetAt(ui.multi[0]);
-    if (!found) return;
-    e.preventDefault();
-    const n = ui.multi.length;
-    if (!removeWidgets(store, found.file, found.at, ui.multi)) return;
-    selectWidgets([]);
-    undoToast(store, `${n} widgets deleted`);
-  }
-}
-document.addEventListener('keydown', selectionKey);
-bridge.on('key', selectionKey);
+// every shortcut (keys.js): pressed here, or in the preview (the bridge forwards its keys: 'key')
+const onKey = createKeys({ store, bridge, overlay, save, widgetAt });
+window.addEventListener('keydown', onKey);
+bridge.on('key', onKey);
+watchMod(window); // Ctrl/Cmd held: the other sections show blocked (multi-select.js)
 // The preview renders the unsaved edits: the dev server gets them after every change
 // (POST /__editor/draft; {} once saved), so pages the preview loads show them. Everything
 // updates in place: one of the page's own (or the footer's) sections is swapped in

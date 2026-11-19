@@ -111,9 +111,10 @@ test('the preview pick and hover live in ui only: the bridge reports them, keeps
 });
 
 test('Esc and the panels select through the ui helpers', async () => {
-  const app = src('svelte/App.svelte');
-  assert.match(app, /\|\| ui\.selSection\) deselect\(\);/);
-  assert.doesNotMatch(app, /ui\.(selection|widget|section|selSection) = null/);
+  const keys = src('keys.js');
+  assert.match(keys, /\|\| ui\.selSection\) deselect\(\);/);
+  for (const f of ['keys.js', 'svelte/App.svelte'])
+    assert.doesNotMatch(src(f), /ui\.(selection|widget|section|selSection) = null/);
   const { ui, deselect, selectText } = await loadUi();
   Object.assign(ui, { widget: 'w-1', multi: ['w-1', 'w-2'], section: 's-1', selSection: 's-1' });
   Object.assign(ui, { selSections: ['s-1', 's-2'], link: 'w-2', anchor: 'w-1' });

@@ -16,15 +16,15 @@ test("a Text's Content tab says its words are typed in the preview (F06, F15)", 
 });
 
 test('a picked Text widget: Enter or a character typed edits its text (F45, F54)', () => {
-  const main = readFileSync(new URL('../src/editor/main.js', import.meta.url), 'utf8');
+  const keys = readFileSync(new URL('../src/editor/keys.js', import.meta.url), 'utf8');
   assert.match(
-    main,
+    keys,
     /if \(bridge\.editWidget\(selectedIds\(ui\)\[0\], typed\)\) e\.preventDefault\(\);/,
   );
   const bridge = readFileSync(new URL('../src/editor/bridge.js', import.meta.url), 'utf8');
   assert.match(bridge, /if \(typed\) doc\.execCommand\('insertText', false, typed\);/);
   // the preview's keys reach it (not the browser) when not typing
-  assert.match(bridge, /\(\(e\.key === 'Enter' \|\| e\.key\.length === 1\) &&/);
+  assert.match(keys, /\(\(e\.key === 'Enter' \|\| e\.key\.length === 1\) &&/);
 });
 
 test('a picked widget has Add widget (to its section) next to its actions (F59)', () => {
