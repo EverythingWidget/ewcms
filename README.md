@@ -164,9 +164,10 @@ that change files copy it to a temp folder first.
 
 ## How it works
 
-**Words** (the editor's and these docs'): **Site Settings** is the editor's second tab (in a
-sentence, site Settings: the shared files at the content root, `content/site.json` and its
-neighbours); **widget settings** are one widget's own
+**Words** (the editor's and these docs'): an **area** is one part of the site in the editor's
+list of areas (Pages, Media, Sources, Theme, Animations, Site settings, History; `src/editor/areas.js`),
+the one place each opens from; **Site settings** is the area of the shared files at the content
+root (`content/site.json` and its neighbours); **widget settings** are one widget's own
 inputs (its definition's `settings:`, the pop-up's Content and Layout tabs); **section
 settings** are one section's (its gear). Never "the settings" alone. A **source** is a list of
 items; a **property** is one value of an item (`{ "property": "title" }`).
@@ -286,6 +287,7 @@ src/
     store.js        ← in-memory content copies, dirty state, undo/redo, rebase
     main.js         ← the controller: store, preview, overlay and UI wired together, saving and loading
     keys.js         ← every keyboard shortcut (the editor's and the preview's keys, in one place)
+    areas.js        ← the editor's areas (Pages, Media, Sources, Theme, Animations, Site settings, History): the one list each opens from
     preview-runtime.js ← talks to the site inside the iframe (text overrides, selection, replay)
     preview-edit.js ← a text edited in place in the preview (plain and rich, its link box)
     preview-pointer.js ← the preview's clicks, double clicks and presses (to the editing, then the overlay)
@@ -337,7 +339,7 @@ tags, and works with JavaScript disabled.
 (prefetched on hover), runs the page-leave transition (a curtain showing the destination's
 name; its text, `curtainText`, lives in the page's file `pages/<page>/index.json` or in the
 item in `sources/`: missing, the page's title; `""`, no label. The curtain's timing is the
-site's alone (animations.json, with the page fade: the editor's Site Settings > Page
+site's alone (animations.json, with the page fade: the editor's Animations > Page
 entrance); a page's `transition` is only `{ "curtain": "off" }` (no curtain: a page fade; the
 page's Motion > Page entrance card: Curtain site default / off), on its `[param]/index.json` for every item page; missing: the site's curtain),
 swaps `<main data-router-view>`, updates
@@ -519,14 +521,14 @@ every section is a grid of **widgets** (`src/render/layout/`):
   renders it hidden (so the switch shows it again at once). A section has **no space above or below**: the
   space between sections is empty rows (cells: a widget placed lower leaves rows above it), so
   it scales with the width like everything else (the side margins, `--pad`, stay).
-- **Contained width** (`site.json` `"layout": { "containedCols": 115 }`, Site Settings › Layout, 60–120):
+- **Contained width** (`site.json` `"layout": { "containedCols": 115 }`, Site settings › Layout, 60–120):
   a contained section is that many columns of the full-width grid's cell (window width / 120)
   wide, centred, and never nearer the window's edges than the side margins (`--pad`). Its
   content is still the 120-column grid, its cells smaller, so widgets keep their columns and a
   narrower setting scales the layout down like a narrower window (rather than N columns of the
   full-width cell, which would cut off widgets placed past column N). The default, 115, is the
   look before the setting (up to 1920px the margins are the narrower; wider, 115/120 of the
-  width). Site Settings shows the resulting px at 1280, 1366, 1440, 1536 and 1920 wide, and the
+  width). Site settings shows the resulting px at 1280, 1366, 1440, 1536 and 1920 wide, and the
   preview follows as you type. Phones: the full 60-column grid inside the side margins. On the
   page it is `--contain` on `:root` (only when not the default), read by `_layout.scss`
   (`--cpad`); `src/render/layout/contain.js`.
@@ -612,7 +614,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
   `_tokens.scss`: title 19, heading 3, subheading 2, statement 5, paragraph 1.4, label 1,
   small 1.05); its own factor scales that to the width, so it is only a starting point.
 
-  **Type scale** (`site.json` `type`, Site Settings › **Type**; `src/render/layout/type.js`): each
+  **Type scale** (`site.json` `type`, Site settings › **Type**; `src/render/layout/type.js`): each
   style's usual font size grows with the window between `min` and `max` (px; equal: fixed),
   with a line height `line` (× the size): `{ "heading": { "min": 38, "max": 104, "line": 0.92 } }`.
   Each left out is the theme's (`--type-<style>-min`, `-max`, `-lh`: the site's
@@ -627,7 +629,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
   you type (no reload). **Preview** shows the type specimen (the dev server's `/__type/`,
   `src/render/layout/type-specimen.js`, never built): one full-width section of an auto-height
   Text widget per style, each following the last; the button reads **Close preview** and goes
-  back to the page you were on, as does the Pages tab. The old cell-based `typography` is
+  back to the page you were on, as does opening another area. The old cell-based `typography` is
   refused (`"typography" is gone`).
   In the editor: the toolbar's **Full-width line** icon (edit mode, after Style: the caret's line)
   and the **Shrink to fit** switch in the widget's pop-up (Layout tab, after Placement; also a
@@ -981,8 +983,9 @@ A List is a simple list: only its items, no heading and no See all link. A headi
   reject anything else with a message. A List pointing at a missing template warns and shows
   Card.
 
-- **The template editor** (local editor): **Pages > Templates** lists every
-  `content/templates/t-*.json` under Header and Footer; opening one works like opening a page,
+- **The template editor** (local editor): **Theme > Templates** lists every
+  `content/templates/t-*.json`; opening one works like opening a page (its ← and Done come
+  back to Theme),
   and **Edit template** (next to the List's Template picker, shown only while a template is
   picked, its place always kept) jumps to it. The preview (the dev server's
   `/__template/<id>/`, never built) shows the template as a List of one sample item: the first
@@ -1310,7 +1313,7 @@ the page and leave the footer be; it is in the view's layer (`.site-footer`: z-i
 `#backdrop` and `#portal`; the curtain covers it). Its rows, animations and widget scripts mount
 with each page (`src/client/main.js`).
 
-In the editor the footer is **Footer** in the pages list (Site), or click it in the preview: a locked
+In the editor the footer is **Footer** in Pages (Site parts), or click it in the preview: a locked
 footer (a dashed outline on hover, its label) picks nothing inside; the first click opens it
 (a solid outline, the Footer is the target) and its sections and widgets are picked and dragged
 like a page's, while the page's are locked. Esc with nothing picked, or a click outside it,
@@ -1399,7 +1402,7 @@ browser's autofill), type (text, email, phone, long text, choice), required, and
 options (comma-separated). A form needs a field named `email` of type email: replies go
 there. `checkContent` checks the fields.
 
-**Where it sends** (Site Settings > Forms, `site.json` `forms`; a form can pick its own under
+**Where it sends** (Site settings > Forms, `site.json` `forms`; a form can pick its own under
 "Sends to"):
 
 | target                        | how                                                                                                     |
@@ -1438,10 +1441,10 @@ URL to see the error message. Nothing is sent, no keys needed.
 5. Send a test message from the live site. Problems show in the project's **Functions > Logs**
    (`[contact] …`).
 6. Optional spam check: Cloudflare **Turnstile > Add widget** for the domain; its site key goes
-   in Site Settings > Forms (public), its secret key in the variable `TURNSTILE_SECRET_KEY`.
+   in Site settings > Forms (public), its secret key in the variable `TURNSTILE_SECRET_KEY`.
 
 Another host: pick "External endpoint" (e.g. a Formspree form's URL) or "Email link" in
-Site Settings > Forms; `functions/` is then simply unused.
+Site settings > Forms; `functions/` is then simply unused.
 
 ### Redirects
 
@@ -1482,13 +1485,13 @@ The editor keeps them up to date by itself (`src/render/redirects.js`):
   itself goes, and one from a path that is a page again (a new page, a rename back) is
   removed, with a note.
 
-**Site Settings > Redirects** lists them: from, to (a page, or External URL), status; add, move,
+**Site settings > Redirects** lists them: from, to (a page, or External URL), status; add, move,
 remove, every change one undo step.
 
 ### SEO
 
 What `<head>` says about a page: `src/render/seo.js` (`seoOf`), from the site's defaults and the
-page's own `meta`. Edited in the editor: Site Settings > SEO (the defaults) and Content > SEO (the
+page's own `meta`. Edited in the editor: Site settings > SEO (the defaults) and Content > SEO (the
 page in the preview; collapsed, below its sections, with a search-result and a share-card
 preview and the 60/160 character counts).
 
@@ -1568,7 +1571,7 @@ from R2 (`deletePhoto`, a SigV4 `DELETE` per key) and the entry.
 
 The content stores keys, not URLs: `mediaUrl()` / `photoOf()` (`src/render/helpers.js`) turn a
 value into URLs when the page is rendered. A path that is in `media/` stays local, a full
-`https://` URL is used as is, anything else is `site.json` `mediaUrl` + `/` + key (Site Settings >
+`https://` URL is used as is, anything else is `site.json` `mediaUrl` + `/` + key (Site settings >
 Photos). So the photo domain can change in one place, and existing photos keep working.
 
 The keys live in `.env.local` (git-ignored; template: `.env.example`). Only the dev server reads
@@ -1590,7 +1593,7 @@ Setup, once:
 4. Copy `.env.example` to `.env.local` and fill in `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`,
    `R2_SECRET_ACCESS_KEY` and `R2_BUCKET`.
 5. Restart `npm run dev`.
-6. Editor > Site Settings > **Photos**: set the photo address to `https://photos.eeliyarasta.com`,
+6. Editor > Site settings > **Photos**: set the photo address to `https://photos.eeliyarasta.com`,
    Save.
 
 No CORS rule is needed: the dev server uploads, and pages only show the photos.
@@ -1727,7 +1730,7 @@ loads pages with `?draft=…`) always gets the site, so the editor never opens i
 Layout: the real site in a same-origin iframe, with a glass side panel. The page (or site part)
 being edited is named over its page tabs (`PageHead.svelte`), a column on
 the panel's 12px edges: a 32×32 filled square ← (**Back to pages**: back to the pages list in
-the **Pages** tab), beside a two-line title: its name, then its address (a path part: that
+**Pages**; an item template: **Back to theme**), beside a two-line title: its name, then its address (a path part: that
 folder; a `[param]/` part, its slash too, in the widget accent; an item template: "Templates";
 Header: "The menu and its labels"; Footer: "Its sections and widgets" — the pages list's
 lines, `src/editor/lib/site-parts.js`). A `[param]` page has a **Preview** line
@@ -1744,13 +1747,26 @@ routes, at its pattern where a param matches nothing: `/people/noor/:year/`). Th
 swap with the editor's slide (`src/editor/lib/slide.js`, as the Sections panes): a page opened
 comes in from the right, the list comes back from the left; reduced motion: no slide.
 
-**Pages list** (the Content tab, ← on the page head; `PagesList.svelte`, `src/editor/lib/page-tree.js`):
+**Areas** (`src/editor/areas.js`, `AreaList.svelte`): the editor opens on one list, a card per
+part of the site with what it holds (a 20px icon, its name, a count): **Pages**, **Media**,
+**Sources**, **Theme**, **Animations**, **Site settings**, **History**. Each part opens from
+there only (no top tabs, no footer buttons). Pages, Theme, Animations and Site settings open in
+the panel (`ui.panel`: `pages`, `theme`, `animations`, `settings`; the list is `areas`; the URL's
+`tab`), under a head with ← **Back to areas**; Media and Sources open their window over the
+editor. An area not built yet (History; Theme's **Fonts and styles**) is disabled and says
+**Coming soon**. Theme holds the item templates (**Templates**), Animations the default timing,
+the Animations library and the **Page entrance**; Site settings the rest (name, SEO, forms,
+layout, type, redirects, photos). **Edit** opens the page in the preview in Pages from any area.
+
+**Pages list** (the Pages area, ← on the page head; `PagesList.svelte`, `src/editor/lib/page-tree.js`):
 the site's pages one folder at a time, flat, on the navigation cards' colour (`--c-page-card`,
 warm sand; their paths and badges in `--c-page-accent`: a card's colour says its type, as the
-widget rows in a section card are teal: `--c-widget-card`, their title line `--c-widget-accent`, a hovered row a 1px ring of it at 50%: `--c-widget-line-hover`). Its header
-(one 32px row): ← (or Esc) up one level, the folder's path (each part goes there; at the top
-just `/`; one line: the parts above shrink with "…", the current one stays whole) and **+** (Add page). Going into a level slides it in from the right, going back from
-the left. Then:
+widget rows in a section card are teal: `--c-widget-card`, their title line `--c-widget-accent`, a hovered row a 1px ring of it at 50%: `--c-widget-line-hover`). Its header:
+at the top the area's (← **Back to areas**, **Pages**) and **+** (Add page); in a folder ← (or
+Esc) up one level, the folder's path, "Back to /parent/" and the same **+**. Going into a level
+slides it in from the right, going back from the left. Then:
+
+- at the top, **Site parts**: Header and Footer (no grip, no delete);
 
 - one list in the menu's order (`header.json`, the order on the website): at the top **Home** and
   the other top pages (Home can move and leave the menu, never be deleted); in a folder its
@@ -1764,8 +1780,9 @@ the left. Then:
   added: + is off once it has one). A plain page's level: its root row and "No sub pages yet";
 - **Not linked**: every page that isn't in the menu, the whole site's (**All**) or this
   folder's (**This folder**; no filter at the top), in the site's order (home first, then by
-  path);
-- at the top, **Site**: Header and Footer (no grip, no delete).
+  path).
+
+A row without a grip or a lock has no empty icon column: its text starts 12px in.
 
 Linking is a drag: a row from the menu list into Not linked takes it out of the menu, a row from
 Not linked into the menu list puts it in the menu there. The row in hand leaves its place and a
@@ -1865,7 +1882,7 @@ the rows it spans, the phone's in the phone preview) and its link (`follows <wid
 or free); links and gaps are dragged in the preview. Then **Size** as buttons (Auto | Aspect |
 Rows; with Aspect its ratio as buttons: 1:1 … 21:9 or Custom "w:h"), the layer with Down / Up (desktop) and **Reset phone** (phone), which removes every phone area
 and link of the section's widgets (they show their desktop layout halved again).
-**Site Settings › Typography** sets the text styles (fitted text keeps their proportions) (size and minimum, line height,
+**Site settings › Typography** sets the text styles (fitted text keeps their proportions) (size and minimum, line height,
 tracking; the preview follows as you type).
 
 **Buttons:** action buttons (Save, Publish, Delete, Add, …) are pills. Utility toggles and tools
@@ -1926,7 +1943,7 @@ in the URL reopens it.
 **Refresh** keeps your place. The URL holds the page (its path), the tab, Menu/Footer and the open Sources item, so a shared link opens the same view:
 `/photography/people/?edit&source=people&item=noor-vermeer` (`tab`: pages (the **Pages** tab), settings, preview;
 the page's own tab, Sections | Element motion | Page motion | SEO, is kept per page in sessionStorage; `view`: header,
-footer; `animation`: Site Settings > Motion's Animations library, open on that animation). Open/closed sections, the selected field or Motion
+footer; `animation`: Animations > Motion's Animations library, open on that animation). Open/closed sections, the selected field or Motion
 element and the scroll positions are kept per browser tab in sessionStorage. See
 `src/editor/svelte/persist.js`.
 
@@ -1934,7 +1951,7 @@ element and the scroll positions are kept per browser tab in sessionStorage. See
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Preview** | The ▶ toggle in the toolbar (or Ctrl/⌘+E), not a tab: use the site normally. The mode tabs hide (the toolbar stays put); the panel shows unsaved changes per file with _Discard_, and what is saved but not published. Off again: back to the tab you were in.                                                                                                                                                                                                               |
 | **Content** | Animations pause. The preview is a layout canvas: click a widget to open it, drag it and its handles to move and resize it, double-click a text to type in it (Enter ends a single-line field; multi-line fields take Enter as a line break). The panel lists the same fields as inputs, and both stay in sync.                                                                                                                                                              |
-| **Motion**  | Click a widget or an animated element (or pick its row in the page's widgets list). Pick its animation and set its own timing (duration, ease, delay, stagger, trigger, scroll start/end/scrub); what the animation does (from/to properties, type-specific values) is shown read-only and edited in Site Settings > Motion's Animations library. Changes replay live. **Replay** runs that widget (or the page) again, and the **Scroll** slider moves the page through it. |
+| **Motion**  | Click a widget or an animated element (or pick its row in the page's widgets list). Pick its animation and set its own timing (duration, ease, delay, stagger, trigger, scroll start/end/scrub); what the animation does (from/to properties, type-specific values) is shown read-only and edited in Animations > Motion's Animations library. Changes replay live. **Replay** runs that widget (or the page) again, and the **Scroll** slider moves the page through it. |
 
 In the edit modes, clicks select instead of following links (in Content no link, button or
 form acts). Hold **Alt** to click through.
@@ -1967,7 +1984,7 @@ or element opens in place, under its row), then Outside the widgets; the preview
 what to animate. Its Page motion tab holds the page's own cards (the preview's clicks arrange
 there, as on Sections): **Scroll backdrop** (its backdrop), then **Page entrance**
 (how visitors arrive at this page: the page's curtain, Site default or Off (page fade), with
-a link to Site Settings > Page entrance). The Animations library and the default timing are in Site Settings > Motion (an
+a link to Animations > Page entrance). The Animations library and the default timing are in Animations > Motion (an
 element's Animation edit button opens the library there), next to the one **Page entrance**
 section (the site's curtain and page fade). The library is the only place that defines what an animation
 does: pick an animation to edit `animations["fade-up"]`, every value including timing, and add

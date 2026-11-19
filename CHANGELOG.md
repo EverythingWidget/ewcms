@@ -29,6 +29,15 @@ say what a site must do before it bumps its pin.
 - Arrows, Enter and letters pressed in the preview act as they do in the editor (G14): the arrows
   nudge the picked widgets, Enter or a letter edits a picked Text. A text edited in place keeps
   them (the caret, a line break, typing).
+- **Areas.** The editor opens on one list of the site's parts: Pages, Media, Sources, Theme,
+  Animations, Site settings and History, each with what it holds. It replaces the Pages | Site
+  Settings tabs and the footer's Sources and Media buttons: each part opens from the list only,
+  and comes back to it with ← Back to areas. History and Theme's Fonts and styles say Coming
+  soon. Pages starts with its Site parts (Header, Footer); the item templates moved to Theme
+  (their ← and Done come back there); the default timing, the Animations library and the Page
+  entrance moved from Site settings to Animations. The URL's `tab` is the area (`areas`, `pages`,
+  `theme`, `animations`, `settings`); an old `tab=settings&animation=…` link opens Animations.
+  No content or data format change.
 
 ## 0.10.0 (2026-11-17)
 
