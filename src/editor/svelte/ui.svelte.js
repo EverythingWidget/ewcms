@@ -138,7 +138,7 @@ export const ui = $state({
   /** Sections tab: the section whose settings pop-up is open (SectionPopup.svelte; its id), or null. */
   section: null,
   /**
-   * A Text widget edited in place in the preview (preview-runtime.js richState): { widget, edit, style,
+   * A Text widget edited in place in the preview (preview-edit.js richState): { widget, edit, style,
    * line, selected, bold, italic, link }, or null.
    */
   rich: null,

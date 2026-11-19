@@ -79,7 +79,7 @@
     onclose();
     card?.focus?.();
   }
-  // Esc: its own (the editor's Esc skips the pop-up, App.svelte)
+  // Esc: its own (the editor's Esc skips the pop-up, keys.js)
   function onkeydown(e) {
     if (e.key !== 'Escape' || e.defaultPrevented) return;
     e.stopPropagation();

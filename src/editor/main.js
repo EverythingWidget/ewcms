@@ -824,7 +824,7 @@ bridge.on('navigate', (path) => {
 bridge.on('pick', pickElement);
 bridge.on('hover', hoverElement);
 bridge.on('textPick', selectText);
-// the Text widget editor (preview-runtime.js, rich.js): its state for the toolbar; an edit ended: its
+// the Text widget editor (preview-edit.js, rich.js): its state for the toolbar; an edit ended: its
 // section rendered again (the fields' values, the animations' markup)
 bridge.on('rich', (state) => (ui.rich = state));
 bridge.on('richDone', (edit) => {

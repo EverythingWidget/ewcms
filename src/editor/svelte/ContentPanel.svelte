@@ -21,7 +21,7 @@
     SEO          SeoSection.svelte
   The footer is sections only (no tabs). While this tab is open the preview is a
   layout canvas (overlay.js): a click picks a widget, a drag moves it, its handles resize it and
-  a double click edits a text in place (preview-runtime.js); links and buttons don't follow; a click on
+  a double click edits a text in place (preview-edit.js); links and buttons don't follow; a click on
   empty space or Esc drops the selection. The selected widget's section shows its grid (faint
   cells). The Sources button in the
   toolbar (App.svelte) opens Sources (SourcesModal.svelte, openSources); so does a

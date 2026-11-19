@@ -19,7 +19,7 @@
   (nothing shows). A preview too narrow for the whole bar puts the text marks into a "…" menu (the widget's
   own width doesn't matter). Its end: the layout part, the Auto height toggle (and Shrink to fit, a type with
   `scaleToFit`: shortcuts to the pop-up's Layout tab, ../widget-layout.js) and its size and place
-  (`64×22 · 4:1`, `64×auto`), on every widget (one without text: that part alone). The edit itself is preview-runtime.js's
+  (`64×22 · 4:1`, `64×auto`), on every widget (one without text: that part alone). The edit itself is preview-edit.js's
   (rich.js).
 -->
 <script>
