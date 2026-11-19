@@ -429,7 +429,7 @@
 {#snippet styleMenu()}
   <div class="btb__menu" role="listbox" aria-label="Style of this line" style={styFonts}>
     <span class="btb__grp"
-      >{editing ? 'This line' : 'Its first line'} · Site Settings › Typography</span
+      >{editing ? 'This line' : 'Its first line'} · Site settings › Typography</span
     >
     {#each LINE_STYLES as [s, label, tag] (s)}
       <button

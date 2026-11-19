@@ -171,7 +171,7 @@ export function photoOf(ctx, src) {
   }
   if (!ctx.site?.mediaUrl)
     warnOnce(
-      `"${src}" is in R2, but no Photos address is set (Site Settings > Photos, site.json mediaUrl)`,
+      `"${src}" is in R2, but no Photos address is set (Site settings > Photos, site.json mediaUrl)`,
     );
   return {
     ...r2,

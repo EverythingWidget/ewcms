@@ -54,14 +54,14 @@ test('titles: the site template around the page title; home in full', () => {
   assert.equal(routeOf(c, '/work/').title, 'My work · Site');
 });
 
-test("home's title: its own, else Site Settings' Home page title, else the site name (F08)", () => {
+test("home's title: its own, else Site settings' Home page title, else the site name (F08)", () => {
   const home = (meta, more) => routeOf(content({ 'pages/index.json': { meta } }, more), '/').title;
   assert.equal(home({ title: 'Welcome' }), 'Welcome');
   assert.equal(home({}), 'Site home');
   assert.equal(home({}, { title: '' }), 'Site');
 });
 
-test('the default site Home has no title of its own: Site Settings names it (F08)', async () => {
+test('the default site Home has no title of its own: Site settings names it (F08)', async () => {
   const { readFileSync } = await import('node:fs');
   const page = JSON.parse(
     readFileSync(new URL('../default-site/content/en/pages/index.json', import.meta.url), 'utf8'),

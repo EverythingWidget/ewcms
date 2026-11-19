@@ -5,7 +5,7 @@
   canonical. A [param] page: its template's defaults for every item page (an item's own name,
   summary and cover come first). Below, a search result and a share card as the build makes
   them, with the character counts search engines show. Empty fields fall back to the site's
-  defaults (Site Settings > SEO). Every change is one undo step; the preview's page itself does not
+  defaults (Site settings > SEO). Every change is one undo step; the preview's page itself does not
   change.
 -->
 <script>
@@ -54,10 +54,10 @@
   <p class="hint">
     {template
       ? 'Defaults for every item page. Each item page is titled with its name and uses its own summary and cover first.'
-      : 'Search engines and share cards. Empty fields use the site defaults (Site Settings > SEO).'}
+      : 'Search engines and share cards. Empty fields use the site defaults (Site settings > SEO).'}
   </p>
   {#snippet tip()}<b>Title</b>: the browser tab and search result. The site name is added
-    automatically ({added ? `“${added}”` : 'Site Settings › Name'}), so leave it out; typed anyway,
+    automatically ({added ? `“${added}”` : 'Site settings › Name'}), so leave it out; typed anyway,
     it is not added twice.{/snippet}
   <PageAddress {live} {file} {actions} />
   {#if !template}

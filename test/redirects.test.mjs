@@ -215,7 +215,7 @@ test('_redirects: one line per path, with and without its slash; build warnings'
   );
   assert.equal(out.list.length, 4);
   assert.deepEqual(out.warnings, [
-    '/about/ is a page: its redirect is left out (remove it in Site Settings > Redirects)',
+    '/about/ is a page: its redirect is left out (remove it in Site settings > Redirects)',
     '/a/ -> /b/: there is no page /b/',
   ]);
 });

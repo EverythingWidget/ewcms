@@ -13,7 +13,7 @@ import { targetFile } from '../layout-sync.js';
 import { itemName, schemaFor } from './source-items.js';
 import { TEXT_TYPES } from '../../render/property-types.js';
 
-/** site.json values edited in the Site Settings tab: [key, label, field type]. */
+/** site.json values edited in the Site settings: [key, label, field type]. */
 export const SITE_SETTINGS = [
   ['name', 'Site name', 'text'],
   ['accent', 'Accent color', 'text'],
@@ -22,7 +22,7 @@ export const SITE_SETTINGS = [
   ['country', 'Country code (for search engines, e.g. NL)', 'text'],
 ];
 
-/** site.json search and share defaults (src/render/seo.js), Site Settings > SEO. robots is a Select. */
+/** site.json search and share defaults (src/render/seo.js), Site settings > SEO. robots is a Select. */
 export const SEO_SETTINGS = [
   ['title', 'Home page title (in full)', 'text'],
   ['titleTemplate', 'Title of other pages: {page} is the page, {site} the site name', 'text'],

@@ -1,5 +1,5 @@
 /**
- * site.json lang: the languages offered (the first-run modal and Site Settings, one list) and
+ * site.json lang: the languages offered (the first-run modal and Site settings, one list) and
  * the hint for one without its content folder in use. The language folder is read when
  * ewcms dev starts (src/cli/site-config.mjs langContentDir): content/<lang>/ when it exists,
  * else content/en/.

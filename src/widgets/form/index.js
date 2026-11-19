@@ -138,7 +138,7 @@ export const form = {
       key: 'target',
       label: 'Sends to',
       type: 'select',
-      options: [['', 'Site default (Site Settings > Forms)'], ...TARGETS],
+      options: [['', 'Site default (Site settings > Forms)'], ...TARGETS],
     },
   ],
   defaults: {

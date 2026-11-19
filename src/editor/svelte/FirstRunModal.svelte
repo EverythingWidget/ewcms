@@ -57,7 +57,7 @@
   <form onsubmit={start}>
     <h3 class="modal__title" id="{uid}-title">Your new site</h3>
     <p class="hint small first-run__lead">
-      Three things to start with. Each can be changed later in Site Settings.
+      Three things to start with. Each can be changed later in Site settings.
     </p>
     <label class="tf">
       <span class="tf__label">Site name</span>
