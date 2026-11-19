@@ -9,18 +9,27 @@ import { readFileSync } from 'node:fs';
 const read = (f) => readFileSync(new URL(`../src/${f}`, import.meta.url), 'utf8');
 
 test('F108: a click on a link in the selected Text edits it there and opens its link box', () => {
-  const b = read('editor/preview-runtime.js');
+  // (the click: preview-pointer.js; the edit and its link box: preview-edit.js)
+  const p = read('editor/preview-pointer.js');
+  const b = read('editor/preview-edit.js');
   // the selected widget's link (selected before the press, not a drag's end): edit, then the box
-  assert.match(b, /const link = e\.detail === 1 \? pickedLinkAt\(e\.clientX, e\.clientY\) : null;/);
-  assert.match(b, /startRich\(link\.body, e\.clientX, e\.clientY\);\s*linkBoxSoon\(\);/);
-  assert.match(b, /return body && id && !moved \? \{ a, body \} : null;/);
+  assert.match(p, /const link = e\.detail === 1 \? pickedLinkAt\(e\.clientX, e\.clientY\) : null;/);
+  assert.match(
+    p,
+    /edit\.startRich\(link\.body, e\.clientX, e\.clientY\);\s*edit\.linkBoxSoon\(\);/,
+  );
+  assert.match(p, /return body && id && !moved \? \{ a, body \} : null;/);
   // already edited: a click in a link opens it too
-  assert.match(b, /if \(rich && e\.detail === 1 && t\.closest\('a'\)\) linkBoxSoon\(\);/);
+  assert.match(
+    p,
+    /if \(edit\.richEditing && e\.detail === 1 && t\.closest\('a'\)\) edit\.linkBoxSoon\(\);/,
+  );
   // a double click (a word of the link selected) opens no box; the box opens on a caret in a link
-  assert.match(b, /if \(e\.detail > 1\) clearTimeout\(linkBoxTimer\);/);
+  assert.match(p, /if \(e\.detail > 1\) edit\.cancelLinkBox\(\);/);
+  assert.match(b, /cancelLinkBox: \(\) => clearTimeout\(linkBoxTimer\),/);
   assert.match(b, /!isCaret\(s\) \|\| !linkRangeAt\(store\.get\(rich\.file, rich\.ptr\), s\.to\)/);
   assert.match(b, /const LINK_BOX_WAIT = 300;/);
-  // the bridge knows the selected widget
+  // the pointer knows the selected widget
   assert.match(read('editor/main.js'), /widget: \(\) => ui\.widget,/);
 });
 
@@ -54,7 +63,10 @@ test("F107: a link saved as the editor's preview address is marked, and one clic
   );
   // its first click (the widget not selected yet) opens its box: empty, with the note (DRAFT_HREF)
   // a first click on a link opens it too (the widget need not be picked first: G12)
-  assert.match(b, /return body && id && !moved \? \{ a, body \} : null;/);
+  assert.match(
+    read('editor/preview-pointer.js'),
+    /return body && id && !moved \? \{ a, body \} : null;/,
+  );
   const tb = read('editor/svelte/WidgetToolbar.svelte');
   // (its box empties a preview address: link-paste.test.mjs F50)
   assert.match(
@@ -72,8 +84,8 @@ test('F107: the mark matches the preview address in either form the preview rend
 });
 
 test('F107: a click off any link is no link (pickedLinkAt never reads a missing <a>)', () => {
-  const src = read('editor/preview-runtime.js');
-  const fn = src.slice(src.indexOf('function pickedLinkAt('), src.indexOf('let down = null'));
+  const src = read('editor/preview-pointer.js');
+  const fn = src.slice(src.indexOf('function pickedLinkAt('), src.indexOf('const pickField'));
   assert.ok(fn.includes('if (!a) return null;'));
   // the link's box, not the caret: a paragraph must not take a click meant for the link (G12)
   assert.match(fn, /body\.querySelectorAll\('a'\)/);
@@ -88,7 +100,7 @@ test('G12: a locked Header or Footer takes no click; it opens from the pages lis
   assert.doesNotMatch(read('editor/svelte/App.svelte'), /lockPart/);
   // open: a click outside it does nothing (Done locks it)
   assert.match(
-    b,
+    read('editor/preview-pointer.js'),
     /if \(open && !open\.contains\(t\)\) \{\s*e\.preventDefault\(\);\s*e\.stopPropagation\(\);\s*return;/,
   );
   assert.match(
@@ -100,7 +112,7 @@ test('G12: a locked Header or Footer takes no click; it opens from the pages lis
 test('F115: Ctrl+K opens the link box from the editor window too, every rich-text field', () => {
   // the preview forwards Ctrl+K (keys.js isShortcut, used by the bridge)
   assert.match(read('editor/keys.js'), /\^\[sezyk\]\$/);
-  assert.match(read('editor/preview-runtime.js'), /import \{ isShortcut \} from '\.\/keys\.js';/);
+  assert.match(read('editor/preview-edit.js'), /import \{ isShortcut \} from '\.\/keys\.js';/);
   const tb = read('editor/svelte/WidgetToolbar.svelte');
   assert.match(tb, /window\.addEventListener\('keydown', onKey, true\)/);
   assert.match(tb, /e\.key\.toLowerCase\(\) !== 'k'/);

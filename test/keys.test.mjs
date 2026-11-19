@@ -51,7 +51,7 @@ test('keys: one handler, in the editor window and for the preview (its forwarded
   assert.match(main, /watchMod\(window\);/);
   assert.match(
     main,
-    /overlay\.attach\(bridge\.doc\.defaultView\);\s*watchMod\(bridge\.doc\.defaultView\);/,
+    /pointer\.attach\(bridge\.doc\.defaultView\);\s*watchMod\(bridge\.doc\.defaultView\);/,
   );
   // no second dispatcher, Ctrl/Cmd tracker or Delete-link handler elsewhere
   assert.doesNotMatch(main, /function selectionKey|const trackMod|overlay\.deleteLink\(\)/);
@@ -61,8 +61,9 @@ test('keys: one handler, in the editor window and for the preview (its forwarded
   assert.doesNotMatch(ov, /trackMod|function onkeydown|addEventListener\('keyup'/);
   assert.doesNotMatch(ov, /setMod/);
   // the bridge forwards what keys.js calls a shortcut
-  assert.match(src('preview-runtime.js'), /import \{ isShortcut \} from '\.\/keys\.js';/);
-  assert.doesNotMatch(src('preview-runtime.js'), /const isShortcut =|const typing =/);
+  assert.match(src('preview-edit.js'), /import \{ isShortcut \} from '\.\/keys\.js';/);
+  for (const f of ['preview-runtime.js', 'preview-edit.js', 'preview-pointer.js'])
+    assert.doesNotMatch(src(f), /const isShortcut =|const typing =/, f);
   // the order: a selected link's Delete, the selection's keys, then the app's
   assert.match(src('keys.js'), /linkKey\(e\);\s*selectionKey\(e\);\s*appKey\(e\);/);
 });

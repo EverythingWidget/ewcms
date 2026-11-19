@@ -102,6 +102,7 @@ import {
   setSectionRows,
 } from './layout-ops.js';
 import { createOverlay } from './overlay.js';
+import { createPointer } from './preview-pointer.js';
 import { createKeys, watchMod } from './keys.js';
 import { restoreUi, restorePlace } from './svelte/persist.js';
 import { editorHref } from './lib/editor-url.js';
@@ -135,7 +136,6 @@ const bridge = createBridge({
   labelFor: (p) => labelFor(store, p),
   picked: () => ui.picked,
   hovered: () => ui.hoverEl,
-  widget: () => ui.widget,
   clicks: previewClicks,
 });
 // the preview's layout overlay (arranging in the Sections tab, Grid; overlay.js): widgetAt and
@@ -217,6 +217,14 @@ const overlay = createOverlay({
 });
 // the panels change what the overlay shows (a row picked or hovered, a key): its loop runs
 // for a moment, then idles again
+// the preview's clicks, double clicks and presses, to the editing and the overlay (in that order)
+const pointer = createPointer({
+  bridge,
+  overlay,
+  clicks: previewClicks,
+  hovered: () => ui.hoverEl,
+  widget: () => ui.widget,
+});
 for (const t of ['pointerdown', 'pointermove', 'pointerup', 'keydown', 'keyup', 'input', 'wheel'])
   document.addEventListener(t, () => overlay.kick(), { capture: true, passive: true });
 
@@ -662,6 +670,7 @@ bridge.on('connect', () => {
   bridge.clicksChanged();
   clearPick();
   overlay.attach(bridge.doc.defaultView);
+  pointer.attach(bridge.doc.defaultView);
   watchMod(bridge.doc.defaultView);
   applyPart();
   pushCurtains();

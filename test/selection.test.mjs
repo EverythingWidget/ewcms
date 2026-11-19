@@ -23,7 +23,13 @@ test('pop-up: a single click only selects; one selected swaps it, none or severa
   assert.equal(popupStays(0), false);
   assert.equal(popupStays(2), false);
   const ov = src('overlay.js');
-  assert.match(ov, /addEventListener\('dblclick', ondblclick, true\)/, 'double click opens');
+  assert.match(ov, /dblclick: ondblclick,/);
+  // (the preview's pointer: the text's double click first, then the widget's pop-up)
+  assert.match(
+    src('preview-pointer.js'),
+    /textDblclick\(e\);\s*ov\.dblclick\(e\);/,
+    'double click opens',
+  );
   assert.match(ov, /onopen\?\.\(id\)/);
   const main = src('main.js');
   // a selection box (or Ctrl+click) never opens the pop-up
@@ -100,13 +106,13 @@ test('the preview pick and hover live in ui only: the bridge reports them, keeps
   const b = src('preview-runtime.js');
   assert.doesNotMatch(b, /let (selected|hoverEl)\b/);
   assert.doesNotMatch(b, /\bselect\(el, kind|setHover\(/);
-  assert.match(b, /emit\('hover', el\)/);
+  assert.match(src('preview-pointer.js'), /emit\('hover', el\)/);
   const m = src('main.js');
   assert.doesNotMatch(m, /bridge\.(select|selected)\b|on\('select'/);
   assert.match(m, /bridge\.on\('hover', hoverElement\)/);
   assert.match(m, /bridge\.clicksChanged\(\);\s*clearPick\(\);/);
   // what a click does: previewClicks() only, read by the bridge (no copy of its own)
-  assert.match(m, /widget: \(\) => ui\.widget,\s*clicks: previewClicks,/);
+  assert.match(m, /labelFor: \(p\) => labelFor\(store, p\),[\s\S]{0,80}clicks: previewClicks,\s*\}\);/);
   assert.match(b, /clicks = \(\) => 'visitor',/);
   assert.doesNotMatch(b, /let clicks|clicks = next|setClickMode|\bclicks (===|!==)/);
   const u = src('svelte/ui.svelte.js');

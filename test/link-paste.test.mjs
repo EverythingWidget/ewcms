@@ -126,12 +126,12 @@ test("F50: the toolbar's Link opens on a caret in a link and empties a preview a
   assert.match(src, /disabled=\{!rich\?\.selected && !rich\?\.link\}\s*aria-label="Link"/);
   assert.match(src, /linkDraft = isDraftHref\(href\);\s*linkText = linkDraft \? '' : href;/);
   assert.match(src, /bridge\.selectLink\(\)/);
-  const bridge = readFileSync(new URL('../src/editor/preview-runtime.js', import.meta.url), 'utf8');
+  const bridge = readFileSync(new URL('../src/editor/preview-edit.js', import.meta.url), 'utf8');
   assert.match(bridge, /htmlLines\(parsed\.body, \(h\) => isSafeHref\(h\) && !isDraftHref\(h\)\)/);
 });
 
 test('Ctrl+K: a caret in a link opens the link box too, not only a selection', () => {
-  const bridge = readFileSync(new URL('../src/editor/preview-runtime.js', import.meta.url), 'utf8');
+  const bridge = readFileSync(new URL('../src/editor/preview-edit.js', import.meta.url), 'utf8');
   const k = bridge.slice(
     bridge.indexOf("k === 'k'"),
     bridge.indexOf("emit('richLink')", bridge.indexOf("k === 'k'")) + 20,

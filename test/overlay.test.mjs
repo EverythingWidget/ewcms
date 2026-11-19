@@ -109,14 +109,13 @@ test("a press on a widget's link or button only picks it: no pressed look, Alt s
     rule,
     /:not\(\[data-anim\], :has\(\[data-anim\], \[contenteditable\]\), \[contenteditable\] \*\)/,
   );
-  assert.match(b, /classList\.toggle\('__ed-alt', !!e\.altKey\)/);
+  assert.match(src('preview-pointer.js'), /classList\.toggle\('__ed-alt', !!e\.altKey\)/);
   // the site's own styles are untouched: the press look stays for visitors
   assert.match(read('src/client/styles/_glass.scss'), /&:active \{\s*transform: scale\(0\.97\);/);
 });
 
-
 test('G14: Ctrl+Z in the preview is preventDefault before the editor undo runs', () => {
-  const b = src('preview-runtime.js');
+  const b = src('preview-edit.js'); // (the preview's keydown: its editing, then the forward)
   assert.match(b, /e\.preventDefault\(\); \/\/ Ctrl\+Z after a drag/);
   assert.match(b, /e\.preventDefault\(\); \/\/ Ctrl\+Z: the editor's undo/);
 });
@@ -134,7 +133,10 @@ test("a press on a widget's body hides its handles and the toolbar; a resize kee
   assert.doesNotMatch(o, /toggle\('is-auto', sizeOf\(widget\) === 'auto' && !dragging\)/);
   // a body move: is-moving at pointerdown (no threshold); a handle resize does not
   assert.match(o, /setAttribute\('data-flow-hold', h \? 'resize' : 'move'\)/);
-  assert.match(o, /els\.sel\.classList\.add\('is-dragging'\);\s*if \(!h\) els\.sel\.classList\.add\('is-moving'\);/);
+  assert.match(
+    o,
+    /els\.sel\.classList\.add\('is-dragging'\);\s*if \(!h\) els\.sel\.classList\.add\('is-moving'\);/,
+  );
   assert.match(o, /els\.sel\.classList\.remove\('is-dragging', 'is-moving'\)/);
   // hidden in place: no layout shift
   assert.match(

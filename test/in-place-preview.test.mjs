@@ -355,13 +355,16 @@ test('what the patch cannot show renders the section as before (G13)', () => {
 });
 
 test('inline editing is data-edit-inline (a Text body); a double click on any other text opens its field', () => {
-  const bridge = read('src/editor/preview-runtime.js');
+  // (the double click: preview-pointer.js; the editing: preview-edit.js; its CSS: the runtime's)
+  const bridge = ['preview-runtime', 'preview-edit', 'preview-pointer']
+    .map((f) => read(`src/editor/${f}.js`))
+    .join('\n');
   assert.match(
-    bridge,
+    read('src/editor/preview-pointer.js'),
     /const inline = hit\.dataset\.editInline !== undefined && hit\.dataset\.bound === undefined;\s*if \(!inline\) pickField\(hit\);/,
   );
   assert.match(
-    bridge,
+    read('src/editor/preview-edit.js'),
     /const richOf = \(w\) => w\?\.querySelector\('\[data-edit-inline\]\[data-edit-type="rich"\]'\)/,
   );
   for (const sel of ['[data-edit][contenteditable]', "closest?.('[data-edit]')"])

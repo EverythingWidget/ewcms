@@ -1370,6 +1370,16 @@ export function createOverlay({
       e.stopPropagation();
     }
   };
+  // a clickable template item's widgets get no pointerover (hitOf): the pointer's move finds them
+  function onpointermove(e) {
+    if (tplOpen() && arranging() && e.target.id !== '__ed-layout' && widgetAt(hitOf(e)) !== hover)
+      onpointerover(e);
+  }
+  function onpointerleave() {
+    hover = null; // the pointer out of the preview: no widget outlined
+    unpeek();
+    hotAt(null);
+  }
   function onpointerover(e) {
     if (e.target.id === '__ed-layout') return; // over its circles: the widget stays hovered
     const hit = hitOf(e);
@@ -1388,30 +1398,7 @@ export function createOverlay({
       doc = siteWin.document;
       gridKey = '';
       build();
-      doc.addEventListener('pointerdown', onpointerdown, true);
-      doc.addEventListener('mousedown', swallow, true);
-      doc.addEventListener('click', swallow, true);
-      doc.addEventListener('dblclick', ondblclick, true);
-      doc.addEventListener('pointerover', onpointerover, true);
-      // a clickable template item's widgets get no pointerover (hitOf): the pointer's move finds them
-      doc.addEventListener(
-        'pointermove',
-        (e) => {
-          if (
-            tplOpen() &&
-            arranging() &&
-            e.target.id !== '__ed-layout' &&
-            widgetAt(hitOf(e)) !== hover
-          )
-            onpointerover(e);
-        },
-        { capture: true, passive: true },
-      );
-      doc.documentElement.addEventListener('pointerleave', () => {
-        hover = null; // the pointer out of the preview: no widget outlined
-        unpeek();
-        hotAt(null);
-      });
+      // (its pointer handlers: preview-pointer.js listens and calls them, `pointer` below)
       // what moves the page: the loop runs for it, then idles
       anims = 0;
       const opts = { capture: true, passive: true };
@@ -1469,5 +1456,18 @@ export function createOverlay({
     },
     /** Arrow keys: the selection moved by (dc, dr) cells. */
     nudge,
+    /**
+     * The preview's pointer (preview-pointer.js calls them, after the editing's): a press picks
+     * or drags, a double click opens the pop-up, the page's own press and click on a widget are
+     * swallowed, the widget under the pointer is outlined.
+     */
+    pointer: {
+      down: onpointerdown,
+      dblclick: ondblclick,
+      swallow,
+      over: onpointerover,
+      move: onpointermove,
+      leave: onpointerleave,
+    },
   };
 }
