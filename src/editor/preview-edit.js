@@ -489,8 +489,11 @@ export function createEdit({ store, emit, clicks, reveal, markApplied }) {
           e.stopPropagation(); // keep site shortcuts (album arrows, menu) out of typing
         }
         if (isShortcut(e)) {
-          e.preventDefault(); // Ctrl+Z after a drag: the store's undo on the first press (G14)
+          // to keys.js first, as a key in the editor (not yet defaultPrevented: the arrows nudge,
+          // Enter or a letter edits a picked Text), then the browser's own action prevented
+          // (Ctrl+Z after a drag: the store's undo on the first press, G14)
           emit('key', e);
+          e.preventDefault();
         }
       },
       true,

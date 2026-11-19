@@ -123,7 +123,11 @@ test("a press on a widget's link or button only picks it: no pressed look, Alt s
 
 test('G14: Ctrl+Z in the preview is preventDefault before the editor undo runs', () => {
   const b = src('preview-edit.js'); // (the preview's keydown: its editing, then the forward)
-  assert.match(b, /e\.preventDefault\(\); \/\/ Ctrl\+Z after a drag/);
+  // (forwarded first, then prevented: keys.js sees an arrow or Enter as one in the editor)
+  assert.match(
+    b,
+    /Ctrl\+Z after a drag: the store's undo on the first press, G14\)\s*emit\('key', e\);\s*e\.preventDefault\(\);/,
+  );
   assert.match(b, /e\.preventDefault\(\); \/\/ Ctrl\+Z: the editor's undo/);
 });
 
