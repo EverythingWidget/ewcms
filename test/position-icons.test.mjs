@@ -1,18 +1,22 @@
-// Single-axis Position icons (bars) and the Button label edited in its popup only.
+// Single-axis Position icons (bars) and the Button label edited in its popup only (inline: a Text only).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 
-test('the button widget has no inline-edit marker (its label: the popup only)', () => {
+test('the button label: marked for the preview (data-edit), not inline (its popup only)', () => {
   const src = read('src/widgets/button/index.js');
-  assert.doesNotMatch(src, /widget\.ed\(/);
+  assert.match(src, /widget\?\.ed\('label'\)/);
+  assert.doesNotMatch(src, /inline: true/);
   assert.match(src, /key: 'label'/);
 });
 
-test('the text widget stays editable in the preview', () => {
-  assert.match(read('src/widgets/text/index.js'), /widget\.ed\('body', 'rich'\)/);
+test('the text widget stays editable in the preview (inline)', () => {
+  assert.match(
+    read('src/widgets/text/index.js'),
+    /widget\.ed\('body', 'rich', \{ inline: true \}\)/,
+  );
 });
 
 test('Position: bars for one axis (trigger and cells), the dot grid for both', () => {

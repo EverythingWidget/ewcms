@@ -25,7 +25,14 @@ import {
 import { needsReload, routesFile, routesKey } from '../src/editor/lib/needs-reload.js';
 import { sectionsUsing, usesOf } from '../src/widgets/list/template-uses.js';
 import { PREVIEW_PAGE, templatePreviewPath } from '../src/widgets/list/template-preview.js';
-import { swapSections, swapWidget } from '../src/editor/layout-sync.js';
+import {
+  markRendered,
+  patchTexts,
+  swapSections,
+  swapWidget,
+  syncLayout,
+} from '../src/editor/layout-sync.js';
+import { createStore } from '../src/editor/store.js';
 import { SITE_A } from './fixtures/index.mjs';
 
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
@@ -256,8 +263,109 @@ test('the editor: in place by default, a reload only by the rule, on Save too', 
     );
 });
 
-test('G13: a content change re-renders the section in place, not only a flagged structure edit', () => {
+test('G13: a content change re-renders the section in place, unless its text was patched in', () => {
   const main = read('src/editor/main.js');
   assert.match(main, /syncSections\(\{ structure: !typed \}, root\);/);
   assert.doesNotMatch(main, /structure && !typed/);
+  // the targeted patch first (it marks the section rendered); the full scan only when it didn't
+  assert.ok(
+    main.indexOf('patchTexts(root, store, edits, bridge.patchText)') <
+      main.indexOf('syncSections({ structure: !typed }, root)'),
+  );
+  assert.match(main, /if \(patched\) bridge\.applyCurtain\(\);\s*else\s*bridge\.applyTexts\(/);
+});
+
+/** A page with one section: a button (its label marked) and a hero (its name in words). */
+function patchPage() {
+  const F = 'pages/index.json';
+  const { document } = parseHTML(
+    `<div data-router-view data-page-file="${F}"><section data-sec="s-a">` +
+      `<div data-widget="w-b"><a class="btn"><span data-edit="${F}#/sections/0/widgets/0/label">Go</span></a></div>` +
+      `<div data-widget="w-h"><span data-edit="${F}#/sections/0/widgets/1/title" data-edit-type="words"><span>Noor</span></span>` +
+      `<span data-edit="${F}#/sections/0/widgets/1/eyebrow">Hi</span></div>` +
+      `</section></div>`,
+  );
+  const store = createStore();
+  store.load({
+    [F]: {
+      sections: [
+        {
+          id: 's-a',
+          widgets: [
+            { id: 'w-b', type: 'button', label: 'Go', config: { link: { href: '/x' } } },
+            { id: 'w-h', type: 'hero', title: 'Noor', eyebrow: 'Hi' },
+          ],
+        },
+      ],
+    },
+  });
+  const view = document.querySelector('[data-router-view]');
+  markRendered(document, store, view);
+  let edits = null;
+  store.on((e) => (edits = e.edits));
+  const set = (ptr, v) => {
+    store.set(F, `/sections/0/widgets/${ptr}`, v, { source: 'panel', key: `text:${ptr}` });
+    return edits;
+  };
+  const write = (el, v) => (el.textContent = String(v));
+  const stale = () => [...syncLayout(document, store, { structure: true, root: view })];
+  return { document, store, view, set, write, stale };
+}
+
+test('a label typed in its popup is patched into its element: no section render', () => {
+  const { view, store, set, write, stale } = patchPage();
+  const edits = set('0/label', 'Go on');
+  assert.deepEqual(
+    edits.map((e) => [e.ptr, e.before, e.after]),
+    [['/sections/0/widgets/0/label', 'Go', 'Go on']],
+  );
+  assert.equal(patchTexts(view, store, edits, write), true);
+  assert.equal(view.querySelector('[data-widget="w-b"] span').textContent, 'Go on');
+  assert.deepEqual(stale(), []); // nothing for renderOp
+  // a keystroke more (the same undo step): patched again
+  assert.equal(patchTexts(view, store, set('0/label', 'Go on!'), write), true);
+  assert.equal(view.querySelector('[data-widget="w-b"] span').textContent, 'Go on!');
+  assert.deepEqual(stale(), []);
+  // a plain text of another widget too (the hero's eyebrow)
+  assert.equal(patchTexts(view, store, set('1/eyebrow', 'Hello'), write), true);
+  assert.deepEqual(stale(), []);
+});
+
+test('what the patch cannot show renders the section as before (G13)', () => {
+  // a link: markup changes (href, a or span)
+  let p = patchPage();
+  assert.equal(patchTexts(p.view, p.store, p.set('0/config/link', { href: '/y' }), p.write), false);
+  assert.deepEqual(p.stale(), ['s-a']);
+  // ...and a label typed while that render is pending: still rendered (the section is stale)
+  assert.equal(patchTexts(p.view, p.store, p.set('0/label', 'Go on'), p.write), false);
+  assert.deepEqual(p.stale(), ['s-a']);
+  // an emptied label (a default or nothing shows): rendered
+  p = patchPage();
+  assert.equal(patchTexts(p.view, p.store, p.set('0/label', ''), p.write), false);
+  assert.deepEqual(p.stale(), ['s-a']);
+  // the hero's name (words: split, its size follows its longest word): rendered
+  p = patchPage();
+  assert.equal(patchTexts(p.view, p.store, p.set('1/title', 'Noor V'), p.write), false);
+  assert.deepEqual(p.stale(), ['s-a']);
+  // a text with no element of its own in the widget: rendered
+  p = patchPage();
+  assert.equal(patchTexts(p.view, p.store, p.set('1/body', 'More'), p.write), false);
+  // an undo has no edits: the full scan (applyTexts) and the render
+  assert.equal(patchTexts(p.view, p.store, null, p.write), false);
+});
+
+test('inline editing is data-edit-inline (a Text body); a double click on any other text opens its field', () => {
+  const bridge = read('src/editor/bridge.js');
+  assert.match(
+    bridge,
+    /const inline = hit\.dataset\.editInline !== undefined && hit\.dataset\.bound === undefined;\s*if \(!inline\) pickField\(hit\);/,
+  );
+  assert.match(
+    bridge,
+    /const richOf = \(w\) => w\?\.querySelector\('\[data-edit-inline\]\[data-edit-type="rich"\]'\)/,
+  );
+  for (const sel of ['[data-edit][contenteditable]', "closest?.('[data-edit]')"])
+    assert.ok(!bridge.includes(sel), sel);
+  // the photo's double click still opens its field (pickField), as a bound value's
+  assert.match(bridge, /\[data-edit-inline\]\[contenteditable\] \{ outline: 1\.5px solid/);
 });

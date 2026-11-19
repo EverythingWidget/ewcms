@@ -21,6 +21,7 @@ import {
 } from '../render/layout/index.js';
 import { kindOf } from '../widgets/index.js';
 import { templateFile } from '../render/files.js';
+import { set } from './lib/pointer.js';
 
 /**
  * A widget's motion attributes as the site renders them:
@@ -97,6 +98,74 @@ export function markRendered(doc, store, view = pageView(doc)) {
     const el = els.get(s?.id);
     if (el) rendered.set(el, keyOf(s, at));
   });
+}
+
+// A widget's own keys that aren't texts it shows (kindOf leaves out the first ones; its config
+// and id change markup, not a text)
+const NOT_TEXT = new Set([
+  'layout',
+  'layer',
+  'size',
+  'aspect',
+  'motion',
+  'scale',
+  'config',
+  'id',
+  'type',
+]);
+// the [data-edit] types a value is written into as it is (bridge.js patchText). Not 'words'
+// (the hero's name: its words are split and its size follows its longest word), 'rich' (a Text
+// widget's body: the dev server renders it) or 'photo' (its sizes and placement)
+const PATCHED = new Set(['text', 'multiline', 'number']);
+const shownText = (v) => (typeof v === 'string' && v.trim() !== '') || typeof v === 'number';
+
+/**
+ * A text typed in a widget's field, put into its one element instead of rendering its section
+ * again: `edits` ([{ file, ptr, before, after }], the store's) each a text of a widget of
+ * `root`'s file (the page's view, or the footer) that its widget shows in [data-edit] elements
+ * of a plain type, before and after (an emptied one can show a default, or nothing: rendered).
+ * Only when all of them are: each element gets its value (write(el, value)) and the section
+ * counts as rendered from the file as it is now (syncLayout won't render it). Anything else
+ * (a link, config, a bound value, layout, a Text's body, an element not found, a section
+ * already waiting for its render) changes nothing here: false, the section renders as before (G13).
+ */
+export function patchTexts(root, store, edits, write) {
+  const file = root?.dataset.pageFile;
+  const sections = store.current[file]?.sections;
+  if (!file || !Array.isArray(sections) || !edits?.length) return false;
+  if (edits.some((c) => c.file !== file)) return false;
+  const els = sectionsIn(root);
+  const plan = [];
+  const touched = new Map(); // section index -> its edits
+  for (const c of edits) {
+    const m = /^\/sections\/(\d+)\/widgets\/(\d+)\/([^/]+)/.exec(c.ptr);
+    if (!m || NOT_TEXT.has(m[3])) return false;
+    if (!shownText(c.after) || !shownText(c.before)) return false;
+    const at = Number(m[1]);
+    const s = sections[at];
+    const widget = s?.widgets?.[Number(m[2])];
+    const sec = els.get(s?.id);
+    const node = sec && widget && sec.querySelector(`[data-widget="${widget.id}"]`);
+    if (!node || node.closest('[data-sec]') !== sec) return false;
+    const edit = `${file}#${c.ptr}`;
+    const targets = [...node.querySelectorAll('[data-edit]')].filter(
+      (el) => el.dataset.edit === edit,
+    );
+    if (!targets.length || targets.some((el) => !PATCHED.has(el.dataset.editType || 'text')))
+      return false;
+    plan.push([targets, c.after]);
+    if (!touched.has(at)) touched.set(at, []);
+    touched.get(at).push(c);
+  }
+  // each section showed these values before (else it waits for a render already: it gets it)
+  for (const [at, list] of touched) {
+    const was = structuredClone(sections[at]);
+    for (const c of [...list].reverse()) set(was, c.ptr.replace(/^\/sections\/\d+/, ''), c.before);
+    if (rendered.get(els.get(sections[at].id)) !== keyOf(was, at)) return false;
+  }
+  for (const [targets, value] of plan) for (const el of targets) write(el, value);
+  for (const at of touched.keys()) rendered.set(els.get(sections[at].id), keyOf(sections[at], at));
+  return true;
 }
 
 /**

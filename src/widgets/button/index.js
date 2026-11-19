@@ -7,8 +7,8 @@ import { hrefOf } from '../../render/hrefs.js';
 
 /**
  * A button linking somewhere (config.link: a page, an item or a URL; src/render/hrefs.js). Its
- * label is edited in its settings popup only (no widget.ed: never inline in the preview; only a Text
- * widget's content is).
+ * label is edited in its settings popup only (never inline in the preview: only a Text widget's
+ * content is); its widget.ed marks the label so the editor's preview shows it as it is typed.
  */
 export const button = {
   type: 'button',
@@ -27,9 +27,9 @@ export const button = {
     config: { link: { href: '' } },
     motion: { animation: 'fade-in' },
   },
-  render: (s, ctx) => {
+  render: (s, ctx, widget) => {
     const href = hrefOf(ctx, s.config?.link, 'a button');
-    const label = html`<span>${esc(s.label)}</span> <span aria-hidden="true">→</span>`;
+    const label = html`<span${widget?.ed('label') ?? ''}>${esc(s.label)}</span> <span aria-hidden="true">→</span>`;
     return html` <div class="buttonwidget">
       ${href
         ? html`<a class="btn glass" href="${esc(href)}"${extAttrs(href)}>${label}</a>`

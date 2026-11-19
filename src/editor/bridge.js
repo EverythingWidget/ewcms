@@ -4,10 +4,13 @@
  * The site calls window.parent.__siteEditor.connect(api, win) at startup (see
  * src/client/main.js), before it mounts the first page. From then on the editor:
  *  - pushes the edited animations.json into the preview and re-mounts animations,
- *  - re-applies edited text to every [data-edit] element whenever a page mounts,
- *  - Arrange clicks ('arrange'; ui.svelte.js previewClicks): a double click turns a [data-edit] element into an inline editor
- *    until it loses focus (a single click picks its widget: overlay.js); a double-clicked
- *    photo (data-edit-type="photo") or bound value opens its field in the panel. Links,
+ *  - re-applies edited text to every [data-edit] element whenever a page mounts (and after an
+ *    undo, a redo or an edit the targeted patch didn't cover: main.js; a text typed in a
+ *    widget's field is patched into its one element: layout-sync.js patchTexts, patchText),
+ *  - Arrange clicks ('arrange'; ui.svelte.js previewClicks): a double click turns a
+ *    [data-edit-inline] element (a Text widget's body, the only one) into an inline editor
+ *    until it loses focus (a single click picks its widget: overlay.js); any other double-clicked
+ *    text, photo (data-edit-type="photo") or bound value opens its field in the panel. Links,
  *    buttons and forms don't act on clicks (Alt+click does),
  *  - lets you hover/click widgets ([data-widget]) and [data-anim] elements to select them (animate
  *    clicks, 'animate': the innermost one under the pointer); visitor clicks ('visitor'):
@@ -60,8 +63,8 @@ html::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: 99
 html.__ed-arrange [data-edit], html.__ed-arrange [data-bound] { outline-offset: 3px; border-radius: ${T.radiusXs}; pointer-events: auto; }
 html.__ed-arrange [data-edit]:hover { outline: 1px dashed rgb(255 255 255 / .5); }
 html.__ed-arrange [data-bound]:hover { outline: 1px dotted rgb(255 255 255 / .5); }
-html.__ed-arrange [data-edit][contenteditable] { outline: 1.5px solid ${T.accent}; caret-color: ${T.accent}; cursor: text !important; }
-html.__ed-arrange [data-edit].__ed-invalid { outline-color: ${T.error} !important; }
+html.__ed-arrange [data-edit-inline][contenteditable] { outline: 1.5px solid ${T.accent}; caret-color: ${T.accent}; cursor: text !important; }
+html.__ed-arrange [data-edit-inline].__ed-invalid { outline-color: ${T.error} !important; }
 html.__ed-arrange [data-widget], html.__ed-arrange [data-widget] *:not([contenteditable], [contenteditable] *) { cursor: default !important; }
 [data-bound-missing] { opacity: .4; }
 html.__ed-arrange .hero__title { z-index: 5; }
@@ -100,8 +103,8 @@ html.__ed-arrange [contenteditable] .ts__chip[data-unknown] { color: rgb(${T.war
   color: ${T.white}; font: ${T.fsXs}/16px ${T.font}; letter-spacing: .04em; text-align: left;
   white-space: nowrap; text-overflow: ellipsis; pointer-events: none;
 }
-html.__ed-arrange [data-edit-type="rich"][contenteditable] { outline-offset: 6px; }
-html.__ed-arrange [data-edit-type="rich"][contenteditable] a { cursor: text !important; }
+html.__ed-arrange [data-edit-inline][data-edit-type="rich"][contenteditable] { outline-offset: 6px; }
+html.__ed-arrange [data-edit-inline][data-edit-type="rich"][contenteditable] a { cursor: text !important; }
 html.__ed-arrange [data-widget] :is([data-edit], [data-bound]):not(.__ed-invalid) { outline: none !important; }
 `;
 
@@ -294,36 +297,11 @@ export function createBridge({
         if (!force && (el === doc.activeElement || applied.get(el) === value)) continue;
         pending.push([el, value]);
       }
-      // Keep the page-transition label on <main> in sync with the draft content.
-      const view = doc.querySelector('[data-router-view]');
-      if (view?.dataset.curtainEdit) {
-        const { file, ptr } = splitEdit(view.dataset.curtainEdit);
-        const curtainVal = store.get(file, ptr);
-        if (curtainVal !== undefined && curtainVal !== null)
-          view.setAttribute('data-curtain', String(curtainVal));
-      }
+      bridge.applyCurtain();
 
       if (!pending.length) return;
       const run = () => {
-        for (const [el, value] of pending) {
-          applied.set(el, value);
-          if (el.dataset.editType === 'photo') {
-            // a new photo: its URL and, for an R2 photo, its sizes (the sizes attribute stays)
-            const url = photoUrl(value);
-            if (el.getAttribute('src') !== url) {
-              const srcset = photoSrcset(value);
-              if (srcset) el.srcset = srcset;
-              else el.removeAttribute('srcset');
-              el.src = url;
-            }
-          } else if (el.dataset.editType === 'multiline') {
-            const html = escText(value).replace(/\r?\n/g, '<br>');
-            if (el.innerHTML !== html) el.innerHTML = html;
-          } else if (el.dataset.editType === 'words') {
-            const html = words(value);
-            if (el.innerHTML !== html) el.innerHTML = html;
-          } else if (el.textContent !== String(value)) el.textContent = String(value);
-        }
+        for (const [el, value] of pending) writeText(el, value);
       };
       // Without arrange clicks, split-text animations own the DOM: revert, write, re-mount.
       if (!plain && clicks !== 'arrange' && api) {
@@ -331,6 +309,23 @@ export function createBridge({
         run();
         api.unfreeze();
       } else run();
+    },
+
+    /** The page-transition label on <main> in step with the draft content. */
+    applyCurtain() {
+      const view = doc?.querySelector('[data-router-view]');
+      if (!view?.dataset.curtainEdit) return;
+      const { file, ptr } = splitEdit(view.dataset.curtainEdit);
+      const value = store.get(file, ptr);
+      if (value !== undefined && value !== null) view.setAttribute('data-curtain', String(value));
+    },
+
+    /**
+     * One [data-edit] element shows `value` now (the targeted patch: layout-sync.js patchTexts).
+     * Its words and lines as the render writes them (text, multiline, words; a photo's URL).
+     */
+    patchText(el, value) {
+      writeText(el, value);
     },
 
     updateAnimations(cfg, { replay = true } = {}) {
@@ -482,8 +477,30 @@ export function createBridge({
     },
   };
 
+  /** Write `value` into the [data-edit] element `el`, as its type is rendered. */
+  function writeText(el, value) {
+    applied.set(el, value);
+    if (el.dataset.editType === 'photo') {
+      // a new photo: its URL and, for an R2 photo, its sizes (the sizes attribute stays)
+      const url = photoUrl(value);
+      if (el.getAttribute('src') !== url) {
+        const srcset = photoSrcset(value);
+        if (srcset) el.srcset = srcset;
+        else el.removeAttribute('srcset');
+        el.src = url;
+      }
+    } else if (el.dataset.editType === 'multiline') {
+      const html = escText(value).replace(/\r?\n/g, '<br>');
+      if (el.innerHTML !== html) el.innerHTML = html;
+    } else if (el.dataset.editType === 'words') {
+      const html = words(value);
+      if (el.innerHTML !== html) el.innerHTML = html;
+    } else if (el.textContent !== String(value)) el.textContent = String(value);
+  }
+
   /**
-   * Edit a text in place (a double click with arrange clicks): editable until it loses focus,
+   * Edit a text in place (a double click with arrange clicks on a [data-edit-inline] element
+   * that isn't a Text widget's body; none does today): editable until it loses focus,
    * the caret where it was clicked (x, y).
    */
   function startEdit(el, x, y) {
@@ -505,7 +522,7 @@ export function createBridge({
   }
   const endEdits = () => {
     if (rich) finishRich();
-    doc?.querySelectorAll('[data-edit][contenteditable]').forEach(endEdit);
+    doc?.querySelectorAll('[data-edit-inline][contenteditable]').forEach(endEdit);
   };
 
   // ---- the Text widget's editor (rich.js, ../render/text.js)
@@ -572,7 +589,7 @@ export function createBridge({
     // the link's box (its links take no pointer: caretRangeFromPoint can miss and hit the
     // paragraph instead: G12); a first click opens it too, not only once the widget is picked
     const hit = doc.elementFromPoint?.(x, y);
-    const body = hit?.closest?.('[data-edit-type="rich"]');
+    const body = hit?.closest?.('[data-edit-inline][data-edit-type="rich"]');
     if (!body) return null;
     const a = [...body.querySelectorAll('a')].find((el) => {
       const r = el.getBoundingClientRect();
@@ -603,7 +620,7 @@ export function createBridge({
   }
 
   /** A widget's Text body (the element edited in its edit mode), or null. */
-  const richOf = (w) => w?.querySelector('[data-edit-type="rich"]') || null;
+  const richOf = (w) => w?.querySelector('[data-edit-inline][data-edit-type="rich"]') || null;
 
   function startRich(el, x, y) {
     if (rich?.el === el) return;
@@ -913,8 +930,8 @@ export function createBridge({
       true,
     );
 
-    // Arrange clicks: a double click edits a text in place; a photo or a bound value opens its
-    // field in the panel.
+    // Arrange clicks: a double click edits a Text widget's text in place ([data-edit-inline]);
+    // any other text, a photo or a bound value opens its field in the panel.
     doc.addEventListener(
       'dblclick',
       (e) => {
@@ -930,7 +947,8 @@ export function createBridge({
         if (!hit || hit.isContentEditable) return;
         e.preventDefault();
         e.stopPropagation();
-        if (hit.dataset.bound !== undefined || hit.dataset.editType === 'photo') pickField(hit);
+        const inline = hit.dataset.editInline !== undefined && hit.dataset.bound === undefined;
+        if (!inline) pickField(hit);
         else if (hit.dataset.editType === 'rich') startRich(hit, e.clientX, e.clientY);
         else startEdit(hit, e.clientX, e.clientY);
       },
@@ -938,7 +956,7 @@ export function createBridge({
     );
 
     doc.addEventListener('focusin', (e) => {
-      const el = e.target.closest?.('[data-edit]');
+      const el = e.target.closest?.('[data-edit-inline]');
       if (clicks !== 'arrange' || !el) return;
       // Word-split text (hero name) is edited as plain text and re-split on blur.
       if (el.dataset.editType === 'words') {
@@ -961,7 +979,7 @@ export function createBridge({
         if (!rich.hold) finishRich();
         return;
       }
-      const edited = e.target.closest?.('[data-edit][contenteditable]');
+      const edited = e.target.closest?.('[data-edit-inline][contenteditable]');
       if (edited) endEdit(edited);
       const el = e.target.closest?.('[data-edit-type="words"]');
       if (!el) return;
@@ -991,7 +1009,7 @@ export function createBridge({
         emit('rich', richState());
         return;
       }
-      const el = e.target.closest?.('[data-edit]');
+      const el = e.target.closest?.('[data-edit-inline]');
       if (clicks !== 'arrange' || !el) return;
       const value = readValue(el);
       el.classList.toggle('__ed-invalid', value === undefined);
@@ -1012,7 +1030,7 @@ export function createBridge({
           e.stopPropagation();
           return;
         }
-        const el = e.target.closest?.('[contenteditable][data-edit]');
+        const el = e.target.closest?.('[contenteditable][data-edit-inline]');
         if (el) {
           if (e.key === 'Enter' && el.dataset.editType !== 'multiline') {
             e.preventDefault();
@@ -1110,7 +1128,7 @@ export function createBridge({
 
     if (!plaintext) {
       doc.addEventListener('paste', (e) => {
-        if (!e.target.closest?.('[contenteditable][data-edit]')) return;
+        if (!e.target.closest?.('[contenteditable][data-edit-inline]')) return;
         e.preventDefault();
         doc.execCommand('insertText', false, e.clipboardData.getData('text/plain'));
       });

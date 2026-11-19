@@ -49,7 +49,7 @@
  *   item      it needs an item (its source's first): without one it is skipped
  *   render(data, ctx, widget)  its HTML, one root element. data: the widget's values (bound
  *             settings filled in with the item's properties); widget: { id, file, ed, source,
- *             items, item, index, indexOf }: the widget's id, the page file, ed(key or path, type), the editor marker of one
+ *             items, item, index, indexOf }: the widget's id, the page file, ed(key or path, type, { inline }), the editor marker of one
  *             of its settings, and what its source shows (widgetItems, ../layout/source.js)
  */
 import text from './text/index.js';

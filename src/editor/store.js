@@ -10,7 +10,9 @@
  * A change marked `structure` (a section or list item added or removed) has the sections it
  * touched rendered again (in place, main.js syncSections): listeners get { structure: true }
  * for it, and for its undo and redo. (Whether the preview loads again is the files' rule:
- * lib/needs-reload.js.)
+ * lib/needs-reload.js.) A new change also tells its listeners its values ({ edits: [{ file,
+ * ptr, before, after }] }: main.js patches a typed text into the preview with them); an undo,
+ * a redo or anything else has no edits.
  */
 import { get, set, remove } from './lib/pointer.js';
 import { clone, equal, diff, patch } from './lib/diff.js';
@@ -33,9 +35,9 @@ export function createStore() {
     if (!tidied.has(data)) tidied.set(data, omitDefaults(file, data));
     return tidied.get(data);
   };
-  const emit = (files, source, structure = false) => {
+  const emit = (files, source, structure = false, edits = null) => {
     tidied = new WeakMap(); // the files change in place
-    listeners.forEach((fn) => fn({ files: [...new Set(files)], source, structure }));
+    listeners.forEach((fn) => fn({ files: [...new Set(files)], source, structure, edits }));
   };
 
   const write = (c, value) => {
@@ -65,6 +67,7 @@ export function createStore() {
       entry.changes.map((c) => c.file),
       source,
       entry.structure,
+      entry.changes.map(({ file, ptr, before, after }) => ({ file, ptr, before, after })),
     );
   }
 

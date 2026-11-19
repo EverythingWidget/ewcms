@@ -59,7 +59,7 @@ export function splitEdit(edit) {
 }
 
 /**
- * Editor markers (data-edit, data-edit-type, data-section, data-section-kind,
+ * Editor markers (data-edit, data-edit-type, data-edit-inline, data-section, data-section-kind,
  * data-curtain-edit) are only rendered for the dev server, where the editor's preview needs
  * them; the build leaves them out (the public site never reads them). renderRoute sets this
  * for each page it renders (rendering is synchronous).
@@ -72,11 +72,14 @@ export const setEditable = (on) => (editable = !!on);
  *   ed('pages/index.json', ['hero', 'title'])  ->  data-edit="pages/index.json#/hero/title"
  * type: 'text' (single line, default), 'multiline' (multi-line, \n <-> <br>), 'number', or
  * 'words' (single line rendered with words(), e.g. the hero name).
+ * data-edit only says "this element shows that value": the editor puts an edited value in it
+ * (and a double click opens its field). { inline: true } adds data-edit-inline: the element is
+ * edited in place in the preview. Only a Text widget's body is (src/widgets/text).
  * The editor (src/editor) finds these in its preview; '' when not editable (the build).
  */
-export const ed = (file, parts, type = 'text') =>
+export const ed = (file, parts, type = 'text', { inline = false } = {}) =>
   editable
-    ? ` data-edit="${esc(editRef(file, parts))}"${type === 'text' ? '' : ` data-edit-type="${type}"`}`
+    ? ` data-edit="${esc(editRef(file, parts))}"${type === 'text' ? '' : ` data-edit-type="${type}"`}${inline ? ' data-edit-inline' : ''}`
     : '';
 
 /** "Noor Vermeer" -> "noor-vermeer". */

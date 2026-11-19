@@ -326,9 +326,9 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
     top: at === 0 && file !== FOOTER,
     ...shown,
     scopeItems: items,
-    ed: (path, type) => {
+    ed: (path, type, opts) => {
       const value = [path].flat().reduce((v, k) => v?.[k], widget);
-      if (!isParts(value)) return ed(file, parts(path), type);
+      if (!isParts(value)) return ed(file, parts(path), type, opts);
       return editable ? bound(value, path) : '';
     },
   };

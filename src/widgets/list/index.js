@@ -121,11 +121,11 @@ const PHONE_COLUMNS = ['1', '2', '3'];
  */
 function itemEd(file, j, widget) {
   if (!file || j < 0) return () => '';
-  return (path, type) => {
+  return (path, type, opts) => {
     const keys = [path].flat();
     const value = keys.reduce((v, k) => v?.[k], widget);
     const parts = ['sections', 0, 'widgets', j, ...keys];
-    if (!isParts(value)) return ed(file, parts, type);
+    if (!isParts(value)) return ed(file, parts, type, opts);
     if (!editable) return '';
     return ` data-bound="${esc(editRef(file, parts))}"`;
   };

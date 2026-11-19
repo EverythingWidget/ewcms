@@ -85,6 +85,7 @@ import { compile } from './lib/pointer.js';
 import {
   holdScroll,
   markRendered,
+  patchTexts,
   previewFile,
   setPartOpen,
   swapSections,
@@ -954,7 +955,7 @@ function followTemplate() {
 }
 
 let animTimer = 0;
-store.on(({ files, source: src, structure: _structure }) => {
+store.on(({ files, source: src, structure: _structure, edits }) => {
   const page = previewFile(bridge.doc);
   // the files whose sections the preview swaps in place: the page's and the footer's
   const roots = syncRoots(bridge.doc);
@@ -980,6 +981,12 @@ store.on(({ files, source: src, structure: _structure }) => {
   if (src === 'saved') return;
   const textChanged = files.some((f) => f !== ANIMATIONS);
   if ((src === 'undo' || src === 'redo') && bridge.richEditing) bridge.endRich();
+  // a text typed in a widget's field (a button's label, a hero's eyebrow): put into its one
+  // element in the preview, and its section counts as rendered (layout-sync.js patchTexts)
+  const patched =
+    !typed &&
+    !!edits?.length &&
+    roots.some((root) => patchTexts(root, store, edits, bridge.patchText));
   for (const root of roots)
     if (files.includes(root.dataset.pageFile))
       // content or config too (keyOf), not only a flagged structure edit: else the preview
@@ -989,10 +996,14 @@ store.on(({ files, source: src, structure: _structure }) => {
   if (textChanged) {
     pushCurtains();
     const fromPreview = src && src.nodeType === 1;
-    bridge.applyTexts({
-      skip: fromPreview ? src : null,
-      force: ['undo', 'redo', 'rebase', 'restore'].includes(src),
-    });
+    // every [data-edit] of the page looked at again: an undo, a redo, a rebase or anything the
+    // targeted patch didn't cover (a header label, a source's item, a photo)
+    if (patched) bridge.applyCurtain();
+    else
+      bridge.applyTexts({
+        skip: fromPreview ? src : null,
+        force: ['undo', 'redo', 'rebase', 'restore'].includes(src),
+      });
   }
   if (files.includes(ANIMATIONS)) {
     clearTimeout(animTimer);

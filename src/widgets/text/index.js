@@ -59,7 +59,7 @@ export const text = {
           ? ' data-anim="page.intro"'
           : '';
     return html`<div class="text">
-      <div class="text__body" ${widget.ed('body', 'rich')}${names}>${renderBody(body, {
+      <div class="text__body" ${widget.ed('body', 'rich', { inline: true })}${names}>${renderBody(body, {
         value,
         known,
         href: (link) => hrefOf(ctx, link, 'a text link') || '#',

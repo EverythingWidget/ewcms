@@ -206,6 +206,41 @@ test('render: sections are grids, widgets carry their area; off is hidden', () =
   assert.match(renderSections(ctxOf(page), page, F, wide), /--c:116;--s:5;/);
 });
 
+test('render: only a Text widget is edited inline (data-edit-inline); the others only show their values', () => {
+  const list = [
+    section([
+      widget('text'),
+      widget('button', { label: 'Go', config: { link: { href: '/x' } } }),
+      widget('hero', { title: 'Noor', eyebrow: 'Photographer', body: 'Hi' }),
+      widget('form', {
+        title: 'Write',
+        submit: 'Send',
+        fields: [{ name: 'email', label: 'Email' }],
+      }),
+    ]),
+  ];
+  setEditable(true);
+  try {
+    const out = renderSections(ctxOf(page), page, F, list);
+    const inline = [...out.matchAll(/data-edit="([^"]+)"[^>]*?data-edit-inline/g)].map((m) => m[1]);
+    assert.deepEqual(inline, [`${F}#/sections/0/widgets/0/body`]);
+    assert.equal(out.match(/data-edit-inline/g).length, 1);
+    // the button's label: marked, so the editor patches it as it is typed
+    assert.match(
+      out,
+      new RegExp(
+        `<span data-edit="${F.replace(/\//g, '\\/').replace(/\./g, '\\.')}#\\/sections\\/0\\/widgets\\/1\\/label">Go</span>`,
+      ),
+    );
+    for (const key of ['2/title', '2/eyebrow', '2/body', '3/title', '3/submit', '3/fields/0/label'])
+      assert.ok(out.includes(`data-edit="${F}#/sections/0/widgets/${key}"`), key);
+  } finally {
+    setEditable(false);
+  }
+  // the public page: no markers
+  assert.doesNotMatch(renderSections(ctxOf(page), page, F, list), /data-edit/);
+});
+
 test('render: editor markers point into the widgets, only when editable', () => {
   const list = [section([widget('photo'), widget('text')])];
   assert.doesNotMatch(renderSections(ctxOf(page), page, F, list), /data-edit|data-sec|data-widget/);

@@ -753,8 +753,10 @@ export default {
 That's all: the registry (`registerWidgets` in `src/widgets/index.js`) adds it next to the
 built-ins for the prerender, content validation (its `settings` types and `check`), and, through
 `virtual:site-widgets`, the editor: the Add widget modal, the inspector (from `settings`/`config`),
-Motion and the widget/layout toolbars need no code of their own. `widget.ed(key)` makes a field
-editable in place on the preview; `widget.top` is true in the page's first section (load its
+Motion and the widget/layout toolbars need no code of their own. `widget.ed(key)` marks the element
+that shows a field: the editor's preview shows it as it is typed in the widget's settings, and a
+double click there opens that field (only a Text widget's body is edited in place:
+`widget.ed('body', 'rich', { inline: true })`, `data-edit-inline`); `widget.top` is true in the page's first section (load its
 photos at once: `img(ctx, src, { priority: widget.top })`). A bad definition or a built-in's type stops the build/dev
 server with a message. Example and tests: `test/fixtures/site-b`, `test/site-widgets.test.mjs`.
 After editing a widget's `index.js`, restart `npm run dev` (the editor's server endpoints load it once).
@@ -1984,7 +1986,7 @@ for multi-line text (`\n` ⇄ `<br>`), `'number'` for numbers and `'words'` for 
 in each page's `pages/<page>/index.json`, shared copy (nav) in `site.json`, for this reason. The editor only ever writes
 existing JSON files in `content/en/pages/`, `content/en/sources/`, `content/en/strings.json`, the shared files at `content/` and `content/templates/` (the
 content folder: `ewcms.config.mjs`; the folders: `src/render/files.js`); only the pages list (and Address) creates, moves or deletes files, and only page files.
-These editor markers (`data-edit`, `data-edit-type`, `data-sec`, `data-widget`,
+These editor markers (`data-edit`, `data-edit-type`, `data-edit-inline`, `data-sec`, `data-widget`,
 `data-curtain-edit`) are only rendered by the dev server; `npm run build` leaves them out
 (`renderRoute(route, content, { editable })`), which makes the built HTML about 9% smaller.
 
