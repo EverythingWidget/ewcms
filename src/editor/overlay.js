@@ -50,7 +50,7 @@
  * (clicks(), widget, link) every frame, and the section metrics once per drag, so the grid
  * doesn't move under the pointer while the page reflows.
  */
-import { COLS, MAX_MIN_ROWS, MCOLS, makesLoop, ratioOf, sizeOf } from '../render/layout/index.js';
+import { COLS, MCOLS, makesLoop, ratioOf, sizeOf } from '../render/layout/index.js';
 
 /** An Auto widget's height dragged by fewer rows than this: a stray drag, nothing changes. */
 const STRAY_ROWS = 2;
@@ -67,9 +67,10 @@ import {
 } from '../render/layout/geometry.js';
 import { PHONE_MAX } from '../render/layout/grid.js';
 import { clampDelta, hits, selectedIds, toggle } from './multi-select.js';
+import { createOverlayRows } from './overlay-rows.js';
 import { reveal } from './reveal.js';
 import { T } from './ui-tokens.js';
-import { hotWidget, peekSection, selectLink, setAnchor, setSecRows } from './svelte/ui.svelte.js';
+import { hotWidget, peekSection, selectLink, setAnchor } from './svelte/ui.svelte.js';
 import { shownPlace, tagHtml } from './widget-tag.js';
 
 const PHONE_W = PHONE_MAX;
@@ -361,6 +362,12 @@ export function createOverlay({
     box.style.width = `${r.w}px`;
     box.style.height = `${r.h}px`;
   };
+
+  // ---- its parts (overlay-*.js): each a factory given `ctx` (the one state S, never a copy,
+  // and the helpers above); what it gives is added to ctx for the parts after it. None imports
+  // this file.
+  const ctx = { S, ui, tplOpen, isPhone, secOf, widgetEl, flowOf, secKey, kick, onrows };
+  const { minOf, customOf, startRows } = Object.assign(ctx, createOverlayRows(ctx));
 
   /**
    * The grid of the selected (or dragged) widget's section, none without one: rebuilt when that
@@ -1126,81 +1133,6 @@ export function createOverlay({
     restore();
     stop();
     S.drag = null;
-  }
-
-  // ---- a Custom section's rows: its bottom edge dragged
-
-  /** A section's own rows (Custom height; the phone's on the phone), 0 for any other. */
-  function minOf(sec, phone) {
-    return parseInt(sec?.style.getPropertyValue(phone ? '--mminrows' : '--minrows'), 10) || 0;
-  }
-  // custom on the grid shown (the phone's height on the phone: its --mminrows)
-  // (a template's item on the phone: none, its phone rows are its desktop rows halved)
-  const customOf = (sec) =>
-    sec && !sec.hidden && !(tplOpen() && isPhone()) && minOf(sec, isPhone()) ? sec : null;
-
-  function startRows(e) {
-    const sec = customOf(S.hoverSec) || customOf(secOf(widgetEl(ui.widget)));
-    if (!sec || S.drag || S.linking) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const phone = isPhone();
-    const flow = flowOf(sec, phone);
-    // the rows its content needs: down to its lowest widget, as rows.js placed them
-    const content = Math.max(1, ...Object.values(flow).map((a) => a.row + a.rows - 1));
-    const rows = Number(sec.style.getPropertyValue('--frows')) || minOf(sec, phone) || content;
-    const lines = linesOf(sec, S.win);
-    S.doc.documentElement.setAttribute('data-flow-hold', '');
-    S.sizing = {
-      sec,
-      phone,
-      content,
-      from: rows,
-      rows,
-      y: e.clientY,
-      step: lines.row + lines.rowGap,
-      saved: [sec.style.cssText, phone ? '--mminrows' : '--minrows'],
-      max: phone ? Math.ceil(MAX_MIN_ROWS / 2) : MAX_MIN_ROWS,
-    };
-    setSecRows({ id: secKey(sec), rows, phone });
-    S.win.addEventListener('pointermove', moveRows, true);
-    S.win.addEventListener('pointerup', endRows, true);
-    S.win.addEventListener('keydown', cancelRows, true);
-    kick();
-  }
-
-  function moveRows(e) {
-    const s = S.sizing;
-    const n = Math.min(s.max, Math.max(s.content, Math.round(s.from + (e.clientY - s.y) / s.step)));
-    if (n === s.rows) return;
-    s.rows = n;
-    s.sec.style.setProperty('--frows', n);
-    s.sec.style.setProperty(s.saved[1], n);
-    setSecRows({ id: secKey(s.sec), rows: n, phone: s.phone });
-  }
-
-  function stopRows() {
-    S.doc.documentElement.removeAttribute('data-flow-hold');
-    S.win.removeEventListener('pointermove', moveRows, true);
-    S.win.removeEventListener('pointerup', endRows, true);
-    S.win.removeEventListener('keydown', cancelRows, true);
-    S.sizing = null;
-    setSecRows(null);
-  }
-
-  function endRows() {
-    const { sec, rows, from, phone } = S.sizing;
-    if (rows === from) sec.style.cssText = S.sizing.saved[0];
-    stopRows();
-    if (rows !== from) onrows(secKey(sec), rows, { phone });
-  }
-
-  function cancelRows(e) {
-    if (e.key !== 'Escape') return;
-    e.preventDefault();
-    e.stopPropagation();
-    S.sizing.sec.style.cssText = S.sizing.saved[0];
-    stopRows();
   }
 
   // ---- links: a drag from a widget's top circle to another widget's bottom circle

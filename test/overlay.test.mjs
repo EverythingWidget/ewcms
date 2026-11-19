@@ -1,7 +1,7 @@
 // The preview overlay: boxes around what shows, the link layer, the edge handles and drags.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { boxOf } from '../src/render/layout/geometry.js';
 import { createStore } from '../src/editor/store.js';
 import { addSection, placeWidget } from '../src/editor/layout-ops.js';
@@ -155,7 +155,10 @@ test("one draw loop: the preview's boxes are drawn in the overlay's frame, its o
     o,
     /function frame\(\) \{\s*S\.raf = 0;\s*if \(!S\.root\?\.isConnected\) return;\s*const more = draw\(\);\s*if \(S\.due\) layout\(\);\s*if \(more \|\| S\.due\) S\.raf = S\.win\.requestAnimationFrame\(frame\);/,
   );
-  assert.match(o, /function kick\(\) \{\s*S\.idleUntil = now\(\) \+ IDLE;\s*S\.due = true;\s*wake\(\);/);
+  assert.match(
+    o,
+    /function kick\(\) \{\s*S\.idleUntil = now\(\) \+ IDLE;\s*S\.due = true;\s*wake\(\);/,
+  );
   assert.match(
     o,
     /S\.due =\s*!!shown\(\) &&\s*!!\(\s*S\.drag \|\|\s*S\.group \|\|\s*S\.boxing \|\|\s*S\.sizing \|\|\s*S\.linking \|\|\s*S\.anims > 0 \|\|\s*now\(\) < S\.idleUntil\s*\);/,
@@ -169,4 +172,27 @@ test("one draw loop: the preview's boxes are drawn in the overlay's frame, its o
   const m = src('main.js');
   assert.match(m, /wake: \(\) => overlay\.wake\(\),/);
   assert.match(m, /draw: \(\) => bridge\.drawBoxes\(\),/);
+});
+
+test("the overlay's parts (overlay-*.js): factories over its one state, none imports overlay.js", () => {
+  const parts = readdirSync(new URL('../src/editor/', import.meta.url)).filter((n) =>
+    /^overlay-[\w-]+\.js$/.test(n),
+  );
+  assert.ok(parts.length);
+  const o = src('overlay.js');
+  assert.match(o, /const S = \{/);
+  for (const f of parts) {
+    const p = src(f);
+    const name = `createOverlay${f.slice(8, -3).replace(/(^|-)(\w)/g, (_, _d, c) => c.toUpperCase())}`;
+    assert.match(p, new RegExp(`export function ${name}\\(ctx\\) \\{`), f);
+    assert.match(o, new RegExp(`import \\{ ${name} \\} from '\\./${f.replace('.', '\\.')}';`), f);
+    assert.match(o, new RegExp(`Object\\.assign\\(ctx, ${name}\\(ctx\\)\\)`), f);
+    // no import of the overlay (no cycle), no state of its own beside S (never a copy)
+    assert.doesNotMatch(p, /from '\.\/overlay(-[\w-]+)?\.js'/, f);
+    assert.doesNotMatch(
+      p,
+      /\b(let|const) (S|doc|win|root|els|drag|group|boxing|sizing|linking)\b/,
+      f,
+    );
+  }
 });

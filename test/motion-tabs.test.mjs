@@ -1,7 +1,7 @@
 // Pages | Site Settings, a page's Sections | Motion | SEO, and the site's default animation timing.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { checkContent } from '../src/render/validate.js';
 import { DEFAULT_TIMING, defaultsProblems } from '../src/render/layout/motion.js';
 
@@ -81,10 +81,15 @@ test('URL tabs are ui.panel: pages, settings; clicks: arrange, animate, visitor'
   );
   // ui.mode is written only through setMode (ui.svelte.js); setPanel routes another
   // panel than Pages through setMode('browse'); never a second flag beside it
+  // (the overlay and its parts: overlay-*.js)
+  const overlays = readdirSync(new URL('../src/editor/', import.meta.url))
+    .filter((n) => /^overlay(-[\w-]+)?\.js$/.test(n))
+    .map((n) => `editor/${n}`);
+  assert.ok(overlays.length > 1, 'the overlay and its parts');
   for (const f of [
     'editor/main.js',
     'editor/preview-runtime.js',
-    'editor/overlay.js',
+    ...overlays,
     'editor/svelte/App.svelte',
   ])
     assert.doesNotMatch(read(f), /lastEdit|previewMode|pagesWin\.open/, f);

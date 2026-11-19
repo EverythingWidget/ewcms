@@ -47,7 +47,7 @@ test("the overlay arranges an open template's item: its own [data-tw] widgets, n
   // no section of its own to pick: a click on its empty grid drops the selection
   assert.match(ov, /if \(tplOpen\(\)\) onpick\(null\);/);
   // its phone rows are its desktop rows halved: no bottom edge on the phone
-  assert.match(ov, /!\(tplOpen\(\) && isPhone\(\)\)/);
+  assert.match(read('src/editor/overlay-rows.js'), /!\(tplOpen\(\) && isPhone\(\)\)/);
   // the writes: main.js finds the widget in the template's file (/sections/0)
   assert.match(read('src/editor/main.js'), /ui\.target\?\.kind === 'item-template'\s+\? 0/);
 });

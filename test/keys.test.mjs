@@ -2,7 +2,7 @@
 // and the preview's forwarded keys go through one handler; no other file listens for them.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -57,9 +57,13 @@ test('keys: one handler, in the editor window and for the preview (its forwarded
   assert.doesNotMatch(main, /function selectionKey|const trackMod|overlay\.deleteLink\(\)/);
   const app = src('svelte/App.svelte');
   assert.doesNotMatch(app, /function onKey|onkeydown=|bridge\.on\('key'/);
-  const ov = src('overlay.js');
-  assert.doesNotMatch(ov, /trackMod|function onkeydown|addEventListener\('keyup'/);
-  assert.doesNotMatch(ov, /setMod/);
+  // (the overlay and its parts: overlay-*.js)
+  for (const f of readdirSync(new URL('../src/editor/', import.meta.url)).filter((n) =>
+    /^overlay(-[\w-]+)?\.js$/.test(n),
+  )) {
+    assert.doesNotMatch(src(f), /trackMod|function onkeydown|addEventListener\('keyup'/, f);
+    assert.doesNotMatch(src(f), /setMod/, f);
+  }
   // preview-edit.js attach() forwards what keys.js calls a shortcut
   assert.match(src('preview-edit.js'), /import \{ isShortcut \} from '\.\/keys\.js';/);
   for (const f of ['preview-runtime.js', 'preview-edit.js', 'preview-pointer.js'])
