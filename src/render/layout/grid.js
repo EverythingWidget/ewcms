@@ -126,7 +126,13 @@ export function phoneStack(widgets) {
  * place in their default stack (phoneStack); else its desktop area halved.
  */
 export function phoneAreaOf(widget, widgets) {
-  if (hasPhoneArea(phoneOf(widget))) return placeOf(phoneOf(widget), MCOLS);
+  if (hasPhoneArea(phoneOf(widget))) {
+    const m = placeOf(phoneOf(widget), MCOLS);
+    // a Rows / Aspect widget's phone area kept from when it was Auto (no rows): its rows derived
+    return storesRows(widget) && !isRows(phoneOf(widget).rows)
+      ? { ...m, rows: phoneRowsFor(widget, m.span) }
+      : m;
+  }
   const s = widgets && phoneStack(widgets).get(widget?.id);
   return s ? s.area : halfArea(baseOf(widget));
 }
@@ -147,6 +153,36 @@ export const phoneOf = (widget) =>
   isObject(widget?.layout?.phone) ? widget.layout.phone : undefined;
 /** Does a widget store its rows (its height isn't its content's)? */
 export const storesRows = (widget) => widget?.size === 'aspect' || widget?.size === 'rows';
+
+const isRows = (v) => Number.isInteger(v) && v >= 1;
+
+/**
+ * The phone rows of a Rows / Aspect widget whose phone area has none (it was Auto when it got
+ * that area): a Rows widget's desktop box at its phone width `span` (phoneStack's, there at the
+ * full 60), an Aspect widget's desktop rows halved (its ratio sets its height anyway).
+ */
+export function phoneRowsFor(widget, span = MCOLS) {
+  const p = placeOf(baseOf(widget));
+  return widget?.size === 'rows'
+    ? Math.max(1, Math.round((p.rows * span) / p.span))
+    : halfArea(p).rows;
+}
+
+/**
+ * A widget's stored rows made whole again where its size needs them (Rows / Aspect): its base
+ * rows (from 1), and its phone area's when it has one (phoneRowsFor). A widget switched from
+ * Auto to Rows kept a phone area without rows, and the page failed its check ("layout.phone.rows
+ * must be a whole number from 1"). Rows that aren't whole numbers from 1 are rounded or derived.
+ */
+export function fitRows(widget) {
+  if (!storesRows(widget) || !isObject(widget?.layout)) return widget;
+  const b = baseOf(widget);
+  if (!isRows(b.rows)) setBase(widget, { rows: Math.max(1, Math.round(Number(b.rows)) || 1) });
+  const m = phoneOf(widget);
+  if (hasPhoneArea(m) && !isRows(m.rows))
+    setPhone(widget, { rows: phoneRowsFor(widget, placeOf(m, MCOLS).span) });
+  return widget;
+}
 
 function tidy(widget, o) {
   const next = { ...o };

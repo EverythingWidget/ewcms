@@ -332,8 +332,11 @@ function checkWidgetLayout(widget) {
     const res = [];
     const extra = Object.keys(o).filter((k) => !AREA_KEYS.includes(k) && k !== 'link');
     if (extra.length) res.push(`"${key}.${extra[0]}" must be left out (area and link only)`);
+    // a phone area may leave its rows out (it was Auto when it got the area): derived from the
+    // desktop's (grid.js phoneRowsFor); 0, a fraction or not a number is still refused
+    const need = rows && (whole || o.rows !== undefined);
     if (whole || AREA_KEYS.some((k) => o[k] !== undefined))
-      res.push(...checkArea(o, key, cols, rows, whole));
+      res.push(...checkArea(o, key, cols, need, whole));
     return res;
   };
   out.push(...part(l.base, 'layout.base', COLS, true));

@@ -71,6 +71,7 @@ import { contentPath, FOOTER } from '../files.js';
 export {
   COLS,
   MCOLS,
+  fitRows,
   halfArea,
   hasPhoneArea,
   phoneAreaOf,

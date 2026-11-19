@@ -547,7 +547,10 @@ every section is a grid of **widgets** (`src/render/layout/`):
 "phone"?: { …the same keys… } | null }`. `base`: its area on the 120-column grid
   (first column 1–120, columns, first row; without a layout it is full width in row 1), and its
   `link`. `phone`: only what changes on phones, over what it would show there (its
-  base area halved, its base link with the gap halved); `null`: hidden on phones.
+  base area halved, its base link with the gap halved); `null`: hidden on phones. A Rows or
+  Aspect widget's phone area may leave its `rows` out (it got the area while it was Auto): they
+  are its desktop box at its phone width (Rows) or its desktop rows halved (Aspect); the editor
+  writes them whenever it writes the section.
   The same rule as hero photos (`x/y/w` plus `phone`).
 - **The navbar** (v0.1.19): a page's first section starts at the very top of the page (its
   background and preset height run behind the fixed header), but its grid starts below it: row 1

@@ -11,6 +11,7 @@ import {
   COLS,
   MCOLS,
   HEIGHTS,
+  fitRows,
   minRowsOf,
   phoneMinRowsOf,
   phoneHeightOf,
@@ -99,6 +100,8 @@ function settleLinks(section) {
  * so none are stored): no new render. key: typing in one field (a number) coalesces into one undo step (store.js).
  */
 const writeSection = (store, file, at, section, key) => {
+  // a Rows / Aspect widget's rows whole numbers from 1, its phone area's too (grid.js fitRows)
+  for (const widget of section.widgets || []) fitRows(widget);
   settleLinks(section);
   return store.set(file, `/sections/${at}`, section, { source: 'panel', key });
 };

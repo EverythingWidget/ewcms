@@ -9,6 +9,7 @@ import {
   anchorOf,
   widgetClass,
   widgetVars,
+  fitRows,
   halfArea,
   phoneRowsOf,
   nameProblems,
@@ -415,4 +416,116 @@ test('layout: phone null hides a widget on phones; no stored grid; auto widgets 
   assert.equal(store.current[F].sections[0].widgets[0].layout.base.rows, 7);
   setWidget(store, F, 0, 0, { size: undefined });
   assert.ok(!('rows' in store.current[F].sections[0].widgets[0].layout.base));
+});
+
+// the Button in Eeliya's report: Auto with a phone area of its own (no rows: an auto widget's
+// are measured), then Rows. Its phone area kept no rows, the page failed its check
+// ('"layout.phone.rows" must be a whole number from 1') and every preview render of it failed:
+// a Text pick (Wrap) never showed
+test('auto to Rows: a phone area of its own gets its rows; the page passes its check', () => {
+  const button = (more = {}) => ({
+    id: 'w-ab4e',
+    type: 'button',
+    label: 'Email me',
+    layout: { base: { col: 60, span: 12, row: 1 }, phone: { col: 1, span: 20, row: 1 } },
+    ...more,
+  });
+  const page = (widget) => ({ version: 1, kind: 'page', id: 'pg-t090', sections: [sec([widget])] });
+  const load = (widget) => {
+    const store = createStore();
+    store.load({ [F]: page(widget) });
+    return { store, widget: () => store.current[F].sections[0].widgets[0] };
+  };
+  // the size pick (Layout tab's Rows, the tag's Auto toggle)
+  let s = load(button());
+  setWidget(s.store, F, 0, 0, { size: 'rows', rows: 7 });
+  assert.deepEqual(s.widget().layout.base, { col: 60, span: 12, row: 1, rows: 7 });
+  // its desktop box at its phone width: 7 rows x 20 / 12 columns
+  assert.deepEqual(s.widget().layout.phone, { col: 1, span: 20, row: 1, rows: 12 });
+  assert.deepEqual(checkContent(F, s.store.current[F]), []);
+  // Aspect: the desktop rows halved
+  s = load(button());
+  setWidget(s.store, F, 0, 0, { size: 'aspect', aspect: '3:1', rows: 7 });
+  assert.equal(s.widget().layout.phone.rows, 4);
+  assert.deepEqual(checkContent(F, s.store.current[F]), []);
+  // its height dragged on the desktop (placeWidget's size 'rows': Auto height off)
+  s = load(button());
+  placeWidget(s.store, F, 0, 0, { col: 60, span: 27, row: 1, rows: 11 }, undefined, {
+    size: 'rows',
+  });
+  assert.deepEqual(s.widget().layout.phone, { col: 1, span: 20, row: 1, rows: 8 });
+  assert.deepEqual(checkContent(F, s.store.current[F]), []);
+  // a link-only phone layout stays link-only (no area: it has nothing to size)
+  const store = createStore();
+  const lead = { id: 'w-lead', type: 'text', layout: { base: { col: 1, span: 12, row: 1 } } };
+  const linked = button({
+    layout: { base: { col: 1, span: 12, row: 9 }, phone: { link: { to: 'w-lead', gap: 2 } } },
+  });
+  store.load({ [F]: { ...page(lead), sections: [sec([lead, linked])] } });
+  setWidget(store, F, 0, 1, { size: 'rows', rows: 3 });
+  assert.deepEqual(store.current[F].sections[0].widgets[1].layout.phone, {
+    link: { to: 'w-lead', gap: 2 },
+  });
+  assert.deepEqual(checkContent(F, store.current[F]), []);
+  // back to Auto: no rows anywhere
+  s = load(
+    button({
+      size: 'rows',
+      layout: {
+        base: { col: 60, span: 12, row: 1, rows: 7 },
+        phone: { col: 1, span: 20, row: 1, rows: 12 },
+      },
+    }),
+  );
+  setWidget(s.store, F, 0, 0, { size: undefined });
+  assert.ok(!('rows' in s.widget().layout.base) && !('rows' in s.widget().layout.phone));
+});
+
+test('fitRows: rows that are not whole numbers from 1 are made whole; Auto keeps none', () => {
+  const w = (size, base, phone) => ({ id: 'w-aaaa', type: 'text', size, layout: { base, phone } });
+  const at = { col: 1, span: 30, row: 1 };
+  const m = { col: 1, span: 60, row: 1 };
+  for (const bad of [0, -2, 2.5, NaN, null, undefined, '3']) {
+    const x = fitRows(w('rows', { ...at, rows: 6 }, { ...m, rows: bad }));
+    assert.equal(x.layout.phone.rows, 12, String(bad)); // 6 x 60 / 30
+    const y = fitRows(w('rows', { ...at, rows: bad }, { ...m }));
+    assert.ok(Number.isInteger(y.layout.base.rows) && y.layout.base.rows >= 1, String(bad));
+  }
+  assert.equal(fitRows(w('rows', { ...at, rows: 6 }, { ...m, rows: 3 })).layout.phone.rows, 3);
+  assert.equal(fitRows(w('rows', { ...at, rows: 6.6 }, { ...m })).layout.base.rows, 7);
+  assert.ok(!('rows' in fitRows(w(undefined, { ...at }, { ...m })).layout.phone));
+});
+
+test('a phone area that leaves its rows out: derived (renders), still checked when given', () => {
+  const widget = (phone) => ({
+    id: 'w-aaaa',
+    type: 'text',
+    size: 'rows',
+    layout: { base: { col: 1, span: 30, row: 1, rows: 6 }, phone },
+  });
+  const one = (phone) =>
+    checkContent(F, { version: 1, kind: 'page', id: 'pg-t091', sections: [sec([widget(phone)])] });
+  // saved before the fix: left out is fine, its rows are its desktop box at its phone width
+  assert.deepEqual(one({ col: 1, span: 30, row: 1 }), []);
+  assert.deepEqual(phoneAreaOf(widget({ col: 1, span: 30, row: 2 })), {
+    col: 1,
+    span: 30,
+    row: 2,
+    rows: 6,
+  });
+  assert.match(widgetVars(widget({ col: 1, span: 30, row: 2 })), /--mrs:6$/);
+  for (const bad of [0, 1.5, 'x'])
+    assert.deepEqual(one({ col: 1, span: 30, row: 1, rows: bad }), [
+      'section 1, widget 1 (Text): "layout.phone.rows" must be a whole number from 1',
+    ]);
+  // the desktop's rows are still needed
+  assert.deepEqual(
+    checkContent(F, {
+      version: 1,
+      kind: 'page',
+      id: 'pg-t092',
+      sections: [sec([{ ...widget(), layout: { base: { col: 1, span: 30, row: 1 } } }])],
+    }),
+    ['section 1, widget 1 (Text): "layout.base.rows" must be a whole number from 1'],
+  );
 });
