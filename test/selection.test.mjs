@@ -112,7 +112,7 @@ test('the preview pick and hover live in ui only: the bridge reports them, keeps
   assert.match(m, /bridge\.on\('hover', hoverElement\)/);
   assert.match(m, /bridge\.clicksChanged\(\);\s*clearPick\(\);/);
   // what a click does: previewClicks() only, read by the bridge (no copy of its own)
-  assert.match(m, /labelFor: \(p\) => labelFor\(store, p\),[\s\S]{0,80}clicks: previewClicks,\s*\}\);/);
+  assert.match(m, /labelFor: \(p\) => labelFor\(store, p\),[\s\S]{0,80}clicks: previewClicks,/);
   assert.match(b, /clicks = \(\) => 'visitor',/);
   assert.doesNotMatch(b, /let clicks|clicks = next|setClickMode|\bclicks (===|!==)/);
   const u = src('svelte/ui.svelte.js');

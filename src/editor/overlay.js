@@ -178,6 +178,7 @@ export function createOverlay({
   onsize = () => {},
   widgetOf,
   secNameOf = () => '',
+  draw = () => false,
 }) {
   let doc = null;
   let win = null;
@@ -188,10 +189,16 @@ export function createOverlay({
   let idleUntil = 0;
   let anims = 0; // the preview's running transitions and animations
   let frames = 0; // frames drawn (the tests count them)
+  let due = false; // the overlay's own drawing runs this frame (kick(), or something moves)
   const now = () => performance.now();
+  /** The next frame asked for (once). */
+  function wake() {
+    if (!raf && win && root) raf = win.requestAnimationFrame(frame);
+  }
   function kick() {
     idleUntil = now() + IDLE;
-    if (!raf && win && root) raf = win.requestAnimationFrame(frame);
+    due = true;
+    wake();
   }
   let drag = null;
   let linking = null;
@@ -530,9 +537,19 @@ export function createOverlay({
     if (els.tag.textContent !== name) els.tag.textContent = name;
   }
 
+  /**
+   * The editor's one draw loop: the preview's boxes (draw(): preview-runtime.js drawBoxes) every
+   * frame they ask for, the overlay's own (layout()) only while it is due; then it idles.
+   */
   function frame() {
     raf = 0;
     if (!root?.isConnected) return;
+    const more = draw();
+    if (due) layout();
+    if (more || due) raf = win.requestAnimationFrame(frame);
+  }
+
+  function layout() {
     drawGrids();
     drawLinks();
     // the widget's section card hovered (ui.peek from the panel): only its section shows
@@ -604,8 +621,9 @@ export function createOverlay({
     frames++;
     // again only while something moves: a drag, a resize, a box, a link drawn, a running
     // transition or animation, or for a moment after the page, the pointer or a key changed
-    if (shown() && (drag || group || boxing || sizing || linking || anims > 0 || now() < idleUntil))
-      raf = win.requestAnimationFrame(frame);
+    due =
+      !!shown() &&
+      !!(drag || group || boxing || sizing || linking || anims > 0 || now() < idleUntil);
   }
 
   // ---- multi-select (multi-select.js): two or more widgets, one section, all alike
@@ -1394,6 +1412,7 @@ export function createOverlay({
     attach(siteWin) {
       // a frame asked of the document before (a reload) never comes: the loop starts again
       raf = 0;
+      due = false;
       win = siteWin;
       doc = siteWin.document;
       gridKey = '';
@@ -1450,6 +1469,8 @@ export function createOverlay({
     deleteLink,
     /** The loop run for a moment (the editor's panel changed what shows: main.js). */
     kick,
+    /** The next frame drawn (the preview's boxes asked for it: preview-runtime.js). */
+    wake,
     /** Frames drawn so far (the loop idles: tests). */
     get frames() {
       return frames;

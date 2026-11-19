@@ -147,3 +147,26 @@ test("a press on a widget's body hides its handles and the toolbar; a resize kee
   // a group move is a body move too
   assert.match(o, /setAttribute\('data-flow-hold', 'move'\)/);
 });
+
+test("one draw loop: the preview's boxes are drawn in the overlay's frame, its own drawing idles", () => {
+  const o = src('overlay.js');
+  // every frame: the boxes (draw()) while they ask for one, the overlay's own only while due
+  assert.match(
+    o,
+    /function frame\(\) \{\s*raf = 0;\s*if \(!root\?\.isConnected\) return;\s*const more = draw\(\);\s*if \(due\) layout\(\);\s*if \(more \|\| due\) raf = win\.requestAnimationFrame\(frame\);/,
+  );
+  assert.match(o, /function kick\(\) \{\s*idleUntil = now\(\) \+ IDLE;\s*due = true;\s*wake\(\);/);
+  assert.match(
+    o,
+    /due =\s*!!shown\(\) &&\s*!!\(drag \|\| group \|\| boxing \|\| sizing \|\| linking \|\| anims > 0 \|\| now\(\) < idleUntil\);/,
+  );
+  // the preview runtime asks for frames (wake), it runs no loop of its own
+  const b = src('preview-runtime.js');
+  assert.doesNotMatch(b, /function loop\(|let raf\b/);
+  assert.match(b, /function drawBoxes\(\) \{\s*if \(!boxes\?\.hover\.isConnected\) return false;/);
+  assert.match(b, /return clicks\(\) !== 'visitor';\s*\}/);
+  assert.equal((b.match(/\bwake\(\);/g) || []).length, 2); // a page mounted, the clicks changed
+  const m = src('main.js');
+  assert.match(m, /wake: \(\) => overlay\.wake\(\),/);
+  assert.match(m, /draw: \(\) => bridge\.drawBoxes\(\),/);
+});

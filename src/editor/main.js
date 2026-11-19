@@ -137,12 +137,14 @@ const bridge = createBridge({
   picked: () => ui.picked,
   hovered: () => ui.hoverEl,
   clicks: previewClicks,
+  wake: () => overlay.wake(), // its boxes drawn in the overlay's frame (one draw loop)
 });
 // the preview's layout overlay (arranging in the Sections tab, Grid; overlay.js): widgetAt and
 // placeWidget below
 const overlay = createOverlay({
   clicks: previewClicks,
   ui,
+  draw: () => bridge.drawBoxes(), // the preview's hover and selected boxes, in its frame
   onpick(id) {
     selectWidgets(id ? [id] : []);
   },
@@ -215,8 +217,6 @@ const overlay = createOverlay({
     return (typeof name === 'string' && name.trim()) || `Section ${at + 1}`;
   },
 });
-// the panels change what the overlay shows (a row picked or hovered, a key): its loop runs
-// for a moment, then idles again
 // the preview's clicks, double clicks and presses, to the editing and the overlay (in that order)
 const pointer = createPointer({
   bridge,
@@ -225,6 +225,8 @@ const pointer = createPointer({
   hovered: () => ui.hoverEl,
   widget: () => ui.widget,
 });
+// the panels change what the overlay shows (a row picked or hovered, a key): its loop runs
+// for a moment, then idles again
 for (const t of ['pointerdown', 'pointermove', 'pointerup', 'keydown', 'keyup', 'input', 'wheel'])
   document.addEventListener(t, () => overlay.kick(), { capture: true, passive: true });
 

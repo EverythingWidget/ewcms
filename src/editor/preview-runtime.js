@@ -100,6 +100,7 @@ export function createBridge({
   picked = () => null,
   hovered = () => null,
   clicks = () => 'visitor',
+  wake = () => {},
 }) {
   const handlers = {
     connect: [],
@@ -118,8 +119,7 @@ export function createBridge({
   let api = null;
   let win = null;
   let doc = null;
-  let boxes = null;
-  let raf = 0;
+  let boxes = null; // the hover and selected boxes (animate clicks; drawn: drawBoxes)
   let applied = new WeakMap(); // element -> value it currently shows
   let restore = null; // after a reload(): puts scroll and selection back once mounted
   // editing in place (a Text widget's body; preview-edit.js)
@@ -132,6 +132,8 @@ export function createBridge({
   });
 
   const bridge = {
+    /** The hover and selected boxes drawn (the overlay's frame: overlay.js); true: again. */
+    drawBoxes: () => drawBoxes(),
     get api() {
       return api;
     },
@@ -213,7 +215,7 @@ export function createBridge({
         else api.unfreeze();
       }
       if (clicks() !== 'arrange') edit.endEdits();
-      loop();
+      wake();
     },
 
     /** Unique [data-edit] fields on the current page, in document order. */
@@ -429,25 +431,24 @@ export function createBridge({
     if (box.firstChild.textContent !== label) box.firstChild.textContent = label;
   }
 
-  function loop() {
-    if (raf || !boxes) return;
-    const tick = () => {
-      raf = 0;
-      if (!boxes?.hover.isConnected) return;
-      const selected = picked();
-      const hoverEl = hovered();
-      const sameAsSel = selected && hoverEl === selected.el;
-      // a text in a widget (arrange clicks): the overlay's frame on the widget is its one border
-      const own = (el) => (clicks() === 'arrange' && el?.closest?.('[data-widget]') ? null : el);
-      placeBox(
-        boxes.hover,
-        sameAsSel ? null : own(hoverEl),
-        clicks() === 'arrange' ? 'text' : 'anim',
-      );
-      placeBox(boxes.sel, own(selected?.el), selected?.kind);
-      if (clicks() !== 'visitor') raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
+  /**
+   * The hover and selected boxes placed on their elements: in the overlay's frame (its one
+   * draw loop: overlay.js), every frame while the preview takes clicks; false: no more.
+   */
+  function drawBoxes() {
+    if (!boxes?.hover.isConnected) return false;
+    const selected = picked();
+    const hoverEl = hovered();
+    const sameAsSel = selected && hoverEl === selected.el;
+    // a text in a widget (arrange clicks): the overlay's frame on the widget is its one border
+    const own = (el) => (clicks() === 'arrange' && el?.closest?.('[data-widget]') ? null : el);
+    placeBox(
+      boxes.hover,
+      sameAsSel ? null : own(hoverEl),
+      clicks() === 'arrange' ? 'text' : 'anim',
+    );
+    placeBox(boxes.sel, own(selected?.el), selected?.kind);
+    return clicks() !== 'visitor';
   }
 
   function attachListeners() {
@@ -476,7 +477,6 @@ export function createBridge({
       doc = siteWin.document;
       edit.connect(doc, win);
       boxes = null;
-      raf = 0;
       api.setAnimations(store.current[ANIMATIONS]);
       if (clicks() === 'arrange') api.freeze();
       api.hooks.beforeMount.add(() => bridge.applyTexts({ force: true, plain: true }));
@@ -487,7 +487,7 @@ export function createBridge({
         emit('navigate', win.location.pathname);
         restore?.();
         restore = null;
-        loop();
+        wake();
       });
       attachListeners();
       emit('connect', api);
