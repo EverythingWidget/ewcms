@@ -40,6 +40,7 @@ export function createOverlayLinks(ctx) {
     noSelect,
     kick,
     onlink,
+    escKeys,
   } = ctx;
 
   /** A link's line from a leader's bottom circle to a follower's top circle (page px). */
@@ -199,7 +200,7 @@ export function createOverlayLinks(ctx) {
     noSelect(true);
     S.win.addEventListener('pointermove', moveLink, true);
     S.win.addEventListener('pointerup', endLink, true);
-    S.win.addEventListener('keydown', cancelLink, true);
+    escKeys(cancelLink, true);
     kick();
   }
 
@@ -254,7 +255,7 @@ export function createOverlayLinks(ctx) {
     noSelect(false);
     S.win.removeEventListener('pointermove', moveLink, true);
     S.win.removeEventListener('pointerup', endLink, true);
-    S.win.removeEventListener('keydown', cancelLink, true);
+    escKeys(cancelLink, false);
     S.els.targets.replaceChildren();
     S.linking = null;
   }

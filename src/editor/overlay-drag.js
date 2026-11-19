@@ -34,6 +34,7 @@ export function createOverlayDrag(ctx) {
     noSelect,
     onplace,
     onpick,
+    escKeys,
   } = ctx;
 
   /** A drag of widget `el`: move (h empty) or a resize by handle `h`. */
@@ -96,7 +97,7 @@ export function createOverlayDrag(ctx) {
     if (!h) S.els.sel.classList.add('is-moving');
     S.win.addEventListener('pointermove', move, true);
     S.win.addEventListener('pointerup', end, true);
-    S.win.addEventListener('keydown', cancel, true);
+    escKeys(cancel, true);
   }
 
   /**
@@ -220,7 +221,7 @@ export function createOverlayDrag(ctx) {
     S.doc.documentElement.removeAttribute('data-flow-hold');
     S.win.removeEventListener('pointermove', move, true);
     S.win.removeEventListener('pointerup', end, true);
-    S.win.removeEventListener('keydown', cancel, true);
+    escKeys(cancel, false);
     S.els.sel.classList.remove('is-dragging', 'is-moving');
   }
 

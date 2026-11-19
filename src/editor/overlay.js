@@ -216,6 +216,17 @@ export function createOverlay({
     S.due = true;
     wake();
   }
+  // the editor's own window (the overlay runs in it; none outside a browser: the tests)
+  const editorWin = typeof window === 'undefined' ? null : window;
+  /**
+   * A gesture's Esc handler `fn` on (or off): heard in the preview's window and the editor's,
+   * capture, wherever the focus is (a press on a circle or a section's edge leaves it in the
+   * editor). It stops the key, so keys.js never sees it: the gesture ends, the selection stays.
+   */
+  function escKeys(fn, on) {
+    for (const w of new Set([S.win, editorWin]))
+      w?.[on ? 'addEventListener' : 'removeEventListener']('keydown', fn, true);
+  }
   let tagShown = ''; // the tag's HTML now (set only when it changes)
   let gridKey = '';
 
@@ -381,6 +392,7 @@ export function createOverlay({
     place,
     noSelect,
     kick,
+    escKeys,
     onpick,
     onplace,
     onrows,

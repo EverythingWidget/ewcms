@@ -120,7 +120,18 @@ function page() {
       getPropertyValue: (k) => (k === '--cell' ? '8' : ''),
     }),
   };
-  return { win, doc, on, docOn, attrs };
+  // the editor's window: a gesture's Esc is heard there too (the focus can stay in the editor)
+  const edOn = new Set();
+  const ed = {
+    addEventListener: (t, f) => edOn.add(`${t}:${f.name}`),
+    removeEventListener: (t, f) => edOn.delete(`${t}:${f.name}`),
+  };
+  // as overlay.js's escKeys: both windows, capture
+  const escKeys = (fn, on) => {
+    for (const w of [win, ed])
+      w[on ? 'addEventListener' : 'removeEventListener']('keydown', fn, true);
+  };
+  return { win, doc, on, docOn, attrs, ed, edOn, escKeys };
 }
 
 /** A pointer or key event; `e.stopped` and `e.prevented` tell what the handler did. */
@@ -156,11 +167,13 @@ test("a Custom section's rows: Esc puts its height back, the key stopped, nothin
     flowOf: () => ({ a: { row: 1, rows: 3 } }),
     secKey: () => 's1',
     kick: () => {},
+    escKeys: p.escKeys,
     onrows: (...a) => calls.push(a),
   });
   assert.equal(rows.customOf(sec), sec);
   assert.equal(rows.minOf(sec, false), 10);
   const h = spy(p.win);
+  const eh = spy(p.ed); // the focus in the editor (a press on the edge keeps it there)
   const before = sec.style.cssText;
   rows.startRows(ev({ clientY: 100 }));
   assert.ok(S.sizing);
@@ -170,11 +183,12 @@ test("a Custom section's rows: Esc puts its height back, the key stopped, nothin
   fire(h, 'keydown', ev({ key: 'a' })); // another key: the drag goes on
   assert.ok(S.sizing);
   const esc = ev({ key: 'Escape' });
-  fire(h, 'keydown', esc);
+  assert.equal(p.edOn.size, 1, 'its Esc heard in the editor too');
+  fire(eh, 'keydown', esc);
   assert.ok(esc.prevented && esc.stopped);
   assert.equal(sec.style.cssText, before);
   assert.equal(S.sizing, null);
-  assert.equal(p.on.size, 0, 'its listeners off');
+  assert.equal(p.on.size + p.edOn.size, 0, 'its listeners off');
   assert.equal(p.attrs.has('data-flow-hold'), false);
   assert.deepEqual(calls, []);
   // a drag released: one onrows
@@ -182,7 +196,7 @@ test("a Custom section's rows: Esc puts its height back, the key stopped, nothin
   fire(h, 'pointermove', ev({ clientY: 116 }));
   fire(h, 'pointerup', ev());
   assert.deepEqual(calls, [['s1', 12, { phone: false }]]);
-  assert.equal(p.on.size, 0);
+  assert.equal(p.on.size + p.edOn.size, 0);
 });
 
 test("a link's drag: Esc drops it, the key stopped, the targets gone; a drop links, keeping the gap", () => {
@@ -220,9 +234,11 @@ test("a link's drag: Esc drops it, the key stopped, the targets gone; a drop lin
     place: () => {},
     noSelect: (on) => (held += on ? 1 : -1),
     kick: () => {},
+    escKeys: p.escKeys,
     onlink: (...x) => calls.push(x),
   });
   const h = spy(p.win);
+  const eh = spy(p.ed);
   const near = ev({ clientX: 40, clientY: 24 + DOT }); // a's bottom circle
   links.startLink(ev(), b);
   assert.ok(S.linking);
@@ -231,18 +247,18 @@ test("a link's drag: Esc drops it, the key stopped, the targets gone; a drop lin
   fire(h, 'pointermove', near);
   assert.equal(S.linking.near?.id, 'a');
   const esc = ev({ key: 'Escape' });
-  fire(h, 'keydown', esc);
+  fire(eh, 'keydown', esc); // the focus in the editor (a press on the circle keeps it there)
   assert.ok(esc.prevented && esc.stopped);
   assert.equal(S.linking, null);
   assert.deepEqual(targets, []);
-  assert.equal(p.on.size, 0, 'its listeners off');
+  assert.equal(p.on.size + p.edOn.size, 0, 'its listeners off');
   assert.equal(held, 0);
   assert.deepEqual(calls, []);
   links.startLink(ev(), b);
   fire(h, 'pointermove', near);
   fire(h, 'pointerup', ev());
   assert.deepEqual(calls, [['b', 'a', 2, { phone: false }]]);
-  assert.equal(p.on.size, 0);
+  assert.equal(p.on.size + p.edOn.size, 0);
   assert.equal(held, 0);
 });
 
@@ -269,6 +285,7 @@ test("a widget's drag: Esc puts the section back, the key stopped, the auto-scro
     linkOfEl: () => null,
     minOf: () => 0,
     noSelect: (on) => (held += on ? 1 : -1),
+    escKeys: p.escKeys,
     onplace: (...x) => placed.push(x),
     onpick: () => {},
   });
@@ -293,7 +310,7 @@ test("a widget's drag: Esc puts the section back, the key stopped, the auto-scro
   assert.equal(S.drag, null);
   assert.equal(sel.classList.set.size, 0);
   assert.equal(p.attrs.has('data-flow-hold'), false);
-  assert.equal(p.on.size, 0, 'its listeners off');
+  assert.equal(p.on.size + p.edOn.size, 0, 'its listeners off');
   assert.equal(held, 0);
   assert.deepEqual(placed, []);
   // a resize from a handle keeps the handles (no is-moving); a release places it
@@ -304,7 +321,7 @@ test("a widget's drag: Esc puts the section back, the key stopped, the auto-scro
   fire(h, 'pointerup', ev());
   assert.equal(placed.length, 1);
   assert.deepEqual(placed[0].slice(0, 2), ['a', { col: 1, span: 6, row: 1, rows: 3 }]);
-  assert.equal(p.on.size, 0);
+  assert.equal(p.on.size + p.edOn.size, 0);
   assert.equal(held, 0);
 });
 
@@ -339,12 +356,14 @@ function selectPart() {
     setArea,
     noSelect: (on) => (t.held += on ? 1 : -1),
     kick: () => {},
+    escKeys: p.escKeys,
     onpick: (id) => t.calls.push(['pick', id]),
     onselect: (ids) => t.calls.push(['select', ids]),
     onsectionpick: (id) => t.calls.push(['section', id]),
     ongroupmove: (...x) => t.calls.push(['move', ...x.slice(0, 3)]),
   });
   t.h = spy(p.win);
+  t.eh = spy(p.ed);
   return t;
 }
 
@@ -367,14 +386,14 @@ test('a group move: Esc puts the section back, the key stopped; a release is one
   assert.equal(t.S.group, null);
   assert.equal(t.sel.classList.set.size, 0);
   assert.equal(t.p.attrs.has('data-flow-hold'), false);
-  assert.equal(t.p.on.size, 0, 'its listeners off');
+  assert.equal(t.p.on.size + t.p.edOn.size, 0, 'its listeners off');
   assert.equal(t.held, 0);
   assert.deepEqual(t.calls, []);
   t.part.startGroup(ev({ clientX: 10, clientY: 10 }), ['a', 'b'], t.a);
   fire(t.h, 'pointermove', ev({ clientX: 26, clientY: 26 }));
   fire(t.h, 'pointerup', ev());
   assert.deepEqual(t.calls, [['move', ['a', 'b'], 2, 2]]);
-  assert.equal(t.p.on.size, 0);
+  assert.equal(t.p.on.size + t.p.edOn.size, 0);
   assert.equal(t.held, 0);
   // the arrow keys: one move, clamped to the grid (b ends at column 8 of 120)
   t.calls.length = 0;
@@ -394,16 +413,16 @@ test('a selection box: Esc gives the selection back, the key stopped; a click pi
   fire(t.h, 'pointermove', ev({ pageX: 20, pageY: 20 })); // over a
   assert.deepEqual(t.calls, [['select', ['a']]]);
   const esc = ev({ key: 'Escape' });
-  fire(t.h, 'keydown', esc);
+  fire(t.eh, 'keydown', esc); // the focus in the editor
   assert.ok(esc.prevented && esc.stopped);
   assert.deepEqual(t.calls.at(-1), ['select', []]);
   assert.equal(t.S.boxing, null);
-  assert.equal(t.p.on.size, 0, 'its listeners off');
+  assert.equal(t.p.on.size + t.p.edOn.size, 0, 'its listeners off');
   assert.equal(t.held, 0);
   t.calls.length = 0;
   t.part.startBox(ev({ pageX: 70, pageY: 70 }), t.sec, []);
   fire(t.h, 'pointerup', ev());
   assert.deepEqual(t.calls, [['section', 's1']]);
-  assert.equal(t.p.on.size, 0);
+  assert.equal(t.p.on.size + t.p.edOn.size, 0);
   assert.equal(t.held, 0);
 });

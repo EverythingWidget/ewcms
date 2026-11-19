@@ -209,3 +209,32 @@ test("the overlay's parts (overlay-*.js): factories over its one state, none imp
     );
   }
 });
+
+test("a gesture's Esc is heard wherever the focus is, before keys.js (the selection stays)", () => {
+  const o = src('overlay.js');
+  // the preview's window and the editor's, capture
+  assert.match(o, /const editorWin = typeof window === 'undefined' \? null : window;/);
+  assert.match(
+    o,
+    /for \(const w of new Set\(\[S\.win, editorWin\]\)\)\s*w\?\.\[on \? 'addEventListener' : 'removeEventListener'\]\('keydown', fn, true\);/,
+  );
+  // keys.js listens on the editor's window in the bubble phase: a gesture's capture Esc, which
+  // stops the key, comes first
+  assert.match(src('main.js'), /window\.addEventListener\('keydown', onKey\);/);
+  const parts = readdirSync(new URL('../src/editor/', import.meta.url)).filter((n) =>
+    /^overlay-[\w-]+\.js$/.test(n),
+  );
+  for (const f of parts) {
+    const p = src(f);
+    assert.doesNotMatch(p, /addEventListener\('keydown'/, `${f}: its Esc through escKeys`);
+    const on = p.match(/escKeys\((\w+), true\)/g) || [];
+    const off = p.match(/escKeys\((\w+), false\)/g) || [];
+    assert.equal(on.length, off.length, `${f}: every Esc taken off again`);
+    for (const c of p.match(/function cancel\w*\(e\) \{[^]*?\n {2}\}/g) || [])
+      assert.match(
+        c,
+        /e\.preventDefault\(\);\s*e\.stopPropagation\(\);/,
+        `${f}: its Esc stops the key`,
+      );
+  }
+});

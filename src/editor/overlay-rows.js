@@ -13,7 +13,7 @@ import { setSecRows } from './svelte/ui.svelte.js';
  * minOf(sec, phone), customOf(sec) and startRows(e) (a press on the line).
  */
 export function createOverlayRows(ctx) {
-  const { S, ui, tplOpen, isPhone, secOf, widgetEl, flowOf, secKey, kick, onrows } = ctx;
+  const { S, ui, tplOpen, isPhone, secOf, widgetEl, flowOf, secKey, kick, onrows, escKeys } = ctx;
 
   /** A section's own rows (Custom height; the phone's on the phone), 0 for any other. */
   function minOf(sec, phone) {
@@ -50,7 +50,7 @@ export function createOverlayRows(ctx) {
     setSecRows({ id: secKey(sec), rows, phone });
     S.win.addEventListener('pointermove', moveRows, true);
     S.win.addEventListener('pointerup', endRows, true);
-    S.win.addEventListener('keydown', cancelRows, true);
+    escKeys(cancelRows, true);
     kick();
   }
 
@@ -68,7 +68,7 @@ export function createOverlayRows(ctx) {
     S.doc.documentElement.removeAttribute('data-flow-hold');
     S.win.removeEventListener('pointermove', moveRows, true);
     S.win.removeEventListener('pointerup', endRows, true);
-    S.win.removeEventListener('keydown', cancelRows, true);
+    escKeys(cancelRows, false);
     S.sizing = null;
     setSecRows(null);
   }

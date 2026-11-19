@@ -38,6 +38,7 @@ export function createOverlaySelect(ctx) {
     onselect,
     onsectionpick,
     ongroupmove,
+    escKeys,
   } = ctx;
 
   /** The step of one cell (px) on a section's lines: columns, rows. */
@@ -92,7 +93,7 @@ export function createOverlaySelect(ctx) {
     noSelect(true);
     S.win.addEventListener('pointermove', moveGroup, true);
     S.win.addEventListener('pointerup', endGroup, true);
-    S.win.addEventListener('keydown', cancelGroup, true);
+    escKeys(cancelGroup, true);
   }
 
   function moveGroup(e) {
@@ -132,7 +133,7 @@ export function createOverlaySelect(ctx) {
     noSelect(false);
     S.win.removeEventListener('pointermove', moveGroup, true);
     S.win.removeEventListener('pointerup', endGroup, true);
-    S.win.removeEventListener('keydown', cancelGroup, true);
+    escKeys(cancelGroup, false);
   }
 
   function endGroup() {
@@ -205,7 +206,7 @@ export function createOverlaySelect(ctx) {
     noSelect(true);
     S.win.addEventListener('pointermove', moveBox, true);
     S.win.addEventListener('pointerup', endBox, true);
-    S.win.addEventListener('keydown', cancelBox, true);
+    escKeys(cancelBox, true);
     kick();
   }
 
@@ -234,7 +235,7 @@ export function createOverlaySelect(ctx) {
     noSelect(false);
     S.win.removeEventListener('pointermove', moveBox, true);
     S.win.removeEventListener('pointerup', endBox, true);
-    S.win.removeEventListener('keydown', cancelBox, true);
+    escKeys(cancelBox, false);
   }
 
   function endBox() {
