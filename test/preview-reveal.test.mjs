@@ -47,7 +47,7 @@ test('reveal: centred, smooth or instant, only when out of view; nothing without
 });
 
 test('reveal: the bridge and the overlay scroll through it; Locate lives beside it', () => {
-  const b = src('bridge.js');
+  const b = src('preview-runtime.js');
   assert.match(b, /import \{ reveal \} from '\.\/reveal\.js';/);
   assert.match(b, /reveal\(el, \{ when: 'play', smooth: false \}\)/);
   assert.doesNotMatch(b, /api\.scrollTo\(|scrollIntoView/);

@@ -138,7 +138,7 @@ export const ui = $state({
   /** Sections tab: the section whose settings pop-up is open (SectionPopup.svelte; its id), or null. */
   section: null,
   /**
-   * A Text widget edited in place in the preview (bridge.js richState): { widget, edit, style,
+   * A Text widget edited in place in the preview (preview-runtime.js richState): { widget, edit, style,
    * line, selected, bold, italic, link }, or null.
    */
   rich: null,
@@ -146,7 +146,7 @@ export const ui = $state({
   link: null,
   /**
    * The element picked in the preview (its outline there): { el, kind: 'text' | 'anim' }, or
-   * null. bridge.js reports clicks and draws the outline; pickElement() sets it.
+   * null. preview-runtime.js reports clicks and draws the outline; pickElement() sets it.
    */
   picked: null,
   /** The element under the pointer in the preview (animate clicks) or a Motion row's, or null. */

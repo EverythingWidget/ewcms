@@ -1,6 +1,6 @@
 /**
  * Design tokens read from the token stylesheets themselves (custom properties: `--name: value;`),
- * so CSS the editor builds in JS (overlay.js's Shadow DOM, bridge.js's <style>: where the
+ * so CSS the editor builds in JS (overlay.js's Shadow DOM, preview-runtime.js's <style>: where the
  * editor's stylesheet doesn't reach) has no copy of them. Pure: ../ui-tokens.js hands it the
  * files' text (Vite ?raw), the tests the same files read from disk.
  */
@@ -34,7 +34,7 @@ export function uiTokens(...sources) {
   return {
     accent: v('--c-accent'),
     accentRgb: rgbOf(v('--c-accent')),
-    // a Text widget's property chips (bridge.js), as the panel shows them; an unknown name's
+    // a Text widget's property chips (preview-runtime.js), as the panel shows them; an unknown name's
     chipRgb: rgbOf(v('--teal-400')),
     warningRgb: rgbOf(v('--c-warning')),
     onAccent: v('--c-on-accent'),

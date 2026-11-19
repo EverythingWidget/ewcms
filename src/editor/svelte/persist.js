@@ -42,7 +42,7 @@ const PANELS = ['pages', 'settings'];
 const PAGE_TABS = ['sections', 'element-motion', 'page-motion', 'seo'];
 const VIEWS = { header: 'Header', footer: 'Footer' };
 
-let bridge, live; // the preview (../bridge.js) and the content (live.svelte.js)
+let bridge, live; // the preview (../preview-runtime.js) and the content (live.svelte.js)
 let saved = null; // what to put back, until the preview shows the page
 
 function readSession() {

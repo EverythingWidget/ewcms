@@ -21,7 +21,7 @@ test('a picked Text widget: Enter or a character typed edits its text (F45, F54)
     keys,
     /if \(bridge\.editWidget\(selectedIds\(ui\)\[0\], typed\)\) e\.preventDefault\(\);/,
   );
-  const bridge = readFileSync(new URL('../src/editor/bridge.js', import.meta.url), 'utf8');
+  const bridge = readFileSync(new URL('../src/editor/preview-runtime.js', import.meta.url), 'utf8');
   assert.match(bridge, /if \(typed\) doc\.execCommand\('insertText', false, typed\);/);
   // the preview's keys reach it (not the browser) when not typing
   assert.match(keys, /\(\(e\.key === 'Enter' \|\| e\.key\.length === 1\) &&/);

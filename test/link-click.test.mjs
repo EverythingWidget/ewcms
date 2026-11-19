@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 const read = (f) => readFileSync(new URL(`../src/${f}`, import.meta.url), 'utf8');
 
 test('F108: a click on a link in the selected Text edits it there and opens its link box', () => {
-  const b = read('editor/bridge.js');
+  const b = read('editor/preview-runtime.js');
   // the selected widget's link (selected before the press, not a drag's end): edit, then the box
   assert.match(b, /const link = e\.detail === 1 \? pickedLinkAt\(e\.clientX, e\.clientY\) : null;/);
   assert.match(b, /startRich\(link\.body, e\.clientX, e\.clientY\);\s*linkBoxSoon\(\);/);
@@ -41,13 +41,13 @@ test('F109: while a Text is edited its handles and resize edges are gone: nothin
   // (picked, not edited: its links take no pointer on purpose, the click is the widget's and
   // a click on a link opens it: F108)
   assert.match(
-    read('editor/bridge.js'),
+    read('editor/preview-runtime.js'),
     /:not\(\[data-anim\], :has\(\[data-anim\], \[contenteditable\]\), \[contenteditable\] \*\) \{ pointer-events: none; \}/,
   );
 });
 
 test("F107: a link saved as the editor's preview address is marked, and one click on it asks again", () => {
-  const b = read('editor/bridge.js');
+  const b = read('editor/preview-runtime.js');
   assert.match(
     b,
     /a:is\(\[href\*="\?draft="\], \[href\*="&draft="\], \[data-ts-link\*="draft="\]\) \{ text-decoration: underline wavy/,
@@ -72,7 +72,7 @@ test('F107: the mark matches the preview address in either form the preview rend
 });
 
 test('F107: a click off any link is no link (pickedLinkAt never reads a missing <a>)', () => {
-  const src = read('editor/bridge.js');
+  const src = read('editor/preview-runtime.js');
   const fn = src.slice(src.indexOf('function pickedLinkAt('), src.indexOf('let down = null'));
   assert.ok(fn.includes('if (!a) return null;'));
   // the link's box, not the caret: a paragraph must not take a click meant for the link (G12)
@@ -81,7 +81,7 @@ test('F107: a click off any link is no link (pickedLinkAt never reads a missing 
 });
 
 test('G12: a locked Header or Footer takes no click; it opens from the pages list only', () => {
-  const b = read('editor/bridge.js');
+  const b = read('editor/preview-runtime.js');
   assert.doesNotMatch(b, /__ed-part-open/);
   assert.doesNotMatch(read('editor/main.js'), /bridge\.on\('part'/);
   // nor Esc: Done is the way out
@@ -100,7 +100,7 @@ test('G12: a locked Header or Footer takes no click; it opens from the pages lis
 test('F115: Ctrl+K opens the link box from the editor window too, every rich-text field', () => {
   // the preview forwards Ctrl+K (keys.js isShortcut, used by the bridge)
   assert.match(read('editor/keys.js'), /\^\[sezyk\]\$/);
-  assert.match(read('editor/bridge.js'), /import \{ isShortcut \} from '\.\/keys\.js';/);
+  assert.match(read('editor/preview-runtime.js'), /import \{ isShortcut \} from '\.\/keys\.js';/);
   const tb = read('editor/svelte/WidgetToolbar.svelte');
   assert.match(tb, /window\.addEventListener\('keydown', onKey, true\)/);
   assert.match(tb, /e\.key\.toLowerCase\(\) !== 'k'/);

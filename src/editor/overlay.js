@@ -12,7 +12,7 @@
  *             App.svelte) drops the selection (the panel shows the sections again),
  *             a drag moves it and the handles on its edges and corners resize it. A press
  *             on its body hides the handles and the toolbar until release (a resize from a
- *             handle keeps them); a double click edits a text in place (bridge.js), the
+ *             handle keeps them); a double click edits a text in place (preview-runtime.js), the
  *             page's own clicks are off. A drag snaps to the cells and shows its area live
  *             (the widget's CSS variables, and the
  *             widgets that follow it move along); on release it is one edit, one undo step
@@ -1297,7 +1297,7 @@ export function createOverlay({
     return true;
   }
   // Arrange: clicks pick and drag widgets; the page's own clicks (links, buttons) are off. A
-  // text being edited in place (contenteditable, bridge.js) keeps its clicks (the caret).
+  // text being edited in place (contenteditable, preview-runtime.js) keeps its clicks (the caret).
   const editing = (t) => !!t.closest?.('[contenteditable]');
   /**
    * The selected widget when the pointer is inside its box (widgets overlap: the selected one
@@ -1356,7 +1356,7 @@ export function createOverlay({
     if (drag && top && top !== el) drag.click = idOf(top);
   }
   // a double click on a widget: its pop-up (a single click only selects it; a text's own edit
-  // still starts, bridge.js)
+  // still starts, preview-runtime.js)
   function ondblclick(e) {
     if (!arranging() || e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     if (editing(e.target)) return;

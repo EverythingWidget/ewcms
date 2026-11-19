@@ -61,8 +61,8 @@ test('keys: one handler, in the editor window and for the preview (its forwarded
   assert.doesNotMatch(ov, /trackMod|function onkeydown|addEventListener\('keyup'/);
   assert.doesNotMatch(ov, /setMod/);
   // the bridge forwards what keys.js calls a shortcut
-  assert.match(src('bridge.js'), /import \{ isShortcut \} from '\.\/keys\.js';/);
-  assert.doesNotMatch(src('bridge.js'), /const isShortcut =|const typing =/);
+  assert.match(src('preview-runtime.js'), /import \{ isShortcut \} from '\.\/keys\.js';/);
+  assert.doesNotMatch(src('preview-runtime.js'), /const isShortcut =|const typing =/);
   // the order: a selected link's Delete, the selection's keys, then the app's
   assert.match(src('keys.js'), /linkKey\(e\);\s*selectionKey\(e\);\s*appKey\(e\);/);
 });

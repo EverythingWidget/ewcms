@@ -83,7 +83,7 @@ test('URL tabs are ui.panel: pages, settings; clicks: arrange, animate, visitor'
   // panel than Pages through setMode('browse'); never a second flag beside it
   for (const f of [
     'editor/main.js',
-    'editor/bridge.js',
+    'editor/preview-runtime.js',
     'editor/overlay.js',
     'editor/svelte/App.svelte',
   ])

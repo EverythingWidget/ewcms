@@ -15,7 +15,7 @@
   import { ui } from './ui.svelte.js';
   import { animationOf, layerPtr, animationModel } from './motion.js';
 
-  // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
+  // live: reactive store (live.svelte.js); bridge: the preview (../preview-runtime.js);
   // cfg: animations.json as edited; items: the page's animated elements; sections: the page's
   // widgets (MotionPanel); gsap: the preview's
   let { live, bridge, cfg, items, sections = [], gsap } = $props();

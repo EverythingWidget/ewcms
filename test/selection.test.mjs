@@ -90,14 +90,14 @@ test("a save's reload restores the selection quietly: no pop-up opens", async ()
   assert.deepEqual(ui.picked, { el, kind: 'text' });
   pickElement(el, 'text');
   assert.deepEqual(ui.selection, { edit: 'pages/index.json#/title' });
-  const b = src('bridge.js');
+  const b = src('preview-runtime.js');
   assert.match(b, /emit\('pick', el, sel\.kind, \{ quiet: true \}\)/);
   assert.match(src('main.js'), /bridge\.on\('pick', pickElement\)/);
   assert.match(src('svelte/ContentPanel.svelte'), /if \(!edit \|\| quiet\) return;/);
 });
 
 test('the preview pick and hover live in ui only: the bridge reports them, keeps none', () => {
-  const b = src('bridge.js');
+  const b = src('preview-runtime.js');
   assert.doesNotMatch(b, /let (selected|hoverEl)\b/);
   assert.doesNotMatch(b, /\bselect\(el, kind|setHover\(/);
   assert.match(b, /emit\('hover', el\)/);

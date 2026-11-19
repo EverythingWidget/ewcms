@@ -164,7 +164,7 @@ test('a reload of the preview: the loop starts again, the text sizes skip a docu
 });
 
 // A clickable template's item (an <a>, details' summary) takes no pointer in arrange mode
-// (bridge.js turns a widget's links and buttons off): the event lands on its List, and the
+// (preview-runtime.js turns a widget's links and buttons off): the event lands on its List, and the
 // widget under the pointer is found by position (src/editor/lib/template-hit.js).
 test("a clickable template item's widgets are found by the pointer's position", async () => {
   const { templateHit } = await import('../src/editor/lib/template-hit.js');
@@ -213,5 +213,8 @@ test("a clickable template item's widgets are found by the pointer's position", 
   assert.match(ov, /hover = arranging\(\) \? widgetAt\(hit\) : null;/);
   assert.match(ov, /if \(hitOf\(e\)\.closest\?\./);
   // a page keeps the rule: a widget's links and buttons take no pointer (no hover look)
-  assert.match(read('src/editor/bridge.js'), /:not\(\.__ed-alt\) \[data-widget\] :is\(a, button/);
+  assert.match(
+    read('src/editor/preview-runtime.js'),
+    /:not\(\.__ed-alt\) \[data-widget\] :is\(a, button/,
+  );
 });

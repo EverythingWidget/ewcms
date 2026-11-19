@@ -70,7 +70,7 @@ export const targetFile = (target, doc) =>
 /**
  * Open one site part in the preview ('header' | 'footer', or none: ''), lock the other: open,
  * its texts (and the footer's sections and widgets) can be hovered and picked and the page's
- * can't (bridge.js INJECTED_CSS: data-ed-open); locked, a click on it opens it.
+ * can't (preview-runtime.js INJECTED_CSS: data-ed-open); locked, a click on it opens it.
  */
 export function setPartOpen(doc, id) {
   doc?.querySelector('[data-header]')?.toggleAttribute('data-ed-open', id === 'header');
@@ -113,7 +113,7 @@ const NOT_TEXT = new Set([
   'id',
   'type',
 ]);
-// the [data-edit] types a value is written into as it is (bridge.js patchText). Not 'words'
+// the [data-edit] types a value is written into as it is (preview-runtime.js patchText). Not 'words'
 // (the hero's name: its words are split and its size follows its longest word), 'rich' (a Text
 // widget's body: the dev server renders it) or 'photo' (its sizes and placement)
 const PATCHED = new Set(['text', 'multiline', 'number']);

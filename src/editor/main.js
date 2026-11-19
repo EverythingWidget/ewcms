@@ -18,7 +18,7 @@
  * under `npm run dev`.
  *
  * The whole UI is Svelte: svelte/App.svelte shows `ui` (svelte/ui.svelte.js); the keyboard
- * shortcuts are keys.js. This file mounts it and holds the glue: the preview (bridge.js) and
+ * shortcuts are keys.js. This file mounts it and holds the glue: the preview (preview-runtime.js) and
  * store (store.js) events, saving and loading the content.
  */
 // the site's own widgets join the registry first (before any module reads it)
@@ -55,7 +55,7 @@ import { createLive } from './svelte/live.svelte.js';
 import { connectMedia } from './svelte/media.svelte.js';
 import { createStore } from './store.js';
 import * as source from './source.js';
-import { createBridge } from './bridge.js';
+import { createBridge } from './preview-runtime.js';
 import { labelFor } from './svelte/content-groups.js';
 import { plural } from './lib/format.js';
 import { oneAtATime } from './lib/one-at-a-time.js';
@@ -813,7 +813,7 @@ bridge.on('navigate', (path) => {
 bridge.on('pick', pickElement);
 bridge.on('hover', hoverElement);
 bridge.on('textPick', selectText);
-// the Text widget editor (bridge.js, rich.js): its state for the toolbar; an edit ended: its
+// the Text widget editor (preview-runtime.js, rich.js): its state for the toolbar; an edit ended: its
 // section rendered again (the fields' values, the animations' markup)
 bridge.on('rich', (state) => (ui.rich = state));
 bridge.on('richDone', (edit) => {

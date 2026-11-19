@@ -4,7 +4,7 @@
   (.fields): one field a row; in a list item two half fields share one (pairedHalves); a list field is a ListField.
 
     g         the group
-    live      reactive store (live.svelte.js); bridge: the preview (../bridge.js)
+    live      reactive store (live.svelte.js); bridge: the preview (../preview-runtime.js)
     sourceIds the files in content/en/sources/, for a list item's source
     onsource  (file, item?, edit?): open Sources
     bindings  a widget's: { binds(type), resolved(f), from } for its settings' pickers (Custom

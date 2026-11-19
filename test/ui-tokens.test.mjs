@@ -1,4 +1,4 @@
-// The preview's injected CSS (overlay.js, bridge.js) takes its colours and sizes from the token
+// The preview's injected CSS (overlay.js, preview-runtime.js) takes its colours and sizes from the token
 // files (src/editor/ui-tokens.js reads them, lib/css-tokens.js): the values it gets, and every
 // token the injected CSS uses is there.
 import { test } from 'node:test';
@@ -28,8 +28,8 @@ test('ui tokens: the values the injected CSS gets from the token files', () => {
   });
 });
 
-test('ui tokens: every token overlay.js and bridge.js use is set', () => {
-  for (const f of ['src/editor/overlay.js', 'src/editor/bridge.js'])
+test('ui tokens: every token overlay.js and preview-runtime.js use is set', () => {
+  for (const f of ['src/editor/overlay.js', 'src/editor/preview-runtime.js'])
     for (const [, k] of read(f).matchAll(/\bT\.(\w+)/g))
       assert.ok(typeof T[k] === 'string' && T[k], `${f}: T.${k}`);
   // ui-tokens.js is only the token files, read (no values of its own)

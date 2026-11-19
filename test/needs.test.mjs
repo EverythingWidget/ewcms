@@ -211,7 +211,7 @@ test('a text line with no property shows its text in the chips box (was empty)',
 });
 
 test('the editor: the Hidden tag sits inside the dimmed widget, clipped to its box (no overlap)', () => {
-  const css = read('src/editor/bridge.js');
+  const css = read('src/editor/preview-runtime.js');
   const rule = css.slice(
     css.indexOf('[data-no-value]::before {'),
     css.indexOf('}', css.indexOf('[data-no-value]::before {')),

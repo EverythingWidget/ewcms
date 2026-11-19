@@ -42,7 +42,7 @@
     valueAt,
   } from './source-items.js';
 
-  // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js)
+  // live: reactive store (live.svelte.js); bridge: the preview (../preview-runtime.js)
   let { live, bridge } = $props();
 
   let dialog = $state();

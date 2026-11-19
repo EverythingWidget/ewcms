@@ -285,7 +285,7 @@ src/
   editor/           ← the visual editor app (any page + ?edit), dev server only, never built or shipped
     config.js       ← content files the editor may write and publish
     store.js        ← in-memory content copies, dirty state, undo/redo, rebase
-    bridge.js       ← talks to the site inside the iframe (text overrides, selection, replay)
+    preview-runtime.js ← talks to the site inside the iframe (text overrides, selection, replay)
     source.js       ← talks to the dev-server endpoints (load, save, status, publish)
     svelte/         ← the editor UI (Svelte 5): panels, fields, modals
     lib/            ← small editor helpers (pointers, diff, format, show-value, dialog, editor-url)

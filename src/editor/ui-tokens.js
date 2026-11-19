@@ -1,5 +1,5 @@
 /**
- * The editor's tokens for CSS it injects into the preview (overlay.js's Shadow DOM, bridge.js's
+ * The editor's tokens for CSS it injects into the preview (overlay.js's Shadow DOM, preview-runtime.js's
  * <style>), where the editor's stylesheet doesn't reach. Read from the token files themselves
  * (styles/_tokens.scss: the editor's own, never the site's or its theme's), so they are the one
  * source: no copy here.

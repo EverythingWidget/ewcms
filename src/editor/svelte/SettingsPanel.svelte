@@ -39,7 +39,7 @@
     containedWidth,
   } from '../../render/layout/contain.js';
 
-  // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
+  // live: reactive store (live.svelte.js); bridge: the preview (../preview-runtime.js);
   // actions: showSpecimen (main.js)
   let { live, bridge, actions } = $props();
 

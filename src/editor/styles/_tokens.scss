@@ -6,7 +6,7 @@
 // The editor's own: it does not read the site's tokens or theme (the site's look can change;
 // the editor's stays). Its fonts: styles/_fonts.scss (DM Mono, and Momo Trust Display for titles).
 // Raw hex colours and px font sizes are only allowed in token files (stylelint
-// local/no-raw-tokens). The preview's injected CSS (overlay.js, bridge.js) reads its values
+// local/no-raw-tokens). The preview's injected CSS (overlay.js, preview-runtime.js) reads its values
 // from this file (../ui-tokens.js, lib/css-tokens.js): keep them plain declarations.
 :root {
   // ---- primitives: greys (named by their hex level)

@@ -355,7 +355,7 @@ test('what the patch cannot show renders the section as before (G13)', () => {
 });
 
 test('inline editing is data-edit-inline (a Text body); a double click on any other text opens its field', () => {
-  const bridge = read('src/editor/bridge.js');
+  const bridge = read('src/editor/preview-runtime.js');
   assert.match(
     bridge,
     /const inline = hit\.dataset\.editInline !== undefined && hit\.dataset\.bound === undefined;\s*if \(!inline\) pickField\(hit\);/,

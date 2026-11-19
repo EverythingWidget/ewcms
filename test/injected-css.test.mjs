@@ -1,4 +1,4 @@
-// The CSS the editor injects into the preview (overlay.js's Shadow DOM, bridge.js's <style>)
+// The CSS the editor injects into the preview (overlay.js's Shadow DOM, preview-runtime.js's <style>)
 // gets the editor's 4px-grid and text-colour rules too: Stylelint can't see it inside JS.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -18,7 +18,7 @@ function cssOf(file, name) {
 
 for (const [file, name] of [
   ['src/editor/overlay.js', 'STYLE'],
-  ['src/editor/bridge.js', 'INJECTED_CSS'],
+  ['src/editor/preview-runtime.js', 'INJECTED_CSS'],
 ])
   test(`injected CSS on the 4px grid, solid text colours: ${file}`, async () => {
     const { results } = await stylelint.lint({

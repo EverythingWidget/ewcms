@@ -399,7 +399,7 @@ test('a template Text is edited in the preview, like a page Text: no Style/Text 
   assert.match(bar, /data-tw="\$\{CSS\.escape\(id\)\}"/);
   assert.match(bar, /sampleSource\(live\.content, live\.current\(where\.file\)\)/);
   assert.match(bar, /tplExtras/);
-  const bridge = read('src/editor/bridge.js');
+  const bridge = read('src/editor/preview-runtime.js');
   assert.match(bridge, /closest\('\[data-tw\], \[data-widget\]'\)/);
   assert.match(bridge, /oneLineBody/);
   assert.match(bridge, /templateIdOf\(rich\.file\)/);

@@ -19,7 +19,7 @@
   import { ANIMATIONS } from '../../render/files.js';
   import { animationOf, elementOf } from './motion.js';
 
-  // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js); actions: main.js;
+  // live: reactive store (live.svelte.js); bridge: the preview (../preview-runtime.js); actions: main.js;
   // file: the page file
   let { live, bridge, actions, file } = $props();
 

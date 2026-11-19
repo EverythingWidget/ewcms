@@ -17,7 +17,7 @@
   import { ANIMATIONS } from '../../render/files.js';
   import { DEFAULT_TIMING } from '../../render/layout/motion.js';
 
-  // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js); gsap: the preview's
+  // live: reactive store (live.svelte.js); bridge: the preview (../preview-runtime.js); gsap: the preview's
   let { live, bridge, gsap } = $props();
 
   const cfg = $derived(live.current(ANIMATIONS));

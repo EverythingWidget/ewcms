@@ -1,5 +1,5 @@
 // The preview: square corners, and the editor's thin scrollbar inside its page (injected by
-// bridge.js in the editor only; the site's own styles leave the browser's).
+// preview-runtime.js in the editor only; the site's own styles leave the browser's).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -16,7 +16,7 @@ test('the preview frame has no border radius (the phone frame keeps its own)', (
 });
 
 test("the preview's page gets the editor's scrollbar, injected (editor only)", () => {
-  const b = read('editor/bridge.js');
+  const b = read('editor/preview-runtime.js');
   const css = b.slice(
     b.indexOf('const INJECTED_CSS = `'),
     b.indexOf('`;', b.indexOf('const INJECTED_CSS')),

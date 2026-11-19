@@ -1,7 +1,7 @@
 /**
  * The template editor's preview: the element a pointer event is on, for the widget and section
  * under it (overlay.js). An item that is a link or a button (a clickable template's <a>, details'
- * summary) takes no pointer in arrange mode (bridge.js: a widget's links and buttons are off, so
+ * summary) takes no pointer in arrange mode (preview-runtime.js: a widget's links and buttons are off, so
  * the page shows no hover, active or focus look and nothing follows), and nor does anything in it:
  * the event lands on the List around the item. Its widget is then found by where the pointer is:
  * the one on top whose box holds it (the highest layer, --z; then the last one), else the item.

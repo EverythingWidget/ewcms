@@ -93,7 +93,7 @@ test('a link drag keeps the widget where it is (the gap: the rows between them)'
 });
 
 test("a press on a widget's link or button only picks it: no pressed look, Alt still clicks through", () => {
-  const b = src('bridge.js');
+  const b = src('preview-runtime.js');
   const css = b.slice(
     b.indexOf('const INJECTED_CSS'),
     b.indexOf('`;', b.indexOf('const INJECTED_CSS')),
@@ -116,7 +116,7 @@ test("a press on a widget's link or button only picks it: no pressed look, Alt s
 
 
 test('G14: Ctrl+Z in the preview is preventDefault before the editor undo runs', () => {
-  const b = src('bridge.js');
+  const b = src('preview-runtime.js');
   assert.match(b, /e\.preventDefault\(\); \/\/ Ctrl\+Z after a drag/);
   assert.match(b, /e\.preventDefault\(\); \/\/ Ctrl\+Z: the editor's undo/);
 });

@@ -41,7 +41,7 @@
   import { writeUrl } from './persist.js';
   import { MOD, plural } from '../lib/format.js';
 
-  // live: reactive store (live.svelte.js); bridge: the preview (../bridge.js);
+  // live: reactive store (live.svelte.js); bridge: the preview (../preview-runtime.js);
   // actions: setPanel, setPageTab, setMode, pickTarget, save, refreshStatus, pagesOp
   let { live, bridge, actions } = $props();
 
