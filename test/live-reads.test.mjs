@@ -51,18 +51,44 @@ test('live.sources, live.schema, live.loaded and live.read follow the store', ()
 });
 
 test('only live.svelte.js reads the change counter: no live.version anywhere else', async () => {
-  const { readFileSync } = await import('node:fs');
+  const { readFileSync, readdirSync, existsSync } = await import('node:fs');
   const { execFileSync } = await import('node:child_process');
-  const { join } = await import('node:path');
-  const root = new URL('..', import.meta.url).pathname;
-  // the repository's own files (not another checkout's work in progress)
-  const files = execFileSync('git', ['ls-files', 'src', 'sandbox', 'default-site'], {
-    cwd: root,
-    encoding: 'utf8',
-  })
-    .split('\n')
-    .filter((f) => /\.(svelte|js|mjs)$/.test(f))
-    .map((f) => join(root, f));
+  const { join, resolve } = await import('node:path');
+  const root = resolve(new URL('..', import.meta.url).pathname);
+  const DIRS = ['src', 'sandbox', 'default-site'];
+  const code = (f) => /\.(svelte|js|mjs)$/.test(f);
+  /** The repository's own files (not another checkout's work in progress), or null without git. */
+  function tracked() {
+    try {
+      const top = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim();
+      // (a package inside another repository: not this one's files)
+      if (resolve(top) !== root) return null;
+      return execFileSync('git', ['ls-files', ...DIRS], { cwd: root, encoding: 'utf8' })
+        .split('\n')
+        .filter(code)
+        .map((f) => join(root, f));
+    } catch {
+      return null; // no git, or no .git (a git archive, an installed package)
+    }
+  }
+  // else the folders walked, without node_modules or the git-ignored sandbox/mocks
+  const SKIP = new Set([join(root, 'sandbox/mocks')]);
+  const walk = (dir) =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const f = join(dir, e.name);
+      if (e.isDirectory())
+        return e.name === 'node_modules' || e.name.startsWith('.') || SKIP.has(f) ? [] : walk(f);
+      return code(e.name) ? [f] : [];
+    });
+  const files =
+    tracked() ??
+    DIRS.map((d) => join(root, d))
+      .filter((d) => existsSync(d))
+      .flatMap(walk);
   const live = join(root, 'src/editor/svelte/live.svelte.js');
   assert.ok(files.includes(live));
   const readers = files.filter(
