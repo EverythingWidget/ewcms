@@ -51,19 +51,18 @@ test('live.sources, live.schema, live.loaded and live.read follow the store', ()
 });
 
 test('only live.svelte.js reads the change counter: no live.version anywhere else', async () => {
-  const { readdirSync, readFileSync, statSync } = await import('node:fs');
+  const { readFileSync } = await import('node:fs');
+  const { execFileSync } = await import('node:child_process');
   const { join } = await import('node:path');
   const root = new URL('..', import.meta.url).pathname;
-  const files = [];
-  const walk = (dir) => {
-    for (const name of readdirSync(dir)) {
-      if (name === 'node_modules' || name.startsWith('.')) continue;
-      const p = join(dir, name);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.(svelte|js|mjs)$/.test(name)) files.push(p);
-    }
-  };
-  for (const d of ['src', 'sandbox', 'default-site']) walk(join(root, d));
+  // the repository's own files (not another checkout's work in progress)
+  const files = execFileSync('git', ['ls-files', 'src', 'sandbox', 'default-site'], {
+    cwd: root,
+    encoding: 'utf8',
+  })
+    .split('\n')
+    .filter((f) => /\.(svelte|js|mjs)$/.test(f))
+    .map((f) => join(root, f));
   const live = join(root, 'src/editor/svelte/live.svelte.js');
   assert.ok(files.includes(live));
   const readers = files.filter(
