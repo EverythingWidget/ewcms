@@ -1,10 +1,9 @@
 <!--
   The editor shell: the site preview on the left, the side panel on the right with the
-  header (the status line | Edit / Done | Publish), the area open (ui.panel, ../areas.js: the
-  areas' list, AreaList.svelte; Pages: the pages list in browse, or the page open with its tabs
-  Sections | Motion | SEO in edit, ContentPanel.svelte; Theme: ThemePanel.svelte; Animations:
-  AnimationsPanel.svelte; Site settings: SiteSettingsPanel.svelte; Media and Sources open their
-  windows from the list) and the footer (Desktop | Phone; undo, redo in edit). Also the modals, each
+  header (the status line | Edit / Done | Publish), the area open (ui.panel: the component its
+  record in ../areas.js names, e.g. Pages: the pages list in browse, or the page open with its
+  tabs Sections | Motion | SEO in edit, ContentPanel.svelte; else the areas' list,
+  AreaList.svelte, where Media and Sources open their windows) and the footer (Desktop | Phone; undo, redo in edit). Also the modals, each
   mounted once here and opened through state (modals.svelte.js) and the toasts (the keyboard
   shortcuts: ../keys.js).
   Browse or edit is ui.mode (ui.svelte.js): Edit opens the page in the preview; Done saves
@@ -18,10 +17,7 @@
   import Button from './Button.svelte';
   import { SITE } from '../../render/files.js';
   import AreaList from './AreaList.svelte';
-  import ContentPanel from './ContentPanel.svelte';
-  import ThemePanel from './ThemePanel.svelte';
-  import AnimationsPanel from './AnimationsPanel.svelte';
-  import SiteSettingsPanel from './SiteSettingsPanel.svelte';
+  import { AREAS, EDIT_PANEL, TEMPLATES_PANEL, areaOf, opensIn } from '../areas.js';
   import PublishModal from './PublishModal.svelte';
   import MediaModal from './MediaModal.svelte';
   import SourcesModal from './SourcesModal.svelte';
@@ -59,6 +55,13 @@
   // the modals' dialogs follow the stack (ui.modals)
   $effect(syncModals);
 
+  // the area open (its record, ../areas.js) and the panel components, all loaded at the start
+  // (the records import them on demand: areas.js stays plain data)
+  const area = $derived(areaOf(ui.panel));
+  let panels = $state.raw({});
+  for (const a of AREAS)
+    if (opensIn(a) === 'panel')
+      a.opens.panel().then((m) => (panels = { ...panels, [a.id]: m.default }));
   // an area opened comes in from the right, Back to areas brings the list from the left (the
   // pages list's slide, lib/slide.js); one area to another (Edit, a link) comes in the same way,
   // but a template's ← or Done (Pages to Theme) goes back, from the left
@@ -68,7 +71,8 @@
     const next = ui.panel;
     untrack(() => {
       if (next === shownArea || !areaView) return void (shownArea = next);
-      const dir = next === 'areas' || (shownArea === 'pages' && next === 'theme') ? -1 : 1;
+      const back = next === 'areas' || (shownArea === EDIT_PANEL && next === TEMPLATES_PANEL);
+      const dir = back ? -1 : 1;
       shownArea = next;
       const play = swapView(areaView);
       tick().then(() => play(dir));
@@ -82,13 +86,13 @@
   // what is unsaved first (nothing is lost), then browses; a failed save stays in edit
   const editing = $derived(ui.mode === 'edit');
   function edit() {
-    if (ui.panel !== 'pages') actions.setPanel('pages');
+    if (ui.panel !== EDIT_PANEL) actions.setPanel(EDIT_PANEL);
     setMode('edit');
   }
   async function done() {
     if (!(await actions.save())) return;
     // an item template: back to its list, in Theme (setPanel browses)
-    if (ui.target?.kind === 'item-template') actions.setPanel('theme');
+    if (ui.target?.kind === 'item-template') actions.setPanel(TEMPLATES_PANEL);
     else setMode('browse');
   }
   const VIEWPORTS = [
@@ -221,14 +225,9 @@
 
     <!-- the area open (ui.panel), or the areas' list -->
     <div class="ed-area" bind:this={areaView}>
-      {#if ui.panel === 'pages'}
-        <ContentPanel {live} {bridge} {actions} />
-      {:else if ui.panel === 'theme'}
-        <ThemePanel {live} {actions} />
-      {:else if ui.panel === 'animations'}
-        <AnimationsPanel {live} {bridge} {actions} />
-      {:else if ui.panel === 'site-settings'}
-        <SiteSettingsPanel {live} {bridge} {actions} />
+      {#if opensIn(area) === 'panel'}
+        {@const Panel = panels[area.id]}
+        {#if Panel}<Panel {live} {bridge} {actions} />{/if}
       {:else}
         <AreaList {live} {actions} />
       {/if}

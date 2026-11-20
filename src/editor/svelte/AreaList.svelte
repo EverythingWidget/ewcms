@@ -1,25 +1,25 @@
 <!--
-  The areas (ui.panel 'areas'): one card per part of the site, the only place each is opened
-  from (../areas.js). A card: [ 20px icon in a 36px column | name / what it holds | › ]. Pages,
-  Theme, Animations and Site settings open in the side panel (actions.setPanel; their head's
-  ← comes back here), Media and Sources open their window over the editor and the list stays.
-  An area not built yet is disabled and says "Coming soon" where the › is.
+  The areas (ui.panel 'areas'): one card per record of ../areas.js, the only place each is
+  opened from. A card: [ 20px icon in a 36px column | label / subtitle | › ]. A click opens what
+  the record says (opens): its panel (actions.setPanel: its head's ← comes back here) or its
+  window over the editor (the list stays). An area not built yet (status 'soon') is disabled and
+  says "Coming soon" where the › is.
 -->
 <script>
-  import { AREAS, areaSubs } from '../areas.js';
+  import { AREAS, opensIn } from '../areas.js';
   import { ui } from './ui.svelte.js';
-  import { media, isR2, openMedia } from './media.svelte.js';
-  import { openSources } from './modals.svelte.js';
+  import { media, isR2 } from './media.svelte.js';
   import { sourceIdOf } from '../../render/files.js';
   import { pageIds } from '../lib/page-tree.js';
 
   // live: reactive store (live.svelte.js); actions: setPanel (main.js)
   let { live, actions } = $props();
 
-  const subs = $derived.by(() => {
+  // what the site has, for the records' subtitles
+  const counts = $derived.by(() => {
     const files = live.files;
     const sources = Object.keys(files).filter((f) => sourceIdOf(f));
-    return areaSubs({
+    return {
       pages: pageIds(files).length,
       photos: Object.keys(media.photos).filter(isR2).length + Object.keys(media.manifest).length,
       sources: sources.length,
@@ -28,33 +28,34 @@
         0,
       ),
       templates: ui.pages.filter((p) => p.kind === 'item-template').length,
-    });
+    };
   });
 
+  // the record says what opens: its panel, or its window
   function open(area) {
-    if (area.id === 'media') return openMedia({ key: ui.media.key });
-    if (area.id === 'sources') return openSources();
-    if (area.opens === 'panel') actions.setPanel(area.id);
+    if (area.status !== 'ready') return;
+    if (opensIn(area) === 'panel') actions.setPanel(area.id);
+    else area.opens?.window?.();
   }
 </script>
 
 <section class="ed-body" aria-label="Areas">
   <ul class="areas">
     {#each AREAS as area (area.id)}
-      {@const soon = area.opens === 'soon'}
+      {@const soon = area.status === 'soon'}
       <li>
         <button
           type="button"
           class={['arow', soon && 'is-soon']}
           data-area={area.id}
           disabled={soon}
-          aria-haspopup={area.opens === 'modal' ? 'dialog' : undefined}
+          aria-haspopup={opensIn(area) === 'window' ? 'dialog' : undefined}
           onclick={() => open(area)}
         >
           <span class="arow__lead"><i class="fa-solid fa-{area.icon}" aria-hidden="true"></i></span>
           <span class="arow__text">
             <span class="arow__name">{area.label}</span>
-            <span class="arow__sub">{subs[area.id]}</span>
+            <span class="arow__sub">{area.subtitle(counts)}</span>
           </span>
           {#if soon}
             <span class="arow__soon">Coming soon</span>

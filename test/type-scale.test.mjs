@@ -196,8 +196,7 @@ test('Site settings › Type: a row per style with its tag, Preview / Close prev
     main,
     /ui\.specimenFrom = bridge\.path\(\) \|\| ui\.path;\s*bridge\.navigate\(TYPE_SPECIMEN\)/,
   );
-  assert.match(
-    read('src/editor/svelte/App.svelte'),
-    /<SiteSettingsPanel \{live\} \{bridge\} \{actions\} \/>/,
-  );
+  // the panel gets the bridge and actions (App.svelte, from its record in areas.js)
+  assert.match(read('src/editor/svelte/App.svelte'), /<Panel \{live\} \{bridge\} \{actions\} \/>/);
+  assert.match(read('src/editor/areas.js'), /import\('\.\/svelte\/SiteSettingsPanel\.svelte'\)/);
 });

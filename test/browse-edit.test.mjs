@@ -77,11 +77,11 @@ test('header: status | Edit / Done (one 80px slot) | Publish; Done saves, then b
   // Done: saved, then browse (an item template: back to Theme, setPanel browses)
   assert.match(
     app,
-    /async function done\(\) \{\s*if \(!\(await actions\.save\(\)\)\) return;[\s\S]*?if \(ui\.target\?\.kind === 'item-template'\) actions\.setPanel\('theme'\);\s*else setMode\('browse'\);/,
+    /async function done\(\) \{\s*if \(!\(await actions\.save\(\)\)\) return;[\s\S]*?if \(ui\.target\?\.kind === 'item-template'\) actions\.setPanel\(TEMPLATES_PANEL\);\s*else setMode\('browse'\);/,
   );
   assert.match(
     app,
-    /function edit\(\) \{\s*if \(ui\.panel !== 'pages'\) actions\.setPanel\('pages'\);\s*setMode\('edit'\);/,
+    /function edit\(\) \{\s*if \(ui\.panel !== EDIT_PANEL\) actions\.setPanel\(EDIT_PANEL\);\s*setMode\('edit'\);/,
   );
   // Ctrl+S saves
   assert.match(src('keys.js'), /mod && k === 's'\) \{\s*e\.preventDefault\(\);\s*save\(\);/);

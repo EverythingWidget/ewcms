@@ -5,7 +5,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { AREAS, PANELS, areaOf, areaSubs, panelOf } from '../src/editor/areas.js';
+import {
+  AREAS,
+  EDIT_PANEL,
+  PANELS,
+  TEMPLATES_PANEL,
+  areaOf,
+  opensIn,
+  panelOf,
+} from '../src/editor/areas.js';
 import { loadUi } from '../scripts/load-ui.mjs';
 
 const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
@@ -15,18 +23,28 @@ test('the areas, in order: Pages, Media, Sources, Theme, Animations, Site settin
     AREAS.map((a) => a.label),
     ['Pages', 'Media', 'Sources', 'Theme', 'Animations', 'Site settings', 'History'],
   );
-  // where each opens: the side panel, a window over the editor, or not yet
-  assert.deepEqual(Object.fromEntries(AREAS.map((a) => [a.id, a.opens])), {
+  // where each opens: the side panel, a window over the editor, or nothing yet
+  assert.deepEqual(Object.fromEntries(AREAS.map((a) => [a.id, opensIn(a)])), {
     pages: 'panel',
-    media: 'modal',
-    sources: 'modal',
+    media: 'window',
+    sources: 'window',
     theme: 'panel',
     animations: 'panel',
     'site-settings': 'panel',
+    history: null,
+  });
+  assert.deepEqual(Object.fromEntries(AREAS.map((a) => [a.id, a.status])), {
+    pages: 'ready',
+    media: 'ready',
+    sources: 'ready',
+    theme: 'ready',
+    animations: 'ready',
+    'site-settings': 'ready',
     history: 'soon',
   });
   // ui.panel's values: the list, then the side panel's areas (one name each: id = state value)
   assert.deepEqual(PANELS, ['areas', 'pages', 'theme', 'animations', 'site-settings']);
+  assert.ok(PANELS.includes(EDIT_PANEL) && PANELS.includes(TEMPLATES_PANEL));
   assert.equal(areaOf('site-settings').label, 'Site settings');
   // an old 'settings' (a link, a session) is site-settings
   assert.equal(panelOf('settings'), 'site-settings');
@@ -34,18 +52,57 @@ test('the areas, in order: Pages, Media, Sources, Theme, Animations, Site settin
   assert.equal(areaOf('nope'), undefined);
 });
 
+test('a record is the whole area: id, label, icon, subtitle, status, what it opens', () => {
+  for (const a of AREAS) {
+    assert.deepEqual(Object.keys(a), ['id', 'label', 'icon', 'subtitle', 'status', 'opens'], a.id);
+    assert.match(a.id, /^[a-z][a-z-]*$/);
+    assert.ok(['ready', 'soon'].includes(a.status), a.id);
+    // a ready area opens something; a panel or a window is a function (loaded on demand)
+    if (a.status === 'ready') assert.ok(opensIn(a), a.id);
+    if (a.opens) assert.equal(typeof (a.opens.panel || a.opens.window), 'function', a.id);
+  }
+  assert.equal(new Set(AREAS.map((a) => a.id)).size, AREAS.length);
+  // the panels' components: one each, named in the record
+  const file = src('areas.js');
+  for (const c of ['ContentPanel', 'ThemePanel', 'AnimationsPanel', 'SiteSettingsPanel'])
+    assert.match(file, new RegExp(`import\\('\\./svelte/${c}\\.svelte'\\)`), c);
+});
+
 test("each area's second line says what it holds, counted", () => {
-  const s = areaSubs({ pages: 5, photos: 35, sources: 3, items: 10, templates: 7 });
-  assert.equal(s.pages, 'Site parts and 5 pages');
-  assert.equal(s.media, '35 photos');
-  assert.equal(s.sources, '3 sources, 10 items');
-  assert.equal(s.theme, '7 templates');
-  assert.equal(
-    areaSubs({ pages: 1, photos: 1, sources: 1, items: 1, templates: 1 }).theme,
-    '1 template',
-  );
-  assert.equal(areaSubs().media, '0 photos');
-  for (const a of AREAS) assert.ok(s[a.id], a.id);
+  const n = { pages: 5, photos: 35, sources: 3, items: 10, templates: 7 };
+  const s = (id) => areaOf(id).subtitle(n);
+  assert.equal(s('pages'), 'Site parts and 5 pages');
+  assert.equal(s('media'), '35 photos');
+  assert.equal(s('sources'), '3 sources, 10 items');
+  assert.equal(s('theme'), '7 templates');
+  assert.equal(areaOf('theme').subtitle({ templates: 1 }), '1 template');
+  assert.equal(areaOf('media').subtitle({}), '0 photos');
+  for (const a of AREAS) assert.ok(a.subtitle(n), a.id);
+});
+
+test('no switch on area ids or panel values: App and AreaList follow the record', () => {
+  const app = src('svelte/App.svelte');
+  const list = src('svelte/AreaList.svelte');
+  const ids = AREAS.map((a) => a.id).join('|');
+  for (const [name, text] of [
+    ['App.svelte', app],
+    ['AreaList.svelte', list],
+  ]) {
+    // no ui.panel === 'x' / area.id === 'x', no area id as a string literal
+    assert.doesNotMatch(text, /(ui\.panel|area\.id|\.id)\s*[!=]==?\s*'/, name);
+    assert.doesNotMatch(text, new RegExp(`'(${ids})'`), name);
+    // no panel component imported by name: the records name them
+    assert.doesNotMatch(
+      text,
+      /import (ContentPanel|ThemePanel|AnimationsPanel|SiteSettingsPanel) /,
+      name,
+    );
+    assert.doesNotMatch(text, /openSources|openMedia/, name);
+  }
+  assert.match(app, /\{@const Panel = panels\[area\.id\]\}/);
+  assert.match(list, /if \(opensIn\(area\) === 'panel'\) actions\.setPanel\(area\.id\);/);
+  assert.match(list, /else area\.opens\?\.window\?\.\(\);/);
+  assert.match(list, /\{area\.subtitle\(counts\)\}/);
 });
 
 test('the editor opens on the areas; only Pages edits', async () => {
@@ -58,14 +115,11 @@ test('the editor opens on the areas; only Pages edits', async () => {
   );
 });
 
-test('AreaList: a card per area (20px icon in a 36px column), Coming soon disabled, Media and Sources open their windows', () => {
+test('AreaList: a card per area (20px icon in a 36px column), Coming soon disabled', () => {
   const list = src('svelte/AreaList.svelte');
   assert.match(list, /\{#each AREAS as area \(area\.id\)\}/);
   assert.match(list, /disabled=\{soon\}/);
   assert.match(list, /<span class="arow__soon">Coming soon<\/span>/);
-  assert.match(list, /if \(area\.id === 'media'\) return openMedia\(\{ key: ui\.media\.key \}\);/);
-  assert.match(list, /if \(area\.id === 'sources'\) return openSources\(\);/);
-  assert.match(list, /if \(area\.opens === 'panel'\) actions\.setPanel\(area\.id\);/);
   assert.match(list, /width: 36px;/);
   assert.match(list, /font-size: var\(--fs-2xl\);/);
   assert.match(list, /min-height: 48px;/);
@@ -82,14 +136,8 @@ test('one place each: no top tabs, no Sources or Media in the footer; the head 1
   // the area open, else the list
   const area = app.slice(app.indexOf('<div class="ed-area"'), app.indexOf('<!-- (i) [ Desktop'));
   const order = [
-    "ui.panel === 'pages'",
-    '<ContentPanel',
-    "ui.panel === 'theme'",
-    '<ThemePanel',
-    "ui.panel === 'animations'",
-    '<AnimationsPanel',
-    "ui.panel === 'site-settings'",
-    '<SiteSettingsPanel',
+    "opensIn(area) === 'panel'",
+    '<Panel {live} {bridge} {actions} />',
     '{:else}',
     '<AreaList',
   ];
@@ -99,7 +147,7 @@ test('one place each: no top tabs, no Sources or Media in the footer; the head 1
     at.join(' '),
   );
   // an area comes in from the right, the list comes back from the left
-  assert.match(app, /const dir = next === 'areas' \|\|/);
+  assert.match(app, /const back = next === 'areas' \|\|/);
 });
 
 test('every area but the list has the head back to it (AreaHead: ← Back to areas)', () => {
@@ -144,7 +192,7 @@ test("Theme: Fonts and styles Coming soon, the templates; a template's ← and D
   );
   assert.match(
     src('svelte/App.svelte'),
-    /if \(ui\.target\?\.kind === 'item-template'\) actions\.setPanel\('theme'\);/,
+    /if \(ui\.target\?\.kind === 'item-template'\) actions\.setPanel\(TEMPLATES_PANEL\);/,
   );
   const list = src('svelte/PagesList.svelte');
   assert.match(list, /<span class="prow__soon">Coming soon<\/span>/);
