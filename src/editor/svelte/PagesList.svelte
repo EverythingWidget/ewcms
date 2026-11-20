@@ -6,11 +6,12 @@
                 path, a quiet "Back to /parent/" under it, and a square + (Add page; off
                 where only a [param] page could go and it has one); at the top: the area's
                 head (AreaHead.svelte: ← Back to areas, "Pages") and the same +
-    Site parts  at the top: the Header and Footer (no grip, no delete)
     menu list   one list in the menu's order (header.json): at the top home and the other pages;
                 in a folder its root row first (locked: its own page, the Own page switch
                 when it has a normal sub page; off: quieter, its first sub page "As /"), then
                 its pages, its [param] page pinned last (a lock)
+    Site parts  after the menu list: the Header and Footer, the area list's half-width cards
+                (AreaCard.svelte: an icon, the name, a short line; a click opens it)
     Not linked  every page not in the menu (All), or the ones under this folder (This folder;
                 no filter at the top: every page is under /), in the site's order
   The Theme area (area 'theme', ThemePanel.svelte) is this list's other face: its head (Back
@@ -37,6 +38,7 @@
   import BackHead from './BackHead.svelte';
   import AreaHead from './AreaHead.svelte';
   import SoonTag from './SoonTag.svelte';
+  import AreaCard from './AreaCard.svelte';
   import { areaOf } from '../areas.js';
   import Select from './Select.svelte';
   import { openAddPage } from './modals.svelte.js';
@@ -695,12 +697,6 @@
       <p class="hint small">No templates yet: a List’s Duplicate makes one.</p>
     {/if}
   {:else}
-    {#if !level}
-      {@render head('Site parts')}
-      <ul class="pl-rows">
-        {#each SITE_PARTS as p (p.id)}{@render row({ ...p, part: true })}{/each}
-      </ul>
-    {/if}
     <ul class="pl-rows" bind:this={subList}>
       {#if L.own}{@render row(L.own)}{/if}
       {#if !lastMovable}{#each slotsAt(0, null) as p, i (i)}{@render slot(p)}{/each}{/if}
@@ -713,6 +709,29 @@
       {/each}
     </ul>
     {#if level && !L.sub.length}<p class="hint small">No sub pages yet: + adds one.</p>{/if}
+
+    <!-- the site parts, after the pages: the area list's half-width cards (AreaCard.svelte) -->
+    {#if !level}
+      {@render head('Site parts')}
+      <ul class="pl-parts">
+        {#each SITE_PARTS as p (p.id)}
+          {@const r = { ...p, part: true }}
+          <li>
+            <AreaCard
+              icon={p.icon}
+              name={p.title}
+              sub={p.card}
+              active={isActive(r)}
+              selected={sel === r.id}
+              data-part={p.id}
+              title="Open the {p.title}"
+              onclick={(e) => onclick(e, r)}
+              ondblclick={() => into(r)}
+            />
+          </li>
+        {/each}
+      </ul>
+    {/if}
 
     <div class="pl-zone" bind:this={nlZone}>
       {@render head('Not linked', L.notLinked.length, !!level)}
@@ -819,6 +838,17 @@
 
   .pl-rows {
     @include stack(var(--space-1));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  // the site parts: the area list's window cards (AreaList.svelte .areas-win), two a row, 8px
+  // apart: (376 - 8) / 2 = 184px each
+  .pl-parts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
     margin: 0;
     padding: 0;
     list-style: none;

@@ -4,10 +4,11 @@
   the record says (opens): its panel (actions.setPanel: its head's ← comes back here) or its
   window over the editor (the list stays). The areas that open a window are half-width cards
   under the list, two a row, without the ›. An area not built yet (status 'soon') is disabled and
-  says "Coming soon" where the › is (SoonTag.svelte).
+  says "Coming soon" where the › is (SoonTag.svelte). The card: AreaCard.svelte (the pages
+  list's site parts are the same card).
 -->
 <script>
-  import SoonTag from './SoonTag.svelte';
+  import AreaCard from './AreaCard.svelte';
   import { AREAS, opensIn } from '../areas.js';
   import { ui } from './ui.svelte.js';
   import { media, isR2 } from './media.svelte.js';
@@ -60,27 +61,18 @@
 </section>
 
 {#snippet card(area)}
-  {@const soon = area.status === 'soon'}
   {@const win = opensIn(area) === 'window'}
-  <button
-    type="button"
-    class={['arow', soon && 'is-soon', area.highlight?.(counts) && 'is-update']}
+  <AreaCard
+    icon={area.icon}
+    name={area.label}
+    sub={area.subtitle(counts)}
+    go={!win}
+    soon={area.status === 'soon'}
+    update={!!area.highlight?.(counts)}
     data-area={area.id}
-    disabled={soon}
     aria-haspopup={win ? 'dialog' : undefined}
     onclick={() => open(area)}
-  >
-    <span class="arow__lead"><i class="fa-solid fa-{area.icon}" aria-hidden="true"></i></span>
-    <span class="arow__text">
-      <span class="arow__name">{area.label}</span>
-      <span class="arow__sub">{area.subtitle(counts)}</span>
-    </span>
-    {#if soon}
-      <SoonTag />
-    {:else if !win}
-      <span class="arow__go"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
-    {/if}
-  </button>
+  />
 {/snippet}
 
 <style lang="scss">
@@ -103,90 +95,5 @@
     margin: var(--space-3) 0 0;
     padding: 0;
     list-style: none;
-  }
-
-  // a page card's look: [ 20px icon in a 36px column (8px each side) | name / sub | › ]
-  .arow {
-    @include row(0);
-    width: 100%;
-    min-height: 48px;
-    padding-right: var(--space-1);
-    border: 0;
-    border-radius: var(--radius-lg);
-    background: var(--c-page-card);
-    box-shadow: inset 0 0 0 1px transparent;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-
-    &:hover:not(:disabled) {
-      box-shadow: inset 0 0 0 1px var(--c-line-hover);
-    }
-
-    &:focus-visible {
-      @include focus-ring;
-    }
-
-    // highlighted (its record's highlight: About, an update): the old update pill's teal, a 1px
-    // ring at 50% (a hovered widget row's), full on hover; the icon and the subtitle teal
-    &.is-update {
-      box-shadow: inset 0 0 0 1px var(--c-widget-line-hover);
-
-      &:hover {
-        box-shadow: inset 0 0 0 1px var(--c-widget-accent);
-      }
-
-      .arow__lead,
-      .arow__sub {
-        color: var(--c-widget-accent);
-      }
-    }
-
-    &.is-soon {
-      @include soon-row('.arow__lead, .arow__name');
-    }
-  }
-
-  .arow__lead {
-    display: grid;
-    flex: none;
-    place-items: center;
-    align-self: stretch;
-    width: 36px; // 8px + 20px icon + 8px
-    color: var(--c-text-muted);
-    font-size: var(--fs-2xl);
-    line-height: 1;
-  }
-
-  .arow__text {
-    display: grid;
-    flex: 1;
-    align-self: stretch;
-    align-content: center;
-    min-width: 0;
-    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
-    font-size: var(--fs-base);
-    line-height: 20px;
-  }
-
-  .arow__name {
-    @include ellipsis;
-    color: var(--c-text-strong);
-    font-weight: 500;
-  }
-
-  .arow__sub {
-    @include ellipsis;
-    @include muted;
-  }
-
-  .arow__go {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 24px;
-    color: var(--c-text-muted);
-    font-size: var(--fs-2xs);
   }
 </style>

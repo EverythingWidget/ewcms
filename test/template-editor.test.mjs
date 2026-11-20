@@ -189,7 +189,7 @@ test('the editor: a Templates group in Theme, its own target, Edit template, no 
   // Templates are Theme's (area 'theme'), the site parts Pages'
   const theme = list.slice(
     list.indexOf('{#if theme}\n    <!--'),
-    list.indexOf('{:else}\n    {#if !level}'),
+    list.indexOf('{:else}\n    <ul class="pl-rows" bind:this={subList}>'),
   );
   assert.match(theme, /head\('Templates'/);
   assert.match(theme, /<SoonTag \/>/);

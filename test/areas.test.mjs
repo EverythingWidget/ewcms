@@ -19,6 +19,7 @@ import {
   sectionKeyOf,
 } from '../src/editor/areas.js';
 import { loadUi } from '../scripts/load-ui.mjs';
+import { SITE_PARTS } from '../src/editor/lib/site-parts.js';
 
 const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
 
@@ -141,11 +142,14 @@ test('AreaList: a card per area (20px icon in a 36px column), Coming soon disabl
     list,
     /\{#each rows as area \(area\.id\)\}<li>\{@render card\(area\)\}<\/li>\{\/each\}/,
   );
-  assert.match(list, /disabled=\{soon\}/);
-  assert.match(list, /\{#if soon\}\s*<SoonTag \/>/);
-  assert.match(list, /width: 36px;/);
-  assert.match(list, /font-size: var\(--fs-2xl\);/);
-  assert.match(list, /min-height: 48px;/);
+  // the card (AreaCard.svelte, shared with the pages list's site parts)
+  assert.match(list, /soon=\{area\.status === 'soon'\}/);
+  const card = src('svelte/AreaCard.svelte');
+  assert.match(card, /disabled=\{soon\}/);
+  assert.match(card, /\{#if soon\}\s*<SoonTag \/>/);
+  assert.match(card, /width: 36px;/);
+  assert.match(card, /font-size: var\(--fs-2xl\);/);
+  assert.match(card, /min-height: 48px;/);
   assert.match(src('styles/_tokens.scss'), /--fs-2xl: 20px;/);
 });
 
@@ -180,7 +184,8 @@ test('the windows (a record that opens one): half-width cards under the list, tw
   assert.match(list, /const windows = AREAS\.filter\(\(a\) => opensIn\(a\) === 'window'\);/);
   assert.match(list, /<ul class="areas-win">\s*\{#each windows as area \(area\.id\)\}/);
   // the same card as a row (its icon column, label, subtitle), without the ›
-  assert.match(list, /\{:else if !win\}\s*<span class="arow__go">/);
+  assert.match(list, /<AreaCard[\s\S]*?go=\{!win\}/);
+  assert.match(src('svelte/AreaCard.svelte'), /\{:else if go\}\s*<span class="arow__go">/);
   // 2 a row, 8px apart, 12px under the list
   assert.match(
     list,
@@ -206,10 +211,11 @@ test("About: ewcms's version, or the update to it, highlighted (its record)", ()
   assert.match(src('areas.js'), /openAbout\(\)/);
   // the card: its record's highlight, the old pill's teal; same fill and size
   const list = src('svelte/AreaList.svelte');
-  assert.match(list, /area\.highlight\?\.\(counts\) && 'is-update'/);
+  assert.match(list, /update=\{!!area\.highlight\?\.\(counts\)\}/);
+  assert.match(src('svelte/AreaCard.svelte'), /update && 'is-update'/);
   assert.match(list, /update: \{ \.\.\.upd\.info, highlighted: highlighted\(\) \}/);
   assert.match(
-    list,
+    src('svelte/AreaCard.svelte'),
     /&\.is-update \{\s*box-shadow: inset 0 0 0 1px var\(--c-widget-line-hover\);\s*&:hover \{\s*box-shadow: inset 0 0 0 1px var\(--c-widget-accent\);/,
   );
   // highlighted: an offer not put off with Later, an update running or failed
@@ -255,7 +261,7 @@ test('Coming soon: one pattern, from the status; the words in one place', () => 
   assert.match(src('svelte/SoonTag.svelte'), /<span class="soon">\{COMING_SOON\}<\/span>/);
   // the rows' look: the soon-row mixin, in the list and in Theme
   assert.match(src('styles/_mixins.scss'), /@mixin soon-row\(\$faint\)/);
-  assert.match(src('svelte/AreaList.svelte'), /@include soon-row\('\.arow__lead, \.arow__name'\);/);
+  assert.match(src('svelte/AreaCard.svelte'), /@include soon-row\('\.arow__lead, \.arow__name'\);/);
   assert.match(src('svelte/PagesList.svelte'), /@include soon-row\('\.prow__title'\);/);
   // no copy of the words or of the style elsewhere in the editor's markup
   for (const f of readdirSync(new URL('../src/editor/svelte/', import.meta.url))) {
@@ -282,10 +288,10 @@ test('every area but the list has the head back to it (AreaHead: ← Back to are
   );
 });
 
-test('Pages: Site parts first (Header, Footer), then the menu and Not linked; no empty icon column', () => {
+test('Pages: the menu, then Site parts (Header, Footer), then Not linked; no empty icon column', () => {
   const list = src('svelte/PagesList.svelte');
-  const pages = list.slice(list.indexOf('{:else}\n    {#if !level}'));
-  const at = ["head('Site parts')", 'SITE_PARTS', 'bind:this={subList}', "head('Not linked'"].map(
+  const pages = list.slice(list.indexOf('{:else}\n    <ul class="pl-rows" bind:this={subList}>'));
+  const at = ['bind:this={subList}', "head('Site parts')", 'SITE_PARTS', "head('Not linked'"].map(
     (s) => pages.indexOf(s),
   );
   assert.ok(
@@ -332,4 +338,35 @@ test('Animations: Motion (timing, library) and the Page entrance; Site settings 
   assert.match(settings, /<RedirectSettings \{live\} \/>/);
   assert.doesNotMatch(settings, /MotionSettings|Page entrance"|EntranceCurtain/);
   assert.match(src('svelte/MotionSettings.svelte'), /key="animations:motion"/);
+});
+
+test("Pages: the site parts are the area list's half-width cards (AreaCard), not page rows", () => {
+  const list = src('svelte/PagesList.svelte');
+  const parts = list.slice(list.indexOf("head('Site parts')"), list.indexOf("head('Not linked'"));
+  // only at the top, the same card as the areas' windows, two a row, 8px apart
+  assert.match(list, /\{#if !level\}\s*\{@render head\('Site parts'\)\}/);
+  assert.match(parts, /<ul class="pl-parts">/);
+  assert.match(parts, /<AreaCard\s/);
+  assert.doesNotMatch(parts, /@render row\(/);
+  assert.match(
+    list,
+    /\.pl-parts \{\s*display: grid;\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);\s*gap: var\(--space-2\);/,
+  );
+  assert.match(src('svelte/AreaList.svelte'), /<AreaCard\s/);
+  // the behaviour of a page row: its click (opens it), double click, the ring and the fill
+  assert.match(parts, /active=\{isActive\(r\)\}/);
+  assert.match(parts, /selected=\{sel === r\.id\}/);
+  assert.match(parts, /onclick=\{\(e\) => onclick\(e, r\)\}/);
+  assert.match(parts, /ondblclick=\{\(\) => into\(r\)\}/);
+  const card = src('svelte/AreaCard.svelte');
+  assert.match(card, /active && 'is-active'/);
+  assert.match(card, /selected && 'is-sel'/);
+  // icons and short lines (the page head keeps the long ones)
+  assert.deepEqual(
+    SITE_PARTS.map((p) => [p.id, p.icon, p.card]),
+    [
+      ['header', 'bars', 'Menu and labels'],
+      ['footer', 'window-minimize', 'Sections, widgets'],
+    ],
+  );
 });
