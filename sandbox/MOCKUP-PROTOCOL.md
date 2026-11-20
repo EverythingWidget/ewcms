@@ -85,6 +85,10 @@ optional (only when asked to redo or clear mocks).
 
 ## 5. Kit cheat sheet
 
+Editor state (the preview's page with its row's active fill, a selected widget, an update
+available or not, many pages): `<EditorState path="/about/" pages="many" update="available"
+widget="w-1">{#snippet children(live)}…{/snippet}</EditorState>` (`kit/README.md`, Editor state).
+
 Import everything from `'../kit/index.js'` (from a mock). Real editor components, if you need
 one the kit lacks: `'../../src/editor/svelte/<Name>.svelte'` (Button, Section, Field, Select,
 Tabs, ExplorerHead, …). `{live}` is required wherever listed.

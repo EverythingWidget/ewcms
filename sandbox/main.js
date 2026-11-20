@@ -20,6 +20,7 @@
  * message): mock.mjs loads it again.
  */
 import { mount } from 'svelte';
+import { settled } from './kit/ready.js';
 import './viewer.css';
 
 // this machine's mocks (sandbox/mocks/: git-ignored), and the kit's demo (tracked) as "kit-demo"
@@ -96,6 +97,7 @@ async function mocks() {
 async function main() {
   if (names.length) await mocks();
   else mount((await import('./Viewer.svelte')).default, { target: root });
+  await settled(); // what a mock loads first (kit/ready.js hold)
   await document.fonts.ready;
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   window.__mockReady = true;

@@ -7,3 +7,6 @@ export { default as Compare } from './Compare.svelte';
 export { default as Variant } from './Variant.svelte';
 export { default as Ask } from './Ask.svelte';
 export { FILE, PAGES, SECTIONS, widget, labelOf, sampleLive, samplePage } from './sample.js';
+export { default as EditorState } from './EditorState.svelte';
+export { editorState, siteFiles, withPages } from './state.js';
+export { hold } from './ready.js';
