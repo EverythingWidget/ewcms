@@ -20,21 +20,15 @@
   const edit = $derived(curtainEdits(live.store, ANIMATIONS, CURTAIN));
   // Re-read after every store change.
   const plan = $derived.by(() => {
-    live.version;
-    return edit.plan();
+    return live.read(() => edit.plan());
   });
   const individual = $derived.by(() => {
-    live.version;
-    return edit.easeMode() === 'individual';
+    return live.read(() => edit.easeMode()) === 'individual';
   });
   const shared = $derived.by(() => {
-    live.version;
-    return edit.sharedEase();
+    return live.read(() => edit.sharedEase());
   });
-  const value = (rel) => {
-    live.version;
-    return edit.shown(rel);
-  };
+  const value = (rel) => live.read(() => edit.shown(rel));
   // "stay" is not stored (it is the gap before textOutStart): never marked changed.
   const changed = (rel) => rel !== '/stay' && live.changed(edit.file, edit.base + rel);
 

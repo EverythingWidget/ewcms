@@ -36,8 +36,7 @@
   ]);
   // the elements of the widget with their own animation (data-anim inside it)
   const elements = $derived.by(() => {
-    live.version;
-    return el ? [...el.querySelectorAll('[data-anim]')] : [];
+    return live.read(() => (el ? [...el.querySelectorAll('[data-anim]')] : []));
   });
 
   /** Pick the animation (its own timing stays); '' removes the widget's motion. */

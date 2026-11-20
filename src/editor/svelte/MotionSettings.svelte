@@ -23,14 +23,14 @@
   const cfg = $derived(live.current(ANIMATIONS));
   const items = $derived.by(() => {
     ui.previewVersion;
-    live.version;
-    return bridge.api ? bridge.animElements() : [];
+    return live.read(() => (bridge.api ? bridge.animElements() : []));
   });
   const sections = $derived.by(() => {
     ui.previewVersion;
-    live.version;
-    const file = targetFile(ui.target, bridge.doc);
-    return motionSections(file ? live.get(file, '/sections') : null, bridge.doc, items);
+    return live.read(() => {
+      const file = targetFile(ui.target, bridge.doc);
+      return motionSections(file ? live.get(file, '/sections') : null, bridge.doc, items);
+    });
   });
 
   // [key, label, GSAP's own: shown while unset]

@@ -24,7 +24,7 @@
     changed = false,
     red = false,
   } = $props();
-  const sections = $derived((live.version, live.store.current[FILE].sections));
+  const sections = $derived(live.get(FILE, '/sections'));
   const last = $derived(at === sections.length - 1);
   // writable: the card's own Cancel / Delete clear it
   let deleting = $derived(red ? sections[at]?.id : '');

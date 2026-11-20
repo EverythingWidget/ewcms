@@ -79,9 +79,8 @@
   // The texts come from the preview's [data-edit] elements: re-read them after every edit
   // (widgets may have moved) and when the preview shows another page.
   const groups = $derived.by(() => {
-    live.version;
     ui.previewVersion;
-    return contentGroups(live.store, bridge, ui.target);
+    return live.read((store) => contentGroups(store, bridge, ui.target));
   });
   const waiting = $derived.by(() => {
     ui.previewVersion;

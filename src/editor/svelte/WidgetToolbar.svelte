@@ -59,7 +59,6 @@
 
   // ---- the widget: where it is in its file, its stored value, its element in the preview
   const where = $derived.by(() => {
-    live.version;
     ui.previewVersion;
     const id = ui.widget;
     if (!id || previewClicks() !== 'arrange') return null;
@@ -277,7 +276,7 @@
       view?.removeEventListener('keydown', esc, true);
     };
   });
-  // its id only: `where` is a new object per edit (live.version), and a style picked must not
+  // its id only: `where` is a new object per edit (live.get), and a style picked must not
   // close its menu (G4)
   const whereId = $derived(where?.id);
   $effect(() => {

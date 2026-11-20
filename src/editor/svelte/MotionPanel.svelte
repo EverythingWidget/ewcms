@@ -37,15 +37,15 @@
   });
   const items = $derived.by(() => {
     ui.previewVersion;
-    live.version;
-    return bridge.api ? bridge.animElements() : [];
+    return live.read(() => (bridge.api ? bridge.animElements() : []));
   });
 
   // The page's sections and widgets (its file), each widget with its element and the animated elements inside it.
   const sections = $derived.by(() => {
     ui.previewVersion;
-    live.version;
-    return motionSections(file ? live.get(file, '/sections') : null, bridge.doc, items);
+    return live.read(() =>
+      motionSections(file ? live.get(file, '/sections') : null, bridge.doc, items),
+    );
   });
   const outside = $derived(items.filter((it) => !it.el.closest('[data-widget]')));
 
