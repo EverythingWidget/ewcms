@@ -65,6 +65,8 @@
  *                     the value from the widget's config (default: config[key]; '', null or
  *                     undefined removes the variable). E.g. a List's gap:
  *                     { on: '.list__items--grid', var: '--list-gap', value: (c) => gapOf(c) || null }
+ *   hint      optional: a line the editor shows first in its Content tab (a Text: where its
+ *             words are typed)
  *   defaults  a new widget of this type (Add widget)
  *   check(widget)  optional: more problems than its settings' types (src/render/validate.js)
  *   pageTitle(widget)  optional: the page's title from this widget, { title } (title undefined:

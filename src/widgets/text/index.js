@@ -30,6 +30,10 @@ export const text = {
   fitWidth: true,
   scaleToFit: true,
   settings: [{ key: 'body', label: 'Text', type: 'rich' }],
+  // its words aren't a field in the editor's Content tab: where they are typed
+  hint:
+    'Type the text in the preview: with the widget picked, just type (or press Enter, or ' +
+    'double-click it). Styles, bold, links and Full-width line are in its toolbar.',
   config: [],
   defaults: { body: [{ style: 'paragraph', text: [{ t: 'Some text.' }] }], config: {} },
   check: (widget) => (widget.body === undefined ? [] : checkBody(widget.body)),

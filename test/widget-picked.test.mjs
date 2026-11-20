@@ -6,10 +6,15 @@ import { readFileSync } from 'node:fs';
 const src = (f) => readFileSync(new URL(`../src/editor/svelte/${f}`, import.meta.url), 'utf8');
 
 test("a Text's Content tab says its words are typed in the preview (F06, F15)", () => {
-  const ins = src('WidgetInspector.svelte');
+  // the Text type's hint (its declaration), shown first in the Content tab
   assert.match(
-    ins,
-    /widget\.type === 'text'[\s\S]*Type the text in the preview: with the widget picked, just type/,
+    src('WidgetInspector.svelte'),
+    /\{#if type\.hint\}\s*<p class="hint" data-text-hint>\{type\.hint\}<\/p>/,
+  );
+  const textType = readFileSync(new URL('../src/widgets/text/index.js', import.meta.url), 'utf8');
+  assert.match(
+    textType,
+    /hint:\s*'Type the text in the preview: with the widget picked, just type/,
   );
   assert.match(src('WidgetSource.svelte'), /<b>None<\/b>: only\s+what you type/);
   assert.match(src('GroupFields.svelte'), /<b>Hide<\/b>: the widget is left out/);
