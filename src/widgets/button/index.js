@@ -20,7 +20,8 @@ export const button = {
   sketch: 'button',
   // its content box (the button): Fit hugs its label, Fill fills the widget; placed in it
   placement: { axes: 'both', box: true, place: 'left top' },
-  settings: [{ key: 'label', label: 'Label' }],
+  // (an emptied label keeps its element: the editor writes it in place)
+  settings: [{ key: 'label', label: 'Label', blank: 'keep' }],
   config: [
     { key: 'link', label: 'Link', type: 'link' },
     // a label longer than the widget is wide: cut at its edge (Clip, unset) or broken onto more
@@ -35,6 +36,8 @@ export const button = {
         ['wrap', 'Wrap'],
         ['clip', 'Clip'],
       ],
+      // the editor toggles it in place, as render() writes it
+      live: { on: '.buttonwidget', class: 'buttonwidget--wrap', when: 'wrap' },
     },
   ],
   defaults: {

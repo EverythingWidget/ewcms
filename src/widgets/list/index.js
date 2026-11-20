@@ -288,6 +288,8 @@ export const list = {
       // a whole number of the page's cells (0: side by side; WidgetLayout.svelte)
       min: 0,
       max: MAX_GAP,
+      // the editor writes it in place, as render() does: --list-gap on the grid, none at 0
+      live: { on: '.list__items--grid', var: '--list-gap', value: (c) => gapOf(c) || null },
     },
     ...CAROUSEL_ROWS,
   ],

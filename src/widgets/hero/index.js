@@ -41,6 +41,10 @@ export const longestWord = (text) =>
       .map((w) => [...w].length),
   );
 
+/** The name written in place in the editor: the title's --hero-word with it. */
+const heroWord = (el, value) =>
+  el.closest('.hero__title')?.style.setProperty('--hero-word', String(longestWord(value)));
+
 /** The Hero's looks (style): the first photo beside the name or behind it, or all scattered. */
 export const HERO_STYLES = [
   ['beside', 'Photo beside'],
@@ -69,9 +73,18 @@ export const hero = {
   sketch: 'hero',
   settings: [
     { key: 'style', label: 'Style', type: 'seg', options: HERO_STYLES, unset: 'scattered' },
-    { key: 'title', label: 'Name', type: 'words', width: 'half' },
-    { key: 'eyebrow', label: 'Eyebrow', width: 'half' },
-    { key: 'body', label: 'Subline', type: 'multiline' },
+    // (the editor writes these in place, emptied too: their elements stay; the name's size
+    // follows its longest word, --hero-word on the title, as render() writes it)
+    {
+      key: 'title',
+      label: 'Name',
+      type: 'words',
+      width: 'half',
+      blank: 'keep',
+      live: { after: (el, value) => heroWord(el, value) },
+    },
+    { key: 'eyebrow', label: 'Eyebrow', width: 'half', blank: 'keep' },
+    { key: 'body', label: 'Subline', type: 'multiline', blank: 'keep' },
     {
       key: 'photos',
       label: 'Photos',

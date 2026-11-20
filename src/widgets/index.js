@@ -27,7 +27,7 @@
  *             Shrink to fit; ../layout/type.js)
  *   size      optional false: no Size (Auto / Rows / Aspect); every built-in has it
  *   settings  its content settings for the editor (each one field there; an item's properties
- *             can fill them, ../layout/bindings.js): [{ key, label, type?, width?, list?, item? }]
+ *             can fill them, ../layout/bindings.js): [{ key, label, type?, width?, list?, item?, blank?, live? }]
  *               type: 'text' (default) | 'multiline' (multi-line) | 'words' | 'number' | 'photo'
  *                     (the types: ../property-types.js)
  *               width: 'half' shares a row with a half setting next to it (short texts)
@@ -37,9 +37,27 @@
  *                     { type, label, width?, options? }: a type with its label, 'select' with options
  *                     [[value, label]])
  *               item: a new item of the list (default: '' or the subkeys empty)
- *   config    how it works (its look, on/off): [{ key, label, type, options?, empty? }]
+ *               blank: 'keep': emptied, its element stays (render shows '' in it), so the
+ *                     editor writes an emptied value in place too; without it an emptied
+ *                     text renders the widget again (it may leave the element out or show a
+ *                     default instead)
+ *               live: { after(el, value) }: run in the editor's preview after it wrote a typed
+ *                     value into the setting's element el (data-edit), for what the render
+ *                     writes beside it (the Hero's name: --hero-word on its title)
+ *             A text, multi-line, words or number setting typed is written into its elements
+ *             in place (src/editor/layout-sync.js patchTexts); anything else renders the
+ *             widget again.
+ *   config    how it works (its look, on/off): [{ key, label, type, options?, empty?, live? }]
  *               type: 'source' (a content/en/sources file) | 'select' (options [[value, label]])
  *                     | 'text' | 'boolean'; every widget also has config.enabled (on/off)
+ *               live: how the editor's preview shows a changed value in place, as render()
+ *                     writes it, instead of rendering the widget again (src/editor/
+ *                     widget-fields.js configStep): { on, var } sets the CSS variable var on
+ *                     the widget's own element matching the selector on, or { on, class, when }
+ *                     toggles class on it (on when the value is when); value(config) optional:
+ *                     the value from the widget's config (default: config[key]; '', null or
+ *                     undefined removes the variable). E.g. a List's gap:
+ *                     { on: '.list__items--grid', var: '--list-gap', value: (c) => gapOf(c) || null }
  *   defaults  a new widget of this type (Add widget)
  *   check(widget)  optional: more problems than its settings' types (src/render/validate.js)
  *   warn(widget)   optional: things to tell, not problems (ewcms check shows them, e.g. a
