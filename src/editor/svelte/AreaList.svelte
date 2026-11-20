@@ -3,9 +3,10 @@
   opened from. A card: [ 20px icon in a 36px column | label / subtitle | › ]. A click opens what
   the record says (opens): its panel (actions.setPanel: its head's ← comes back here) or its
   window over the editor (the list stays). An area not built yet (status 'soon') is disabled and
-  says "Coming soon" where the › is.
+  says "Coming soon" where the › is (SoonTag.svelte).
 -->
 <script>
+  import SoonTag from './SoonTag.svelte';
   import { AREAS, opensIn } from '../areas.js';
   import { ui } from './ui.svelte.js';
   import { media, isR2 } from './media.svelte.js';
@@ -58,7 +59,7 @@
             <span class="arow__sub">{area.subtitle(counts)}</span>
           </span>
           {#if soon}
-            <span class="arow__soon">Coming soon</span>
+            <SoonTag />
           {:else}
             <span class="arow__go"
               ><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span
@@ -104,14 +105,8 @@
       @include focus-ring;
     }
 
-    // not built yet: quieter, no hover, no pointer
     &.is-soon {
-      cursor: default;
-
-      .arow__lead,
-      .arow__name {
-        color: var(--c-text-faint);
-      }
+      @include soon-row('.arow__lead, .arow__name');
     }
   }
 
@@ -155,13 +150,5 @@
     width: 24px;
     color: var(--c-text-muted);
     font-size: var(--fs-2xs);
-  }
-
-  // where the › is: the same right edge (the row's 4px), on one line
-  .arow__soon {
-    flex: none;
-    padding-right: var(--space-2);
-    @include muted;
-    white-space: nowrap;
   }
 </style>

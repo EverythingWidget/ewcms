@@ -4,9 +4,10 @@
 // the library and the page entrance.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import {
   AREAS,
+  COMING_SOON,
   EDIT_PANEL,
   PANELS,
   TEMPLATES_PANEL,
@@ -54,7 +55,15 @@ test('the areas, in order: Pages, Media, Sources, Theme, Animations, Site settin
 
 test('a record is the whole area: id, label, icon, subtitle, status, what it opens', () => {
   for (const a of AREAS) {
-    assert.deepEqual(Object.keys(a), ['id', 'label', 'icon', 'subtitle', 'status', 'opens'], a.id);
+    assert.deepEqual(
+      Object.keys(a).filter((k) => k !== 'parts'),
+      ['id', 'label', 'icon', 'subtitle', 'status', 'opens'],
+      a.id,
+    );
+    for (const p of a.parts ?? []) {
+      assert.deepEqual(Object.keys(p), ['id', 'label', 'subtitle', 'status'], `${a.id} ${p.id}`);
+      assert.ok(['ready', 'soon'].includes(p.status), p.id);
+    }
     assert.match(a.id, /^[a-z][a-z-]*$/);
     assert.ok(['ready', 'soon'].includes(a.status), a.id);
     // a ready area opens something; a panel or a window is a function (loaded on demand)
@@ -119,7 +128,7 @@ test('AreaList: a card per area (20px icon in a 36px column), Coming soon disabl
   const list = src('svelte/AreaList.svelte');
   assert.match(list, /\{#each AREAS as area \(area\.id\)\}/);
   assert.match(list, /disabled=\{soon\}/);
-  assert.match(list, /<span class="arow__soon">Coming soon<\/span>/);
+  assert.match(list, /\{#if soon\}\s*<SoonTag \/>/);
   assert.match(list, /width: 36px;/);
   assert.match(list, /font-size: var\(--fs-2xl\);/);
   assert.match(list, /min-height: 48px;/);
@@ -148,6 +157,22 @@ test('one place each: no top tabs, no Sources or Media in the footer; the head 1
   );
   // an area comes in from the right, the list comes back from the left
   assert.match(app, /const back = next === 'areas' \|\|/);
+});
+
+test('Coming soon: one pattern, from the status; the words in one place', () => {
+  assert.equal(COMING_SOON, 'Coming soon');
+  assert.match(src('svelte/SoonTag.svelte'), /<span class="soon">\{COMING_SOON\}<\/span>/);
+  // the rows' look: the soon-row mixin, in the list and in Theme
+  assert.match(src('styles/_mixins.scss'), /@mixin soon-row\(\$faint\)/);
+  assert.match(src('svelte/AreaList.svelte'), /@include soon-row\('\.arow__lead, \.arow__name'\);/);
+  assert.match(src('svelte/PagesList.svelte'), /@include soon-row\('\.prow__title'\);/);
+  // no copy of the words or of the style elsewhere in the editor's markup
+  for (const f of readdirSync(new URL('../src/editor/svelte/', import.meta.url))) {
+    if (!f.endsWith('.svelte')) continue;
+    const s = src(`svelte/${f}`).replace(/<!--[\s\S]*?-->/g, '');
+    assert.doesNotMatch(s, />\s*Coming soon\s*</, f);
+    assert.doesNotMatch(s, /__soon\b/, f);
+  }
 });
 
 test('every area but the list has the head back to it (AreaHead: ← Back to areas)', () => {
@@ -195,8 +220,14 @@ test("Theme: Fonts and styles Coming soon, the templates; a template's ← and D
     /if \(ui\.target\?\.kind === 'item-template'\) actions\.setPanel\(TEMPLATES_PANEL\);/,
   );
   const list = src('svelte/PagesList.svelte');
-  assert.match(list, /<span class="prow__soon">Coming soon<\/span>/);
-  assert.match(list, /<button type="button" class="prow__open" disabled>/);
+  // Fonts and styles: Theme's record's part, status 'soon' (type stays in Site settings)
+  assert.deepEqual(areaOf('theme').parts, [
+    { id: 'fonts-styles', label: 'Fonts and styles', subtitle: "The theme's look", status: 'soon' },
+  ]);
+  assert.match(list, /const parts = \$derived\(areaOf\(area\)\?\.parts \?\? \[\]\);/);
+  assert.match(list, /<button type="button" class="prow__open" disabled=\{soon\}>/);
+  assert.match(list, /\{#if soon\}<SoonTag \/>\{\/if\}/);
+  assert.doesNotMatch(list, /Fonts and styles<|The theme's look</);
   // Theme has no folders
   assert.match(list, /const level = \$derived\(theme \? '' : ui\.pagesWin\.folder\);/);
 });

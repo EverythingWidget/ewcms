@@ -8,12 +8,14 @@
  *   icon      the card's Font Awesome icon (fa-solid fa-<icon>)
  *   subtitle  (counts) => the card's quiet second line, from what the site has ({ pages,
  *             photos, sources, items, templates }: AreaList counts them)
- *   status    'ready' | 'soon' (not built yet: disabled, "Coming soon")
+ *   status    'ready' | 'soon' (not built yet: disabled, COMING_SOON where the › is)
  *   opens     what a click opens, one of:
  *               { panel: () => import(component) }   in the side panel (ui.panel is its id;
  *                                                     the component gets live, bridge, actions)
  *               { window: () => open it }            a window over the editor, the list stays
  *             (null: nothing yet, a 'soon' area)
+ *   parts     (optional) rows the area's panel lists at its top, each { id, label, subtitle,
+ *             status }: a 'soon' one shows as the areas' do (Theme's Fonts and styles)
  * Pages holds the site parts (Header, Footer) and every page, Theme the item templates,
  * Animations the default timing, the Animations library and the page entrance, Site settings
  * what is the same on every page, redirects too.
@@ -21,6 +23,9 @@
  * the tests.)
  */
 import { plural } from './lib/format.js';
+
+/** What a row not built yet (status 'soon') says where its › would be: the one place. */
+export const COMING_SOON = 'Coming soon';
 
 export const AREAS = [
   {
@@ -62,6 +67,15 @@ export const AREAS = [
     subtitle: (n) => plural(n.templates ?? 0, 'template'),
     status: 'ready',
     opens: { panel: () => import('./svelte/ThemePanel.svelte') },
+    // the theme's own look as a form; until it is built, type stays in Site settings
+    parts: [
+      {
+        id: 'fonts-styles',
+        label: 'Fonts and styles',
+        subtitle: "The theme's look",
+        status: 'soon',
+      },
+    ],
   },
   {
     id: 'animations',

@@ -192,7 +192,7 @@ test('the editor: a Templates group in Theme, its own target, Edit template, no 
     list.indexOf('{:else}\n    {#if !level}'),
   );
   assert.match(theme, /head\('Templates'/);
-  assert.match(theme, /Coming soon/);
+  assert.match(theme, /<SoonTag \/>/);
   assert.doesNotMatch(theme, /SITE_PARTS/);
   assert.match(
     read('src/editor/svelte/ThemePanel.svelte'),

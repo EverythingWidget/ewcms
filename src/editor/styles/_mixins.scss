@@ -31,6 +31,21 @@
   background: var(--c-accent);
 }
 
+// A row not built yet (status 'soon', ../areas.js): quieter, no hover ring, no pointer; its
+// $faint parts (the icon, the name) faint. Its "Coming soon": SoonTag.svelte.
+@mixin soon-row($faint) {
+  box-shadow: none;
+
+  &,
+  & * {
+    cursor: default;
+  }
+
+  #{$faint} {
+    color: var(--c-text-faint);
+  }
+}
+
 // Cut long one-line text off with "…"
 @mixin ellipsis {
   overflow: hidden;

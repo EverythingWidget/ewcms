@@ -36,6 +36,8 @@
   import Button from './Button.svelte';
   import BackHead from './BackHead.svelte';
   import AreaHead from './AreaHead.svelte';
+  import SoonTag from './SoonTag.svelte';
+  import { areaOf } from '../areas.js';
   import Select from './Select.svelte';
   import { openAddPage } from './modals.svelte.js';
   import { ui, setMode } from './ui.svelte.js';
@@ -70,6 +72,8 @@
   // area: 'pages' (the pages, Header and Footer) or 'theme' (the item templates)
   let { live, actions, area = 'pages' } = $props();
   const theme = $derived(area === 'theme');
+  // the area's own rows at its top (its record's parts: Theme's Fonts and styles)
+  const parts = $derived(areaOf(area)?.parts ?? []);
 
   const GONE = '(gone)';
   const FULL = 'Only one [param] page per folder: it has one';
@@ -668,16 +672,21 @@
   {/if}
 
   {#if theme}
-    <!-- the theme's own look as a form: not built yet -->
-    <ul class="pl-rows">
-      <li class="prow is-soon">
-        <button type="button" class="prow__open" disabled>
-          <span class="prow__title"><span>Fonts and styles</span></span>
-          <span class="prow__path is-muted">The theme's look</span>
-        </button>
-        <span class="prow__soon">Coming soon</span>
-      </li>
-    </ul>
+    <!-- the area's own rows (its record's parts, ../areas.js): Fonts and styles, not built yet -->
+    {#if parts.length}
+      <ul class="pl-rows">
+        {#each parts as part (part.id)}
+          {@const soon = part.status === 'soon'}
+          <li class={['prow', soon && 'is-soon']} data-part={part.id}>
+            <button type="button" class="prow__open" disabled={soon}>
+              <span class="prow__title"><span>{part.label}</span></span>
+              <span class="prow__path is-muted">{part.subtitle}</span>
+            </button>
+            {#if soon}<SoonTag />{/if}
+          </li>
+        {/each}
+      </ul>
+    {/if}
     {@render head('Templates', templates.length)}
     <ul class="pl-rows" data-templates>
       {#each templates as p (p.id)}{@render row(p)}{/each}
@@ -1045,24 +1054,9 @@
     padding-left: var(--space-3);
   }
 
-  // not built yet (Theme's Fonts and styles): quieter, no hover ring, no pointer
+  // not built yet (a part's status 'soon': Theme's Fonts and styles)
   .prow.is-soon {
-    box-shadow: none;
-
-    .prow__open {
-      cursor: default;
-    }
-
-    .prow__title {
-      color: var(--c-text-faint);
-    }
-  }
-
-  .prow__soon {
-    flex: none;
-    padding-right: var(--space-2);
-    @include muted;
-    white-space: nowrap;
+    @include soon-row('.prow__title');
   }
 
   // the root row's Own page switch, at its end where the buttons are
