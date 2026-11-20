@@ -10,8 +10,8 @@
   import Field from './Field.svelte';
   import Select from './Select.svelte';
   import { ui } from './ui.svelte.js';
-  import { itemName, schemaFor } from './source-items.js';
-  import { sourceFile, sourceIds } from '../../render/files.js';
+  import { itemName } from './source-items.js';
+  import { sourceFile } from '../../render/files.js';
   import { linkKind } from '../../render/hrefs.js';
 
   let {
@@ -47,10 +47,9 @@
     ui.pages.filter((p) => p.kind === 'page' && !p.items && p.pid && p.path !== '/404/'),
   );
   const items = $derived.by(() => {
-    live.version;
-    return sourceIds(live.store.current).flatMap((source) => {
+    return live.sources.flatMap((source) => {
       const list = live.get(sourceFile(source), '/items');
-      const schema = schemaFor(live.store, sourceFile(source));
+      const schema = live.schema(sourceFile(source));
       return (Array.isArray(list) ? list : [])
         .filter((it) => it?.id)
         .map((it) => ({

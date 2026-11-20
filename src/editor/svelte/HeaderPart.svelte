@@ -12,7 +12,7 @@
   import ListField from './ListField.svelte';
   import Select from './Select.svelte';
   import { ui } from './ui.svelte.js';
-  import { HEADER, STRINGS, sourceIds } from '../../render/files.js';
+  import { HEADER, STRINGS } from '../../render/files.js';
 
   // live: reactive store (live.svelte.js)
   let { live } = $props();
@@ -24,10 +24,7 @@
   ];
 
   // the sources a dropdown can list
-  const sources = $derived.by(() => {
-    live.version;
-    return sourceIds(live.store.current);
-  });
+  const sources = $derived(live.sources);
 
   const listOf = (menu) => {
     const list = live.get(HEADER, `/${menu}`);

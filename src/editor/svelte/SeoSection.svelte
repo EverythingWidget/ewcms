@@ -26,10 +26,9 @@
 
   // the preview's page as the build sees it, with the editor's changes
   const seo = $derived.by(() => {
-    live.version;
     const route = live.routeOf(ui.path);
     if (!route) return null;
-    const content = contentFromFiles(live.store.current);
+    const content = contentFromFiles(live.files);
     const ctx = { ...content, media: media.manifest, photos: media.photos };
     return { ...seoOf(ctx, route), src: route.photo || content.site?.ogPhoto || '' };
   });

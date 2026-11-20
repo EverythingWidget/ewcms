@@ -26,15 +26,11 @@
   ];
 
   const list = $derived.by(() => {
-    live.version;
     // a copy: the store changes its objects in place, the list must look new to show it
-    return structuredClone(redirectsOf(live.store.current));
+    return structuredClone(redirectsOf(live.files));
   });
   // the site's pages and item patterns, for `to` and the warnings
-  const paths = $derived.by(() => {
-    live.version;
-    return sitePaths(live.store.current);
-  });
+  const paths = $derived(sitePaths(live.files));
   const warnings = $derived(buildRedirects(list, paths).warnings);
 
   /** Change the list: fn gets a copy to change; one undo step. */

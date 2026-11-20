@@ -238,17 +238,19 @@ test('Add page: a "/" in the name says to add the parent first (F36)', () => {
 
 test('Sources waits for the content, not for a source file: a site without one still opens it and every modal after it (G1)', () => {
   const src = read('SourcesModal.svelte');
-  const ready = src.match(/const ready = \(\) => \{[\s\S]*?\n {2}\};/)?.[0];
-  assert.ok(ready, 'SourcesModal has a ready()');
-  assert.match(ready, /Object\.keys\(live\.store\.current\)\.length > 0/);
-  assert.doesNotMatch(ready, /files\.length/);
+  // live.loaded: any file in the store (live.svelte.js), not a source file
+  assert.match(src, /const ready = \(\) => live\.loaded;/);
+  assert.match(
+    read('live.svelte.js'),
+    /get loaded\(\) \{\s*version;\s*return Object\.keys\(store\.current\)\.length > 0;/,
+  );
   // the empty list says so (the window is not blank)
   assert.match(
     src,
     /\{:else\}\s*<li class="hint small sources-files__none">\s*No source files yet/,
   );
   // Media waits for the same thing
-  assert.match(read('MediaModal.svelte'), /Object\.keys\(live\.store\.current\)\.length > 0/);
+  assert.match(read('MediaModal.svelte'), /const ready = \(\) => live\.loaded;/);
 });
 
 test('a modal not ready keeps the ones above it waiting, and they all show once it is (G1)', () => {

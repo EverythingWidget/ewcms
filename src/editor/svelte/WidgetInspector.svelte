@@ -19,7 +19,6 @@
   import WidgetSource from './WidgetSource.svelte';
   import ListLead from './ListLead.svelte';
   import Tabs from './Tabs.svelte';
-  import { schemaFor } from './source-items.js';
   import { isTemplate, pageIdOf, sourceFile, templateIdOf } from '../../render/files.js';
   import { resolve } from '../../render/layout/bindings.js';
   import { BIND_TYPES } from '../../render/property-types.js';
@@ -69,8 +68,7 @@
   const item = $derived(shown.item);
   const from = $derived(sourceOf({ source })?.from ?? null);
   const schema = $derived.by(() => {
-    live.version;
-    return from ? schemaFor(live.store, sourceFile(from)) : null;
+    return from ? live.schema(sourceFile(from)) : null;
   });
   const isMain = $derived.by(() => {
     return isTemplate(pageId) && live.get(g.file, '/main') === g.id;

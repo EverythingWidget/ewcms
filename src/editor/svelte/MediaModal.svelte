@@ -75,8 +75,7 @@
   const known = $derived(!!key && (isR2(key) || !!media.manifest[key]));
   // where the content (with unsaved edits) uses the selected photo
   const uses = $derived.by(() => {
-    live.version;
-    return known ? photoUses(live.store.current, key) : [];
+    return known ? photoUses(live.files, key) : [];
   });
   const pick = $derived(ui.media.pick ? splitEdit(ui.media.pick) : null);
   const current = $derived(pick ? live.get(pick.file, pick.ptr) : undefined);
@@ -115,10 +114,7 @@
   }
 
   // it waits for the content (a refresh opens it before it is loaded)
-  const ready = () => {
-    live.version;
-    return Object.keys(live.store.current).length > 0;
-  };
+  const ready = () => live.loaded;
 
   const close = () => closeModal('media');
 

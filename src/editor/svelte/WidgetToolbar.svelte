@@ -27,10 +27,9 @@
   import InfoHelp from './InfoHelp.svelte';
   import { ui, previewClicks } from './ui.svelte.js';
   import { targetFile } from '../layout-sync.js';
-  import { schemaFor } from './source-items.js';
   import { WIDGET_TYPES } from '../../widgets/index.js';
   import { countGroups } from '../property-groups.js';
-  import { sourceFile, sourceIds as sourceIdsOf, templateIdOf } from '../../render/files.js';
+  import { sourceFile, templateIdOf } from '../../render/files.js';
   import { sourceOf } from '../../render/layout/source.js';
   import { sampleSource } from '../../widgets/list/template-preview.js';
   import { innerTemplates } from '../../widgets/list/nested.js';
@@ -380,9 +379,8 @@
       : (sourceOf(widget)?.from ?? null),
   );
   const properties = $derived.by(() => {
-    live.version;
     return from
-      ? (schemaFor(live.store, sourceFile(from))?.properties || []).filter((f) =>
+      ? (live.schema(sourceFile(from))?.properties || []).filter((f) =>
           [...BIND_TYPES.multiline, 'photos'].includes(f.type),
         )
       : [];
@@ -411,10 +409,7 @@
       })),
     ];
   });
-  const sources = $derived.by(() => {
-    live.version;
-    return sourceIdsOf(live.store.current);
-  });
+  const sources = $derived(live.sources);
   function insert(run) {
     apply((body, sel) => {
       if (!sel) return null;

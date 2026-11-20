@@ -36,7 +36,6 @@
   import { toast } from './toasts.svelte.js';
   import { setListCustom } from '../layout-ops.js';
   import Select from './Select.svelte';
-  import { schemaFor } from './source-items.js';
   import { sourceOf } from '../../render/layout/source.js';
   import {
     showOnlyFields,
@@ -70,8 +69,7 @@
     return { field: typeof v?.field === 'string' ? v.field : '', value: v?.value ?? '' };
   });
   const soSchema = $derived.by(() => {
-    live.version;
-    return listSource ? schemaFor(live.store, sourceFile(listSource.from)) : null;
+    return listSource ? live.schema(sourceFile(listSource.from)) : null;
   });
   const soItems = $derived(listSource ? itemsOf(listSource.from) : []);
   const soFields = $derived(showOnlyFields(soSchema, soItems));

@@ -68,8 +68,7 @@
     ...(oncustom ? [['custom', 'Custom']] : []),
   ]);
   const schema = $derived.by(() => {
-    live.version;
-    return source ? schemaFor(live.store, sourceFile(source.from)) : null;
+    return source ? live.schema(sourceFile(source.from)) : null;
   });
   const itemsOf = (id) => {
     const items = live.get(sourceFile(id), '/items');

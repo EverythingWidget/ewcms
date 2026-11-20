@@ -35,7 +35,6 @@
     itemMeta,
     pad,
     pairedHalves,
-    schemaFor,
     slugify,
     itemFields,
     newItem,
@@ -51,8 +50,7 @@
   let slugBad = $state(false);
 
   const files = $derived.by(() => {
-    live.version;
-    return Object.keys(live.store.current).filter(isSource).sort();
+    return Object.keys(live.files).filter(isSource).sort();
   });
   const list = $derived(live.current(file)?.items);
   const base = $derived(live.base(file)?.items || []);
@@ -60,8 +58,7 @@
   const index = $derived(isList ? Math.max(0, Math.min(ui.sources.index, list.length - 1)) : 0);
   const item = $derived(isList ? list[index] : undefined);
   const schema = $derived.by(() => {
-    live.version;
-    return file ? schemaFor(live.store, file) : { properties: [] };
+    return file ? live.schema(file) : { properties: [] };
   });
   const slugField = $derived(schema.properties.find((f) => f.key === schema.slug));
   const fields = $derived(item ? itemFields(file, item, index, schema) : []);
@@ -187,10 +184,7 @@
   }
   // it waits for the content (a refresh opens it before it is loaded), not for a source file:
   // a site without one would keep it, and every modal above it, on the stack unshown (G1)
-  const ready = () => {
-    live.version;
-    return Object.keys(live.store.current).length > 0;
-  };
+  const ready = () => live.loaded;
 </script>
 
 <dialog

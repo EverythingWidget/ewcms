@@ -65,7 +65,6 @@
   import { splitEdit } from '../../render/helpers.js';
   import { parse } from '../lib/pointer.js';
   import { targetFile } from '../layout-sync.js';
-  import { sourceIds as sourceIdsOf } from '../../render/files.js';
   import { WIDGET_TYPES } from '../../widgets/index.js';
   import { addWidget } from '../layout-ops.js';
   import { shownRows as shownRowsIn } from '../shown-rows.js';
@@ -112,10 +111,7 @@
     if (ui.section && !popSection && !ui.widget && file) untrack(closeSectionPopup);
   });
   // the files in content/en/sources/, for a list item's source
-  const sourceIds = $derived.by(() => {
-    live.version;
-    return sourceIdsOf(live.store.current);
-  });
+  const sourceIds = $derived(live.sources);
 
   // a page's tabs, the open one per page file
   const TABS = [
