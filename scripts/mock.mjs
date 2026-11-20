@@ -2,13 +2,16 @@
  * Screenshot editor UI mocks (sandbox/mocks/<name>.svelte or .html, sandbox/README.md):
  *
  *   npm run mock -- <name> [<name> ...] [--width N] [--out path] [--bare] [--scrollbars]
+ *                  [--variant name]
  *
  * One name: <MOCK_DIR>/<name>.png (MOCK_DIR: default ../mocks, next to the checkout). Several:
  * stacked with their names in one PNG (<MOCK_DIR>/<first>+N.png, or --out). It reuses the dev server on MOCK_PORT (5173) or
  * starts one (left running for the next call), drives headless Chrome (CHROME, default
  * Chrome's usual path on Windows / macOS, else /usr/bin/google-chrome) over the DevTools protocol and prints the PNG's path.
  * Scrollbars are hidden (they take no room) unless --scrollbars, or the mock exports
- * `scrollbars = true` from its <script module> (sandbox/main.js).
+ * `scrollbars = true` from its <script module> (sandbox/main.js). A mock that exports
+ * `variants` ([{ name, props }]) gets one PNG per variant (<name>-<variant>.png), or only
+ * --variant's.
  */
 import { spawn } from 'node:child_process';
 import {
@@ -24,20 +27,22 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { enginePath, mockSite } from '../src/cli/engine.mjs';
 import { MOCKS_DIR } from './mock-api.mjs';
+import { variantFile } from '../sandbox/kit/variants.js';
 
 const args = process.argv.slice(2);
 const names = [];
-const opt = { width: 0, out: '', bare: false, scrollbars: false };
+const opt = { width: 0, out: '', bare: false, scrollbars: false, variant: '' };
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--width') opt.width = parseInt(args[++i], 10);
   else if (args[i] === '--out') opt.out = args[++i];
   else if (args[i] === '--bare') opt.bare = true;
   else if (args[i] === '--scrollbars') opt.scrollbars = true;
+  else if (args[i] === '--variant') opt.variant = args[++i];
   else names.push(args[i]);
 }
 if (!names.length) {
   console.error(
-    'usage: npm run mock -- <name> [<name> ...] [--width N] [--out path] [--bare] [--scrollbars]',
+    'usage: npm run mock -- <name> [<name> ...] [--width N] [--out path] [--bare] [--scrollbars] [--variant name]',
   );
   process.exit(1);
 }
@@ -141,21 +146,17 @@ try {
     (await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })).result
       .value;
 
-  await send('Emulation.setDeviceMetricsOverride', {
-    width: 1200,
-    height: 1600,
-    deviceScaleFactor: 2,
-    mobile: false,
-  });
+  const VIEW = { width: 1200, height: 1600, deviceScaleFactor: 2, mobile: false };
   const q = new URLSearchParams({ mock: names.join(','), shot: '1' });
   if (opt.width) q.set('width', String(opt.width));
   if (opt.bare) q.set('bare', '1');
   if (opt.scrollbars) q.set('scrollbars', '1');
+  if (opt.variant) q.set('variant', opt.variant);
   // load the mock until it draws: a cold dev server's first loads can fail ("Failed to fetch
   // dynamically imported module", Vite optimizing dependencies and reloading) or stall. A
   // server this call started gets one warm-up load first (thrown away).
-  const url = `${base}/sandbox/?${q}`;
-  const load = async () => {
+  const load = async (url) => {
+    await send('Emulation.setDeviceMetricsOverride', VIEW);
     await send('Page.navigate', { url });
     for (let i = 0; i < 300; i++) {
       // (a reload by Vite mid-load: the flags are gone again, keep waiting)
@@ -167,14 +168,15 @@ try {
     }
     return 'timed out';
   };
-  if (cold) await load();
-  for (let attempt = 1; ; attempt++) {
-    const state = await load();
-    if (state === 'ok') break;
-    if (attempt === 4) throw new Error(`The mock didn't load: ${state}`);
-    console.error(`(mock: ${state.split('\n')[0]}; loading again)`);
-    await sleep(1000 * attempt);
-  }
+  const open = async (url) => {
+    for (let attempt = 1; ; attempt++) {
+      const state = await load(url);
+      if (state === 'ok') return;
+      if (attempt === 4) throw new Error(`The mock didn't load: ${state}`);
+      console.error(`(mock: ${state.split('\n')[0]}; loading again)`);
+      await sleep(1000 * attempt);
+    }
+  };
   // everything drawn, also what reaches out of the panel (an open menu)
   const measure = () =>
     evaluate(`(() => {
@@ -200,32 +202,52 @@ try {
     }
     return { x: r.left, y: r.top, width: right - r.left + 16, height: bottom - r.top + 16 };
   })()`);
-  let box = await measure();
-  // a mock bigger than the viewport: the viewport grows to hold it (a capture beyond the
-  // viewport would drop the scrollbars), then it is measured again
-  const width = Math.ceil(box.x + box.width);
-  const height = Math.ceil(box.y + box.height);
-  if (width > 1200 || height > 1600) {
-    await send('Emulation.setDeviceMetricsOverride', {
-      width: Math.max(1200, width),
-      height: Math.max(1600, height),
-      deviceScaleFactor: 2,
-      mobile: false,
+  /** The page open now, drawn, into `out`. */
+  const shoot = async (out) => {
+    let box = await measure();
+    // a mock bigger than the viewport: the viewport grows to hold it (a capture beyond the
+    // viewport would drop the scrollbars), then it is measured again
+    const width = Math.ceil(box.x + box.width);
+    const height = Math.ceil(box.y + box.height);
+    if (width > VIEW.width || height > VIEW.height) {
+      await send('Emulation.setDeviceMetricsOverride', {
+        ...VIEW,
+        width: Math.max(VIEW.width, width),
+        height: Math.max(VIEW.height, height),
+      });
+      await evaluate('new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))');
+      box = await measure();
+    }
+    const { data } = await send('Page.captureScreenshot', {
+      format: 'png',
+      clip: { ...box, scale: 1 },
     });
-    await evaluate('new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))');
-    box = await measure();
+    mkdirSync(dirname(out), { recursive: true });
+    writeFileSync(out, Buffer.from(data, 'base64'));
+    console.log(out);
+  };
+  const url = `${base}/sandbox/?${q}`;
+  if (cold) await load(url);
+  await open(url);
+  // where the PNG goes: --out, else $MOCK_DIR/<name>.png (several: <first>+N); a variant's
+  // gets "-<variant>" before .png
+  const dir = process.env.MOCK_DIR || resolve('..', 'mocks');
+  const first = `${names[0]}${names.length > 1 ? `+${names.length - 1}` : ''}`;
+  const outOf = (variant) => {
+    const file = resolve(opt.out || `${dir}/${first}.png`);
+    return variantFile(file, variant);
+  };
+  // one mock with variants (its variants export) and no --variant: one PNG per variant
+  const variants =
+    names.length === 1 && !opt.variant
+      ? await evaluate(`(window.__mockVariants || {})[${JSON.stringify(names[0])}] || []`)
+      : [];
+  if (!variants.length) await shoot(outOf(opt.variant));
+  for (const v of variants) {
+    q.set('variant', v);
+    await open(`${base}/sandbox/?${q}`);
+    await shoot(outOf(v));
   }
-  const { data } = await send('Page.captureScreenshot', {
-    format: 'png',
-    clip: { ...box, scale: 1 },
-  });
-  const out = resolve(
-    opt.out ||
-      `${process.env.MOCK_DIR || resolve('..', 'mocks')}/${names[0]}${names.length > 1 ? `+${names.length - 1}` : ''}.png`,
-  );
-  mkdirSync(dirname(out), { recursive: true });
-  writeFileSync(out, Buffer.from(data, 'base64'));
-  console.log(out);
   ws.close();
 } finally {
   quit();

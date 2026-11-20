@@ -49,7 +49,7 @@ drops the viewer's bar and the scrollbars: what `npm run mock` uses; `&scrollbar
 
 ## Screenshot (optional)
 
-    npm run mock -- <name> [<name> ...] [--width N] [--out path] [--bare] [--scrollbars]
+    npm run mock -- <name> [<name> ...] [--width N] [--out path] [--bare] [--scrollbars] [--variant name]
 
 Prints the PNG path: `$MOCK_DIR/<name>.png` (default `../mocks`, next to the checkout), or
 `<first>+N.png` for several (stacked, labelled). It reuses a dev server on `MOCK_PORT` (5173;
@@ -70,6 +70,31 @@ the mock ask for it, so every screenshot of it has them:
 A mock bigger than Chrome's 1200×1600 viewport grows the viewport to fit, so its scrollbars are
 drawn too. The PNG holds what shows: a scroll area's rows below its edge don't make it
 taller (an open menu reaching out of the panel still counts).
+
+### Variants
+
+One mock file, several states, one PNG each: export `variants` (a name and the props to draw
+it with) and take them as props:
+
+```svelte
+<script module>
+  export const variants = [
+    { name: 'few', props: {} },
+    { name: 'many', props: { pages: 'many' } },
+  ];
+</script>
+
+<script>
+  let { pages = 0 } = $props();
+</script>
+```
+
+`npm run mock -- <name>` then saves `<name>-few.png` and `<name>-many.png` (with `--out
+path.png`: `path-few.png`, …); `--variant many` only that one. In the browser,
+`/sandbox/?mock=<name>` stacks all of them with their names, `&variant=many` shows one. A mock
+without `variants` works as before (one PNG). Several mocks in one call stack every variant in
+one PNG. The kit's `EditorState` props make good variants (`kit/README.md`); `ui` is one per
+page, so on the stacked page the last variant's state wins (each PNG is its own page).
 
 A mock that fails to load (a cold dev server's first load can end in "Failed to fetch
 dynamically imported module" while Vite optimizes dependencies) is loaded again, up to four

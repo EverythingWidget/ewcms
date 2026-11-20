@@ -10,6 +10,9 @@
  *   ?shot=1             no viewer bar (scripts/mock.mjs screenshots), and no scrollbars
  *   ?scrollbars=1       a shot keeps the scrollbars (a mock can ask too: its
  *                       <script module> export const scrollbars = true)
+ *   ?variant=few        one of the mock's variants (its <script module> export const
+ *                       variants = [{ name: 'few', props: {…} }, …]); without it, all of
+ *                       them stacked with their names (npm run mock shoots one PNG each)
  *
  * Mocks come from sandbox/mocks/<name>.svelte (or .html), drawn on the editor's panel with the
  * editor's real styles, tokens, fonts and icons, loaded only on a mock page, so they can import
@@ -21,6 +24,7 @@
  */
 import { mount } from 'svelte';
 import { settled } from './kit/ready.js';
+import { pickVariants } from './kit/variants.js';
 import './viewer.css';
 
 // this machine's mocks (sandbox/mocks/: git-ignored), and the kit's demo (tracked) as "kit-demo"
@@ -35,17 +39,20 @@ const names = (params.get('mock') || '').split(',').filter(Boolean);
 const root = document.getElementById('sandbox');
 if (names.length) document.documentElement.classList.add('is-mock');
 
-async function render(name, into) {
+/** A mock's module ({ default, scrollbars?, variants? }), or { html }, or null (no such mock). */
+async function load(name) {
   const svelte = svelteMocks[`./mocks/${name}.svelte`];
   const html = htmlMocks[`./mocks/${name}.html`];
-  if (svelte) {
-    const mod = await svelte();
-    mount(mod.default, { target: into });
-    return mod;
-  }
-  if (html) into.innerHTML = await html();
+  if (svelte) return svelte();
+  if (html) return { html: await html() };
+  return null;
+}
+
+/** Draw a loaded mock into `into`, with the props of one of its variants (or none). */
+function render(name, mod, into, props = {}) {
+  if (mod?.default) mount(mod.default, { target: into, props });
+  else if (mod?.html) into.innerHTML = mod.html;
   else into.innerHTML = `<p class="hint">No mock "${name}".</p>`;
-  return {};
 }
 
 /** The viewer's bar over a mock page: back to the list, the mock's name (not in screenshots). */
@@ -76,20 +83,30 @@ async function mocks() {
   // a shot hides the scrollbars (sandbox.scss .sb-no-scrollbars: they take no room, as before),
   // unless ?scrollbars=1 or a mock exports scrollbars = true (a mock about scrolling)
   let scrollbars = !!params.get('scrollbars');
+  // every mock's variants, for scripts/mock.mjs: { name: ['few', 'many'] } (one shot each)
+  window.__mockVariants = {};
+  const drawn = [];
   for (const name of names) {
+    const mod = await load(name);
+    if (mod?.scrollbars === true) scrollbars = true;
+    if (Array.isArray(mod?.variants)) window.__mockVariants[name] = mod.variants.map((v) => v.name);
+    for (const v of pickVariants(mod?.variants, params.get('variant'), name))
+      drawn.push({ name, mod, v });
+  }
+  for (const { name, mod, v } of drawn) {
     const item = document.createElement('section');
     item.className = 'sb-item';
-    if (names.length > 1) {
+    if (drawn.length > 1) {
       const label = document.createElement('p');
       label.className = 'sb-label';
-      label.textContent = name;
+      label.textContent = v.name ? `${name} · ${v.name}` : name;
       item.append(label);
     }
     const panel = document.createElement('div');
     panel.className = 'sb-panel';
     item.append(panel);
     root.append(item);
-    if ((await render(name, panel)).scrollbars === true) scrollbars = true;
+    render(name, mod, panel, v.props);
   }
   if (params.get('shot') && !scrollbars) document.documentElement.classList.add('sb-no-scrollbars');
 }

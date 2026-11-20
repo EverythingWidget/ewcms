@@ -59,6 +59,7 @@ with the editor's own `src/editor/lib/page-entries.js`, so nothing is copied:
 Without `files` it loads the dev server's content (`GET /__editor/content`, the site
 `npm run mock` serves) and the screenshot waits for it. `editorState({ … })` is the same as a
 function (sync, `files` given) that returns the live state. `ui` is one per page: mocks stacked
-on one page share it.
+on one page share it. Its props make good variants: one mock, a PNG per state
+(`../README.md`, Variants).
 
 Then `npm run mock -- my-idea --bare` (see `../README.md`). `kit-demo` (`demo.svelte`) shows every piece.
