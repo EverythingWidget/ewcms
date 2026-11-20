@@ -53,8 +53,12 @@ optional (only when asked to redo or clear mocks).
   `?mock=a,b` · panel width `&width=N` · no panel `&bare=1` · `/__mocks/list` (JSON).
 - Send Eeliya the links: `http://localhost:5199/sandbox/?mock=<name>`.
 - Screenshot (headless Chrome, 2x): `MOCK_PORT=5199 npm run mock -- <name> [--bare] [--width N]
-[--out file.png]` → `$MOCK_DIR/<name>.png` (default `../mocks/` next to the checkout).
+[--out file.png] [--scrollbars]` → `$MOCK_DIR/<name>.png` (default `../mocks/` next to the checkout).
   Chrome: `CHROME`, else the usual install path (`/usr/bin/google-chrome` on Linux).
+- Scrollbars are hidden in shots; a mock about scrolling keeps them with `--scrollbars`, or by
+  itself with `<script module> export const scrollbars = true; </script>` (`README.md`).
+- A failed first load (a cold server: "Failed to fetch dynamically imported module") is loaded
+  again by itself; no need to run it twice.
 
 ## 4. Template (copy, rename, change the variants)
 

@@ -1,12 +1,14 @@
 /**
  * Screenshot editor UI mocks (sandbox/mocks/<name>.svelte or .html, sandbox/README.md):
  *
- *   npm run mock -- <name> [<name> ...] [--width N] [--out path] [--bare]
+ *   npm run mock -- <name> [<name> ...] [--width N] [--out path] [--bare] [--scrollbars]
  *
  * One name: <MOCK_DIR>/<name>.png (MOCK_DIR: default ../mocks, next to the checkout). Several:
  * stacked with their names in one PNG (<MOCK_DIR>/<first>+N.png, or --out). It reuses the dev server on MOCK_PORT (5173) or
  * starts one (left running for the next call), drives headless Chrome (CHROME, default
  * Chrome's usual path on Windows / macOS, else /usr/bin/google-chrome) over the DevTools protocol and prints the PNG's path.
+ * Scrollbars are hidden (they take no room) unless --scrollbars, or the mock exports
+ * `scrollbars = true` from its <script module> (sandbox/main.js).
  */
 import { spawn } from 'node:child_process';
 import {
@@ -25,15 +27,18 @@ import { MOCKS_DIR } from './mock-api.mjs';
 
 const args = process.argv.slice(2);
 const names = [];
-const opt = { width: 0, out: '', bare: false };
+const opt = { width: 0, out: '', bare: false, scrollbars: false };
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--width') opt.width = parseInt(args[++i], 10);
   else if (args[i] === '--out') opt.out = args[++i];
   else if (args[i] === '--bare') opt.bare = true;
+  else if (args[i] === '--scrollbars') opt.scrollbars = true;
   else names.push(args[i]);
 }
 if (!names.length) {
-  console.error('usage: npm run mock -- <name> [<name> ...] [--width N] [--out path] [--bare]');
+  console.error(
+    'usage: npm run mock -- <name> [<name> ...] [--width N] [--out path] [--bare] [--scrollbars]',
+  );
   process.exit(1);
 }
 for (const n of names)
@@ -91,7 +96,6 @@ const chrome = spawn(
     '--remote-debugging-port=0',
     `--user-data-dir=${profile}`,
     '--no-first-run',
-    '--hide-scrollbars',
     '--force-device-scale-factor=2',
     'about:blank',
   ],
@@ -146,6 +150,7 @@ try {
   const q = new URLSearchParams({ mock: names.join(','), shot: '1' });
   if (opt.width) q.set('width', String(opt.width));
   if (opt.bare) q.set('bare', '1');
+  if (opt.scrollbars) q.set('scrollbars', '1');
   // load the mock until it draws: a cold dev server's first loads can fail ("Failed to fetch
   // dynamically imported module", Vite optimizing dependencies and reloading) or stall. A
   // server this call started gets one warm-up load first (thrown away).
@@ -171,7 +176,8 @@ try {
     await sleep(1000 * attempt);
   }
   // everything drawn, also what reaches out of the panel (an open menu)
-  const box = await evaluate(`(() => {
+  const measure = () =>
+    evaluate(`(() => {
     const root = document.getElementById('sandbox');
     const r = root.getBoundingClientRect();
     let right = r.right, bottom = r.bottom;
@@ -181,10 +187,24 @@ try {
     }
     return { x: r.left, y: r.top, width: right - r.left + 16, height: bottom - r.top + 16 };
   })()`);
+  let box = await measure();
+  // a mock bigger than the viewport: the viewport grows to hold it (a capture beyond the
+  // viewport would drop the scrollbars), then it is measured again
+  const width = Math.ceil(box.x + box.width);
+  const height = Math.ceil(box.y + box.height);
+  if (width > 1200 || height > 1600) {
+    await send('Emulation.setDeviceMetricsOverride', {
+      width: Math.max(1200, width),
+      height: Math.max(1600, height),
+      deviceScaleFactor: 2,
+      mobile: false,
+    });
+    await evaluate('new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))');
+    box = await measure();
+  }
   const { data } = await send('Page.captureScreenshot', {
     format: 'png',
     clip: { ...box, scale: 1 },
-    captureBeyondViewport: true,
   });
   const out = resolve(
     opt.out ||

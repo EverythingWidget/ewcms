@@ -9,6 +9,12 @@ body {
   overflow: auto;
 }
 
+// a screenshot without scrollbars (main.js: ?shot=1, unless ?scrollbars=1 or the mock's
+// scrollbars export): none drawn and none taking room, as Chrome's --hide-scrollbars did
+:root.sb-no-scrollbars * {
+  scrollbar-width: none !important;
+}
+
 #sandbox {
   display: inline-grid;
   gap: var(--space-5);

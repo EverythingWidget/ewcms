@@ -7,7 +7,9 @@
  *   ?mock=name          one mock      ?mock=a,b,c   several, stacked with their names
  *   ?width=400          the panel's width (default: the editor's, --panel-w)
  *   ?bare=1             no panel around it (the editor's page background only)
- *   ?shot=1             no viewer bar (scripts/mock.mjs screenshots)
+ *   ?shot=1             no viewer bar (scripts/mock.mjs screenshots), and no scrollbars
+ *   ?scrollbars=1       a shot keeps the scrollbars (a mock can ask too: its
+ *                       <script module> export const scrollbars = true)
  *
  * Mocks come from sandbox/mocks/<name>.svelte (or .html), drawn on the editor's panel with the
  * editor's real styles, tokens, fonts and icons, loaded only on a mock page, so they can import
@@ -35,9 +37,14 @@ if (names.length) document.documentElement.classList.add('is-mock');
 async function render(name, into) {
   const svelte = svelteMocks[`./mocks/${name}.svelte`];
   const html = htmlMocks[`./mocks/${name}.html`];
-  if (svelte) mount((await svelte()).default, { target: into });
-  else if (html) into.innerHTML = await html();
+  if (svelte) {
+    const mod = await svelte();
+    mount(mod.default, { target: into });
+    return mod;
+  }
+  if (html) into.innerHTML = await html();
   else into.innerHTML = `<p class="hint">No mock "${name}".</p>`;
+  return {};
 }
 
 /** The viewer's bar over a mock page: back to the list, the mock's name (not in screenshots). */
@@ -65,6 +72,9 @@ async function mocks() {
   if (params.get('width'))
     root.style.setProperty('--mock-w', `${parseInt(params.get('width'), 10)}px`);
   if (params.get('bare')) root.classList.add('is-bare');
+  // a shot hides the scrollbars (sandbox.scss .sb-no-scrollbars: they take no room, as before),
+  // unless ?scrollbars=1 or a mock exports scrollbars = true (a mock about scrolling)
+  let scrollbars = !!params.get('scrollbars');
   for (const name of names) {
     const item = document.createElement('section');
     item.className = 'sb-item';
@@ -78,8 +88,9 @@ async function mocks() {
     panel.className = 'sb-panel';
     item.append(panel);
     root.append(item);
-    await render(name, panel);
+    if ((await render(name, panel)).scrollbars === true) scrollbars = true;
   }
+  if (params.get('shot') && !scrollbars) document.documentElement.classList.add('sb-no-scrollbars');
 }
 
 async function main() {

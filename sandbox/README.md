@@ -45,17 +45,30 @@ editor.
 
 Open `/sandbox/?mock=<name>` (`?mock=a,b,c` stacks several with their names,
 `&width=N` sets the panel width, default `--panel-w`, `&bare=1` drops the panel, `&shot=1`
-drops the viewer's bar: what `npm run mock` uses).
+drops the viewer's bar and the scrollbars: what `npm run mock` uses; `&scrollbars=1` keeps them).
 
 ## Screenshot (optional)
 
-    npm run mock -- <name> [<name> ...] [--width N] [--out path] [--bare]
+    npm run mock -- <name> [<name> ...] [--width N] [--out path] [--bare] [--scrollbars]
 
 Prints the PNG path: `$MOCK_DIR/<name>.png` (default `../mocks`, next to the checkout), or
 `<first>+N.png` for several (stacked, labelled). It reuses a dev server on `MOCK_PORT` (5173;
 set `MOCK_PORT=5199` to use `mock:serve`'s) or starts one in the background, and drives
 headless Chrome over the DevTools protocol at 2x. Chrome: `CHROME`, else its usual install path
 on Windows or macOS, else `/usr/bin/google-chrome`. About 2 s per call with the server up.
+
+Scrollbars are hidden in screenshots (they take no room, as Chrome's `--hide-scrollbars` did).
+For a mock about scrolling, keep them: `--scrollbars` (or `&scrollbars=1` on the URL), or let
+the mock ask for it, so every screenshot of it has them:
+
+```svelte
+<script module>
+  export const scrollbars = true;
+</script>
+```
+
+A mock bigger than Chrome's 1200×1600 viewport grows the viewport to fit, so its scrollbars are
+drawn too.
 
 A mock that fails to load (a cold dev server's first load can end in "Failed to fetch
 dynamically imported module" while Vite optimizes dependencies) is loaded again, up to four
