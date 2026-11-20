@@ -9,7 +9,7 @@
  *                                      or a page added or removed, moved, a slug, or the name or
  *                                      cover of an item the menu lists
  *   the site's settings                only when more than its type scale changed (siteKey:
- *                                      "type" is CSS variables the Settings panel puts on the
+ *                                      "type" is CSS variables Site settings › Type puts on the
  *                                      preview's root as it is typed)
  *   the menu (header.json), the photos' and the UI strings
  *   any other file the rule doesn't know (a reload is always right)
@@ -70,7 +70,7 @@ export function routesKey(files) {
 }
 
 /**
- * site.json as one string, without what the preview takes live ("type": the Settings panel
+ * site.json as one string, without what the preview takes live ("type": Site settings › Type
  * sets its CSS variables on the preview's root). Equal before and after: only the type changed.
  */
 export function siteKey(files) {

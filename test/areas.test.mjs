@@ -9,11 +9,14 @@ import {
   AREAS,
   COMING_SOON,
   EDIT_PANEL,
+  MOVED_OUT,
+  PANEL_ALIASES,
   PANELS,
   TEMPLATES_PANEL,
   areaOf,
   opensIn,
   panelOf,
+  sectionKeyOf,
 } from '../src/editor/areas.js';
 import { loadUi } from '../scripts/load-ui.mjs';
 
@@ -49,6 +52,12 @@ test('the areas, in order: Pages, Media, Sources, Theme, Animations, Site settin
   assert.equal(areaOf('site-settings').label, 'Site settings');
   // an old 'settings' (a link, a session) is site-settings
   assert.equal(panelOf('settings'), 'site-settings');
+  // the one table of old names: section keys and what moved out follow it
+  assert.equal(sectionKeyOf('settings:seo'), 'site-settings:seo');
+  assert.equal(sectionKeyOf('site-settings:seo'), 'site-settings:seo');
+  assert.equal(sectionKeyOf('animations:entrance'), 'animations:entrance');
+  assert.equal(sectionKeyOf('settings'), 'settings');
+  for (const old of Object.keys(MOVED_OUT)) assert.ok(PANEL_ALIASES[old], old);
   assert.equal(panelOf('pages'), 'pages');
   assert.equal(areaOf('nope'), undefined);
 });

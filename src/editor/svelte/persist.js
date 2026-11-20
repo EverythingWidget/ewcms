@@ -34,7 +34,7 @@ import { editorHref } from '../lib/editor-url.js';
 import { ui, previewClicks, pickElement, selectText } from './ui.svelte.js';
 import { sourceIdOf } from '../../render/files.js';
 import { isOpen, pushed } from './modals.svelte.js';
-import { PANELS, panelOf } from '../areas.js';
+import { MOVED_OUT, PANELS, panelOf, sectionKeyOf } from '../areas.js';
 
 const KEY = 'editor:ui';
 // the modals open again after a refresh (the others are opened with callbacks: modals.svelte.js)
@@ -96,8 +96,9 @@ function readState() {
   } else if (q.get('tab') === 'pages' || state.part) state.mode = 'edit'; // a page or part open
   if (state.panel && state.panel !== 'pages') state.mode = 'browse'; // only Pages edits
   if (q.has('animation')) {
-    // the library is in Animations > Motion (a link from before the areas: tab=settings)
-    if (!q.has('tab') || q.get('tab') === 'settings') state.panel = 'animations';
+    // the library is in Animations > Motion (an old link's tab: MOVED_OUT, ../areas.js)
+    const moved = MOVED_OUT[q.get('tab')]?.animation;
+    if (!q.has('tab') || moved) state.panel = moved || 'animations';
     state.library = { name: q.get('animation') }; // an unknown name: the list
   } else if (q.get('tab') === 'animations') state.library = { name: '' };
   return state;
@@ -114,12 +115,9 @@ export function restoreUi(preview, content) {
   if (['browse', 'edit'].includes(saved.mode) && ui.panel === 'pages') ui.mode = saved.mode;
   // Header or Footer open (pages: the URL's path; browse: the page in the preview)
   if (saved.part && ui.mode === 'edit') ui.target = saved.part;
-  // open/closed sections; Site settings' were "settings:…" before its rename
+  // open/closed sections (keys from before a rename: sectionKeyOf, ../areas.js)
   ui.sections = Object.fromEntries(
-    Object.entries(saved.sections || {}).map(([k, v]) => [
-      k.replace(/^settings:/, 'site-settings:'),
-      v,
-    ]),
+    Object.entries(saved.sections || {}).map(([k, v]) => [sectionKeyOf(k), v]),
   );
   // Animations > Motion's library, on an animation
   if (typeof saved.library?.name === 'string') ui.library = { name: saved.library.name };

@@ -300,7 +300,7 @@
         <Button
           size="small"
           icon="pen"
-          title="Open this template in the template editor (Pages > Templates)"
+          title="Open this template in the template editor (Theme › Templates)"
           disabled={!isOwnTemplate}
           onclick={() => ui.openTemplate?.(templateId, { back: true })}
           data-edit-template>Edit template</Button

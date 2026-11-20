@@ -138,14 +138,14 @@ link colour, eye, Duplicate, Delete; no grip, no order). Put it in a `<ul>`.
 
 | prop          | type                                                       | default           | meaning                                                                                   |
 | ------------- | ---------------------------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------- |
-| `mode`        | `'pages'`\|`'settings'`                                    | `'pages'`         | active mode tab, Pages \| Settings                                                        |
+| `area`        | `'pages'`\|`'areas'`\|`'theme'`\|…                         | `'pages'`         | the area open: `pages` shows a page's head and tabs, others the body only                 |
 | `editing`     | bool                                                       | `false`           | edit (Done, undo / redo in the footer) or browse (Edit)                                   |
 | `tab`         | `'sections'`\|`'element-motion'`\|`'page-motion'`\|`'seo'` | `'sections'`      | page tab (only in `pages`; Page motion holds the Scroll backdrop and Page entrance cards) |
 | `tabs`        | bool                                                       | `true`            | `false` hides the page tabs                                                               |
 | `height`      | CSS length                                                 | `'844px'`         | panel height (body scrolls)                                                               |
 | `changes`     | number                                                     | `0`               | unsaved count: "Unsaved changes", Publish on, Undo on                                     |
 | `unpublished` | number                                                     | `0`               | saved, not published: "N changes to publish", Publish · N                                 |
-| `phone`       | bool                                                       | `false`           | the footer's Phone cell on (else Desktop)                                                |
+| `phone`       | bool                                                       | `false`           | the footer's Phone cell on (else Desktop)                                                 |
 | `pending`     | string                                                     | `'All published'` | the header's line when nothing is unsaved or unpublished                                  |
 | `children`    | snippet                                                    | —                 | the scroll body                                                                           |
 

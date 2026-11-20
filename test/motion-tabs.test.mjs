@@ -68,7 +68,7 @@ test('no top tabs (the areas instead); page tabs Sections | Element motion | Pag
 
 test('URL tabs are ui.panel: areas, pages, theme, animations, site-settings; clicks: arrange, animate, visitor', () => {
   const p = read('editor/svelte/persist.js');
-  assert.match(p, /import \{ PANELS, panelOf \} from '\.\.\/areas\.js';/);
+  assert.match(p, /import \{ MOVED_OUT, PANELS, panelOf, sectionKeyOf \} from '\.\.\/areas\.js';/);
   assert.match(p, /set\('tab', ui\.panel\)/);
   const u = read('editor/svelte/ui.svelte.js');
   // browse or edit (ui.mode) is the one source: browse is visitor clicks

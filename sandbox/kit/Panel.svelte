@@ -1,9 +1,11 @@
 <!--
   The editor's side panel, App.svelte's markup with its own styles (styles.js): the header
-  (status line | Edit / Done | Publish), the mode tabs, the page head (PageHead.svelte's look:
-  ← title / path; page: { title, path }, false hides it), the page tabs (the real Tabs), the
-  scroll body (.ed-body) and the footer (Desktop | Phone, Sources, Media; undo, redo in edit).
-    mode     'pages' | 'settings' (default 'pages')
+  (status line | Edit / Done | Publish), then the area open (no tabs on top: the areas list,
+  ../../src/editor/areas.js): in Pages a page open, its head (PageHead.svelte's look: ← title /
+  path; page: { title, path }, false hides it) and its tabs (the real Tabs); the scroll body
+  (.ed-body) and the footer (Desktop | Phone; undo, redo in edit).
+    area     the area open: 'pages' (a page open, default) or any other ('areas' for the list,
+             'theme', 'animations', 'site-settings': the body only, your cards)
     editing  edit (Done, undo / redo shown) or browse (Edit; default)
     tab      the page tab shown (default 'sections'); tabs: false hides them
     height   the panel's height (default 844px)       pending  the header's line
@@ -16,7 +18,7 @@
   import { APP } from './styles.js';
 
   let {
-    mode = 'pages',
+    area = 'pages',
     tab = 'sections',
     tabs = true,
     page = { title: 'Home', path: '/' },
@@ -41,10 +43,6 @@
     [false, 'Desktop', 'desktop'],
     [true, 'Phone', 'mobile-screen-button'],
   ];
-  const MODES = [
-    ['pages', 'Pages'],
-    ['settings', 'Settings'],
-  ];
   const PAGE_TABS = [
     ['sections', 'Sections'],
     ['element-motion', 'Element motion'],
@@ -65,17 +63,8 @@
           >{unpublished ? `Publish · ${unpublished}` : 'Publish'}</Button
         >
       </div>
-      <Tabs
-        class="ed-panels"
-        role="navigation"
-        fill
-        label="Mode"
-        tabs={MODES}
-        value={mode}
-        onpick={() => {}}
-      />
     </header>
-    {#if page && mode === 'pages'}
+    {#if page && area === 'pages'}
       <div class="kit-ph">
         <Button size="small" icon="arrow-left" iconOnly label="Back to pages" />
         <div>
@@ -84,7 +73,7 @@
         </div>
       </div>
     {/if}
-    {#if tabs && mode === 'pages'}
+    {#if tabs && area === 'pages'}
       <Tabs
         tabs={PAGE_TABS}
         value={tab}
@@ -110,8 +99,6 @@
           </button>
         {/each}
       </div>
-      <Button icon="database" iconOnly label="Sources" />
-      <Button icon="images" iconOnly label="Media" />
       <span class="ed-foot__gap"></span>
       {#if editing}
         <Button icon="rotate-left" iconOnly label="Undo" disabled={!changes} />

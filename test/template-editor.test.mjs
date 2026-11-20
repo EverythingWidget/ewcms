@@ -1,4 +1,4 @@
-// List step 8: the template editor (Pages > Templates, content/templates/t-….json).
+// List step 8: the template editor (Theme › Templates, content/templates/t-….json).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { onGrid, template } from '../scripts/grid-helper.mjs';

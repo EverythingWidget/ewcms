@@ -113,11 +113,28 @@ export const PANELS = ['areas', ...AREAS.filter((a) => opensIn(a) === 'panel').m
 export const EDIT_PANEL = 'pages';
 export const TEMPLATES_PANEL = 'theme';
 
-/** Old ui.panel values (a link or a session from before a rename): the area they are now. */
+/**
+ * Old names, the one table: an old ui.panel value (a link's tab, a session from before a
+ * rename) and the area it is now. Everything that follows a rename reads it (persist.js):
+ *   panelOf(value)      a link's ?tab= and a session's panel
+ *   sectionKeyOf(key)   a session's open/closed section keys ("settings:seo" is "site-settings:seo")
+ *   MOVED_OUT           what left an old area for another one: an old link's &animation= on
+ *                       ?tab=settings opens Animations (its library was in Settings)
+ */
 export const PANEL_ALIASES = { settings: 'site-settings' };
+
+/** Old area -> { a URL parameter of what moved out: the area it is in now }. */
+export const MOVED_OUT = { settings: { animation: 'animations' } };
 
 /** A ui.panel value as it is now: an alias resolved, anything else as is. */
 export const panelOf = (value) => PANEL_ALIASES[value] ?? value;
+
+/** A section key ("<area>:<section>", ui.sections) as it is now: its area's alias resolved. */
+export const sectionKeyOf = (key) => {
+  const at = key.indexOf(':');
+  const area = at > 0 && PANEL_ALIASES[key.slice(0, at)];
+  return area ? area + key.slice(at) : key;
+};
 
 /** The area `id` (its record), or undefined. */
 export const areaOf = (id) => AREAS.find((a) => a.id === id);
