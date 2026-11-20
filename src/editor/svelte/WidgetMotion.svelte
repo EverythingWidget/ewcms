@@ -22,7 +22,6 @@
 
   const base = $derived(`/sections/${at}/widgets/${j}`);
   const motion = $derived.by(() => {
-    live.version;
     const m = live.get(file, `${base}/motion`);
     return m && typeof m === 'object' ? { ...m } : null;
   });

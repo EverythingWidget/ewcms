@@ -16,7 +16,6 @@
 
   const route = $derived(live.routeOf(ui.path));
   const curtain = $derived.by(() => {
-    live.version;
     const at = route && splitEdit(route.transitionEdit);
     return at ? curtainMode(live.get(at.file, at.ptr)) : 'global';
   });

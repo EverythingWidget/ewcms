@@ -54,7 +54,6 @@
     ['line', 'Line'],
   ];
   const typeVars = $derived.by(() => {
-    live.version;
     return typeVarList(live.get(SITE, '') || {});
   });
   // the theme's sizes (the placeholders): the preview's own, read where site.json sets none
@@ -97,7 +96,6 @@
   }
   // Layout: a contained section's columns (layout/contain.js), its width at common windows
   const contained = $derived.by(() => {
-    live.version;
     return containedOf(live.get(SITE, '') || {});
   });
   const WINDOWS = [1280, 1366, 1440, 1536, 1920];

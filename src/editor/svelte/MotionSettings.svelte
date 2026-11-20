@@ -40,7 +40,6 @@
     ['ease', 'Default ease', 'power1.out'],
   ];
   const valueOf = (key) => {
-    live.version;
     const v = live.get(ANIMATIONS, `/defaults/${key}`);
     return v === undefined ? '' : String(v);
   };

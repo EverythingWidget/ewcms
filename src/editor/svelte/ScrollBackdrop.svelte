@@ -26,7 +26,6 @@
   let { live, file } = $props();
 
   const b = $derived.by(() => {
-    live.version;
     const v = live.get(file, '/backdrop');
     // a copy: the store changes its objects in place, and a derived of the same object stays put
     return isObject(v) ? { ...v } : {};

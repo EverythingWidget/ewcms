@@ -30,7 +30,6 @@
     return null;
   });
   const element = $derived.by(() => {
-    live.version;
     return base ? live.get(file, `${base}/motion/elements`)?.[sel.id] : undefined;
   });
   // where edits go: picked, else this widget's elements when they have values, else All

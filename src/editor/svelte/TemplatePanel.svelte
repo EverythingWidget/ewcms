@@ -46,7 +46,6 @@
   const id = $derived(ui.target.id);
   const file = $derived(templateFile(id));
   const tpl = $derived.by(() => {
-    live.version;
     return live.current(file) || null;
   });
   const section = $derived(itemSection(tpl));

@@ -52,13 +52,11 @@
   const pageId = $derived(pageIdOf(g.file) || '');
   // (read on its own, a copy: what it shows follows its source alone)
   const source = $derived.by(() => {
-    live.version;
     const v = live.get(g.file, `${base}/source`);
     return v && typeof v === 'object' ? structuredClone(v) : null;
   });
   // a List's Show only (config.showOnly) narrows them: the "N items" line follows it
   const showOnly = $derived.by(() => {
-    live.version;
     const v = live.get(g.file, `${base}/config/showOnly`);
     return v && typeof v === 'object' ? structuredClone(v) : null;
   });
@@ -75,7 +73,6 @@
     return from ? schemaFor(live.store, sourceFile(from)) : null;
   });
   const isMain = $derived.by(() => {
-    live.version;
     return isTemplate(pageId) && live.get(g.file, '/main') === g.id;
   });
   // a property's value as one line (the picker's hint)

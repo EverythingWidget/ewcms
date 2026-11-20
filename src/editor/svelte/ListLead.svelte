@@ -49,27 +49,23 @@
   const customPtr = $derived(`${base}/config/custom`);
   const itemsPtr = $derived(`${base}/config/items`);
   const custom = $derived.by(() => {
-    live.version;
     return live.get(g.file, customPtr) === true;
   });
 
   // ---- custom items as a ListField descriptor (config.items)
   const itemsOf = (id) => {
-    live.version;
     const list = live.get(sourceFile(id), '/items');
     return Array.isArray(list) ? list : [];
   };
   // ---- Show only (config.showOnly { field, value }: ../../widgets/list/show-only.js)
   const showOnlyPtr = $derived(`${base}/config/showOnly`);
   const listSource = $derived.by(() => {
-    live.version;
     const v = live.get(g.file, `${base}/source`);
     return sourceOf({ source: v }) ? v : null;
   });
   // a List from a source showing several items: All or From URL (not Item, None or Custom)
   const showOnlyOn = $derived(!custom && !!listSource && listSource.mode !== 'item');
   const showOnly = $derived.by(() => {
-    live.version;
     const v = live.get(g.file, showOnlyPtr);
     return { field: typeof v?.field === 'string' ? v.field : '', value: v?.value ?? '' };
   });
@@ -122,7 +118,6 @@
     };
   };
   const itemsField = $derived.by(() => {
-    live.version;
     const items = Array.isArray(live.get(g.file, itemsPtr)) ? live.get(g.file, itemsPtr) : [];
     const subs = Object.entries(listDef.list);
     const basePath = ['sections', g.widget.at, 'widgets', g.widget.j, 'config', 'items'];
@@ -161,11 +156,9 @@
   // ---- template (config.template): presets, then the site's templates
   const templatePtr = $derived(`${base}/config/template`);
   const templateId = $derived.by(() => {
-    live.version;
     return live.get(g.file, templatePtr) || PRESETS[0].id;
   });
   const templateOptions = $derived.by(() => {
-    live.version;
     const own = Object.entries(live.content?.templates || {})
       .map(([id, tpl]) => [id, tpl?.name || id])
       .sort((a, b) => a[1].localeCompare(b[1]));

@@ -15,7 +15,6 @@
 
   // on: shown (a photo, not switched off), as the backdrop's switch
   const backdrop = $derived.by(() => {
-    live.version;
     const b = live.get(file, '/backdrop');
     if (!isObject(b)) return 'off';
     const has = Array.isArray(b.photos) && b.photos.some(Boolean);

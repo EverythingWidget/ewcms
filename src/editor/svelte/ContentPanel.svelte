@@ -95,7 +95,6 @@
     return targetFile(ui.target, bridge.doc);
   });
   const sections = $derived.by(() => {
-    live.version;
     const list = file && live.current(file)?.sections;
     return Array.isArray(list) ? list : [];
   });

@@ -23,7 +23,6 @@
   const page = $derived(route ? splitEdit(route.transitionEdit) : null);
   const text = $derived(route ? splitEdit(route.curtainEdit) : null);
   const stored = $derived.by(() => {
-    live.version;
     return text ? live.get(text.file, text.ptr) : undefined;
   });
   const textChanged = $derived(!!text && live.changed(text.file, text.ptr));
@@ -41,7 +40,6 @@
     });
 
   const mode = $derived.by(() => {
-    live.version;
     return page ? curtainMode(live.get(page.file, page.ptr)) : 'global';
   });
 </script>

@@ -20,7 +20,6 @@
   const id = $derived(templateOfPath(ui.path || ''));
   const file = $derived(id ? templateFile(id) : '');
   const tpl = $derived.by(() => {
-    live.version;
     return file ? live.current(file) || null : null;
   });
   const setColumns = (v) => {

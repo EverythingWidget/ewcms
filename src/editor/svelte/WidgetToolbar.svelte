@@ -390,7 +390,6 @@
   // a template Text also offers {number}, {back}, and an outer item's parent: keys
   const tplExtras = $derived.by(() => {
     if (!itemTpl) return [];
-    live.version;
     const extras = [
       { value: 'number', label: '{number}', hint: '01, 02 …' },
       { value: 'back', label: '{back}', hint: 'the page around it' },

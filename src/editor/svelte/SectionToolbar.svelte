@@ -46,7 +46,6 @@
   let { live, file, bridge, onsection, onadd, addOnly = false } = $props();
 
   const sections = $derived.by(() => {
-    live.version;
     const list = live.current(file)?.sections;
     return Array.isArray(list) ? list : [];
   });

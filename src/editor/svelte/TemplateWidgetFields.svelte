@@ -39,7 +39,6 @@
 
   const id = $derived(templateIdOf(file) || '');
   const tpl = $derived.by(() => {
-    live.version;
     return live.current(file) || null;
   });
   const section = $derived(itemSection(tpl));

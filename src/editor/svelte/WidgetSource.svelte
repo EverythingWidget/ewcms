@@ -57,7 +57,6 @@
   const params = $derived(isTemplate(pageId) ? paramsOf(pageId) : []);
   // (read on its own: the store changes a value in place, so the widget stays the same object)
   const source = $derived.by(() => {
-    live.version;
     const v = live.get(g.file, `${base}/source`);
     return sourceOf({ source: v }) ? structuredClone(v) : null;
   });
@@ -73,7 +72,6 @@
     return source ? schemaFor(live.store, sourceFile(source.from)) : null;
   });
   const itemsOf = (id) => {
-    live.version;
     const items = live.get(sourceFile(id), '/items');
     return Array.isArray(items) ? items : [];
   };
@@ -81,7 +79,6 @@
 
   // ---- the main widget
   const mainId = $derived.by(() => {
-    live.version;
     return live.get(g.file, '/main');
   });
   const isMain = $derived(params.length > 0 && mainId === g.id);

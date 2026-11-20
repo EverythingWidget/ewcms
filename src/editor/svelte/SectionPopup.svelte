@@ -21,7 +21,6 @@
 
   // a fresh copy after every edit (SectionSettings reads the values from it), found by its id
   const sections = $derived.by(() => {
-    live.version;
     const list = live.current(file)?.sections;
     return Array.isArray(list) ? list : [];
   });

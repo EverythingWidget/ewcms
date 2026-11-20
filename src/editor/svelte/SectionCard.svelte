@@ -40,7 +40,6 @@
   } = $props();
 
   const s = $derived.by(() => {
-    live.version;
     return sectionProp ?? (live.current(file)?.sections?.[at] || {});
   });
   const name = $derived((typeof s.name === 'string' && s.name.trim()) || '');

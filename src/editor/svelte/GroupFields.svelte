@@ -114,7 +114,6 @@
 
   // a source's items (for the source fields' counts)
   const itemsOf = (id) => {
-    live.version;
     const list = live.get(sourceFile(id), '/items');
     return Array.isArray(list) ? list : [];
   };
