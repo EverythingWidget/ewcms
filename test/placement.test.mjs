@@ -166,3 +166,18 @@ test('Button Text: Wrap | Clip in the Layout tab; Wrap a class, Clip (unset) as 
   const wrap = scss.slice(scss.indexOf('.buttonwidget--wrap > .btn {'));
   assert.match(wrap, /^\.buttonwidget--wrap > \.btn \{\s*white-space: normal;/);
 });
+
+test('Button Text: Clip, the default, writes no textOverflow (Wrap writes wrap)', async () => {
+  const { button } = await import('../src/widgets/button/index.js');
+  const { choiceValue, layoutOptions } = await import('../src/editor/widget-layout.js');
+  const opt = button.config.find((c) => c.key === 'textOverflow');
+  assert.equal(choiceValue(opt, 'clip'), undefined);
+  assert.equal(choiceValue(opt, 'wrap'), 'wrap');
+  // every Layout tab choice: its default left out (a number's own rule: wholeIn)
+  for (const type of ['button', 'list', 'text', 'photo', 'hero', 'form'])
+    for (const c of layoutOptions(type).filter((o) => o.type === 'seg' && o.default))
+      assert.equal(choiceValue(c, c.default), undefined, `${type} ${c.key}`);
+  assert.equal(choiceValue({ type: 'select', default: '1' }, '1'), '1'); // a select: as before
+  const wl = readFileSync('src/editor/svelte/WidgetLayout.svelte', 'utf8');
+  assert.match(wl, /live\.store\.set\(file, optionPtr\(c\), choiceValue\(c, v\), \{/);
+});

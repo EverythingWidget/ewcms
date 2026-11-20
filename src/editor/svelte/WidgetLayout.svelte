@@ -24,6 +24,7 @@
   import { CAROUSEL, withArrangement } from '../../widgets/list/carousel.js';
   import {
     boxLabels,
+    choiceValue,
     layoutOptions,
     layoutParts,
     scaleHint,
@@ -104,7 +105,10 @@
               structure: true,
             },
           )
-        : live.store.set(file, optionPtr(c), v, { source: 'panel', structure: true });
+        : live.store.set(file, optionPtr(c), choiceValue(c, v), {
+            source: 'panel',
+            structure: true,
+          });
   // Shrink to fit (off by default): its hint has two lines' room, so nothing moves when it changes
   const isScaled = $derived(scaledToFit(widget));
 

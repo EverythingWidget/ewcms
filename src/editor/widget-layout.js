@@ -32,6 +32,12 @@ export function layoutOptions(type) {
 }
 
 /**
+ * What a Layout tab choice writes: its default left out (a Button's Text: Clip, the default, is
+ * no textOverflow; defaults are never stored).
+ */
+export const choiceValue = (c, v) => (c.type === 'seg' && v === c.default ? undefined : v);
+
+/**
  * When a value is missing (every widget's Content tab, GroupFields.svelte): Hide leaves the
  * widget out of the published page; Show empty keeps it. Default Hide (omitted from content).
  * A List's item widgets inherit the List's choice unless they set their own
