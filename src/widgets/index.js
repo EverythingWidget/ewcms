@@ -37,6 +37,10 @@
  *                     { type, label, width?, options? }: a type with its label, 'select' with options
  *                     [[value, label]])
  *               item: a new item of the list (default: '' or the subkeys empty)
+ *               itemDefaults: { name, values }: an item's values never stored (each left out
+ *                     when it equals its default, src/render/defaults.js; e.g. the Hero's
+ *                     photos: { name: 'photo', values: { layer: 'back' } }); name: an item
+ *                     in its messages ("section 1, widget 2 photo 3")
  *               blank: 'keep': emptied, its element stays (render shows '' in it), so the
  *                     editor writes an emptied value in place too; without it an emptied
  *                     text renders the widget again (it may leave the element out or show a

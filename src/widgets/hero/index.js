@@ -91,6 +91,8 @@ export const hero = {
       list: { src: 'photo', link: { type: 'link', label: 'Link' } },
       // a new photo: in the middle, behind the name (x / y / w in % of the hero; see heroPhoto)
       item: { src: '', x: 40, y: 30, w: 16, depth: 1 },
+      // a photo's values left out when they are the default (src/render/defaults.js)
+      itemDefaults: { name: 'photo', values: { layer: 'back' } },
     },
   ],
   // added from the editor: the section's whole width and about a screen under the menu (68 rows

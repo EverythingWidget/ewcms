@@ -4,8 +4,8 @@
  * writing), storedDefaults(file, data) lists the ones still there (validation reports them).
  *
  *   section  enabled: true, width: "contained", height: "fit"
- *   widget    size: "auto", config.enabled: true
- *   hero     photos[].layer: "back"
+ *   widget    size: "auto", config.enabled: true; its list settings' items: the setting's
+ *            itemDefaults (src/widgets/index.js; the Hero's photos[].layer: "back")
  *   backdrop the page's (src/render/backdrop.js BACKDROP_DEFAULTS); and the other transition's
  *            options, and a backdrop without photos, are left out too
  *
@@ -20,12 +20,12 @@ import { COLS } from './layout/grid.js';
 import { tidyBackdrop } from './backdrop.js';
 import { isObject } from './is.js';
 import { eachWidget } from './layout/ids.js';
+import { widgetType } from '../widgets/index.js';
 
 export const DEFAULTS = {
   section: { enabled: true, width: 'contained', height: 'fit' },
   widget: { size: 'auto' },
   config: { enabled: true },
-  heroPhoto: { layer: 'back' },
 };
 
 /** Every [object, defaults, where] of a page's data that can hold a default. */
@@ -38,9 +38,13 @@ function* places(data) {
       const where = `section ${at + 1}, widget ${j + 1}`;
       yield [widget, DEFAULTS.widget, where];
       if (isObject(widget.config)) yield [widget.config, DEFAULTS.config, `${where} config`];
-      if (widget.type === 'hero' && Array.isArray(widget.photos))
-        for (const [i, p] of widget.photos.entries())
-          if (isObject(p)) yield [p, DEFAULTS.heroPhoto, `${where} photo ${i + 1}`];
+      // a list setting's items: the defaults its type declares (itemDefaults)
+      for (const f of widgetType(widget.type)?.settings || []) {
+        const d = f?.itemDefaults;
+        if (!d || !Array.isArray(widget[f.key])) continue;
+        for (const [i, p] of widget[f.key].entries())
+          if (isObject(p)) yield [p, d.values, `${where} ${d.name} ${i + 1}`];
+      }
     }
   }
 }
