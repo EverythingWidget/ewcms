@@ -172,6 +172,7 @@ const MODALS = {
   saveFailed: 'SaveFailedModal',
   unsavedEdits: 'UnsavedEditsModal',
   firstRun: 'FirstRunModal',
+  about: 'AboutModal',
 };
 
 test('each modal is mounted once, in App.svelte, and is a <dialog> on the stack', () => {
@@ -199,6 +200,7 @@ test("names: each modal's box is modal__box <name>-modal", () => {
   assert.match(read('PublishModal.svelte'), /class="modal__box publish-modal"/);
   assert.match(read('MediaModal.svelte'), /'media-modal'/);
   assert.match(read('SourcesModal.svelte'), /class="modal__box sources-modal"/);
+  assert.match(read('AboutModal.svelte'), /class="modal__box about-modal"/);
   assert.match(read('WidgetsModal.svelte'), /class="modal__box widgets-modal"/);
   assert.match(read('ItemModal.svelte'), /class="modal__box item-modal"/);
   assert.match(read('PreviewModal.svelte'), /class="modal__box preview-modal"/);

@@ -175,7 +175,7 @@ kbd {
 
 // on a surface (a pop-up, a popover: _mixins.scss surface()), placeholders are its quiet text;
 // the side panel keeps the browser's
-:where(.wpop, .spop, .pov, .upd-card) ::placeholder {
+:where(.wpop, .spop, .pov) ::placeholder {
   color: var(--text-quiet);
 }
 

@@ -31,7 +31,8 @@
   import SaveFailedModal from './SaveFailedModal.svelte';
   import UnsavedEditsModal from './UnsavedEditsModal.svelte';
   import FirstRunModal from './FirstRunModal.svelte';
-  import UpdateNotice from './UpdateNotice.svelte';
+  import AboutModal from './AboutModal.svelte';
+  import { loadUpdate } from './update.svelte.js';
   import WidgetToolbar from './WidgetToolbar.svelte';
   import TemplateCols from './TemplateCols.svelte';
   import { templateOfPath } from '../../widgets/list/template-preview.js';
@@ -54,6 +55,8 @@
   }
   // the modals' dialogs follow the stack (ui.modals)
   $effect(syncModals);
+  // ewcms's update (dev only): the About card and window read it (update.svelte.js)
+  loadUpdate();
 
   // the area open (its record, ../areas.js) and the panel components, all loaded at the start
   // (the records import them on demand: areas.js stays plain data)
@@ -256,7 +259,7 @@
           </button>
         {/each}
       </div>
-      <span class="ed-foot__gap"><UpdateNotice /></span>
+      <span class="ed-foot__gap"></span>
       {#if editing}
         <Button
           icon="rotate-left"
@@ -287,6 +290,7 @@
   <SaveFailedModal />
   <UnsavedEditsModal />
   <FirstRunModal {live} {actions} />
+  <AboutModal />
   <Toasts />
 {/if}
 
@@ -421,11 +425,9 @@
     }
   }
 
-  // the update notice's pill sits here (its card floats over the panel: UpdateNotice.svelte)
+  // the space between Desktop | Phone and undo, redo
   .ed-foot__gap {
     flex: 1 !important;
-    display: flex;
-    justify-content: flex-start;
     min-width: 0;
   }
 

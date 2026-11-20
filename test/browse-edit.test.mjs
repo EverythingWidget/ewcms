@@ -3,7 +3,7 @@
 // only), and the pages list's active row (the page in the preview).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { loadUi } from '../scripts/load-ui.mjs';
 import { entryShows } from '../src/editor/lib/page-tree.js';
 
@@ -113,9 +113,10 @@ test('footer: the Desktop / Phone tip, Desktop | Phone (32px icon cells); undo /
   );
   // Sources and Media open from the areas' list only (AreaList.svelte), not from here
   assert.doesNotMatch(foot, /label="Sources"|label="Media"|openSources|openMedia/);
-  // the update pill moved here with the tools; its card floats above the footer
-  assert.match(foot, /<UpdateNotice \/>/);
-  assert.match(src('svelte/UpdateNotice.svelte'), /bottom: calc\(100% \+ var\(--space-1\)\);/);
+  // no update pill: the update is in About (an area, AboutModal.svelte); the gap stays empty
+  assert.match(foot, /<span class="ed-foot__gap"><\/span>/);
+  assert.doesNotMatch(app, /UpdateNotice|upd-pill|Update available/);
+  assert.ok(!existsSync(new URL('../src/editor/svelte/UpdateNotice.svelte', import.meta.url)));
 });
 
 test('pages list: no edit pens (their 24px slot kept), the page in the preview is the active row (A2)', () => {

@@ -76,7 +76,7 @@ test('surfaces: one mixin derives the role colours, solid, from --surface', () =
     assert.match(read(`src/editor/svelte/${f}.svelte`), /@include surface\(/, f);
   // the per-pop-up colour overrides and their tokens are gone
   assert.doesNotMatch(tokens, /--on-card-|--c-pop-|--c-sec-pop-|--c-popover-(fill|dim)/);
-  const src = ['WidgetPopup', 'SectionPopup', 'Popover', 'Position', 'UpdateNotice']
+  const src = ['WidgetPopup', 'SectionPopup', 'Popover', 'Position', 'AboutModal']
     .map((f) => read(`src/editor/svelte/${f}.svelte`))
     .join('\n');
   assert.doesNotMatch(src, /on-card-|c-pop-|c-sec-pop-|c-popover-(fill|dim)|c-focus-ring/);

@@ -25,7 +25,7 @@ const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 
 test('the areas, in order: Pages, Media, Sources, Theme, Animations, Site settings, History', () => {
   assert.deepEqual(
     AREAS.map((a) => a.label),
-    ['Pages', 'Media', 'Sources', 'Theme', 'Animations', 'Site settings', 'History'],
+    ['Pages', 'Media', 'Sources', 'Theme', 'Animations', 'Site settings', 'History', 'About'],
   );
   // where each opens: the side panel, a window over the editor, or nothing yet
   assert.deepEqual(Object.fromEntries(AREAS.map((a) => [a.id, opensIn(a)])), {
@@ -36,6 +36,7 @@ test('the areas, in order: Pages, Media, Sources, Theme, Animations, Site settin
     animations: 'panel',
     'site-settings': 'panel',
     history: null,
+    about: 'window',
   });
   assert.deepEqual(Object.fromEntries(AREAS.map((a) => [a.id, a.status])), {
     pages: 'ready',
@@ -45,6 +46,7 @@ test('the areas, in order: Pages, Media, Sources, Theme, Animations, Site settin
     animations: 'ready',
     'site-settings': 'ready',
     history: 'soon',
+    about: 'ready',
   });
   // ui.panel's values: the list, then the side panel's areas (one name each: id = state value)
   assert.deepEqual(PANELS, ['areas', 'pages', 'theme', 'animations', 'site-settings']);
@@ -65,7 +67,7 @@ test('the areas, in order: Pages, Media, Sources, Theme, Animations, Site settin
 test('a record is the whole area: id, label, icon, subtitle, status, what it opens', () => {
   for (const a of AREAS) {
     assert.deepEqual(
-      Object.keys(a).filter((k) => k !== 'parts'),
+      Object.keys(a).filter((k) => !['parts', 'highlight'].includes(k)),
       ['id', 'label', 'icon', 'subtitle', 'status', 'opens'],
       a.id,
     );
@@ -186,8 +188,66 @@ test('the windows (a record that opens one): half-width cards under the list, tw
   );
   assert.deepEqual(
     AREAS.filter((a) => opensIn(a) === 'window').map((a) => a.id),
-    ['media', 'sources'],
+    ['media', 'sources', 'about'],
   );
+});
+
+test("About: ewcms's version, or the update to it, highlighted (its record)", () => {
+  const about = areaOf('about');
+  assert.equal(about.subtitle({}), 'ewcms');
+  const none = { current: 'v0.9.0', latest: 'v0.9.0', available: false };
+  assert.equal(about.subtitle({ update: none }), 'ewcms v0.9.0');
+  assert.equal(about.highlight({ update: none }), false);
+  const offer = { current: 'v0.9.0', latest: 'v0.10.0', available: true, highlighted: true };
+  assert.equal(about.subtitle({ update: offer }), 'Update to v0.10.0');
+  assert.equal(about.highlight({ update: offer }), true);
+  // Later: still offered, not highlighted
+  assert.equal(about.highlight({ update: { ...offer, highlighted: false } }), false);
+  assert.match(src('areas.js'), /openAbout\(\)/);
+  // the card: its record's highlight, the old pill's teal; same fill and size
+  const list = src('svelte/AreaList.svelte');
+  assert.match(list, /area\.highlight\?\.\(counts\) && 'is-update'/);
+  assert.match(list, /update: \{ \.\.\.upd\.info, highlighted: highlighted\(\) \}/);
+  assert.match(
+    list,
+    /&\.is-update \{\s*box-shadow: inset 0 0 0 1px var\(--c-widget-line-hover\);\s*&:hover \{\s*box-shadow: inset 0 0 0 1px var\(--c-widget-accent\);/,
+  );
+  // highlighted: an offer not put off with Later, an update running or failed
+  const u = src('svelte/update.svelte.js');
+  assert.match(
+    u,
+    /\(!!upd\.info\?\.available && !upd\.later && upd\.phase === 'offer'\) \|\|\s*updating\(\) \|\|\s*upd\.phase === 'error'/,
+  );
+  assert.match(u, /export function later\(\) \{\s*upd\.later = true;\s*closeModal\('about'\);/);
+});
+
+test('the About window: the update (offer, installing, restarting, done, error) or Up to date, then ewcms', () => {
+  const m = src('svelte/AboutModal.svelte');
+  // Media's and Sources' window: ExplorerHead, the box with no padding, header + body
+  assert.match(m, /<ExplorerHead title="About" icon="fa-circle-info"/);
+  assert.match(m, /dialog\.about-modal \{\s*width: min\(520px, calc\(100vw - 32px\)\);/);
+  assert.match(m, /grid-template-rows: auto minmax\(0, 1fr\);\s*padding: 0;/);
+  for (const s of [
+    'Update available',
+    '{info.current} → {info.latest}',
+    'this site · latest tag',
+    'Updating…',
+    'Restarting dev server…',
+    'Updated to {job.to}',
+    'Update failed',
+    'Up to date',
+    'The editor and builder of this site',
+    'https://ewcms.org',
+    "This site's engine",
+    '{info?.engine',
+  ])
+    assert.ok(m.includes(s), s);
+  // Later / Update only on an offer; Up to date has no buttons
+  assert.match(
+    m,
+    /\{#if offer\}\s*<div class="upd__btns">\s*<button type="button" onclick=\{later\}>Later<\/button>\s*<button type="button" class="is-primary" onclick=\{startUpdate\}>Update<\/button>/,
+  );
+  assert.equal(m.match(/class="upd__btns"/g).length, 3); // offer, done, error
 });
 
 test('Coming soon: one pattern, from the status; the words in one place', () => {

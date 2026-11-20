@@ -39,6 +39,13 @@ say what a site must do before it bumps its pin.
   `theme`, `animations`, `site-settings`); an old `tab=settings` link (or session) opens Site
   settings, an old `tab=settings&animation=…` link Animations.
   No content or data format change.
+- **About.** The areas that open a window (Media, Sources and the new **About**) are half-width
+  cards, two a row, under the list. About holds what the footer's Update available pill and its
+  card did: its card says the version (`ewcms v0.9.0`) or the update (`Update to v0.10.0`,
+  highlighted in teal); its window shows the update with its changes, Later / Update and the
+  update's steps, or Up to date, then what ewcms is and the engine the site pins. Later closes
+  it and takes the highlight off for this visit. The footer is Desktop | Phone (and undo, redo).
+  `GET /__editor/update` also answers the pin (`engine`).
 
 ## 0.10.0 (2026-11-17)
 

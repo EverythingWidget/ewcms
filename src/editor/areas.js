@@ -7,13 +7,15 @@
  *   label     the card's name and the area head's title
  *   icon      the card's Font Awesome icon (fa-solid fa-<icon>)
  *   subtitle  (counts) => the card's quiet second line, from what the site has ({ pages,
- *             photos, sources, items, templates }: AreaList counts them)
+ *             photos, sources, items, templates, update }: AreaList counts them; update:
+ *             svelte/update.svelte.js's info and highlighted)
  *   status    'ready' | 'soon' (not built yet: disabled, COMING_SOON where the › is)
  *   opens     what a click opens, one of:
  *               { panel: () => import(component) }   in the side panel (ui.panel is its id;
  *                                                     the component gets live, bridge, actions)
  *               { window: () => open it }            a window over the editor, the list stays
  *             (null: nothing yet, a 'soon' area)
+ *   highlight (optional) (counts) => the card highlighted (About: an update to offer)
  *   parts     (optional) rows the area's panel lists at its top, each { id, label, subtitle,
  *             status }: a 'soon' one shows as the areas' do (Theme's Fonts and styles)
  * Pages holds the site parts (Header, Footer) and every page, Theme the item templates,
@@ -100,6 +102,17 @@ export const AREAS = [
     subtitle: () => 'Past publishes',
     status: 'soon',
     opens: null,
+  },
+  {
+    id: 'about',
+    label: 'About',
+    icon: 'circle-info',
+    // ewcms's version for this site, or the update to it (dev only: none, just "ewcms")
+    subtitle: ({ update: u } = {}) =>
+      u?.available ? `Update to ${u.latest}` : u?.current ? `ewcms ${u.current}` : 'ewcms',
+    highlight: (n) => !!n.update?.highlighted,
+    status: 'ready',
+    opens: { window: async () => (await import('./svelte/modals.svelte.js')).openAbout() },
   },
 ];
 

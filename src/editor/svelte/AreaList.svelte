@@ -13,6 +13,7 @@
   import { media, isR2 } from './media.svelte.js';
   import { sourceIdOf } from '../../render/files.js';
   import { pageIds } from '../lib/page-tree.js';
+  import { upd, highlighted } from './update.svelte.js';
 
   // live: reactive store (live.svelte.js); actions: setPanel (main.js)
   let { live, actions } = $props();
@@ -30,6 +31,7 @@
         0,
       ),
       templates: ui.pages.filter((p) => p.kind === 'item-template').length,
+      update: { ...upd.info, highlighted: highlighted() },
     };
   });
 
@@ -62,7 +64,7 @@
   {@const win = opensIn(area) === 'window'}
   <button
     type="button"
-    class={['arow', soon && 'is-soon']}
+    class={['arow', soon && 'is-soon', area.highlight?.(counts) && 'is-update']}
     data-area={area.id}
     disabled={soon}
     aria-haspopup={win ? 'dialog' : undefined}
@@ -124,6 +126,21 @@
 
     &:focus-visible {
       @include focus-ring;
+    }
+
+    // highlighted (its record's highlight: About, an update): the old update pill's teal, a 1px
+    // ring at 50% (a hovered widget row's), full on hover; the icon and the subtitle teal
+    &.is-update {
+      box-shadow: inset 0 0 0 1px var(--c-widget-line-hover);
+
+      &:hover {
+        box-shadow: inset 0 0 0 1px var(--c-widget-accent);
+      }
+
+      .arow__lead,
+      .arow__sub {
+        color: var(--c-widget-accent);
+      }
     }
 
     &.is-soon {

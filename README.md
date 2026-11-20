@@ -69,12 +69,13 @@ point at the engine's files (the dev server serves them as `/@fs/…`). The look
 own `theme/`; the engine has no theme of its own (see **Theme**).
 
 **Updates (dev only).** The editor checks the engine's GitHub tags: when one is newer than the
-`#vX.Y.Z` in the site's `package.json`, its header shows **Update available**; the card lists the
-versions and the commits between. **Update** sets the tag in `package.json`, runs `npm install`
+`#vX.Y.Z` in the site's `package.json`, the **About** area's card says **Update to vX.Y.Z**
+(highlighted) and its window lists the versions and the commits between (**Later** takes the
+highlight off for the visit). **Update** sets the tag in `package.json`, runs `npm install`
 and restarts `ewcms dev` (the editor reloads by itself); then commit `package.json` and the
 lockfile. A failed install changes nothing. A linked or `file:` engine is never offered one. No check is
 an error: offline (or GitHub down), `GET /__editor/update` answers 200 with `"latest": "unknown"`
-and no notice, and a site with no `package.json` is simply not pinned.
+and About says it can't check, and a site with no `package.json` is simply not pinned.
 
 ## Working on ewcms and a site together (the workspace, no npm link)
 
@@ -1749,11 +1750,12 @@ comes in from the right, the list comes back from the left; reduced motion: no s
 
 **Areas** (`src/editor/areas.js`, `AreaList.svelte`): the editor opens on one list, a card per
 part of the site with what it holds (a 20px icon, its name, a count): **Pages**, **Media**,
-**Sources**, **Theme**, **Animations**, **Site settings**, **History**. Each part opens from
+**Sources**, **Theme**, **Animations**, **Site settings**, **History**, **About**. Each part opens from
 there only (no top tabs, no footer buttons). Pages, Theme, Animations and Site settings open in
 the panel (`ui.panel`: `pages`, `theme`, `animations`, `site-settings`; the list is `areas`; the
-URL's `tab`; an old `tab=settings` is `site-settings`), under a head with ← **Back to areas**; Media and Sources open their window over the
-editor. An area not built yet (History; Theme's **Fonts and styles**) is disabled and says
+URL's `tab`; an old `tab=settings` is `site-settings`), under a head with ← **Back to areas**; Media, Sources and About open their window over the
+editor (half-width cards under the list, two a row). About: ewcms's version for the site or
+its update (see **Updates**), what ewcms is and the engine the site pins. An area not built yet (History; Theme's **Fonts and styles**) is disabled and says
 **Coming soon**. Theme holds the item templates (**Templates**), Animations the default timing,
 the Animations library and the **Page entrance**; Site settings the rest (name, SEO, forms,
 layout, type, redirects, photos). **Edit** opens the page in the preview in Pages from any area.

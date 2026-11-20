@@ -62,6 +62,8 @@ test('check offers the newest tag, update bumps package.json and installs', asyn
   assert.equal(c.current, 'v0.1.36');
   assert.equal(c.latest, 'v0.1.38');
   assert.equal(c.available, true);
+  // the pin, for the About window's "This site's engine"
+  assert.equal(c.engine, 'github:EverythingWidget/ewcms#v0.1.36');
   assert.equal(c.boot, BOOT);
   assert.deepEqual(
     c.changes.map((x) => x.ref),

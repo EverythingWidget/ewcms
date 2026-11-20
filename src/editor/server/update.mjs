@@ -1,8 +1,8 @@
 /**
- * The editor's update notice (dev only): is there a newer ewcms than the site's package.json
- * names, and the update itself. GET /__editor/update: { current, latest, available, changes,
- * boot } (the newest vX.Y.Z tag of the engine's GitHub repo; changes: the commits between,
- * newest first, { ref, text }). POST /__editor/update { to }: package.json's ewcms tag set to
+ * The ewcms update (dev only; in the editor: the About window): is there a newer ewcms than the
+ * site's package.json names, and the update itself. GET /__editor/update: { current, latest,
+ * available, changes, engine, boot } (the newest vX.Y.Z tag of the engine's GitHub repo;
+ * changes: the commits between, newest first, { ref, text }; engine: the package.json pin). POST /__editor/update { to }: package.json's ewcms tag set to
  * it, `npm install`, then the dev server restarted (the same command again, so the new engine's
  * code runs); GET /__editor/update/status follows it: { state: idle | installing | restarting
  * | error, log, from, to }. A failed install puts package.json and the lockfile back.
@@ -89,6 +89,7 @@ export function createUpdater({ root, server, logger = console, fetchJSON = gh }
     if (!force && fresh) return { ...checked.body, boot: BOOT };
     const body = {
       current: dep?.tag || `v${ENGINE_VERSION}`,
+      engine: dep?.spec || '', // the site's package.json pin (the About window), '' unpinned
       latest: '',
       available: false,
       changes: [],
