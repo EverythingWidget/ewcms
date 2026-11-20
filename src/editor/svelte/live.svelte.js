@@ -3,9 +3,12 @@
  *
  * The store stays plain JavaScript with an on() event. Every store event bumps `version`;
  * everything below reads `version` first, so a component that uses it re-renders after
- * each edit, undo, save, ... without knowing about store events.
+ * each edit, undo, save, ... without knowing about store events. Components ask for what they
+ * show (a file, a value, the routes, the sources, a schema) and never read the counter
+ * themselves: this module is the one place that decides what wakes them.
  */
-import { contentFromFiles } from '../../render/files.js';
+import { contentFromFiles, sourceIds } from '../../render/files.js';
+import { schemaFor } from './source-items.js';
 import { getRoutes } from '../../render/routes.js';
 
 const copy = (value) => (value === undefined ? undefined : JSON.parse(JSON.stringify(value)));
@@ -110,6 +113,30 @@ export function createLive(store) {
     get canRedo() {
       version;
       return store.canRedo();
+    },
+    /** Are the files loaded (any file in the store)? */
+    get loaded() {
+      version;
+      return Object.keys(store.current).length > 0;
+    },
+    /** The sources' ids (content/en/sources/*.json), sorted. */
+    get sources() {
+      version;
+      return sourceIds(store.current);
+    },
+    /** A source file's schema ("sources/people.json"): its schema file, else inferred (schemaFor). */
+    schema(file) {
+      version;
+      return schemaFor(store, file);
+    },
+    /**
+     * What `fn(store)` makes of the files, or of what follows them (the preview's elements, an
+     * editor's plan from the store), run again after every store change: for what the getters
+     * above don't name. Don't change the store's objects in it.
+     */
+    read(fn) {
+      version;
+      return fn(store);
     },
     /** Number of unsaved changes over all files (one per changed value). */
     get changes() {
