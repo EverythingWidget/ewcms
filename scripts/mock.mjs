@@ -181,9 +181,22 @@ try {
     const root = document.getElementById('sandbox');
     const r = root.getBoundingClientRect();
     let right = r.right, bottom = r.bottom;
+    // what shows of it: cut by the boxes that clip it (a scroll area's rows below its edge
+    // don't count; an open menu reaching out of the panel does)
+    const clips = (el) => getComputedStyle(el).overflow !== 'visible';
     for (const el of root.querySelectorAll('*')) {
       const b = el.getBoundingClientRect();
-      if (b.width && b.height) { right = Math.max(right, b.right); bottom = Math.max(bottom, b.bottom); }
+      let r2 = b.right, b2 = b.bottom;
+      for (let up = el.parentElement; up && up !== root; up = up.parentElement)
+        if (clips(up)) {
+          const c = up.getBoundingClientRect();
+          r2 = Math.min(r2, c.right);
+          b2 = Math.min(b2, c.bottom);
+        }
+      if (b.width && b.height && r2 > b.left && b2 > b.top) {
+        right = Math.max(right, r2);
+        bottom = Math.max(bottom, b2);
+      }
     }
     return { x: r.left, y: r.top, width: right - r.left + 16, height: bottom - r.top + 16 };
   })()`);

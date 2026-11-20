@@ -68,7 +68,8 @@ the mock ask for it, so every screenshot of it has them:
 ```
 
 A mock bigger than Chrome's 1200×1600 viewport grows the viewport to fit, so its scrollbars are
-drawn too.
+drawn too. The PNG holds what shows: a scroll area's rows below its edge don't make it
+taller (an open menu reaching out of the panel still counts).
 
 A mock that fails to load (a cold dev server's first load can end in "Failed to fetch
 dynamically imported module" while Vite optimizes dependencies) is loaded again, up to four
