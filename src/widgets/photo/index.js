@@ -19,6 +19,8 @@ export const photo = {
   icon: 'image',
   line: 'One photo, with a caption',
   sketch: 'photo',
+  // in an item template (the Template editor): When a value is missing
+  inTemplate: { missing: true },
   placement: { media: true, fill: true, place: 'center' },
   settings: [
     { key: 'src', label: 'Photo', type: 'photo' },

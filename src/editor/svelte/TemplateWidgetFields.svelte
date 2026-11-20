@@ -13,6 +13,7 @@
   import { sampleSource } from '../../widgets/list/template-preview.js';
   import { ITEM_WIDGETS, itemSection } from '../../widgets/list/item-grid.js';
   import { PRESETS } from '../../widgets/list/presets.js';
+  import { widgetType } from '../../widgets/index.js';
   import { innerChoice, innerTemplates } from '../../widgets/list/nested.js';
   import { MIN_TEXT_PX, sizeLine, textSizes } from '../lib/small-text.js';
   import {
@@ -158,7 +159,8 @@
     class .li__&lt;role&gt;). It doesn't pick what it shows: its own property does. Only a preset
     uses it, to fill the part from the source's property of the same name.{/snippet}
 </Field>
-{#if ['text', 'photo', 'button'].includes(w.type)}
+<!-- what its type offers in an item template (its inTemplate: src/widgets/index.js) -->
+{#if widgetType(w.type)?.inTemplate?.missing}
   <!-- When a value is missing (src/render/layout/missing.js): one full row; Inherit is left out -->
   <Field
     edit={`${file}#${b}/config/missing`}
@@ -174,7 +176,7 @@
       as the List says.{/snippet}
   </Field>
 {/if}
-{#if w.type === 'text'}
+{#if widgetType(w.type)?.inTemplate?.join}
   <!-- Style + Text: edited in the preview (the page Text's toolbar), not here -->
   {#if w.join !== undefined}
     <Field

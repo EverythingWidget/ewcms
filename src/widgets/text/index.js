@@ -30,6 +30,8 @@ export const text = {
   fitWidth: true,
   scaleToFit: true,
   settings: [{ key: 'body', label: 'Text', type: 'rich' }],
+  // in an item template (the Template editor): When a value is missing, and Between facts
+  inTemplate: { missing: true, join: true },
   // its words aren't a field in the editor's Content tab: where they are typed
   hint:
     'Type the text in the preview: with the widget picked, just type (or press Enter, or ' +

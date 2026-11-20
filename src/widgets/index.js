@@ -65,6 +65,9 @@
  *                     the value from the widget's config (default: config[key]; '', null or
  *                     undefined removes the variable). E.g. a List's gap:
  *                     { on: '.list__items--grid', var: '--list-gap', value: (c) => gapOf(c) || null }
+ *   inTemplate  optional { missing?, join? }: what the Template editor offers for it in a List's
+ *             item template (TemplateWidgetFields.svelte): missing, When a value is missing
+ *             (config.missing, ../layout/missing.js); join, Between facts (its join)
  *   hint      optional: a line the editor shows first in its Content tab (a Text: where its
  *             words are typed)
  *   defaults  a new widget of this type (Add widget)

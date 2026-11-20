@@ -18,6 +18,8 @@ export const button = {
   icon: 'arrow-right',
   line: 'A link to a page or a site',
   sketch: 'button',
+  // in an item template (the Template editor): When a value is missing
+  inTemplate: { missing: true },
   // its content box (the button): Fit hugs its label, Fill fills the widget; placed in it
   placement: { axes: 'both', box: true, place: 'left top' },
   // (an emptied label keeps its element: the editor writes it in place)
