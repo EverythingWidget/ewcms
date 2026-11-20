@@ -56,7 +56,7 @@
         <p class="upd__kicker is-quiet">Up to date</p>
         <p class="upd__title">{info?.current || 'ewcms'}</p>
         <p class="upd__muted">
-          {info?.engine ? 'this site · the latest tag' : 'a linked engine: no updates'}
+          {info?.pin ? 'this site · the latest tag' : 'a linked engine: no updates'}
         </p>
       {/if}
 
@@ -109,7 +109,7 @@
       <dt>Website</dt>
       <dd><a href="https://ewcms.org" target="_blank" rel="noreferrer">ewcms.org</a></dd>
       <dt>This site's engine</dt>
-      <dd>{info?.engine || 'not pinned in package.json'}</dd>
+      <dd>{info?.pin || 'not pinned in package.json'}</dd>
     </dl>
   </div>
 </dialog>

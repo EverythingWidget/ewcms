@@ -45,7 +45,7 @@ say what a site must do before it bumps its pin.
   highlighted in teal); its window shows the update with its changes, Later / Update and the
   update's steps, or Up to date, then what ewcms is and the engine the site pins. Later closes
   it and takes the highlight off for this visit. The footer is Desktop | Phone (and undo, redo).
-  `GET /__editor/update` also answers the pin (`engine`).
+  `GET /__editor/update` also answers the pin (`pin`).
 
 ## 0.10.0 (2026-11-17)
 

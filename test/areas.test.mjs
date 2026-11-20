@@ -245,7 +245,7 @@ test('the About window: the update (offer, installing, restarting, done, error) 
     'The editor and builder of this site',
     'https://ewcms.org',
     "This site's engine",
-    '{info?.engine',
+    '{info?.pin',
   ])
     assert.ok(m.includes(s), s);
   // Later / Update only on an offer; Up to date has no buttons

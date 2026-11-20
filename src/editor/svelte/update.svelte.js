@@ -3,7 +3,7 @@
  * (AreaList.svelte, its record in ../areas.js: subtitle, highlight) and the About window
  * (AboutModal.svelte: the versions, the changelog, Later / Update, then installing,
  * restarting, done or the error). loadUpdate() once, at the start (App.svelte).
- *   info   GET /__editor/update: { current, latest, available, changes, engine, boot }
+ *   info   GET /__editor/update: { current, latest, available, changes, pin, boot }
  *   phase  offer | installing | restarting | done | error
  *   later  Later was picked: the card isn't highlighted any more (this visit), the offer stays
  * An update restarts the dev server; sessionStorage keeps the job across it, and the About

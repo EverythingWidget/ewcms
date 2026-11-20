@@ -75,14 +75,14 @@ const UPDATE = {
     latest: '9.9.9',
     available: true,
     changes: ['A made-up change for the mock', 'Another one'],
-    engine: `^${pkg.version}`,
+    pin: `^${pkg.version}`,
   }),
   'up-to-date': () => ({
     current: pkg.version,
     latest: pkg.version,
     available: false,
     changes: [],
-    engine: `^${pkg.version}`,
+    pin: `^${pkg.version}`,
   }),
 };
 
