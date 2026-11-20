@@ -87,6 +87,7 @@ import {
   syncRoots,
   targetFile,
 } from './layout-sync.js';
+import { createRenderJobs } from './render-jobs.js';
 import {
   linkWidget,
   moveWidgets,
@@ -684,27 +685,31 @@ function relayout() {
 
 /**
  * Sections `ids` of `root` (the previewed page's view, or the footer) rendered by the dev
- * server and swapped in, in turn.
+ * server and swapped in, in turn. Changes while one waits join it (render-jobs.js).
  */
+const renderJobs = createRenderJobs();
 function renderSections(
   stale,
   root = bridge.doc?.querySelector('[data-router-view]'),
   { only = null } = {},
 ) {
   if (!stale.length || !root) return;
+  const job = renderJobs.add(root, stale, only);
+  if (!job) return;
   rendering = rendering.then(async () => {
+    const ids = renderJobs.start(root, job);
     const file = root.dataset.pageFile;
     const path = bridge.path();
     // the preview between two pages (reloading: no window yet) loads
     // the drafts itself; nothing to swap (else: "null is not a page of …")
     if (!path || !file || !root.isConnected) return;
     try {
-      const { html } = await source.render({ path, file, data: store.current[file], ids: stale });
+      const { html } = await source.render({ path, file, data: store.current[file], ids });
       if (!root.isConnected || bridge.path() !== path) return;
       // the preview stays where it is scrolled (layout-sync.js holdScroll)
       const release = holdScroll(bridge.doc);
       try {
-        if (only && swapWidget(bridge.doc, store, html, root, only)) bridge.api?.reflow?.();
+        if (job.only && swapWidget(bridge.doc, store, html, root, job.only)) bridge.api?.reflow?.();
         else {
           swapSections(bridge.doc, store, html, root);
           bridge.api?.remountView();
