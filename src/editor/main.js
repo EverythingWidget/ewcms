@@ -887,11 +887,13 @@ store.on(({ files, source: src, structure: _structure, edits }) => {
     !typed &&
     !!edits?.length &&
     roots.some((root) => patchTexts(root, store, edits, bridge.patchText, { layout: relayout }));
-  for (const root of roots)
-    if (files.includes(root.dataset.pageFile))
-      // content or config too (keyOf), not only a flagged structure edit: else the preview
-      // can stay stale until a reload (G13). Not while a Text is being typed (that would end it).
-      syncSections({ structure: !typed }, root);
+  // patched: the sections show the file already (the layout is the same), nothing to look at
+  if (!patched)
+    for (const root of roots)
+      if (files.includes(root.dataset.pageFile))
+        // content or config too (keyOf), not only a flagged structure edit: else the preview
+        // can stay stale until a reload (G13). Not while a Text is being typed (that would end it).
+        syncSections({ structure: !typed }, root);
   if (files.includes(page)) syncBackdrop();
   if (textChanged) {
     pushCurtains();

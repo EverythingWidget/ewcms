@@ -149,3 +149,15 @@ test('typing in main.js: the patch first (a CSS variable: the rows again), no fu
   );
   assert.match(main, /if \(patched\) bridge\.applyCurtain\(\);\s*else\s*bridge\.applyTexts\(/);
 });
+
+test('a patched edit: syncSections is skipped (no section key compared, nothing rendered)', () => {
+  const main = read('src/editor/main.js');
+  assert.match(
+    main,
+    /\{ layout: relayout \}\)\);\s*(\/\/[^\n]*\n\s*)*if \(!patched\)\s*for \(const root of roots\)\s*if \(files\.includes\(root\.dataset\.pageFile\)\)\s*(\/\/[^\n]*\n\s*)*syncSections\(\{ structure: !typed \}, root\);/,
+  );
+  // what the skipped syncSections would have found: nothing stale (the patch marked it rendered)
+  const p = preview();
+  assert.equal(p.set('0/title', 'Eve Noor'), true);
+  assert.deepEqual(p.stale(), []);
+});
