@@ -81,7 +81,7 @@ export const hero = {
       type: 'words',
       width: 'half',
       blank: 'keep',
-      live: { after: (el, value) => heroWord(el, value) },
+      inPlace: { after: (el, value) => heroWord(el, value) },
     },
     { key: 'eyebrow', label: 'Eyebrow', width: 'half', blank: 'keep' },
     { key: 'body', label: 'Subline', type: 'multiline', blank: 'keep' },

@@ -1,9 +1,9 @@
 /**
  * What a widget's fields declare the editor can update in the preview itself (the widget
- * format, src/widgets/index.js): a setting's `blank: 'keep'` and `live: { after }`, a config
- * entry's `live: { on, var | class, when?, value? }`. The editor holds no widget's name: it does
- * what the field declares, else the widget renders again (layout-sync.js patchTexts,
- * preview-runtime.js patchText).
+ * format, src/widgets/index.js): a setting's `blank: 'keep'` and `inPlace: { after }`, a
+ * config entry's `inPlace: { on, var | class, when?, value? }`. The editor holds no widget's
+ * name: it does what the field declares, else the widget renders again (layout-sync.js
+ * patchTexts, preview-runtime.js patchText).
  */
 import { widgetType } from '../widgets/index.js';
 import { splitEdit } from '../render/helpers.js';
@@ -42,24 +42,25 @@ export function ownElements(node, on) {
 }
 
 /**
- * A config value's `live` declaration applied to the widget element `node` (config: the
+ * A config value's `inPlace` declaration applied to the widget element `node` (config: the
  * widget's config now): a CSS variable set (removed for '', null or undefined) or a class
- * toggled (on when the value is `when`). A function to run, or null when it can't (no `live`, or
- * not exactly one element).
+ * toggled (on when the value is `when`). A function to run, or null when it can't (no
+ * `inPlace`, or not exactly one element).
  */
 export function configStep(node, widget, key) {
-  const live = configOf(widget, key)?.live;
-  if (!live?.on || (!live.var && !live.class)) return null;
-  const els = ownElements(node, live.on);
+  const inPlace = configOf(widget, key)?.inPlace;
+  if (!inPlace?.on || (!inPlace.var && !inPlace.class)) return null;
+  const els = ownElements(node, inPlace.on);
   if (els.length !== 1) return null;
   const config = widget.config || {};
-  const value = live.value ? live.value(config) : config[key];
+  const value = inPlace.value ? inPlace.value(config) : config[key];
   const [el] = els;
   return () => {
-    if (live.var) {
-      if (value === undefined || value === null || value === '') el.style.removeProperty(live.var);
-      else el.style.setProperty(live.var, String(value));
+    if (inPlace.var) {
+      if (value === undefined || value === null || value === '')
+        el.style.removeProperty(inPlace.var);
+      else el.style.setProperty(inPlace.var, String(value));
     }
-    if (live.class) el.classList.toggle(live.class, value === live.when);
+    if (inPlace.class) el.classList.toggle(inPlace.class, value === inPlace.when);
   };
 }

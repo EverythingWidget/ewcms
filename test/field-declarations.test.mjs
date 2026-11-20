@@ -1,5 +1,5 @@
 // The editor updates a widget in the preview in place only as its fields declare (the widget
-// format, src/widgets/index.js: a setting's blank / live.after, a config entry's live); the
+// format, src/widgets/index.js: a setting's blank / inPlace.after, a config entry's inPlace); the
 // patch code itself names no widget (src/editor/widget-fields.js, layout-sync.js patchTexts,
 // preview-runtime.js writeText).
 import { test } from 'node:test';
@@ -54,23 +54,46 @@ test("the built-ins declare what was the editor's list: kept blanks, a CSS varia
   const config = (type, key) => widgetType(type).config.find((c) => c.key === key);
   for (const key of ['title', 'eyebrow', 'body']) assert.equal(setting('hero', key).blank, 'keep');
   assert.equal(setting('button', 'label').blank, 'keep');
-  assert.equal(typeof setting('hero', 'title').live.after, 'function');
+  assert.equal(typeof setting('hero', 'title').inPlace.after, 'function');
   // a Form shows defaults or leaves its texts out when emptied: rendered
   for (const f of widgetType('form').settings) assert.equal(f.blank, undefined, f.key);
-  const gap = config('list', 'gap').live;
+  const gap = config('list', 'gap').inPlace;
   assert.deepEqual([gap.on, gap.var], ['.list__items--grid', '--list-gap']);
   assert.equal(gap.value({ gap: 0 }), null);
   assert.equal(gap.value({ gap: 3 }), 3);
   assert.deepEqual(
-    { ...config('button', 'textOverflow').live },
+    { ...config('button', 'textOverflow').inPlace },
     { on: '.buttonwidget', class: 'buttonwidget--wrap', when: 'wrap' },
   );
+});
+
+test('no widget declares the old field key `live` (it is inPlace), nor does the editor read it', async () => {
+  const { readdirSync } = await import('node:fs');
+  // the built-ins' fields (settings, config, a list setting's subkeys)
+  for (const w of BUILTIN_WIDGETS)
+    for (const f of [...(w.settings || []), ...(w.config || [])]) {
+      assert.equal(Object.hasOwn(f, 'live'), false, `${w.type}: ${f.key}`);
+      for (const sub of Object.values(typeof f.list === 'object' ? f.list : {}))
+        if (sub && typeof sub === 'object') assert.equal(Object.hasOwn(sub, 'live'), false);
+    }
+  // and the widget modules' code (aria-live attributes aside: not a key)
+  const walk = (dir) =>
+    readdirSync(new URL(`../${dir}`, import.meta.url), { withFileTypes: true }).flatMap((e) =>
+      e.isDirectory()
+        ? walk(`${dir}/${e.name}`)
+        : /\.m?js$/.test(e.name)
+          ? [`${dir}/${e.name}`]
+          : [],
+    );
+  for (const f of walk('src/widgets')) assert.doesNotMatch(code(read(f)), /(^|[\s{,])live\s*:/m, f);
+  for (const f of ['src/editor/widget-fields.js', 'src/editor/preview-runtime.js'])
+    assert.doesNotMatch(code(read(f)), /\?\.live\b|\)\.live\b/, f);
 });
 
 test('the widget format documents the field keys (custom widgets use them)', () => {
   const doc = read('src/widgets/index.js').split('*/')[0];
   assert.match(doc, /blank: 'keep'/);
-  assert.match(doc, /live: \{ after\(el, value\) \}/);
+  assert.match(doc, /inPlace: \{ after\(el, value\) \}/);
   assert.match(doc, /\{ on, var \}/);
   assert.match(doc, /\{ on, class, when \}/);
 });

@@ -421,9 +421,9 @@ export function createBridge({
       const html = words(value);
       if (el.innerHTML !== html) el.innerHTML = html;
     } else if (el.textContent !== String(value)) el.textContent = String(value);
-    // what its setting declares beside the text (the widget format: live.after, e.g. a size
+    // what its setting declares beside the text (the widget format: inPlace.after, e.g. a size
     // that follows the text; widget-fields.js)
-    settingAt(store, el.dataset.edit)?.live?.after?.(el, value);
+    settingAt(store, el.dataset.edit)?.inPlace?.after?.(el, value);
   }
 
   function boxLabel(el, kind) {

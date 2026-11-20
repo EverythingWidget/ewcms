@@ -69,7 +69,7 @@ function preview() {
   const view = document.querySelector('main');
   const store = createStore();
   store.load({ [F]: page() });
-  // the editor's bridge reads the store (a setting's live.after: widget-fields.js settingAt)
+  // the editor's bridge reads the store (a setting's inPlace.after: widget-fields.js settingAt)
   const bridge = createBridge({ store, labelFor: () => '' });
   markRendered(document, store, view);
   let edits = null;

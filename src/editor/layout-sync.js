@@ -115,7 +115,7 @@ const NOT_TEXT = new Set([
   'type',
 ]);
 // the [data-edit] types a value is written into as the render writes it (preview-runtime.js
-// patchText: 'words' split into its words; a setting's live.after then). Not 'rich' (a Text
+// patchText: 'words' split into its words; a setting's inPlace.after then). Not 'rich' (a Text
 // widget's body: the dev server renders it) or 'photo' (its srcset, size and alt are the render's)
 const PATCHED = new Set(['text', 'multiline', 'number', 'words']);
 const isText = (v) => typeof v === 'string' || (typeof v === 'number' && Number.isFinite(v));
@@ -126,7 +126,7 @@ const blank = (v) => typeof v === 'string' && v.trim() === '';
  * again: `edits` ([{ file, ptr, before, after }], the store's) each a text of a widget of
  * `root`'s file (the page's view, or the footer) that its widget shows in [data-edit] elements
  * of a plain type (PATCHED), or a config value whose field declares how the preview shows it
- * (`live`: widget-fields.js configStep). An emptied text only where its setting keeps its
+ * (`inPlace`: widget-fields.js configStep). An emptied text only where its setting keeps its
  * element (`blank: 'keep'`). The fields' declarations decide (the widget format,
  * src/widgets/index.js); no widget is named here. Only when all of them can: each element gets
  * its value (write(el, value); a config value: then layout()) and the section counts as

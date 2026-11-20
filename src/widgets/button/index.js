@@ -37,7 +37,7 @@ export const button = {
         ['clip', 'Clip'],
       ],
       // the editor toggles it in place, as render() writes it
-      live: { on: '.buttonwidget', class: 'buttonwidget--wrap', when: 'wrap' },
+      inPlace: { on: '.buttonwidget', class: 'buttonwidget--wrap', when: 'wrap' },
     },
   ],
   defaults: {

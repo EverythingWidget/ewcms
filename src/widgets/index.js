@@ -27,7 +27,7 @@
  *             Shrink to fit; ../layout/type.js)
  *   size      optional false: no Size (Auto / Rows / Aspect); every built-in has it
  *   settings  its content settings for the editor (each one field there; an item's properties
- *             can fill them, ../layout/bindings.js): [{ key, label, type?, width?, list?, item?, blank?, live? }]
+ *             can fill them, ../layout/bindings.js): [{ key, label, type?, width?, list?, item?, blank?, inPlace? }]
  *               type: 'text' (default) | 'multiline' (multi-line) | 'words' | 'number' | 'photo'
  *                     (the types: ../property-types.js)
  *               width: 'half' shares a row with a half setting next to it (short texts)
@@ -41,16 +41,16 @@
  *                     editor writes an emptied value in place too; without it an emptied
  *                     text renders the widget again (it may leave the element out or show a
  *                     default instead)
- *               live: { after(el, value) }: run in the editor's preview after it wrote a typed
+ *               inPlace: { after(el, value) }: run in the editor's preview after it wrote a typed
  *                     value into the setting's element el (data-edit), for what the render
  *                     writes beside it (the Hero's name: --hero-word on its title)
  *             A text, multi-line, words or number setting typed is written into its elements
  *             in place (src/editor/layout-sync.js patchTexts); anything else renders the
  *             widget again.
- *   config    how it works (its look, on/off): [{ key, label, type, options?, empty?, live? }]
+ *   config    how it works (its look, on/off): [{ key, label, type, options?, empty?, inPlace? }]
  *               type: 'source' (a content/en/sources file) | 'select' (options [[value, label]])
  *                     | 'text' | 'boolean'; every widget also has config.enabled (on/off)
- *               live: how the editor's preview shows a changed value in place, as render()
+ *               inPlace: how the editor's preview shows a changed value in place, as render()
  *                     writes it, instead of rendering the widget again (src/editor/
  *                     widget-fields.js configStep): { on, var } sets the CSS variable var on
  *                     the widget's own element matching the selector on, or { on, class, when }

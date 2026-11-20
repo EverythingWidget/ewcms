@@ -289,7 +289,7 @@ export const list = {
       min: 0,
       max: MAX_GAP,
       // the editor writes it in place, as render() does: --list-gap on the grid, none at 0
-      live: { on: '.list__items--grid', var: '--list-gap', value: (c) => gapOf(c) || null },
+      inPlace: { on: '.list__items--grid', var: '--list-gap', value: (c) => gapOf(c) || null },
     },
     ...CAROUSEL_ROWS,
   ],
