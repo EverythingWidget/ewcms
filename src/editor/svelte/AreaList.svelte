@@ -2,7 +2,8 @@
   The areas (ui.panel 'areas'): one card per record of ../areas.js, the only place each is
   opened from. A card: [ 20px icon in a 36px column | label / subtitle | › ]. A click opens what
   the record says (opens): its panel (actions.setPanel: its head's ← comes back here) or its
-  window over the editor (the list stays). An area not built yet (status 'soon') is disabled and
+  window over the editor (the list stays). The areas that open a window are half-width cards
+  under the list, two a row, without the ›. An area not built yet (status 'soon') is disabled and
   says "Coming soon" where the › is (SoonTag.svelte).
 -->
 <script>
@@ -32,6 +33,10 @@
     };
   });
 
+  // the areas in the side panel (and the ones not built yet) as rows, the windows as cards
+  const rows = AREAS.filter((a) => opensIn(a) !== 'window');
+  const windows = AREAS.filter((a) => opensIn(a) === 'window');
+
   // the record says what opens: its panel, or its window
   function open(area) {
     if (area.status !== 'ready') return;
@@ -42,34 +47,39 @@
 
 <section class="ed-body" aria-label="Areas">
   <ul class="areas">
-    {#each AREAS as area (area.id)}
-      {@const soon = area.status === 'soon'}
-      <li>
-        <button
-          type="button"
-          class={['arow', soon && 'is-soon']}
-          data-area={area.id}
-          disabled={soon}
-          aria-haspopup={opensIn(area) === 'window' ? 'dialog' : undefined}
-          onclick={() => open(area)}
-        >
-          <span class="arow__lead"><i class="fa-solid fa-{area.icon}" aria-hidden="true"></i></span>
-          <span class="arow__text">
-            <span class="arow__name">{area.label}</span>
-            <span class="arow__sub">{area.subtitle(counts)}</span>
-          </span>
-          {#if soon}
-            <SoonTag />
-          {:else}
-            <span class="arow__go"
-              ><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span
-            >
-          {/if}
-        </button>
-      </li>
-    {/each}
+    {#each rows as area (area.id)}<li>{@render card(area)}</li>{/each}
   </ul>
+  <!-- the areas that open a window (Media, Sources, ...): two a row under the list -->
+  {#if windows.length}
+    <ul class="areas-win">
+      {#each windows as area (area.id)}<li>{@render card(area)}</li>{/each}
+    </ul>
+  {/if}
 </section>
+
+{#snippet card(area)}
+  {@const soon = area.status === 'soon'}
+  {@const win = opensIn(area) === 'window'}
+  <button
+    type="button"
+    class={['arow', soon && 'is-soon']}
+    data-area={area.id}
+    disabled={soon}
+    aria-haspopup={win ? 'dialog' : undefined}
+    onclick={() => open(area)}
+  >
+    <span class="arow__lead"><i class="fa-solid fa-{area.icon}" aria-hidden="true"></i></span>
+    <span class="arow__text">
+      <span class="arow__name">{area.label}</span>
+      <span class="arow__sub">{area.subtitle(counts)}</span>
+    </span>
+    {#if soon}
+      <SoonTag />
+    {:else if !win}
+      <span class="arow__go"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
+    {/if}
+  </button>
+{/snippet}
 
 <style lang="scss">
   @use '../styles/mixins' as *;
@@ -78,6 +88,17 @@
   .areas {
     @include stack(var(--space-1));
     margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  // the windows' cards: two a row, 12px under the list, 8px apart, flush with the rows
+  // (a row's look and height, half its width: (376 - 8) / 2 = 184px; no ›)
+  .areas-win {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: var(--space-3) 0 0;
     padding: 0;
     list-style: none;
   }

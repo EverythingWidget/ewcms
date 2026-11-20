@@ -135,7 +135,10 @@ test('the editor opens on the areas; only Pages edits', async () => {
 
 test('AreaList: a card per area (20px icon in a 36px column), Coming soon disabled', () => {
   const list = src('svelte/AreaList.svelte');
-  assert.match(list, /\{#each AREAS as area \(area\.id\)\}/);
+  assert.match(
+    list,
+    /\{#each rows as area \(area\.id\)\}<li>\{@render card\(area\)\}<\/li>\{\/each\}/,
+  );
   assert.match(list, /disabled=\{soon\}/);
   assert.match(list, /\{#if soon\}\s*<SoonTag \/>/);
   assert.match(list, /width: 36px;/);
@@ -166,6 +169,25 @@ test('one place each: no top tabs, no Sources or Media in the footer; the head 1
   );
   // an area comes in from the right, the list comes back from the left
   assert.match(app, /const back = next === 'areas' \|\|/);
+});
+
+test('the windows (a record that opens one): half-width cards under the list, two a row, no ›', () => {
+  const list = src('svelte/AreaList.svelte');
+  // the record decides: opensIn, no ids
+  assert.match(list, /const rows = AREAS\.filter\(\(a\) => opensIn\(a\) !== 'window'\);/);
+  assert.match(list, /const windows = AREAS\.filter\(\(a\) => opensIn\(a\) === 'window'\);/);
+  assert.match(list, /<ul class="areas-win">\s*\{#each windows as area \(area\.id\)\}/);
+  // the same card as a row (its icon column, label, subtitle), without the ›
+  assert.match(list, /\{:else if !win\}\s*<span class="arow__go">/);
+  // 2 a row, 8px apart, 12px under the list
+  assert.match(
+    list,
+    /\.areas-win \{\s*display: grid;\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);\s*gap: var\(--space-2\);\s*margin: var\(--space-3\) 0 0;/,
+  );
+  assert.deepEqual(
+    AREAS.filter((a) => opensIn(a) === 'window').map((a) => a.id),
+    ['media', 'sources'],
+  );
 });
 
 test('Coming soon: one pattern, from the status; the words in one place', () => {
