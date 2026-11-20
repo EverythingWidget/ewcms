@@ -1,5 +1,5 @@
 <!--
-  Nav > SEO (a tab of the page panel), plain fields: its address (PageAddress.svelte:
+  A page's SEO tab (Pages, the page open), plain fields: its address (PageAddress.svelte:
   renames it), then what search engines and share cards say about the page in the preview, from
   its file's "meta" (src/render/seo.js). A page: title, description, share photo, noindex and
   canonical. A [param] page: its template's defaults for every item page (an item's own name,

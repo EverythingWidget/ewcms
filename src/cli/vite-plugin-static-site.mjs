@@ -11,7 +11,7 @@
  * index.html is the shell; it contains two markers: <!--ssr-head--> and <!--ssr-body-->.
  *
  * Visual editor (src/editor/index.html → src/editor) is DEV ONLY:
- *  dev   → any page with ?edit (/?edit, /about/?edit&tab=settings: src/editor/lib/editor-url.js)
+ *  dev   → any page with ?edit (/?edit, /about/?edit&tab=site-settings: src/editor/lib/editor-url.js)
  *          gets the editor app instead (its preview iframe, ?draft=…, always gets the site), and /__editor/*
  *          (src/editor/server/editor-server.mjs, localhost only) loads, saves and publishes the content JSON files and uploads photos to
  *          Cloudflare R2 with the R2_* keys from .env.local (read here, never sent to a page).

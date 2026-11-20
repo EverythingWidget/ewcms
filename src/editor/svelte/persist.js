@@ -1,9 +1,9 @@
 /**
  * Keeps the editor where it was across a refresh, in two places:
  *
- *   The URL (shareable): /photography/people/?edit&tab=settings (src/editor/lib/editor-url.js)
- *     tab     ui.panel, the area open: areas | pages | theme | animations | settings
- *             (../areas.js; the page's own tab, ui.pageTab, is kept per page in
+ *   The URL (shareable): /photography/people/?edit&tab=site-settings (src/editor/lib/editor-url.js)
+ *     tab     ui.panel, the area open: areas | pages | theme | animations | site-settings
+ *             (../areas.js; an old tab=settings is site-settings, PANEL_ALIASES; the page's own tab, ui.pageTab, is kept per page in
  *             sessionStorage; an unknown tab: the areas)
  *     (path)  the URL's own path is the page in the preview (main.js keeps it up to date)
  *     view    header | footer, when a site part (Header, Footer) is edited instead of a page
@@ -34,7 +34,7 @@ import { editorHref } from '../lib/editor-url.js';
 import { ui, previewClicks, pickElement, selectText } from './ui.svelte.js';
 import { sourceIdOf } from '../../render/files.js';
 import { isOpen, pushed } from './modals.svelte.js';
-import { PANELS } from '../areas.js';
+import { PANELS, panelOf } from '../areas.js';
 
 const KEY = 'editor:ui';
 // the modals open again after a refresh (the others are opened with callbacks: modals.svelte.js)
@@ -58,8 +58,11 @@ function readSession() {
 function readState() {
   const state = readSession();
   const q = new URLSearchParams(location.search);
+  // a session or link from before a rename (panel 'settings': site-settings)
+  state.panel = panelOf(state.panel);
   // the page's tab stays the session's (ui.pageTab)
-  if (q.has('tab')) state.panel = PANELS.includes(q.get('tab')) ? q.get('tab') : 'areas';
+  const tab = panelOf(q.get('tab'));
+  if (q.has('tab')) state.panel = PANELS.includes(tab) ? tab : 'areas';
   if (q.has('view')) {
     state.part = VIEWS[q.get('view')] && {
       kind: 'part',
@@ -111,7 +114,13 @@ export function restoreUi(preview, content) {
   if (['browse', 'edit'].includes(saved.mode) && ui.panel === 'pages') ui.mode = saved.mode;
   // Header or Footer open (pages: the URL's path; browse: the page in the preview)
   if (saved.part && ui.mode === 'edit') ui.target = saved.part;
-  ui.sections = saved.sections || {};
+  // open/closed sections; Site settings' were "settings:…" before its rename
+  ui.sections = Object.fromEntries(
+    Object.entries(saved.sections || {}).map(([k, v]) => [
+      k.replace(/^settings:/, 'site-settings:'),
+      v,
+    ]),
+  );
   // Animations > Motion's library, on an animation
   if (typeof saved.library?.name === 'string') ui.library = { name: saved.library.name };
   // the pages list's folder (PagesList)

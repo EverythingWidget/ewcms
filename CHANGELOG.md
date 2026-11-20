@@ -36,7 +36,8 @@ say what a site must do before it bumps its pin.
   soon. Pages starts with its Site parts (Header, Footer); the item templates moved to Theme
   (their ← and Done come back there); the default timing, the Animations library and the Page
   entrance moved from Site settings to Animations. The URL's `tab` is the area (`areas`, `pages`,
-  `theme`, `animations`, `settings`); an old `tab=settings&animation=…` link opens Animations.
+  `theme`, `animations`, `site-settings`); an old `tab=settings` link (or session) opens Site
+  settings, an old `tab=settings&animation=…` link Animations.
   No content or data format change.
 
 ## 0.10.0 (2026-11-17)

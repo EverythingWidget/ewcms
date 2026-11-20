@@ -58,7 +58,7 @@
   const setTo = (i, value) => setKey(i, 'to', value === EXTERNAL ? 'https://' : value);
 </script>
 
-<Collapsible key="settings:redirects" title="Redirects" open={false}>
+<Collapsible key="site-settings:redirects" title="Redirects" open={false}>
   <p class="hint">
     Old addresses that send visitors on (dist/_redirects, for Cloudflare Pages). Renaming or
     deleting a page and changing an item's slug add them by themselves. /old/:slug/ stands for every

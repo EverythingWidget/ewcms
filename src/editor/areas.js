@@ -17,12 +17,18 @@ export const AREAS = [
   { id: 'sources', label: 'Sources', icon: 'database', opens: 'modal' },
   { id: 'theme', label: 'Theme', icon: 'palette', opens: 'panel' },
   { id: 'animations', label: 'Animations', icon: 'play', opens: 'panel' },
-  { id: 'settings', label: 'Site settings', icon: 'gear', opens: 'panel' },
+  { id: 'site-settings', label: 'Site settings', icon: 'gear', opens: 'panel' },
   { id: 'history', label: 'History', icon: 'clock-rotate-left', opens: 'soon' },
 ];
 
 /** ui.panel's values: the list, then the areas the side panel shows. */
 export const PANELS = ['areas', ...AREAS.filter((a) => a.opens === 'panel').map((a) => a.id)];
+
+/** Old ui.panel values (a link or a session from before a rename): the area they are now. */
+export const PANEL_ALIASES = { settings: 'site-settings' };
+
+/** A ui.panel value as it is now: an alias resolved, anything else as is. */
+export const panelOf = (value) => PANEL_ALIASES[value] ?? value;
 
 /** The area `id` ({ id, label, icon, opens }), or undefined. */
 export const areaOf = (id) => AREAS.find((a) => a.id === id);
@@ -38,7 +44,7 @@ export function areaSubs({ pages = 0, photos = 0, sources = 0, items = 0, templa
     sources: `${plural(sources, 'source')}, ${plural(items, 'item')}`,
     theme: plural(templates, 'template'),
     animations: 'Timing, library and page entrance',
-    settings: 'Name, SEO, forms, type and redirects',
+    'site-settings': 'Name, SEO, forms, type and redirects',
     history: 'Past publishes',
   };
 }

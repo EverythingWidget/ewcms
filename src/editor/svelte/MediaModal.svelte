@@ -319,7 +319,7 @@
         property: parts.slice(2).join('.'),
         edit: null,
       });
-    if (u.file === SITE) return actions.setPanel('settings');
+    if (u.file === SITE) return actions.setPanel('site-settings');
     actions.setPanel('pages');
     const id = pageIdOf(u.file);
     if (id === null) return;

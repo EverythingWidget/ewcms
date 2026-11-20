@@ -178,7 +178,7 @@ test('needsReload: site.json reloads unless only its type changed (siteKey)', ()
 });
 
 test('Site settings › Type: a row per style with its tag, Preview / Close preview, live in the preview', () => {
-  const panel = read('src/editor/svelte/SettingsPanel.svelte');
+  const panel = read('src/editor/svelte/SiteSettingsPanel.svelte');
   assert.match(panel, /title="Type"/);
   assert.doesNotMatch(panel, /typography|Size \(cells\)|Tracking/);
   assert.match(panel, /\{name\} · \{tag\.toUpperCase\(\)\}/);
@@ -191,13 +191,13 @@ test('Site settings › Type: a row per style with its tag, Preview / Close prev
   assert.match(panel, /bridge\.doc\?\.documentElement/);
   const main = read('src/editor/main.js');
   // another area closes the specimen, back to the page it replaced
-  assert.match(main, /if \(panel !== 'settings'\) showSpecimen\(false\);/);
+  assert.match(main, /if \(panel !== 'site-settings'\) showSpecimen\(false\);/);
   assert.match(
     main,
     /ui\.specimenFrom = bridge\.path\(\) \|\| ui\.path;\s*bridge\.navigate\(TYPE_SPECIMEN\)/,
   );
   assert.match(
     read('src/editor/svelte/App.svelte'),
-    /<SettingsPanel \{live\} \{bridge\} \{actions\} \/>/,
+    /<SiteSettingsPanel \{live\} \{bridge\} \{actions\} \/>/,
   );
 });

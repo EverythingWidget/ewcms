@@ -9,7 +9,7 @@
     name      optional: what it is, on a second line in the accent color
               (Motion: "Section 2" / "Work")
     key       remembers open/closed in ui.sections (also kept across a refresh, persist.js),
-              e.g. "settings:site"; without it the section just starts as `open`
+              e.g. "site-settings:site"; without it the section just starts as `open`
     open      open when nothing is remembered yet (default true)
     id        data-section, to find the section (e.g. scroll to it)
     off       dimmed: the section is turned off

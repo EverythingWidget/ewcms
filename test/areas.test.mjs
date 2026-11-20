@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { AREAS, PANELS, areaOf, areaSubs } from '../src/editor/areas.js';
+import { AREAS, PANELS, areaOf, areaSubs, panelOf } from '../src/editor/areas.js';
 import { loadUi } from '../scripts/load-ui.mjs';
 
 const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
@@ -22,12 +22,15 @@ test('the areas, in order: Pages, Media, Sources, Theme, Animations, Site settin
     sources: 'modal',
     theme: 'panel',
     animations: 'panel',
-    settings: 'panel',
+    'site-settings': 'panel',
     history: 'soon',
   });
   // ui.panel's values: the list, then the side panel's areas (one name each: id = state value)
-  assert.deepEqual(PANELS, ['areas', 'pages', 'theme', 'animations', 'settings']);
-  assert.equal(areaOf('settings').label, 'Site settings');
+  assert.deepEqual(PANELS, ['areas', 'pages', 'theme', 'animations', 'site-settings']);
+  assert.equal(areaOf('site-settings').label, 'Site settings');
+  // an old 'settings' (a link, a session) is site-settings
+  assert.equal(panelOf('settings'), 'site-settings');
+  assert.equal(panelOf('pages'), 'pages');
   assert.equal(areaOf('nope'), undefined);
 });
 
@@ -85,8 +88,8 @@ test('one place each: no top tabs, no Sources or Media in the footer; the head 1
     '<ThemePanel',
     "ui.panel === 'animations'",
     '<AnimationsPanel',
-    "ui.panel === 'settings'",
-    '<SettingsPanel',
+    "ui.panel === 'site-settings'",
+    '<SiteSettingsPanel',
     '{:else}',
     '<AreaList',
   ];
@@ -109,7 +112,10 @@ test('every area but the list has the head back to it (AreaHead: ← Back to are
   );
   assert.match(src('svelte/PagesList.svelte'), /<AreaHead id="theme" \{actions\} \/>/);
   assert.match(src('svelte/AnimationsPanel.svelte'), /<AreaHead id="animations" \{actions\} \/>/);
-  assert.match(src('svelte/SettingsPanel.svelte'), /<AreaHead id="settings" \{actions\} \/>/);
+  assert.match(
+    src('svelte/SiteSettingsPanel.svelte'),
+    /<AreaHead id="site-settings" \{actions\} \/>/,
+  );
 });
 
 test('Pages: Site parts first (Header, Footer), then the menu and Not linked; no empty icon column', () => {
@@ -150,7 +156,7 @@ test("Theme: Fonts and styles Coming soon, the templates; a template's ← and D
 test('Animations: Motion (timing, library) and the Page entrance; Site settings keeps the rest', () => {
   const anim = src('svelte/AnimationsPanel.svelte');
   assert.ok(anim.indexOf('<MotionSettings') < anim.indexOf('title="Page entrance"'));
-  const settings = src('svelte/SettingsPanel.svelte');
+  const settings = src('svelte/SiteSettingsPanel.svelte');
   for (const title of ['Name & Details', 'SEO', 'Forms', 'Layout', 'Type', 'Photos'])
     assert.match(settings, new RegExp(`title="${title}"`), title);
   assert.match(settings, /<RedirectSettings \{live\} \/>/);

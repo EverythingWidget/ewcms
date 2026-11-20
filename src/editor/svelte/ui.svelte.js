@@ -15,7 +15,7 @@ import { popupStays } from '../multi-select.js';
  *                   'pages'       Pages: the pages list (browse), or the page open (edit)
  *                   'theme'       Theme: the item templates
  *                   'animations'  Animations: the default timing, the library, the page entrance
- *                   'settings'    Site settings: what is the same on every page
+ *                   'site-settings'  Site settings: what is the same on every page
  *                 (Media and Sources open their windows over it: ui.modals)
  *   ui.pageTab    the open page's tab, under Pages: 'sections' | 'element-motion' (Element
  *                 motion) | 'page-motion' (Page motion) | 'seo'; null when no
@@ -156,7 +156,7 @@ export const ui = $state({
   picked: null,
   /** The element under the pointer in the preview (animate clicks) or a Motion row's, or null. */
   hoverEl: null,
-  /** Open/closed per Section key ("text:hero", "settings:site", ...), once toggled. */
+  /** Open/closed per Section key ("text:hero", "site-settings:site", ...), once toggled. */
   sections: {},
   /**
    * The open modals, bottom first: the last one is in front (modals.svelte.js). Media's and

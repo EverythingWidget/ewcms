@@ -130,11 +130,12 @@ test('areas in the URL: a library link from before them opens Animations, a site
   assert.equal(urlNow().searchParams.get('tab'), 'animations');
   assert.equal(urlNow().searchParams.get('animation'), 'fade-up');
 
-  // Site settings itself stays 'settings'
+  // an old Site settings link (tab=settings) is site-settings now, in the URL too
   urlNow = browser('/x/?edit&tab=settings');
   restoreUi(bridge, live);
-  assert.equal(ui.panel, 'settings');
+  assert.equal(ui.panel, 'site-settings');
   writeUrl();
+  assert.equal(urlNow().searchParams.get('tab'), 'site-settings');
   assert.equal(urlNow().searchParams.has('animation'), false);
 
   // the Header open without a tab: in Pages, edit
@@ -149,4 +150,19 @@ test('areas in the URL: a library link from before them opens Animations, a site
     restoreUi(bridge, live);
     assert.equal(ui.panel, tab);
   }
+});
+
+test("a session from before the rename: panel 'settings' and its sections open as site-settings", async () => {
+  const urlNow = browser('/x/?edit');
+  sessionStorage.setItem(
+    'editor:ui',
+    JSON.stringify({ panel: 'settings', sections: { 'settings:seo': true, 'text:hero': false } }),
+  );
+  const { restoreUi, writeUrl } = await import('../src/editor/svelte/persist.js');
+  const { ui } = await import('../src/editor/svelte/ui.svelte.js');
+  restoreUi(bridge, live);
+  assert.equal(ui.panel, 'site-settings');
+  assert.deepEqual({ ...ui.sections }, { 'site-settings:seo': true, 'text:hero': false });
+  writeUrl();
+  assert.equal(urlNow().searchParams.get('tab'), 'site-settings');
 });

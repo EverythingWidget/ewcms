@@ -12,7 +12,7 @@ const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 
 test('previewClicks comes from ui.mode only: browse is visitor, edit arranges or animates', async () => {
   const { ui, previewClicks } = await loadUi();
   assert.equal(ui.mode, 'browse', 'the editor opens in browse');
-  for (const panel of ['areas', 'pages', 'theme', 'animations', 'settings']) {
+  for (const panel of ['areas', 'pages', 'theme', 'animations', 'site-settings']) {
     ui.panel = panel;
     for (const tab of [null, 'sections', 'element-motion']) {
       ui.pageTab = tab;

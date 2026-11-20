@@ -1,5 +1,5 @@
 /**
- * Visual editor (any page with ?edit: /?edit, /about/?edit&tab=settings): the real site in an iframe + a side panel.
+ * Visual editor (any page with ?edit: /?edit, /about/?edit&tab=site-settings): the real site in an iframe + a side panel.
  *
  * The side panel shows an area (ui.panel; the names are explained in svelte/ui.svelte.js and
  * areas.js), opened from the areas' list:
@@ -609,7 +609,7 @@ function applyClicks(before) {
  * specimen. Only Pages edits: another area is browse (ui.mode).
  */
 function setPanel(panel) {
-  if (panel !== 'settings') showSpecimen(false);
+  if (panel !== 'site-settings') showSpecimen(false);
   const before = previewClicks();
   ui.panel = panel;
   if (panel !== 'pages') ui.originStack = [];

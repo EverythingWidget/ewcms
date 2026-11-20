@@ -62,13 +62,13 @@ test('no top tabs (the areas instead); page tabs Sections | Element motion | Pag
   const pm = read('editor/svelte/PageMotionPanel.svelte');
   assert.match(pm, /<ScrollBackdropCard \{live\} \{file\} \/>\s*<EntranceCard /);
   assert.match(read('editor/svelte/AnimationsPanel.svelte'), /<MotionSettings /);
-  assert.doesNotMatch(read('editor/svelte/SettingsPanel.svelte'), /MotionSettings/);
+  assert.doesNotMatch(read('editor/svelte/SiteSettingsPanel.svelte'), /MotionSettings/);
   assert.match(read('editor/svelte/MotionSettings.svelte'), /<AnimLibrary /);
 });
 
-test('URL tabs are ui.panel: areas, pages, theme, animations, settings; clicks: arrange, animate, visitor', () => {
+test('URL tabs are ui.panel: areas, pages, theme, animations, site-settings; clicks: arrange, animate, visitor', () => {
   const p = read('editor/svelte/persist.js');
-  assert.match(p, /import \{ PANELS \} from '\.\.\/areas\.js';/);
+  assert.match(p, /import \{ PANELS, panelOf \} from '\.\.\/areas\.js';/);
   assert.match(p, /set\('tab', ui\.panel\)/);
   const u = read('editor/svelte/ui.svelte.js');
   // browse or edit (ui.mode) is the one source: browse is visitor clicks

@@ -3,7 +3,7 @@
   header (the status line | Edit / Done | Publish), the area open (ui.panel, ../areas.js: the
   areas' list, AreaList.svelte; Pages: the pages list in browse, or the page open with its tabs
   Sections | Motion | SEO in edit, ContentPanel.svelte; Theme: ThemePanel.svelte; Animations:
-  AnimationsPanel.svelte; Site settings: SettingsPanel.svelte; Media and Sources open their
+  AnimationsPanel.svelte; Site settings: SiteSettingsPanel.svelte; Media and Sources open their
   windows from the list) and the footer (Desktop | Phone; undo, redo in edit). Also the modals, each
   mounted once here and opened through state (modals.svelte.js) and the toasts (the keyboard
   shortcuts: ../keys.js).
@@ -21,7 +21,7 @@
   import ContentPanel from './ContentPanel.svelte';
   import ThemePanel from './ThemePanel.svelte';
   import AnimationsPanel from './AnimationsPanel.svelte';
-  import SettingsPanel from './SettingsPanel.svelte';
+  import SiteSettingsPanel from './SiteSettingsPanel.svelte';
   import PublishModal from './PublishModal.svelte';
   import MediaModal from './MediaModal.svelte';
   import SourcesModal from './SourcesModal.svelte';
@@ -227,8 +227,8 @@
         <ThemePanel {live} {actions} />
       {:else if ui.panel === 'animations'}
         <AnimationsPanel {live} {bridge} {actions} />
-      {:else if ui.panel === 'settings'}
-        <SettingsPanel {live} {bridge} {actions} />
+      {:else if ui.panel === 'site-settings'}
+        <SiteSettingsPanel {live} {bridge} {actions} />
       {:else}
         <AreaList {live} {actions} />
       {/if}

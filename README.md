@@ -1751,8 +1751,8 @@ comes in from the right, the list comes back from the left; reduced motion: no s
 part of the site with what it holds (a 20px icon, its name, a count): **Pages**, **Media**,
 **Sources**, **Theme**, **Animations**, **Site settings**, **History**. Each part opens from
 there only (no top tabs, no footer buttons). Pages, Theme, Animations and Site settings open in
-the panel (`ui.panel`: `pages`, `theme`, `animations`, `settings`; the list is `areas`; the URL's
-`tab`), under a head with ← **Back to areas**; Media and Sources open their window over the
+the panel (`ui.panel`: `pages`, `theme`, `animations`, `site-settings`; the list is `areas`; the
+URL's `tab`; an old `tab=settings` is `site-settings`), under a head with ← **Back to areas**; Media and Sources open their window over the
 editor. An area not built yet (History; Theme's **Fonts and styles**) is disabled and says
 **Coming soon**. Theme holds the item templates (**Templates**), Animations the default timing,
 the Animations library and the **Page entrance**; Site settings the rest (name, SEO, forms,
@@ -1882,7 +1882,7 @@ the rows it spans, the phone's in the phone preview) and its link (`follows <wid
 or free); links and gaps are dragged in the preview. Then **Size** as buttons (Auto | Aspect |
 Rows; with Aspect its ratio as buttons: 1:1 … 21:9 or Custom "w:h"), the layer with Down / Up (desktop) and **Reset phone** (phone), which removes every phone area
 and link of the section's widgets (they show their desktop layout halved again).
-**Site settings › Typography** sets the text styles (fitted text keeps their proportions) (size and minimum, line height,
+**Site settings › Type** sets the text styles (fitted text keeps their proportions) (size and minimum, line height,
 tracking; the preview follows as you type).
 
 **Buttons:** action buttons (Save, Publish, Delete, Add, …) are pills. Utility toggles and tools

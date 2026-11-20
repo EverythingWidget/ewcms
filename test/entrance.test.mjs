@@ -41,7 +41,7 @@ test('Page entrance: one Animations section (curtain, page fade); the page card 
     /key="animations:entrance"[\s\S]*?id="page-entrance"[\s\S]*?title="Page entrance"/,
   );
   // no longer in Site settings
-  assert.doesNotMatch(esrc('svelte/SettingsPanel.svelte'), /EntranceCurtain|EntranceFade/);
+  assert.doesNotMatch(esrc('svelte/SiteSettingsPanel.svelte'), /EntranceCurtain|EntranceFade/);
   assert.match(sp, /<EntranceCurtain[^>]*\/>\s*<EntranceFade[^>]*\/>\s*<\/Collapsible>/);
   for (const [f, head] of [
     ['EntranceCurtain', 'Curtain'],

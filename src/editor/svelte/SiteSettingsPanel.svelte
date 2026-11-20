@@ -1,5 +1,5 @@
 <!--
-  Site settings (ui.panel 'settings', an area: ../areas.js): what is the same on every page.
+  Site settings (ui.panel 'site-settings', an area: ../areas.js): what is the same on every page.
   Under its head (AreaHead.svelte: Back to areas) the site's name and details (site.json), its
   search and share defaults (SEO: titles, description, share photo, address, robots, language;
   a page's own are in its SEO tab), where contact forms send (Forms), where uploaded photos are
@@ -121,9 +121,9 @@
   used as written. Empty: the <b>Site name</b>. Home's own Title (its SEO tab) wins over both.{/snippet}
 
 <section class="ed-body" aria-label="Site settings">
-  <AreaHead id="settings" {actions} />
+  <AreaHead id="site-settings" {actions} />
 
-  <Collapsible key="settings:site" title="Name & Details">
+  <Collapsible key="site-settings:site" title="Name & Details">
     <p class="hint">
       Used on every page: the clock and search engines' details about you. The preview shows them
       after Save.
@@ -152,10 +152,10 @@
     </div>
   </Collapsible>
 
-  <Collapsible key="settings:seo" title="SEO">
+  <Collapsible key="site-settings:seo" title="SEO">
     <p class="hint">
-      What search engines and share cards show. Pages can set their own in Nav > SEO; these are the
-      defaults.
+      What search engines and share cards show. Pages can set their own in their SEO tab; these are
+      the defaults.
     </p>
     {#each SEO_SETTINGS as [key, label, type] (key)}
       <Field
@@ -183,7 +183,7 @@
     </div>
   </Collapsible>
 
-  <Collapsible key="settings:forms" title="Forms">
+  <Collapsible key="site-settings:forms" title="Forms">
     <p class="hint">
       Where contact forms send (a form can pick its own in Content). The Cloudflare function emails
       through Resend with the keys set in the Cloudflare Pages project, never here (see the README,
@@ -219,7 +219,7 @@
     </p>
   </Collapsible>
 
-  <Collapsible key="settings:layout" title="Layout">
+  <Collapsible key="site-settings:layout" title="Layout">
     <p class="hint">
       How wide a contained section is: columns of the {COLS}-column grid ({CONTAINED_MIN}–{COLS};
       {CONTAINED} by default), centred and never nearer the edges than the side margins. Its widgets keep
@@ -242,7 +242,7 @@
     </ul>
   </Collapsible>
 
-  <Collapsible key="settings:type" title="Type">
+  <Collapsible key="site-settings:type" title="Type">
     <p class="hint">
       The usual size of each text style, in pixels: it grows with the window between Min and Max.
       When they are the same, the size is fixed. Empty: the theme's (shown greyed).
@@ -277,7 +277,7 @@
 
   <RedirectSettings {live} />
 
-  <Collapsible key="settings:media" title="Photos">
+  <Collapsible key="site-settings:media" title="Photos">
     <p class="hint">
       Photos you upload in the editor go to Cloudflare R2 (keys in .env.local, see the README). The
       content stores their key (photos/…); the site shows them from this address. Photos in media/
