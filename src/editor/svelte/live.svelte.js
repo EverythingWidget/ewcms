@@ -54,10 +54,6 @@ export function createLive(store) {
       }
       return files;
     },
-    /** Read it to re-run after every store change (e.g. to re-read something outside the store). */
-    get version() {
-      return version;
-    },
     /** The site's content with the edits ({ site, pages, sources, ... }), shared. Don't change it. */
     get content() {
       version;

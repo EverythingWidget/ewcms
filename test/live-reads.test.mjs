@@ -49,3 +49,27 @@ test('live.sources, live.schema, live.loaded and live.read follow the store', ()
   store.set(PEOPLE, '/items/0/age', 30);
   assert.deepEqual(live.schema(PEOPLE), schemaFor(store, PEOPLE));
 });
+
+test('only live.svelte.js reads the change counter: no live.version anywhere else', async () => {
+  const { readdirSync, readFileSync, statSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const root = new URL('..', import.meta.url).pathname;
+  const files = [];
+  const walk = (dir) => {
+    for (const name of readdirSync(dir)) {
+      if (name === 'node_modules' || name.startsWith('.')) continue;
+      const p = join(dir, name);
+      if (statSync(p).isDirectory()) walk(p);
+      else if (/\.(svelte|js|mjs)$/.test(name)) files.push(p);
+    }
+  };
+  for (const d of ['src', 'sandbox', 'default-site']) walk(join(root, d));
+  const live = join(root, 'src/editor/svelte/live.svelte.js');
+  assert.ok(files.includes(live));
+  const readers = files.filter(
+    (f) => f !== live && /\blive\??\.version\b/.test(readFileSync(f, 'utf8')),
+  );
+  assert.deepEqual(readers, []);
+  // and live has no counter to read: panels ask it for what they show
+  assert.equal('version' in createLive(createStore()), false);
+});
