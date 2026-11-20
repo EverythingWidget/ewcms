@@ -37,7 +37,6 @@ const { SITE_A } = await import('./fixtures/index.mjs');
 
 const F = 'pages/index.json';
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
-const bridge = createBridge({ store: { current: {} }, labelFor: () => '' });
 const base = JSON.parse(read('test/fixtures/site-a/content/en/pages/index.json'));
 
 const widgets = () => [
@@ -70,6 +69,8 @@ function preview() {
   const view = document.querySelector('main');
   const store = createStore();
   store.load({ [F]: page() });
+  // the editor's bridge reads the store (a setting's live.after: widget-fields.js settingAt)
+  const bridge = createBridge({ store, labelFor: () => '' });
   markRendered(document, store, view);
   let edits = null;
   store.on((e) => (edits = e.edits));
@@ -121,6 +122,12 @@ test('an emptied text is patched where the widget keeps its element (hero, butto
 test('a List gap typed is patched (--list-gap, left out at 0), the rows flowed again', () => {
   const p = typing(3, 'config/gap', [3, 0, 1]);
   assert.equal(p.layouts(), 3);
+});
+
+test("a Button's Text Wrap/Clip is patched (its declared class, buttonwidget--wrap)", () => {
+  // Clip is its default, left out of the file (undefined)
+  const p = typing(1, 'config/textOverflow', ['wrap', undefined, 'wrap', 'clip']);
+  assert.equal(p.layouts(), 4);
 });
 
 test("what the render shows differently when emptied still renders: a Form's texts", () => {

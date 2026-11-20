@@ -22,7 +22,7 @@ import { withDraft } from './source.js';
 import { EDIT_PARAM } from './lib/editor-url.js';
 import { splitEdit, words } from '../render/helpers.js';
 import { ANIMATIONS } from '../render/files.js';
-import { longestWord } from '../widgets/hero/index.js';
+import { settingAt } from './widget-fields.js';
 import { photoSrcset, photoUrl } from './svelte/media.svelte.js';
 import { T } from './ui-tokens.js';
 import { reveal } from './reveal.js';
@@ -420,11 +420,10 @@ export function createBridge({
     } else if (el.dataset.editType === 'words') {
       const html = words(value);
       if (el.innerHTML !== html) el.innerHTML = html;
-      // the hero's name: its size follows its longest word (hero__title's --hero-word)
-      const title = el.parentElement;
-      if (title?.style.getPropertyValue('--hero-word'))
-        title.style.setProperty('--hero-word', String(longestWord(value)));
     } else if (el.textContent !== String(value)) el.textContent = String(value);
+    // what its setting declares beside the text (the widget format: live.after, e.g. a size
+    // that follows the text; widget-fields.js)
+    settingAt(store, el.dataset.edit)?.live?.after?.(el, value);
   }
 
   function boxLabel(el, kind) {

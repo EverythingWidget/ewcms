@@ -22,7 +22,7 @@ import {
 import { kindOf } from '../widgets/index.js';
 import { templateFile } from '../render/files.js';
 import { set } from './lib/pointer.js';
-import { gapOf } from '../widgets/list/index.js';
+import { configStep, settingOf } from './widget-fields.js';
 
 /**
  * A widget's motion attributes as the site renders them:
@@ -115,49 +115,25 @@ const NOT_TEXT = new Set([
   'type',
 ]);
 // the [data-edit] types a value is written into as the render writes it (preview-runtime.js
-// patchText: 'words' split into its words, the hero's --hero-word with them). Not 'rich' (a Text
+// patchText: 'words' split into its words; a setting's live.after then). Not 'rich' (a Text
 // widget's body: the dev server renders it) or 'photo' (its srcset, size and alt are the render's)
 const PATCHED = new Set(['text', 'multiline', 'number', 'words']);
 const isText = (v) => typeof v === 'string' || (typeof v === 'number' && Number.isFinite(v));
 const blank = (v) => typeof v === 'string' && v.trim() === '';
-// the widgets that show a blank text as it is, their element kept (an emptied one is patched in
-// too). Others may leave the element out or show a default instead (a Form: its title, intro,
-// a field's name for its label, "Send"): rendered
-const KEEPS_BLANK = new Set(['hero', 'button']);
-// a widget's config value typed that the preview shows as a CSS variable on one element of it
-// (a List's Space between items: --list-gap on its grid, left out at 0), the render's own way
-const CONFIG_VARS = {
-  list: { gap: { on: '.list__items--grid', name: '--list-gap', value: (c) => gapOf(c) || '' } },
-};
-
-/** The plan for a typed config value shown as a CSS variable (CONFIG_VARS), else null. */
-function configPlan(node, widget, rest) {
-  const key = /^\/config\/([^/]+)$/.exec(rest)?.[1];
-  const v = key && CONFIG_VARS[widget.type]?.[key];
-  if (!v) return null;
-  // its own element, not a nested List's
-  const els = [...node.querySelectorAll(v.on)].filter(
-    (el) => !el.parentElement?.closest(v.on) || !node.contains(el.parentElement.closest(v.on)),
-  );
-  if (els.length !== 1) return null;
-  const value = String(v.value(widget.config));
-  return () => {
-    if (value) els[0].style.setProperty(v.name, value);
-    else els[0].style.removeProperty(v.name);
-  };
-}
 
 /**
  * A text typed in a widget's field, put into its elements instead of rendering its section
  * again: `edits` ([{ file, ptr, before, after }], the store's) each a text of a widget of
  * `root`'s file (the page's view, or the footer) that its widget shows in [data-edit] elements
- * of a plain type (PATCHED), or a config value it shows as a CSS variable (CONFIG_VARS). An
- * emptied text only for the widgets that keep its element (KEEPS_BLANK). Only when all of
- * them are: each element gets its value (write(el, value); a CSS variable: then layout()) and
- * the section counts as rendered from the file as it is now (syncLayout won't render it).
- * Anything else (a link, other config, a value with properties, layout, a Text's body, a
- * photo, an element not found, a section already waiting for its render) changes nothing
- * here: false, the section renders as before (G13).
+ * of a plain type (PATCHED), or a config value whose field declares how the preview shows it
+ * (`live`: widget-fields.js configStep). An emptied text only where its setting keeps its
+ * element (`blank: 'keep'`). The fields' declarations decide (the widget format,
+ * src/widgets/index.js); no widget is named here. Only when all of them can: each element gets
+ * its value (write(el, value); a config value: then layout()) and the section counts as
+ * rendered from the file as it is now (syncLayout won't render it). Anything else (a link,
+ * other config, a value with properties, layout, a Text's body, a photo, an element not found,
+ * a section already waiting for its render) changes nothing here: false, the section renders
+ * as before (G13).
  */
 export function patchTexts(root, store, edits, write, { layout } = {}) {
   const file = root?.dataset.pageFile;
@@ -178,13 +154,14 @@ export function patchTexts(root, store, edits, write, { layout } = {}) {
     const node = sec && widget && sec.querySelector(`[data-widget="${widget.id}"]`);
     if (!node || node.closest('[data-sec]') !== sec) return false;
     if (m[3] === 'config') {
-      const step = configPlan(node, widget, c.ptr.slice(m[0].length - '/config'.length));
+      const key = /^\/config\/([^/]+)$/.exec(c.ptr.slice(m[0].length - '/config'.length))?.[1];
+      const step = key && configStep(node, widget, key);
       if (!step) return false;
       plan.push(step);
       moved = true;
     } else {
       if (NOT_TEXT.has(m[3]) || !isText(c.after)) return false;
-      if (blank(c.after) && !KEEPS_BLANK.has(widget.type)) return false;
+      if (blank(c.after) && settingOf(widget, m[3])?.blank !== 'keep') return false;
       const edit = `${file}#${c.ptr}`;
       const targets = [...node.querySelectorAll('[data-edit]')].filter(
         (el) => el.dataset.edit === edit,
@@ -197,9 +174,10 @@ export function patchTexts(root, store, edits, write, { layout } = {}) {
     touched.get(at).push(c);
   }
   // each section showed these values before (else it waits for a render already: it gets it)
-  for (const [at, list] of touched) {
+  for (const [at, changes] of touched) {
     const was = structuredClone(sections[at]);
-    for (const c of [...list].reverse()) set(was, c.ptr.replace(/^\/sections\/\d+/, ''), c.before);
+    for (const c of [...changes].reverse())
+      set(was, c.ptr.replace(/^\/sections\/\d+/, ''), c.before);
     if (rendered.get(els.get(sections[at].id)) !== keyOf(was, at)) return false;
   }
   for (const step of plan) step();
