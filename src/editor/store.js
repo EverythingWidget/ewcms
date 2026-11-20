@@ -28,16 +28,39 @@ export function createStore() {
   let batchEntry = null;
 
   // a file as Save writes it (defaults left out): what "changed" compares, so a value equal to
-  // its default is the same as none (a widget moved back to col 1). Cached until the next change (emit).
-  let tidied = new WeakMap();
+  // its default is the same as none (a widget moved back to col 1). Cached until a change to
+  // that file (emit): the files change in place
+  const tidied = new WeakMap();
   const tidy = (file, data) => {
     if (data === undefined || data === null || typeof data !== 'object') return data;
     if (!tidied.has(data)) tidied.set(data, omitDefaults(file, data));
     return tidied.get(data);
   };
+  // per file, until a change to it (emit): is it dirty, how many changes (a keystroke compares
+  // and counts its own file again, not every file). stats.compared: files compared (tests)
+  const known = new Map();
+  const stats = { compared: 0 };
+  const facts = (f) => {
+    let k = known.get(f);
+    if (!k) known.set(f, (k = {}));
+    return k;
+  };
+  const isDirty = (f) => {
+    const k = facts(f);
+    if (k.dirty === undefined) {
+      stats.compared++;
+      k.dirty = formatJSON(tidy(f, current[f])) !== formatJSON(tidy(f, base[f]));
+    }
+    return k.dirty;
+  };
   const emit = (files, source, structure = false, edits = null) => {
-    tidied = new WeakMap(); // the files change in place
-    listeners.forEach((fn) => fn({ files: [...new Set(files)], source, structure, edits }));
+    const names = [...new Set(files)];
+    for (const f of names) {
+      known.delete(f);
+      if (current[f] && typeof current[f] === 'object') tidied.delete(current[f]);
+      if (base[f] && typeof base[f] === 'object') tidied.delete(base[f]);
+    }
+    listeners.forEach((fn) => fn({ files: names, source, structure, edits }));
   };
 
   const write = (c, value) => {
@@ -161,12 +184,22 @@ export function createStore() {
     canUndo: () => history.length > 0,
     canRedo: () => future.length > 0,
 
-    dirtyFiles: () =>
-      Object.keys(current).filter(
-        (f) => formatJSON(tidy(f, current[f])) !== formatJSON(tidy(f, base[f])),
-      ),
+    /** The files that differ from the saved ones (each compared again only after a change to it). */
+    dirtyFiles: () => Object.keys(current).filter(isDirty),
     /** Leaf changes per file, for the "changes" list. */
     changes: (file) => diff(tidy(file, base[file]), tidy(file, current[file])),
+    /** Number of unsaved changes over all files (one per changed value), counted per file once per change to it. */
+    changeCount() {
+      let n = 0;
+      for (const f of Object.keys(current)) {
+        if (!isDirty(f)) continue;
+        const k = facts(f);
+        k.count ??= store.changes(f).length;
+        n += k.count;
+      }
+      return n;
+    },
+    stats,
 
     /** The source now holds `files` (after a save): what was sent (default: now) becomes the base. */
     markSaved(files, sent = current) {

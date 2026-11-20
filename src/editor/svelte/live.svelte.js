@@ -37,6 +37,9 @@ export function createLive(store) {
   // the store's files, one new object per change (the store edits its own in place), shared
   let filesAt = -1;
   let files = {};
+  // the number of unsaved changes, counted once per store change (App.svelte reads it 4 times)
+  let changesAt = -1;
+  let changes = 0;
 
   return {
     store,
@@ -110,8 +113,11 @@ export function createLive(store) {
     },
     /** Number of unsaved changes over all files (one per changed value). */
     get changes() {
-      version;
-      return store.dirtyFiles().reduce((n, f) => n + store.changes(f).length, 0);
+      if (changesAt !== version) {
+        changes = store.changeCount();
+        changesAt = version;
+      }
+      return changes;
     },
   };
 }
