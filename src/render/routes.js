@@ -45,13 +45,25 @@
  * Routes with noindex (404, meta.noindex, items with "placeholder": true, or site.json
  * "robots": "noindex") get <meta name="robots" content="noindex"> and stay out of sitemap.xml.
  */
-import { isParam, isSlug, isTemplate, pageFile, paramOf, sourceFile } from './files.js';
+import {
+  isParam,
+  isSlug,
+  isTemplate,
+  pageFile,
+  paramOf,
+  parentId,
+  pathOfId,
+  sourceFile,
+} from './files.js';
+// (pathOfId and parentId live in files.js, which widgets can import without a cycle: routes.js
+// asks the widget registry for a page's title)
+export { parentId, pathOfId };
 import { coverOf, editRef } from './helpers.js';
 import { itemTitle, schemaOf } from './schemas.js';
 import { fillTitle } from './seo.js';
 import { curtainMode } from '../client/anim/curtain.js';
 import { widgetsOf } from './layout/ids.js';
-import { lineText } from './text.js';
+import { widgetType } from '../widgets/index.js';
 import { mainOf, mainProblem, refsOf, sourceOf } from './layout/source.js';
 import { hasProperty, query, ruleOf, valueOf, SLUG } from './query.js';
 
@@ -75,34 +87,16 @@ export const NAMED_VIEWS = {
 };
 
 /**
- * A page's path: "about" -> "/about/", "home" -> "/"; a template's is its pattern, a param as
- * ":name": "people/[person]" -> "/people/:person/" (the redirects' patterns read the same).
- */
-export const pathOfId = (id) =>
-  id === 'home' || id === ''
-    ? '/'
-    : `/${id
-        .split('/')
-        .map((s) => (isParam(s) ? `:${paramOf(s)}` : s))
-        .join('/')}/`;
-
-/**
- * A page's title: the first title line of its first Text widget with one (widgets/text/index.js),
- * else undefined. A title with a property in it names the item, not the page: none.
+ * A page's title: the first widget's whose type gives one (its pageTitle(widget): { title }, or
+ * null for none; a Text's first title line, widgets/text/index.js), else undefined.
  */
 export const pageTitle = (page) => {
-  for (const widget of widgetsOf(page))
-    if (
-      widget?.type === 'text' &&
-      Array.isArray(widget.body) &&
-      widget.body.some((l) => l?.style === 'title')
-    )
-      return lineText(widget.body, 'title');
+  for (const widget of widgetsOf(page)) {
+    const found = widgetType(widget?.type)?.pageTitle?.(widget);
+    if (found) return found.title;
+  }
   return undefined;
 };
-
-/** "photography/people" -> "photography", "about" -> "" (home's folder). */
-export const parentId = (id) => (id.includes('/') ? id.slice(0, id.lastIndexOf('/')) : '');
 
 /** The page ids the menu (header.json "header") links to, in its order (children after their item). */
 export function navOrder(nav) {

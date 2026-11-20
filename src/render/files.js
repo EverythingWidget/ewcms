@@ -160,6 +160,21 @@ export const paramFolder = (name) => `[${name}]`;
 /** Is `s` a valid param name ("person")? */
 export const isParamName = (s) => new RegExp(`^${PARAM_NAME}$`).test(String(s ?? ''));
 
+/**
+ * A page's path: "about" -> "/about/", "home" -> "/"; a template's is its pattern, a param as
+ * ":name": "people/[person]" -> "/people/:person/" (the redirects' patterns read the same).
+ */
+export const pathOfId = (id) =>
+  id === 'home' || id === ''
+    ? '/'
+    : `/${id
+        .split('/')
+        .map((s) => (isParam(s) ? `:${paramOf(s)}` : s))
+        .join('/')}/`;
+
+/** "photography/people" -> "photography", "about" -> "" (home's folder). */
+export const parentId = (id) => (id.includes('/') ? id.slice(0, id.lastIndexOf('/')) : '');
+
 const NAME = '[a-z0-9][a-z0-9_-]*';
 const SOURCE = new RegExp(`^sources/(${NAME})\\.json$`, 'i');
 const SCHEMA = new RegExp(`^sources/(${NAME})\\.schema\\.json$`, 'i');

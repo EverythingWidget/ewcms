@@ -1,7 +1,6 @@
 /** Data helpers shared by widget types. */
 import { warnOnce } from '../render/helpers.js';
-import { isTemplate, paramsOf, sourceFile } from '../render/files.js';
-import { parentId, pathOfId } from '../render/routes.js';
+import { isTemplate, paramsOf, parentId, pathOfId, sourceFile } from '../render/files.js';
 import { widgetsOf } from '../render/layout/ids.js';
 import { pageSourceOf, sourceOf } from '../render/layout/source.js';
 

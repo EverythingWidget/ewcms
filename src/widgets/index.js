@@ -60,6 +60,9 @@
  *                     { on: '.list__items--grid', var: '--list-gap', value: (c) => gapOf(c) || null }
  *   defaults  a new widget of this type (Add widget)
  *   check(widget)  optional: more problems than its settings' types (src/render/validate.js)
+ *   pageTitle(widget)  optional: the page's title from this widget, { title } (title undefined:
+ *             none), or null to ask the next widget: its page's first one that gives one names it
+ *             (src/render/routes.js pageTitle; a Text: its first title line)
  *   warn(widget)   optional: things to tell, not problems (ewcms check shows them, e.g. a
  *             List's leftover config.properties; src/render/validate.js)
  *   list      a list widget: it shows all its source's items (its source: All / From URL /

@@ -3,7 +3,7 @@
  * the format), its default export the definition.
  */
 import { html, editable } from '../../render/helpers.js';
-import { checkBody, renderBody } from '../../render/text.js';
+import { checkBody, lineText, renderBody } from '../../render/text.js';
 import { knownName, partLabel, partText } from '../../render/layout/parts.js';
 import { keysOf } from '../../render/layout/bindings.js';
 import { hrefOf } from '../../render/hrefs.js';
@@ -33,6 +33,12 @@ export const text = {
   config: [],
   defaults: { body: [{ style: 'paragraph', text: [{ t: 'Some text.' }] }], config: {} },
   check: (widget) => (widget.body === undefined ? [] : checkBody(widget.body)),
+  // the page's title (src/render/routes.js pageTitle): its first title line, when it has one (a
+  // title with a property in it names the item, not the page: none)
+  pageTitle: (widget) =>
+    Array.isArray(widget.body) && widget.body.some((l) => l?.style === 'title')
+      ? { title: lineText(widget.body, 'title') }
+      : null,
   render: (s, ctx, widget) => {
     const body = Array.isArray(s.body) ? s.body : [];
     // the names its property runs can have (the editor marks the others: data-names for its
