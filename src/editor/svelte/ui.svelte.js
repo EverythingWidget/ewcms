@@ -75,7 +75,7 @@ export const ui = $state({
   focusParam: null,
   /**
    * The page the type specimen (Site settings › Type › Preview, /__type/) replaced in the
-   * preview: Close preview and the Pages tab go back to it ('' when it isn't shown).
+   * preview: Close preview and the Pages area go back to it ('' when it isn't shown).
    */
   specimenFrom: '',
   /** The path shown in the preview ("/people/noor-vermeer/"). */
@@ -86,9 +86,9 @@ export const ui = $state({
    * one (main.js returnToOrigin); going anywhere else empties it (lib/template-origin.js).
    */
   originStack: [],
-  /** What the Pages tab edits: a page { kind: 'page', path, title } or a site part { kind: 'part', id: 'header' | 'footer', title }. */
+  /** What the Pages area edits: a page { kind: 'page', path, title } or a site part { kind: 'part', id: 'header' | 'footer', title }. */
   target: { kind: 'page', path: '/', title: 'Home' },
-  /** Bumped when the preview shows a (new) page: the Pages tab re-reads its texts. */
+  /** Bumped when the preview shows a (new) page: the Pages area re-reads its texts. */
   previewVersion: 0,
   /**
    * The text picked in the preview or in a field: { edit } (its data-edit), or null.
@@ -175,7 +175,7 @@ export const ui = $state({
    * managing; multi: a photo list's Add photo, see openMedia).
    */
   media: { key: '', filter: 'all', pick: '', multi: null },
-  /** The pages list (Pages tab, browse): the folder it shows ('' = content/en/pages/ itself). */
+  /** The pages list (the Pages area, browse): the folder it shows ('' = content/en/pages/ itself). */
   pagesWin: { folder: '' },
   /** Animations > Motion, the Animations library: the animation open ('' = the list). */
   library: { name: '' },

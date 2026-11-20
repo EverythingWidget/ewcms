@@ -1,5 +1,5 @@
 <!--
-  Pages tab (ui.panel 'pages'): the pages list (PagesList.svelte, browse: ui.mode), or the page in the
+  The Pages area (ui.panel 'pages'): the pages list (PagesList.svelte, browse: ui.mode), or the page in the
   preview or a site part (edit) (the Header: HeaderPart.svelte; the Footer; an item template:
   TemplatePanel.svelte) under PageHead.svelte
   (Back to pages: back to the pages list, browse). The two swap with a slide (lib/slide.js):
@@ -23,9 +23,8 @@
   layout canvas (overlay.js): a click picks a widget, a drag moves it, its handles resize it and
   a double click edits a text in place (preview-edit.js); links and buttons don't follow; a click on
   empty space or Esc drops the selection. The selected widget's section shows its grid (faint
-  cells). The Sources button in the
-  toolbar (App.svelte) opens Sources (SourcesModal.svelte, openSources); so does a
-  list item's text clicked in the preview.
+  cells). Sources in the areas list (AreaList.svelte) opens Sources (SourcesModal.svelte,
+  openSources); so does a list item's text clicked in the preview.
 
   Selection goes both ways through ui.selection: main.js sets it when a text is clicked in
   the preview, a field sets it (via the bridge) when it gets focus. This panel opens the widget

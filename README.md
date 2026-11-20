@@ -1383,7 +1383,7 @@ move. A page's own file is
 - Links to an item (menu dropdowns, grids, next) come from the routes, and an item's `{back}`
   goes to the page that shows its source (the folder of its top-level `[param]` page, else the first page
   with a widget of it), so they follow a folder rename. A new page is in the menu when added
-  with In the menu on (the pages list), else add it there or in Content › Header (see "Menu").
+  with In the menu on (the pages list), else add it there or in Pages › Header (see "Menu").
 - **Own page off:** `"ownPage": false` in a folder's page (the pages list's Own page switch):
   its URL has no page of its own and sends visitors to its first sub page (the menu's order,
   else the folder's): a 302 (`_redirects` in the build, plus a small redirect page; the dev
@@ -1491,8 +1491,8 @@ remove, every change one undo step.
 ### SEO
 
 What `<head>` says about a page: `src/render/seo.js` (`seoOf`), from the site's defaults and the
-page's own `meta`. Edited in the editor: Site settings > SEO (the defaults) and Content > SEO (the
-page in the preview; collapsed, below its sections, with a search-result and a share-card
+page's own `meta`. Edited in the editor: Site settings > SEO (the defaults) and a page's SEO tab (Pages, the
+page open; collapsed, below its sections, with a search-result and a share-card
 preview and the 60/160 character counts).
 
 **Site defaults** (`content/site.json`):
@@ -1801,10 +1801,10 @@ pages yet"), and on a level's root row, Home, 404, Header or Footer opens it (it
 Page motion, SEO tabs; Header and Footer have their own). Every row also has a quiet **edit** button (a pen, 30% until hovered or
 focused, like the trash) that opens that page's Sections the same way in one click (no select,
 no drag; Header and Footer open theirs; a `[param]` page that builds no pages too, to fix its main widget). A row's end is fixed 24px slots, `copy | trash | ›` (copy: Duplicate; `›`: a click goes inside)
-(an empty slot where a row has no trash, as Home, 404 and Site), so the buttons line up; the
+(an empty slot where a row has no trash, as Home, 404, Header and Footer), so the buttons line up; the
 `›` (muted) marks a page with pages inside (there are no counts of sub pages). A level's root
 row ends with edit, then its Own page switch (or its empty place). A dot after a
-title: unsaved changes in its file; an eye: hidden from search. Content › Header has the menu's
+title: unsaved changes in its file; an eye: hidden from search. Pages › Header has the menu's
 labels and dropdowns. **+** opens **Add page** (title -> URL name, In the menu; or a **[param]
 page**: a template with a source and a param name, `[slug]` by default, one per folder, none at
 the top; in a `[param]` folder only this kind): a new folder with its `index.json`.
@@ -1904,18 +1904,18 @@ name the menu lists; the menu, the site settings, photos and UI strings); templa
 animations and redirects never. Other pages render from the unsaved edits too: the editor sends them to the dev server (`POST
 /__editor/draft`, cleared on Save), which renders dev pages from them.
 
-**Content › Header** (a site part: the page picker's **Site** group, or click the header in the
-preview) edits `header.json` and the header's labels (`strings.json` `header`: the menu and close
+**Pages › Header** (a site part: **Site parts** at the top of the pages list, or click the header
+in the preview) edits `header.json` and the header's labels (`strings.json` `header`: the menu and close
 buttons, the clock). The menu with its items: label,
 link (a page from the page tree, or External URL with its URL), ↑ / ↓ / Remove, **Add link**,
 and a dropdown: the items of a source, or **Dropdown links** (one level) and the
 "all" link's label. The preview renders the menu again on each change; undo works as anywhere. On a `[param]` page the page head's **Preview** line
 picks which of its pages the preview shows.
 
-The **Sources** button (the database icon next to the page dropdown, before Pages and Media) opens Sources on the files in `content/en/sources/` (with their
+**Sources** (in the areas list) opens a window on the files in `content/en/sources/` (with their
 item counts): click one to edit its items, **←** goes back to the files. A grid's Source edit
 button, or a click on a person/place/project in the preview, opens straight into that item. In
-the Content tab, a group whose texts come from a source (a person on their page) shows its file
+a page open in Pages, a group whose texts come from a source (a person on their page) shows its file
 (`people.json`) as a button in its bar (beside each field only when a group mixes sources): it
 opens Sources on that item (with a property highlighted: `&property=` in the URL). What Sources
 shows comes from the source's schema (see "Sources & schemas").

@@ -2,7 +2,7 @@
   Sources: the lists in content/en/sources/ (people, places, projects, ...). It starts on
   the files with their item counts; click one to enter it: its items on the left, the
   selected item's properties on the right, Back returns to the files. Mounted once in
-  App.svelte; openSources() (modals.svelte.js) opens it: the toolbar's Sources button (the
+  App.svelte; openSources() (modals.svelte.js) opens it: Sources in the areas list (the
   files), a Source edit button, the item modal's edit buttons (on top of that modal, which is
   there again when it closes) or a click on a list item in the preview (straight into that
   file, item or field). Where it is lives in ui.sources, so persist.js can bring it back after

@@ -82,7 +82,7 @@
   // the item template editor: a row above the frame holds its Columns control; on pages
   // the frame takes that space (the frame moving when a template opens is accepted)
   const templating = $derived(!!templateOfPath(ui.path || ''));
-  // browse or edit (ui.mode): Edit opens the page in the preview (in the Pages tab); Done saves
+  // browse or edit (ui.mode): Edit opens the page in the preview (in the Pages area); Done saves
   // what is unsaved first (nothing is lost), then browses; a failed save stays in edit
   const editing = $derived(ui.mode === 'edit');
   function edit() {

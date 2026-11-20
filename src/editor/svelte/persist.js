@@ -11,7 +11,7 @@
  *             property highlighted (&source=people&item=noor-vermeer&property=summary; item is the
  *             slug, or the number without one)
  *     animation    Animations > Motion's Animations library, open on that animation (&animation=fade-up)
- *     pages   the pages list (the Pages tab, browse), open on that folder (&pages=/people/; / is
+ *     pages   the pages list (the Pages area, browse), open on that folder (&pages=/people/; / is
  *             the root); tab=pages without it: the page in the preview open (edit)
  *     media   + pick: the Media window, on that photo (&media=photos/x-1600.webp; / for none),
  *             picking for that field (&pick=sources/people.json#/0/photos/0/src)
