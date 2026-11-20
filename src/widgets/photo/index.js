@@ -19,6 +19,8 @@ export const photo = {
   icon: 'image',
   line: 'One photo, with a caption',
   sketch: 'photo',
+  // the Add widget modal's drawing of it (WidgetsModal.svelte): grey shapes, classes there
+  drawing: ['img', 'w40 h4'],
   // in an item template (the Template editor): When a value is missing
   inTemplate: { missing: true },
   placement: { media: true, fill: true, place: 'center' },

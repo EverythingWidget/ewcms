@@ -11,6 +11,8 @@
 -->
 <script module>
   const COLS = 5;
+  // a sketch with no drawing: two plain lines
+  const PLAIN = ['w70 h8', 'w50 h4'];
 </script>
 
 <script>
@@ -19,6 +21,7 @@
   import Button from './Button.svelte';
   import ExplorerHead from './ExplorerHead.svelte';
   import { argsOf, closeModal, modal } from './modals.svelte.js';
+  import { widgetType } from '../../widgets/index.js';
 
   let dialog = $state();
   let query = $state('');
@@ -76,26 +79,17 @@
   }
 </script>
 
-<!-- a widget's sketch: grey shapes, 2:1; `name` is its definition's `sketch` (not its type) -->
+<!-- a widget's sketch: grey shapes, 2:1; `name` is its definition's `sketch` (not its type), the
+  drawing that type's (its definition's `drawing`, src/widgets/index.js), else two plain lines -->
 {#snippet sketch(name)}
   <span class="widgets-sk widgets-sk--{name}" aria-hidden="true">
-    {#if name === 'text'}<b class="w40 h4"></b><b class="w70 h12"></b><b class="w90 h4"></b><b
-        class="w60 h4"
-      ></b>
-    {:else if name === 'photo'}<b class="img"></b><b class="w40 h4"></b>
-    {:else if name === 'button'}<b class="pill"></b>
-    {:else if name === 'form'}<b class="w90 h8 box"></b><b class="w90 h8 box"></b><b
-        class="w90 h16 box"
-      ></b>
-    {:else if name === 'hero'}<b class="sc s1"></b><b class="sc s2"></b><b class="sc s3"></b><b
-        class="w70 h12 mid"
-      ></b>
-    {:else if name === 'list'}<span class="g g3"
-        >{#each Array(3) as _, i (i)}<b></b>{/each}</span
-      ><b class="w40 h4"></b>
-    {:else if name === 'details'}<b class="w70 h8"></b><b class="pill"></b>
-    {:else}<b class="w70 h8"></b><b class="w50 h4"></b>
-    {/if}
+    {#each widgetType(name)?.drawing ?? PLAIN as shape, i (i)}
+      {#if typeof shape === 'string'}<b class={shape}></b>
+      {:else}<span class="g g{shape.grid}"
+          >{#each Array(shape.grid) as _, k (k)}<b></b>{/each}</span
+        >
+      {/if}
+    {/each}
   </span>
 {/snippet}
 

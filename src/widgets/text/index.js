@@ -24,6 +24,8 @@ export const text = {
   icon: 'font',
   line: 'Titles, paragraphs, labels: any text',
   sketch: 'text',
+  // the Add widget modal's drawing of it (WidgetsModal.svelte): grey shapes, classes there
+  drawing: ['w40 h4', 'w70 h12', 'w90 h4', 'w60 h4'],
   // always full width: no Fit / Fill, only where it sits top to bottom
   placement: { axes: 'v', box: false, place: 'top' },
   // its lines can each fill its width (Full-width line), its whole text scale down (Shrink to fit)

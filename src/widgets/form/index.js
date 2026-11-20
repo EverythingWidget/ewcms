@@ -110,6 +110,8 @@ export const form = {
   icon: 'envelope',
   line: 'Name, email and a message',
   sketch: 'form',
+  // the Add widget modal's drawing of it (WidgetsModal.svelte): grey shapes, classes there
+  drawing: ['w90 h8 box', 'w90 h8 box', 'w90 h16 box'],
   settings: [
     { key: 'title', label: 'Title (empty: none)' },
     { key: 'body', label: 'Intro (empty: none)', type: 'multiline' },

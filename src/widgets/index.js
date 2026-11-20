@@ -18,7 +18,10 @@
  *   type      its name in the content
  *   label     its name in the editor; icon: a Font Awesome icon name (no "fa-")
  *   line      one line on what it is, under its name in the editor's Add widget modal
- *   sketch    the modal's drawing of it: a type's name, or another type's
+ *   sketch    the modal's drawing of it: a type's name, or another type's (its drawing)
+ *   drawing   the drawing itself (WidgetsModal.svelte): its shapes, each a string of the modal's
+ *             shape classes (w40..w90 width, h4..h16 height, img, box, pill, sc s1..s3, mid) or
+ *             { grid: n }, a row of n tiles; none: two plain lines
  *   placement optional { axes, box, fill, place, media }: its content box's Fit / Fill and
  *             place in the widget (../layout/place.js)
  *   fitWidth  optional true: its text lines can each fill its width (a line's "fit", the

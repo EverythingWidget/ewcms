@@ -84,6 +84,8 @@ export const hero = {
   icon: 'star',
   line: 'Your name with a photo beside or behind it, or photos scattered around',
   sketch: 'hero',
+  // the Add widget modal's drawing of it (WidgetsModal.svelte): grey shapes, classes there
+  drawing: ['sc s1', 'sc s2', 'sc s3', 'w70 h12 mid'],
   settings: [
     { key: 'style', label: 'Style', type: 'seg', options: HERO_STYLES, unset: 'scattered' },
     // (the editor writes these in place, emptied too: their elements stay; the name's size

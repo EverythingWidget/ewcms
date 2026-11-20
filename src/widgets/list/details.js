@@ -44,6 +44,8 @@ export const details = {
   icon: 'plus-minus',
   line: 'An item that opens, with its details below',
   sketch: 'details',
+  // the Add widget modal's drawing of it (WidgetsModal.svelte): grey shapes, classes there
+  drawing: ['w70 h8', 'pill'],
   templateOnly: true,
 };
 

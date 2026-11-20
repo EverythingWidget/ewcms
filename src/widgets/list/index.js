@@ -228,6 +228,8 @@ export const list = {
   icon: 'table-list',
   line: 'An item per entry of a source, or items you add by hand, in a look you pick',
   sketch: 'list',
+  // the Add widget modal's drawing of it (WidgetsModal.svelte): grey shapes, classes there; { grid: 3 }: a row of 3
+  drawing: [{ grid: 3 }, 'w40 h4'],
   config: [
     // custom + items: Content tab via ListLead (not the generic settings loop)
     { key: 'custom', type: 'boolean' },
