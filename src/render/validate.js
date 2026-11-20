@@ -447,16 +447,9 @@ function checkWidget(widget, where) {
   if (!isId(widget.id, 'w')) bad('id', 'a widget id like "w-7qpa"');
   out.push(...checkWidgetLayout(widget).map((p) => `${name}: ${p}`));
   if (widget.size !== undefined && !SIZES.includes(widget.size)) bad('size', SIZES.join(', '));
-  if (widget.type === 'hero' && Array.isArray(widget.photos))
-    widget.photos.forEach((p, i) => {
-      const ph = p?.phone;
-      if (ph === undefined || ph === null) return;
-      if (!isObject(ph) || Object.keys(ph).some((k) => !['x', 'y', 'w'].includes(k)))
-        bad(`photos.${i}.phone`, 'null (hidden on phones) or { x?, y?, w? }');
-      else
-        for (const [k, v] of Object.entries(ph))
-          if (typeof v !== 'number') bad(`photos.${i}.phone.${k}`, 'a number');
-    });
+  // a setting's own check of its value (its declaration's check(value); the Hero's photos)
+  for (const f of t?.settings || [])
+    if (f?.check) out.push(...f.check(widget[f.key]).map((p) => `${name}: ${p}`));
   if ((widget.size === 'aspect' || widget.aspect !== undefined) && !isRatio(widget.aspect))
     bad('aspect', 'a ratio like "4:5"');
   if (widget.layer !== undefined && !Number.isInteger(widget.layer)) bad('layer', 'a whole number');

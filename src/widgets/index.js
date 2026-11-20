@@ -37,6 +37,9 @@
  *                     { type, label, width?, options? }: a type with its label, 'select' with options
  *                     [[value, label]])
  *               item: a new item of the list (default: '' or the subkeys empty)
+ *               check(value): optional, problems with the setting's value beyond its type
+ *                     ('"photos.0.phone" must be …', src/render/validate.js; the Hero's
+ *                     photos: each one's phone place)
  *               itemDefaults: { name, values }: an item's values never stored (each left out
  *                     when it equals its default, src/render/defaults.js; e.g. the Hero's
  *                     photos: { name: 'photo', values: { layer: 'back' } }); name: an item

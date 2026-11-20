@@ -4,6 +4,7 @@
  */
 import { html, esc, img, lines, words, firstPhotos, sizes } from '../../render/helpers.js';
 import { t } from '../../render/strings.js';
+import { isObject } from '../../render/is.js';
 import { hrefOf } from '../../render/hrefs.js';
 
 const heroPhoto = (ctx, widget, p, i) => {
@@ -40,6 +41,18 @@ export const longestWord = (text) =>
       .split(/\s+/)
       .map((w) => [...w].length),
   );
+
+/** Each photo's phone place: null (hidden on phones) or { x?, y?, w? } numbers (validate.js). */
+const photoProblems = (photos) =>
+  (Array.isArray(photos) ? photos : []).flatMap((p, i) => {
+    const ph = p?.phone;
+    if (ph === undefined || ph === null) return [];
+    if (!isObject(ph) || Object.keys(ph).some((k) => !['x', 'y', 'w'].includes(k)))
+      return [`"photos.${i}.phone" must be null (hidden on phones) or { x?, y?, w? }`];
+    return Object.entries(ph)
+      .filter(([, v]) => typeof v !== 'number')
+      .map(([k]) => `"photos.${i}.phone.${k}" must be a number`);
+  });
 
 /** The name written in place in the editor: the title's --hero-word with it. */
 const heroWord = (el, value) =>
@@ -93,6 +106,8 @@ export const hero = {
       item: { src: '', x: 40, y: 30, w: 16, depth: 1 },
       // a photo's values left out when they are the default (src/render/defaults.js)
       itemDefaults: { name: 'photo', values: { layer: 'back' } },
+      // each photo's phone place (src/render/validate.js)
+      check: photoProblems,
     },
   ],
   // added from the editor: the section's whole width and about a screen under the menu (68 rows
