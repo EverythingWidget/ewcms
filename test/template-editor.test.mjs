@@ -199,7 +199,7 @@ test('the editor: a Templates group in Theme, its own target, Edit template, no 
     /<PagesList \{live\} \{actions\} area="theme" \/>/,
   );
   const main = read('src/editor/main.js');
-  assert.match(main, /kind: 'item-template'/);
+  assert.match(read('src/editor/lib/page-entries.js'), /kind: 'item-template'/);
   assert.match(main, /item\.kind === 'item-template'\) bridge\.navigate\(item\.path\)/);
   // the panel: Widgets and Settings tabs, chips (formats) on each bound value
   const panel = read('src/editor/svelte/TemplatePanel.svelte');

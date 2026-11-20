@@ -62,19 +62,10 @@ import { createBridge } from './preview-runtime.js';
 import { labelFor } from './svelte/content-groups.js';
 import { plural } from './lib/format.js';
 import { oneAtATime } from './lib/one-at-a-time.js';
-import { curtainOverrides, pathOfId, templateSection } from '../render/routes.js';
+import { pageMenu } from './lib/page-entries.js';
+import { curtainOverrides, pathOfId } from '../render/routes.js';
 import { BACKDROP } from '../render/backdrop.js';
-import { pageSourceOf } from '../render/layout/source.js';
-import {
-  ANIMATIONS,
-  REDIRECTS,
-  SITE,
-  isTemplate,
-  pageFile,
-  pageIdOf,
-  schemaIdOf,
-  sourceIdOf,
-} from '../render/files.js';
+import { ANIMATIONS, REDIRECTS, SITE, pageFile, schemaIdOf, sourceIdOf } from '../render/files.js';
 import {
   itemMoves,
   moveLinks,
@@ -111,12 +102,7 @@ import { restoreUi, restorePlace } from './svelte/persist.js';
 import { editorHref } from './lib/editor-url.js';
 import editorConfig from 'virtual:editor-config';
 import { contentFromFiles, setContentDir, templateFile, templateIdOf } from '../render/files.js';
-import {
-  PREVIEW_PAGE,
-  templateOfPath,
-  templatePreview,
-  templatePreviewPath,
-} from '../widgets/list/template-preview.js';
+import { PREVIEW_PAGE, templateOfPath, templatePreview } from '../widgets/list/template-preview.js';
 import { sectionsUsing } from '../widgets/list/template-uses.js';
 import { needsReload, routesFile, routesKey, siteKey } from './lib/needs-reload.js';
 import { TYPE_SPECIMEN, isTypeSpecimen } from '../render/layout/type-specimen.js';
@@ -264,82 +250,12 @@ function pushCurtains() {
   bridge.api?.setPageCurtains?.(curtainOverrides(live.routes));
 }
 
-/**
- * Page menu entries, grouped by folder: "/people/" holds the people page and the pages in its
- * folder. A [param] template is one entry ({ template, items }) for all its item pages.
- */
-function pageEntries(routes) {
-  const ids = Object.keys(store.current).map(pageIdOf).filter(Boolean);
-  const folders = new Set(ids.map((id) => id.slice(0, Math.max(0, id.lastIndexOf('/')))));
-  const groupOf = (id) => {
-    const folder = folders.has(id) ? id : id.slice(0, Math.max(0, id.lastIndexOf('/')));
-    return folder ? `/${folder}/` : 'Pages';
-  };
-  const entries = [];
-  const templates = new Map();
-  const template = (id, section) => {
-    if (!templates.has(id)) {
-      const entry = {
-        kind: 'page',
-        template: id,
-        path: `/${id}`,
-        // "People item"; a source without a section title: its [param] ("[person]")
-        title: section ? `${section} item` : id.slice(id.lastIndexOf('/') + 1),
-        group: groupOf(id),
-        items: [],
-      };
-      templates.set(id, entry);
-      entries.push(entry);
-    }
-    return templates.get(id);
-  };
-  for (const r of routes) {
-    if (r.template) template(r.id, r.section).items.push({ path: r.path, title: r.name });
-    else
-      entries.push({
-        kind: 'page',
-        path: r.path,
-        title: r.title.split('|')[0].trim(),
-        pid: r.pid,
-        group: groupOf(r.id),
-      });
-  }
-  // a template whose source has no items yet has no pages, but is still a page to pick
-  for (const id of ids)
-    if (isTemplate(id)) {
-      const folder = id.slice(0, id.lastIndexOf('/')); // "people"
-      const source = pageSourceOf(store.current[pageFile(id)]);
-      template(id, templateSection(store.current[pageFile(folder)], source));
-    }
-  return entries;
-}
-
-/** The page entries (ui.pages: the pages list's edit and the page head pick from them): the site parts (Header, Footer), then every page of the site (404 included: it has its own file). */
+/** The page entries (ui.pages: the pages list's edit and the page head pick from them): lib/page-entries.js pageMenu. */
 function updatePages() {
   const path = bridge.path() || startPath();
-  const routes = live.routes;
-  ui.pages = [
-    { kind: 'part', id: 'header', title: 'Header', path: '---' },
-    { kind: 'part', id: 'footer', title: 'Footer', path: '---' },
-    ...templateEntries(store.current),
-    ...pageEntries(routes),
-  ];
+  ui.pages = pageMenu(store.current, live.routes);
   // Header / Footer stay picked; otherwise follow the page (or template) shown in the preview.
   if (ui.target?.kind !== 'part') ui.target = shownPage(path);
-}
-
-/** The item templates (content/templates/t-….json): { kind: 'item-template', id, title, path }. */
-function templateEntries(files) {
-  return Object.keys(files)
-    .map((f) => templateIdOf(f))
-    .filter(Boolean)
-    .sort()
-    .map((id) => ({
-      kind: 'item-template',
-      id,
-      title: files[templateFile(id)]?.name || id,
-      path: templatePreviewPath(id),
-    }));
 }
 
 /**
