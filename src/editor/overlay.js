@@ -46,9 +46,12 @@
  * auto and aspect widgets the rows they need), so a drag starts from there; while it runs the
  * page holds its rows (data-flow-hold on <html>).
  *
- * The overlay follows the page with a frame loop while it shows something; it reads `ui`
- * (clicks(), widget, link) every frame, and the section metrics once per drag, so the grid
- * doesn't move under the pointer while the page reflows.
+ * The overlay follows the page with a frame loop that runs only while something moves (a
+ * gesture, a running animation, a box that just moved, or for a moment after a pointer, a
+ * scroll, a key or a page change) and otherwise asks for no frame: the editor's own writes in
+ * the page (its boxes, this layer) never wake it. It reads `ui` (clicks(), widget, link) every
+ * frame it runs, and the section metrics once per drag, so the grid doesn't move under the
+ * pointer while the page reflows.
  *
  * This file is the layer, what it draws (in the one loop: frame(), layout()), the pointer's
  * dispatch and the API. The gestures are its parts, each a factory on its one state (S, never a
@@ -178,6 +181,7 @@ export function createOverlay({
   widgetOf,
   secNameOf = () => '',
   draw = () => false,
+  boxed = () => false,
 }) {
   /**
    * The overlay's one state (its parts read and write this object, never a copy): the
@@ -216,6 +220,36 @@ export function createOverlay({
     S.due = true;
     wake();
   }
+  /**
+   * Something moves, so the loop runs again: a drag, a resize, a box, a link drawn, a running
+   * transition or animation, or for a moment after the page, the pointer or a key changed.
+   */
+  const busy = () =>
+    !!(
+      S.drag ||
+      S.group ||
+      S.boxing ||
+      S.sizing ||
+      S.linking ||
+      S.anims > 0 ||
+      now() < S.idleUntil
+    );
+  /**
+   * The editor's own nodes in the preview's page (this layer's host, the preview's boxes and
+   * style: preview-runtime.js): their changes are its own drawing, not the page's.
+   */
+  const OWN = '#__ed-layout, .__ed-box, #__ed-style';
+  const own = (n) => !!(n.nodeType === 1 ? n : n.parentElement)?.closest?.(OWN);
+  /**
+   * A page mutation that may move what the editor draws: not its own (one of its own nodes
+   * changed, added or removed), and, when the overlay shows nothing of its own (Element motion:
+   * the preview's boxes only), not a style written on an element no box is on or under (a
+   * script's motion elsewhere, an endless drift: as an endless CSS animation, not followed).
+   */
+  const pageMutation = (r) =>
+    !own(r.target) &&
+    !(r.type === 'childList' && [...r.addedNodes, ...r.removedNodes].every(own)) &&
+    !(r.attributeName === 'style' && !shown() && !boxed(r.target));
   // the editor's own window (the overlay runs in it; none outside a browser: the tests)
   const editorWin = typeof window === 'undefined' ? null : window;
   /**
@@ -470,15 +504,17 @@ export function createOverlay({
   }
 
   /**
-   * The editor's one draw loop: the preview's boxes (draw(): preview-runtime.js drawBoxes) every
-   * frame they ask for, the overlay's own (layout()) only while it is due; then it idles.
+   * The editor's one draw loop: the preview's boxes (draw(): preview-runtime.js drawBoxes) and
+   * the overlay's own (layout(), while it is due) every frame while something moves (busy()) or
+   * a box just moved; then it idles: no frame is asked for until a real change kicks it.
    */
   function frame() {
     S.raf = 0;
     if (!S.root?.isConnected) return;
     const more = draw();
     if (S.due) layout();
-    if (more || S.due) S.raf = S.win.requestAnimationFrame(frame);
+    if (more || S.due || (clicks() !== 'visitor' && busy()))
+      S.raf = S.win.requestAnimationFrame(frame);
   }
 
   function layout() {
@@ -552,19 +588,7 @@ export function createOverlay({
       place(S.els.hover, boxOf(h, S.win));
     }
     S.frames++;
-    // again only while something moves: a drag, a resize, a box, a link drawn, a running
-    // transition or animation, or for a moment after the page, the pointer or a key changed
-    S.due =
-      !!shown() &&
-      !!(
-        S.drag ||
-        S.group ||
-        S.boxing ||
-        S.sizing ||
-        S.linking ||
-        S.anims > 0 ||
-        now() < S.idleUntil
-      );
+    S.due = !!shown() && busy();
   }
 
   // ---- multi-select (multi-select.js): two or more widgets, one section, all alike
@@ -731,10 +755,13 @@ export function createOverlay({
       gridKey = '';
       build();
       // (its pointer handlers: preview-pointer.js listens and calls them, `pointer` below)
-      // what moves the page: the loop runs for it, then idles
+      // what moves the page or picks in it (a press and its release: Element motion's pick
+      // draws its box): the loop runs for it, then idles
       S.anims = 0;
       const opts = { capture: true, passive: true };
       for (const t of [
+        'pointerdown',
+        'pointerup',
         'pointermove',
         'pointerover',
         'pointerout',
@@ -750,20 +777,26 @@ export function createOverlay({
       const endless = (e) =>
         e.type.startsWith('animation') &&
         /infinite/.test(S.win.getComputedStyle(e.target).animationIterationCount);
+      // (the editor's own: the preview's boxes fading, not the page moving)
       for (const t of ['transitionrun', 'animationstart'])
-        S.doc.addEventListener(t, (e) => (endless(e) || S.anims++, kick()), opts);
+        S.doc.addEventListener(t, (e) => own(e.target) || (endless(e) || S.anims++, kick()), opts);
       for (const t of ['transitionend', 'transitioncancel', 'animationend', 'animationcancel'])
         S.doc.addEventListener(
           t,
-          (e) => (endless(e) || (S.anims = Math.max(0, S.anims - 1)), kick()),
+          (e) => own(e.target) || (endless(e) || (S.anims = Math.max(0, S.anims - 1)), kick()),
           opts,
         );
-      new S.win.MutationObserver(kick).observe(S.doc.documentElement, {
-        subtree: true,
-        childList: true,
-        attributes: true,
-        characterData: true,
-      });
+      // the page changed (an edit, a render, a script's animation writing styles): not the
+      // editor's own drawing (the preview's boxes), which would wake the loop that drew it
+      new S.win.MutationObserver((rs) => rs.some(pageMutation) && kick()).observe(
+        S.doc.documentElement,
+        {
+          subtree: true,
+          childList: true,
+          attributes: true,
+          characterData: true,
+        },
+      );
       new S.win.ResizeObserver(kick).observe(S.doc.documentElement);
       this.refresh();
     },

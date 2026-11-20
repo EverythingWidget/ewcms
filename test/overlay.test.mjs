@@ -43,7 +43,11 @@ test('links: kept paths by id, d set on change, no innerHTML; the loop idles', (
   // a new layer: the lines kept for the one before dropped
   assert.match(ov, /resetLinks\(\);\s*shadow\.innerHTML = /);
   assert.match(ov, /S\.anims > 0 \|\|\s*now\(\) < S\.idleUntil/);
-  assert.match(ov, /new S\.win\.MutationObserver\(kick\)/);
+  // the page's changes wake it, not the editor's own drawing (overlay-idle.test.mjs)
+  assert.match(
+    ov,
+    /new S\.win\.MutationObserver\(\(rs\) => rs\.some\(pageMutation\) && kick\(\)\)/,
+  );
   assert.match(ov, /new S\.win\.ResizeObserver\(kick\)/);
   assert.doesNotMatch(ov, /if \(shown\(\)\) (S\.)?raf = (S\.)?win\.requestAnimationFrame/);
 });
@@ -163,10 +167,11 @@ test("a press on a widget's body hides its handles and the toolbar; a resize kee
 
 test("one draw loop: the preview's boxes are drawn in the overlay's frame, its own drawing idles", () => {
   const o = src('overlay.js');
-  // every frame: the boxes (draw()) while they ask for one, the overlay's own only while due
+  // every frame while something moves (busy()) or a box just moved: the boxes (draw()), the
+  // overlay's own only while due; then no frame is asked for
   assert.match(
     o,
-    /function frame\(\) \{\s*S\.raf = 0;\s*if \(!S\.root\?\.isConnected\) return;\s*const more = draw\(\);\s*if \(S\.due\) layout\(\);\s*if \(more \|\| S\.due\) S\.raf = S\.win\.requestAnimationFrame\(frame\);/,
+    /function frame\(\) \{\s*S\.raf = 0;\s*if \(!S\.root\?\.isConnected\) return;\s*const more = draw\(\);\s*if \(S\.due\) layout\(\);\s*if \(more \|\| S\.due \|\| \(clicks\(\) !== 'visitor' && busy\(\)\)\)\s*S\.raf = S\.win\.requestAnimationFrame\(frame\);/,
   );
   assert.match(
     o,
@@ -174,17 +179,19 @@ test("one draw loop: the preview's boxes are drawn in the overlay's frame, its o
   );
   assert.match(
     o,
-    /S\.due =\s*!!shown\(\) &&\s*!!\(\s*S\.drag \|\|\s*S\.group \|\|\s*S\.boxing \|\|\s*S\.sizing \|\|\s*S\.linking \|\|\s*S\.anims > 0 \|\|\s*now\(\) < S\.idleUntil\s*\);/,
+    /const busy = \(\) =>\s*!!\(\s*S\.drag \|\|\s*S\.group \|\|\s*S\.boxing \|\|\s*S\.sizing \|\|\s*S\.linking \|\|\s*S\.anims > 0 \|\|\s*now\(\) < S\.idleUntil\s*\);/,
   );
+  assert.match(o, /S\.due = !!shown\(\) && busy\(\);/);
   // the preview runtime asks for frames (wake), it runs no loop of its own
   const b = src('preview-runtime.js');
   assert.doesNotMatch(b, /function loop\(|let raf\b/);
   assert.match(b, /function drawBoxes\(\) \{\s*if \(!boxes\?\.hover\.isConnected\) return false;/);
-  assert.match(b, /return clicks\(\) !== 'visitor';\s*\}/);
+  assert.match(b, /return a \|\| b;\s*\}/); // a box moved: one more frame
   assert.equal((b.match(/\bwake\(\);/g) || []).length, 2); // a page mounted, the clicks changed
   const m = src('main.js');
   assert.match(m, /wake: \(\) => overlay\.wake\(\),/);
   assert.match(m, /draw: \(\) => bridge\.drawBoxes\(\),/);
+  assert.match(m, /boxed: \(node\) => bridge\.boxed\(node\),/);
 });
 
 test("the overlay's parts (overlay-*.js): factories over its one state, none imports overlay.js", () => {

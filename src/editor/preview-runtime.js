@@ -120,6 +120,7 @@ export function createBridge({
   let win = null;
   let doc = null;
   let boxes = null; // the hover and selected boxes (animate clicks; drawn: drawBoxes)
+  const written = new WeakMap(); // box -> the styles drawBoxes last wrote on it
   let applied = new WeakMap(); // element -> value it currently shows
   let restore = null; // after a reload(): puts scroll and selection back once mounted
   // editing in place (a Text widget's body; preview-edit.js)
@@ -134,6 +135,8 @@ export function createBridge({
   const bridge = {
     /** The hover and selected boxes drawn (the overlay's frame: overlay.js); true: again. */
     drawBoxes: () => drawBoxes(),
+    /** True when `node` is, or holds, an element a box is on (it moving moves the box). */
+    boxed: (node) => [picked()?.el, hovered()].some((el) => el && node.contains?.(el)),
     get api() {
       return api;
     },
@@ -418,22 +421,36 @@ export function createBridge({
     return `${el.dataset.anim} · ${api?.resolve(el.dataset.anim, el)?.animation || '?'}`;
   }
 
+  /**
+   * A box on `el` (none: hidden); true when it changed. Only what changed is written: a box
+   * that stays where it is writes nothing (the overlay's loop idles, no mutation for it).
+   */
   function placeBox(box, el, kind) {
     const r = el?.isConnected ? el.getBoundingClientRect() : null;
     const on = !!r && (r.width > 0 || r.height > 0) && clicks() !== 'visitor';
+    let changed = box.classList.contains('is-on') !== on;
     box.classList.toggle('is-on', on);
-    if (!on) return;
-    box.style.transform = `translate(${r.left - 4}px, ${r.top - 4}px)`;
-    box.style.width = `${r.width + 8}px`;
-    box.style.height = `${r.height + 8}px`;
-    box.classList.toggle('is-low', r.top < 30);
+    if (!on) return changed;
+    // (compared with what was written, not read back: the browser rounds what it serializes)
+    const was = written.get(box) || {};
+    written.set(box, was);
+    const set = (k, v) => was[k] !== v && ((box.style[k] = was[k] = v), (changed = true));
+    set('transform', `translate(${r.left - 4}px, ${r.top - 4}px)`);
+    set('width', `${r.width + 8}px`);
+    set('height', `${r.height + 8}px`);
+    if (box.classList.contains('is-low') !== r.top < 30) {
+      box.classList.toggle('is-low', r.top < 30);
+      changed = true;
+    }
     const label = boxLabel(el, kind);
     if (box.firstChild.textContent !== label) box.firstChild.textContent = label;
+    return changed;
   }
 
   /**
    * The hover and selected boxes placed on their elements: in the overlay's frame (its one
-   * draw loop: overlay.js), every frame while the preview takes clicks; false: no more.
+   * draw loop: overlay.js), while it runs (the page, the pointer, a key or an animation woke
+   * it); true: a box moved this frame (what it is on may still be moving: one more frame).
    */
   function drawBoxes() {
     if (!boxes?.hover.isConnected) return false;
@@ -442,13 +459,13 @@ export function createBridge({
     const sameAsSel = selected && hoverEl === selected.el;
     // a text in a widget (arrange clicks): the overlay's frame on the widget is its one border
     const own = (el) => (clicks() === 'arrange' && el?.closest?.('[data-widget]') ? null : el);
-    placeBox(
+    const a = placeBox(
       boxes.hover,
       sameAsSel ? null : own(hoverEl),
       clicks() === 'arrange' ? 'text' : 'anim',
     );
-    placeBox(boxes.sel, own(selected?.el), selected?.kind);
-    return clicks() !== 'visitor';
+    const b = placeBox(boxes.sel, own(selected?.el), selected?.kind);
+    return a || b;
   }
 
   function attachListeners() {
