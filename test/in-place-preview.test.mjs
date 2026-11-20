@@ -269,7 +269,7 @@ test('G13: a content change re-renders the section in place, unless its text was
   assert.doesNotMatch(main, /structure && !typed/);
   // the targeted patch first (it marks the section rendered); the full scan only when it didn't
   assert.ok(
-    main.indexOf('patchTexts(root, store, edits, bridge.patchText)') <
+    main.indexOf('patchTexts(root, store, edits, bridge.patchText') <
       main.indexOf('syncSections({ structure: !typed }, root)'),
   );
   assert.match(main, /if \(patched\) bridge\.applyCurtain\(\);\s*else\s*bridge\.applyTexts\(/);
@@ -339,14 +339,16 @@ test('what the patch cannot show renders the section as before (G13)', () => {
   // ...and a label typed while that render is pending: still rendered (the section is stale)
   assert.equal(patchTexts(p.view, p.store, p.set('0/label', 'Go on'), p.write), false);
   assert.deepEqual(p.stale(), ['s-a']);
-  // an emptied label (a default or nothing shows): rendered
+  // an emptied label: a button keeps its element (patched); a removed one (a default): rendered
+  // (an emptied Form text, left out or a default: test/typing-patch.test.mjs)
   p = patchPage();
-  assert.equal(patchTexts(p.view, p.store, p.set('0/label', ''), p.write), false);
+  assert.equal(patchTexts(p.view, p.store, p.set('0/label', ''), p.write), true);
+  assert.equal(patchTexts(p.view, p.store, p.set('0/label', undefined), p.write), false);
   assert.deepEqual(p.stale(), ['s-a']);
-  // the hero's name (words: split, its size follows its longest word): rendered
+  // the hero's name (words) is patched (its words and --hero-word: test/typing-patch.test.mjs)
   p = patchPage();
-  assert.equal(patchTexts(p.view, p.store, p.set('1/title', 'Noor V'), p.write), false);
-  assert.deepEqual(p.stale(), ['s-a']);
+  assert.equal(patchTexts(p.view, p.store, p.set('1/title', 'Noor V'), p.write), true);
+  assert.deepEqual(p.stale(), []);
   // a text with no element of its own in the widget: rendered
   p = patchPage();
   assert.equal(patchTexts(p.view, p.store, p.set('1/body', 'More'), p.write), false);

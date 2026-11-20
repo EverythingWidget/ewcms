@@ -676,6 +676,12 @@ function renderUses({ templates = [], sources = [] }) {
   }
 }
 
+/** A config value patched in as a CSS variable (patchTexts): the rows and scroll positions again. */
+function relayout() {
+  bridge.api?.reflow?.();
+  bridge.api?.refresh?.();
+}
+
 /**
  * Sections `ids` of `root` (the previewed page's view, or the footer) rendered by the dev
  * server and swapped in, in turn.
@@ -869,12 +875,13 @@ store.on(({ files, source: src, structure: _structure, edits }) => {
   if (src === 'saved') return;
   const textChanged = files.some((f) => f !== ANIMATIONS);
   if ((src === 'undo' || src === 'redo') && bridge.richEditing) bridge.endRich();
-  // a text typed in a widget's field (a button's label, a hero's eyebrow): put into its one
-  // element in the preview, and its section counts as rendered (layout-sync.js patchTexts)
+  // a text typed in a widget's field (a button's label, a hero's name, an emptied eyebrow) or
+  // a config value shown as a CSS variable (a List's gap): put into its elements in the
+  // preview, and its section counts as rendered (layout-sync.js patchTexts): nothing to render
   const patched =
     !typed &&
     !!edits?.length &&
-    roots.some((root) => patchTexts(root, store, edits, bridge.patchText));
+    roots.some((root) => patchTexts(root, store, edits, bridge.patchText, { layout: relayout }));
   for (const root of roots)
     if (files.includes(root.dataset.pageFile))
       // content or config too (keyOf), not only a flagged structure edit: else the preview
