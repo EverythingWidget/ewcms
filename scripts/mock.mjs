@@ -54,7 +54,9 @@ const up = () =>
     .catch(() => false);
 
 // the dev server: reuse it, or start one in the background (it stays up for the next mock)
+let cold = false;
 if (!(await up())) {
+  cold = true;
   const log = openSync(join(tmpdir(), `mock-vite-${port}.log`), 'a');
   // node + the engine's CLI (no npx, no shell): the same on Windows. The site: engine.mjs mockSite
   const site = mockSite();
@@ -144,8 +146,30 @@ try {
   const q = new URLSearchParams({ mock: names.join(','), shot: '1' });
   if (opt.width) q.set('width', String(opt.width));
   if (opt.bare) q.set('bare', '1');
-  await send('Page.navigate', { url: `${base}/sandbox/?${q}` });
-  for (let i = 0; i < 300 && !(await evaluate('window.__mockReady === true')); i++) await sleep(50);
+  // load the mock until it draws: a cold dev server's first loads can fail ("Failed to fetch
+  // dynamically imported module", Vite optimizing dependencies and reloading) or stall. A
+  // server this call started gets one warm-up load first (thrown away).
+  const url = `${base}/sandbox/?${q}`;
+  const load = async () => {
+    await send('Page.navigate', { url });
+    for (let i = 0; i < 300; i++) {
+      // (a reload by Vite mid-load: the flags are gone again, keep waiting)
+      const state = await evaluate(
+        'window.__mockReady === true ? (window.__mockError || "ok") : ""',
+      ).catch(() => '');
+      if (state) return state;
+      await sleep(50);
+    }
+    return 'timed out';
+  };
+  if (cold) await load();
+  for (let attempt = 1; ; attempt++) {
+    const state = await load();
+    if (state === 'ok') break;
+    if (attempt === 4) throw new Error(`The mock didn't load: ${state}`);
+    console.error(`(mock: ${state.split('\n')[0]}; loading again)`);
+    await sleep(1000 * attempt);
+  }
   // everything drawn, also what reaches out of the panel (an open menu)
   const box = await evaluate(`(() => {
     const root = document.getElementById('sandbox');

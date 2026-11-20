@@ -57,6 +57,11 @@ set `MOCK_PORT=5199` to use `mock:serve`'s) or starts one in the background, and
 headless Chrome over the DevTools protocol at 2x. Chrome: `CHROME`, else its usual install path
 on Windows or macOS, else `/usr/bin/google-chrome`. About 2 s per call with the server up.
 
+A mock that fails to load (a cold dev server's first load can end in "Failed to fetch
+dynamically imported module" while Vite optimizes dependencies) is loaded again, up to four
+times (it prints `(mock: …; loading again)`); a dev server the call starts gets one warm-up load
+first. The page reports a failure in `window.__mockError` (`main.js`).
+
 ## Pushing mocks in one command
 
 `scripts/mock-push.mjs` (`npm run mock:push`; plain Node, also in PowerShell) reads a base64 tar.gz of `.svelte` files from stdin, writes them into `sandbox/mocks/`, and checks that the mock server lists them. Add `--rm a,b` to delete mocks first.

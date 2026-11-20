@@ -14,7 +14,8 @@
  * its real components and look exactly like the editor.
  *
  * When everything is drawn (fonts too) window.__mockReady is true; scripts/mock.mjs waits for
- * it and screenshots #sandbox.
+ * it and screenshots #sandbox. A mock that failed to load sets window.__mockError too (its
+ * message): mock.mjs loads it again.
  */
 import { mount } from 'svelte';
 import './viewer.css';
@@ -91,5 +92,8 @@ async function main() {
 
 main().catch((err) => {
   root.textContent = String(err?.stack || err);
+  // scripts/mock.mjs loads the page again on this (a cold dev server's first load can fail
+  // with "Failed to fetch dynamically imported module" while Vite optimizes dependencies)
+  window.__mockError = String(err?.message || err);
   window.__mockReady = true;
 });
