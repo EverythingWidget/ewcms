@@ -49,7 +49,9 @@
  * The overlay follows the page with a frame loop that runs only while something moves (a
  * gesture, a running animation, a box that just moved, or for a moment after a pointer, a
  * scroll, a key or a page change) and otherwise asks for no frame: the editor's own writes in
- * the page (its boxes, this layer) never wake it. It reads `ui` (clicks(), widget, link) every
+ * the page (its boxes, this layer) never wake it. Accepted: on Element motion a style animated
+ * on another element that shifts the picked one's layout (a height above it) is followed only on
+ * the next pointer move, scroll or key. It reads `ui` (clicks(), widget, link) every
  * frame it runs, and the section metrics once per drag, so the grid doesn't move under the
  * pointer while the page reflows.
  *
@@ -182,6 +184,7 @@ export function createOverlay({
   secNameOf = () => '',
   draw = () => false,
   boxed = () => false,
+  afterFrame = () => {},
 }) {
   /**
    * The overlay's one state (its parts read and write this object, never a copy): the
@@ -513,6 +516,7 @@ export function createOverlay({
     if (!S.root?.isConnected) return;
     const more = draw();
     if (S.due) layout();
+    afterFrame();
     if (more || S.due || (clicks() !== 'visitor' && busy()))
       S.raf = S.win.requestAnimationFrame(frame);
   }

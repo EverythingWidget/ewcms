@@ -149,6 +149,7 @@ const overlay = createOverlay({
   ui,
   draw: () => bridge.drawBoxes(), // the preview's hover and selected boxes, in its frame
   boxed: (node) => bridge.boxed(node), // what those boxes are on (a style written there moves them)
+  afterFrame: () => bridge.framed(), // what follows the page from the editor (WidgetToolbar)
   onpick(id) {
     selectWidgets(id ? [id] : []);
   },

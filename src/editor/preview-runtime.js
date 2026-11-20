@@ -121,6 +121,7 @@ export function createBridge({
   let doc = null;
   let boxes = null; // the hover and selected boxes (animate clicks; drawn: drawBoxes)
   const written = new WeakMap(); // box -> the styles drawBoxes last wrote on it
+  const frameFns = new Set(); // called after each of the overlay's frames (onFrame)
   let applied = new WeakMap(); // element -> value it currently shows
   let restore = null; // after a reload(): puts scroll and selection back once mounted
   // editing in place (a Text widget's body; preview-edit.js)
@@ -135,6 +136,20 @@ export function createBridge({
   const bridge = {
     /** The hover and selected boxes drawn (the overlay's frame: overlay.js); true: again. */
     drawBoxes: () => drawBoxes(),
+    /**
+     * `fn` called after every frame the overlay's loop draws (main.js: overlay's afterFrame), so
+     * what follows the page from the editor (the widget toolbar) idles with it; one frame now.
+     * Returns the unsubscribe.
+     */
+    onFrame(fn) {
+      frameFns.add(fn);
+      wake();
+      return () => frameFns.delete(fn);
+    },
+    /** The overlay drew a frame (overlay.js frame(), after layout()). */
+    framed() {
+      for (const fn of frameFns) fn();
+    },
     /** True when `node` is, or holds, an element a box is on (it moving moves the box). */
     boxed: (node) => [picked()?.el, hovered()].some((el) => el && node.contains?.(el)),
     get api() {
@@ -458,13 +473,14 @@ export function createBridge({
     const hoverEl = hovered();
     const sameAsSel = selected && hoverEl === selected.el;
     // a text in a widget (arrange clicks): the overlay's frame on the widget is its one border
-    const own = (el) => (clicks() === 'arrange' && el?.closest?.('[data-widget]') ? null : el);
+    const boxTarget = (el) =>
+      clicks() === 'arrange' && el?.closest?.('[data-widget]') ? null : el;
     const a = placeBox(
       boxes.hover,
-      sameAsSel ? null : own(hoverEl),
+      sameAsSel ? null : boxTarget(hoverEl),
       clicks() === 'arrange' ? 'text' : 'anim',
     );
-    const b = placeBox(boxes.sel, own(selected?.el), selected?.kind);
+    const b = placeBox(boxes.sel, boxTarget(selected?.el), selected?.kind);
     return a || b;
   }
 

@@ -28,6 +28,7 @@ register(
 );
 const { parseHTML } = await import('linkedom');
 globalThis.window ??= globalThis; // the bridge's hook for the site (window.__siteEditor)
+globalThis.CSS ??= { escape: (s) => String(s) }; // (widgetEl's selectors)
 const { createOverlay } = await import('../src/editor/overlay.js');
 const { createBridge } = await import('../src/editor/preview-runtime.js');
 
@@ -118,6 +119,7 @@ async function preview({ mode = 'arrange' } = {}) {
     widgetOf: () => null,
     draw: () => bridge.drawBoxes(),
     boxed: (node) => bridge.boxed(node),
+    afterFrame: () => bridge.framed(),
   });
   overlay.attach(win);
   // linkedom: a shadow root's nodes never connected; the overlay's frame runs while its host is
@@ -140,6 +142,7 @@ async function preview({ mode = 'arrange' } = {}) {
   p.restore = () => (performance.now = realNow);
   p.queued = () => queued.length;
   p.overlay = overlay;
+  p.bridge = bridge;
   p.box = () => doc.querySelector('.__ed-box--sel').style.transform;
   return p;
 }
@@ -158,6 +161,43 @@ test('an idle preview runs no frame once it has settled (Edit and Element motion
       p.restore();
     }
   }
+});
+
+test('a widget selected: the overlay and the widget toolbar (bridge.onFrame) idle together', async () => {
+  const p = await preview();
+  try {
+    p.ui.widget = 'a';
+    p.overlay.refresh();
+    let ticks = 0;
+    const off = p.bridge.onFrame(() => ticks++); // as WidgetToolbar.svelte follows its widget
+    const settling = await p.run(1000);
+    assert.ok(settling > 0 && settling < 60, `it settles (${settling} frames)`);
+    assert.ok(ticks > 0, 'the toolbar placed in its frames');
+    assert.equal(
+      p.doc.getElementById('__ed-layout').shadowRoot.querySelector('.sel').hidden,
+      false,
+    );
+    ticks = 0;
+    assert.equal(await p.run(2000), 0, '0 frames in 2s idle, a widget selected');
+    assert.equal(ticks, 0, 'the toolbar idles too');
+    p.win.dispatchEvent(new p.win.Event('scroll'));
+    assert.ok((await p.run(1000)) > 1 && ticks > 1, 'a scroll moves both');
+    ticks = 0;
+    assert.equal(await p.run(1000), 0);
+    off();
+    p.overlay.kick();
+    await p.run(1000);
+    assert.equal(ticks, 0, 'unsubscribed: no more calls');
+  } finally {
+    p.restore();
+  }
+  // the toolbar runs no loop of its own
+  const tb = readFileSync(
+    new URL('../src/editor/svelte/WidgetToolbar.svelte', import.meta.url),
+    'utf8',
+  );
+  assert.doesNotMatch(tb, /requestAnimationFrame/);
+  assert.match(tb, /return bridge\.onFrame\(tick\);/);
 });
 
 test('a pointer move, a scroll, a resize, a key, a content change and an animation wake it', async () => {
@@ -266,5 +306,8 @@ test('the boxes write only what changed, and ask for a frame only when they move
     /const set = \(k, v\) => was\[k\] !== v && \(\(box\.style\[k\] = was\[k\] = v\), \(changed = true\)\);/,
   );
   assert.match(b, /return a \|\| b;\s*\}/);
+  // a text inside a widget (arrange): the overlay's frame is its border (not overlay.js own())
+  assert.match(b, /const boxTarget = \(el\) =>/);
+  assert.doesNotMatch(b, /const own = /);
   assert.doesNotMatch(b, /return clicks\(\) !== 'visitor';/, 'no frame every frame while editing');
 });

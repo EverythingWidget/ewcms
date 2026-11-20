@@ -171,7 +171,7 @@ test("one draw loop: the preview's boxes are drawn in the overlay's frame, its o
   // overlay's own only while due; then no frame is asked for
   assert.match(
     o,
-    /function frame\(\) \{\s*S\.raf = 0;\s*if \(!S\.root\?\.isConnected\) return;\s*const more = draw\(\);\s*if \(S\.due\) layout\(\);\s*if \(more \|\| S\.due \|\| \(clicks\(\) !== 'visitor' && busy\(\)\)\)\s*S\.raf = S\.win\.requestAnimationFrame\(frame\);/,
+    /function frame\(\) \{\s*S\.raf = 0;\s*if \(!S\.root\?\.isConnected\) return;\s*const more = draw\(\);\s*if \(S\.due\) layout\(\);\s*afterFrame\(\);\s*if \(more \|\| S\.due \|\| \(clicks\(\) !== 'visitor' && busy\(\)\)\)\s*S\.raf = S\.win\.requestAnimationFrame\(frame\);/,
   );
   assert.match(
     o,
@@ -187,11 +187,12 @@ test("one draw loop: the preview's boxes are drawn in the overlay's frame, its o
   assert.doesNotMatch(b, /function loop\(|let raf\b/);
   assert.match(b, /function drawBoxes\(\) \{\s*if \(!boxes\?\.hover\.isConnected\) return false;/);
   assert.match(b, /return a \|\| b;\s*\}/); // a box moved: one more frame
-  assert.equal((b.match(/\bwake\(\);/g) || []).length, 2); // a page mounted, the clicks changed
+  assert.equal((b.match(/\bwake\(\);/g) || []).length, 3); // a page mounted, the clicks changed, onFrame
   const m = src('main.js');
   assert.match(m, /wake: \(\) => overlay\.wake\(\),/);
   assert.match(m, /draw: \(\) => bridge\.drawBoxes\(\),/);
   assert.match(m, /boxed: \(node\) => bridge\.boxed\(node\),/);
+  assert.match(m, /afterFrame: \(\) => bridge\.framed\(\),/);
 });
 
 test("the overlay's parts (overlay-*.js): factories over its one state, none imports overlay.js", () => {

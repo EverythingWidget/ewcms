@@ -91,7 +91,8 @@
     where && setWidget(live.store, where.file, where.at, where.j, scalePatch(!isScaled));
   const bodyRef = $derived(where ? { file: where.file, ptr: `${where.base}/body` } : null);
 
-  // ---- where it is drawn: the widget's box in the frame, on the stage, every frame
+  // ---- where it is drawn: the widget's box in the frame, on the stage, every frame the
+  // overlay draws (its one loop: overlay.js; none while the page is still)
   let box = $state(null); // { x, y, w, h, frameTop, frameBottom }
   let place = $state(null); // { col, span, row, rows }: shownPlace
   // a drag in the preview: a resize keeps the bar (its size readout updates live) but lets
@@ -106,9 +107,8 @@
   $effect(() => {
     if (!where) return void (box = null);
     const id = where.id;
-    let raf = 0;
+    // in the overlay's frames (bridge.onFrame): it idles with its one loop
     const tick = () => {
-      raf = requestAnimationFrame(tick);
       const doc = bridge.doc;
       const frame = doc?.defaultView?.frameElement;
       const el =
@@ -142,7 +142,7 @@
       if (move !== moving) moving = move;
     };
     tick();
-    return () => cancelAnimationFrame(raf);
+    return bridge.onFrame(tick);
   });
 
   // its toolbar's width (measured), for where it goes and what moves into "…"
