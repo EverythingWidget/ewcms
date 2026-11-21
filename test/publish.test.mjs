@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { useTestEnv } from '../scripts/test-layout.mjs';
-import { contentStatus, publish } from '../src/editor/server/local-data-layer.mjs';
+import { siteStatus, publish } from '../src/editor/server/local-data-layer.mjs';
 
 // Run from a git hook (pre-push), GIT_DIR & co. point at the real repo: every git here (and the
 // editor's, which inherits this process's environment) must only see the temp repos.
@@ -44,10 +44,15 @@ test('publish: a git mv rename commits the new path and the removal of the old o
   fs.appendFileSync(path.join(root, 'notes.txt'), 'staged, not content\n');
   git(root, 'add', 'notes.txt');
 
-  const s = await contentStatus(root);
+  const s = await siteStatus(root);
   assert.deepEqual(
-    s.files.map((f) => `${f.status} ${f.name}`),
-    ['deleted pages/a/index.json', 'new pages/b/index.json', 'deleted pages/c/index.json'],
+    s.files.map((f) => `${f.status} ${f.name || f.path}`),
+    [
+      'deleted pages/a/index.json',
+      'new pages/b/index.json',
+      'deleted pages/c/index.json',
+      'modified notes.txt',
+    ],
   );
   const r = await publish(root, 'Rename a to b');
   assert.equal(r.status, 200, JSON.stringify(r.body));
@@ -67,10 +72,14 @@ test('status and publish: the shared files at the content root (content/header.j
   fs.writeFileSync(path.join(root, 'content/site.json'), '{ "version": 1, "name": "S" }\n');
   // not content: a stray file next to them
   fs.writeFileSync(path.join(root, 'content/notes.json'), '{}\n');
-  const s = await contentStatus(root);
+  const s = await siteStatus(root);
   assert.deepEqual(
-    s.files.map((f) => `${f.status} ${f.name} ${f.path}`),
-    ['new header.json content/header.json', 'new site.json content/site.json'],
+    s.files.map((f) => `${f.status} ${f.name} ${f.path} ${f.group}`),
+    [
+      'new header.json content/header.json content',
+      'new site.json content/site.json content',
+      'new undefined content/notes.json other',
+    ],
   );
   const r = await publish(root, 'Shared files');
   assert.equal(r.status, 200, JSON.stringify(r.body));

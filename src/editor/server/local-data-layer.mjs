@@ -7,7 +7,7 @@
  *
  *   load()           { mode, files: { [name]: data }, media, photos, r2 }
  *   save(files)      { status, body: { ok, written } | { error, problems } }
- *   status()         the git status (contentStatus below)
+ *   status()         the git status (siteStatus below)
  *   publish(message) { status, body } (publish below)
  *
  * Only the local one exists for now (a hosted one would answer the same).
@@ -237,14 +237,64 @@ const parseJSON = (text) => {
   }
 };
 
+/** The order of the groups in status (and the Publish window). */
+export const GROUPS = ['content', 'sources', 'templates', 'theme', 'media', 'other'];
+
+/** Over this, GitHub rejects or warns about a file (100 MB hard limit): Publish refuses it. */
+export const MAX_FILE_BYTES = 95 * 1024 * 1024;
+
+/** Names that look like secrets: never committed, even if the site's .gitignore misses them. */
+const SECRET = /^(\.env|\.env\..*|\.dev\.vars|.*\.pem|.*\.key|id_rsa.*|.*\.p12)$/i;
+
+/** Why `file` ({ path, size }) must not be published, or ''. */
+export function blockedReason(file) {
+  const base = file.path.split('/').pop();
+  if (SECRET.test(base) && base.toLowerCase() !== '.env.example')
+    return 'looks like a secret (keys, passwords): add it to .gitignore or remove it';
+  if (file.size > MAX_FILE_BYTES)
+    return `is ${(file.size / 1024 / 1024).toFixed(1)} MB, over the 95 MB limit (GitHub refuses 100 MB): add it to .gitignore or make it smaller`;
+  return '';
+}
+
+/** The group of a changed site file: its content file name, else where it is. */
+function groupOf(root, p, name) {
+  if (name)
+    return name.startsWith('templates/')
+      ? 'templates'
+      : name.startsWith('sources/')
+        ? 'sources'
+        : 'content';
+  const { themeDir, mediaDir } = loadSiteConfig(root);
+  const under = (dir) => {
+    if (!dir) return false;
+    const rel = path.relative(root, dir).split(path.sep).join('/');
+    return !!rel && !rel.startsWith('..') && (p === rel || p.startsWith(`${rel}/`));
+  };
+  return under(themeDir) ? 'theme' : under(mediaDir) ? 'media' : 'other';
+}
+
+/** Whether a file looks binary (a NUL byte in its first 8000 bytes, as git checks). */
+function isBinary(file) {
+  const fd = fs.openSync(file, 'r');
+  try {
+    const buf = Buffer.alloc(8000);
+    const n = fs.readSync(fd, buf, 0, buf.length, 0);
+    return buf.subarray(0, n).includes(0);
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
 /**
- * Content files that differ from HEAD (the ones Publish would commit), plus branch and
- * push state. Only content files (src/render/files.js FOLDERS, LANG_FILES, ROOT_FILES, the
- * templates) are looked at.
+ * Every changed file in the site folder that differs from HEAD (new, modified, deleted;
+ * ignored files never show), plus branch and push state. Content files get their editor name
+ * and the number of edits; the others +/- lines, or bytes when binary. blocked: the changed
+ * files Publish refuses (blockedReason).
  */
-export async function contentStatus(root) {
+export async function siteStatus(root) {
   const inside = await git(root, ['rev-parse', '--is-inside-work-tree']);
-  if (!inside.ok) return { git: false, error: 'Not a git repository', files: [], ahead: 0 };
+  if (!inside.ok)
+    return { git: false, error: 'Not a git repository', files: [], blocked: [], ahead: 0 };
   const [branchR, prefixR, remoteR] = await Promise.all([
     git(root, ['rev-parse', '--abbrev-ref', 'HEAD']),
     git(root, ['rev-parse', '--show-prefix']),
@@ -252,27 +302,21 @@ export async function contentStatus(root) {
   ]);
   const branch = branchR.stdout.trim();
   const prefix = prefixR.stdout.trim();
-  // Every JSON file in the editable folders, including deleted or new ones.
-  const rel = [
-    ...FOLDERS.map((d) => `:(glob)${contentRel(root)}/${d}/**/*.json`),
-    ...LANG_FILES.map((f) => `${contentRel(root)}/${f}`),
-    ...ROOT_FILES.map((f) => diskRel(root, f)),
-    `:(glob)${loadSiteConfig(root).templatesRel}/*.json`,
-  ];
 
+  // `.`: the site folder only, even inside a bigger repo
   const st = await git(root, [
     'status',
     '--porcelain=v1',
     '-z',
     '--untracked-files=all',
     '--',
-    ...rel,
+    '.',
   ]);
   const files = [];
   const entries = st.stdout.split('\0').filter(Boolean);
+  const { templatesRel: tRel, contentRootRel: rRel } = loadSiteConfig(root);
   const add = (repoPath, status) => {
     const p = repoPath.startsWith(prefix) ? repoPath.slice(prefix.length) : repoPath;
-    const { templatesRel: tRel, contentRootRel: rRel } = loadSiteConfig(root);
     const name = p.startsWith(`${tRel}/`)
       ? `templates/${p.slice(tRel.length + 1)}`
       : p.startsWith(`${contentRel(root)}/`)
@@ -280,7 +324,13 @@ export async function contentStatus(root) {
         : rRel === '.'
           ? p
           : p.slice(rRel.length + 1);
-    if (isContentFile(name) && p === diskRel(root, name)) files.push({ name, path: p, status });
+    const content = isContentFile(name) && p === diskRel(root, name);
+    files.push({
+      ...(content && { name }),
+      path: p,
+      group: groupOf(root, p, content && name),
+      status,
+    });
   };
   for (let i = 0; i < entries.length; i++) {
     const code = entries[i].slice(0, 2);
@@ -301,25 +351,38 @@ export async function contentStatus(root) {
   }
   await Promise.all(
     files.map(async (f) => {
+      const abs = path.join(root, f.path);
+      const size = fs.existsSync(abs) ? fs.statSync(abs).size : 0;
+      if (size > MAX_FILE_BYTES) return (f.bytes = size); // not read: too big (blocked)
+      const binary = size > 0 && isBinary(abs);
       const [numstat, head] = await Promise.all([
         git(root, ['diff', '--numstat', 'HEAD', '--', `:(literal)${f.path}`]),
-        git(root, ['show', `HEAD:${prefix}${f.path}`]),
+        f.name ? git(root, ['show', `HEAD:${prefix}${f.path}`]) : null,
       ]);
       const [added, removed] = numstat.stdout.trim().split(/\s+/);
-      const disk = fs.existsSync(path.join(root, f.path))
-        ? parseJSON(fs.readFileSync(path.join(root, f.path), 'utf8'))
-        : undefined;
-      const before = head.ok ? parseJSON(head.stdout) : undefined;
+      if (binary || added === '-') {
+        f.bytes = size;
+        return;
+      }
       f.added =
         Number(added) ||
-        (f.status === 'new'
-          ? fs.readFileSync(path.join(root, f.path), 'utf8').split('\n').length - 1
-          : 0);
+        (f.status === 'new' && size ? fs.readFileSync(abs, 'utf8').split('\n').length - 1 : 0);
       f.removed = Number(removed) || 0;
+      if (!f.name) return;
+      const disk = fs.existsSync(abs) ? parseJSON(fs.readFileSync(abs, 'utf8')) : undefined;
+      const before = head.ok ? parseJSON(head.stdout) : undefined;
       f.changes = before === undefined || disk === undefined ? 1 : countEdits(before, disk, f.name);
     }),
   );
-  files.sort((a, b) => a.name.localeCompare(b.name));
+  const order = (f) => GROUPS.indexOf(f.group);
+  files.sort((a, b) => order(a) - order(b) || (a.name || a.path).localeCompare(b.name || b.path));
+  const blocked = files
+    .filter((f) => f.status !== 'deleted')
+    .map((f) => ({
+      path: f.path,
+      reason: blockedReason({ path: f.path, size: f.bytes ?? 0 }),
+    }))
+    .filter((b) => b.reason);
 
   // Commits on this branch that origin doesn't have yet (e.g. a publish whose push failed).
   let upstream = (
@@ -355,6 +418,7 @@ export async function contentStatus(root) {
     remote: remoteR.ok ? remoteR.stdout.trim() : null,
     repoUrl: repoUrl(remoteR.stdout.trim(), loadSiteConfig(root).config),
     files,
+    blocked,
   };
 }
 
@@ -377,7 +441,8 @@ function pushHint(output) {
 
 /** Commit every changed content file in one commit and push the branch. */
 export async function publish(root, message) {
-  const s = await contentStatus(root);
+  const all = await siteStatus(root);
+  const s = { ...all, files: all.files.filter((f) => f.name) };
   if (!s.git) return { status: 400, body: { error: s.error } };
   if (s.detached)
     return {
@@ -466,7 +531,7 @@ export function createLocalDataLayer(root, { env = {}, onWrite = () => {} } = {}
       r2: !r2Config(env).missing,
     }),
     save: (files) => save(root, files, onWrite),
-    status: () => contentStatus(root),
+    status: () => siteStatus(root),
     publish: (message) => publish(root, message),
   };
 }
