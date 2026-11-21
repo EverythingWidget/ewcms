@@ -119,8 +119,8 @@ test('F80: a failed save is a window until dismissed (not a toast); the copy is 
   assert.match(main, /store\.on\(\(\) => \{\s*clearTimeout\(copyTimer\);/);
   assert.match(main, /function discardDraft\(\) \{[^}]*clearDraft\(localStorage, draftAt\)/);
   assert.match(main, /readDraft\(localStorage, draftAt\)/);
-  // never a save of its own: only save() calls saveDev
-  assert.equal(main.match(/source\.saveDev\(/g).length, 1);
+  // never a save of its own: only save() calls dataLayer.save
+  assert.equal(main.match(/dataLayer\.save\(/g).length, 1);
   assert.match(main, /offering = true;\s*openUnsavedEdits\(\{/);
   const failed = read('src/editor/svelte/SaveFailedModal.svelte');
   assert.match(failed, /role="alertdialog"/);

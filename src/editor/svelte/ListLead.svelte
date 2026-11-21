@@ -32,7 +32,8 @@
   import { ui } from './ui.svelte.js';
   import { PRESETS, cloneTemplate } from '../../widgets/list/presets.js';
   import { t } from '../../render/strings.js';
-  import { saveDev, templatesOp } from '../source.js';
+  import { templatesOp } from '../source.js';
+  import { dataLayer } from '../data/index.js';
   import { toast } from './toasts.svelte.js';
   import { setListCustom } from '../layout-ops.js';
   import Select from './Select.svelte';
@@ -192,7 +193,7 @@
       if (pending) note = `Saved as template ${res.id}: the List's switch is saved with the page`;
       else {
         const sent = { [g.file]: structuredClone(live.store.current[g.file]) };
-        await saveDev(sent);
+        await dataLayer.save(sent);
         live.store.markSaved([g.file], sent);
         toast(`Template “${res.data.name}” added and used (content/templates/${res.id}.json)`);
       }

@@ -13,7 +13,7 @@ test('after a save the footer says Saved until the next edit (F60)', () => {
 
 test("G16: Saved is set before markSaved, and the badge keeps Unsaved changes' width", () => {
   const main = readFileSync(new URL('../src/editor/main.js', import.meta.url), 'utf8');
-  const save = main.slice(main.indexOf('await source.saveDev(sent);'), main.indexOf('saves++;'));
+  const save = main.slice(main.indexOf('await dataLayer.save(sent);'), main.indexOf('saves++;'));
   assert.ok(save.indexOf('ui.saved = true;') < save.indexOf('store.markSaved('));
   const app = readFileSync(new URL('../src/editor/svelte/App.svelte', import.meta.url), 'utf8');
   assert.match(app, /min-width: 16ch; \/\/ "Unsaved changes"/);

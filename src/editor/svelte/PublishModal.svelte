@@ -14,7 +14,7 @@
   import { ui } from './ui.svelte.js';
   import { toast } from './toasts.svelte.js';
   import { closeModal, modal } from './modals.svelte.js';
-  import * as source from '../source.js';
+  import { dataLayer } from '../data/index.js';
   import { plural } from '../lib/format.js';
 
   // live: reactive store (live.svelte.js); actions: save({ quiet }), refreshStatus()
@@ -93,7 +93,7 @@
           throw new Error('Saving the unsaved edits failed, nothing was published.');
       }
       phase = 'Publishing…';
-      const res = await source.publish(message.trim());
+      const res = await dataLayer.publish(message.trim());
       result = { ok: res };
       toast(`Published ${res.short}`, {
         kind: 'ok',

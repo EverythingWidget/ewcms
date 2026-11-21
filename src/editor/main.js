@@ -55,9 +55,10 @@ import { popOrigin, pushOrigin } from './lib/template-origin.js';
 import { toast, undoToast } from './svelte/toasts.svelte.js';
 import { frameOr, within } from './lib/settle.js';
 import { createLive } from './svelte/live.svelte.js';
-import { connectMedia } from './svelte/media.svelte.js';
+import { connectMedia, media } from './svelte/media.svelte.js';
 import { createStore } from './store.js';
 import * as source from './source.js';
+import { dataLayer } from './data/index.js';
 import { createBridge } from './preview-runtime.js';
 import { labelFor } from './svelte/content-groups.js';
 import { plural } from './lib/format.js';
@@ -438,7 +439,7 @@ const pagesQueued = oneAtATime(async (body) => {
   let res;
   try {
     res = await source.pagesOp(body);
-    const { files } = await source.load();
+    const { files } = await loadSite();
     store.files(Object.fromEntries(res.created.map((f) => [f, files[f]])), res.removed);
     // links and redirects.json the op kept up to date: unsaved edits there stay on top
     const dirty = store.dirtyFiles();
@@ -500,10 +501,19 @@ function movedToast({ links = 0, added = [], broken = 0, pruned = [] }) {
     );
 }
 
-/** Saved-but-unpublished content changes (ui.pub), from /__editor/status. */
+/** The site's files from the data layer; takes its media and photo lists. */
+async function loadSite() {
+  const loaded = await dataLayer.load();
+  media.manifest = loaded.media || {};
+  media.photos = loaded.photos || {};
+  media.r2 = !!loaded.r2;
+  return loaded;
+}
+
+/** Saved-but-unpublished changes (ui.pub), from the data layer's status(). */
 async function refreshStatus() {
   try {
-    ui.pub = await source.status();
+    ui.pub = await dataLayer.status();
   } catch (err) {
     ui.pub = { error: err.message, files: [], ahead: 0 };
   }
@@ -958,7 +968,7 @@ async function save({ quiet = false } = {}) {
         dirty.some(routesFile) && routesKey(store.base) !== routesKey({ ...store.base, ...sent }),
       site: dirty.includes(SITE) && siteKey(store.base) !== siteKey({ ...store.base, ...sent }),
     });
-    await source.saveDev(sent);
+    await dataLayer.save(sent);
     // Saved first: markSaved emits, and the badge must not flash "Unsaved changes" (G16)
     ui.saved = true;
     store.markSaved(dirty, sent);
@@ -1012,7 +1022,7 @@ function onDiskChange({ content, external }) {
         let files;
         for (let tries = 0; tries < 3 && !files; tries++) {
           const before = saves;
-          const loaded = (await source.load()).files;
+          const loaded = (await loadSite()).files;
           if (before === saves && !ui.saving) files = loaded;
           else await new Promise((r) => setTimeout(r, 300));
         }
@@ -1074,7 +1084,7 @@ async function boot() {
   ui.status = 'Loading content…';
   let loaded;
   try {
-    loaded = await source.load();
+    loaded = await loadSite();
   } catch (err) {
     ui.loadError = err.message; // App shows it instead of the editor
     return;

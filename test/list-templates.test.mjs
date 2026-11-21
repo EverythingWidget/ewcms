@@ -310,7 +310,7 @@ test('the panel: a Template picker and Duplicate preset, in both modes, no shift
   assert.match(lead, /\.ll__dup \{\s*display: inline-grid;\s*> span \{\s*grid-area: 1 \/ 1;/);
   // the switch saved at once unless the page has other unsaved edits; else the note
   assert.match(lead, /const pending = live\.store\.dirtyFiles\(\)\.includes\(g\.file\)/);
-  assert.match(lead, /await saveDev\(sent\);\s*live\.store\.markSaved\(\[g\.file\], sent\)/);
+  assert.match(lead, /await dataLayer\.save\(sent\);\s*live\.store\.markSaved\(\[g\.file\], sent\)/);
   assert.match(lead, /Saved as template \$\{res\.id\}/);
   assert.match(lead, /'ll__note', !note && 'is-hidden'/);
   assert.match(lead, /templatesOp\(\{ op: 'add'/);
