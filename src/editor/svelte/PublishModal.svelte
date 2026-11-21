@@ -1,8 +1,9 @@
 <!--
-  Publish modal: what will be committed (the saved content files, plus the unsaved edits
-  when "Save first" is ticked), a commit message, then commit + push through the dev server
-  (it commits files in content/ only). Shows the result or the error; a failed push can be
-  retried. Mounted once in App.svelte, whose Publish buttons check the status first and then
+  Publish modal: what will be committed (every saved change in the site folder, grouped, plus
+  the unsaved edits when "Save first" is ticked), a commit message, then commit + push through
+  the data layer (src/editor/data/). Files Publish refuses (secrets, over 95 MB) are listed at
+  the top and Publish is off. Shows the result or the error (a conflict with its files); a
+  commit that wasn't pushed stays on this machine and can be pushed again. Mounted once in App.svelte, whose Publish buttons check the status first and then
   call openPublish() (modals.svelte.js).
 -->
 <script>
@@ -16,13 +17,14 @@
   import { closeModal, modal } from './modals.svelte.js';
   import { dataLayer } from '../data/index.js';
   import { plural } from '../lib/format.js';
+  import { defaultMessage, groupOfName } from '../lib/publish-list.js';
 
   // live: reactive store (live.svelte.js); actions: save({ quiet }), refreshStatus()
   let { live, actions } = $props();
 
   let dialog = $state();
   let textarea = $state();
-  let pub = $state(null); // /__editor/status when it opened
+  let pub = $state(null); // the data layer's status() when it opened
   let dirty = $state([]); // files with unsaved edits when it opened
   let edits = $state(0); // number of unsaved edits
   let saveFirst = $state(false);
@@ -33,10 +35,17 @@
   let result = $state(null); // { ok: response } or { error }
 
   const branch = $derived(pub?.branch || 'main');
-  // The files the commit will have: their names, and the list shown (saved files first,
-  // then the files with only unsaved edits).
+  // The files the commit will have: the content files' names, the other files, and the list
+  // shown (saved files first, then the files with only unsaved edits).
+  const others = $derived((pub?.files || []).filter((f) => !f.name));
+  const blocked = $derived(pub?.blocked || []);
   const names = $derived(
-    [...new Set([...(pub?.files || []).map((f) => f.name), ...(saveFirst ? dirty : [])])].sort(),
+    [
+      ...new Set([
+        ...(pub?.files || []).filter((f) => f.name).map((f) => f.name),
+        ...(saveFirst ? dirty : []),
+      ]),
+    ].sort(),
   );
   const listed = $derived([
     ...(pub?.files || []).map((f) => ({
@@ -50,17 +59,17 @@
       .filter((name) => !pub.files.some((p) => p.name === name))
       .map((name) => ({
         path: contentPath(name),
+        name,
+        group: groupOfName(name),
         status: 'modified',
         changes: changes(name),
         note: ' · unsaved, saved first',
       })),
   ]);
   const published = $derived(!!result?.ok);
-
-  const defaultMessage = (files) =>
-    files.length
-      ? `Content: update ${files.map((n) => n.replace(/^.*\//, '').replace(/\.json$/, '')).join(', ')} (visual editor)`
-      : '';
+  // files to commit (not only commits to push)
+  const toCommit = $derived(names.length + others.length);
+  const sentence = (text) => (/[.!?]$/.test(text) ? text : `${text}.`);
   const changes = (file) => live.store.changes(file).length;
 
   /** Shown (openPublish, after App.svelte refreshed ui.pub): what will be committed now. */
@@ -72,18 +81,19 @@
     touched = false;
     retry = '';
     result = null;
-    message = defaultMessage(names);
+    message = defaultMessage(names, others);
     await tick();
     textarea?.focus();
     textarea?.select();
   }
 
   function onSaveFirst() {
-    if (!touched) message = defaultMessage(names);
+    if (!touched) message = defaultMessage(names, others);
   }
 
   async function publish() {
-    if (names.length && !message.trim()) return textarea.focus();
+    if (blocked.length) return;
+    if (toCommit && !message.trim()) return textarea.focus();
     result = null;
     ui.publishing = true;
     try {
@@ -103,7 +113,7 @@
       ui.status = `Published ${res.short} · ${new Date().toLocaleTimeString()}`;
     } catch (err) {
       result = { error: err };
-      if (err.committed) {
+      if (err.kept) {
         // The commit exists locally: only the push is left.
         saveFirst = false;
         dirty = [];
@@ -111,7 +121,7 @@
         pub.ahead = Math.max(1, pub.ahead || 0);
         retry = 'Retry push';
       } else retry = 'Try again';
-      ui.status = err.committed ? `Commit ${err.short} not pushed` : 'Publish failed';
+      ui.status = err.kept ? `Commit ${err.short} not pushed` : 'Publish failed';
     } finally {
       phase = '';
       ui.publishing = false;
@@ -130,9 +140,20 @@
   <h3 class="modal__title">Publish to GitHub</h3>
   {#if pub}
     <p class="hint">
-      Commits the saved content changes in <b>one commit</b> and runs
-      <code>git push origin {branch}</code>. Only files in <code>content/</code> are committed.
+      Commits the saved changes in the site folder in <b>one commit</b>, brings in new commits from
+      GitHub, and runs <code>git push origin {branch}</code>. Files in
+      <code>.gitignore</code> are left out.
     </p>
+    {#if blocked.length && !published}
+      <div class="pub-hint pub-blocked">
+        <p>
+          Not published: {blocked.length === 1 ? 'this file' : 'these files'} must not go to GitHub.
+        </p>
+        <ul class="list">
+          {#each blocked as b (b.path)}<li><code>{b.path}</code> {b.reason}</li>{/each}
+        </ul>
+      </div>
+    {/if}
 
     {#if !published}
       {#if dirty.length}
@@ -141,7 +162,7 @@
           Save my {plural(edits, 'unsaved edit')} first and include {edits === 1 ? 'it' : 'them'}
         </label>
       {/if}
-      {#if names.length}<PubFiles files={listed} />{/if}
+      {#if toCommit}<PubFiles files={listed} />{/if}
       {#if pub.ahead}
         <p class="hint">
           Also pushes {plural(pub.ahead, 'earlier commit')} not on {pub.upstream ||
@@ -151,7 +172,7 @@
           {#each pub.unpushed || [] as c (c.hash)}<li><code>{c.hash}</code> {c.subject}</li>{/each}
         </ul>
       {/if}
-      {#if names.length}
+      {#if toCommit}
         <label class="tf">
           <span class="tf__label">Commit message</span>
           <textarea
@@ -179,17 +200,26 @@
       <p class="hint">
         {res.files?.length
           ? `Committed: ${res.files.join(', ')}`
-          : 'Pushed the earlier commits; there were no new content changes.'}
+          : 'Pushed the earlier commits; there were no new changes.'}
+        {#if res.pulled}Brought in the new commits from GitHub first.{/if}
       </p>
     {:else if result?.error}
       {@const err = result.error}
       <p class="error">
-        {err.committed ? `Committed locally as ${err.short}, but the push failed.` : err.message}
+        {err.kept ? `Commit ${err.short} is on your machine but not pushed.` : err.message}
       </p>
-      {#if err.committed}
+      {#if err.kept}
         <p class="hint">
-          {err.error}. The commit stays on your machine; Publish again to retry the push.
+          {sentence(err.error)}
+          {err.conflicts?.length
+            ? ''
+            : 'The commit stays on your machine; Publish again to retry the push.'}
         </p>
+      {/if}
+      {#if err.conflicts?.length}
+        <ul class="list commits">
+          {#each err.conflicts as c (c)}<li><code>{c}</code></li>{/each}
+        </ul>
       {/if}
       {#if err.hint}<p class="pub-hint">{err.hint}</p>{/if}
       {#if err.output}<pre class="pub-out">{err.output}</pre>{/if}
@@ -203,10 +233,10 @@
     {#if pub && !published}
       <Button
         variant="primary"
-        disabled={!!phase || (!names.length && !pub.ahead)}
+        disabled={!!phase || !!blocked.length || (!toCommit && !pub.ahead)}
         onclick={publish}
       >
-        {phase || retry || (names.length ? 'Publish' : `Push ${plural(pub.ahead, 'commit')}`)}
+        {phase || retry || (toCommit ? 'Publish' : `Push ${plural(pub.ahead, 'commit')}`)}
       </Button>
     {/if}
   </footer>
@@ -269,6 +299,19 @@
     border-radius: var(--radius-lg);
     background: var(--red-300-a08);
     box-shadow: inset 0 0 0 1px var(--red-300-a25);
+  }
+
+  .pub-blocked {
+    margin: 0 0 var(--space-4);
+
+    p {
+      margin: 0 0 var(--space-2);
+      color: var(--c-error);
+    }
+
+    code {
+      color: var(--c-text);
+    }
   }
 
   .pub-out {

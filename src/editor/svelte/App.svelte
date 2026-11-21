@@ -215,7 +215,7 @@
         <Button
           size="small"
           variant="primary"
-          title="Commit all saved content changes in one commit and push to {branch}"
+          title="Commit all saved changes in the site folder in one commit and push to {branch}"
           disabled={ui.publishing || (!unpublished.length && !ahead && !live.changes)}
           onclick={publish}
         >
