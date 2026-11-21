@@ -7,7 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { parseHTML } from 'linkedom';
 import { loadContent } from '../src/cli/content.mjs';
-import { save } from '../src/editor/server/editor-server.mjs';
+import { save } from '../src/editor/server/local-data-layer.mjs';
 import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { moveAt, movedIndex } from '../src/editor/lib/reorder.js';

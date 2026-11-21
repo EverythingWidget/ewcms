@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { loadContent, writeFileAtomic } from '../src/cli/content.mjs';
-import { readContentFiles, save } from '../src/editor/server/editor-server.mjs';
+import { readContentFiles, save } from '../src/editor/server/local-data-layer.mjs';
 import { checkContent, parseContent } from '../src/render/validate.js';
 import { SITE_A } from './fixtures/index.mjs';
 
