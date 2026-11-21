@@ -298,11 +298,13 @@ src/
     overlay-links.js ← the link lines and gaps, a top circle dragged onto another widget's bottom one
     overlay-rows.js ← a Custom section's bottom edge dragged (its rows)
     reveal.js       ← reveal() and locate(): scroll into view when out of view, or Locate to its top
-    source.js       ← talks to the dev-server endpoints (load, save, status, publish)
+    data/           ← the data layer: createLocalDataLayer() loads, saves, checks the status and publishes through the dev server
+    source.js       ← the other dev-server calls (drafts, renders, page, template and media ops, uploads)
     svelte/         ← the editor UI (Svelte 5): panels, fields, modals
     lib/            ← small editor helpers (pointers, diff, format, show-value, dialog, editor-url)
     server/         ← Node editor endpoints, not the browser app
       editor-server.mjs ← dev-only: content / save / draft / render / status / upload / media / pages / publish (localhost only)
+      local-data-layer.mjs ← the data layer on disk: the content files, Save, git status and Publish
       local-upload.mjs  ← uploads without R2 keys: saved in media/, resized at once
       git-env.mjs       ← git's environment without a hook's GIT_DIR & co. (Publish)
       update.mjs        ← the editor's update notice: /__editor/update
@@ -1938,8 +1940,8 @@ details (files, commits not pushed, the last save).
 with Upload (see [Photos on Cloudflare R2](#photos-on-cloudflare-r2)). The selected photo shows
 its sizes, where the content uses it (click to go there) and its alt text. Opened from a field,
 **Use this photo** puts it in the field (one undo step). **Delete** is offered only for photos
-nothing uses: an R2 photo loses all its sizes, a local one its file in `media/` (Publish only
-commits `content/`, so commit that removal yourself). `&media=<key>` (and `&pick=<field>`)
+nothing uses: an R2 photo loses all its sizes, a local one its file in `media/` (the next
+Publish commits that removal). `&media=<key>` (and `&pick=<field>`)
 in the URL reopens it.
 
 **Refresh** keeps your place. The URL holds the page (its path), the tab, Menu/Footer and the open Sources item, so a shared link opens the same view:
@@ -2032,22 +2034,39 @@ These editor markers (`data-edit`, `data-edit-type`, `data-edit-inline`, `data-s
 - **Edits outside the editor** (your IDE, a `git checkout`) are picked up too: the preview
   reloads, and the editor takes the files on disk with your unsaved edits on top (a "Changed
   on disk" note; undo history starts over for that change).
-- **Publish** commits **all saved content changes in one commit** and pushes it, so you can
-  batch many edits into one publish. The dialog lists the changed files (status, number of
-  changes, `+/-` lines) and any earlier commits on the branch that aren't pushed yet, and asks for a
-  commit message. If you have unsaved edits it offers to **save them first** and include them.
-  It then runs `git add` + `git commit` for **only the changed content JSON files** (other
-  staged or modified files are never committed) and `git push origin <current branch>`. On
-  success it links to the commit on GitHub. If the push fails (e.g. git has no GitHub login on
-  this machine), the commit stays local, the error output is shown, and **Retry push** pushes it
-  later.
+- **Publish** commits **every saved change in the site folder in one commit** (content, theme,
+  photos in `media/`, other files) and pushes it, so you can batch many edits into one publish.
+  Files in the site's `.gitignore` (`.env*`, `node_modules`, `dist`, `public/media`, …) are
+  never committed. The dialog lists the changed files grouped (content, sources, templates,
+  theme, media, other) with the number of changes, `+/-` lines or the size, and any earlier
+  commits on the branch that aren't pushed yet, and asks for a commit message. If you have
+  unsaved edits it offers to **save them first** and include them.
+  - It refuses, with nothing staged, when a changed file looks like a secret (`.env`, `.env.*`
+    but `.env.example`, `.dev.vars`, `*.pem`, `*.key`, `id_rsa*`, `*.p12`) or is over 95 MB
+    (add it to `.gitignore` or remove it), when HEAD is detached, a rebase, merge or
+    cherry-pick is in progress, or git has no name and email (`git config user.name`/`user.email`).
+  - Then `git add -A -- .` and `git commit -- .` (the site folder only, even inside a bigger
+    repo; hooks run). If the commit fails (e.g. a hook), only what Publish staged is unstaged.
+  - With an upstream it runs `git fetch origin <branch>` and, when GitHub has new commits,
+    `git rebase origin/<branch>` (your unpushed commits on top). If GitHub changed the same
+    files, the rebase is aborted and the dialog lists them: your commit stays on this machine;
+    resolve it in the terminal (`git pull --rebase`) and Publish again.
+  - Then `git push origin <current branch>` (`-u` for a branch not on origin yet). On success it
+    links to the commit on GitHub. If the fetch or push fails (e.g. git has no GitHub login on
+    this machine), the commit stays local, the error output is shown, and **Retry push** pushes
+    it later without a new commit.
+  - It never forces a push, skips hooks, stashes, resets, cleans, edits `.gitignore` or
+    resolves a conflict, and runs one publish at a time.
 - The panel footer always shows how many **saved changes aren't published** yet (and commits
   not pushed).
 
 The endpoints live in `src/editor/server/editor-server.mjs` (`/__editor/content`, `/save`, `/draft`,
-`/render`, `/status`, `/upload`, `/media`, `/pages`, `/publish`). They exist only on the dev server, accept **only requests from this machine**
-(loopback address, localhost `Host`, same-origin `Origin`), and only touch the content files in
-those folders. The GitHub links come from the git remote, else from `ewcms.config.mjs` `repo`. Git runs without a shell and never prompts in the terminal, so pushing
+`/render`, `/status`, `/upload`, `/media`, `/pages`, `/publish`). Load, save, status and publish
+go through the **data layer**: `createLocalDataLayer()` in `src/editor/data/` in the editor, and
+in `src/editor/server/local-data-layer.mjs` on the dev server (the site's files and git repo),
+the same `load()`, `save(files)`, `status()` and `publish(message)` in both. They exist only on the dev server, accept **only requests from this machine**
+(loopback address, localhost `Host`, same-origin `Origin`); Save only writes the content files in
+those folders, and Publish only commits the site folder. The GitHub links come from the git remote, else from `ewcms.config.mjs` `repo`. Git runs without a shell and never prompts in the terminal, so pushing
 needs a working git login for GitHub on the machine running `npm run dev` (e.g. `gh auth login`
 then `gh auth setup-git`).
 

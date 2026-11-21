@@ -9,15 +9,16 @@
  *   POST /__editor/draft    → this tab's unsaved edits ({ files, session }), which its preview's
  *                             pages (?draft=<session>) render from (draftOp); cleared on Save
  *   POST /__editor/render   → sections of a page rendered from those edits (renderOp)
- *   GET  /__editor/status   → saved-but-unpublished content files (git status vs HEAD) and
- *                             commits not pushed yet
+ *   GET  /__editor/status   → saved-but-unpublished files in the site folder (git status vs
+ *                             HEAD), grouped, the ones Publish refuses, and commits not pushed
  *   POST /__editor/upload   → one photo (the raw bytes, its Content-Type, X-Filename): resized,
  *                             stored in Cloudflare R2 and added to photos.json
  *                             (src/cli/r2.mjs), answers { key, photo }; without the R2 keys
  *                             it is saved in media/ and resized there (src/editor/server/local-upload.mjs),
  *                             answers { key, local: true, media }
- *   POST /__editor/publish  → { message }: git add + commit ONLY the changed content files in
- *                             one commit, then git push origin <current branch>
+ *   POST /__editor/publish  → { message }: commit every changed file in the site folder in
+ *                             one commit, fetch + rebase on origin's new commits, then git push
+ *                             origin <current branch> (local-data-layer.mjs publish)
  *   POST /__editor/pages    → { op, ... }: add, rename or delete pages (pagesOp)
  *   POST /__editor/templates → { op: 'add', data }: a new item template (content/templates/
  *                             t-<id>.json, Duplicate preset): answers { id, file, data }
