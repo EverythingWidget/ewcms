@@ -62,15 +62,16 @@ test('publish: a git mv rename commits the new path and the removal of the old o
     'content/en/pages/index.json',
     'notes.txt',
   ]);
-  // the staged non-content change stays staged, out of the commit
-  assert.equal(git(root, 'status', '--porcelain'), 'M  notes.txt');
+  // the staged change outside content/ is in the commit too: nothing left
+  assert.equal(git(root, 'status', '--porcelain'), '');
+  assert.match(git(origin, 'show', 'main:notes.txt'), /staged, not content/);
 });
 
 test('status and publish: the shared files at the content root (content/header.json)', async () => {
   const { root, origin } = repo();
   fs.writeFileSync(path.join(root, 'content/header.json'), '{ "version": 1, "header": [] }\n');
   fs.writeFileSync(path.join(root, 'content/site.json'), '{ "version": 1, "name": "S" }\n');
-  // not content: a stray file next to them
+  // not content, a stray file next to them: published too
   fs.writeFileSync(path.join(root, 'content/notes.json'), '{}\n');
   const s = await siteStatus(root);
   assert.deepEqual(
@@ -85,5 +86,5 @@ test('status and publish: the shared files at the content root (content/header.j
   assert.equal(r.status, 200, JSON.stringify(r.body));
   const files = git(origin, 'ls-tree', '-r', '--name-only', 'main').split('\n');
   assert.ok(files.includes('content/header.json') && files.includes('content/site.json'));
-  assert.ok(!files.includes('content/notes.json'));
+  assert.ok(files.includes('content/notes.json'));
 });

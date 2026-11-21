@@ -439,77 +439,191 @@ function pushHint(output) {
   return '';
 }
 
-/** Commit every changed content file in one commit and push the branch. */
+const split0 = (out) => out.split('\0').filter(Boolean);
+
+/** Why Publish can't start in this repo state (detached, mid-rebase/merge), or ''. */
+async function repoStateProblem(root, s) {
+  if (s.detached) return 'HEAD is detached: check out a branch before publishing.';
+  for (const p of ['rebase-merge', 'rebase-apply', 'MERGE_HEAD', 'CHERRY_PICK_HEAD']) {
+    const r = await git(root, ['rev-parse', '--git-path', p]);
+    if (r.ok && fs.existsSync(path.resolve(root, r.stdout.trim())))
+      return 'A rebase, merge or cherry-pick is in progress: finish or abort it in the terminal first.';
+  }
+  return '';
+}
+
+/** The commit author git will use: from the environment or git config. Publish never sets one. */
+async function hasIdentity(root) {
+  const env = process.env;
+  const config = async (key) => (await git(root, ['config', key])).stdout.trim();
+  const name = env.GIT_AUTHOR_NAME || (await config('user.name'));
+  const email = env.GIT_AUTHOR_EMAIL || (await config('user.email'));
+  return !!(name && email);
+}
+
+const IDENTITY_HINT =
+  'In this repo\'s terminal run `git config user.name "Your Name"` and `git config user.email "you@example.com"`, then click Publish again.';
+
+/**
+ * Commit every changed file in the site folder in one commit, bring in origin's new commits
+ * (fetch + rebase, aborted on a conflict) and push the branch. Refuses (nothing staged) when a
+ * changed file is blocked, the repo is mid-rebase or detached, or there is no identity. A failed
+ * commit unstages only what Publish staged; after the commit, a failure keeps it (a later
+ * Publish pushes it). Never forces, skips hooks, stashes, resets or cleans.
+ */
 export async function publish(root, message) {
-  const all = await siteStatus(root);
-  const s = { ...all, files: all.files.filter((f) => f.name) };
+  const s = await siteStatus(root);
   if (!s.git) return { status: 400, body: { error: s.error } };
-  if (s.detached)
+  const problem = await repoStateProblem(root, s);
+  if (problem) return { status: 409, body: { error: problem } };
+  if (s.blocked.length)
     return {
       status: 409,
-      body: { error: 'HEAD is detached: check out a branch before publishing.' },
+      body: {
+        error: `Not published: ${s.blocked.map((b) => `${b.path} ${b.reason}`).join('; ')}.`,
+        blocked: s.blocked,
+      },
     };
   if (!s.files.length && !s.ahead)
     return {
       status: 400,
-      body: { error: 'Nothing to publish: no saved content changes and no unpushed commits.' },
+      body: { error: 'Nothing to publish: no saved changes and no unpushed commits.' },
     };
 
   let committed = false;
   const steps = [];
+  const files = s.files.map((f) => f.path);
+  const run = async (args, opts) => {
+    const r = await git(root, args, opts);
+    steps.push({
+      cmd: `git ${args.map((a) => (a === message ? '<message>' : a)).join(' ')}`,
+      ...r,
+    });
+    return r;
+  };
   if (s.files.length) {
     const msg = String(message || '').trim();
     if (!msg) return { status: 400, body: { error: 'A commit message is required.' } };
     if (msg.length > 5000) return { status: 400, body: { error: 'Commit message is too long.' } };
-    const paths = s.files.map((f) => f.path);
-    // literal: "[person]/index.json" is not a glob here
-    const specs = paths.map((p) => `:(literal)${p}`);
-    // Deleted files need no add (the commit below takes their removal; the old path of a
-    // `git mv` isn't known to git add at all).
-    const present = s.files.filter((f) => f.status !== 'deleted').map((f) => f.path);
-    if (present.length) {
-      const add = await git(root, ['add', '--', ...present.map((p) => `:(literal)${p}`)]);
-      steps.push({ cmd: `git add -- ${present.join(' ')}`, ...add });
-      if (!add.ok)
-        return { status: 500, body: { error: 'git add failed', output: add.output, steps } };
+    if (!(await hasIdentity(root)))
+      return {
+        status: 400,
+        body: {
+          error: 'Git has no name and email for the commit on this machine.',
+          hint: IDENTITY_HINT,
+        },
+      };
+    message = msg;
+    // what was staged before: a failed commit unstages only what Publish added
+    const before = new Set(
+      split0((await git(root, ['diff', '--cached', '--name-only', '-z', '--', '.'])).stdout),
+    );
+    const unstage = async () => {
+      const staged = split0(
+        (await git(root, ['diff', '--cached', '--name-only', '-z', '--', '.'])).stdout,
+      );
+      const ours = staged.filter((p) => !before.has(p));
+      if (ours.length)
+        await git(root, ['reset', '-q', '--', ...ours.map((p) => `:(top,literal)${p}`)]);
+    };
+    // the site folder only, following .gitignore (never -f)
+    const add = await run(['add', '-A', '--', '.']);
+    if (!add.ok) {
+      await unstage();
+      return { status: 500, body: { error: 'git add failed', output: add.output, steps } };
     }
-    // With pathspecs, `git commit` commits ONLY these paths, even if other files are staged.
-    const commit = await git(root, ['commit', '-m', msg, '--', ...specs]);
-    steps.push({ cmd: `git commit -m <message> -- ${paths.join(' ')}`, ...commit });
-    if (!commit.ok)
+    // `-- .`: only the site folder is committed, even if something outside it is staged
+    const commit = await run(['commit', '-m', msg, '--', '.']);
+    if (!commit.ok) {
+      await unstage();
       return { status: 500, body: { error: 'git commit failed', output: commit.output, steps } };
+    }
     committed = true;
   }
-  const hash = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
-  const url = `${s.repoUrl}/commit/${hash}`;
-  const push = await git(root, ['push', 'origin', s.branch], { timeout: 120_000 });
-  steps.push({ cmd: `git push origin ${s.branch}`, ...push });
-  const files = s.files.map((f) => f.path);
-  if (!push.ok) {
+
+  const head = async () => (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
+  const kept = async (status, body) => {
+    const hash = await head();
     return {
-      status: 502,
+      status,
       body: {
-        error: push.timedOut ? 'git push timed out' : 'git push failed',
-        output: push.output,
-        hint: pushHint(push.output),
+        ...body,
         committed,
+        // a commit is on this machine, not on origin yet: Publish again pushes it
+        kept: true,
         hash,
         short: hash.slice(0, 7),
-        url,
+        url: `${s.repoUrl}/commit/${hash}`,
         branch: s.branch,
         files,
+        steps,
       },
     };
+  };
+
+  // Bring in origin's new commits first: only this machine's unpushed commits are replayed.
+  let pulled = false;
+  if (s.upstream) {
+    const fetch = await run(['fetch', 'origin', s.branch], { timeout: 60_000 });
+    if (!fetch.ok)
+      return kept(502, {
+        error: fetch.timedOut ? 'git fetch timed out' : 'git fetch failed',
+        output: fetch.output,
+        hint: pushHint(fetch.output),
+      });
+    const behind =
+      Number(
+        (await git(root, ['rev-list', '--count', `HEAD..origin/${s.branch}`])).stdout.trim(),
+      ) || 0;
+    if (behind) {
+      const dirty = await git(root, ['status', '--porcelain=v1', '-z', '--untracked-files=no']);
+      if (split0(dirty.stdout).length)
+        return kept(409, {
+          error: `Files changed in the repo while publishing, so GitHub's ${behind} new ${behind === 1 ? 'commit' : 'commits'} could not be brought in.`,
+          hint: 'Your commit is kept on this machine. Run `git pull --rebase` in the terminal, then click Publish again.',
+          output: dirty.stdout.replace(/\0/g, '\n').trim(),
+        });
+      const rebase = await run(['rebase', `origin/${s.branch}`], { timeout: 60_000 });
+      if (!rebase.ok) {
+        const conflicts = split0(
+          (await git(root, ['diff', '--name-only', '--diff-filter=U', '-z'])).stdout,
+        );
+        await run(['rebase', '--abort']);
+        return kept(409, {
+          error: `GitHub has changes to the same files: ${conflicts.join(', ') || 'see the output'}.`,
+          hint: 'Your commit is kept on this machine: resolve it in the terminal (git pull --rebase) or ask the developer.',
+          conflicts,
+          output: rebase.output,
+        });
+      }
+      pulled = true;
+    }
   }
+
+  // a branch with no upstream yet: -u sets origin/<the same branch>
+  const tracked = (await git(root, ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']))
+    .ok;
+  const push = await run(['push', ...(tracked ? [] : ['-u']), 'origin', s.branch], {
+    timeout: 120_000,
+  });
+  if (!push.ok)
+    return kept(502, {
+      error: push.timedOut ? 'git push timed out' : 'git push failed',
+      output: push.output,
+      hint: pushHint(push.output),
+      pulled,
+    });
+  const hash = await head();
   return {
     status: 200,
     body: {
       ok: true,
       committed,
+      pulled,
       pushed: true,
       hash,
       short: hash.slice(0, 7),
-      url,
+      url: `${s.repoUrl}/commit/${hash}`,
       branch: s.branch,
       files,
       output: push.output,

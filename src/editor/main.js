@@ -513,9 +513,7 @@ async function loadSite() {
 /** Saved-but-unpublished changes (ui.pub), from the data layer's status(). */
 async function refreshStatus() {
   try {
-    const pub = await dataLayer.status();
-    // Publish commits content files only (for now): list just those
-    ui.pub = { ...pub, files: pub.files.filter((f) => f.name) };
+    ui.pub = await dataLayer.status();
   } catch (err) {
     ui.pub = { error: err.message, files: [], ahead: 0 };
   }
