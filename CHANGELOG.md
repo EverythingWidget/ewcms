@@ -4,9 +4,9 @@ Releases are tagged `vX.Y.Z` on main; a site pins one in its `package.json`
 (`"ewcms": "github:EverythingWidget/ewcms#vX.Y.Z"`). Breaking changes are marked **Breaking** and
 say what a site must do before it bumps its pin.
 
-## Unreleased
+## 0.11.0 (2026-11-23)
 
-### Breaking: what a site must do before bumping
+### Breaking: what a site must do before bumping to 0.11.0
 
 - **Breaking: Album (the item) (`album`) is gone.** Use a List (`list`) with a From URL source
   and a template (`"config": { "template": "preset:plain", "columns": "1" }`, or a site template
@@ -46,6 +46,15 @@ say what a site must do before it bumps its pin.
   update's steps, or Up to date, then what ewcms is and the engine the site pins. Later closes
   it and takes the highlight off for this visit. The footer is Desktop | Phone (and undo, redo).
   `GET /__editor/update` also answers the pin (`pin`).
+- **Publish commits every saved change in the site folder** (content, theme, `media/`, other
+  files), not only content JSON; `.gitignore`d files stay out. It refuses, with nothing staged,
+  secret-looking files (`.env*` but `.env.example`, `.dev.vars`, `*.pem`, `*.key`, `id_rsa*`,
+  `*.p12`), files over 95 MB, a detached HEAD, a rebase or merge in progress, and a missing git
+  name/email. It brings in GitHub's new commits first (fetch + rebase; on a conflict the rebase is
+  aborted and the commit kept), then pushes (`-u` for a new branch). Never forced. The Publish
+  window lists the files grouped (content, sources, templates, theme, media, other) and the
+  refused ones. Load, save, status and publish go through the data layer (`src/editor/data/`,
+  `src/editor/server/local-data-layer.mjs`).
 
 ## 0.10.0 (2026-11-17)
 
