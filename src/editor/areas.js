@@ -19,9 +19,9 @@
  *   parts     (optional) rows the area's panel lists at its top, each { id, label, subtitle,
  *             status }: a 'soon' one shows as the areas' do (Theme's Fonts and styles)
  * Pages holds the site parts (Header, Footer) and every page, Templates the item templates,
- * Theme the look (Fonts and styles is still Coming soon), Animations the default timing,
- * the Animations library and the page entrance, Site settings what is the same on every
- * page, redirects too.
+ * Theme the look (Type and Layout; Fonts and styles is still Coming soon), Animations the
+ * default timing, the Animations library and the page entrance, Site settings what is the
+ * same on every page, redirects too.
  * (The components and windows load on demand: this file stays plain data for persist.js and
  * the tests.)
  */
@@ -67,10 +67,10 @@ export const AREAS = [
     id: 'theme',
     label: 'Theme',
     icon: 'palette',
-    subtitle: () => 'Fonts and styles',
+    subtitle: () => 'Type, layout, fonts and styles',
     status: 'ready',
     opens: { panel: () => import('./svelte/ThemePanel.svelte') },
-    // the theme's own look as a form; until it is built, type stays in Site settings
+    // the theme's own look as a form; Fonts and styles is still Coming soon
     parts: [
       {
         id: 'fonts-styles',
@@ -100,7 +100,7 @@ export const AREAS = [
     id: 'site-settings',
     label: 'Site settings',
     icon: 'gear',
-    subtitle: () => 'Name, SEO, forms, type and redirects',
+    subtitle: () => 'Name, SEO, forms and redirects',
     status: 'ready',
     opens: { panel: () => import('./svelte/SiteSettingsPanel.svelte') },
   },
@@ -139,7 +139,8 @@ export const TEMPLATES_PANEL = 'templates';
  * Old names, the one table: an old ui.panel value (a link's tab, a session from before a
  * rename) and the area it is now. Everything that follows a rename reads it (persist.js):
  *   panelOf(value)      a link's ?tab= and a session's panel
- *   sectionKeyOf(key)   a session's open/closed section keys ("settings:seo" is "site-settings:seo")
+ *   sectionKeyOf(key)   a session's open/closed section keys ("settings:seo" is "site-settings:seo";
+ *                       "site-settings:type" is "theme:type")
  *   MOVED_OUT           what left an old area for another one: an old link's &animation= on
  *                       ?tab=settings opens Animations (its library was in Settings)
  */
@@ -148,14 +149,21 @@ export const PANEL_ALIASES = { settings: 'site-settings' };
 /** Old area -> { a URL parameter of what moved out: the area it is in now }. */
 export const MOVED_OUT = { settings: { animation: 'animations' } };
 
+/** A section key that left its old area for another one (Type and Layout moved to Theme). */
+export const SECTION_ALIASES = {
+  'site-settings:type': 'theme:type',
+  'site-settings:layout': 'theme:layout',
+};
+
 /** A ui.panel value as it is now: an alias resolved, anything else as is. */
 export const panelOf = (value) => PANEL_ALIASES[value] ?? value;
 
-/** A section key ("<area>:<section>", ui.sections) as it is now: its area's alias resolved. */
+/** A section key ("<area>:<section>", ui.sections) as it is now: its area's and section's aliases resolved. */
 export const sectionKeyOf = (key) => {
   const at = key.indexOf(':');
   const area = at > 0 && PANEL_ALIASES[key.slice(0, at)];
-  return area ? area + key.slice(at) : key;
+  const next = area ? area + key.slice(at) : key;
+  return SECTION_ALIASES[next] ?? next;
 };
 
 /** The area `id` (its record), or undefined. */

@@ -14,9 +14,10 @@
                 (AreaCard.svelte: an icon, the name, a short line; a click opens it)
     Not linked  every page not in the menu (All), or the ones under this folder (This folder;
                 no filter at the top: every page is under /), in the site's order
-  The Theme area (area 'theme', ThemePanel.svelte) is this list's other face: its head (Back
-  to areas) and Fonts and styles (Coming soon). The Templates area (area 'templates',
-  TemplatesPanel.svelte) is the item templates (open, delete), in the same rows.
+  The Theme area (area 'theme', ThemePanel.svelte) uses this list for Fonts and styles
+  (Coming soon); Type and Layout live in ThemePanel, which draws the area head. The
+  Templates area (area 'templates', TemplatesPanel.svelte) is the item templates (open,
+  delete), in the same rows.
   The whole row drags (the path no longer grabs the pointer: G18): in the menu list to another
   place (the menu's order); from it into Not linked (out of the menu); from Not linked into it
   (into the menu there). Remove from menu does the same, and does not delete the page. The row in hand
@@ -71,8 +72,10 @@
   import { SITE_PARTS } from '../lib/site-parts.js';
 
   // live: reactive store (live.svelte.js); actions: pickTarget, pagesOp, setPanel (main.js);
-  // area: 'pages' (the pages, Header and Footer), 'theme' (Fonts and styles) or 'templates' (the item templates)
-  let { live, actions, area = 'pages' } = $props();
+  // area: 'pages' (the pages, Header and Footer), 'theme' (Fonts and styles; Type and Layout
+  // are in ThemePanel) or 'templates' (the item templates). showHead: false when the area
+  // panel already draws AreaHead (Theme).
+  let { live, actions, area = 'pages', showHead = true } = $props();
   const theme = $derived(area === 'theme');
   const templatesArea = $derived(area === 'templates');
   // the area's own rows at its top (its record's parts: Theme's Fonts and styles)
@@ -657,7 +660,7 @@
   <!-- in a folder: the page head's square ←, the path as the name, "Back to /parent/", a
        square +; at the top: the area's head (← Back to areas, "Pages") and the same + -->
   {#if area !== 'pages'}
-    <AreaHead id={area} {actions} />
+    {#if showHead}<AreaHead id={area} {actions} />{/if}
   {:else if level}
     <div class="pl-folder">
       <BackHead

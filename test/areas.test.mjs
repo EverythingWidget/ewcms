@@ -1,7 +1,7 @@
 // The editor's areas (src/editor/areas.js, AreaList.svelte): one list, the single place each
 // part of the site opens from; no top tabs, no Sources / Media in the footer; the areas not
 // built yet disabled ("Coming soon"); Templates holds the item templates, Theme the look
-// (Fonts and styles is still Coming soon), Animations the timing, the library and the page entrance.
+// (Type and Layout; Fonts and styles is still Coming soon), Animations the timing, the library and the page entrance.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -62,6 +62,11 @@ test('the areas, in order: Pages, Media, Sources, Theme, Templates, Animations, 
   assert.equal(sectionKeyOf('site-settings:seo'), 'site-settings:seo');
   assert.equal(sectionKeyOf('animations:entrance'), 'animations:entrance');
   assert.equal(sectionKeyOf('settings'), 'settings');
+  // Type and Layout moved from Site settings to Theme (an old session key follows)
+  assert.equal(sectionKeyOf('site-settings:type'), 'theme:type');
+  assert.equal(sectionKeyOf('site-settings:layout'), 'theme:layout');
+  assert.equal(sectionKeyOf('settings:type'), 'theme:type');
+  assert.equal(sectionKeyOf('theme:type'), 'theme:type');
   for (const old of Object.keys(MOVED_OUT)) assert.ok(PANEL_ALIASES[old], old);
   assert.equal(panelOf('pages'), 'pages');
   assert.equal(areaOf('nope'), undefined);
@@ -97,7 +102,8 @@ test("each area's second line says what it holds, counted", () => {
   assert.equal(s('pages'), 'Site parts and 5 pages');
   assert.equal(s('media'), '35 photos');
   assert.equal(s('sources'), '3 sources, 10 items');
-  assert.equal(s('theme'), 'Fonts and styles');
+  assert.equal(s('theme'), 'Type, layout, fonts and styles');
+  assert.equal(s('site-settings'), 'Name, SEO, forms and redirects');
   assert.equal(s('templates'), '7 templates');
   assert.equal(areaOf('templates').subtitle({ templates: 1 }), '1 template');
   assert.equal(areaOf('media').subtitle({}), '0 photos');
@@ -289,6 +295,7 @@ test('every area but the list has the head back to it (AreaHead: ← Back to are
     src('svelte/SiteSettingsPanel.svelte'),
     /<AreaHead id="site-settings" \{actions\} \/>/,
   );
+  assert.match(src('svelte/ThemePanel.svelte'), /<AreaHead id="theme" \{actions\} \/>/);
 });
 
 test('Pages: the menu, then Site parts (Header, Footer), then Not linked; no empty icon column', () => {
@@ -310,7 +317,7 @@ test('Pages: the menu, then Site parts (Header, Footer), then Not linked; no emp
   );
 });
 
-test("Theme: Fonts and styles Coming soon; a template's ← and Done come back to Templates", () => {
+test("Theme: Type and Layout, Fonts and styles Coming soon; a template's ← and Done come back to Templates", () => {
   assert.match(
     src('svelte/PageHead.svelte'),
     /if \(isItemTemplate\) return actions\.setPanel\(TEMPLATES_PANEL\);/,
@@ -320,7 +327,7 @@ test("Theme: Fonts and styles Coming soon; a template's ← and Done come back t
     /if \(ui\.target\?\.kind === 'item-template'\) actions\.setPanel\(TEMPLATES_PANEL\);/,
   );
   const list = src('svelte/PagesList.svelte');
-  // Fonts and styles: Theme's record's part, status 'soon' (type stays in Site settings)
+  // Fonts and styles: Theme's record's part, status 'soon' (Type and Layout are in ThemePanel)
   assert.deepEqual(areaOf('theme').parts, [
     { id: 'fonts-styles', label: 'Fonts and styles', subtitle: "The theme's look", status: 'soon' },
   ]);
@@ -333,18 +340,24 @@ test("Theme: Fonts and styles Coming soon; a template's ← and Done come back t
   assert.equal(TEMPLATES_PANEL, 'templates');
   // templates are their own area, not listed in Theme
   assert.match(src('svelte/TemplatesPanel.svelte'), /<PagesList \{live\} \{actions\} area="templates" \/>/);
-  assert.match(src('svelte/ThemePanel.svelte'), /<PagesList \{live\} \{actions\} area="theme" \/>/);
+  assert.match(src('svelte/ThemePanel.svelte'), /<PagesList \{live\} \{actions\} area="theme" showHead=\{false\} \/>/);
   assert.doesNotMatch(src('svelte/ThemePanel.svelte'), /data-templates|head\('Templates'/);
+  const theme = src('svelte/ThemePanel.svelte');
+  for (const title of ['Type', 'Layout']) assert.match(theme, new RegExp(`title="${title}"`), title);
+  assert.match(theme, /key="theme:type"/);
+  assert.match(theme, /key="theme:layout"/);
+  assert.doesNotMatch(theme, /site-settings:(type|layout)/);
 });
 
 test('Animations: Motion (timing, library) and the Page entrance; Site settings keeps the rest', () => {
   const anim = src('svelte/AnimationsPanel.svelte');
   assert.ok(anim.indexOf('<MotionSettings') < anim.indexOf('title="Page entrance"'));
   const settings = src('svelte/SiteSettingsPanel.svelte');
-  for (const title of ['Name & Details', 'SEO', 'Forms', 'Layout', 'Type', 'Photos'])
+  for (const title of ['Name & Details', 'SEO', 'Forms', 'Photos'])
     assert.match(settings, new RegExp(`title="${title}"`), title);
   assert.match(settings, /<RedirectSettings \{live\} \/>/);
   assert.doesNotMatch(settings, /MotionSettings|Page entrance"|EntranceCurtain/);
+  assert.doesNotMatch(settings, /title="Layout"|title="Type"/);
   assert.match(src('svelte/MotionSettings.svelte'), /key="animations:motion"/);
 });
 

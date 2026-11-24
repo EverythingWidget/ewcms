@@ -179,7 +179,7 @@
 
 {#snippet spaceTip()}<b>Space above this section</b>: a number of grid rows of padding above
   this section (the section's own square cells). Empty: the site default (<b>Space between
-  sections</b> in Site settings). 0 means none. The first visible section of a page does not
+  sections</b> in Theme). 0 means none. The first visible section of a page does not
   use it (it already starts under the header). The first footer section does.{/snippet}
 
 <!-- Name (no label: its placeholder says it; its #anchor under it) the whole row; then Height

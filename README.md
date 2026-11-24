@@ -524,14 +524,14 @@ every section is a grid of **widgets** (`src/render/layout/`):
   renders it hidden (so the switch shows it again at once). A section has **no space above or below**: the
   space between sections is empty rows (cells: a widget placed lower leaves rows above it), so
   it scales with the width like everything else (the side margins, `--pad`, stay).
-- **Contained width** (`site.json` `"layout": { "containedCols": 115 }`, Site settings › Layout, 60–120):
+- **Contained width** (`site.json` `"layout": { "containedCols": 115 }`, Theme › Layout, 60–120):
   a contained section is that many columns of the full-width grid's cell (window width / 120)
   wide, centred, and never nearer the window's edges than the side margins (`--pad`). Its
   content is still the 120-column grid, its cells smaller, so widgets keep their columns and a
   narrower setting scales the layout down like a narrower window (rather than N columns of the
   full-width cell, which would cut off widgets placed past column N). The default, 115, is the
   look before the setting (up to 1920px the margins are the narrower; wider, 115/120 of the
-  width). Site settings shows the resulting px at 1280, 1366, 1440, 1536 and 1920 wide, and the
+  width). Theme › Layout shows the resulting px at 1280, 1366, 1440, 1536 and 1920 wide, and the
   preview follows as you type. Phones: the full 60-column grid inside the side margins. On the
   page it is `--contain` on `:root` (only when not the default), read by `_layout.scss`
   (`--cpad`); `src/render/layout/contain.js`.
@@ -617,7 +617,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
   `_tokens.scss`: title 19, heading 3, subheading 2, statement 5, paragraph 1.4, label 1,
   small 1.05); its own factor scales that to the width, so it is only a starting point.
 
-  **Type scale** (`site.json` `type`, Site settings › **Type**; `src/render/layout/type.js`): each
+  **Type scale** (`site.json` `type`, Theme › **Type**; `src/render/layout/type.js`): each
   style's usual font size grows with the window between `min` and `max` (px; equal: fixed),
   with a line height `line` (× the size): `{ "heading": { "min": 38, "max": 104, "line": 0.92 } }`.
   Each left out is the theme's (`--type-<style>-min`, `-max`, `-lh`: the site's
@@ -1758,9 +1758,10 @@ the panel (`ui.panel`: `pages`, `theme`, `animations`, `site-settings`; the list
 URL's `tab`; an old `tab=settings` is `site-settings`), under a head with ← **Back to areas**; Media, Sources and About open their window over the
 editor (half-width cards under the list, two a row). About: ewcms's version for the site or
 its update (see **Updates**), what ewcms is and the engine the site pins. An area not built yet (History; Theme's **Fonts and styles**) is disabled and says
-**Coming soon**. Theme holds the item templates (**Templates**), Animations the default timing,
+**Coming soon**. Theme holds **Type**, **Layout**, and **Fonts and styles** (Coming soon);
+Templates the item templates; Animations the default timing,
 the Animations library and the **Page entrance**; Site settings the rest (name, SEO, forms,
-layout, type, redirects, photos). **Edit** opens the page in the preview in Pages from any area.
+redirects, photos). **Edit** opens the page in the preview in Pages from any area.
 
 **Pages list** (the Pages area, ← on the page head; `PagesList.svelte`, `src/editor/lib/page-tree.js`):
 the site's pages one folder at a time, flat, on the navigation cards' colour (`--c-page-card`,
@@ -1886,7 +1887,7 @@ the rows it spans, the phone's in the phone preview) and its link (`follows <wid
 or free); links and gaps are dragged in the preview. Then **Size** as buttons (Auto | Aspect |
 Rows; with Aspect its ratio as buttons: 1:1 … 21:9 or Custom "w:h"), the layer with Down / Up (desktop) and **Reset phone** (phone), which removes every phone area
 and link of the section's widgets (they show their desktop layout halved again).
-**Site settings › Type** sets the text styles (fitted text keeps their proportions) (size and minimum, line height,
+**Theme › Type** sets the text styles (fitted text keeps their proportions) (size and minimum, line height,
 tracking; the preview follows as you type).
 
 **Buttons:** action buttons (Save, Publish, Delete, Add, …) are pills. Utility toggles and tools

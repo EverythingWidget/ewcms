@@ -110,9 +110,9 @@ test('the first visible page section keeps --nav-h; later sections and the foote
   assert.doesNotMatch(css, /\.site-footer[^{]*padding-top: var\(--nav-h\)/);
 });
 
-test('the editor labels: Site settings and the section popup; the keys are sectionSpace', () => {
+test('the editor labels: Theme › Layout and the section popup; the keys are sectionSpace', () => {
   const site = readFileSync(
-    new URL('../src/editor/svelte/SiteSettingsPanel.svelte', import.meta.url),
+    new URL('../src/editor/svelte/ThemePanel.svelte', import.meta.url),
     'utf8',
   );
   const section = readFileSync(
@@ -124,6 +124,7 @@ test('the editor labels: Site settings and the section popup; the keys are secti
   assert.match(site, /layout\/sectionSpace/);
   assert.match(site, /layout\/sectionSpacePhone/);
   assert.match(section, /label="Space above this section"/);
+  assert.match(section, /<b>Space between\s*sections<\/b> in Theme/);
   assert.match(section, /sectionSpacePhone/);
   assert.match(section, /Reset space \(follow the site\)/);
   assert.doesNotMatch(site, /spaceAbove/);

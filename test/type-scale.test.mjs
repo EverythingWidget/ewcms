@@ -1,5 +1,5 @@
 // The type scale (src/render/layout/type.js): site.json "type" over the theme's sizes, as CSS
-// variables on the page's :root; Site settings › Type and its Preview, the type specimen
+// variables on the page's :root; Theme › Type and its Preview, the type specimen
 // (src/render/layout/type-specimen.js, /__type/); the preview follows Type without a reload.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -177,8 +177,8 @@ test('needsReload: site.json reloads unless only its type changed (siteKey)', ()
   assert.match(main, /site: dirty\.includes\(SITE\) && siteKey\(store\.base\) !== siteKey/);
 });
 
-test('Site settings › Type: a row per style with its tag, Preview / Close preview, live in the preview', () => {
-  const panel = read('src/editor/svelte/SiteSettingsPanel.svelte');
+test('Theme › Type: a row per style with its tag, Preview / Close preview, live in the preview', () => {
+  const panel = read('src/editor/svelte/ThemePanel.svelte');
   assert.match(panel, /title="Type"/);
   assert.doesNotMatch(panel, /typography|Size \(cells\)|Tracking/);
   assert.match(panel, /\{name\} · \{tag\.toUpperCase\(\)\}/);
@@ -191,12 +191,12 @@ test('Site settings › Type: a row per style with its tag, Preview / Close prev
   assert.match(panel, /bridge\.doc\?\.documentElement/);
   const main = read('src/editor/main.js');
   // another area closes the specimen, back to the page it replaced
-  assert.match(main, /if \(panel !== 'site-settings'\) showSpecimen\(false\);/);
+  assert.match(main, /if \(panel !== 'theme'\) showSpecimen\(false\);/);
   assert.match(
     main,
     /ui\.specimenFrom = bridge\.path\(\) \|\| ui\.path;\s*bridge\.navigate\(TYPE_SPECIMEN\)/,
   );
   // the panel gets the bridge and actions (App.svelte, from its record in areas.js)
   assert.match(read('src/editor/svelte/App.svelte'), /<Panel \{live\} \{bridge\} \{actions\} \/>/);
-  assert.match(read('src/editor/areas.js'), /import\('\.\/svelte\/SiteSettingsPanel\.svelte'\)/);
+  assert.match(read('src/editor/areas.js'), /import\('\.\/svelte\/ThemePanel\.svelte'\)/);
 });

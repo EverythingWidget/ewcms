@@ -202,7 +202,7 @@ test('the editor: a Templates area, its own target, Edit template, no shift', ()
   assert.doesNotMatch(templates, /SITE_PARTS/);
   assert.match(
     read('src/editor/svelte/ThemePanel.svelte'),
-    /<PagesList \{live\} \{actions\} area="theme" \/>/,
+    /<PagesList \{live\} \{actions\} area="theme" showHead=\{false\} \/>/,
   );
   assert.match(
     read('src/editor/svelte/TemplatesPanel.svelte'),

@@ -781,7 +781,7 @@ export function renderOp(render, root, drafts, { path: at, file, data, ids, sess
     const html = render.renderRouteSections(preview.route, preview.content, ids, file, page);
     return { status: 200, body: { ok: true, html } };
   }
-  // Site settings › Type's Preview (/__type/): made from the drafts, no file of its own
+  // Theme › Type's Preview (/__type/): made from the drafts, no file of its own
   // (this module's, like the template preview's: not the Vite-loaded render's)
   if (isTypeSpecimen(at)) {
     const { route, content } = typeSpecimen(loadContent(root, draftsFor(drafts, session)));

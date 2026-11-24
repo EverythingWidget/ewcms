@@ -11,8 +11,8 @@
  * Phones (below 760px): a contained section is the 60-column grid inside the side margins,
  * as before (N doesn't apply: on a phone every column counts).
  *
- * The CSS (_layout.scss) reads --contain on :root (head, shell/layout.js); the Site settings
- * panel shows the widths at common window sizes (containedWidth).
+ * The CSS (_layout.scss) reads --contain on :root (head, shell/layout.js); Theme › Layout
+ * shows the widths at common window sizes (containedWidth).
  */
 import { COLS } from './grid.js';
 import { layoutSpaceVars, spaceRows } from './space.js';

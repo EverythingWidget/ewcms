@@ -535,11 +535,11 @@ function applyClicks(before) {
 }
 
 /**
- * Show an area: ui.panel (ui.svelte.js, ../areas.js). Leaving Site settings closes the type
+ * Show an area: ui.panel (ui.svelte.js, ../areas.js). Leaving Theme closes the type
  * specimen. Only Pages edits: another area is browse (ui.mode).
  */
 function setPanel(panel) {
-  if (panel !== 'site-settings') showSpecimen(false);
+  if (panel !== 'theme') showSpecimen(false);
   const before = previewClicks();
   ui.panel = panel;
   if (panel !== 'pages') ui.originStack = [];
@@ -566,7 +566,7 @@ function toBrowse() {
 }
 
 /**
- * Site settings › Type's Preview: the type specimen (/__type/, render/layout/type-specimen.js) in
+ * Theme › Type's Preview: the type specimen (/__type/, render/layout/type-specimen.js) in
  * the preview (on), or the page it replaced back (off: Close preview, another area).
  */
 function showSpecimen(on) {
