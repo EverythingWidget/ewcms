@@ -74,7 +74,13 @@ import { itemSection, itemWidgets } from './item-grid.js';
 import { templateOfPath } from './template-preview.js';
 import { detailsOf, nameOf, opensHtml, toggleHtml } from './details.js';
 import { innerItems, innerKeys } from './nested.js';
-import { CAROUSEL, carouselHtml, carouselOf, carouselProblems } from './carousel.js';
+import {
+  CAROUSEL,
+  carouselHtml,
+  carouselOf,
+  carouselProblems,
+  withArrangement,
+} from './carousel.js';
 
 // the Carousel settings' rows (Layout tab): shown only with Carousel (Grid: hidden)
 const isCarousel = (config) => config?.arrangement === 'carousel';
@@ -100,7 +106,7 @@ const CAROUSEL_ROWS = [
   },
   { key: 'alsoGrid', label: 'Also as a grid', type: 'boolean' },
   { key: 'deepLink', label: 'Open slide from #n', type: 'boolean' },
-].map((r) => ({ ...r, tab: 'layout', shownWhen: isCarousel }));
+].map((r) => ({ ...r, tab: 'layout', shownWhen: isCarousel, default: CAROUSEL[r.key][0] }));
 
 const COLUMNS = ['1', '2', '3', '4', '5', '6'];
 /** The most cells between a List's items (config.gap). */
@@ -317,6 +323,8 @@ export const list = {
         ['grid', 'Grid'],
         ['carousel', 'Carousel'],
       ],
+      // changing it writes the whole config (Grid drops the carousel settings)
+      writeConfig: withArrangement,
     },
     {
       key: 'columns',

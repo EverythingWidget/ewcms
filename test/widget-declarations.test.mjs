@@ -1,8 +1,9 @@
 // What a widget type declares instead of the editor or the renderer checking its name: a page's
 // title (pageTitle), its list items' stored defaults (itemDefaults) and value checks (a
 // setting's check), its Content-tab hint, its rows in an item template (inTemplate), its Add
-// widget drawing, and the Template editor's add rules (noNesting, onePerTemplate,
-// clearsClickable). The places that used to check a built-in's name don't again.
+// widget drawing, the Template editor's add rules (noNesting, onePerTemplate, clearsClickable)
+// and the Layout tab's option defaults and writes (writeConfig). The places that used to check
+// a built-in's name don't again.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -35,6 +36,7 @@ test('the places that checked a widget name ask its declaration instead', () => 
     'src/render/defaults.js',
     'src/editor/layout-ops.js',
     'src/editor/svelte/TemplatePanel.svelte',
+    'src/editor/svelte/WidgetLayout.svelte',
   ])
     assert.doesNotMatch(code(read(f)), nameCheck, f);
   // the Template editor's rows, the Hero photos' phone check in validate.js
@@ -184,11 +186,12 @@ test('the widget format documents the keys', () => {
     'noNesting ',
     'onePerTemplate ',
     'clearsClickable ',
+    'writeConfig(',
   ])
     assert.ok(doc.includes(key), key);
 });
 
-test('the template editor asks the type, not its name', () => {
+test('the template editor and Layout tab ask the type, not its name', async () => {
   assert.equal(widgetType('list').noNesting, true);
   assert.equal(widgetType('details').noNesting, true);
   assert.equal(widgetType('details').onePerTemplate, true);
@@ -204,4 +207,11 @@ test('the template editor asks the type, not its name', () => {
   assert.match(panel, /clearsClickable/);
   assert.match(panel, /noNesting/);
   assert.match(panel, /onePerTemplate/);
+  const { CAROUSEL, withArrangement } = await import('../src/widgets/list/carousel.js');
+  const cfg = (key) => widgetType('list').config.find((c) => c.key === key);
+  for (const key of Object.keys(CAROUSEL)) assert.equal(cfg(key).default, CAROUSEL[key][0], key);
+  assert.equal(cfg('arrangement').writeConfig, withArrangement);
+  const wl = code(read('src/editor/svelte/WidgetLayout.svelte'));
+  assert.match(wl, /c\.writeConfig/);
+  assert.doesNotMatch(wl, /CAROUSEL|withArrangement/);
 });

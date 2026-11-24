@@ -57,7 +57,7 @@
  *             A text, multi-line, words or number setting typed is written into its elements
  *             in place (src/editor/layout-sync.js patchTexts); anything else renders the
  *             widget again.
- *   config    how it works (its look, on/off): [{ key, label, type, options?, empty?, inPlace? }]
+ *   config    how it works (its look, on/off): [{ key, label, type, options?, empty?, inPlace?, default?, writeConfig? }]
  *               type: 'source' (a content/en/sources file) | 'select' (options [[value, label]])
  *                     | 'text' | 'boolean'; every widget also has config.enabled (on/off)
  *               inPlace: how the editor's preview shows a changed value in place, as render()
@@ -68,6 +68,9 @@
  *                     the value from the widget's config (default: config[key]; '', null or
  *                     undefined removes the variable). E.g. a List's gap:
  *                     { on: '.list__items--grid', var: '--list-gap', value: (c) => gapOf(c) || null }
+ *               default: the value when the widget leaves the key out (the Layout tab shows it)
+ *               writeConfig(config, value): optional, changing the setting writes the whole
+ *                     config (a List's arrangement: Grid drops the carousel settings)
  *   inTemplate  optional { missing?, join?, fields? }: what the Template editor offers for it in a List's
  *             item template (TemplateWidgetFields.svelte): missing, When a value is missing
  *             (config.missing, ../layout/missing.js); join, Between facts (its join);

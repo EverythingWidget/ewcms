@@ -21,7 +21,6 @@
   import { scaledToFit } from '../../render/layout/type.js';
   import Field from './Field.svelte';
   import InfoHelp from './InfoHelp.svelte';
-  import { CAROUSEL, withArrangement } from '../../widgets/list/carousel.js';
   import {
     boxLabels,
     choiceValue,
@@ -80,9 +79,6 @@
     layoutOptions(widget.type).filter((c) => !c.shownWhen || c.shownWhen(widget.config)),
   );
   const optionPtr = (c) => `/sections/${at}/widgets/${j}/config/${c.key}`;
-  // a setting's default when the widget leaves it out (a List's carousel ones: carousel.js)
-  const listDefault = (c) =>
-    c.default ?? (widget.type === 'list' ? CAROUSEL[c.key]?.[0] : undefined);
   // a number setting (a List's gap in cells): a whole number in its range; its default left out
   const wholeIn = (c, v) => {
     if (typeof v !== 'number' || !Number.isFinite(v)) return undefined;
@@ -95,11 +91,11 @@
           source: 'panel',
           key: `layout:${file}#${optionPtr(c)}`,
         })
-      : widget.type === 'list' && c.key === 'arrangement'
+      : c.writeConfig
         ? live.store.set(
             file,
-            optionPtr(c).replace(/\/arrangement$/, ''),
-            withArrangement(widget.config, v),
+            `/sections/${at}/widgets/${j}/config`,
+            c.writeConfig(widget.config, v),
             {
               source: 'panel',
               structure: true,
@@ -184,8 +180,8 @@
           type={['boolean', 'seg', 'number'].includes(c.type) ? c.type : 'select'}
           half={c.width === 'half'}
           value={c.type === 'boolean'
-            ? (widget.config?.[c.key] ?? listDefault(c)) === true
-            : (widget.config?.[c.key] ?? listDefault(c) ?? (c.type === 'number' ? 0 : ''))}
+            ? (widget.config?.[c.key] ?? c.default) === true
+            : (widget.config?.[c.key] ?? c.default ?? (c.type === 'number' ? 0 : ''))}
           options={c.options ?? []}
           changed={live.changed(file, optionPtr(c))}
           onvalue={(v) => setOption(c, v)}
