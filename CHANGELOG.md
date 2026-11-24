@@ -4,6 +4,17 @@ Releases are tagged `vX.Y.Z` on main; a site pins one in its `package.json`
 (`"ewcms": "github:EverythingWidget/ewcms#vX.Y.Z"`). Breaking changes are marked **Breaking** and
 say what a site must do before it bumps its pin.
 
+## Unreleased
+
+### Breaking
+
+- **Breaking: `site.json` `accent` is gone.** The brand colour is `--brand` in the theme
+  (`theme/tokens.scss`), not `site.json`. `ewcms check` warns if `accent` is still in
+  `site.json` (it is ignored; you can delete the key). Album item `accent` values are
+  unchanged. First run no longer asks for a look colour; Site settings no longer has
+  Accent color. Set `--brand` (and `--accent`, the glass tint) in the theme. Once the
+  Theme area can edit tokens, those values are changed there.
+
 ## 0.11.0 (2026-11-23)
 
 ### Breaking: what a site must do before bumping to 0.11.0

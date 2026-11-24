@@ -112,6 +112,11 @@ const required = (data, keys, kind) =>
     .map((k) => `"${k}" must be ${kind === 'object' ? 'an object' : `a ${kind}`}`);
 
 function checkSite(d) {
+  // leftover: brand colour is --brand in the theme, not site.json
+  if (d.accent !== undefined)
+    warnings.push(
+      '"accent" is no longer used: set --brand in the theme (theme/tokens.scss).',
+    );
   return [
     ...required(d, ['name', 'url'], 'string'),
     ...optional(d, {

@@ -6,7 +6,7 @@
  *
  * The manifest stores, per source photo: intrinsic width/height, the generated
  * srcset, a tiny blurred placeholder (LQIP) and the dominant colour, which the
- * templates use for album accents when an album has no explicit `accent`.
+ * templates use for album accents when an album has no explicit `accent` (else the theme --accent).
  *
  * If `sharp` isn't installed, originals are copied as-is and the site still works
  * (no srcset / placeholders). Outputs are cached: unchanged photos are skipped.

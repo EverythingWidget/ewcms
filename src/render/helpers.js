@@ -298,15 +298,16 @@ const hsl = (h, s, l) => {
 /**
  * Accent colour for an album: explicit `accent` wins, otherwise the dominant
  * colour of the cover photo (from the photo pipeline), normalised so it works
- * as a soft tint on black. Greyscale covers fall back to the site accent.
+ * as a soft tint on black. Greyscale covers (or no colour) leave --accent to
+ * the theme (theme/tokens.scss).
  */
 export function accentOf(ctx, album) {
   if (album?.accent) return album.accent;
   const cover = coverOf(album);
   const color = cover && photoOf(ctx, cover)?.color;
-  if (!color) return ctx.site.accent;
+  if (!color) return '';
   const [h, s] = rgbToHsl(hexToRgb(color));
-  if (s < 0.12) return ctx.site.accent;
+  if (s < 0.12) return '';
   return hsl(h, Math.min(0.55, Math.max(0.3, s)), 0.66);
 }
 

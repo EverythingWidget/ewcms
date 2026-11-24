@@ -16,7 +16,6 @@ import { TEXT_TYPES } from '../../render/property-types.js';
 /** site.json values edited in the Site settings: [key, label, field type]. */
 export const SITE_SETTINGS = [
   ['name', 'Site name', 'text'],
-  ['accent', 'Accent color', 'text'],
   ['timezone', 'Time zone of the clock (e.g. Europe/Amsterdam)', 'text'],
   ['jobTitle', 'Job title (for search engines)', 'text'],
   ['country', 'Country code (for search engines, e.g. NL)', 'text'],
