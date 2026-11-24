@@ -16,6 +16,9 @@ say what a site must do before it bumps its pin.
 
 ### Editor
 
+- **A field’s revert** shows only when that field has a stored value, at the right end of the
+  label row (the 24px row does not shift). The unsaved-change dot is unchanged.
+
 - **Theme › Color** has a Color scheme field (`color.scheme`): Dark, Light, Light dark, Dark
   light and Normal; empty writes no meta. The preview updates the color-scheme meta in place,
   with no reload.

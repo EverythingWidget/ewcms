@@ -3,7 +3,7 @@
   its file, e.g. people.json, that opens it in Sources) with an input, or a
   textarea for longer text, a switch (boolean) or a Select (select, options [[value, label]]).
   bare: no label row (label is the input's aria-label; say it in the placeholder); help: a hint under it; tip: a snippet, an (i) after
-  the label that explains it (InfoHelp.svelte: in the label row, nothing shifts); reset: a quiet undo in the label row, always there (disabled when !reset.on, so the row does not shift); half: it shares a row with the next field (the parent's grid).
+  the label that explains it (InfoHelp.svelte: in the label row, nothing shifts); reset: a quiet undo at the end of the label row, only when reset.on (a stored value; the 24px row does not shift); half: it shares a row with the next field (the parent's grid).
   empty: a number field can be cleared (onvalue(undefined): the default, say it in the placeholder).
   type 'photo': a photo (its media/ path or R2 key) as a 64px card: the photo, its label
   (inside), file name and sizes, Media and ✕ (clears it; remove: the parent's, a list item's);
@@ -196,13 +196,12 @@
       {#if binds}<span class="tf__name">{label}</span>{:else}{label}{/if}{#if tip}<InfoHelp
           label="About {label}">{@render tip()}</InfoHelp
         >{/if}
-      {#if reset}
+      {#if reset?.on}
         <button
           type="button"
           class="tf__reset"
           title={reset.title}
           aria-label={reset.label}
-          disabled={!reset.on}
           onclick={reset.run}><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button
         >
       {/if}
@@ -539,13 +538,13 @@
     color: var(--text-quiet);
   }
 
-  // a quiet reset in the label row: always reserved (16px), dim when it does nothing
+  // a quiet reset at the end of the 24px label row, only when the field has a value
   .tf__reset {
     display: inline-grid;
     place-items: center;
     width: 16px;
     height: 16px;
-    margin-left: var(--space-1);
+    margin-left: auto;
     padding: 0;
     border: 0;
     background: none;
@@ -553,13 +552,8 @@
     font-size: var(--fs-xs);
     cursor: pointer;
 
-    &:hover:not(:disabled) {
+    &:hover {
       color: var(--c-text);
-    }
-
-    &:disabled {
-      opacity: var(--o-disabled);
-      cursor: default;
     }
 
     &:focus-visible {
