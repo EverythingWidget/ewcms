@@ -79,7 +79,7 @@
 
   // the type scale: each text style's font size, between min and max as the window grows (px;
   // equal: a fixed size) and its line height (× the size). These are the engine's defaults
-  // (site-core/_tokens.scss); site.json "type" (Site Settings › Type) wins over them per site.
+  // (site-core/_tokens.scss); site.json "type" (Theme › Type) wins over them per site.
   // The styles' weight, tracking and colour: below (@optional).
   --type-title-min: 72px;
   --type-title-max: 250px;

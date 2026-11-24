@@ -7,9 +7,9 @@
  *                   widgets, double click a text to type it; animations paused), Motion
  *                   (animate: click a widget or an animated element to edit its animation), SEO
  *   Templates     - the item templates
- *   Theme         - the look (Fonts and styles is still Coming soon)
+ *   Theme         - the look: type, layout, and Fonts and styles (still Coming soon)
  *   Animations    - the default timing, the Animations library, the page entrance
- *   Site settings - site-wide values: site name and meta, forms, type, redirects
+ *   Site settings - site-wide values: site name and meta, forms, redirects
  *   Preview  - the toolbar's toggle: the site as visitors see it (links work); the panel
  *              shows the unsaved and unpublished changes
  *
