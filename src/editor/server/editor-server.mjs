@@ -18,7 +18,7 @@
  *                             answers { key, local: true, media }
  *   POST /__editor/publish  → { message }: commit every changed file in the site folder in
  *                             one commit, fetch + rebase on origin's new commits, then git push
- *                             origin <current branch> (local-data-layer.mjs publish)
+ *                             origin <current branch> (site-git.mjs publish)
  *   POST /__editor/pages    → { op, ... }: add, rename or delete pages (pagesOp)
  *   POST /__editor/templates → { op: 'add', data }: a new item template (content/templates/
  *                             t-<id>.json, Duplicate preset): answers { id, file, data }
@@ -825,7 +825,7 @@ export function editorMiddleware({
   updater = null,
 }) {
   const log = (msg) => logger.info(`\x1b[32m✓\x1b[0m ${msg}`, { timestamp: true });
-  // load, save, status and publish: the site's files and git repo (local-data-layer.mjs)
+  // load, save, status and publish: the site's files and git repo (local-data-layer.mjs, site-git.mjs)
   const data = createLocalDataLayer(root, { env, onWrite });
 
   return async (req, res) => {

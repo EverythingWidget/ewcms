@@ -3,7 +3,7 @@
  * layer's status files grouped, binary sizes, and the default commit message.
  */
 
-/** The groups in the order the data layer's status gives them (local-data-layer.mjs GROUPS). */
+/** The groups in the order the data layer's status gives them (site-git.mjs GROUPS). */
 export const GROUP_LABELS = {
   content: 'Content',
   sources: 'Sources',

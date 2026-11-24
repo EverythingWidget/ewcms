@@ -1,7 +1,7 @@
 /**
  * The local data layer's git side on temp repos with a bare "origin": status lists every
  * changed file in the site folder, and Publish commits and pushes them safely
- * (src/editor/server/local-data-layer.mjs).
+ * (src/editor/server/site-git.mjs).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -430,23 +430,22 @@ test('POST /__editor/publish: one publish at a time', async () => {
 // ---------------------------------------------------------------- guards
 
 test('guard: Publish never forces, skips hooks, stashes, resets or cleans', () => {
-  const src = fs.readFileSync(
-    new URL('../src/editor/server/local-data-layer.mjs', import.meta.url),
-    'utf8',
-  );
-  const code = src.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, ''); // comments may name them
-  for (const bad of [
-    /--force/,
-    /--no-verify/,
-    /--tags/,
-    /'--hard'/,
-    /'clean'/,
-    /'stash'/,
-    /'-f'/,
-    /'checkout'/,
-    /'--autostash'/,
-  ])
-    assert.doesNotMatch(code, bad);
+  for (const rel of ['../src/editor/server/site-git.mjs', '../src/editor/server/local-data-layer.mjs']) {
+    const src = fs.readFileSync(new URL(rel, import.meta.url), 'utf8');
+    const code = src.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, ''); // comments may name them
+    for (const bad of [
+      /--force/,
+      /--no-verify/,
+      /--tags/,
+      /'--hard'/,
+      /'clean'/,
+      /'stash'/,
+      /'-f'/,
+      /'checkout'/,
+      /'--autostash'/,
+    ])
+      assert.doesNotMatch(code, bad, rel);
+  }
 });
 
 test('guard: only the data layer commits, pushes, fetches or rebases in the editor', () => {
@@ -456,7 +455,7 @@ test('guard: only the data layer commits, pushes, fetches or rebases in the edit
       .readdirSync(d, { withFileTypes: true })
       .flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]));
   for (const file of walk(dir).filter((f) => /\.(m?js|svelte)$/.test(f))) {
-    if (file.endsWith('server/local-data-layer.mjs')) continue;
+    if (file.endsWith('server/local-data-layer.mjs') || file.endsWith('server/site-git.mjs')) continue;
     const src = fs.readFileSync(file, 'utf8');
     assert.doesNotMatch(src, /\bgit\(\s*\w+,\s*\[\s*'(commit|push|fetch|rebase|add|reset)'/, file);
     assert.doesNotMatch(src, /\b(execFile|spawn|exec)(Sync)?\(\s*['"]git['"]/, file);

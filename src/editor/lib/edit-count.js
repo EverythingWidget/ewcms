@@ -1,6 +1,6 @@
 /**
  * The edits a content file's change is made of, counted the way its author sees them (the
- * Publish footer's "N changes to publish"; local-data-layer.mjs status): not every value
+ * Publish footer's "N changes to publish"; site-git.mjs status): not every value
  * that differs, but
  *   - a widget added, removed, moved, resized or restyled: 1 each (a drag changing its column,
  *     row, width and height at once is 1);
