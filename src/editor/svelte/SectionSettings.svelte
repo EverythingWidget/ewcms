@@ -127,13 +127,13 @@
   <SectionIcon kind="width" arg={band} />
 {/snippet}
 
-<!-- a setting as a half field (.tf: the same label row as a Field) of quiet icon buttons, one
-     picked: Height and Width. options: [value, label, its icon's argument] -->
+<!-- Height or Width: a field (.tf: the same label row as a Field) of quiet icon buttons, one
+     picked. options: [value, label, its icon's argument] -->
 {#snippet choices(at, key, title, options, now, icon, reset = null)}
   {@const id = `${sections[at].id}-${key}`}
   {@const ptr = key === 'phoneHeight' ? 'phone/height' : key}
   <div
-    class={['tf', 'is-half', changed(at, ptr) && 'is-changed']}
+    class={['tf', changed(at, ptr) && 'is-changed']}
     data-edit="{file}#/sections/{at}/{ptr}"
   >
     <span class="tf__label" {id}
@@ -182,7 +182,8 @@
   sections</b> in Site settings). 0 means none. The first visible section of a page does not
   use it (it already starts under the header). The first footer section does.{/snippet}
 
-<!-- Name (no label: its placeholder says it; its #anchor under it) the whole row; then Height | Width, two halves -->
+<!-- Name (no label: its placeholder says it; its #anchor under it) the whole row; then Height
+     and Width side by side, each column as wide as its buttons -->
 <div class="fields">
   <Field
     edit="{file}#/sections/{at}/name"
@@ -194,25 +195,30 @@
     changed={changed(at, 'name')}
     onvalue={(name) => setName(at, name)}
   />
-  <!-- Height (a minimum; its content always centred) | Width: icon buttons, one picked -->
-  {#if phoneView}
-    <!-- the phone preview: its phone height (its own, else the desktop's) -->
-    {@render choices(
-      at,
-      'phoneHeight',
-      s.phone?.height ? 'Phone height' : 'Phone height (desktop)',
-      HEIGHTS,
-      phoneHeightOf(s),
-      heightIcon,
-      {
-        on: !!s.phone?.height,
-        run: () => setPhoneHeight(live.store, file, at, undefined),
-      },
-    )}
-  {:else}
-    {@render choices(at, 'height', 'Height', HEIGHTS, heightOf(s), heightIcon)}
-  {/if}
-  {@render choices(at, 'width', 'Width', WIDTHS, widthOf(s), widthIcon)}
+  <!-- Height (a minimum; its content always centred) and Width: icon buttons, one picked.
+       A row of their own, columns sized to the button groups (five 40px and two), not the
+       parent .fields' 1fr 1fr halves — those are ~170px in the 380px pop-up, and Height
+       would overflow into Width. -->
+  <div class="hw">
+    {#if phoneView}
+      <!-- the phone preview: its phone height (its own, else the desktop's) -->
+      {@render choices(
+        at,
+        'phoneHeight',
+        s.phone?.height ? 'Phone height' : 'Phone height (desktop)',
+        HEIGHTS,
+        phoneHeightOf(s),
+        heightIcon,
+        {
+          on: !!s.phone?.height,
+          run: () => setPhoneHeight(live.store, file, at, undefined),
+        },
+      )}
+    {:else}
+      {@render choices(at, 'height', 'Height', HEIGHTS, heightOf(s), heightIcon)}
+    {/if}
+    {@render choices(at, 'width', 'Width', WIDTHS, widthOf(s), widthIcon)}
+  </div>
   {#if pageSection}
     <!-- space above this section: always on this row (no layout shift); empty uses the site
          default (placeholder). The first visible page section does not show this padding;
@@ -265,6 +271,16 @@
   // the name's #anchor hint at its right, under it
   .fields > :global(:first-child .tf__help) {
     text-align: right;
+  }
+
+  // Height and Width: one row, each column as wide as its buttons (200px and 80px), packed
+  // to the start. The parent .fields grid is 1fr 1fr; those halves are too narrow for five
+  // 40px buttons in the 380px pop-up (12px padding, 16px gap: ~170px a column).
+  .hw {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    gap: var(--gap-fields);
+    justify-content: start;
   }
 
   // a joined button group (v2): no padding or gaps, its buttons edge to edge (40px each,

@@ -37,3 +37,24 @@ test('the toolbar: a gear, pressed while open', () => {
   assert.doesNotMatch(tb, /pen-to-square/);
   assert.match(tb, /aria-pressed=\{ui\.section === s\.id\}/);
 });
+
+test('Height and Width sit side by side without overlapping in the 380px pop-up', () => {
+  const ss = src('svelte/SectionSettings.svelte');
+  // a row of their own, columns as wide as the button groups — not .fields' 1fr 1fr halves
+  assert.match(ss, /<div class="hw">/);
+  assert.doesNotMatch(ss, /class=\{\['tf', 'is-half'/);
+  const hw = ss.match(/\n {2}\.hw \{[^}]*\}/)[0];
+  assert.match(hw, /grid-template-columns: max-content max-content/);
+  assert.match(hw, /gap: var\(--gap-fields\)/);
+  // five 40px Height buttons + the fields gap + two 40px Width buttons fit in the body
+  // (380px, 12px padding each side); still fit if a scrollbar takes ~15px
+  const tokens = src('styles/_tokens.scss');
+  const space3 = Number(tokens.match(/--space-3: (\d+)px/)[1]);
+  const gap = Number(tokens.match(/--gap-fields: (\d+)px/)[1]);
+  const buttons = ss.match(/\.hset__btn \{[\s\S]*?width: (\d+)px;/)[1];
+  assert.equal(Number(buttons), 40);
+  const row = 5 * 40 + gap + 2 * 40;
+  const body = 380 - 2 * space3;
+  assert.ok(row <= body, `row ${row}px must fit in the ${body}px pop-up body`);
+  assert.ok(row <= body - 15, `row ${row}px must still fit with a scrollbar`);
+});
