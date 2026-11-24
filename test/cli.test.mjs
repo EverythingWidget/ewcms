@@ -61,7 +61,7 @@ test("scaffold (dev's first run): the default site in a folder with no site, a s
     '.gitignore',
     'README.md',
     'functions/api/contact.js',
-    'theme/theme.json',
+    'theme/meta.json',
     'content/site.json',
     'public/favicon.svg',
     'media',
@@ -82,15 +82,15 @@ test("scaffold (dev's first run): the default site in a folder with no site, a s
     /^github:EverythingWidget\/ewcms#(v\d+\.\d+\.\d+|[0-9a-f]{40})$/,
   );
   assert.deepEqual(await checkContentOf(dir), []);
-  // the theme: the site's own copy of the default site's look (tokens, fonts, theme.json), named
+  // the theme: the site's own copy of the default site's look (tokens, fonts, meta.json), named
   assert.deepEqual(fs.readdirSync(path.join(dir, 'theme')).sort(), [
     'fonts.scss',
-    'theme.json',
+    'meta.json',
     'tokens.scss',
   ]);
-  const theme = JSON.parse(fs.readFileSync(path.join(dir, 'theme/theme.json'), 'utf8'));
-  assert.equal(theme.name, 'My Site');
-  assert.equal(theme.colorScheme, 'dark'); // the default site's
+  const meta = JSON.parse(fs.readFileSync(path.join(dir, 'theme/meta.json'), 'utf8'));
+  assert.equal(meta.name, 'My Site');
+  assert.equal(meta.colorScheme, 'dark'); // the default site's
   assert.equal(
     fs.readFileSync(path.join(dir, 'theme/tokens.scss'), 'utf8'),
     fs.readFileSync(enginePath('default-site/theme/tokens.scss'), 'utf8'),

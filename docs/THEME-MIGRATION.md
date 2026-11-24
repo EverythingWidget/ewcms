@@ -1,5 +1,13 @@
 # Theme migration
 
+## Unreleased: `theme/theme.json` is `theme/meta.json`
+
+The theme folder's manifest (`name`, `themeColor`, `colorScheme`, `preloads`) is
+`theme/meta.json`; `theme.json` now means `content/theme.json` (the Theme area's values). No
+migration: in the commit that bumps the pin, `git mv theme/theme.json theme/meta.json`. Until
+then its preloads and color-scheme are not used, and `npx ewcms check` says
+`theme/theme.json is now theme/meta.json`.
+
 ## Unreleased: `--f-mono` is `--f-body`
 
 The body and UI font token is `--f-body` (it was `--f-mono`, whatever the font). No alias: rename

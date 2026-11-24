@@ -8,6 +8,11 @@ say what a site must do before it bumps its pin.
 
 ### Breaking
 
+- **Breaking: `theme/theme.json` is `theme/meta.json`.** The theme folder's manifest (`name`,
+  `themeColor`, `colorScheme`, `preloads`) is renamed, so `theme.json` only means
+  `content/theme.json`. No migration: `git mv theme/theme.json theme/meta.json` in the commit
+  that bumps the pin. Until then its preloads and color-scheme are not used; `ewcms check` warns
+  while a `theme/theme.json` is left.
 - **Breaking: `site.json` `accent` is gone.** The brand colour is `--brand` in the theme
   (`theme/tokens.scss`), not `site.json`. `ewcms check` warns if `accent` is still in
   `site.json` (it is ignored; you can delete the key). Album item `accent` values are
