@@ -17,7 +17,7 @@
  *             (null: nothing yet, a 'soon' area)
  *   highlight (optional) (counts) => the card highlighted (About: an update to offer)
  * Pages holds the site parts (Header, Footer) and every page, Templates the item templates,
- * Theme the look (content/theme.json: Typography and Layout; Color once its field is built), Animations the
+ * Theme the look (content/theme.json: Color, Typography and Layout), Animations the
  * default timing, the Animations library and the page entrance, Site settings what is the
  * same on every page, redirects too.
  * (The components and windows load on demand: this file stays plain data for persist.js and
@@ -65,7 +65,7 @@ export const AREAS = [
     id: 'theme',
     label: 'Theme',
     icon: 'palette',
-    subtitle: () => 'Typography and layout',
+    subtitle: () => 'Color, typography and layout',
     status: 'ready',
     opens: { panel: () => import('./svelte/ThemePanel.svelte') },
   },

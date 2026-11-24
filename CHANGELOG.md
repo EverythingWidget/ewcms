@@ -34,11 +34,12 @@ say what a site must do before it bumps its pin.
 
 ### Editor
 
-- **Theme edits `content/theme.json`.** Typography (was Type; Fonts and styles is folded into it,
-  so its Coming soon row is gone) and Layout read and save `content/theme.json`; Save makes the
+- **Theme edits `content/theme.json`.** Color (Brand color: a hex field with a swatch that opens
+  the color picker; empty, the theme's `--brand`, shown greyed), Typography (was Type; Fonts and
+  styles is folded into it, so its Coming soon row is gone) and Layout read and save
+  `content/theme.json`; Save makes the
   file when the site has none. The preview follows every value as it is typed, undo and redo
-  too, without a reload. A section's space placeholder follows `theme.json` `layout`. The brand
-  color field (Theme › Color) comes later.
+  too, without a reload. A section's space placeholder follows `theme.json` `layout`.
 
 ## 0.11.0 (2026-11-23)
 

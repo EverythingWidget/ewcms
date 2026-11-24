@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { head } from '../src/render/shell/layout.js';
-import { brandOf, checkTheme, themeColorOf, themeVars, THEME_VARS } from '../src/render/theme.js';
+import { brandOf, checkTheme, themeColorOf, themeVarList, themeVars, THEME_VARS } from '../src/render/theme.js';
 
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 
@@ -149,4 +149,24 @@ test('the page head sets --accent only for an album colour, never --site-accent 
   const plain = head(ctx, { page: 'home' }, '');
   assert.doesNotMatch(plain, /--accent:/);
   assert.doesNotMatch(plain, /--site-accent/);
+});
+
+test('Theme › Color: Brand color edits theme.json color.brand, #rrggbb only, a swatch picks it', () => {
+  const panel = read('src/editor/svelte/ThemePanel.svelte');
+  assert.match(panel, /<Collapsible key="theme:color" title="Color">/);
+  assert.match(panel, /edit="\{THEME\}#\/color\/brand"/);
+  assert.match(panel, /label="Brand color"/);
+  // only a #rrggbb is stored (lowercase); empty clears it (the theme's --brand)
+  assert.match(panel, /if \(v && !isThemeColor\(v\)\) return;\s*set\('color\/brand', v \? v\.toLowerCase\(\) : undefined\);/);
+  // the swatch: the native picker, its value always #rrggbb
+  assert.match(panel, /<input\s+type="color"\s+value=\{pickerValue\}/);
+  assert.match(panel, /oninput=\{\(e\) => setBrand\(e\.currentTarget\.value\)\}/);
+  // unset: the placeholder is the theme's --brand, read from the preview
+  assert.match(panel, /getPropertyValue\('--brand'\)/);
+  assert.match(panel, /placeholder=\{themeBrand\}/);
+  // the reset goes back to the theme's
+  assert.match(panel, /run: \(\) => setBrand\(''\)/);
+  // set, typed or picked: the preview gets it with no reload (theme-vars.js via main.js)
+  const t = themeVarList({ color: { brand: '#CC2020' } });
+  assert.deepEqual(t, [['--brand', '#cc2020']]);
 });

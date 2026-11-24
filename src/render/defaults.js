@@ -92,7 +92,11 @@ function tidyTheme(data) {
   if (isObject(copy.typography))
     for (const [k, s] of Object.entries(copy.typography)) if (isEmpty(s)) delete copy.typography[k];
   for (const k of ['color', 'typography', 'layout']) if (isEmpty(copy[k])) delete copy[k];
-  return copy;
+  // in the Theme area's order, whatever order the edits came in
+  const { version, color, typography, layout, ...rest } = copy;
+  return Object.fromEntries(
+    Object.entries({ version, color, typography, layout, ...rest }).filter(([, v]) => v !== undefined),
+  );
 }
 
 /** A copy of a content file's data without its default values (page files and theme.json). */

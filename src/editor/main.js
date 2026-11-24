@@ -7,7 +7,7 @@
  *                   widgets, double click a text to type it; animations paused), Motion
  *                   (animate: click a widget or an animated element to edit its animation), SEO
  *   Templates     - the item templates
- *   Theme         - the look, content/theme.json: typography and layout
+ *   Theme         - the look, content/theme.json: color, typography and layout
  *   Animations    - the default timing, the Animations library, the page entrance
  *   Site settings - site-wide values: site name and meta, forms, redirects
  *   Preview  - the toolbar's toggle: the site as visitors see it (links work); the panel

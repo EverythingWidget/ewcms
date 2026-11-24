@@ -1759,7 +1759,7 @@ there only (no top tabs, no footer buttons). Pages, Theme, Animations and Site s
 the panel (`ui.panel`: `pages`, `theme`, `animations`, `site-settings`; the list is `areas`; the
 URL's `tab`; an old `tab=settings` is `site-settings`), under a head with ← **Back to areas**; Media, Sources and About open their window over the
 editor (half-width cards under the list, two a row). About: ewcms's version for the site or
-its update (see **Updates**), what ewcms is and the engine the site pins. An area not built yet (History; Theme's **Fonts and styles**) is disabled and says
+its update (see **Updates**), what ewcms is and the engine the site pins. An area not built yet (History) is disabled and says
 **Coming soon**. Theme holds **Type**, **Layout**, and **Fonts and styles** (Coming soon);
 Templates the item templates; Animations the default timing,
 the Animations library and the **Page entrance**; Site settings the rest (name, SEO, forms,
@@ -1889,7 +1889,9 @@ the rows it spans, the phone's in the phone preview) and its link (`follows <wid
 or free); links and gaps are dragged in the preview. Then **Size** as buttons (Auto | Aspect |
 Rows; with Aspect its ratio as buttons: 1:1 … 21:9 or Custom "w:h"), the layer with Down / Up (desktop) and **Reset phone** (phone), which removes every phone area
 and link of the section's widgets (they show their desktop layout halved again).
-**Theme › Typography** sets the text styles' sizes (fitted text keeps their proportions): min and
+**Theme** is `content/theme.json`: **Color** (Brand color: a hex field, `#rrggbb`, with a swatch
+that opens the color picker; empty: the theme's `--brand`, shown greyed), **Typography** and
+**Layout**; the preview follows every value as you type. **Theme › Typography** sets the text styles' sizes (fitted text keeps their proportions): min and
 max in px and the line height, saved in `content/theme.json` `typography`; the preview follows as
 you type.
 

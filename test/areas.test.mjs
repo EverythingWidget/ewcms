@@ -1,7 +1,7 @@
 // The editor's areas (src/editor/areas.js, AreaList.svelte): one list, the single place each
 // part of the site opens from; no top tabs, no Sources / Media in the footer; the areas not
 // built yet disabled ("Coming soon"); Templates holds the item templates, Theme the look
-// (content/theme.json: Typography and Layout), Animations the timing, the library and the page entrance.
+// (content/theme.json: Color, Typography and Layout), Animations the timing, the library and the page entrance.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -99,7 +99,7 @@ test("each area's second line says what it holds, counted", () => {
   assert.equal(s('pages'), 'Site parts and 5 pages');
   assert.equal(s('media'), '35 photos');
   assert.equal(s('sources'), '3 sources, 10 items');
-  assert.equal(s('theme'), 'Typography and layout');
+  assert.equal(s('theme'), 'Color, typography and layout');
   assert.equal(s('site-settings'), 'Name, SEO, forms and redirects');
   assert.equal(s('templates'), '7 templates');
   assert.equal(areaOf('templates').subtitle({ templates: 1 }), '1 template');
@@ -333,9 +333,11 @@ test("Theme: Typography and Layout of theme.json, no Fonts and styles row; a tem
   assert.match(src('svelte/TemplatesPanel.svelte'), /<PagesList \{live\} \{actions\} area="templates" \/>/);
   const theme = src('svelte/ThemePanel.svelte');
   assert.doesNotMatch(theme, /PagesList|data-templates|head\('Templates'/);
-  // Typography, then Layout, both content/theme.json (Color comes first once its field is built)
-  assert.ok(theme.indexOf('title="Typography"') < theme.indexOf('title="Layout"'));
-  assert.doesNotMatch(theme, /title="Type"|title="Color"/);
+  // Color, Typography, then Layout, all content/theme.json
+  const at = ['title="Color"', 'title="Typography"', 'title="Layout"'].map((t) => theme.indexOf(t));
+  assert.ok(at[0] > 0 && at[0] < at[1] && at[1] < at[2], at.join(' '));
+  assert.doesNotMatch(theme, /title="Type"/);
+  assert.match(theme, /key="theme:color"/);
   assert.match(theme, /key="theme:typography"/);
   assert.match(theme, /key="theme:layout"/);
   assert.match(theme, /edit="\{THEME\}#\/layout\/containedCols"/);

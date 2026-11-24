@@ -204,6 +204,13 @@ test('theme.json: read as { "version": 1 } until Save makes it; empty sections l
   assert.equal(r.status, 200);
   assert.deepEqual(JSON.parse(read(root, 'theme.json')), { version: 1, color: { brand: '#cc2020' } });
   assert.deepEqual(readContentFiles(root)['theme.json'], { version: 1, color: { brand: '#cc2020' } });
+  // saved in the Theme area's order: color, typography, layout
+  assert.equal(
+    save(root, { 'theme.json': { version: 1, layout: { containedCols: 96 }, color: { brand: '#cc2020' } } })
+      .status,
+    200,
+  );
+  assert.deepEqual(Object.keys(JSON.parse(read(root, 'theme.json'))), ['version', 'color', 'layout']);
   // no other root file is made by Save
   assert.equal(save(root, { 'header.json': { version: 1 } }).status, 400);
   assert.equal(fs.existsSync(path.join(root, 'content/header.json')), false);

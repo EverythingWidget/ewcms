@@ -1,12 +1,14 @@
 <!--
   Theme (ui.panel 'theme', an area: ../areas.js): the theme's values, content/theme.json
-  (src/render/theme.js). Under its head (Back to areas): Typography, the text styles' sizes
+  (src/render/theme.js). Under its head (Back to areas): Color, the brand color (theme.json
+  color.brand, #rrggbb: --brand; a swatch at the hex field's start opens the native color
+  picker; empty: the theme's tokens.scss --brand, read from the preview and shown greyed), then
+  Typography, the text styles' sizes
   (theme.json typography, px, src/render/layout/type.js; its Preview shows every style: the
   type specimen, render/layout/type-specimen.js, until Close preview or another area opens;
   fonts and text styles come here later), and Layout (contained width, space between sections:
   theme.json layout, src/render/layout/contain.js and space.js). The preview follows every
-  value as it is typed (../theme-vars.js, from main.js). Color (the brand color) comes first
-  once its field is built.
+  value as it is typed (../theme-vars.js, from main.js).
 -->
 <script>
   import { untrack } from 'svelte';
@@ -21,6 +23,7 @@
   import { isTypeSpecimen } from '../../render/layout/type-specimen.js';
   import { LINE_STYLES } from '../../render/text.js';
   import { isObject } from '../../render/is.js';
+  import { brandOf, isThemeColor } from '../../render/theme.js';
   import {
     CONTAINED,
     CONTAINED_MIN,
@@ -39,6 +42,28 @@
   const theme = () => live.get(THEME, '') || {};
   function set(key, value) {
     live.store.set(THEME, `/${key}`, value, { key: `text:${THEME}#/${key}`, source: 'panel' });
+  }
+
+  // Color: the brand color. brand: theme.json's (lowercase), '' when unset; themeBrand: the
+  // theme's own (the preview's --brand where theme.json sets none), the placeholder
+  const brand = $derived(brandOf(theme()) || '');
+  let themeBrand = $state('');
+  $effect(() => {
+    ui.previewVersion;
+    if (brand) return;
+    const root = bridge.doc?.documentElement;
+    if (!root) return;
+    const v = root.ownerDocument.defaultView.getComputedStyle(root).getPropertyValue('--brand');
+    themeBrand = v.trim().toLowerCase();
+  });
+  // what the swatch shows: theme.json's, else the theme's; the native picker needs #rrggbb
+  const swatch = $derived(brand || themeBrand);
+  const pickerValue = $derived(isThemeColor(swatch) ? swatch : '#000000');
+  /** A brand color typed or picked: stored when it is #rrggbb, cleared when empty. */
+  function setBrand(value) {
+    const v = String(value ?? '').trim();
+    if (v && !isThemeColor(v)) return;
+    set('color/brand', v ? v.toLowerCase() : undefined);
   }
 
   // Typography: [key, label] of a style's fields (theme.json typography, by style and key)
@@ -113,6 +138,45 @@
 
 <section class="ed-body" aria-label="Theme">
   <AreaHead id="theme" {actions} />
+
+  <Collapsible key="theme:color" title="Color">
+    <p class="hint">
+      The brand color: the header's glass, menus, buttons and links take it. Empty: the theme's
+      (shown greyed).
+    </p>
+    <!-- leaving the hex field: it shows what is stored (a half-typed or picked value) -->
+    <div
+      class={['brand', !brand && 'is-unset']}
+      style:--swatch={swatch || 'transparent'}
+      onfocusout={(e) => {
+        if (e.target.classList?.contains('tf__input')) e.target.value = brand;
+      }}
+    >
+      <Field
+        edit="{THEME}#/color/brand"
+        label="Brand color"
+        placeholder={themeBrand}
+        value={brand}
+        help="A hex color, #rrggbb. The swatch opens the color picker."
+        reset={{
+          on: !!brand,
+          label: "Use the theme's brand color",
+          title: themeBrand ? `Use the theme's (${themeBrand})` : "Use the theme's",
+          run: () => setBrand(''),
+        }}
+        changed={live.changed(THEME, '/color/brand')}
+        onvalue={setBrand}
+      />
+      <label class="brand__swatch" title="Pick a color">
+        <input
+          type="color"
+          value={pickerValue}
+          aria-label="Brand color: pick"
+          oninput={(e) => setBrand(e.currentTarget.value)}
+        />
+      </label>
+    </div>
+  </Collapsible>
 
   <Collapsible key="theme:typography" title="Typography">
     <p class="hint">
@@ -199,6 +263,41 @@
 
 <style lang="scss">
   @use '../styles/mixins' as *;
+
+  // Color: the swatch sits in the hex field, at its start (the native picker under it)
+  .brand {
+    position: relative;
+
+    :global(.tf__input) {
+      padding-left: calc(var(--space-2) + 20px + var(--space-2));
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .brand__swatch {
+    position: absolute;
+    // under the label row (24px and its 8px margin), centred in the input's height
+    top: calc(24px + var(--space-2) + (var(--size-control) - 20px) / 2);
+    left: calc((var(--size-control) - 20px) / 2);
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-sm);
+    background: var(--swatch);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--white) 24%, transparent);
+    cursor: pointer;
+    overflow: hidden;
+
+    input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+  }
+
+  .brand.is-unset .brand__swatch {
+    opacity: 0.6;
+  }
 
   // Typography: a style's Min, Max and Line in one row
   .scale {
