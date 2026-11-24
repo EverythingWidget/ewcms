@@ -13,7 +13,9 @@
     store: the editor's store (the sources' schemas: a list's name, an
     item's photo); label: its own label (a setting's, "Count of"), else by what it picks
     onsource(file, index): open Sources (SourcesModal.svelte); the item modal's edit
-              buttons open it on top of that modal, which is there again when it closes
+              buttons open it on top of that modal, which is there again when it closes.
+              This field itself only changes the pick (the right-left button); editing a
+              source happens in the Sources explorer.
 -->
 <script>
   import Button from './Button.svelte';
@@ -97,24 +99,14 @@
         {#if card}<span class="sc__meta">{card.meta}</span>{/if}
       </span>
     </button>
-    {#if card && onsource}
-      <Button
-        size="small"
-        icon="pen-to-square"
-        iconOnly
-        label={items_
-          ? `Edit ${card.name} in Sources`
-          : `Edit ${current}.json in Sources`}
-        onclick={(e) => {
-          e.stopPropagation();
-          const i = items_ ? itemsOf(current).findIndex((it) => it?.id === value?.id) : -1;
-          onsource(`sources/${current}.json`, Math.max(0, i));
-        }}
-      />
-    {/if}
-    <Button size="small" tabindex="-1" onclick={(e) => (e.stopPropagation(), open())}
-      >{card ? 'Change' : 'Choose'}</Button
-    >
+    <Button
+      size="small"
+      icon="right-left"
+      iconOnly
+      label={items_ ? 'Change the source item' : 'Change the source list'}
+      tabindex="-1"
+      onclick={(e) => (e.stopPropagation(), open())}
+    />
     {#if card && onclear}
       <!-- like the photo card's ✕: back to none -->
       <Button
@@ -135,7 +127,7 @@
     min-width: 0;
   }
 
-  // the card: [ tile | label / name / meta | edit | Change ], styled as an input (its
+  // the card: [ tile | label / name / meta | Change (right-left) | ✕ ], styled as an input (its
   // background, line and 8px corners); empty or filled the same height (the 48px tile, the
   // text 3 x 16px at most)
   .sc {
@@ -143,12 +135,12 @@
     min-width: 0;
     padding: var(--space-2);
     border-radius: var(--radius-md);
-    background: var(--field-bg-dim);
+    background: var(--field-bg);
     box-shadow: inset 0 0 0 1px var(--c-line);
     cursor: pointer;
 
     &:hover {
-      background: var(--field-bg);
+      background: var(--field-hover);
     }
   }
 

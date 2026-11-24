@@ -672,10 +672,29 @@ test('ListLead: Source Custom is config.custom, no Items switch', () => {
   assert.match(lead, /oncustom/);
   assert.match(lead, /<TemplateActions/);
   assert.match(lead, /ll__source-head/);
-  // ListField has no second title; Add lives on the Source row when Custom
+  // ListField has no second title; Add sits on its own row under the items
   assert.match(lead, /label=""/);
   assert.match(lead, /ariaLabel="Items"/);
-  assert.match(lead, /hideAdd/);
+  assert.doesNotMatch(lead, /hideAdd/);
+  assert.match(lead, /\bcards\b/);
+  assert.match(lead, /addLabel="Add"/);
+  // field order: Title, Unit, Photo, Link, Source last
+  const list = readFileSync(new URL('../src/widgets/list/index.js', import.meta.url), 'utf8');
+  const chunk = list.slice(list.indexOf("key: 'items'"));
+  const keys = [...chunk.matchAll(/\n\s+(title|unit|photo|link|source): \{ type:/g)].map(
+    (m) => m[1],
+  );
+  assert.deepEqual(keys.slice(0, 5), ['title', 'unit', 'photo', 'link', 'source']);
+  const lf = readFileSync(new URL('../src/editor/svelte/ListField.svelte', import.meta.url), 'utf8');
+  assert.match(lf, /lf--cards/);
+  assert.match(lf, /border-color: var\(--c-line-hover\)/);
+  const sf = readFileSync(new URL('../src/editor/svelte/SourceField.svelte', import.meta.url), 'utf8');
+  assert.match(sf, /background: var\(--field-bg\)/);
+  assert.doesNotMatch(sf, /field-bg-dim/);
+  assert.doesNotMatch(sf, /pen-to-square/);
+  assert.doesNotMatch(sf, />\{card \? 'Change' : 'Choose'\}</);
+  assert.match(sf, /icon="right-left"/);
+  assert.match(sf, /Change the source list/);
   const srcUi = readFileSync(
     new URL('../src/editor/svelte/WidgetSource.svelte', import.meta.url),
     'utf8',

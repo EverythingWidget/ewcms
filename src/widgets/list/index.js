@@ -297,11 +297,11 @@ export const list = {
       key: 'items',
       label: 'Items',
       list: {
-        source: { type: 'source', label: 'Source' },
         title: { type: 'text', label: 'Title', width: 'half' },
         unit: { type: 'text', label: 'Unit (after the count)', width: 'half' },
         photo: { type: 'photo', label: 'Photo' },
         link: { type: 'link', label: 'Link' },
+        source: { type: 'source', label: 'Source' },
       },
       item: { ...CUSTOM_ITEM },
     },

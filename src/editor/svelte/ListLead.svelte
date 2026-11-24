@@ -4,7 +4,7 @@
   kept for switching back. From a source:
   WidgetSource.svelte (the template names the properties it shows: no mapping), then Show only
   (config.showOnly { field, value }, All or From URL: one row, always laid out). Custom:
-  ListField on config.items. Only the active pane is in the flow (the other is unmounted)
+  ListField on config.items (each item a border-only card; Add under the items). Only the active pane is in the flow (the other is unmounted)
   so the pop-up is content-height.
   Template (config.template, both modes): the presets, then the site's templates
   (content/templates/t-….json); Duplicate template / Edit template sit on their own row
@@ -28,7 +28,6 @@
   import { CUSTOM_ITEM } from '../../widgets/list/custom.js';
   import { TEXT_TYPES } from '../../render/property-types.js';
   import { pointer } from '../../render/helpers.js';
-  import Button from './Button.svelte';
   import TemplateActions from './TemplateActions.svelte';
   import { PRESETS } from '../../widgets/list/presets.js';
   import { setListCustom } from '../layout-ops.js';
@@ -88,11 +87,11 @@
   const listDef = $derived(
     (g.config || []).find((c) => c.key === 'items') || {
       list: {
-        source: { type: 'source', label: 'Source' },
         title: { type: 'text', label: 'Title', width: 'half' },
         unit: { type: 'text', label: 'Unit (after the count)', width: 'half' },
         photo: { type: 'photo', label: 'Photo' },
         link: { type: 'link', label: 'Link' },
+        source: { type: 'source', label: 'Source' },
       },
       item: { ...CUSTOM_ITEM },
       label: 'Items',
@@ -257,9 +256,6 @@
         (Custom: drag them here).</InfoHelp
       ></span
     >
-    {#if custom}
-      <Button size="small" icon="plus" onclick={addItem}>Add</Button>
-    {/if}
   </div>
   <WidgetSource
     {g}
@@ -317,7 +313,7 @@
       items={itemsField.items}
       name={(fields, i) => itemName(fields, i)}
       addLabel="Add"
-      hideAdd
+      cards
       onmove={moveItem}
       onremove={removeItem}
       onadd={addItem}

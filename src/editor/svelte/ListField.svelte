@@ -10,7 +10,9 @@
     items     the list
     name      (item, i) → an item's name (default "<label> <n>")
     addLabel  the Add button's text
-    hideAdd   true: no Add at the end (the parent shows it, e.g. on the Source row)
+    hideAdd   true: no Add at the end (the parent shows it)
+    cards     true: each item is a border-only card (1px --c-line-hover, no fill); padding
+              and radius stay the same
     onmove(from, to), onremove(i), onadd()
     item      snippet (item, i): the item's fields
 -->
@@ -26,6 +28,7 @@
     name = (_, i) => `${label} ${i + 1}`,
     addLabel = 'Add',
     hideAdd = false,
+    cards = false,
     onmove,
     onremove,
     onadd,
@@ -57,7 +60,7 @@
   }
 </script>
 
-<div class="lf" role="group" aria-label={ariaLabel || label || undefined}>
+<div class={['lf', cards && 'lf--cards']} role="group" aria-label={ariaLabel || label || undefined}>
   {#if label}<span class="tf__label">{label}</span>{/if}
   <div class="lf__list" bind:this={list}>
     {#each items as it, i (i)}
@@ -124,6 +127,13 @@
     padding: var(--space-2);
     border-radius: var(--radius-xl);
     border: 1px solid var(--c-line-strong);
+  }
+
+  // List widget Custom items: a 1px card outline, no fill (the reserved 1px border changes
+  // colour only, so nothing shifts)
+  .lf--cards .lf__item {
+    background: transparent;
+    border-color: var(--c-line-hover);
   }
 
   // lifted while dragged: above the others, following the pointer (no size change)
