@@ -96,6 +96,8 @@ test('a valid template passes; an invalid one is rejected with a clear message',
     ['enabled', false],
     ['phone', { height: 'full' }],
     ['name', 'X'],
+    ['sectionSpace', 8],
+    ['sectionSpacePhone', 4],
   ])
     assert.match(
       msg(card({ section: { [k]: v } })),

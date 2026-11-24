@@ -28,8 +28,13 @@
  *            content: its rows) | 'third' | 'half' | 'full' (a third, half or all of the
  *            screen's height, svh). Its rows are always down to its lowest widget
  *            (uniform square cells); a taller section centres them vertically, and content
- *            taller than the minimum makes it taller. No space above or below it: the space
- *            between sections is empty rows (rows above its first widget)
+ *            taller than the minimum makes it taller. A section can also add space above it
+ *            in grid rows (sectionSpace, on phones sectionSpacePhone; the site's default is
+ *            layout.sectionSpace in site.json: ./space.js). That padding is N times the
+ *            section's --cell. It is not applied to the first visible section of a page
+ *            (that one already starts under the header); it is applied to the first footer
+ *            section. Empty rows above a widget or below a custom height still work, and
+ *            add to this padding when both are present.
  *   width    'contained': inside the page's side margins | 'full': edge to edge
  *   enabled  false: off: not on the public page at all; in the editor's preview rendered hidden
  *            (so it can be turned on live)
@@ -63,6 +68,7 @@ import { hideMissing, missingState } from './missing.js';
 import { isParts } from './parts.js';
 import { widgetItems } from './source.js';
 import { COLS, baseOf, phoneAreaOf, placeOf, setBase } from './grid.js';
+import { spaceRows } from './space.js';
 import { linkOf } from './links.js';
 import { scaledToFit } from './type.js';
 import { placeClass, placeVars } from './place.js';
@@ -83,6 +89,16 @@ export {
   setPhone,
   storesRows,
 } from './grid.js';
+export {
+  clampSpaceRows,
+  hasOwnSectionSpace,
+  hasOwnSectionSpacePhone,
+  phoneSectionSpaceOf,
+  sectionSpaceOf,
+  siteSectionSpaceOf,
+  siteSectionSpacePhoneOf,
+  spaceRows,
+} from './space.js';
 export { linkOf, linkProblems, makesLoop } from './links.js';
 /** A section's minimum height: its content, or a third, a half or all of the screen's. */
 export const HEIGHTS = ['custom', 'fit', 'third', 'half', 'full'];
@@ -185,10 +201,16 @@ export function sectionVars(s) {
   // rows.js keeps it so as the content grows (--minrows / --mminrows)
   const min = minRowsOf(s);
   const m = phoneMinRowsOf(s);
+  // a section's own space only (including 0, an override of the site default). The site's
+  // default is --section-space / --section-space-phone on :root (contain.js layoutVars)
+  const space = spaceRows(s?.sectionSpace);
+  const mspace = spaceRows(s?.sectionSpacePhone);
   return (
     `--rows:${Math.max(rowsOf(s), min)};--mrows:${Math.max(phoneRowsOf(s), m)}` +
     (min ? `;--minrows:${min}` : '') +
-    (m ? `;--mminrows:${m}` : '')
+    (m ? `;--mminrows:${m}` : '') +
+    (space !== null ? `;--sspace:${space}` : '') +
+    (mspace !== null ? `;--msspace:${mspace}` : '')
   );
 }
 

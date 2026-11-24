@@ -388,6 +388,13 @@ function checkSection(s, at) {
   }
   if (s.width !== undefined && !WIDTHS.includes(s.width)) bad('width', WIDTHS.join(' or '));
   if (s.enabled !== undefined && typeof s.enabled !== 'boolean') bad('enabled', 'true or false');
+  // space between sections, in grid rows (layout/space.js); 0 is an override of the site default
+  const spaceKey = (key) => {
+    if (s[key] !== undefined && !(whole(s[key], 0) && s[key] <= MAX_MIN_ROWS))
+      bad(key, `a whole number of rows from 0 to ${MAX_MIN_ROWS}`);
+  };
+  spaceKey('sectionSpace');
+  spaceKey('sectionSpacePhone');
   if (!Array.isArray(s.widgets)) return [...out, `${where}: "widgets" must be a list`];
   return [
     ...out,

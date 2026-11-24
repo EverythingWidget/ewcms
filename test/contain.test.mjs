@@ -28,17 +28,27 @@ test('contained width: N columns of the full-width cell, at least the side margi
   assert.equal(containedOf({ layout: { containedCols: 20 } }), 115); // invalid: the default
   assert.equal(layoutVars({}), '');
   assert.equal(layoutVars({ layout: { containedCols: 96 } }), '--contain: 96');
+  assert.equal(layoutVars({ layout: { sectionSpace: 8 } }), '--section-space: 8');
+  assert.equal(
+    layoutVars({ layout: { containedCols: 96, sectionSpace: 8, sectionSpacePhone: 0 } }),
+    '--contain: 96; --section-space: 8; --section-space-phone: 0',
+  );
+  assert.equal(layoutVars({ layout: { sectionSpace: 0 } }), ''); // 0 is the default: left out
 });
 
 test('contained width: validated in site.json, and on the page as --contain', () => {
   assert.deepEqual(checkLayout(undefined), []);
   assert.deepEqual(checkLayout({ containedCols: 100 }), []);
-  assert.deepEqual(checkLayout(3), ['"layout" must be an object { containedCols }']);
+  assert.deepEqual(checkLayout(3), ['"layout" must be an object { containedCols, sectionSpace, sectionSpacePhone }']);
   assert.deepEqual(checkLayout({ containedCols: 59, gap: 1 }), [
     '"layout.containedCols" must be a whole number of columns from 60 to 120',
     '"layout.gap" is not a layout setting',
   ]);
   assert.deepEqual(checkLayout({ containedCols: 100.5 }).length, 1);
+  assert.deepEqual(checkLayout({ sectionSpace: 8, sectionSpacePhone: 0 }), []);
+  assert.deepEqual(checkLayout({ sectionSpace: -1 }), [
+    '"layout.sectionSpace" must be a whole number of rows from 0 to 999',
+  ]);
   const content = loadContent(SITE_A);
   // the site's own setting doesn't matter: the default (no layout) and a set one
   const { layout: _own, ...plain } = content.site; // eslint-disable-line no-unused-vars

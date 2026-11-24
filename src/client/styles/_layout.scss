@@ -12,8 +12,13 @@
  * whose content needs more rows spans more, and modules/rows.js (src/render/layout/flow.js)
  * sets where every widget sits now (a linked widget below its leader) and how many rows it
  * spans (--fr / --frs) and the section's rows (--frows), which win over the stored ones.
- * While it measures, a section has .sec--measure. A section has no padding above or below
- * (the space between sections is empty rows); at the sides --cpad: a contained section is
+ * While it measures, a section has .sec--measure. Space between sections is a number of
+ * grid rows (padding-top: N * --cell; --sspace on the section, or the site's
+ * --section-space on :root; on phones --msspace / --section-space-phone, else the same
+ * count as desktop). The first visible section of a page does not use it (its padding-top
+ * is --nav-h, so row 1 starts under the header); the first footer section does. Empty
+ * rows above a widget or below a custom height still work and add to this padding. At
+ * the sides --cpad: a contained section is
  * --contain columns of the full-width cell wide, centred, at least the page's --pad from the
  * edges (src/render/layout/contain.js). Its height is at
  * least its rows, or its preset's (.sec--h-third / -half / -full: that much of the screen),
@@ -63,6 +68,10 @@
   // holds: under a cell is left over)
   place-content: center;
   padding: 0 var(--cpad);
+  // space between sections (F90): N rows of this section's cells. The first visible
+  // page section overrides this with --nav-h alone (below). A section's own --sspace
+  // (including 0) beats the site default on :root.
+  padding-top: calc(var(--sspace, var(--section-space, 0)) * var(--cell));
   scroll-margin-top: var(--header-h);
   &--full {
     --cell: calc(100vw / var(--cols));
@@ -217,6 +226,10 @@
 
     grid-template-columns: repeat(var(--mcols), var(--cell));
     grid-template-rows: repeat(var(--frows, var(--mrows)), var(--cell));
+    // same row count as desktop when a phone value is unset
+    padding-top: calc(
+      var(--msspace, var(--sspace, var(--section-space-phone, var(--section-space, 0)))) * var(--cell)
+    );
     > .wgt {
       grid-column: var(--mc, 1) / span var(--ms, var(--mcols));
       grid-row: var(--fr, var(--mr, 1)) / span var(--frs, var(--mrs, 1));
@@ -224,6 +237,9 @@
   }
   .sec--full {
     --cell: calc(100vw / var(--mcols));
+  }
+  [data-router-view] > .sec:nth-child(1 of :not([hidden])) {
+    padding-top: var(--nav-h);
   }
   // a phone height of its own (section.phone.height): instead of the desktop's
   .sec--mh-fit,

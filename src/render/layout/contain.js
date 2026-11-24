@@ -15,6 +15,7 @@
  * panel shows the widths at common window sizes (containedWidth).
  */
 import { COLS } from './grid.js';
+import { layoutSpaceVars, spaceRows } from './space.js';
 
 export const CONTAINED = 115;
 export const CONTAINED_MIN = 60;
@@ -30,24 +31,34 @@ export function containedOf(site) {
 /** A contained section's content width, px, in a window `vw` px wide (desktop). */
 export const containedWidth = (vw, n = CONTAINED) => Math.min(vw - 2 * padAt(vw), (vw * n) / COLS);
 
-/** The :root variable, when it isn't the default ('' then). */
+/** The :root variables, when they aren't the default ('' then). */
 export const layoutVars = (site) => {
+  const out = [];
   const n = containedOf(site);
-  return n === CONTAINED ? '' : `--contain: ${n}`;
+  if (n !== CONTAINED) out.push(`--contain: ${n}`);
+  out.push(...layoutSpaceVars(site));
+  return out.join('; ');
 };
 
 /** Problems of site.json "layout". */
 export function checkLayout(l) {
   if (l === undefined) return [];
   if (!l || typeof l !== 'object' || Array.isArray(l))
-    return ['"layout" must be an object { containedCols }'];
+    return ['"layout" must be an object { containedCols, sectionSpace, sectionSpacePhone }'];
   const out = [];
   const n = l.containedCols;
   if (n !== undefined && !(Number.isInteger(n) && n >= CONTAINED_MIN && n <= COLS))
     out.push(
       `"layout.containedCols" must be a whole number of columns from ${CONTAINED_MIN} to ${COLS}`,
     );
+  const rows = (key) => {
+    if (l[key] !== undefined && spaceRows(l[key]) === null)
+      out.push(`"layout.${key}" must be a whole number of rows from 0 to 999`);
+  };
+  rows('sectionSpace');
+  rows('sectionSpacePhone');
+  const keys = ['containedCols', 'sectionSpace', 'sectionSpacePhone'];
   for (const k of Object.keys(l))
-    if (k !== 'containedCols') out.push(`"layout.${k}" is not a layout setting`);
+    if (!keys.includes(k)) out.push(`"layout.${k}" is not a layout setting`);
   return out;
 }
