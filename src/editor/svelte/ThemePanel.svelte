@@ -1,12 +1,14 @@
 <!--
-  Theme (ui.panel 'theme', an area: ../areas.js): under its head (Back to areas) the text
-  styles' sizes (Type: site.json type, px, src/render/layout/type.js; the preview follows
-  them as they are typed, and its Preview shows every style: the type specimen,
-  render/layout/type-specimen.js, until Close preview or another area opens), Layout
-  (contained width, space between sections: site.json layout, src/render/layout/contain.js
-  and space.js; the preview follows as they are typed), then Fonts and styles (Coming soon).
-  The Fonts and styles row is the pages list's (PagesList.svelte, area 'theme'). Values stay
-  in site.json.
+  Theme (ui.panel 'theme', an area: ../areas.js): the theme's values, content/theme.json
+  (src/render/theme.js). Under its head (Back to areas): Color, the brand color (theme.json
+  color.brand, #rrggbb: --brand; a swatch at the hex field's start opens the native color
+  picker; empty: the theme's tokens.scss --brand, read from the preview and shown greyed), then
+  Typography, the text styles' sizes
+  (theme.json typography, px, src/render/layout/type.js; its Preview shows every style: the
+  type specimen, render/layout/type-specimen.js, until Close preview or another area opens;
+  fonts and text styles come here later), and Layout (contained width, space between sections:
+  theme.json layout, src/render/layout/contain.js and space.js). The preview follows every
+  value as it is typed (../theme-vars.js, from main.js).
 -->
 <script>
   import { untrack } from 'svelte';
@@ -14,14 +16,14 @@
   import Button from './Button.svelte';
   import Collapsible from './Collapsible.svelte';
   import AreaHead from './AreaHead.svelte';
-  import PagesList from './PagesList.svelte';
   import { ui } from './ui.svelte.js';
-  import { SITE } from '../../render/files.js';
+  import { THEME } from '../../render/files.js';
   import { COLS } from '../../render/layout/grid.js';
-  import { TYPE_KEYS, TYPE_SCALE, TYPE_VARS, typeVarList } from '../../render/layout/type.js';
+  import { TYPE_KEYS, TYPE_SCALE, typeOf } from '../../render/layout/type.js';
   import { isTypeSpecimen } from '../../render/layout/type-specimen.js';
   import { LINE_STYLES } from '../../render/text.js';
   import { isObject } from '../../render/is.js';
+  import { brandOf, isThemeColor } from '../../render/theme.js';
   import {
     CONTAINED,
     CONTAINED_MIN,
@@ -37,38 +39,56 @@
   // actions: showSpecimen, setPanel (main.js)
   let { live, bridge, actions } = $props();
 
+  const theme = () => live.get(THEME, '') || {};
   function set(key, value) {
-    live.store.set(SITE, `/${key}`, value, { key: `text:${SITE}#/${key}`, source: 'panel' });
+    live.store.set(THEME, `/${key}`, value, { key: `text:${THEME}#/${key}`, source: 'panel' });
   }
 
-  // Type: [key, label] of a style's fields (site.json type, by style and key)
+  // Color: the brand color. brand: theme.json's (lowercase), '' when unset; themeBrand: the
+  // theme's own (the preview's --brand where theme.json sets none), the placeholder
+  const brand = $derived(brandOf(theme()) || '');
+  let themeBrand = $state('');
+  $effect(() => {
+    ui.previewVersion;
+    if (brand) return;
+    const root = bridge.doc?.documentElement;
+    if (!root) return;
+    const v = root.ownerDocument.defaultView.getComputedStyle(root).getPropertyValue('--brand');
+    themeBrand = v.trim().toLowerCase();
+  });
+  // what the swatch shows: theme.json's, else the theme's; the native picker needs #rrggbb
+  const swatch = $derived(brand || themeBrand);
+  const pickerValue = $derived(isThemeColor(swatch) ? swatch : '#000000');
+  /** A brand color typed or picked: stored when it is #rrggbb, cleared when empty. */
+  function setBrand(value) {
+    const v = String(value ?? '').trim();
+    if (v && !isThemeColor(v)) return;
+    set('color/brand', v ? v.toLowerCase() : undefined);
+  }
+
+  // Typography: [key, label] of a style's fields (theme.json typography, by style and key)
   const TYPE_FIELDS = [
     ['min', 'Min (px)'],
     ['max', 'Max (px)'],
     ['line', 'Line'],
   ];
-  const typeVars = $derived.by(() => {
-    return typeVarList(live.get(SITE, '') || {});
-  });
-  // the theme's sizes (the placeholders): the preview's own, read where site.json sets none
+  // (as a string: an edit elsewhere in theme.json, a brand color dragged, doesn't wake the
+  // placeholders below)
+  const ownKey = $derived(JSON.stringify(typeOf(theme())));
+  // the theme's sizes (the placeholders): the preview's own (tokens.scss), read where
+  // theme.json sets none (main.js has put theme.json's on the preview: ../theme-vars.js)
   let themeType = $state(structuredClone(TYPE_SCALE));
-  // the preview's text follows the type as it is typed (the page's head has it after Save)
   $effect(() => {
     ui.previewVersion;
+    const mine = JSON.parse(ownKey);
     const root = bridge.doc?.documentElement;
     if (!root) return;
-    const set = new Map(typeVars);
-    for (const name of TYPE_VARS) {
-      if (set.has(name)) root.style.setProperty(name, set.get(name));
-      else root.style.removeProperty(name);
-    }
     const css = root.ownerDocument.defaultView.getComputedStyle(root);
     const next = untrack(() => structuredClone($state.snapshot(themeType)));
     for (const k of Object.keys(TYPE_SCALE))
       for (const [key, suffix] of TYPE_KEYS) {
-        const name = `--type-${k}-${suffix}`;
-        const v = parseFloat(css.getPropertyValue(name));
-        if (!set.has(name) && Number.isFinite(v)) next[k][key] = v;
+        const v = parseFloat(css.getPropertyValue(`--type-${k}-${suffix}`));
+        if (mine[k]?.[key] === undefined && Number.isFinite(v)) next[k][key] = v;
       }
     themeType = next;
   });
@@ -77,39 +97,26 @@
   /** A style's setting typed (undefined: cleared, the theme's); empty objects left out. */
   function setType(k, key, value) {
     if (value !== undefined && !(typeof value === 'number' && value > 0)) return;
-    const own = live.get(SITE, '/type');
-    const type = isObject(own) ? structuredClone($state.snapshot(own)) : {};
+    const stored = live.get(THEME, '/typography');
+    const type = isObject(stored) ? structuredClone($state.snapshot(stored)) : {};
     const style = { ...(isObject(type[k]) ? type[k] : {}), [key]: value };
     if (value === undefined) delete style[key];
     if (Object.keys(style).length) type[k] = style;
     else delete type[k];
-    live.store.set(SITE, '/type', Object.keys(type).length ? type : undefined, {
-      key: `text:${SITE}#/type/${k}/${key}`,
+    live.store.set(THEME, '/typography', Object.keys(type).length ? type : undefined, {
+      key: `text:${THEME}#/typography/${k}/${key}`,
       source: 'panel',
     });
   }
   // Layout: a contained section's columns (layout/contain.js), its width at common windows
   const contained = $derived.by(() => {
-    return containedOf(live.get(SITE, '') || {});
+    return containedOf(theme());
   });
   const WINDOWS = [1280, 1366, 1440, 1536, 1920];
   // space between sections, in grid rows (F90). empty / 0 on desktop is unset (the default).
   // phone empty follows the desktop count; 0 is stored so it can override the desktop value.
-  const siteSpace = $derived(spaceRows((live.get(SITE, '') || {}).layout?.sectionSpace));
-  const siteSpacePhone = $derived(spaceRows((live.get(SITE, '') || {}).layout?.sectionSpacePhone));
-  // the preview follows as it is typed (the page's head has it after Save)
-  $effect(() => {
-    ui.previewVersion;
-    const root = bridge.doc?.documentElement;
-    if (!root) return;
-    root.style.setProperty('--contain', String(contained));
-    const space = siteSpace ?? 0;
-    if (space) root.style.setProperty('--section-space', String(space));
-    else root.style.removeProperty('--section-space');
-    if (siteSpacePhone !== null && siteSpacePhone !== undefined)
-      root.style.setProperty('--section-space-phone', String(siteSpacePhone));
-    else root.style.removeProperty('--section-space-phone');
-  });
+  const siteSpace = $derived(spaceRows(theme().layout?.sectionSpace));
+  const siteSpacePhone = $derived(spaceRows(theme().layout?.sectionSpacePhone));
   function setContained(value) {
     if (!Number.isInteger(value) || value < CONTAINED_MIN || value > COLS) return;
     set('layout/containedCols', value);
@@ -134,7 +141,46 @@
 <section class="ed-body" aria-label="Theme">
   <AreaHead id="theme" {actions} />
 
-  <Collapsible key="theme:type" title="Type">
+  <Collapsible key="theme:color" title="Color">
+    <p class="hint">
+      The brand color: the header's glass, menus, buttons and links take it. Empty: the theme's
+      (shown greyed).
+    </p>
+    <!-- leaving the hex field: it shows what is stored (a half-typed or picked value) -->
+    <div
+      class={['brand', !brand && 'is-unset']}
+      style:--swatch={swatch || 'transparent'}
+      onfocusout={(e) => {
+        if (e.target.classList?.contains('tf__input')) e.target.value = brand;
+      }}
+    >
+      <Field
+        edit="{THEME}#/color/brand"
+        label="Brand color"
+        placeholder={themeBrand}
+        value={brand}
+        help="A hex color, #rrggbb. The swatch opens the color picker."
+        reset={{
+          on: !!brand,
+          label: "Use the theme's brand color",
+          title: themeBrand ? `Use the theme's (${themeBrand})` : "Use the theme's",
+          run: () => setBrand(''),
+        }}
+        changed={live.changed(THEME, '/color/brand')}
+        onvalue={setBrand}
+      />
+      <label class="brand__swatch" title="Pick a color">
+        <input
+          type="color"
+          value={pickerValue}
+          aria-label="Brand color: pick"
+          oninput={(e) => setBrand(e.currentTarget.value)}
+        />
+      </label>
+    </div>
+  </Collapsible>
+
+  <Collapsible key="theme:typography" title="Typography">
     <p class="hint">
       The usual size of each text style, in pixels: it grows with the window between Min and Max.
       When they are the same, the size is fixed. Empty: the theme's (shown greyed).
@@ -155,13 +201,13 @@
           <div class="scale">
             {#each TYPE_FIELDS as [key, label] (key)}
               <Field
-                edit="{SITE}#/type/{k}/{key}"
+                edit="{THEME}#/typography/{k}/{key}"
                 {label}
                 type="number"
                 empty
                 placeholder={String(themeType[k][key])}
-                value={live.get(SITE, `/type/${k}/${key}`)}
-                changed={live.changed(SITE, `/type/${k}/${key}`)}
+                value={live.get(THEME, `/typography/${k}/${key}`)}
+                changed={live.changed(THEME, `/typography/${k}/${key}`)}
                 onvalue={(value) => setType(k, key, value)}
               />
             {/each}
@@ -179,15 +225,15 @@
     </p>
     <div class="fields">
       <Field
-        edit="{SITE}#/layout/containedCols"
+        edit="{THEME}#/layout/containedCols"
         label="Contained width (columns)"
         type="number"
         value={contained}
-        changed={live.changed(SITE, '/layout/containedCols')}
+        changed={live.changed(THEME, '/layout/containedCols')}
         onvalue={setContained}
       />
       <Field
-        edit="{SITE}#/layout/sectionSpace"
+        edit="{THEME}#/layout/sectionSpace"
         label="Space between sections"
         type="number"
         half
@@ -196,11 +242,11 @@
         value={siteSpace ?? undefined}
         help="Rows of the grid between sections. Empty or 0: none. The first section of a page starts under the header and does not use this."
         tip={spaceTip}
-        changed={live.changed(SITE, '/layout/sectionSpace')}
+        changed={live.changed(THEME, '/layout/sectionSpace')}
         onvalue={(value) => setSiteSpace('sectionSpace', value)}
       />
       <Field
-        edit="{SITE}#/layout/sectionSpacePhone"
+        edit="{THEME}#/layout/sectionSpacePhone"
         label="Space between sections (phone)"
         type="number"
         half
@@ -209,7 +255,7 @@
         value={siteSpacePhone ?? undefined}
         help="On phones. Empty: the same number of rows as desktop."
         tip={spacePhoneTip}
-        changed={live.changed(SITE, '/layout/sectionSpacePhone')}
+        changed={live.changed(THEME, '/layout/sectionSpacePhone')}
         onvalue={(value) => setSiteSpace('sectionSpacePhone', value, true)}
       />
     </div>
@@ -219,12 +265,45 @@
       {/each}
     </ul>
   </Collapsible>
-
-  <PagesList {live} {actions} area="theme" showHead={false} />
 </section>
 
 <style lang="scss">
   @use '../styles/mixins' as *;
+
+  // Color: the swatch sits in the hex field, at its start (the native picker under it)
+  .brand {
+    position: relative;
+
+    :global(.tf__input) {
+      padding-left: calc(var(--space-2) + 20px + var(--space-2));
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .brand__swatch {
+    position: absolute;
+    // under the label row (24px and its 8px margin), centred in the input's height
+    top: calc(24px + var(--space-2) + (var(--size-control) - 20px) / 2);
+    left: calc((var(--size-control) - 20px) / 2);
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-sm);
+    background: var(--swatch);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--white) 24%, transparent);
+    cursor: pointer;
+    overflow: hidden;
+
+    input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+  }
+
+  .brand.is-unset .brand__swatch {
+    opacity: 0.6;
+  }
 
   // a style's name with its Min, Max and Line; more space between styles than under the name
   .styles {
@@ -237,7 +316,7 @@
     margin-top: 0;
   }
 
-  // Type: a style's Min, Max and Line in one row
+  // Typography: a style's Min, Max and Line in one row
   .scale {
     display: grid;
     // (minmax: a number input's default width can't widen a column)

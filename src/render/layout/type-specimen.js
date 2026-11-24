@@ -1,5 +1,5 @@
 /**
- * Theme › Type's Preview (dev only): the type scale on a page of its own, at /__type/.
+ * Theme › Typography's Preview (dev only): the type scale on a page of its own, at /__type/.
  * One full-width section of one Text widget per style (src/render/text.js LINE_STYLES), each the
  * width of the grid, following the one before 4 rows down, its text the style's name and tag
  * ("Heading · H2"). Made here from the content, never a file: the dev middleware alone serves
@@ -36,7 +36,7 @@ export function typeSpecimen(content) {
     id: SPECIMEN_PAGE,
     pid: 'pg-type',
     page: SPECIMEN_PAGE,
-    title: 'Type',
+    title: 'Typography',
     description: '',
     noindex: true,
   };

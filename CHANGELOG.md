@@ -4,6 +4,43 @@ Releases are tagged `vX.Y.Z` on main; a site pins one in its `package.json`
 (`"ewcms": "github:EverythingWidget/ewcms#vX.Y.Z"`). Breaking changes are marked **Breaking** and
 say what a site must do before it bumps its pin.
 
+## Unreleased
+
+### Breaking
+
+- **Breaking: `theme/theme.json` is `theme/meta.json`.** The theme folder's manifest (`name`,
+  `themeColor`, `colorScheme`, `preloads`) is renamed, so `theme.json` only means
+  `content/theme.json`. No migration: `git mv theme/theme.json theme/meta.json` in the commit
+  that bumps the pin. Until then its preloads and color-scheme are not used; `ewcms check` warns
+  while a `theme/theme.json` is left.
+- **Breaking: the look's values move to `content/theme.json`.** A new content file next to
+  `site.json`: `color.brand` (`--brand`, `#rrggbb`), `color.themeColor` (the theme-color meta),
+  `typography` (was `site.json` `type`, same shape) and `layout` (was `site.json` `layout`). The
+  page head writes them over the theme's `tokens.scss` defaults (`:root:root`); left out, the
+  defaults apply and no theme-color meta is written. The head's style that holds them (and an
+  album's `--accent`) is `<style id="theme-vars">` (was `id="accent-init"`), so `theme-vars`, not
+  `accent-init`, is a reserved id a section's name can't take. `site.json` keeps only site facts. No
+  migration: `ewcms check` warns about `accent`, `themeColor`, `type`, `typography` or `layout`
+  left in `site.json` and `themeColor` left in `theme/meta.json` (all ignored). See
+  docs/THEME-MIGRATION.md.
+- **Breaking: `site.json` `accent` is gone.** The brand colour is `content/theme.json`
+  `color.brand` (or the theme's `--brand` default in `theme/tokens.scss`). Album item `accent`
+  values are unchanged. First run no longer asks for a look colour; Site settings no longer has
+  Accent color.
+- **Glass follows `--brand`.** The glass surfaces (the header's pill, dropdowns, the phone menu,
+  `.btn` such as the Button widget and the Form's Send, the carousel's arrows) are tinted by
+  `--brand`, so they stay the brand colour on every page. An album's `--accent` now tints only
+  the background glow. A site whose `--accent` already equals `--brand` looks the same.
+
+### Editor
+
+- **Theme edits `content/theme.json`.** Color (Brand color: a hex field with a swatch that opens
+  the color picker; empty, the theme's `--brand`, shown greyed), Typography (was Type; Fonts and
+  styles is folded into it, so its Coming soon row is gone) and Layout read and save
+  `content/theme.json`; Save makes the
+  file when the site has none. The preview follows every value as it is typed, undo and redo
+  too, without a reload. A section's space placeholder follows `theme.json` `layout`.
+
 ## 0.11.0 (2026-11-23)
 
 ### Breaking: what a site must do before bumping to 0.11.0

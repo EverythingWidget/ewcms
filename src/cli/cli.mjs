@@ -97,9 +97,7 @@ export async function checkContentOf(root, { warnings = [] } = {}) {
   const site = loadSiteConfig(root);
   const problems = [];
   // the render module as Node loads it (the registry its checks use) + the site's widgets
-  const { registerWidgets } = await import(
-    pathToFileURL(enginePath('src/widgets/index.js')).href
-  );
+  const { registerWidgets } = await import(pathToFileURL(enginePath('src/widgets/index.js')).href);
   await registerSiteWidgets(root, { register: registerWidgets });
   const { setContentDir, ROOT_FILES } = await import(
     pathToFileURL(enginePath('src/render/files.js')).href
@@ -297,7 +295,9 @@ const tokensSet = (scss) => [...new Set(scss.match(/(?<![\w-])--[\w-]+(?=\s*:)/g
  * A warning for a site whose theme misses tokens of the look (ewcms default-site/theme/tokens.scss):
  * the engine has no theme of its own, so the chrome and widgets would read them unset. The
  * site's tokens.scss and overrides.scss count. The type scale (--type-*) on its own line: the
- * engine has defaults for it, and what site.json "type" sets counts. '' when none is missing.
+ * engine has defaults for it, and what content/theme.json "typography" sets counts. A leftover
+ * theme/theme.json (now theme/meta.json) is named too, and a themeColor in meta.json (it is
+ * content/theme.json "color" now). '' when there is nothing to say.
  * Not a failure.
  */
 export function themeWarning(site) {
@@ -317,6 +317,19 @@ export function themeWarning(site) {
   const rel =
     posixPath(path.relative(site.root, path.resolve(site.root, site.config.themeDir))) || '.';
   const out = [];
+  // theme/theme.json is theme/meta.json now (no migration): a leftover one is read nowhere
+  if (site.themeDir && fs.existsSync(path.join(site.themeDir, 'theme.json')))
+    out.push(
+      `[check] ${rel}/theme.json is now ${rel}/meta.json (name, themeColor, colorScheme, preloads): ` +
+        `rename it (git mv ${rel}/theme.json ${rel}/meta.json). Until then its preloads and ` +
+        `color-scheme are not used.`,
+    );
+  // themeColor is content/theme.json's now (one source): meta.json's is read nowhere
+  if (site.themeMeta?.themeColor !== undefined)
+    out.push(
+      `[check] ${rel}/meta.json "themeColor" is not used: the theme-color is content/theme.json ` +
+        `"color": { "themeColor" }. Move it there.`,
+    );
   // a token renamed (no alias: the old name is read nowhere): the new name to set
   const renamed = Object.entries(RENAMED_TOKENS)
     .filter(([old, now]) => own.has(old) && look.includes(now))
@@ -326,7 +339,7 @@ export function themeWarning(site) {
     out.push(
       `[check] ${rel}/tokens.scss misses ${look.length} token(s) of the look (${look.join(', ')}): ` +
         `ewcms has no default theme, so its chrome and widgets read them unset.${renamed} Copy them from ` +
-        `ewcms default-site/theme/tokens.scss (and fonts.scss, theme.json): see ewcms docs/THEME-MIGRATION.md`,
+        `ewcms default-site/theme/tokens.scss (and fonts.scss, meta.json): see ewcms docs/THEME-MIGRATION.md`,
     );
   // the type scale has the engine's defaults (site-core/_tokens.scss): a site sees it, not unset
   if (type.length)
@@ -334,7 +347,7 @@ export function themeWarning(site) {
       `[check] ${rel}/tokens.scss doesn't set ${type.length} token(s) of the type scale ` +
         `(${type.join(', ')}): the engine's defaults apply. Copy them from ewcms ` +
         `default-site/theme/tokens.scss (with those defaults) and set the sizes there, or per site ` +
-        `in site.json "type"`,
+        `in content/theme.json "typography"`,
     );
   return out.join('\n');
 }
@@ -342,12 +355,12 @@ export function themeWarning(site) {
 /** Tokens of the look renamed, old: new (CHANGELOG, Breaking): check names the new one. */
 export const RENAMED_TOKENS = { '--f-mono': '--f-body' };
 
-/** The type scale tokens a site's site.json "type" sets (--type-<style>-min, -max, -lh). */
+/** The type scale tokens a site's content/theme.json "typography" sets (--type-<style>-min, -max, -lh). */
 function siteTypeTokens(site) {
-  const file = path.join(site.contentRootDir || '', 'site.json');
+  const file = path.join(site.contentRootDir || '', 'theme.json');
   let type;
   try {
-    type = JSON.parse(fs.readFileSync(file, 'utf8')).type;
+    type = JSON.parse(fs.readFileSync(file, 'utf8')).typography;
   } catch {
     return [];
   }

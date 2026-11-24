@@ -13,7 +13,7 @@ import { popupStays } from '../multi-select.js';
  *   ui.panel      the area the side panel shows (../areas.js):
  *                   'areas'       the areas' list (AreaList.svelte), where each one opens
  *                   'pages'       Pages: the pages list (browse), or the page open (edit)
- *                   'theme'       Theme: Type, Layout, and Fonts and styles (Coming soon)
+ *                   'theme'       Theme: Color, Typography and Layout (content/theme.json)
  *                   'templates'   Templates: the item templates
  *                   'animations'  Animations: the default timing, the library, the page entrance
  *                   'site-settings'  Site settings: what is the same on every page
@@ -75,7 +75,7 @@ export const ui = $state({
    */
   focusParam: null,
   /**
-   * The page the type specimen (Theme › Type › Preview, /__type/) replaced in the
+   * The page the type specimen (Theme › Typography › Preview, /__type/) replaced in the
    * preview: Close preview and the Pages area go back to it ('' when it isn't shown).
    */
   specimenFrom: '',

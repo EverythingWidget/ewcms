@@ -8,9 +8,5 @@
   "description": "A new site built with ewcms.",
   "robots": "index",
   "timezone": "Europe/Amsterdam",
-  "accent": "#cfc8b8",
-  "social": [],
-  "layout": {
-    "containedCols": 96
-  }
+  "social": []
 }

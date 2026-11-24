@@ -73,25 +73,25 @@ export const withDevCss = (html) => html.replace('</head>', `${DEV_CSS}\n</head>
 const CORE_STYLES = enginePath('src/client/styles');
 
 /**
- * The theme's part of a page's head (theme.json), at the shell's <!--theme-meta--> and
- * <!--theme-preloads-->: the theme-color (site.json themeColor first) and color-scheme metas,
- * and its preloads ({ href, as, type?, crossorigin? }).
+ * The theme's part of a page's head (theme/meta.json), at the shell's <!--theme-meta--> and
+ * <!--theme-preloads-->: the theme-color (content/theme.json color.themeColor, from the render)
+ * and color-scheme metas, and its preloads ({ href, as, type?, crossorigin? }).
  */
-export function themeHead(theme = {}, themeColor = '') {
-  const color = themeColor || theme.themeColor;
+export function themeMetaHead(themeMeta = {}, themeColor = '') {
   const meta = [
-    color && `<meta name="theme-color" content="${attr(color)}" />`,
-    theme.colorScheme && `<meta name="color-scheme" content="${attr(theme.colorScheme)}" />`,
+    themeColor && `<meta name="theme-color" content="${attr(themeColor)}" />`,
+    themeMeta.colorScheme &&
+      `<meta name="color-scheme" content="${attr(themeMeta.colorScheme)}" />`,
   ].filter(Boolean);
-  const preloads = (Array.isArray(theme.preloads) ? theme.preloads : []).map(
+  const preloads = (Array.isArray(themeMeta.preloads) ? themeMeta.preloads : []).map(
     (p) =>
       `<link rel="preload" href="${attr(p.href)}" as="${attr(p.as || 'font')}"` +
       `${p.type ? ` type="${attr(p.type)}"` : ''}${p.crossorigin ? ' crossorigin' : ''} />`,
   );
   return { meta: meta.join('\n    '), preloads: preloads.join('\n    ') };
 }
-const setTheme = (shell, theme, themeColor) => {
-  const t = themeHead(theme, themeColor);
+const setThemeMeta = (shell, themeMeta, themeColor) => {
+  const t = themeMetaHead(themeMeta, themeColor);
   return shell.replace('<!--theme-meta-->', t.meta).replace('<!--theme-preloads-->', t.preloads);
 };
 
@@ -102,8 +102,8 @@ export const editorShell = (shell, site = {}) =>
     `<title>${site.name ? `Editor · ${attr(site.name)}` : 'Editor'}</title>`,
   );
 
-const fill = (shell, { head, body, lang, themeColor }, theme) =>
-  setTheme(setLang(shell, lang), theme, themeColor)
+const fill = (shell, { head, body, lang, themeColor }, themeMeta) =>
+  setThemeMeta(setLang(shell, lang), themeMeta, themeColor)
     .replace('<!--ssr-head-->', head)
     .replace('<!--ssr-body-->', body);
 
@@ -324,7 +324,7 @@ export default function staticSite() {
           // the template editor's preview (/__template/<id>/): one List, one sample item
           const preview = !route && templatePreview(content, templateOfPath(pathname));
           if (preview) ({ route, content: shown } = preview);
-          // Theme › Type's Preview (/__type/): a Text widget per style
+          // Theme › Typography's Preview (/__type/): a Text widget per style
           if (!route && isTypeSpecimen(pathname))
             ({ route, content: shown } = typeSpecimen(content));
           if (route?.redirect) {
@@ -341,7 +341,7 @@ export default function staticSite() {
               fill(
                 shell,
                 renderRoute(route, shown, { editable: true, unbuilt: !!draft }),
-                loadSiteConfig(root).theme,
+                loadSiteConfig(root).themeMeta,
               ),
             ),
           );
@@ -441,7 +441,7 @@ export default function staticSite() {
           file,
           route.redirect
             ? redirectPage(route.redirect)
-            : fill(shell, renderRoute(route, content), loadSiteConfig(root).theme),
+            : fill(shell, renderRoute(route, content), loadSiteConfig(root).themeMeta),
         );
       }
       fs.writeFileSync(path.join(outDir, 'sitemap.xml'), sitemapXml(routes, content.site.url));

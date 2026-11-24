@@ -20,6 +20,7 @@ import {
   REDIRECTS,
   SITE,
   STRINGS,
+  THEME,
   VERSION,
   isTemplate,
   isParamName,
@@ -34,6 +35,7 @@ import {
   templateIdOf,
 } from './files.js';
 import { CORE_STRINGS } from './strings.js';
+import { checkTheme } from './theme.js';
 import { checkSchema } from './schemas.js';
 import { RETIRED_WIDGETS, WIDGET_TYPES } from '../widgets/index.js';
 import {
@@ -47,9 +49,8 @@ import {
   ratioOf,
 } from './layout/index.js';
 import { linkProblems } from './layout/links.js';
-import { checkScale, checkType } from './layout/type.js';
+import { checkScale } from './layout/type.js';
 import { checkPlacement } from './layout/place.js';
-import { checkLayout } from './layout/contain.js';
 import { isId } from './layout/ids.js';
 import { linkProblem } from './hrefs.js';
 import { checkMotion, defaultsProblems } from './layout/motion.js';
@@ -111,7 +112,22 @@ const required = (data, keys, kind) =>
     .filter((k) => (kind === 'object' ? !isObject(data[k]) : typeof data[k] !== kind))
     .map((k) => `"${k}" must be ${kind === 'object' ? 'an object' : `a ${kind}`}`);
 
+/** site.json keys that are content/theme.json's now: the warning for a leftover one. */
+const MOVED_TO_THEME = {
+  accent:
+    '"accent" is no longer used: set the brand color in content/theme.json "color": { "brand" } (Theme › Color).',
+  themeColor:
+    '"themeColor" moved to content/theme.json "color": { "themeColor" }: site.json\'s is ignored.',
+  type: '"type" moved to content/theme.json "typography" (Theme › Typography): site.json\'s is ignored.',
+  typography: '"typography" is not a site setting: text sizes are content/theme.json "typography".',
+  layout:
+    '"layout" moved to content/theme.json "layout" (Theme › Layout): site.json\'s is ignored.',
+};
+
 function checkSite(d) {
+  // leftovers: the look is content/theme.json's (ignored here, only a warning)
+  for (const [key, warning] of Object.entries(MOVED_TO_THEME))
+    if (d[key] !== undefined) warnings.push(warning);
   return [
     ...required(d, ['name', 'url'], 'string'),
     ...optional(d, {
@@ -121,14 +137,11 @@ function checkSite(d) {
       ogPhoto: 'string',
       lang: 'string',
       entityType: 'string',
-      themeColor: 'string',
       timezone: 'string',
       social: 'array',
       forms: 'object',
     }),
     ...checkForms(d.forms),
-    ...checkType(d.type, d.typography),
-    ...checkLayout(d.layout),
     ...(d.robots === undefined || ['index', 'noindex'].includes(d.robots)
       ? []
       : ['"robots" must be "index" or "noindex"']),
@@ -646,6 +659,7 @@ export function checkContent(file, data) {
   if (schemaIdOf(file)) return checkSchema(d);
   if (file === REDIRECTS) return checkRedirects(d.redirects);
   if (file === SITE) return checkSite(d);
+  if (file === THEME) return checkTheme(d);
   if (file === ANIMATIONS) return checkAnimations(d);
   if (file === HEADER) return checkHeader(d);
   if (file === STRINGS)

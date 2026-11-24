@@ -1,6 +1,6 @@
 <!--
   "Coming soon" where a row's › would be (a row not built yet, status 'soon': ../areas.js):
-  the area list's and Theme's Fonts and styles. The row itself: the soon-row mixin.
+  the area list's cards. The row itself: the soon-row mixin.
 -->
 <script>
   import { COMING_SOON } from '../areas.js';

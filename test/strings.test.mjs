@@ -47,13 +47,15 @@ test('strings.json: groups are objects', () => {
   assert.equal(checkContent('strings.json', { version: 1, carousel: 'x' }).length, 1);
 });
 
-test('site.json: lang and themeColor reach the shell, entityType the JSON-LD', () => {
+test('site.json lang and theme.json themeColor reach the shell, entityType the JSON-LD', () => {
   const base = loadContent(SITE_A);
   const route = getRoutes(base).find((r) => r.page === 'home');
-  const site = { ...base.site, lang: 'nl', themeColor: '#123456', entityType: 'Organization' };
-  const r = renderRoute(route, { ...base, site });
+  const site = { ...base.site, lang: 'nl', themeColor: '#654321', entityType: 'Organization' };
+  const theme = { color: { themeColor: '#123456' } };
+  const r = renderRoute(route, { ...base, site, theme });
   assert.equal(r.lang, 'nl');
-  assert.equal(r.themeColor, '#123456');
+  assert.equal(r.themeColor, '#123456'); // theme.json's; site.json's is a leftover, ignored
+  assert.equal(renderRoute(route, { ...base, site }).themeColor, ''); // none: the shell's own
   assert.match(r.head, /"@type":"Organization"/);
   assert.match(renderRoute(route, base).head, /"@type":"Person"/, 'the default');
 });

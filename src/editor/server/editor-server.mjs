@@ -32,8 +32,9 @@
  * Host header (widgets DNS rebinding) and, when present, a same-origin Origin header.
  * Only existing JSON files in content/en/pages/, content/en/sources/, content/en/strings.json,
  * the shared files at the content root (content/site.json, header.json, ...) and content/templates/ can be
- * read or written (ewcms.config.mjs contentDir, src/render/files.js FOLDERS); Save never creates files: only
- * the pages list does (POST /pages), and only page files under content/en/pages/.
+ * read or written (ewcms.config.mjs contentDir, src/render/files.js FOLDERS); Save creates no file but
+ * content/theme.json (local-data-layer.mjs CREATABLE): the pages list makes pages (POST /pages), and
+ * only page files under content/en/pages/.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -781,7 +782,7 @@ export function renderOp(render, root, drafts, { path: at, file, data, ids, sess
     const html = render.renderRouteSections(preview.route, preview.content, ids, file, page);
     return { status: 200, body: { ok: true, html } };
   }
-  // Theme › Type's Preview (/__type/): made from the drafts, no file of its own
+  // Theme › Typography's Preview (/__type/): made from the drafts, no file of its own
   // (this module's, like the template preview's: not the Vite-loaded render's)
   if (isTypeSpecimen(at)) {
     const { route, content } = typeSpecimen(loadContent(root, draftsFor(drafts, session)));

@@ -44,7 +44,7 @@ const hex = ({ r, g, b }) =>
 /**
  * Most "vivid" colour of a photo: bucket pixels by hue, weight by saturation ×
  * mid-lightness, return the average colour of the strongest bucket. Greyscale
- * photos return a grey (templates then fall back to the site accent).
+ * photos return a grey (templates then leave --accent to the theme).
  */
 async function vividColor(sharp, input) {
   const { data, info } = await sharp(input)

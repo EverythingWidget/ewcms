@@ -1,5 +1,5 @@
-/** Album accent: tween the --accent CSS variable (tints glass + background glow). --brand (the
- * site's fixed colour: links, menu, focus) is never touched here. */
+/** Album accent: tween the --accent CSS variable (tints the background glow). --brand (the
+ * site's fixed colour: glass, links, menu, focus) is never touched here. */
 import { gsap, reducedMotion } from './lib/env.js';
 import { transitions } from './anim/engine.js';
 

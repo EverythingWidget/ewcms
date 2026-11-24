@@ -72,7 +72,7 @@ test('root files: the shared files load from the content root; a leftover en/set
   fs.mkdirSync(path.join(root, 'content/en/settings'));
   fs.writeFileSync(path.join(root, 'content/en/settings/nav.json'), '{ "version": 1 }');
   const old =
-    /content\/en\/settings\/ is no longer read: its files go to content\/ \(site\.json, header\.json/;
+    /content\/en\/settings\/ is no longer read: its files go to content\/ \(site\.json, theme\.json, header\.json/;
   assert.throws(() => loadContent(root), old);
   assert.throws(() => readContentFiles(root), old);
 });
@@ -188,6 +188,32 @@ test('save: writes every file, formatted, with no temporary files left', () => {
     '{ "version": 1, "kind": "page", "id": "pg-t047", "title": "New" }\n',
   );
   assert.deepEqual(fs.readdirSync(path.join(root, 'content/en', 'pages')), ['index.json']);
+});
+
+test('theme.json: read as { "version": 1 } until Save makes it; empty sections left out', () => {
+  const root = tree();
+  const file = path.join(root, 'content/theme.json');
+  assert.equal(fs.existsSync(file), false);
+  assert.deepEqual(readContentFiles(root)['theme.json'], { version: 1 });
+  // a bad value: nothing written
+  assert.equal(save(root, { 'theme.json': { version: 1, color: { brand: 'red' } } }).status, 400);
+  assert.equal(fs.existsSync(file), false);
+  const r = save(root, {
+    'theme.json': { version: 1, color: { brand: '#cc2020' }, typography: { heading: {} }, layout: {} },
+  });
+  assert.equal(r.status, 200);
+  assert.deepEqual(JSON.parse(read(root, 'theme.json')), { version: 1, color: { brand: '#cc2020' } });
+  assert.deepEqual(readContentFiles(root)['theme.json'], { version: 1, color: { brand: '#cc2020' } });
+  // saved in the Theme area's order: color, typography, layout
+  assert.equal(
+    save(root, { 'theme.json': { version: 1, layout: { containedCols: 96 }, color: { brand: '#cc2020' } } })
+      .status,
+    200,
+  );
+  assert.deepEqual(Object.keys(JSON.parse(read(root, 'theme.json'))), ['version', 'color', 'layout']);
+  // no other root file is made by Save
+  assert.equal(save(root, { 'header.json': { version: 1 } }).status, 400);
+  assert.equal(fs.existsSync(path.join(root, 'content/header.json')), false);
 });
 
 test('writeFileAtomic: replaces the file in one step; a failed write keeps the old file', () => {

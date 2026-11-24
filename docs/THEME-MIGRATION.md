@@ -1,5 +1,38 @@
 # Theme migration
 
+## Unreleased: the look's values are `content/theme.json`
+
+The brand colour, the theme-color, the text sizes and the layout are `content/theme.json` (the
+Theme area: Color, Typography, Layout), not `site.json` or the theme folder. No migration: in the
+commit that bumps the pin, create it and delete the old keys:
+
+```json
+{
+  "version": 1,
+  "color": { "brand": "#cc2020", "themeColor": "#050505" },
+  "typography": { "heading": { "min": 38, "max": 104, "line": 0.92 } },
+  "layout": { "containedCols": 96 }
+}
+```
+
+- `site.json` `type` is `theme.json` `typography` (same shape), `site.json` `layout` is
+  `theme.json` `layout`, `site.json` `themeColor` and `theme/meta.json` `themeColor` are
+  `theme.json` `color.themeColor`. `site.json` `accent` is gone: `color.brand` (`#rrggbb`).
+- Every key is optional: left out, `theme/tokens.scss` keeps its default (`--brand`,
+  `--type-*`) and no theme-color meta is written.
+- `theme/tokens.scss`: `--brand` is a plain default now (`--brand: #cfc8b8;`); a
+  `var(--site-accent, …)` there falls back to its default (`--site-accent` is never set).
+- `npx ewcms check` warns while `site.json` still has `accent`, `themeColor`, `type`,
+  `typography` or `layout`, or `theme/meta.json` has `themeColor` (all ignored).
+
+## Unreleased: `theme/theme.json` is `theme/meta.json`
+
+The theme folder's manifest (`name`, `themeColor`, `colorScheme`, `preloads`) is
+`theme/meta.json`; `theme.json` now means `content/theme.json` (the Theme area's values). No
+migration: in the commit that bumps the pin, `git mv theme/theme.json theme/meta.json`. Until
+then its preloads and color-scheme are not used, and `npx ewcms check` says
+`theme/theme.json is now theme/meta.json`.
+
 ## Unreleased: `--f-mono` is `--f-body`
 
 The body and UI font token is `--f-body` (it was `--f-mono`, whatever the font). No alias: rename
@@ -9,6 +42,10 @@ optional tokens after the default site's `// @optional` line (the type styles' w
 colour, the body text, the nav, the button, …) need nothing: unset, a site looks as before.
 
 ## 0.8.0: the engine has no theme of its own
+
+> **Now `theme/meta.json`:** the steps below and in 0.1.37 are history and say `theme/theme.json`;
+> since the Unreleased change above that file is `theme/meta.json` (and its `themeColor` is
+> `content/theme.json` `color.themeColor`). Don't recreate a `theme/theme.json`.
 
 `theme-default/` is gone. The look (its tokens, fonts and `theme.json`) moved to `default-site/theme/`,
 which `ewcms dev` copies into a new site (a folder with no site files); the site owns that copy. The rest of the old

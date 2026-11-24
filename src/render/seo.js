@@ -11,7 +11,6 @@
  *   url            the site's address: canonical links, og:url, sitemap.xml
  *   robots         "index" (default) or "noindex": keeps the whole site out of search engines
  *   lang           <html lang> (also the editor's page)
- *   themeColor     the meta theme-color (empty: index.html's own)
  *   entityType     the home page's JSON-LD @type ("Person", the default; "Organization", ...)
  *   name           the site's name: og:site_name, JSON-LD, the editor's title
  * A page's own, in its file's "meta" (src/render/routes.js reads them into its route):

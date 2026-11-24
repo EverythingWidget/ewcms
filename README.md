@@ -8,11 +8,11 @@ with GSAP page transitions. The editor (Svelte 5) runs in the dev server only an
 
 A **site** is only its own things; ewcms is everything else:
 
-| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                                             | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                                                                                                                                                           |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content/` (JSON), `media/` (photos), `theme/` (`tokens.scss`, `fonts.scss`, `theme.json`), `public/` (fonts, favicon), `ewcms.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor` (the editor app and its Node `server/`), `src/cli` (the command, Vite plugin, build, photos, R2), `src/functions` (the contact form's Pages Function), `default-site/` (what `ewcms dev` copies into a folder with no site, its theme too), `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
-| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                                                | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                                                                                                                                                               |
-| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                                         |                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| The site's repo (e.g. `Eeliya/eeliyarasta-website`)                                                                                                            | ewcms (this repo, package `ewcms`)                                                                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `content/` (JSON), `media/` (photos), `theme/` (`tokens.scss`, `fonts.scss`, `meta.json`), `public/` (fonts, favicon), `ewcms.config.mjs`, optional `widgets/` | `src/render` (shell, render, validation), `src/client` (the public site's JS + core styles), `src/editor` (the editor app and its Node `server/`), `src/cli` (the command, Vite plugin, build, photos, R2), `src/functions` (the contact form's Pages Function), `default-site/` (what `ewcms dev` copies into a folder with no site, its theme too), `index.html` (the page shell), `sandbox/` (mock kit), tests + fixtures |
+| `functions/api/contact.js`: one line, `export { onRequestPost } from 'ewcms/functions/contact';`                                                               | `bin/ewcms.mjs` (the `ewcms` command), `vite.js` (the Vite preset), `index.js`                                                                                                                                                                                                                                                                                                                                               |
+| `package.json`: `"ewcms": "github:EverythingWidget/ewcms#v0.1.1"`, scripts call `ewcms`                                                                        |                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ## How ewcms works
 
@@ -187,13 +187,13 @@ the List's `--item-*` and the type scale `--type-<style>-min`, `-max`, `-lh`; ev
 look is a token; after its `// @optional` line, as comments with the engine's defaults, the finer
 ones: each text style's weight, tracking and colour, the body text, the logo, the nav and its
 current item, the button, selected text and the skip link), `fonts.scss` (`@font-face`),
-`overrides.scss` (rules after the engine's styles) and `theme.json` (`themeColor`, `colorScheme`
-and `preloads`, put in every page's head at `<!--theme-meta-->` and `<!--theme-preloads-->` in
-`index.html`; `site.json` `themeColor` wins). The engine has no theme of its own: `ewcms dev`, in a
-folder with no site, copies `default-site/theme/` (tokens, fonts, theme.json) into the new site, which
+`overrides.scss` (rules after the engine's styles) and `meta.json` (`colorScheme` and `preloads`,
+put in every page's head at `<!--theme-meta-->` and `<!--theme-preloads-->` in `index.html`, with
+the theme-color from `content/theme.json` `color.themeColor`). The engine has no theme of its own: `ewcms dev`, in a
+folder with no site, copies `default-site/theme/` (tokens, fonts, meta.json) into the new site, which
 owns that copy, and
 `ewcms check` warns when a site's tokens miss any of the default site's before `// @optional` (the type
-scale on a line of its own: the engine has its defaults, and what `site.json` `type` sets counts;
+scale on a line of its own: the engine has its defaults, and what `content/theme.json` `typography` sets counts;
 docs/THEME-MIGRATION.md). The
 files reach `main.scss` through the `site-layer` alias (`.generated/theme-layers`: a stub per
 file, the site's or empty: Sass has no optional `@use`); the site's tokens take the core's
@@ -221,7 +221,7 @@ content/            ← all text, albums, projects, animation config (JSON)
                       plus <id>.schema.json: the properties of its items (see "Sources & schemas")
   strings.json      ← UI text of the templates: the menu's Menu / Close / clock label (header.*)
 media/              ← source photos (jpg), committed
-theme/              ← the site's look: tokens.scss, fonts.scss, overrides.scss, theme.json (ewcms dev copies ewcms's default-site/theme/ into a new site)
+theme/              ← the site's look: tokens.scss, fonts.scss, overrides.scss, meta.json (ewcms dev copies ewcms's default-site/theme/ into a new site)
 ewcms.config.mjs     ← the site's folders
 functions/api/contact.js ← one line: export { onRequestPost } from 'ewcms/functions/contact'
 
@@ -361,6 +361,7 @@ site settings can live side by side):
 | `content/footer.json`                | the **footer**: `{ version, kind: "part", sections }`, sections and widgets exactly like a page's, under every page (see "Footer")                                                                                                                                                                                |
 | `content/en/strings.json`            | UI text of the templates: the menu button and clock labels (`header.menu`, `header.close`, `header.clock`)                                                                                                                                                                                                        |
 | `content/site.json`                  | name, the **SEO defaults** (`title`, `titleTemplate`, `description`, `ogPhoto`, `url`, `robots`, `lang`; see "SEO"), `forms` (where contact forms send, see "Contact form"), socials, email, `timezone` of the clock, `jobTitle` / `country` (structured data on home)                                            |
+| `content/theme.json`                 | the **theme's values** (Theme area): `color` (`brand`: `--brand`, `themeColor`: the theme-color meta; `#rrggbb`), `typography` (the text styles' sizes, see "Type scale"), `layout` (contained width, space between sections). Optional: left out, the theme's `tokens.scss` defaults |
 | `content/animations.json`            | **every animation** (see below)                                                                                                                                                                                                                                                                                   |
 | `content/en/pages/index.json`        | home: its `sections` of widgets (the hero first: the big name, its text and the **scattered hero photos**, position `x/y/w` in %, `phone` over them (`{ x?, y?, w? }`, `null`: hidden on phones), `depth`, `layer` back/front), curtain text                                                                      |
 | `content/en/pages/<page>/index.json` | the other pages: their `sections` of widgets (see "Layout"), curtain text, `meta`: its title, description, share photo, `noindex`, canonical (see "SEO")                                                                                                                                                          |
@@ -524,7 +525,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
   renders it hidden (so the switch shows it again at once). A section has **no space above or below**: the
   space between sections is empty rows (cells: a widget placed lower leaves rows above it), so
   it scales with the width like everything else (the side margins, `--pad`, stay).
-- **Contained width** (`site.json` `"layout": { "containedCols": 115 }`, Theme › Layout, 60–120):
+- **Contained width** (`content/theme.json` `"layout": { "containedCols": 115 }`, Theme › Layout, 60–120):
   a contained section is that many columns of the full-width grid's cell (window width / 120)
   wide, centred, and never nearer the window's edges than the side margins (`--pad`). Its
   content is still the 120-column grid, its cells smaller, so widgets keep their columns and a
@@ -542,7 +543,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
   when the page opens with the hash: `src/client/modules/anchors.js` keeps the section in place
   for a moment while `rows.js`, fonts and photos settle the layout above it (until you scroll).
   Validation: the name's slug must start with a letter (a number is an album photo's hash), not
-  be one of the page's own ids (`main`, `portal`, `page-curtains`, `accent-init`,
+  be one of the page's own ids (`main`, `portal`, `page-curtains`, `theme-vars`,
   `phone-menu`), and be unique on the page; a clash with another id on the rendered page (a
   project row's slug, say) is a build warning (`[anchors]`). Without a name: no id.
 - **A page** has no grid setting: the page grid is always 120 columns (a `grid` key is
@@ -617,12 +618,12 @@ every section is a grid of **widgets** (`src/render/layout/`):
   `_tokens.scss`: title 19, heading 3, subheading 2, statement 5, paragraph 1.4, label 1,
   small 1.05); its own factor scales that to the width, so it is only a starting point.
 
-  **Type scale** (`site.json` `type`, Theme › **Type**; `src/render/layout/type.js`): each
+  **Type scale** (`content/theme.json` `typography`, Theme › **Typography**; `src/render/layout/type.js`): each
   style's usual font size grows with the window between `min` and `max` (px; equal: fixed),
   with a line height `line` (× the size): `{ "heading": { "min": 38, "max": 104, "line": 0.92 } }`.
   Each left out is the theme's (`--type-<style>-min`, `-max`, `-lh`: the site's
   `theme/tokens.scss`, the default site lists them; unset, the engine's in `_tokens.scss`; used by
-  `_text.scss`); what `site.json` sets goes on the page's `:root`, so it changes the preview
+  `_text.scss`); what `theme.json` sets goes on the page's `:root`, so it changes the preview
   and the built site, never the editor. Defaults: title 72–250 / 0.82, heading 38–104 / 0.92,
   subheading 22–36 / 1.15, statement 30–72 / 1.06, paragraph 16 / 1.75, label 11 / 1.55,
   small 12 / 1.5. On a phone (≤ 480px) the Title and the Heading take a size with the width instead,
@@ -1606,9 +1607,10 @@ No CORS rule is needed: the dev server uploads, and pages only show the photos.
 Each person/place can set `"accent": "#hex"`. Without one, the accent is derived from the
 cover's vivid colour (greyscale covers fall back to the site accent). When you open an album,
 GSAP tweens the CSS variable `--accent`, which tints the glass UI and the background glow.
-`--brand` is the site's fixed colour (`site.json` `accent`, or the theme's own in
-`theme/tokens.scss`), never tweened: links, the menu's active item, focus rings and the header's
-dot stay on it (docs/THEME-MIGRATION.md).
+`--brand` is the site's fixed colour (`content/theme.json` `color.brand`, Theme › Color; left out,
+the theme's own in `theme/tokens.scss`), never tweened: links, the menu's active item, focus
+rings, the header's dot and the glass stay on it; the album `--accent` tints only the background
+glow (docs/THEME-MIGRATION.md).
 
 ### Animations: one config, one engine
 
@@ -1757,7 +1759,7 @@ there only (no top tabs, no footer buttons). Pages, Theme, Animations and Site s
 the panel (`ui.panel`: `pages`, `theme`, `animations`, `site-settings`; the list is `areas`; the
 URL's `tab`; an old `tab=settings` is `site-settings`), under a head with ← **Back to areas**; Media, Sources and About open their window over the
 editor (half-width cards under the list, two a row). About: ewcms's version for the site or
-its update (see **Updates**), what ewcms is and the engine the site pins. An area not built yet (History; Theme's **Fonts and styles**) is disabled and says
+its update (see **Updates**), what ewcms is and the engine the site pins. An area not built yet (History) is disabled and says
 **Coming soon**. Theme holds **Type**, **Layout**, and **Fonts and styles** (Coming soon);
 Templates the item templates; Animations the default timing,
 the Animations library and the **Page entrance**; Site settings the rest (name, SEO, forms,
@@ -1887,8 +1889,11 @@ the rows it spans, the phone's in the phone preview) and its link (`follows <wid
 or free); links and gaps are dragged in the preview. Then **Size** as buttons (Auto | Aspect |
 Rows; with Aspect its ratio as buttons: 1:1 … 21:9 or Custom "w:h"), the layer with Down / Up (desktop) and **Reset phone** (phone), which removes every phone area
 and link of the section's widgets (they show their desktop layout halved again).
-**Theme › Type** sets the text styles (fitted text keeps their proportions) (size and minimum, line height,
-tracking; the preview follows as you type).
+**Theme** is `content/theme.json`: **Color** (Brand color: a hex field, `#rrggbb`, with a swatch
+that opens the color picker; empty: the theme's `--brand`, shown greyed), **Typography** and
+**Layout**; the preview follows every value as you type. **Theme › Typography** sets the text styles' sizes (fitted text keeps their proportions): min and
+max in px and the line height, saved in `content/theme.json` `typography`; the preview follows as
+you type.
 
 **Buttons:** action buttons (Save, Publish, Delete, Add, …) are pills. Utility toggles and tools
 (phone view, undo / redo, back, close, and Sources / Pages / Media beside the page

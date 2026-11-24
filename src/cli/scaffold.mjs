@@ -148,7 +148,7 @@ function defaultSiteFiles(dir = DEFAULT_SITE, rel = '', out = []) {
 /**
  * The default site's files root misses, copied (nothing overwritten): the files made, "/"-separated.
  * A package.json made is named after the folder and pins this engine (enginePin: the code that
- * runs, not an older release); theme.json too is named.
+ * runs, not an older release); theme/meta.json too is named.
  */
 export function scaffoldSite(
   root,
@@ -185,6 +185,6 @@ export function scaffoldSite(
       ewcms: `github:EverythingWidget/ewcms#${pin.ref}`,
     },
   }));
-  edit('theme/theme.json', (theme) => ({ ...theme, name }));
+  edit('theme/meta.json', (meta) => ({ ...meta, name }));
   return made;
 }

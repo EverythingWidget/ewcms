@@ -8,13 +8,12 @@
  *   a source, its schema or a page     only when the site's routes changed (routesKey): an item
  *                                      or a page added or removed, moved, a slug, or the name or
  *                                      cover of an item the menu lists
- *   the site's settings                only when more than its type scale changed (siteKey:
- *                                      "type" is CSS variables Theme › Type puts on the
- *                                      preview's root as it is typed)
+ *   the site's settings                when they changed (siteKey)
  *   the menu (header.json), the photos' and the UI strings
  *   any other file the rule doesn't know (a reload is always right)
  *
- * Never: item templates, the footer, animations, redirects (none of them is a route).
+ * Never: item templates, the footer, animations, redirects (none of them is a route), and
+ * theme.json (only CSS variables: ../theme-vars.js puts them on the preview's root as typed).
  */
 import {
   ANIMATIONS,
@@ -24,6 +23,7 @@ import {
   REDIRECTS,
   SITE,
   STRINGS,
+  THEME,
   contentFromFiles,
   pageIdOf,
   schemaIdOf,
@@ -34,7 +34,7 @@ import { getRoutes } from '../../render/routes.js';
 import { isObject } from '../../render/is.js';
 
 /** Files that never reload the preview: rendered in place, or never shown. */
-export const IN_PLACE = [FOOTER, ANIMATIONS, REDIRECTS];
+export const IN_PLACE = [FOOTER, ANIMATIONS, REDIRECTS, THEME];
 /** Files that always do: the menu and what every page shows around its sections. */
 export const RELOADS = [HEADER, SITE, PHOTOS, STRINGS];
 
@@ -70,21 +70,18 @@ export function routesKey(files) {
 }
 
 /**
- * site.json as one string, without what the preview takes live ("type": Theme › Type
- * sets its CSS variables on the preview's root). Equal before and after: only the type changed.
+ * site.json as one string: equal before and after, nothing in it changed. (The look the
+ * preview takes live is theme.json's, never site.json's.)
  */
 export function siteKey(files) {
   const site = files?.[SITE];
-  if (!isObject(site)) return JSON.stringify(site ?? null);
-  const rest = { ...site };
-  delete rest.type;
-  return JSON.stringify(rest);
+  return JSON.stringify(isObject(site) ? site : (site ?? null));
 }
 
 /**
  * True when an edit of `files` needs the preview loaded again. `routes`: whether the site's
  * routes changed with it (routesKey before and after; asked only when routesFile(file) is one);
- * `site`: whether site.json changed more than its type (siteKey; left out: it did).
+ * `site`: whether site.json changed (siteKey; left out: it did).
  */
 export function needsReload(files, { routes = false, site = true } = {}) {
   return files.some((f) => {

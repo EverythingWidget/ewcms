@@ -186,24 +186,15 @@ test('the editor: a Templates area, its own target, Edit template, no shift', ()
   assert.equal(entryFor(pages, { id: 't-ab12', part: true, itemTemplate: true }), pages[0]);
   const list = read('src/editor/svelte/PagesList.svelte');
   assert.match(list, /head\('Templates', templates\.length\)/);
-  // Templates are their own area, the site parts Pages'; Fonts and styles stay in Theme
-  const theme = list.slice(
-    list.indexOf('{#if theme}'),
-    list.indexOf('{:else if templatesArea}'),
-  );
+  // Templates are their own area, the site parts Pages'; Theme lists nothing (ThemePanel)
+  assert.doesNotMatch(list, /\{#if theme\}/);
   const templates = list.slice(
-    list.indexOf('{:else if templatesArea}'),
+    list.indexOf('{#if templatesArea}'),
     list.indexOf("{:else}\n    <ul class=\"pl-rows\" bind:this={subList}>"),
   );
-  assert.doesNotMatch(theme, /head\('Templates'/);
-  assert.match(theme, /<SoonTag \/>/);
-  assert.doesNotMatch(theme, /SITE_PARTS/);
   assert.match(templates, /head\('Templates'/);
   assert.doesNotMatch(templates, /SITE_PARTS/);
-  assert.match(
-    read('src/editor/svelte/ThemePanel.svelte'),
-    /<PagesList \{live\} \{actions\} area="theme" showHead=\{false\} \/>/,
-  );
+  assert.doesNotMatch(read('src/editor/svelte/ThemePanel.svelte'), /<PagesList/);
   assert.match(
     read('src/editor/svelte/TemplatesPanel.svelte'),
     /<PagesList \{live\} \{actions\} area="templates" \/>/,

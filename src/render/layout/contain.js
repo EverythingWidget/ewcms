@@ -1,5 +1,5 @@
 /**
- * How wide a contained section is (site.json "layout": { "containedCols": N }): N columns of the
+ * How wide a contained section is (theme.json "layout": { "containedCols": N }): N columns of the
  * full-width grid's cell (the window's width / 120), centred, but never nearer the window's
  * edges than the page's side margin (--pad). Its content is still a 120-column grid (its
  * cells as much smaller as it is narrower), so a widget keeps its columns whatever N is: a
@@ -22,25 +22,34 @@ export const CONTAINED_MIN = 60;
 /** --pad in _tokens.scss: clamp(16px, 2.6vw, 40px). */
 const padAt = (vw) => Math.min(40, Math.max(16, vw * 0.026));
 
-/** site.json's contained columns (the default when unset or invalid). */
-export function containedOf(site) {
-  const n = site?.layout?.containedCols;
+/** theme.json's contained columns (the default when unset or invalid). */
+export function containedOf(theme) {
+  const n = theme?.layout?.containedCols;
   return Number.isInteger(n) && n >= CONTAINED_MIN && n <= COLS ? n : CONTAINED;
 }
 
 /** A contained section's content width, px, in a window `vw` px wide (desktop). */
 export const containedWidth = (vw, n = CONTAINED) => Math.min(vw - 2 * padAt(vw), (vw * n) / COLS);
 
-/** The :root variables, when they aren't the default ('' then). */
-export const layoutVars = (site) => {
+/** The :root variables, when they aren't the default: [[name, value]]. */
+export function layoutVarList(theme) {
   const out = [];
-  const n = containedOf(site);
-  if (n !== CONTAINED) out.push(`--contain: ${n}`);
-  out.push(...layoutSpaceVars(site));
-  return out.join('; ');
-};
+  const n = containedOf(theme);
+  if (n !== CONTAINED) out.push(['--contain', String(n)]);
+  for (const d of layoutSpaceVars(theme)) out.push(d.split(': '));
+  return out;
+}
 
-/** Problems of site.json "layout". */
+/** The layout's :root declarations ('' when all are the defaults). */
+export const layoutVars = (theme) =>
+  layoutVarList(theme)
+    .map(([name, value]) => `${name}: ${value}`)
+    .join('; ');
+
+/** Every layout variable name (the editor's preview clears the ones no longer set). */
+export const LAYOUT_VARS = ['--contain', '--section-space', '--section-space-phone'];
+
+/** Problems of theme.json "layout". */
 export function checkLayout(l) {
   if (l === undefined) return [];
   if (!l || typeof l !== 'object' || Array.isArray(l))

@@ -15,7 +15,7 @@
  * The animation library (animations.json animations) is not covered: each animation carries every
  * value it uses (there is no global layer to fall back on).
  */
-import { docKindOf } from './files.js';
+import { THEME, docKindOf } from './files.js';
 import { COLS } from './layout/grid.js';
 import { tidyBackdrop } from './backdrop.js';
 import { isObject } from './is.js';
@@ -83,8 +83,25 @@ function tidy(data) {
   }
 }
 
-/** A copy of a content file's data without its default values (only page files have any). */
+/**
+ * theme.json without what says nothing: an empty color, typography, layout or text style (all
+ * unset is { "version": 1 }, the same as no file).
+ */
+function tidyTheme(data) {
+  const copy = structuredClone(data);
+  if (isObject(copy.typography))
+    for (const [k, s] of Object.entries(copy.typography)) if (isEmpty(s)) delete copy.typography[k];
+  for (const k of ['color', 'typography', 'layout']) if (isEmpty(copy[k])) delete copy[k];
+  // in the Theme area's order, whatever order the edits came in
+  const { version, color, typography, layout, ...rest } = copy;
+  return Object.fromEntries(
+    Object.entries({ version, color, typography, layout, ...rest }).filter(([, v]) => v !== undefined),
+  );
+}
+
+/** A copy of a content file's data without its default values (page files and theme.json). */
 export function omitDefaults(file, data) {
+  if (file === THEME && isObject(data)) return tidyTheme(data);
   if (!docKindOf(file) || !isObject(data)) return data;
   const copy = structuredClone(data);
   strip(copy, () => {});
