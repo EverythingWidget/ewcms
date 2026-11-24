@@ -123,6 +123,9 @@ export function restoreUi(preview, content) {
   if (typeof saved.library?.name === 'string') ui.library = { name: saved.library.name };
   // the pages list's folder (PagesList)
   if (typeof saved.pagesWin?.folder === 'string') ui.pagesWin = { folder: saved.pagesWin.folder };
+  // Theme: the part open (Color, Typography, Layout), or the card list
+  if ('themePart' in saved)
+    ui.themePart = ['color', 'typography', 'layout'].includes(saved.themePart) ? saved.themePart : '';
   if (saved.media) {
     ui.media = { ...ui.media, ...saved.media }; // MediaModal's photo, filter, field
     delete ui.media.open; // (a session from before the modal stack)
@@ -142,6 +145,7 @@ export function restoreUi(preview, content) {
         sources: ui.sources,
         library: ui.library,
         pagesWin: ui.pagesWin,
+        themePart: ui.themePart,
         mode: ui.mode,
         media: ui.media,
         modals: ui.modals.filter((name) => KEPT.includes(name)),

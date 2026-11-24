@@ -166,3 +166,19 @@ test("a session from before the rename: panel 'settings' and its sections open a
   writeUrl();
   assert.equal(urlNow().searchParams.get('tab'), 'site-settings');
 });
+
+test('Theme: the open part comes back from the session (the card list if none)', async () => {
+  browser('/x/?edit&tab=theme');
+  sessionStorage.setItem('editor:ui', JSON.stringify({ panel: 'theme', themePart: 'typography' }));
+  const { restoreUi } = await import('../src/editor/svelte/persist.js');
+  const { ui } = await import('../src/editor/svelte/ui.svelte.js');
+  restoreUi(bridge, live);
+  assert.equal(ui.panel, 'theme');
+  assert.equal(ui.themePart, 'typography');
+  sessionStorage.setItem('editor:ui', JSON.stringify({ panel: 'theme', themePart: '' }));
+  restoreUi(bridge, live);
+  assert.equal(ui.themePart, '');
+  sessionStorage.setItem('editor:ui', JSON.stringify({ panel: 'theme', themePart: 'nope' }));
+  restoreUi(bridge, live);
+  assert.equal(ui.themePart, '');
+});

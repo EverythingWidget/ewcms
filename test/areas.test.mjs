@@ -333,13 +333,15 @@ test("Theme: Typography and Layout of theme.json, no Fonts and styles row; a tem
   assert.match(src('svelte/TemplatesPanel.svelte'), /<PagesList \{live\} \{actions\} area="templates" \/>/);
   const theme = src('svelte/ThemePanel.svelte');
   assert.doesNotMatch(theme, /PagesList|data-templates|head\('Templates'/);
-  // Color, Typography, then Layout, all content/theme.json
-  const at = ['title="Color"', 'title="Typography"', 'title="Layout"'].map((t) => theme.indexOf(t));
+  // Color, Typography, then Layout, as cards (content/theme.json), each on its own screen
+  const at = ["name: 'Color'", "name: 'Typography'", "name: 'Layout'"].map((s) => theme.indexOf(s));
   assert.ok(at[0] > 0 && at[0] < at[1] && at[1] < at[2], at.join(' '));
   assert.doesNotMatch(theme, /title="Type"/);
-  assert.match(theme, /key="theme:color"/);
-  assert.match(theme, /key="theme:typography"/);
-  assert.match(theme, /key="theme:layout"/);
+  assert.doesNotMatch(theme, /<Collapsible|key="theme:color"|key="theme:typography"|key="theme:layout"/);
+  assert.match(theme, /data-theme-part=\{s.id\}/);
+  assert.match(theme, /ui.themePart/);
+  assert.match(theme, /backLabel="Back to Theme"/);
+  assert.match(theme, /<span class="ah__to">Theme<\/span>/);
   assert.match(theme, /edit="\{THEME\}#\/layout\/containedCols"/);
   assert.match(src('svelte/SectionSettings.svelte'), /const themeOf = \(\) => live\.get\(THEME, ''\) \|\| \{\};/);
   assert.doesNotMatch(theme, /site-settings:(type|layout)/);

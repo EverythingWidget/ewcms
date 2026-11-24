@@ -13,7 +13,8 @@ import { popupStays } from '../multi-select.js';
  *   ui.panel      the area the side panel shows (../areas.js):
  *                   'areas'       the areas' list (AreaList.svelte), where each one opens
  *                   'pages'       Pages: the pages list (browse), or the page open (edit)
- *                   'theme'       Theme: Color, Typography and Layout (content/theme.json)
+ *                   'theme'       Theme: Color, Typography and Layout cards (content/theme.json;
+ *                                ui.themePart is the part open, or '' the list)
  *                   'templates'   Templates: the item templates
  *                   'animations'  Animations: the default timing, the library, the page entrance
  *                   'site-settings'  Site settings: what is the same on every page
@@ -180,6 +181,11 @@ export const ui = $state({
   pagesWin: { folder: '' },
   /** Animations > Motion, the Animations library: the animation open ('' = the list). */
   library: { name: '' },
+  /**
+   * Theme: the part open ('color' | 'typography' | 'layout'), or '' the Color, Typography and
+   * Layout cards. Kept across a refresh (persist.js).
+   */
+  themePart: '',
 });
 
 /** What a click in the preview does now: 'arrange' | 'animate' | 'visitor' (see above). */

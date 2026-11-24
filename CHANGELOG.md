@@ -16,6 +16,11 @@ say what a site must do before it bumps its pin.
 
 ### Editor
 
+- **Theme opens as Color, Typography and Layout cards.** A click opens that part on its own
+  screen (title over a quiet “Theme”, ← back to the list). The open part is kept across a
+  refresh. Typography’s Preview is full width under the hint; style names (Title · H1, …) are
+  14px and medium weight. Typography size fields bind their stored min, max and line
+  (the pointer had `{key}` as text, so overrides did not show).
 - **A field’s revert** shows only when that field has a stored value, at the right end of the
   label row (the 24px row does not shift). The unsaved-change dot is unchanged.
 

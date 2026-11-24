@@ -292,7 +292,9 @@ test('needsReload: theme.json never reloads; site.json does when it changed (sit
 
 test('Theme › Typography: a row per style with its tag, Preview / Close preview, theme.json', () => {
   const panel = read('src/editor/svelte/ThemePanel.svelte');
-  assert.match(panel, /<Collapsible key="theme:typography" title="Typography">/);
+  assert.match(panel, /id: 'typography', icon: 'font', name: 'Typography'/);
+  assert.match(panel, /part === 'typography'/);
+  assert.doesNotMatch(panel, /<Collapsible|key="theme:typography"/);
   assert.doesNotMatch(panel, /title="Type"|\bSITE\b|Size \(cells\)|Tracking/);
   assert.match(panel, /edit="\{THEME\}#\/typography\/\{k\}\/\{key\}"/);
   assert.match(panel, /live\.store\.set\(THEME, '\/typography'/);
@@ -315,6 +317,21 @@ test('Theme › Typography: a row per style with its tag, Preview / Close previe
   assert.match(read('src/editor/svelte/Field.svelte'), /placeholder=\{placeholder \|\| 'Pick…'\}/);
   assert.match(panel, /specimen \? 'Close preview' : 'Preview'/);
   assert.match(panel, /actions\.showSpecimen\(!specimen\)/);
+  // Preview is full width, under the hint, above Display font
+  const previewAt = panel.indexOf('class="preview"');
+  const fontsAt = panel.indexOf('{#each TYPE_RESERVED.fonts');
+  const stylesAt = panel.indexOf('class="styles"');
+  assert.ok(previewAt > 0 && previewAt < fontsAt && fontsAt < stylesAt, [previewAt, fontsAt, stylesAt].join(' '));
+  assert.match(panel, /\.preview :global\(\.btn\) \{[^}]*width: 100%/);
+  // style group titles: 14px, medium, the regular text colour
+  assert.match(panel, /class="style-name"/);
+  assert.match(panel, /\.style-name \{[^}]*font-size: var\(--fs-md\)/);
+  assert.match(panel, /\.style-name \{[^}]*font-weight: 500/);
+  assert.match(panel, /\.style-name \{[^}]*color: var\(--c-text-strong\)/);
+  // a size field's revert only when that size is stored
+  assert.ok(panel.includes("on: live.get(THEME, `/typography/${k}/${key}`) != null"));
+  // ${key} not {key}: a JS template literal does not interpolate Svelte {key}
+  assert.ok(!panel.includes("`/typography/${k}/{key}`"));
   // the panel only reads the preview's sizes (the placeholders); main.js puts theme.json on it
   assert.doesNotMatch(panel, /setProperty|removeProperty|applyThemeVars/);
   assert.match(panel, /bridge\.doc\?\.documentElement/);
@@ -327,6 +344,7 @@ test('Theme › Typography: a row per style with its tag, Preview / Close previe
   );
   // another area closes the specimen, back to the page it replaced
   assert.match(main, /if \(panel !== 'theme'\) showSpecimen\(false\);/);
+  assert.match(panel, /if \(part === 'typography'\) actions.showSpecimen\(false\)/);
   assert.match(
     main,
     /ui\.specimenFrom = bridge\.path\(\) \|\| ui\.path;\s*bridge\.navigate\(TYPE_SPECIMEN\)/,

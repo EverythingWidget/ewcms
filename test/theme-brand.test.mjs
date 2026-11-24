@@ -165,7 +165,9 @@ test('the page head sets --accent only for an album colour, never --site-accent 
 
 test('Theme › Color: Brand color edits theme.json color.brand, #rrggbb only, a swatch picks it', () => {
   const panel = read('src/editor/svelte/ThemePanel.svelte');
-  assert.match(panel, /<Collapsible key="theme:color" title="Color">/);
+  assert.match(panel, /id: 'color', icon: 'droplet', name: 'Color'/);
+  assert.match(panel, /part === 'color'/);
+  assert.doesNotMatch(panel, /<Collapsible|key="theme:color"/);
   assert.match(panel, /edit="\{THEME\}#\/color\/brand"/);
   assert.match(panel, /label="Brand color"/);
   // only a #rrggbb is stored (lowercase); empty clears it (the theme's --brand)
@@ -221,7 +223,9 @@ test('a color picker dragged: one undo step, no page pass, the style written onl
 
 test('Theme › Color: Color scheme edits theme.json color.scheme, in place, no reload', () => {
   const panel = read('src/editor/svelte/ThemePanel.svelte');
-  assert.match(panel, /<Collapsible key="theme:color" title="Color">/);
+  assert.match(panel, /id: 'color', icon: 'droplet', name: 'Color'/);
+  assert.match(panel, /part === 'color'/);
+  assert.doesNotMatch(panel, /<Collapsible|key="theme:color"/);
   assert.match(panel, /edit="\{THEME\}#\/color\/scheme"/);
   assert.match(panel, /label="Color scheme"/);
   assert.match(panel, /type="select"/);
