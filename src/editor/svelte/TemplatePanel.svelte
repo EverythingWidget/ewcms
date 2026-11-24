@@ -97,7 +97,7 @@
       ]),
     );
   const add = (type) => {
-    if (type === 'details') set('/clickable', false);
+    if (widgetType(type)?.clearsClickable) set('/clickable', false);
     const next = addAt(widgets, fresh(type), shownRows());
     setWidgets(next);
     const wid = next[next.length - 1]?.id;
@@ -106,16 +106,15 @@
       openPopup();
     }
   };
-  // ---- Summary and details (src/widgets/list/details.js): one per template; the item
-  // is then the summary's button, not a link
-  const hasDetails = $derived(widgets.some((w) => w?.type === 'details'));
-  const detailsOff = $derived(
-    outer
-      ? 'This template is shown inside another List: its items can’t open'
-      : hasDetails
-        ? 'One Summary and details per template'
-        : '',
-  );
+  // onePerTemplate / noNesting / clearsClickable: the type's declaration (src/widgets/index.js)
+  const ofType = (w) => widgetType(w?.type);
+  const blocked = (type) => {
+    const d = widgetType(type);
+    if (d?.noNesting && outer) return true;
+    if (d?.onePerTemplate && widgets.some((w) => ofType(w)?.onePerTemplate)) return true;
+    return false;
+  };
+  const locksClickable = $derived(widgets.some((w) => ofType(w)?.clearsClickable));
   const card = $derived({
     id: section?.id || 's-tpl',
     name: (typeof tpl?.name === 'string' && tpl.name.trim()) || '',
@@ -125,9 +124,7 @@
   // Add widget: the modal (WidgetsModal.svelte) with this template's types
   const addWidget = () => openWidgets({ at: 0, types: typeTiles, onpick: (type) => pickAdd(type) });
   const typeTiles = $derived(
-    STACK_TYPES.filter(
-      ([type]) => !(type === 'list' && outer) && !(type === 'details' && detailsOff),
-    ).map(([type]) => {
+    STACK_TYPES.filter(([type]) => !blocked(type)).map(([type]) => {
       const d = widgetType(type) || {};
       return {
         value: type,
@@ -139,7 +136,7 @@
     }),
   );
   function pickAdd(type) {
-    if ((type === 'list' && outer) || (type === 'details' && detailsOff)) return;
+    if (blocked(type)) return;
     add(type);
   }
 </script>
@@ -188,9 +185,9 @@
       edit={`${file}#/clickable`}
       label="Whole item clickable"
       type="boolean"
-      value={!hasDetails && tpl.clickable !== false}
-      disabled={hasDetails}
-      help={hasDetails
+      value={!locksClickable && tpl.clickable !== false}
+      disabled={locksClickable}
+      help={locksClickable
         ? 'An item that opens can’t also be a link'
         : 'The whole item opens the item’s page.'}
       changed={live.changed(file, '/clickable')}

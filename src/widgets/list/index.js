@@ -265,6 +265,8 @@ export const list = {
   // useful size (a third, 40, made them tiny: F81)
   added: { size: 'auto', span: 'all' },
   list: true,
+  // not offered in a template that already sits inside another List (a third level)
+  noNesting: true,
   // Content tab: From a source | Custom (ListLead.svelte); items at config.items
   customItems: true,
   // widgetItems (../../layout/source.js): custom items instead of the source's

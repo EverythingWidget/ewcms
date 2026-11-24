@@ -47,6 +47,11 @@ export const details = {
   // the Add widget modal's drawing of it (WidgetsModal.svelte): grey shapes, classes there
   drawing: ['w70 h8', 'pill'],
   templateOnly: true,
+  // one per item template; not offered in a template that already sits inside another List
+  onePerTemplate: true,
+  noNesting: true,
+  // adding it turns off Whole item clickable (the item is the summary, not a link)
+  clearsClickable: true,
   // in an item template (the Template editor): the details' template and how they open
   inTemplate: {
     fields: [

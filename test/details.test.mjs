@@ -279,11 +279,11 @@ test('the editor: Add Summary and details, its rows; no shift', () => {
     'First item open',
   ])
     assert.ok(labels.includes(label), label);
-  for (const label of [
-    'One Summary and details per template',
-    'An item that opens can’t also be a link',
-  ])
-    assert.ok(panel.includes(label), label);
+  assert.equal(widgetType('details').onePerTemplate, true);
+  assert.equal(widgetType('details').clearsClickable, true);
+  assert.equal(widgetType('details').noNesting, true);
+  assert.match(panel, /clearsClickable/);
+  assert.ok(panel.includes('An item that opens can’t also be a link'));
   assert.ok(read('src/editor/lib/item-template.js').includes("['details', 'Summary and details']"));
   // no shift: the transition is the details' grid row, nothing measured
   const css = read('src/widgets/list/style.scss');

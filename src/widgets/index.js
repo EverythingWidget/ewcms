@@ -102,6 +102,11 @@
  *             List's leftover config.properties; src/render/validate.js)
  *   list      a list widget: it shows all its source's items (its source: All / From URL /
  *             None), not one (Item / From URL / None): ../layout/source.js
+ *   noNesting  optional true: not offered in an item template that already sits inside another
+ *             List (the Template editor's Add widget; a List, Summary and details)
+ *   onePerTemplate  optional true: only one of this type in an item template (Summary and details)
+ *   clearsClickable  optional true: adding it turns off Whole item clickable (the item is its
+ *             summary, not a link)
  *   item      it needs an item (its source's first): without one it is skipped
  *   render(data, ctx, widget)  its HTML, one root element. data: the widget's values (bound
  *             settings filled in with the item's properties); widget: { id, file, ed, source,

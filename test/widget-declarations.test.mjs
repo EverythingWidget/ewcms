@@ -1,7 +1,8 @@
 // What a widget type declares instead of the editor or the renderer checking its name: a page's
 // title (pageTitle), its list items' stored defaults (itemDefaults) and value checks (a
-// setting's check), its Content-tab hint, its rows in an item template (inTemplate) and its Add
-// widget drawing. The places that used to check a built-in's name don't again.
+// setting's check), its Content-tab hint, its rows in an item template (inTemplate), its Add
+// widget drawing, and the Template editor's add rules (noNesting, onePerTemplate,
+// clearsClickable). The places that used to check a built-in's name don't again.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -33,6 +34,7 @@ test('the places that checked a widget name ask its declaration instead', () => 
     'src/render/routes.js',
     'src/render/defaults.js',
     'src/editor/layout-ops.js',
+    'src/editor/svelte/TemplatePanel.svelte',
   ])
     assert.doesNotMatch(code(read(f)), nameCheck, f);
   // the Template editor's rows, the Hero photos' phone check in validate.js
@@ -179,6 +181,27 @@ test('the widget format documents the keys', () => {
     'hint ',
     'inTemplate ',
     'drawing ',
+    'noNesting ',
+    'onePerTemplate ',
+    'clearsClickable ',
   ])
     assert.ok(doc.includes(key), key);
+});
+
+test('the template editor asks the type, not its name', () => {
+  assert.equal(widgetType('list').noNesting, true);
+  assert.equal(widgetType('details').noNesting, true);
+  assert.equal(widgetType('details').onePerTemplate, true);
+  assert.equal(widgetType('details').clearsClickable, true);
+  for (const t of NAMES.filter((n) => n !== 'list' && n !== 'details')) {
+    assert.equal(widgetType(t).noNesting, undefined, t);
+    assert.equal(widgetType(t).onePerTemplate, undefined, t);
+    assert.equal(widgetType(t).clearsClickable, undefined, t);
+  }
+  assert.equal(widgetType('list').onePerTemplate, undefined);
+  assert.equal(widgetType('list').clearsClickable, undefined);
+  const panel = code(read('src/editor/svelte/TemplatePanel.svelte'));
+  assert.match(panel, /clearsClickable/);
+  assert.match(panel, /noNesting/);
+  assert.match(panel, /onePerTemplate/);
 });
