@@ -72,7 +72,7 @@ test('root files: the shared files load from the content root; a leftover en/set
   fs.mkdirSync(path.join(root, 'content/en/settings'));
   fs.writeFileSync(path.join(root, 'content/en/settings/nav.json'), '{ "version": 1 }');
   const old =
-    /content\/en\/settings\/ is no longer read: its files go to content\/ \(site\.json, header\.json/;
+    /content\/en\/settings\/ is no longer read: its files go to content\/ \(site\.json, theme\.json, header\.json/;
   assert.throws(() => loadContent(root), old);
   assert.throws(() => readContentFiles(root), old);
 });

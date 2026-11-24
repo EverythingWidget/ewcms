@@ -295,8 +295,9 @@ const tokensSet = (scss) => [...new Set(scss.match(/(?<![\w-])--[\w-]+(?=\s*:)/g
  * A warning for a site whose theme misses tokens of the look (ewcms default-site/theme/tokens.scss):
  * the engine has no theme of its own, so the chrome and widgets would read them unset. The
  * site's tokens.scss and overrides.scss count. The type scale (--type-*) on its own line: the
- * engine has defaults for it, and what site.json "type" sets counts. A leftover theme/theme.json
- * (now theme/meta.json) is named too. '' when there is nothing to say.
+ * engine has defaults for it, and what content/theme.json "typography" sets counts. A leftover
+ * theme/theme.json (now theme/meta.json) is named too, and a themeColor in meta.json (it is
+ * content/theme.json "color" now). '' when there is nothing to say.
  * Not a failure.
  */
 export function themeWarning(site) {
@@ -323,6 +324,12 @@ export function themeWarning(site) {
         `rename it (git mv ${rel}/theme.json ${rel}/meta.json). Until then its preloads and ` +
         `color-scheme are not used.`,
     );
+  // themeColor is content/theme.json's now (one source): meta.json's is read nowhere
+  if (site.themeMeta?.themeColor !== undefined)
+    out.push(
+      `[check] ${rel}/meta.json "themeColor" is not used: the theme-color is content/theme.json ` +
+        `"color": { "themeColor" }. Move it there.`,
+    );
   // a token renamed (no alias: the old name is read nowhere): the new name to set
   const renamed = Object.entries(RENAMED_TOKENS)
     .filter(([old, now]) => own.has(old) && look.includes(now))
@@ -340,7 +347,7 @@ export function themeWarning(site) {
       `[check] ${rel}/tokens.scss doesn't set ${type.length} token(s) of the type scale ` +
         `(${type.join(', ')}): the engine's defaults apply. Copy them from ewcms ` +
         `default-site/theme/tokens.scss (with those defaults) and set the sizes there, or per site ` +
-        `in site.json "type"`,
+        `in content/theme.json "typography"`,
     );
   return out.join('\n');
 }
@@ -348,12 +355,12 @@ export function themeWarning(site) {
 /** Tokens of the look renamed, old: new (CHANGELOG, Breaking): check names the new one. */
 export const RENAMED_TOKENS = { '--f-mono': '--f-body' };
 
-/** The type scale tokens a site's site.json "type" sets (--type-<style>-min, -max, -lh). */
+/** The type scale tokens a site's content/theme.json "typography" sets (--type-<style>-min, -max, -lh). */
 function siteTypeTokens(site) {
-  const file = path.join(site.contentRootDir || '', 'site.json');
+  const file = path.join(site.contentRootDir || '', 'theme.json');
   let type;
   try {
-    type = JSON.parse(fs.readFileSync(file, 'utf8')).type;
+    type = JSON.parse(fs.readFileSync(file, 'utf8')).typography;
   } catch {
     return [];
   }

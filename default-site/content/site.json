@@ -8,8 +8,5 @@
   "description": "A new site built with ewcms.",
   "robots": "index",
   "timezone": "Europe/Amsterdam",
-  "social": [],
-  "layout": {
-    "containedCols": 96
-  }
+  "social": []
 }

@@ -36,10 +36,12 @@ test('contained width: N columns of the full-width cell, at least the side margi
   assert.equal(layoutVars({ layout: { sectionSpace: 0 } }), ''); // 0 is the default: left out
 });
 
-test('contained width: validated in site.json, and on the page as --contain', () => {
+test('contained width: validated in theme.json, and on the page as --contain', () => {
   assert.deepEqual(checkLayout(undefined), []);
   assert.deepEqual(checkLayout({ containedCols: 100 }), []);
-  assert.deepEqual(checkLayout(3), ['"layout" must be an object { containedCols, sectionSpace, sectionSpacePhone }']);
+  assert.deepEqual(checkLayout(3), [
+    '"layout" must be an object { containedCols, sectionSpace, sectionSpacePhone }',
+  ]);
   assert.deepEqual(checkLayout({ containedCols: 59, gap: 1 }), [
     '"layout.containedCols" must be a whole number of columns from 60 to 120',
     '"layout.gap" is not a layout setting',
@@ -50,14 +52,19 @@ test('contained width: validated in site.json, and on the page as --contain', ()
     '"layout.sectionSpace" must be a whole number of rows from 0 to 999',
   ]);
   const content = loadContent(SITE_A);
-  // the site's own setting doesn't matter: the default (no layout) and a set one
-  const { layout: _own, ...plain } = content.site; // eslint-disable-line no-unused-vars
-  const site = { ...plain, layout: { containedCols: 121 } };
-  assert.match(checkContent('site.json', site).join('\n'), /layout.containedCols/);
+  assert.deepEqual(content.theme.layout, { containedCols: 96 }); // content/theme.json
+  const bad = { version: 1, layout: { containedCols: 121 } };
+  assert.match(checkContent('theme.json', bad).join('\n'), /layout.containedCols/);
+  // site.json's layout is a leftover: ignored, a warning only
+  assert.deepEqual(
+    checkContent('site.json', { ...content.site, layout: { containedCols: 100 } }),
+    [],
+  );
   const { routes } = buildRoutes(content);
   const about = routes.find((r) => r.path === '/about/');
-  const head = (s) => renderRoute(about, { ...content, site: s }).head;
-  assert.doesNotMatch(head(plain), /--contain/);
-  assert.doesNotMatch(head({ ...plain, layout: { containedCols: 115 } }), /--contain/);
-  assert.match(head({ ...plain, layout: { containedCols: 100 } }), /--contain: 100;/);
+  const head = (theme, site = content.site) => renderRoute(about, { ...content, site, theme }).head;
+  assert.doesNotMatch(head({}), /--contain/);
+  assert.doesNotMatch(head({ layout: { containedCols: 115 } }), /--contain/);
+  assert.match(head({ layout: { containedCols: 100 } }), /--contain: 100;/);
+  assert.doesNotMatch(head({}, { ...content.site, layout: { containedCols: 100 } }), /--contain/);
 });

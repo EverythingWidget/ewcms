@@ -74,13 +74,12 @@ const CORE_STYLES = enginePath('src/client/styles');
 
 /**
  * The theme's part of a page's head (theme/meta.json), at the shell's <!--theme-meta--> and
- * <!--theme-preloads-->: the theme-color (site.json themeColor first) and color-scheme metas,
- * and its preloads ({ href, as, type?, crossorigin? }).
+ * <!--theme-preloads-->: the theme-color (content/theme.json color.themeColor, from the render)
+ * and color-scheme metas, and its preloads ({ href, as, type?, crossorigin? }).
  */
 export function themeMetaHead(themeMeta = {}, themeColor = '') {
-  const color = themeColor || themeMeta.themeColor;
   const meta = [
-    color && `<meta name="theme-color" content="${attr(color)}" />`,
+    themeColor && `<meta name="theme-color" content="${attr(themeColor)}" />`,
     themeMeta.colorScheme &&
       `<meta name="color-scheme" content="${attr(themeMeta.colorScheme)}" />`,
   ].filter(Boolean);

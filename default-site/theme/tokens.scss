@@ -14,8 +14,8 @@
   --line: rgb(255 255 255 / 0.1);
   --accent: #cfc8b8;
   // the brand colour: fixed, never tweened per album like --accent. Links, the menu, focus
-  // rings, the header's dot, the glass tint: what stays on-brand. Set it here (the Theme area
-  // will edit it).
+  // rings, the header's dot, the glass tint: what stays on-brand. The default: a site sets its
+  // own in content/theme.json "color": { "brand" } (Theme › Color), which wins over this.
   --brand: #cfc8b8;
   --solid-card: #212121;
   --solid-card-peek: #2f2f2f;

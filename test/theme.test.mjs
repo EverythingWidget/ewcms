@@ -11,7 +11,6 @@ import { themeWarning } from '../src/cli/cli.mjs';
 import { enginePath } from '../src/cli/engine.mjs';
 
 const meta = {
-  themeColor: '#050505',
   colorScheme: 'dark',
   preloads: [
     { href: '/fonts/a.woff2', as: 'font', type: 'font/woff2', crossorigin: true },
@@ -19,13 +18,14 @@ const meta = {
   ],
 };
 
-test('themeMetaHead: theme-color (site.json first), color-scheme, preloads', () => {
-  assert.deepEqual(themeMetaHead(meta), {
+test('themeMetaHead: theme-color (theme.json color.themeColor), color-scheme, preloads', () => {
+  assert.deepEqual(themeMetaHead(meta, '#050505'), {
     meta: '<meta name="theme-color" content="#050505" />\n    <meta name="color-scheme" content="dark" />',
     preloads:
       '<link rel="preload" href="/fonts/a.woff2" as="font" type="font/woff2" crossorigin />\n    <link rel="preload" href="/img/b.webp" as="image" />',
   });
-  assert.match(themeMetaHead(meta, '#fff').meta, /content="#fff"/);
+  // meta.json's own themeColor is not used: one source (content/theme.json)
+  assert.doesNotMatch(themeMetaHead({ ...meta, themeColor: '#123456' }).meta, /theme-color/);
   assert.deepEqual(themeMetaHead({}), { meta: '', preloads: '' });
 });
 
@@ -78,7 +78,19 @@ test('theme/theme.json is theme/meta.json: a leftover one is not read, and check
     /theme\/theme\.json is now theme\/meta\.json .*git mv theme\/theme\.json theme\/meta\.json/,
   );
   fs.renameSync(path.join(root, 'theme/theme.json'), path.join(root, 'theme/meta.json'));
-  assert.doesNotMatch(themeWarning(loadSiteConfig(root)), /theme\.json/);
+  assert.doesNotMatch(themeWarning(loadSiteConfig(root)), /theme\/theme\.json/);
+  // a themeColor left in meta.json: named (it is content/theme.json "color" now)
+  const other = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-'));
+  fs.mkdirSync(path.join(other, 'theme'));
+  fs.writeFileSync(
+    path.join(other, 'theme/meta.json'),
+    JSON.stringify({ ...meta, themeColor: '#000000' }),
+  );
+  assert.match(
+    themeWarning(loadSiteConfig(other)),
+    /theme\/meta\.json "themeColor" is not used: the theme-color is content\/theme\.json/,
+  );
+  fs.rmSync(other, { recursive: true, force: true });
   fs.rmSync(root, { recursive: true, force: true });
 });
 

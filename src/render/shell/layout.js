@@ -1,8 +1,7 @@
 import { html, esc, editable } from '../helpers.js';
 import { seoOf } from '../seo.js';
 import { header, phoneMenu } from './header.js';
-import { typeVars } from '../layout/type.js';
-import { layoutVars } from '../layout/contain.js';
+import { themeVars } from '../theme.js';
 import { footer } from './footer.js';
 import { t } from '../strings.js';
 
@@ -11,11 +10,11 @@ export function head(ctx, route, accent) {
   const { site } = ctx;
   const seo = seoOf(ctx, route);
   const photo = seo.photo;
-  // site.json type (the text styles' sizes: layout/type.js) and layout (a contained section's
-  // columns: layout/contain.js), only what it sets; :root:root, so it beats the theme's own
-  // defaults (_tokens.scss :root) whichever stylesheet comes later: in dev the theme's CSS is
-  // added after this head, and its 250px title max won until they were set inline (G11)
-  const type = [typeVars(site), layoutVars(site)].filter(Boolean).join('; ');
+  // content/theme.json (../theme.js): the brand colour, the text styles' sizes (layout/type.js)
+  // and the layout (layout/contain.js), only what it sets; :root:root, so it beats the theme's
+  // own defaults (tokens.scss :root) whichever stylesheet comes later: in dev and build the
+  // theme's CSS comes after this head, and its 250px title max won until they were set inline (G11)
+  const type = themeVars(ctx.theme);
   const ld =
     route.page === 'home'
       ? html`<script type="application/ld+json">

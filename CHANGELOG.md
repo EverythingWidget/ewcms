@@ -13,12 +13,18 @@ say what a site must do before it bumps its pin.
   `content/theme.json`. No migration: `git mv theme/theme.json theme/meta.json` in the commit
   that bumps the pin. Until then its preloads and color-scheme are not used; `ewcms check` warns
   while a `theme/theme.json` is left.
-- **Breaking: `site.json` `accent` is gone.** The brand colour is `--brand` in the theme
-  (`theme/tokens.scss`), not `site.json`. `ewcms check` warns if `accent` is still in
-  `site.json` (it is ignored; you can delete the key). Album item `accent` values are
-  unchanged. First run no longer asks for a look colour; Site settings no longer has
-  Accent color. Set `--brand` (and `--accent`, the default background glow) in the theme.
-  Once the Theme area can edit tokens, those values are changed there.
+- **Breaking: the look's values move to `content/theme.json`.** A new content file next to
+  `site.json`: `color.brand` (`--brand`, `#rrggbb`), `color.themeColor` (the theme-color meta),
+  `typography` (was `site.json` `type`, same shape) and `layout` (was `site.json` `layout`). The
+  page head writes them over the theme's `tokens.scss` defaults (`:root:root`); left out, the
+  defaults apply and no theme-color meta is written. `site.json` keeps only site facts. No
+  migration: `ewcms check` warns about `accent`, `themeColor`, `type`, `typography` or `layout`
+  left in `site.json` and `themeColor` left in `theme/meta.json` (all ignored). See
+  docs/THEME-MIGRATION.md.
+- **Breaking: `site.json` `accent` is gone.** The brand colour is `content/theme.json`
+  `color.brand` (or the theme's `--brand` default in `theme/tokens.scss`). Album item `accent`
+  values are unchanged. First run no longer asks for a look colour; Site settings no longer has
+  Accent color.
 - **Glass follows `--brand`.** The glass surfaces (the header's pill, dropdowns, the phone menu,
   `.btn` such as the Button widget and the Form's Send, the carousel's arrows) are tinted by
   `--brand`, so they stay the brand colour on every page. An album's `--accent` now tints only

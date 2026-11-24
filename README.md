@@ -187,13 +187,13 @@ the List's `--item-*` and the type scale `--type-<style>-min`, `-max`, `-lh`; ev
 look is a token; after its `// @optional` line, as comments with the engine's defaults, the finer
 ones: each text style's weight, tracking and colour, the body text, the logo, the nav and its
 current item, the button, selected text and the skip link), `fonts.scss` (`@font-face`),
-`overrides.scss` (rules after the engine's styles) and `meta.json` (`themeColor`, `colorScheme`
-and `preloads`, put in every page's head at `<!--theme-meta-->` and `<!--theme-preloads-->` in
-`index.html`; `site.json` `themeColor` wins). The engine has no theme of its own: `ewcms dev`, in a
+`overrides.scss` (rules after the engine's styles) and `meta.json` (`colorScheme` and `preloads`,
+put in every page's head at `<!--theme-meta-->` and `<!--theme-preloads-->` in `index.html`, with
+the theme-color from `content/theme.json` `color.themeColor`). The engine has no theme of its own: `ewcms dev`, in a
 folder with no site, copies `default-site/theme/` (tokens, fonts, meta.json) into the new site, which
 owns that copy, and
 `ewcms check` warns when a site's tokens miss any of the default site's before `// @optional` (the type
-scale on a line of its own: the engine has its defaults, and what `site.json` `type` sets counts;
+scale on a line of its own: the engine has its defaults, and what `content/theme.json` `typography` sets counts;
 docs/THEME-MIGRATION.md). The
 files reach `main.scss` through the `site-layer` alias (`.generated/theme-layers`: a stub per
 file, the site's or empty: Sass has no optional `@use`); the site's tokens take the core's
@@ -361,6 +361,7 @@ site settings can live side by side):
 | `content/footer.json`                | the **footer**: `{ version, kind: "part", sections }`, sections and widgets exactly like a page's, under every page (see "Footer")                                                                                                                                                                                |
 | `content/en/strings.json`            | UI text of the templates: the menu button and clock labels (`header.menu`, `header.close`, `header.clock`)                                                                                                                                                                                                        |
 | `content/site.json`                  | name, the **SEO defaults** (`title`, `titleTemplate`, `description`, `ogPhoto`, `url`, `robots`, `lang`; see "SEO"), `forms` (where contact forms send, see "Contact form"), socials, email, `timezone` of the clock, `jobTitle` / `country` (structured data on home)                                            |
+| `content/theme.json`                 | the **theme's values** (Theme area): `color` (`brand`: `--brand`, `themeColor`: the theme-color meta; `#rrggbb`), `typography` (the text styles' sizes, see "Type scale"), `layout` (contained width, space between sections). Optional: left out, the theme's `tokens.scss` defaults |
 | `content/animations.json`            | **every animation** (see below)                                                                                                                                                                                                                                                                                   |
 | `content/en/pages/index.json`        | home: its `sections` of widgets (the hero first: the big name, its text and the **scattered hero photos**, position `x/y/w` in %, `phone` over them (`{ x?, y?, w? }`, `null`: hidden on phones), `depth`, `layer` back/front), curtain text                                                                      |
 | `content/en/pages/<page>/index.json` | the other pages: their `sections` of widgets (see "Layout"), curtain text, `meta`: its title, description, share photo, `noindex`, canonical (see "SEO")                                                                                                                                                          |
@@ -524,7 +525,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
   renders it hidden (so the switch shows it again at once). A section has **no space above or below**: the
   space between sections is empty rows (cells: a widget placed lower leaves rows above it), so
   it scales with the width like everything else (the side margins, `--pad`, stay).
-- **Contained width** (`site.json` `"layout": { "containedCols": 115 }`, Theme › Layout, 60–120):
+- **Contained width** (`content/theme.json` `"layout": { "containedCols": 115 }`, Theme › Layout, 60–120):
   a contained section is that many columns of the full-width grid's cell (window width / 120)
   wide, centred, and never nearer the window's edges than the side margins (`--pad`). Its
   content is still the 120-column grid, its cells smaller, so widgets keep their columns and a
@@ -617,12 +618,12 @@ every section is a grid of **widgets** (`src/render/layout/`):
   `_tokens.scss`: title 19, heading 3, subheading 2, statement 5, paragraph 1.4, label 1,
   small 1.05); its own factor scales that to the width, so it is only a starting point.
 
-  **Type scale** (`site.json` `type`, Theme › **Type**; `src/render/layout/type.js`): each
+  **Type scale** (`content/theme.json` `typography`, Theme › **Typography**; `src/render/layout/type.js`): each
   style's usual font size grows with the window between `min` and `max` (px; equal: fixed),
   with a line height `line` (× the size): `{ "heading": { "min": 38, "max": 104, "line": 0.92 } }`.
   Each left out is the theme's (`--type-<style>-min`, `-max`, `-lh`: the site's
   `theme/tokens.scss`, the default site lists them; unset, the engine's in `_tokens.scss`; used by
-  `_text.scss`); what `site.json` sets goes on the page's `:root`, so it changes the preview
+  `_text.scss`); what `theme.json` sets goes on the page's `:root`, so it changes the preview
   and the built site, never the editor. Defaults: title 72–250 / 0.82, heading 38–104 / 0.92,
   subheading 22–36 / 1.15, statement 30–72 / 1.06, paragraph 16 / 1.75, label 11 / 1.55,
   small 12 / 1.5. On a phone (≤ 480px) the Title and the Heading take a size with the width instead,
@@ -1606,9 +1607,10 @@ No CORS rule is needed: the dev server uploads, and pages only show the photos.
 Each person/place can set `"accent": "#hex"`. Without one, the accent is derived from the
 cover's vivid colour (greyscale covers fall back to the site accent). When you open an album,
 GSAP tweens the CSS variable `--accent`, which tints the glass UI and the background glow.
-`--brand` is the site's fixed colour (`site.json` `accent`, or the theme's own in
-`theme/tokens.scss`), never tweened: links, the menu's active item, focus rings and the header's
-dot stay on it (docs/THEME-MIGRATION.md).
+`--brand` is the site's fixed colour (`content/theme.json` `color.brand`, Theme › Color; left out,
+the theme's own in `theme/tokens.scss`), never tweened: links, the menu's active item, focus
+rings, the header's dot and the glass stay on it; the album `--accent` tints only the background
+glow (docs/THEME-MIGRATION.md).
 
 ### Animations: one config, one engine
 

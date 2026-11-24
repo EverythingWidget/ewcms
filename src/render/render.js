@@ -5,6 +5,7 @@
  * in its template file, rendered for the route's item.
  */
 import { accentOf, setEditable, warnOnce } from './helpers.js';
+import { themeColorOf } from './theme.js';
 import { head, body } from './shell/layout.js';
 import { renderSections, renderSection, sectionAnchor } from './layout/index.js';
 import { docKindOf, docOf, pageFile } from './files.js';
@@ -43,7 +44,7 @@ export const EMPTY_ROUTE = {
 
 /**
  * { head, body, lang, themeColor } of a route; lang: <html lang>, themeColor: its meta
- * theme-color (site.json themeColor; empty: the shell's own).
+ * theme-color (content/theme.json color.themeColor; empty: the shell's own, none).
  * editable: render the editor's markers (the dev server), see setEditable in helpers.js.
  * No route (a site with no pages yet, and no 404): the empty placeholder, no crash. */
 export function renderRoute(route, content, { editable = false, unbuilt = false } = {}) {
@@ -65,7 +66,7 @@ export function renderRoute(route, content, { editable = false, unbuilt = false 
     head: head(ctx, route, accent),
     body: html,
     lang: site.lang || 'en',
-    themeColor: site.themeColor || '',
+    themeColor: themeColorOf(shown.theme),
   };
 }
 

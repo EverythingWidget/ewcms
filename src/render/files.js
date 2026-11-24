@@ -82,10 +82,15 @@ export const REDIRECTS = rootFile('redirects');
  * The footer: a site part, rendered under every page, outside the view (shell/footer.js).
  */
 export const FOOTER = rootFile('footer');
+/**
+ * The theme's values (Theme area: Color, Typography, Layout): color.brand, color.themeColor,
+ * typography, layout. Optional: left out, the theme's tokens.scss defaults apply.
+ */
+export const THEME = rootFile('theme');
 export const STRINGS = 'strings.json';
 
 /** The shared files at the content root (content/site.json, ...), next to templates/. */
-export const ROOT_FILES = [SITE, HEADER, FOOTER, ANIMATIONS, PHOTOS, REDIRECTS];
+export const ROOT_FILES = [SITE, THEME, HEADER, FOOTER, ANIMATIONS, PHOTOS, REDIRECTS];
 /** Is `file` one of them? */
 export const isRootFile = (file) => ROOT_FILES.includes(file);
 
@@ -222,6 +227,8 @@ export function contentFromFiles(files) {
   const sources = byId(sourceIdOf, itemsOf);
   return {
     site: files[SITE],
+    // the theme's values (content/theme.json; {} without: the theme's own defaults)
+    theme: files[THEME] || {},
     header: files[HEADER] || {},
     pages: byId(pageIdOf),
     sources,

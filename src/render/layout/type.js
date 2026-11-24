@@ -10,10 +10,10 @@
  *                           until it fits the widget's width and (a fixed height) its height
  *                           (the widget's --tks, never above 1); a fit line still fills the width
  *
- * Each style's usual size is the site's type scale (site.json "type"; TYPE_SCALE are the
- * defaults, the same as the theme's in src/client/styles/_tokens.scss):
+ * Each style's usual size is the site's type scale (content/theme.json "typography"; TYPE_SCALE
+ * are the defaults, the same as the theme's in src/client/styles/_tokens.scss):
  *
- *   "type": { "heading": { "min": 38, "max": 104, "line": 0.92 } }
+ *   "typography": { "heading": { "min": 38, "max": 104, "line": 0.92 } }
  *
  *   min, max  the font size, px: it grows with the window between the two (equal: fixed)
  *   line      line height, × the font size
@@ -69,9 +69,9 @@ export const scaledToFit = (widget) => hasScaleToFit(widget?.type) && widget?.sc
 
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 
-/** site.json's own type settings, the valid ones only: { style: { min?, max?, line? } }. */
-export function typeOf(site) {
-  const own = isObject(site?.type) ? site.type : {};
+/** theme.json's own typography, the valid ones only: { style: { min?, max?, line? } }. */
+export function typeOf(theme) {
+  const own = isObject(theme?.typography) ? theme.typography : {};
   const out = {};
   for (const k of Object.keys(TYPE_SCALE)) {
     const o = isObject(own[k]) ? own[k] : {};
@@ -83,10 +83,10 @@ export function typeOf(site) {
   return out;
 }
 
-/** site.json type as CSS variables: [[name, value]] (only those it sets). */
-export function typeVarList(site) {
+/** theme.json typography as CSS variables: [[name, value]] (only those it sets). */
+export function typeVarList(theme) {
   const out = [];
-  for (const [k, s] of Object.entries(typeOf(site)))
+  for (const [k, s] of Object.entries(typeOf(theme)))
     for (const [key, suffix, unit] of TYPE_KEYS)
       if (s[key] !== undefined) out.push([`--type-${k}-${suffix}`, `${s[key]}${unit}`]);
   return out;
@@ -97,39 +97,35 @@ export const TYPE_VARS = Object.keys(TYPE_SCALE).flatMap((k) =>
   TYPE_KEYS.map(([, suffix]) => `--type-${k}-${suffix}`),
 );
 
-/** The :root declarations of site.json type ('' when it sets none). */
-export const typeVars = (site) =>
-  typeVarList(site)
+/** The :root declarations of theme.json typography ('' when it sets none). */
+export const typeVars = (theme) =>
+  typeVarList(theme)
     .map(([name, value]) => `${name}: ${value}`)
     .join('; ');
 
-/** Problems of site.json "type" (and the cell-based "typography" it replaced). */
-export function checkType(t, typography) {
+/** Problems of theme.json "typography" (the text styles' sizes). */
+export function checkType(t) {
   const out = [];
-  if (typography !== undefined)
-    out.push(
-      '"typography" is gone: text sizes are "type" { <style>: { min, max, line } } (px, px, × the size)',
-    );
   if (t === undefined) return out;
-  if (!isObject(t)) return [...out, '"type" must be an object { <style>: { min, max, line } }'];
+  if (!isObject(t)) return ['"typography" must be an object { <style>: { min, max, line } }'];
   const keys = TYPE_KEYS.map(([key]) => key);
   for (const [k, s] of Object.entries(t)) {
     if (!TYPE_SCALE[k]) {
-      out.push(`type: unknown style "${k}" (${Object.keys(TYPE_SCALE).join(', ')})`);
+      out.push(`typography: unknown style "${k}" (${Object.keys(TYPE_SCALE).join(', ')})`);
       continue;
     }
     if (!isObject(s)) {
-      out.push(`type.${k} must be an object { min, max, line }`);
+      out.push(`typography.${k} must be an object { min, max, line }`);
       continue;
     }
     for (const [key, v] of Object.entries(s)) {
-      if (!keys.includes(key)) out.push(`type.${k}: unknown key "${key}"`);
-      else if (!isNum(v)) out.push(`type.${k}.${key} must be a number`);
-      else if (v <= 0) out.push(`type.${k}.${key} must be more than 0`);
+      if (!keys.includes(key)) out.push(`typography.${k}: unknown key "${key}"`);
+      else if (!isNum(v)) out.push(`typography.${k}.${key} must be a number`);
+      else if (v <= 0) out.push(`typography.${k}.${key} must be more than 0`);
     }
     const min = isNum(s.min) ? s.min : TYPE_SCALE[k].min;
     const max = isNum(s.max) ? s.max : TYPE_SCALE[k].max;
-    if (min > max) out.push(`type.${k}: min (${min}px) is more than max (${max}px)`);
+    if (min > max) out.push(`typography.${k}: min (${min}px) is more than max (${max}px)`);
   }
   return out;
 }

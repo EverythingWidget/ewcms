@@ -1,5 +1,5 @@
-// The type scale (src/render/layout/type.js): site.json "type" over the theme's sizes, as CSS
-// variables on the page's :root; Theme › Type and its Preview, the type specimen
+// The type scale (src/render/layout/type.js): content/theme.json "typography" over the theme's
+// sizes, as CSS variables on the page's :root; Theme › Type and its Preview, the type specimen
 // (src/render/layout/type-specimen.js, /__type/); the preview follows Type without a reload.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -23,7 +23,7 @@ import {
 import { LINE_STYLES } from '../src/render/text.js';
 import { checkContent } from '../src/render/validate.js';
 import { needsReload, siteKey } from '../src/editor/lib/needs-reload.js';
-import { HEADER, SITE, pageFile } from '../src/render/files.js';
+import { HEADER, SITE, THEME, pageFile } from '../src/render/files.js';
 import { renderOp } from '../src/editor/server/editor-server.mjs';
 import * as render from '../src/render/render.js';
 import { SITE_A } from './fixtures/index.mjs';
@@ -31,38 +31,52 @@ import { SITE_A } from './fixtures/index.mjs';
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 const site = (more) => ({ version: 1, name: 'x', url: 'https://x.test', ...more });
 
-test('typeOf / typeVars: only what site.json sets, valid numbers only', () => {
+test('typeOf / typeVars: only what theme.json typography sets, valid numbers only', () => {
   assert.deepEqual(typeOf({}), {});
   assert.equal(typeVars({}), '');
-  const s = { type: { heading: { min: 40, line: 1.1 }, small: { max: 14 }, huge: { min: 9 } } };
+  assert.deepEqual(typeOf({ type: { heading: { min: 40 } } }), {}); // the old key: not read
+  const s = {
+    typography: { heading: { min: 40, line: 1.1 }, small: { max: 14 }, huge: { min: 9 } },
+  };
   assert.deepEqual(typeOf(s), { heading: { min: 40, line: 1.1 }, small: { max: 14 } });
   assert.equal(
     typeVars(s),
     '--type-heading-min: 40px; --type-heading-lh: 1.1; --type-small-max: 14px',
   );
-  assert.deepEqual(typeVarList({ type: { title: { min: 'big', max: 0, line: 0.9 } } }), [
+  assert.deepEqual(typeVarList({ typography: { title: { min: 'big', max: 0, line: 0.9 } } }), [
     ['--type-title-lh', '0.9'],
   ]);
   // every style has three variables
   assert.equal(TYPE_VARS.length, Object.keys(TYPE_SCALE).length * 3);
 });
 
-test('checkType: styles, keys, numbers, min not over max; "typography" is gone', () => {
+test('checkType: styles, keys, numbers, min not over max (theme.json typography)', () => {
   assert.deepEqual(checkType(undefined), []);
   assert.deepEqual(checkType({ heading: { min: 40, max: 90, line: 1 } }), []);
-  assert.deepEqual(checkType(3), ['"type" must be an object { <style>: { min, max, line } }']);
+  assert.deepEqual(checkType(3), [
+    '"typography" must be an object { <style>: { min, max, line } }',
+  ]);
   assert.deepEqual(checkType({ huge: {}, heading: { min: 0, tracking: 1 }, small: 2 }), [
-    'type: unknown style "huge" (title, heading, subheading, statement, paragraph, label, small)',
-    'type.heading.min must be more than 0',
-    'type.heading: unknown key "tracking"',
-    'type.small must be an object { min, max, line }',
+    'typography: unknown style "huge" (title, heading, subheading, statement, paragraph, label, small)',
+    'typography.heading.min must be more than 0',
+    'typography.heading: unknown key "tracking"',
+    'typography.small must be an object { min, max, line }',
   ]);
   // against the theme's default when only one is set
   assert.deepEqual(checkType({ heading: { max: 20 } }), [
-    'type.heading: min (38px) is more than max (20px)',
+    'typography.heading: min (38px) is more than max (20px)',
   ]);
-  assert.deepEqual(checkContent(SITE, site({ type: { paragraph: { min: 15, max: 18 } } })), []);
-  assert.match(checkContent(SITE, site({ typography: {} })).join(), /"typography" is gone/);
+  const theme = (typography) => ({ version: 1, typography });
+  assert.deepEqual(checkContent(THEME, theme({ paragraph: { min: 15, max: 18 } })), []);
+  assert.match(
+    checkContent(THEME, theme({ paragraph: { min: -1 } })).join(),
+    /must be more than 0/,
+  );
+  // site.json's are leftovers: ignored, only warnings
+  assert.deepEqual(
+    checkContent(SITE, site({ type: { paragraph: { min: -1 } }, typography: {} })),
+    [],
+  );
 });
 
 test("the theme's defaults: _tokens.scss is TYPE_SCALE, _text.scss sizes every style by them", () => {
@@ -90,16 +104,18 @@ test("the theme's defaults: _tokens.scss is TYPE_SCALE, _text.scss sizes every s
   assert.deepEqual(Object.keys(TEXT_STYLES).sort(), Object.keys(TYPE_SCALE).sort());
 });
 
-test("the page's head: site.json type as :root variables", () => {
+test("the page's head: theme.json typography as :root variables", () => {
   const content = render.typeSpecimen({}).content;
   const shown = {
     ...content,
-    site: site({ type: { heading: { min: 44 } } }),
+    site: site({ type: { heading: { min: 99 } } }),
+    theme: { typography: { heading: { min: 44 } } },
   };
   const { route } = render.typeSpecimen(shown);
   const { head } = render.renderRoute(route, render.typeSpecimen(shown).content);
   // :root:root: over the theme's :root defaults, whichever stylesheet loads later (G11)
   assert.match(head, /:root:root \{[^}]*--type-heading-min: 44px;/);
+  assert.doesNotMatch(head, /99px/); // site.json's type: not read
   const plain = render.renderRoute(
     route,
     render.typeSpecimen({ ...content, site: site() }).content,

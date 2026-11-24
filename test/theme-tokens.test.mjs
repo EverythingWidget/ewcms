@@ -176,7 +176,7 @@ test('F93: selected text and the skip link read their colours', () => {
     assert.ok(base.includes(`var(${t})`), t);
 });
 
-test('F85: the default site has the type scale, the engine\'s defaults; check asks for it, site.json "type" counts', () => {
+test('F85: the default site has the type scale, the engine\'s defaults; check asks for it, theme.json "typography" counts', () => {
   const core = fs.readFileSync(path.join(root, 'src/client/styles/_tokens.scss'), 'utf8');
   const scale = [...core.matchAll(/^\s*(--type-[\w-]+): ([^;]+);/gm)];
   assert.equal(scale.length, 21);
@@ -192,13 +192,13 @@ test('F85: the default site has the type scale, the engine\'s defaults; check as
   const w = themeWarning(loadSiteConfig(dir));
   assert.match(
     w,
-    /doesn't set 6 token\(s\) of the type scale \(--type-title-min, .*site\.json "type"/,
+    /doesn't set 6 token\(s\) of the type scale \(--type-title-min, .*content\/theme\.json "typography"/,
   );
   assert.doesNotMatch(w, /of the look/);
   fs.mkdirSync(path.join(dir, 'content'));
   fs.writeFileSync(
-    path.join(dir, 'content/site.json'),
-    JSON.stringify({ type: { title: { min: 30, max: 60, line: 1 }, heading: { min: 20 } } }),
+    path.join(dir, 'content/theme.json'),
+    JSON.stringify({ typography: { title: { min: 30, max: 60, line: 1 }, heading: { min: 20 } } }),
   );
   assert.match(
     themeWarning(loadSiteConfig(dir)),

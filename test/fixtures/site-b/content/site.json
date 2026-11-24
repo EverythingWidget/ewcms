@@ -16,25 +16,13 @@
   "ogPhoto": "people/noor-vermeer/02.jpg",
   "email": "hello@eeliyarasta.com",
   "emailIsPlaceholder": true,
-  "accent": "#cfc8b8",
   "social": [
     {
       "label": "Instagram",
       "handle": "@eeliya.rasta",
       "url": "https://www.instagram.com/eeliya.rasta/"
     },
-    {
-      "label": "YouTube",
-      "handle": "@eeliyarasta",
-      "url": "https://www.youtube.com/@eeliyarasta"
-    },
-    {
-      "label": "GitHub",
-      "handle": "Eeliya",
-      "url": "https://github.com/Eeliya"
-    }
-  ],
-  "layout": {
-    "containedCols": 96
-  }
+    { "label": "YouTube", "handle": "@eeliyarasta", "url": "https://www.youtube.com/@eeliyarasta" },
+    { "label": "GitHub", "handle": "Eeliya", "url": "https://github.com/Eeliya" }
+  ]
 }
