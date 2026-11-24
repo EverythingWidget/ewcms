@@ -76,7 +76,7 @@ import {
   schemaIdOf,
   sourceIdOf,
 } from '../render/files.js';
-import { applyThemeVars } from './theme-vars.js';
+import { applyTheme } from './theme-vars.js';
 import {
   itemMoves,
   moveLinks,
@@ -619,7 +619,7 @@ bridge.on('connect', () => {
   applyPart();
   pushCurtains();
   // the theme's unsaved values (a page the preview loads renders the saved or drafted ones)
-  applyThemeVars(bridge.doc, store.current[THEME]);
+  applyTheme(bridge.doc, store.current[THEME]);
   ui.previewVersion++;
 });
 
@@ -887,8 +887,8 @@ store.on(({ files, source: src, structure: _structure, edits }) => {
   // a Text widget typed into in place: the preview shows it already (its section renders
   // again when the edit ends: richDone); an undo or redo while it is edited ends the edit
   const typed = src?.nodeType === 1 && src.isContentEditable;
-  // theme.json is CSS variables only: the preview takes them at once (theme-vars.js)
-  if (files.includes(THEME)) applyThemeVars(bridge.doc, store.current[THEME]);
+  // theme.json: CSS variables and the color-scheme meta, put on the preview at once (theme-vars.js)
+  if (files.includes(THEME)) applyTheme(bridge.doc, store.current[THEME]);
   if (src === 'saved' || src === 'rebase') pushDraft();
   else if (files.some((f) => f !== ANIMATIONS))
     pushDraft({
@@ -898,7 +898,7 @@ store.on(({ files, source: src, structure: _structure, edits }) => {
       templates: typed ? [] : files.map(templateIdOf).filter(Boolean),
       sources: typed ? [] : files.map((f) => sourceIdOf(f) || schemaIdOf(f)).filter(Boolean),
     });
-  // theme.json alone (a Theme field, a color picker dragged): only CSS variables, put in above;
+  // theme.json alone (a Theme field, a color picker dragged): only the look, put in above;
   // no text, section or page row of the preview changed, so nothing more to look at
   if (files.every((f) => f === THEME)) return;
   // a template's name: its row in the pages list

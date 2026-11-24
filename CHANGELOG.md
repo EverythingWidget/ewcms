@@ -14,6 +14,12 @@ say what a site must do before it bumps its pin.
   `ewcms check` warns about a leftover `colorScheme` in `theme/meta.json` (ignored). In the
   commit that bumps the pin, move it into `content/theme.json` and drop it from `theme/meta.json`.
 
+### Editor
+
+- **Theme › Color** has a Color scheme field (`color.scheme`): Dark, Light, Light dark, Dark
+  light and Normal; empty writes no meta. The preview updates the color-scheme meta in place,
+  with no reload.
+
 ## 0.12.0 (2026-11-24)
 
 ### Breaking: what a site must do before bumping to 0.12.0

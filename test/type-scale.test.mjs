@@ -216,10 +216,10 @@ test('Theme › Typography: a row per style with its tag, Preview / Close previe
   assert.match(panel, /bridge\.doc\?\.documentElement/);
   const main = read('src/editor/main.js');
   // on every theme.json change (an edit, undo, redo) and every page the preview loads
-  assert.match(main, /if \(files\.includes\(THEME\)\) applyThemeVars\(bridge\.doc, store\.current\[THEME\]\);/);
+  assert.match(main, /if \(files\.includes\(THEME\)\) applyTheme\(bridge\.doc, store\.current\[THEME\]\);/);
   assert.match(
     main,
-    /pushCurtains\(\);[\s\S]{0,160}applyThemeVars\(bridge\.doc, store\.current\[THEME\]\);\s*ui\.previewVersion\+\+;/,
+    /pushCurtains\(\);[\s\S]{0,160}applyTheme\(bridge\.doc, store\.current\[THEME\]\);\s*ui\.previewVersion\+\+;/,
   );
   // another area closes the specimen, back to the page it replaced
   assert.match(main, /if \(panel !== 'theme'\) showSpecimen\(false\);/);

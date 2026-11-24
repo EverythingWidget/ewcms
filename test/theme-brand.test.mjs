@@ -3,7 +3,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createStore } from '../src/editor/store.js';
-import { applyThemeVars } from '../src/editor/theme-vars.js';
+import { parseHTML } from 'linkedom';
+import { applyColorScheme, applyThemeVars } from '../src/editor/theme-vars.js';
 import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { head } from '../src/render/shell/layout.js';
 import { brandOf, checkTheme, schemeOf, themeColorOf, themeVarList, themeVars, THEME_VARS } from '../src/render/theme.js';
@@ -201,7 +202,7 @@ test('a color picker dragged: one undo step, no page pass, the style written onl
   // main.js: theme.json alone stops after the variables and the draft (no text or section pass)
   const main = read('src/editor/main.js');
   const on = main.slice(main.indexOf('store.on(({ files, source: src'));
-  assert.ok(on.indexOf('applyThemeVars(') < on.indexOf("if (files.every((f) => f === THEME)) return;"));
+  assert.ok(on.indexOf('applyTheme(') < on.indexOf("if (files.every((f) => f === THEME)) return;"));
   assert.ok(on.indexOf("if (files.every((f) => f === THEME)) return;") < on.indexOf('patchTexts('));
   // the placeholders' effect follows the typography only (a string), not every theme.json edit
   assert.match(panel, /const ownKey = \$derived\(JSON\.stringify\(typeOf\(theme\(\)\)\)\);/);
@@ -216,4 +217,33 @@ test('a color picker dragged: one undo step, no page pass, the style written onl
   assert.equal(writes, 1);
   applyThemeVars(doc, { color: { brand: '#2050cc' } });
   assert.equal(writes, 2);
+});
+
+test('Theme › Color: Color scheme edits theme.json color.scheme, in place, no reload', () => {
+  const panel = read('src/editor/svelte/ThemePanel.svelte');
+  assert.match(panel, /<Collapsible key="theme:color" title="Color">/);
+  assert.match(panel, /edit="\{THEME\}#\/color\/scheme"/);
+  assert.match(panel, /label="Color scheme"/);
+  assert.match(panel, /type="select"/);
+  assert.match(panel, /set\('color\/scheme', v \|\| undefined\)/);
+  assert.match(panel, /run: \(\) => setScheme\(''\)/);
+  // main.js: theme.json applies the look (variables and the color-scheme meta) and returns
+  const main = read('src/editor/main.js');
+  const on = main.slice(main.indexOf('store.on(({ files, source: src'));
+  assert.ok(on.indexOf('applyTheme(') < on.indexOf("if (files.every((f) => f === THEME)) return;"));
+  assert.match(main, /if \(files\.includes\(THEME\)\) applyTheme\(/);
+  // the meta is written, updated or removed, only when it differs; it sits after theme-color
+  const { document } = parseHTML(
+    '<!doctype html><html><head><meta name="theme-color" content="#050505" /></head><body></body></html>',
+  );
+  applyColorScheme(document, { color: { scheme: 'dark' } });
+  const el = document.querySelector('meta[name="color-scheme"]');
+  assert.equal(el.getAttribute('content'), 'dark');
+  assert.equal(el.previousElementSibling?.getAttribute('name'), 'theme-color');
+  applyColorScheme(document, { color: { scheme: 'dark' } });
+  assert.equal(document.querySelectorAll('meta[name="color-scheme"]').length, 1);
+  applyColorScheme(document, { color: { scheme: 'Light' } });
+  assert.equal(document.querySelector('meta[name="color-scheme"]').getAttribute('content'), 'light');
+  applyColorScheme(document, {});
+  assert.equal(document.querySelector('meta[name="color-scheme"]'), null);
 });

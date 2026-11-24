@@ -2,7 +2,8 @@
   Theme (ui.panel 'theme', an area: ../areas.js): the theme's values, content/theme.json
   (src/render/theme.js). Under its head (Back to areas): Color, the brand color (theme.json
   color.brand, #rrggbb: --brand; a swatch at the hex field's start opens the native color
-  picker; empty: the theme's tokens.scss --brand, read from the preview and shown greyed), then
+  picker; empty: the theme's tokens.scss --brand, read from the preview and shown greyed) and
+  the color scheme (theme.json color.scheme: the color-scheme meta; empty: none), then
   Typography, the text styles' sizes
   (theme.json typography, px, src/render/layout/type.js; its Preview shows every style: the
   type specimen, render/layout/type-specimen.js, until Close preview or another area opens;
@@ -23,7 +24,7 @@
   import { isTypeSpecimen } from '../../render/layout/type-specimen.js';
   import { LINE_STYLES } from '../../render/text.js';
   import { isObject } from '../../render/is.js';
-  import { brandOf, isThemeColor } from '../../render/theme.js';
+  import { brandOf, isScheme, isThemeColor, schemeOf, schemeValue } from '../../render/theme.js';
   import {
     CONTAINED,
     CONTAINED_MIN,
@@ -64,6 +65,21 @@
     const v = String(value ?? '').trim();
     if (v && !isThemeColor(v)) return;
     set('color/brand', v ? v.toLowerCase() : undefined);
+  }
+
+  // Color scheme: the color-scheme meta. Empty writes none. The usual values only.
+  const SCHEME_OPTIONS = [
+    ['dark', 'Dark'],
+    ['light', 'Light'],
+    ['light dark', 'Light dark'],
+    ['dark light', 'Dark light'],
+    ['normal', 'Normal'],
+  ];
+  const scheme = $derived(schemeOf(theme()) || '');
+  function setScheme(value) {
+    const v = schemeValue(value);
+    if (v && !isScheme(v)) return;
+    set('color/scheme', v || undefined);
   }
 
   // Typography: [key, label] of a style's fields (theme.json typography, by style and key)
@@ -178,6 +194,22 @@
         />
       </label>
     </div>
+    <Field
+      edit="{THEME}#/color/scheme"
+      label="Color scheme"
+      type="select"
+      options={SCHEME_OPTIONS}
+      value={scheme}
+      help="Tells the browser whether the page is light or dark (the color-scheme meta). Empty: none."
+      reset={{
+        on: !!scheme,
+        label: 'Use no color-scheme meta',
+        title: 'Use no color-scheme meta',
+        run: () => setScheme(''),
+      }}
+      changed={live.changed(THEME, '/color/scheme')}
+      onvalue={setScheme}
+    />
   </Collapsible>
 
   <Collapsible key="theme:typography" title="Typography">

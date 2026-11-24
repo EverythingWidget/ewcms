@@ -13,7 +13,7 @@
  *   any other file the rule doesn't know (a reload is always right)
  *
  * Never: item templates, the footer, animations, redirects (none of them is a route), and
- * theme.json (only CSS variables: ../theme-vars.js puts them on the preview's root as typed).
+ * theme.json (CSS variables and the color-scheme meta: ../theme-vars.js puts them on the preview as typed).
  */
 import {
   ANIMATIONS,
