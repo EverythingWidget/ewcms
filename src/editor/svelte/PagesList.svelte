@@ -14,9 +14,7 @@
                 (AreaCard.svelte: an icon, the name, a short line; a click opens it)
     Not linked  every page not in the menu (All), or the ones under this folder (This folder;
                 no filter at the top: every page is under /), in the site's order
-  The Theme area (area 'theme', ThemePanel.svelte) uses this list for Fonts and styles
-  (Coming soon); Type and Layout live in ThemePanel, which draws the area head. The
-  Templates area (area 'templates', TemplatesPanel.svelte) is the item templates (open,
+  The Templates area (area 'templates', TemplatesPanel.svelte) is the item templates (open,
   delete), in the same rows.
   The whole row drags (the path no longer grabs the pointer: G18): in the menu list to another
   place (the menu's order); from it into Not linked (out of the menu); from Not linked into it
@@ -38,9 +36,7 @@
   import Button from './Button.svelte';
   import BackHead from './BackHead.svelte';
   import AreaHead from './AreaHead.svelte';
-  import SoonTag from './SoonTag.svelte';
   import AreaCard from './AreaCard.svelte';
-  import { areaOf } from '../areas.js';
   import Select from './Select.svelte';
   import { openAddPage } from './modals.svelte.js';
   import { ui, setMode } from './ui.svelte.js';
@@ -72,14 +68,10 @@
   import { SITE_PARTS } from '../lib/site-parts.js';
 
   // live: reactive store (live.svelte.js); actions: pickTarget, pagesOp, setPanel (main.js);
-  // area: 'pages' (the pages, Header and Footer), 'theme' (Fonts and styles; Type and Layout
-  // are in ThemePanel) or 'templates' (the item templates). showHead: false when the area
-  // panel already draws AreaHead (Theme).
+  // area: 'pages' (the pages, Header and Footer) or 'templates' (the item templates).
+  // showHead: false when the area panel already draws AreaHead.
   let { live, actions, area = 'pages', showHead = true } = $props();
-  const theme = $derived(area === 'theme');
   const templatesArea = $derived(area === 'templates');
-  // the area's own rows at its top (its record's parts: Theme's Fonts and styles)
-  const parts = $derived(areaOf(area)?.parts ?? []);
 
   const GONE = '(gone)';
   const FULL = 'Only one [param] page per folder: it has one';
@@ -677,23 +669,7 @@
     <AreaHead id="pages" {actions} trailing={addPage} />
   {/if}
 
-  {#if theme}
-    <!-- the area's own rows (its record's parts, ../areas.js): Fonts and styles, not built yet -->
-    {#if parts.length}
-      <ul class="pl-rows">
-        {#each parts as part (part.id)}
-          {@const soon = part.status === 'soon'}
-          <li class={['prow', soon && 'is-soon']} data-part={part.id}>
-            <button type="button" class="prow__open" disabled={soon}>
-              <span class="prow__title"><span>{part.label}</span></span>
-              <span class="prow__path is-muted">{part.subtitle}</span>
-            </button>
-            {#if soon}<SoonTag />{/if}
-          </li>
-        {/each}
-      </ul>
-    {/if}
-  {:else if templatesArea}
+  {#if templatesArea}
     {@render head('Templates', templates.length)}
     <ul class="pl-rows" data-templates>
       {#each templates as p (p.id)}{@render row(p)}{/each}
@@ -1087,11 +1063,6 @@
   // no empty icon column: a row without a grip or a lock starts its text 12px in
   .prow:not(:has(.prow__lead)) .prow__open {
     padding-left: var(--space-3);
-  }
-
-  // not built yet (a part's status 'soon': Theme's Fonts and styles)
-  .prow.is-soon {
-    @include soon-row('.prow__title');
   }
 
   // the root row's Own page switch, at its end where the buttons are

@@ -7,7 +7,7 @@
  *                   widgets, double click a text to type it; animations paused), Motion
  *                   (animate: click a widget or an animated element to edit its animation), SEO
  *   Templates     - the item templates
- *   Theme         - the look: type, layout, and Fonts and styles (still Coming soon)
+ *   Theme         - the look, content/theme.json: typography and layout
  *   Animations    - the default timing, the Animations library, the page entrance
  *   Site settings - site-wide values: site name and meta, forms, redirects
  *   Preview  - the toolbar's toggle: the site as visitors see it (links work); the panel
@@ -67,7 +67,16 @@ import { oneAtATime } from './lib/one-at-a-time.js';
 import { pageMenu } from './lib/page-entries.js';
 import { curtainOverrides, pathOfId } from '../render/routes.js';
 import { BACKDROP } from '../render/backdrop.js';
-import { ANIMATIONS, REDIRECTS, SITE, pageFile, schemaIdOf, sourceIdOf } from '../render/files.js';
+import {
+  ANIMATIONS,
+  REDIRECTS,
+  SITE,
+  THEME,
+  pageFile,
+  schemaIdOf,
+  sourceIdOf,
+} from '../render/files.js';
+import { applyThemeVars } from './theme-vars.js';
 import {
   itemMoves,
   moveLinks,
@@ -609,6 +618,8 @@ bridge.on('connect', () => {
   watchMod(bridge.doc.defaultView);
   applyPart();
   pushCurtains();
+  // the theme's unsaved values (a page the preview loads renders the saved or drafted ones)
+  applyThemeVars(bridge.doc, store.current[THEME]);
   ui.previewVersion++;
 });
 
@@ -828,7 +839,7 @@ function pushDraft({ reload = false, templates = [], sources = [] } = {}) {
   }, 250);
 }
 
-/** Whether site.json changed more than its type (lib/needs-reload.js siteKey) since last looked at. */
+/** Whether site.json changed (lib/needs-reload.js siteKey) since last looked at. */
 let siteSeen = null;
 function siteMoved() {
   const key = siteKey(store.current);
@@ -876,6 +887,8 @@ store.on(({ files, source: src, structure: _structure, edits }) => {
   // a Text widget typed into in place: the preview shows it already (its section renders
   // again when the edit ends: richDone); an undo or redo while it is edited ends the edit
   const typed = src?.nodeType === 1 && src.isContentEditable;
+  // theme.json is CSS variables only: the preview takes them at once (theme-vars.js)
+  if (files.includes(THEME)) applyThemeVars(bridge.doc, store.current[THEME]);
   if (src === 'saved' || src === 'rebase') pushDraft();
   else if (files.some((f) => f !== ANIMATIONS))
     pushDraft({

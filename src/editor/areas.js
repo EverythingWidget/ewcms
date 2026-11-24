@@ -16,10 +16,8 @@
  *               { window: () => open it }            a window over the editor, the list stays
  *             (null: nothing yet, a 'soon' area)
  *   highlight (optional) (counts) => the card highlighted (About: an update to offer)
- *   parts     (optional) rows the area's panel lists at its top, each { id, label, subtitle,
- *             status }: a 'soon' one shows as the areas' do (Theme's Fonts and styles)
  * Pages holds the site parts (Header, Footer) and every page, Templates the item templates,
- * Theme the look (Type and Layout; Fonts and styles is still Coming soon), Animations the
+ * Theme the look (content/theme.json: Typography and Layout; Color once its field is built), Animations the
  * default timing, the Animations library and the page entrance, Site settings what is the
  * same on every page, redirects too.
  * (The components and windows load on demand: this file stays plain data for persist.js and
@@ -67,18 +65,9 @@ export const AREAS = [
     id: 'theme',
     label: 'Theme',
     icon: 'palette',
-    subtitle: () => 'Type, layout, fonts and styles',
+    subtitle: () => 'Typography and layout',
     status: 'ready',
     opens: { panel: () => import('./svelte/ThemePanel.svelte') },
-    // the theme's own look as a form; Fonts and styles is still Coming soon
-    parts: [
-      {
-        id: 'fonts-styles',
-        label: 'Fonts and styles',
-        subtitle: "The theme's look",
-        status: 'soon',
-      },
-    ],
   },
   {
     id: 'templates',
@@ -140,7 +129,7 @@ export const TEMPLATES_PANEL = 'templates';
  * rename) and the area it is now. Everything that follows a rename reads it (persist.js):
  *   panelOf(value)      a link's ?tab= and a session's panel
  *   sectionKeyOf(key)   a session's open/closed section keys ("settings:seo" is "site-settings:seo";
- *                       "site-settings:type" is "theme:type")
+ *                       "site-settings:type" and "theme:type" are "theme:typography")
  *   MOVED_OUT           what left an old area for another one: an old link's &animation= on
  *                       ?tab=settings opens Animations (its library was in Settings)
  */
@@ -149,9 +138,13 @@ export const PANEL_ALIASES = { settings: 'site-settings' };
 /** Old area -> { a URL parameter of what moved out: the area it is in now }. */
 export const MOVED_OUT = { settings: { animation: 'animations' } };
 
-/** A section key that left its old area for another one (Type and Layout moved to Theme). */
+/**
+ * A section key that left its old area for another one (Type and Layout moved to Theme) or
+ * was renamed (Theme's Type is Typography).
+ */
 export const SECTION_ALIASES = {
-  'site-settings:type': 'theme:type',
+  'site-settings:type': 'theme:typography',
+  'theme:type': 'theme:typography',
   'site-settings:layout': 'theme:layout',
 };
 

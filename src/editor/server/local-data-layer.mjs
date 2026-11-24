@@ -22,12 +22,14 @@ import {
   isContentFile,
   LANG_FILES,
   ROOT_FILES,
+  THEME,
   itemsOf,
   schemaFile,
   schemaIdOf,
   sourceFile,
   sourceIdOf,
   FOLDERS,
+  VERSION,
 } from '../../render/files.js';
 import { checkItems, photoChecker, schemaOf } from '../../render/schemas.js';
 import { r2Config } from '../../cli/r2.mjs';
@@ -57,6 +59,13 @@ export const contentRel = (root) => loadSiteConfig(root).contentRel;
 export const diskRel = (root, file) =>
   path.relative(root, contentFilePath(root, file)).split(path.sep).join('/');
 
+/**
+ * Files Save may create when they are missing: theme.json (the Theme area's values), read as
+ * { "version": 1 } until then. Every other file must exist (pages and templates are made by
+ * their own operations).
+ */
+export const CREATABLE = [THEME];
+
 /** Editable content files that exist on disk, e.g. "pages/index.json", "site.json" (content file names). */
 export function editableFiles(root) {
   assertNoSettingsFolder(root);
@@ -70,9 +79,11 @@ export function editableFiles(root) {
   }
   for (const file of LANG_FILES)
     if (fs.existsSync(path.join(contentDirOf(root), file))) files.push(file);
-  // photos.json belongs to the upload, not to the editor's edits
+  // photos.json belongs to the upload, not to the editor's edits; theme.json is editable even
+  // when there is none yet (CREATABLE: Save makes it)
   for (const file of ROOT_FILES)
-    if (file !== PHOTOS && fs.existsSync(contentFilePath(root, file))) files.push(file);
+    if (file !== PHOTOS && (CREATABLE.includes(file) || fs.existsSync(contentFilePath(root, file))))
+      files.push(file);
   files.push(...templateFiles(root));
   return new Set(files);
 }
@@ -83,7 +94,12 @@ export function editableFiles(root) {
  */
 export const readContentFiles = (root) =>
   Object.fromEntries(
-    [...editableFiles(root)].map((f) => [f, readContentFile(root, f, { check: false })]),
+    [...editableFiles(root)].map((f) => [
+      f,
+      CREATABLE.includes(f) && !fs.existsSync(contentFilePath(root, f))
+        ? { version: VERSION }
+        : readContentFile(root, f, { check: false }),
+    ]),
   );
 
 export const mediaFile = (root) => loadSiteConfig(root).manifest;
@@ -171,7 +187,7 @@ function bindingErrors(root, files) {
 
 /**
  * Save: write the editor's files ({ "pages/index.json": data, ... }) to content/. Only existing
- * editable files, and only when every one of them has the right shape (src/render/validate.js)
+ * editable files (and theme.json, made when missing: CREATABLE), and only when every one of them has the right shape (src/render/validate.js)
  * and every source fits its schema (sourceProblems): nothing is written otherwise. Each file is written atomically (temp file + rename).
  * Returns { status, body }.
  */

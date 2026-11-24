@@ -12,7 +12,7 @@
   import SectionIcon from './SectionIcon.svelte';
   import { ui } from './ui.svelte.js';
   import { setPhoneHeight, setSection, setSectionRows } from '../layout-ops.js';
-  import { SITE, templateIdOf } from '../../render/files.js';
+  import { THEME, templateIdOf } from '../../render/files.js';
   import {
     anchorOf,
     clampSpaceRows,
@@ -87,14 +87,14 @@
   };
   // space above this section, in grid rows (F90). A template's section has no such key.
   // empty / reset: follow the site (desktop) or the desktop value (phone).
-  const siteOf = () => live.get(SITE, '') || {};
+  const themeOf = () => live.get(THEME, '') || {};
   const pageSection = $derived(!templateIdOf(file));
   const spaceKey = $derived(phoneView ? 'sectionSpacePhone' : 'sectionSpace');
   const spaceOwn = (s) => (phoneView ? hasOwnSectionSpacePhone(s) : hasOwnSectionSpace(s));
   const spaceValue = (s) =>
     spaceOwn(s) ? (phoneView ? s.sectionSpacePhone : s.sectionSpace) : undefined;
   const spacePlaceholder = (s) =>
-    String(phoneView ? phoneSectionSpaceOf(s, siteOf()) : sectionSpaceOf(s, siteOf()));
+    String(phoneView ? phoneSectionSpaceOf(s, themeOf()) : sectionSpaceOf(s, themeOf()));
   const setSpace = (at, v) => {
     const n = v === undefined ? undefined : clampSpaceRows(v);
     if (v !== undefined && n === null) return;

@@ -190,6 +190,25 @@ test('save: writes every file, formatted, with no temporary files left', () => {
   assert.deepEqual(fs.readdirSync(path.join(root, 'content/en', 'pages')), ['index.json']);
 });
 
+test('theme.json: read as { "version": 1 } until Save makes it; empty sections left out', () => {
+  const root = tree();
+  const file = path.join(root, 'content/theme.json');
+  assert.equal(fs.existsSync(file), false);
+  assert.deepEqual(readContentFiles(root)['theme.json'], { version: 1 });
+  // a bad value: nothing written
+  assert.equal(save(root, { 'theme.json': { version: 1, color: { brand: 'red' } } }).status, 400);
+  assert.equal(fs.existsSync(file), false);
+  const r = save(root, {
+    'theme.json': { version: 1, color: { brand: '#cc2020' }, typography: { heading: {} }, layout: {} },
+  });
+  assert.equal(r.status, 200);
+  assert.deepEqual(JSON.parse(read(root, 'theme.json')), { version: 1, color: { brand: '#cc2020' } });
+  assert.deepEqual(readContentFiles(root)['theme.json'], { version: 1, color: { brand: '#cc2020' } });
+  // no other root file is made by Save
+  assert.equal(save(root, { 'header.json': { version: 1 } }).status, 400);
+  assert.equal(fs.existsSync(path.join(root, 'content/header.json')), false);
+});
+
 test('writeFileAtomic: replaces the file in one step; a failed write keeps the old file', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'atomic-'));
   const file = path.join(dir, 'a.json');

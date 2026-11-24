@@ -1,7 +1,7 @@
 // The editor's areas (src/editor/areas.js, AreaList.svelte): one list, the single place each
 // part of the site opens from; no top tabs, no Sources / Media in the footer; the areas not
 // built yet disabled ("Coming soon"); Templates holds the item templates, Theme the look
-// (Type and Layout; Fonts and styles is still Coming soon), Animations the timing, the library and the page entrance.
+// (content/theme.json: Typography and Layout), Animations the timing, the library and the page entrance.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -62,11 +62,12 @@ test('the areas, in order: Pages, Media, Sources, Theme, Templates, Animations, 
   assert.equal(sectionKeyOf('site-settings:seo'), 'site-settings:seo');
   assert.equal(sectionKeyOf('animations:entrance'), 'animations:entrance');
   assert.equal(sectionKeyOf('settings'), 'settings');
-  // Type and Layout moved from Site settings to Theme (an old session key follows)
-  assert.equal(sectionKeyOf('site-settings:type'), 'theme:type');
+  // Type and Layout moved from Site settings to Theme, Type is Typography (an old session key follows)
+  assert.equal(sectionKeyOf('site-settings:type'), 'theme:typography');
   assert.equal(sectionKeyOf('site-settings:layout'), 'theme:layout');
-  assert.equal(sectionKeyOf('settings:type'), 'theme:type');
-  assert.equal(sectionKeyOf('theme:type'), 'theme:type');
+  assert.equal(sectionKeyOf('settings:type'), 'theme:typography');
+  assert.equal(sectionKeyOf('theme:type'), 'theme:typography');
+  assert.equal(sectionKeyOf('theme:typography'), 'theme:typography');
   for (const old of Object.keys(MOVED_OUT)) assert.ok(PANEL_ALIASES[old], old);
   assert.equal(panelOf('pages'), 'pages');
   assert.equal(areaOf('nope'), undefined);
@@ -75,14 +76,10 @@ test('the areas, in order: Pages, Media, Sources, Theme, Templates, Animations, 
 test('a record is the whole area: id, label, icon, subtitle, status, what it opens', () => {
   for (const a of AREAS) {
     assert.deepEqual(
-      Object.keys(a).filter((k) => !['parts', 'highlight'].includes(k)),
+      Object.keys(a).filter((k) => k !== 'highlight'),
       ['id', 'label', 'icon', 'subtitle', 'status', 'opens'],
       a.id,
     );
-    for (const p of a.parts ?? []) {
-      assert.deepEqual(Object.keys(p), ['id', 'label', 'subtitle', 'status'], `${a.id} ${p.id}`);
-      assert.ok(['ready', 'soon'].includes(p.status), p.id);
-    }
     assert.match(a.id, /^[a-z][a-z-]*$/);
     assert.ok(['ready', 'soon'].includes(a.status), a.id);
     // a ready area opens something; a panel or a window is a function (loaded on demand)
@@ -102,7 +99,7 @@ test("each area's second line says what it holds, counted", () => {
   assert.equal(s('pages'), 'Site parts and 5 pages');
   assert.equal(s('media'), '35 photos');
   assert.equal(s('sources'), '3 sources, 10 items');
-  assert.equal(s('theme'), 'Type, layout, fonts and styles');
+  assert.equal(s('theme'), 'Typography and layout');
   assert.equal(s('site-settings'), 'Name, SEO, forms and redirects');
   assert.equal(s('templates'), '7 templates');
   assert.equal(areaOf('templates').subtitle({ templates: 1 }), '1 template');
@@ -268,10 +265,9 @@ test('the About window: the update (offer, installing, restarting, done, error) 
 test('Coming soon: one pattern, from the status; the words in one place', () => {
   assert.equal(COMING_SOON, 'Coming soon');
   assert.match(src('svelte/SoonTag.svelte'), /<span class="soon">\{COMING_SOON\}<\/span>/);
-  // the rows' look: the soon-row mixin, in the list and in Theme
+  // the rows' look: the soon-row mixin, in the list
   assert.match(src('styles/_mixins.scss'), /@mixin soon-row\(\$faint\)/);
   assert.match(src('svelte/AreaCard.svelte'), /@include soon-row\('\.arow__lead, \.arow__name'\);/);
-  assert.match(src('svelte/PagesList.svelte'), /@include soon-row\('\.prow__title'\);/);
   // no copy of the words or of the style elsewhere in the editor's markup
   for (const f of readdirSync(new URL('../src/editor/svelte/', import.meta.url))) {
     if (!f.endsWith('.svelte')) continue;
@@ -317,7 +313,7 @@ test('Pages: the menu, then Site parts (Header, Footer), then Not linked; no emp
   );
 });
 
-test("Theme: Type and Layout, Fonts and styles Coming soon; a template's ← and Done come back to Templates", () => {
+test("Theme: Typography and Layout of theme.json, no Fonts and styles row; a template's ← and Done come back to Templates", () => {
   assert.match(
     src('svelte/PageHead.svelte'),
     /if \(isItemTemplate\) return actions\.setPanel\(TEMPLATES_PANEL\);/,
@@ -327,25 +323,23 @@ test("Theme: Type and Layout, Fonts and styles Coming soon; a template's ← and
     /if \(ui\.target\?\.kind === 'item-template'\) actions\.setPanel\(TEMPLATES_PANEL\);/,
   );
   const list = src('svelte/PagesList.svelte');
-  // Fonts and styles: Theme's record's part, status 'soon' (Type and Layout are in ThemePanel)
-  assert.deepEqual(areaOf('theme').parts, [
-    { id: 'fonts-styles', label: 'Fonts and styles', subtitle: "The theme's look", status: 'soon' },
-  ]);
-  assert.match(list, /const parts = \$derived\(areaOf\(area\)\?\.parts \?\? \[\]\);/);
-  assert.match(list, /<button type="button" class="prow__open" disabled=\{soon\}>/);
-  assert.match(list, /\{#if soon\}<SoonTag \/>\{\/if\}/);
-  assert.doesNotMatch(list, /Fonts and styles<|The theme's look</);
+  // Fonts and styles folded into Typography: no row, no parts (Theme is ThemePanel alone)
+  assert.equal(areaOf('theme').parts, undefined);
+  assert.doesNotMatch(list, /\.parts\b|SoonTag|\{#if theme\}|Fonts and styles/);
   // Theme and Templates have no folders
   assert.match(list, /const level = \$derived\(area === 'pages' \? ui\.pagesWin\.folder : ''\);/);
   assert.equal(TEMPLATES_PANEL, 'templates');
   // templates are their own area, not listed in Theme
   assert.match(src('svelte/TemplatesPanel.svelte'), /<PagesList \{live\} \{actions\} area="templates" \/>/);
-  assert.match(src('svelte/ThemePanel.svelte'), /<PagesList \{live\} \{actions\} area="theme" showHead=\{false\} \/>/);
-  assert.doesNotMatch(src('svelte/ThemePanel.svelte'), /data-templates|head\('Templates'/);
   const theme = src('svelte/ThemePanel.svelte');
-  for (const title of ['Type', 'Layout']) assert.match(theme, new RegExp(`title="${title}"`), title);
-  assert.match(theme, /key="theme:type"/);
+  assert.doesNotMatch(theme, /PagesList|data-templates|head\('Templates'/);
+  // Typography, then Layout, both content/theme.json (Color comes first once its field is built)
+  assert.ok(theme.indexOf('title="Typography"') < theme.indexOf('title="Layout"'));
+  assert.doesNotMatch(theme, /title="Type"|title="Color"/);
+  assert.match(theme, /key="theme:typography"/);
   assert.match(theme, /key="theme:layout"/);
+  assert.match(theme, /edit="\{THEME\}#\/layout\/containedCols"/);
+  assert.match(src('svelte/SectionSettings.svelte'), /const themeOf = \(\) => live\.get\(THEME, ''\) \|\| \{\};/);
   assert.doesNotMatch(theme, /site-settings:(type|layout)/);
 });
 

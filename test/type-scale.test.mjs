@@ -1,6 +1,7 @@
 // The type scale (src/render/layout/type.js): content/theme.json "typography" over the theme's
-// sizes, as CSS variables on the page's :root; Theme › Type and its Preview, the type specimen
-// (src/render/layout/type-specimen.js, /__type/); the preview follows Type without a reload.
+// sizes, as CSS variables on the page's :root; Theme › Typography and its Preview, the type
+// specimen (src/render/layout/type-specimen.js, /__type/); the preview follows theme.json
+// without a reload (src/editor/theme-vars.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -22,7 +23,8 @@ import {
 } from '../src/render/layout/type-specimen.js';
 import { LINE_STYLES } from '../src/render/text.js';
 import { checkContent } from '../src/render/validate.js';
-import { needsReload, siteKey } from '../src/editor/lib/needs-reload.js';
+import { IN_PLACE, needsReload, siteKey } from '../src/editor/lib/needs-reload.js';
+import { applyThemeVars, themeStyleText } from '../src/editor/theme-vars.js';
 import { HEADER, SITE, THEME, pageFile } from '../src/render/files.js';
 import { renderOp } from '../src/editor/server/editor-server.mjs';
 import * as render from '../src/render/render.js';
@@ -178,13 +180,15 @@ test('the type specimen renders: the full page (dev middleware) and its section 
   );
 });
 
-test('needsReload: site.json reloads unless only its type changed (siteKey)', () => {
-  const a = { [SITE]: site({ type: { heading: { min: 40 } } }) };
-  const b = { [SITE]: site({ type: { heading: { min: 50 } } }) };
-  const c = { [SITE]: site({ name: 'y', type: { heading: { min: 50 } } }) };
-  assert.equal(siteKey(a), siteKey(b));
-  assert.notEqual(siteKey(b), siteKey(c));
-  assert.equal(siteKey({ [SITE]: site() }), siteKey(a));
+test('needsReload: theme.json never reloads; site.json does when it changed (siteKey)', () => {
+  assert.ok(IN_PLACE.includes(THEME));
+  assert.equal(needsReload([THEME]), false);
+  assert.equal(needsReload([THEME, HEADER]), true);
+  const a = { [SITE]: site() };
+  const b = { [SITE]: site({ name: 'y' }) };
+  assert.equal(siteKey(a), siteKey({ [SITE]: site() }));
+  assert.notEqual(siteKey(a), siteKey(b));
+  assert.equal(siteKey({}), 'null');
   assert.equal(needsReload([SITE], { site: false }), false);
   assert.equal(needsReload([SITE], { site: true }), true);
   assert.equal(needsReload([SITE]), true); // left out: it did
@@ -193,19 +197,26 @@ test('needsReload: site.json reloads unless only its type changed (siteKey)', ()
   assert.match(main, /site: dirty\.includes\(SITE\) && siteKey\(store\.base\) !== siteKey/);
 });
 
-test('Theme › Type: a row per style with its tag, Preview / Close preview, live in the preview', () => {
+test('Theme › Typography: a row per style with its tag, Preview / Close preview, theme.json', () => {
   const panel = read('src/editor/svelte/ThemePanel.svelte');
-  assert.match(panel, /title="Type"/);
-  assert.doesNotMatch(panel, /typography|Size \(cells\)|Tracking/);
+  assert.match(panel, /<Collapsible key="theme:typography" title="Typography">/);
+  assert.doesNotMatch(panel, /title="Type"|\bSITE\b|Size \(cells\)|Tracking/);
+  assert.match(panel, /edit="\{THEME\}#\/typography\/\{k\}\/\{key\}"/);
+  assert.match(panel, /live\.store\.set\(THEME, '\/typography'/);
   assert.match(panel, /\{name\} · \{tag\.toUpperCase\(\)\}/);
   for (const label of ['Min (px)', 'Max (px)', "'Line'"]) assert.ok(panel.includes(label), label);
   assert.match(panel, /specimen \? 'Close preview' : 'Preview'/);
   assert.match(panel, /actions\.showSpecimen\(!specimen\)/);
-  // the preview's root gets the variables (and loses those cleared); never the editor's
-  assert.match(panel, /root\.style\.setProperty\(name, set\.get\(name\)\)/);
-  assert.match(panel, /root\.style\.removeProperty\(name\)/);
+  // the panel only reads the preview's sizes (the placeholders); main.js puts theme.json on it
+  assert.doesNotMatch(panel, /setProperty|removeProperty|applyThemeVars/);
   assert.match(panel, /bridge\.doc\?\.documentElement/);
   const main = read('src/editor/main.js');
+  // on every theme.json change (an edit, undo, redo) and every page the preview loads
+  assert.match(main, /if \(files\.includes\(THEME\)\) applyThemeVars\(bridge\.doc, store\.current\[THEME\]\);/);
+  assert.match(
+    main,
+    /pushCurtains\(\);[\s\S]{0,160}applyThemeVars\(bridge\.doc, store\.current\[THEME\]\);\s*ui\.previewVersion\+\+;/,
+  );
   // another area closes the specimen, back to the page it replaced
   assert.match(main, /if \(panel !== 'theme'\) showSpecimen\(false\);/);
   assert.match(
@@ -215,4 +226,41 @@ test('Theme › Type: a row per style with its tag, Preview / Close preview, liv
   // the panel gets the bridge and actions (App.svelte, from its record in areas.js)
   assert.match(read('src/editor/svelte/App.svelte'), /<Panel \{live\} \{bridge\} \{actions\} \/>/);
   assert.match(read('src/editor/areas.js'), /import\('\.\/svelte\/ThemePanel\.svelte'\)/);
+});
+
+test("the preview follows theme.json: its accent-init style's :root:root block (theme-vars.js)", () => {
+  const head = `
+      :root { --accent: #123456; }
+      :root:root {
+        --brand: #cc2020; --contain: 80;
+      }
+    `;
+  // replaced, the album's --accent kept
+  const t = themeStyleText(head, { color: { brand: '#00FF00' }, typography: { heading: { min: 40 } } });
+  assert.match(t, /:root \{ --accent: #123456; \}/);
+  assert.match(t, /:root:root \{\s*--brand: #00ff00; --type-heading-min: 40px;\s*\}/);
+  assert.doesNotMatch(t, /#cc2020|--contain/);
+  assert.equal(t.match(/:root:root/g).length, 1);
+  // all cleared: no block, so tokens.scss's defaults show
+  const none = themeStyleText(head, {});
+  assert.doesNotMatch(none, /:root:root|--brand/);
+  assert.match(none, /--accent: #123456/);
+  assert.equal(themeStyleText(themeStyleText(head, {}), { layout: { containedCols: 80 } }).match(/:root:root/g).length, 1);
+  // applied again and again: the same text (nothing piles up)
+  const v = { color: { brand: '#cc2020' } };
+  assert.equal(themeStyleText(themeStyleText(head, v), v), themeStyleText(head, v));
+  // on a document: the page's style, or a new one when the page had none
+  const els = {};
+  const doc = {
+    head: { prepend: (el) => (els[el.id] = el) },
+    getElementById: (id) => els[id] || null,
+    createElement: () => ({ id: '', textContent: '' }),
+  };
+  applyThemeVars(doc, {});
+  assert.equal(els['accent-init'], undefined);
+  applyThemeVars(doc, { color: { brand: '#cc2020' } });
+  assert.match(els['accent-init'].textContent, /:root:root \{\s*--brand: #cc2020;\s*\}/);
+  applyThemeVars(doc, {});
+  assert.doesNotMatch(els['accent-init'].textContent, /--brand/);
+  applyThemeVars(null, {}); // no preview yet: nothing
 });
