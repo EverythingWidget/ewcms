@@ -543,7 +543,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
   when the page opens with the hash: `src/client/modules/anchors.js` keeps the section in place
   for a moment while `rows.js`, fonts and photos settle the layout above it (until you scroll).
   Validation: the name's slug must start with a letter (a number is an album photo's hash), not
-  be one of the page's own ids (`main`, `portal`, `page-curtains`, `accent-init`,
+  be one of the page's own ids (`main`, `portal`, `page-curtains`, `theme-vars`,
   `phone-menu`), and be unique on the page; a clash with another id on the rendered page (a
   project row's slug, say) is a build warning (`[anchors]`). Without a name: no id.
 - **A page** has no grid setting: the page grid is always 120 columns (a `grid` key is

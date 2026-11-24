@@ -123,6 +123,9 @@ test('the page head: theme.json brand, typography and layout in :root:root (beat
     h,
     /:root:root \{\s*--brand: #cc2020; --type-title-max: 200px; --contain: 100;\s*\}/,
   );
+  // the block's style is <style id="theme-vars"> (the editor's preview rewrites it: theme-vars.js)
+  assert.match(h, /<style id="theme-vars">/);
+  assert.doesNotMatch(h, /accent-init/);
   // nothing from site.json, nothing at all without a theme.json
   const none = head(
     {
@@ -133,7 +136,7 @@ test('the page head: theme.json brand, typography and layout in :root:root (beat
     { page: 'home' },
     '',
   );
-  assert.doesNotMatch(none, /accent-init|--brand|--type-|--contain/);
+  assert.doesNotMatch(none, /theme-vars|--brand|--type-|--contain/);
   // the theme's stylesheet comes after this head in dev and build: :root:root wins over its :root
   assert.match(read('src/render/shell/layout.js'), /:root:root \{/);
 });

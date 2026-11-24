@@ -17,7 +17,9 @@ say what a site must do before it bumps its pin.
   `site.json`: `color.brand` (`--brand`, `#rrggbb`), `color.themeColor` (the theme-color meta),
   `typography` (was `site.json` `type`, same shape) and `layout` (was `site.json` `layout`). The
   page head writes them over the theme's `tokens.scss` defaults (`:root:root`); left out, the
-  defaults apply and no theme-color meta is written. `site.json` keeps only site facts. No
+  defaults apply and no theme-color meta is written. The head's style that holds them (and an
+  album's `--accent`) is `<style id="theme-vars">` (was `id="accent-init"`), so `theme-vars`, not
+  `accent-init`, is a reserved id a section's name can't take. `site.json` keeps only site facts. No
   migration: `ewcms check` warns about `accent`, `themeColor`, `type`, `typography` or `layout`
   left in `site.json` and `themeColor` left in `theme/meta.json` (all ignored). See
   docs/THEME-MIGRATION.md.

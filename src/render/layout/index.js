@@ -127,7 +127,7 @@ export const phoneMinRowsOf = (s) => {
 };
 export const WIDTHS = ['contained', 'full'];
 /** Ids the page's own templates use: no section is named one of them. */
-const RESERVED_IDS = ['main', 'portal', 'page-curtains', 'accent-init', 'phone-menu'];
+const RESERVED_IDS = ['main', 'portal', 'page-curtains', 'theme-vars', 'phone-menu'];
 
 /** A section's height preset ('fit' when unset or unknown). */
 export const heightOf = (s) => (HEIGHTS.includes(s?.height) ? s.height : 'fit');

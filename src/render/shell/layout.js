@@ -59,7 +59,7 @@ export function head(ctx, route, accent) {
     <meta name="twitter:card" content="${photo ? 'summary_large_image' : 'summary'}" />
     ${
       accent || type
-        ? `<style id="accent-init">
+        ? `<style id="theme-vars">
       ${
         accent
           ? `:root {

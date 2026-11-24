@@ -232,7 +232,7 @@ test('Theme › Typography: a row per style with its tag, Preview / Close previe
   assert.match(read('src/editor/areas.js'), /import\('\.\/svelte\/ThemePanel\.svelte'\)/);
 });
 
-test("the preview follows theme.json: its accent-init style's :root:root block (theme-vars.js)", () => {
+test("the preview follows theme.json: its theme-vars style's :root:root block (theme-vars.js)", () => {
   const head = `
       :root { --accent: #123456; }
       :root:root {
@@ -261,10 +261,10 @@ test("the preview follows theme.json: its accent-init style's :root:root block (
     createElement: () => ({ id: '', textContent: '' }),
   };
   applyThemeVars(doc, {});
-  assert.equal(els['accent-init'], undefined);
+  assert.equal(els['theme-vars'], undefined);
   applyThemeVars(doc, { color: { brand: '#cc2020' } });
-  assert.match(els['accent-init'].textContent, /:root:root \{\s*--brand: #cc2020;\s*\}/);
+  assert.match(els['theme-vars'].textContent, /:root:root \{\s*--brand: #cc2020;\s*\}/);
   applyThemeVars(doc, {});
-  assert.doesNotMatch(els['accent-init'].textContent, /--brand/);
+  assert.doesNotMatch(els['theme-vars'].textContent, /--brand/);
   applyThemeVars(null, {}); // no preview yet: nothing
 });
