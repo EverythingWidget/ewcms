@@ -74,14 +74,14 @@ const CORE_STYLES = enginePath('src/client/styles');
 
 /**
  * The theme's part of a page's head (theme/meta.json), at the shell's <!--theme-meta--> and
- * <!--theme-preloads-->: the theme-color (content/theme.json color.themeColor, from the render)
- * and color-scheme metas, and its preloads ({ href, as, type?, crossorigin? }).
+ * <!--theme-preloads-->: the theme-color and color-scheme metas (content/theme.json
+ * color.themeColor and color.scheme, from the render) and its preloads
+ * ({ href, as, type?, crossorigin? }).
  */
-export function themeMetaHead(themeMeta = {}, themeColor = '') {
+export function themeMetaHead(themeMeta = {}, themeColor = '', scheme = '') {
   const meta = [
     themeColor && `<meta name="theme-color" content="${attr(themeColor)}" />`,
-    themeMeta.colorScheme &&
-      `<meta name="color-scheme" content="${attr(themeMeta.colorScheme)}" />`,
+    scheme && `<meta name="color-scheme" content="${attr(scheme)}" />`,
   ].filter(Boolean);
   const preloads = (Array.isArray(themeMeta.preloads) ? themeMeta.preloads : []).map(
     (p) =>
@@ -90,8 +90,8 @@ export function themeMetaHead(themeMeta = {}, themeColor = '') {
   );
   return { meta: meta.join('\n    '), preloads: preloads.join('\n    ') };
 }
-const setThemeMeta = (shell, themeMeta, themeColor) => {
-  const t = themeMetaHead(themeMeta, themeColor);
+const setThemeMeta = (shell, themeMeta, themeColor, scheme) => {
+  const t = themeMetaHead(themeMeta, themeColor, scheme);
   return shell.replace('<!--theme-meta-->', t.meta).replace('<!--theme-preloads-->', t.preloads);
 };
 
@@ -102,8 +102,8 @@ export const editorShell = (shell, site = {}) =>
     `<title>${site.name ? `Editor · ${attr(site.name)}` : 'Editor'}</title>`,
   );
 
-const fill = (shell, { head, body, lang, themeColor }, themeMeta) =>
-  setThemeMeta(setLang(shell, lang), themeMeta, themeColor)
+const fill = (shell, { head, body, lang, themeColor, scheme }, themeMeta) =>
+  setThemeMeta(setLang(shell, lang), themeMeta, themeColor, scheme)
     .replace('<!--ssr-head-->', head)
     .replace('<!--ssr-body-->', body);
 

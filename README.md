@@ -187,9 +187,9 @@ the List's `--item-*` and the type scale `--type-<style>-min`, `-max`, `-lh`; ev
 look is a token; after its `// @optional` line, as comments with the engine's defaults, the finer
 ones: each text style's weight, tracking and colour, the body text, the logo, the nav and its
 current item, the button, selected text and the skip link), `fonts.scss` (`@font-face`),
-`overrides.scss` (rules after the engine's styles) and `meta.json` (`colorScheme` and `preloads`,
-put in every page's head at `<!--theme-meta-->` and `<!--theme-preloads-->` in `index.html`, with
-the theme-color from `content/theme.json` `color.themeColor`). The engine has no theme of its own: `ewcms dev`, in a
+`overrides.scss` (rules after the engine's styles) and `meta.json` (`preloads`,
+put in every page's head at `<!--theme-preloads-->` in `index.html`, with the theme-color and
+color-scheme from `content/theme.json` `color.themeColor` and `color.scheme`). The engine has no theme of its own: `ewcms dev`, in a
 folder with no site, copies `default-site/theme/` (tokens, fonts, meta.json) into the new site, which
 owns that copy, and
 `ewcms check` warns when a site's tokens miss any of the default site's before `// @optional` (the type
@@ -361,7 +361,7 @@ site settings can live side by side):
 | `content/footer.json`                | the **footer**: `{ version, kind: "part", sections }`, sections and widgets exactly like a page's, under every page (see "Footer")                                                                                                                                                                                |
 | `content/en/strings.json`            | UI text of the templates: the menu button and clock labels (`header.menu`, `header.close`, `header.clock`)                                                                                                                                                                                                        |
 | `content/site.json`                  | name, the **SEO defaults** (`title`, `titleTemplate`, `description`, `ogPhoto`, `url`, `robots`, `lang`; see "SEO"), `forms` (where contact forms send, see "Contact form"), socials, email, `timezone` of the clock, `jobTitle` / `country` (structured data on home)                                            |
-| `content/theme.json`                 | the **theme's values** (Theme area): `color` (`brand`: `--brand`, `themeColor`: the theme-color meta; `#rrggbb`), `typography` (the text styles' sizes, see "Type scale"), `layout` (contained width, space between sections). Optional: left out, the theme's `tokens.scss` defaults |
+| `content/theme.json`                 | the **theme's values** (Theme area): `color` (`brand`: `--brand`, `themeColor`: the theme-color meta; `#rrggbb`, `scheme`: the color-scheme meta; `dark`, `light`, …), `typography` (the text styles' sizes, see "Type scale"), `layout` (contained width, space between sections). Optional: left out, the theme's `tokens.scss` defaults |
 | `content/animations.json`            | **every animation** (see below)                                                                                                                                                                                                                                                                                   |
 | `content/en/pages/index.json`        | home: its `sections` of widgets (the hero first: the big name, its text and the **scattered hero photos**, position `x/y/w` in %, `phone` over them (`{ x?, y?, w? }`, `null`: hidden on phones), `depth`, `layer` back/front), curtain text                                                                      |
 | `content/en/pages/<page>/index.json` | the other pages: their `sections` of widgets (see "Layout"), curtain text, `meta`: its title, description, share photo, `noindex`, canonical (see "SEO")                                                                                                                                                          |

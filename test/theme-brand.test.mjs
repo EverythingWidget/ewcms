@@ -6,7 +6,7 @@ import { createStore } from '../src/editor/store.js';
 import { applyThemeVars } from '../src/editor/theme-vars.js';
 import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { head } from '../src/render/shell/layout.js';
-import { brandOf, checkTheme, themeColorOf, themeVarList, themeVars, THEME_VARS } from '../src/render/theme.js';
+import { brandOf, checkTheme, schemeOf, themeColorOf, themeVarList, themeVars, THEME_VARS } from '../src/render/theme.js';
 
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 
@@ -71,7 +71,7 @@ test('leftover site.json look keys are only warnings: accent, themeColor, type, 
 test('theme.json: color (#rrggbb only), typography, layout; nothing else', () => {
   const ok = {
     version: 1,
-    color: { brand: '#CC2020', themeColor: '#050505' },
+    color: { brand: '#CC2020', themeColor: '#050505', scheme: 'dark' },
     typography: { heading: { min: 30, max: 90, line: 1 } },
     layout: { containedCols: 96, sectionSpace: 2 },
   };
@@ -100,11 +100,20 @@ test('theme.json: color (#rrggbb only), typography, layout; nothing else', () =>
     /typography\.heading\.min must be more than 0/,
   );
   assert.match(checkTheme({ layout: { containedCols: 200 } }).join(), /layout\.containedCols/);
+  assert.match(
+    checkTheme({ color: { scheme: 'blue' } }).join(),
+    /"color\.scheme" must be/,
+  );
+  assert.deepEqual(checkTheme({ color: { scheme: 'Light Dark' } }), []);
   // values
   assert.equal(brandOf(ok), '#cc2020');
   assert.equal(brandOf({ color: { brand: 'red' } }), '');
   assert.equal(themeColorOf(ok), '#050505');
   assert.equal(themeColorOf({}), '');
+  assert.equal(schemeOf(ok), 'dark');
+  assert.equal(schemeOf({ color: { scheme: 'Light Dark' } }), 'light dark');
+  assert.equal(schemeOf({}), '');
+  assert.equal(schemeOf({ color: { scheme: 'blue' } }), '');
   assert.equal(themeVars({}), '');
   assert.match(
     themeVars(ok),

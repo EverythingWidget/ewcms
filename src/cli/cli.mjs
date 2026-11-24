@@ -296,8 +296,8 @@ const tokensSet = (scss) => [...new Set(scss.match(/(?<![\w-])--[\w-]+(?=\s*:)/g
  * the engine has no theme of its own, so the chrome and widgets would read them unset. The
  * site's tokens.scss and overrides.scss count. The type scale (--type-*) on its own line: the
  * engine has defaults for it, and what content/theme.json "typography" sets counts. A leftover
- * theme/theme.json (now theme/meta.json) is named too, and a themeColor in meta.json (it is
- * content/theme.json "color" now). '' when there is nothing to say.
+ * theme/theme.json (now theme/meta.json) is named too, and a themeColor or colorScheme in
+ * meta.json (they are content/theme.json "color" now). '' when there is nothing to say.
  * Not a failure.
  */
 export function themeWarning(site) {
@@ -320,15 +320,19 @@ export function themeWarning(site) {
   // theme/theme.json is theme/meta.json now (no migration): a leftover one is read nowhere
   if (site.themeDir && fs.existsSync(path.join(site.themeDir, 'theme.json')))
     out.push(
-      `[check] ${rel}/theme.json is now ${rel}/meta.json (name, themeColor, colorScheme, preloads): ` +
-        `rename it (git mv ${rel}/theme.json ${rel}/meta.json). Until then its preloads and ` +
-        `color-scheme are not used.`,
+      `[check] ${rel}/theme.json is now ${rel}/meta.json (name, preloads): ` +
+        `rename it (git mv ${rel}/theme.json ${rel}/meta.json). Until then its preloads are not used.`,
     );
-  // themeColor is content/theme.json's now (one source): meta.json's is read nowhere
+  // themeColor and colorScheme are content/theme.json's now (one source): meta.json's are read nowhere
   if (site.themeMeta?.themeColor !== undefined)
     out.push(
       `[check] ${rel}/meta.json "themeColor" is not used: the theme-color is content/theme.json ` +
         `"color": { "themeColor" }. Move it there.`,
+    );
+  if (site.themeMeta?.colorScheme !== undefined)
+    out.push(
+      `[check] ${rel}/meta.json "colorScheme" is not used: the color-scheme is content/theme.json ` +
+        `"color": { "scheme" }. Move it there.`,
     );
   // a token renamed (no alias: the old name is read nowhere): the new name to set
   const renamed = Object.entries(RENAMED_TOKENS)

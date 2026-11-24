@@ -90,7 +90,9 @@ test("scaffold (dev's first run): the default site in a folder with no site, a s
   ]);
   const meta = JSON.parse(fs.readFileSync(path.join(dir, 'theme/meta.json'), 'utf8'));
   assert.equal(meta.name, 'My Site');
-  assert.equal(meta.colorScheme, 'dark'); // the default site's
+  assert.equal(meta.colorScheme, undefined); // color.scheme is content/theme.json now
+  const theme = JSON.parse(fs.readFileSync(path.join(dir, 'content/theme.json'), 'utf8'));
+  assert.equal(theme.color.scheme, 'dark'); // the default site's
   assert.equal(
     fs.readFileSync(path.join(dir, 'theme/tokens.scss'), 'utf8'),
     fs.readFileSync(enginePath('default-site/theme/tokens.scss'), 'utf8'),

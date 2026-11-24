@@ -18,15 +18,17 @@ const meta = {
   ],
 };
 
-test('themeMetaHead: theme-color (theme.json color.themeColor), color-scheme, preloads', () => {
-  assert.deepEqual(themeMetaHead(meta, '#050505'), {
+test('themeMetaHead: theme-color and color-scheme (theme.json color), preloads', () => {
+  assert.deepEqual(themeMetaHead(meta, '#050505', 'dark'), {
     meta: '<meta name="theme-color" content="#050505" />\n    <meta name="color-scheme" content="dark" />',
     preloads:
       '<link rel="preload" href="/fonts/a.woff2" as="font" type="font/woff2" crossorigin />\n    <link rel="preload" href="/img/b.webp" as="image" />',
   });
-  // meta.json's own themeColor is not used: one source (content/theme.json)
+  // meta.json's own themeColor and colorScheme are not used: one source (content/theme.json)
   assert.doesNotMatch(themeMetaHead({ ...meta, themeColor: '#123456' }).meta, /theme-color/);
+  assert.doesNotMatch(themeMetaHead(meta, '#050505').meta, /color-scheme/);
   assert.deepEqual(themeMetaHead({}), { meta: '', preloads: '' });
+  assert.deepEqual(themeMetaHead({}, '', 'light').meta, '<meta name="color-scheme" content="light" />');
 });
 
 test('loadSiteConfig: the site theme folder, its style files and meta.json', () => {
@@ -79,7 +81,7 @@ test('theme/theme.json is theme/meta.json: a leftover one is not read, and check
   );
   fs.renameSync(path.join(root, 'theme/theme.json'), path.join(root, 'theme/meta.json'));
   assert.doesNotMatch(themeWarning(loadSiteConfig(root)), /theme\/theme\.json/);
-  // a themeColor left in meta.json: named (it is content/theme.json "color" now)
+  // a themeColor or colorScheme left in meta.json: named (they are content/theme.json "color" now)
   const other = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-'));
   fs.mkdirSync(path.join(other, 'theme'));
   fs.writeFileSync(
@@ -90,6 +92,11 @@ test('theme/theme.json is theme/meta.json: a leftover one is not read, and check
     themeWarning(loadSiteConfig(other)),
     /theme\/meta\.json "themeColor" is not used: the theme-color is content\/theme\.json/,
   );
+  // meta already has colorScheme (the fixture): named too
+  assert.match(
+    themeWarning(loadSiteConfig(other)),
+    /theme\/meta\.json "colorScheme" is not used: the color-scheme is content\/theme\.json/,
+  );
   fs.rmSync(other, { recursive: true, force: true });
   fs.rmSync(root, { recursive: true, force: true });
 });
@@ -99,7 +106,11 @@ test('the default site theme: every colour in its tokens; the engine styles none
     fs.readFileSync(path.join(DEFAULT_SITE_THEME, 'meta.json'), 'utf8'),
   );
   assert.equal(defaultSite.version, 1);
-  assert.equal(defaultSite.colorScheme, 'dark');
+  assert.equal(defaultSite.colorScheme, undefined);
+  const defaultTheme = JSON.parse(
+    fs.readFileSync(new URL('../default-site/content/theme.json', import.meta.url), 'utf8'),
+  );
+  assert.equal(defaultTheme.color.scheme, 'dark');
   // what was the engine's theme-default: its chrome and the widgets' looks read the site's tokens
   const files = [
     'src/client/styles/_chrome.scss',

@@ -49,7 +49,7 @@ export const DEFAULTS = Object.freeze({
 
 /** A site theme's style files, each optional (src/client/styles/main.scss: the site-layer alias). */
 export const THEME_LAYERS = Object.freeze(['fonts.scss', 'tokens.scss', 'overrides.scss']);
-/** The theme folder's manifest: name, themeColor, colorScheme, preloads (was theme.json). */
+/** The theme folder's manifest: name, preloads (was theme.json). */
 export const THEME_META = 'meta.json';
 
 /** The theme a new site starts from (ewcms dev copies it into a folder with no site: scaffold.mjs): the look's tokens, fonts, meta.json. */
@@ -100,7 +100,7 @@ export function loadSiteConfig(root = process.cwd()) {
   };
   const abs = (p) => path.resolve(root, p);
   // The look is the site's own: its theme folder's tokens.scss, fonts.scss, overrides.scss
-  // (themeLayers, each optional) and meta.json (name, themeColor, colorScheme, preloads). The engine has no theme of its own: its chrome
+  // (themeLayers, each optional) and meta.json (name, preloads). The engine has no theme of its own: its chrome
   // and widgets read the site's tokens.
   const themeDir = fs.existsSync(abs(config.themeDir)) ? abs(config.themeDir) : null;
   const site = {

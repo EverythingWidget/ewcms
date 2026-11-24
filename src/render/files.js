@@ -84,7 +84,7 @@ export const REDIRECTS = rootFile('redirects');
 export const FOOTER = rootFile('footer');
 /**
  * The theme's values (Theme area: Color, Typography, Layout): color.brand, color.themeColor,
- * typography, layout. Optional: left out, the theme's tokens.scss defaults apply.
+ * color.scheme, typography, layout. Optional: left out, the theme's tokens.scss defaults apply.
  */
 export const THEME = rootFile('theme');
 export const STRINGS = 'strings.json';

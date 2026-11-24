@@ -1,5 +1,14 @@
 # Theme migration
 
+## Unreleased: `colorScheme` is `content/theme.json` `color.scheme`
+
+The color-scheme meta is `content/theme.json` `color.scheme` (was `theme/meta.json`
+`colorScheme`), the same pattern as `color.themeColor`. No migration: in the commit that bumps
+the pin, add it under `color` and take `colorScheme` out of `theme/meta.json`. Left out, no
+color-scheme meta is written. `npx ewcms check` warns while `theme/meta.json` still has
+`colorScheme` (ignored).
+
+
 ## Unreleased: the look's values are `content/theme.json`
 
 The brand colour, the theme-color, the text sizes and the layout are `content/theme.json` (the

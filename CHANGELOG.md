@@ -4,6 +4,16 @@ Releases are tagged `vX.Y.Z` on main; a site pins one in its `package.json`
 (`"ewcms": "github:EverythingWidget/ewcms#vX.Y.Z"`). Breaking changes are marked **Breaking** and
 say what a site must do before it bumps its pin.
 
+## Unreleased
+
+### Breaking: what a site must do before bumping to the next release
+
+- **Breaking: `theme/meta.json` `colorScheme` moves to `content/theme.json` `color.scheme`.** The
+  color-scheme meta is written from `color.scheme` (`dark`, `light`, `light dark`, and the other
+  usual values; left out: none), the same way `color.themeColor` already is. No migration:
+  `ewcms check` warns about a leftover `colorScheme` in `theme/meta.json` (ignored). In the
+  commit that bumps the pin, move it into `content/theme.json` and drop it from `theme/meta.json`.
+
 ## 0.12.0 (2026-11-24)
 
 ### Breaking: what a site must do before bumping to 0.12.0

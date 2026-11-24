@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "color": { "themeColor": "#050505" },
+  "color": { "themeColor": "#050505", "scheme": "dark" },
   "layout": { "containedCols": 96 }
 }
