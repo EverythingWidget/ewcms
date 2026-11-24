@@ -8,8 +8,12 @@ import { readFileSync } from 'node:fs';
 import {
   TYPE_SCALE,
   TYPE_VARS,
+  TYPE_RESERVED,
+  TYPE_FONT_OF,
   TEXT_STYLES,
   checkType,
+  fontsOf,
+  typeFontWarnings,
   typeOf,
   typeVarList,
   typeVars,
@@ -48,21 +52,22 @@ test('typeOf / typeVars: only what theme.json typography sets, valid numbers onl
   assert.deepEqual(typeVarList({ typography: { title: { min: 'big', max: 0, line: 0.9 } } }), [
     ['--type-title-lh', '0.9'],
   ]);
-  // every style has three variables
-  assert.equal(TYPE_VARS.length, Object.keys(TYPE_SCALE).length * 3);
+  // every style has min, max, lh and font, plus the two global font tokens
+  assert.equal(TYPE_VARS.length, Object.keys(TYPE_SCALE).length * 4 + TYPE_RESERVED.fonts.length);
+  assert.ok(TYPE_VARS.includes('--f-display') && TYPE_VARS.includes('--type-heading-font'));
 });
 
 test('checkType: styles, keys, numbers, min not over max (theme.json typography)', () => {
   assert.deepEqual(checkType(undefined), []);
   assert.deepEqual(checkType({ heading: { min: 40, max: 90, line: 1 } }), []);
   assert.deepEqual(checkType(3), [
-    '"typography" must be an object { <style>: { min, max, line } }',
+    '"typography" must be an object { fonts?, <style>: { min, max, line, font } }',
   ]);
   assert.deepEqual(checkType({ huge: {}, heading: { min: 0, tracking: 1 }, small: 2 }), [
     'typography: unknown style "huge" (title, heading, subheading, statement, paragraph, label, small)',
     'typography.heading.min must be more than 0',
     'typography.heading: unknown key "tracking"',
-    'typography.small must be an object { min, max, line }',
+    'typography.small must be an object { min, max, line, font }',
   ]);
   // against the theme's default when only one is set
   assert.deepEqual(checkType({ heading: { max: 20 } }), [
@@ -79,6 +84,64 @@ test('checkType: styles, keys, numbers, min not over max (theme.json typography)
     checkContent(SITE, site({ type: { paragraph: { min: -1 } }, typography: {} })),
     [],
   );
+  // fonts is reserved (TYPE_RESERVED), not a style; font is a string on a style
+  assert.ok(TYPE_RESERVED.fonts.includes('display') && TYPE_RESERVED.fonts.includes('body'));
+  assert.deepEqual(checkType({ fonts: { display: 'DM Mono', body: 'Momo Trust Display' } }), []);
+  assert.deepEqual(checkType({ fonts: 'DM Mono' }), [
+    'typography.fonts must be an object { display, body }',
+  ]);
+  assert.deepEqual(checkType({ fonts: { display: '', heading: 1 } }), [
+    'typography.fonts.display must be a string',
+    'typography.fonts: unknown key "heading"',
+  ]);
+  assert.deepEqual(checkType({ heading: { font: 'DM Mono' } }), []);
+  assert.deepEqual(checkType({ heading: { font: 3 } }), ['typography.heading.font must be a string']);
+  // an unknown name is kept (not a shape error); typeFontWarnings names it
+  assert.deepEqual(checkType({ heading: { font: 'Comic Sans' } }), []);
+});
+
+const FONTS = [
+  { family: 'DM Mono', fallback: "ui-monospace, 'SFMono-Regular', Menlo, monospace" },
+  { family: 'Momo Trust Display', fallback: "'Didot', 'Times New Roman', serif" },
+];
+
+test('fontsOf / typeVarList: known fonts emit a stack; unknown or empty names are omitted', () => {
+  assert.deepEqual(
+    fontsOf(FONTS).map((f) => f.family),
+    ['DM Mono', 'Momo Trust Display'],
+  );
+  assert.equal(
+    fontsOf(FONTS).find((f) => f.family === 'DM Mono').stack,
+    "'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace",
+  );
+  assert.deepEqual(fontsOf(undefined), []);
+  assert.deepEqual(fontsOf([{ family: '' }, 'nope', { fallback: 'serif' }]), []);
+  const theme = {
+    typography: {
+      fonts: { display: 'Momo Trust Display', body: 'DM Mono' },
+      heading: { min: 40, font: 'DM Mono' },
+      title: { font: 'Comic Sans' },
+      paragraph: { font: '' },
+    },
+  };
+  // without the catalog, font vars are omitted (call sites that pass only theme.json still work)
+  assert.deepEqual(typeVarList(theme), [['--type-heading-min', '40px']]);
+  assert.deepEqual(typeVarList(theme, FONTS), [
+    ['--type-heading-min', '40px'],
+    ['--f-display', "'Momo Trust Display', 'Didot', 'Times New Roman', serif"],
+    ['--f-body', "'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace"],
+    ['--type-heading-font', "'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace"],
+  ]);
+  assert.doesNotMatch(typeVars(theme, FONTS), /Comic Sans|--type-title-font|--type-paragraph-font/);
+  assert.deepEqual(typeFontWarnings(theme.typography, FONTS), [
+    '"typography.title.font" "Comic Sans" is not a font this theme provides (DM Mono, Momo Trust Display)',
+  ]);
+  assert.deepEqual(typeFontWarnings({ fonts: { body: 'Comic Sans' } }, FONTS), [
+    '"typography.fonts.body" "Comic Sans" is not a font this theme provides (DM Mono, Momo Trust Display)',
+  ]);
+  assert.deepEqual(TYPE_FONT_OF.heading, 'display');
+  assert.deepEqual(TYPE_FONT_OF.label, 'body');
+  assert.deepEqual(TYPE_FONT_OF.paragraph, 'body');
 });
 
 test("the theme's defaults: _tokens.scss is TYPE_SCALE, _text.scss sizes every style by them", () => {
@@ -99,6 +162,14 @@ test("the theme's defaults: _tokens.scss is TYPE_SCALE, _text.scss sizes every s
     );
     assert.match(text, new RegExp(`line-height: var\\(--type-${k}-lh\\)`), k);
   }
+  // a style's font: --type-<style>-font over the global or inherit
+  assert.match(text, /\.ts--title \{[^}]*font-family: var\(--type-title-font, var\(--f-display\)\)/);
+  assert.match(text, /\.ts--heading \{[^}]*font-family: var\(--type-heading-font, var\(--f-display\)\)/);
+  assert.match(text, /\.ts--subheading \{[^}]*font-family: var\(--type-subheading-font, var\(--f-display\)\)/);
+  assert.match(text, /\.ts--statement \{[^}]*font-family: var\(--type-statement-font, var\(--f-display\)\)/);
+  assert.match(text, /\.ts--label \{[^}]*font-family: var\(--type-label-font, var\(--f-body\)\)/);
+  assert.match(text, /\.ts--paragraph \{[^}]*font-family: var\(--type-paragraph-font, inherit\)/);
+  assert.match(text, /\.ts--small \{[^}]*font-family: var\(--type-small-font, inherit\)/);
   // no fixed px sizes left in the text styles
   assert.doesNotMatch(text, /font-size: \d+px/);
   // the same styles everywhere
@@ -123,6 +194,28 @@ test("the page's head: theme.json typography as :root variables", () => {
     render.typeSpecimen({ ...content, site: site() }).content,
   );
   assert.doesNotMatch(plain.head, /--type-/);
+  const withFonts = render.renderRoute(
+    route,
+    render.typeSpecimen({
+      ...content,
+      site: site(),
+      theme: { typography: { fonts: { body: 'DM Mono' }, heading: { font: 'Momo Trust Display' } } },
+      fonts: FONTS,
+    }).content,
+  );
+  // the head escapes quotes in the stack (&#39;), so a stack is not a single ;-terminated run
+  assert.match(withFonts.head, /--f-body:.*DM Mono.*ui-monospace/s);
+  assert.match(withFonts.head, /--type-heading-font:.*Momo Trust Display/s);
+  const unknown = render.renderRoute(
+    route,
+    render.typeSpecimen({
+      ...content,
+      site: site(),
+      theme: { typography: { heading: { font: 'Comic Sans' } } },
+      fonts: FONTS,
+    }).content,
+  );
+  assert.doesNotMatch(unknown.head, /Comic Sans|--type-heading-font/);
 });
 
 test('the type specimen: one full-width section, a Text widget per style, each following the last', () => {

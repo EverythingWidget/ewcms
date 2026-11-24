@@ -2,12 +2,27 @@
   "version": 1,
   "name": "Default site",
   "preloads": [
-    { "href": "/fonts/dm-mono-400.woff2", "as": "font", "type": "font/woff2", "crossorigin": true },
+    {
+      "href": "/fonts/dm-mono-400.woff2",
+      "as": "font",
+      "type": "font/woff2",
+      "crossorigin": true
+    },
     {
       "href": "/fonts/momo-trust-display-400.woff2",
       "as": "font",
       "type": "font/woff2",
       "crossorigin": true
+    }
+  ],
+  "fonts": [
+    {
+      "family": "DM Mono",
+      "fallback": "ui-monospace, 'SFMono-Regular', Menlo, monospace"
+    },
+    {
+      "family": "Momo Trust Display",
+      "fallback": "'Didot', 'Times New Roman', serif"
     }
   ]
 }

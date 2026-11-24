@@ -16,7 +16,8 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { ENGINE, enginePath, posixPath, ENGINE_VERSION } from './engine.mjs';
-import { loadSiteConfig, CONFIG_FILE, DEFAULT_SITE_THEME } from './site-config.mjs';
+import { loadSiteConfig, CONFIG_FILE, DEFAULT_SITE_THEME, THEME_META } from './site-config.mjs';
+import { typeFontWarnings } from '../render/layout/type.js';
 import { buildPhotos } from './photos.mjs';
 import { checkLinks } from './check-links.mjs';
 import { registerSiteWidgets } from './site-widgets.mjs';
@@ -334,6 +335,32 @@ export function themeWarning(site) {
       `[check] ${rel}/meta.json "colorScheme" is not used: the color-scheme is content/theme.json ` +
         `"color": { "scheme" }. Move it there.`,
     );
+  // typography fonts: the theme lists the families Theme › Typography can pick
+  const metaFile = site.themeDir && path.join(site.themeDir, THEME_META);
+  const listed = site.themeMeta?.fonts;
+  if (metaFile && fs.existsSync(metaFile) && listed === undefined)
+    out.push(
+      `[check] ${rel}/meta.json should list "fonts" (the families Theme › Typography can pick: ` +
+        `[{ "family", "fallback"? }]).`,
+    );
+  else if (listed !== undefined && !Array.isArray(listed))
+    out.push(
+      `[check] ${rel}/meta.json "fonts" must be a list of { family, fallback? }.`,
+    );
+  else if (Array.isArray(listed))
+    listed.forEach((item, i) => {
+      if (!item || typeof item !== 'object' || typeof item.family !== 'string' || !item.family.trim())
+        out.push(`[check] ${rel}/meta.json fonts[${i}] needs a "family" string.`);
+    });
+  try {
+    const typo = JSON.parse(fs.readFileSync(path.join(site.contentRootDir || '', 'theme.json'), 'utf8'))
+      .typography;
+    const rootRel = posixPath(path.relative(site.root, site.contentRootDir || '')) || '.';
+    for (const w of typeFontWarnings(typo, listed))
+      out.push(`[check] ${rootRel}/theme.json ${w}`);
+  } catch {
+    // no content/theme.json, or it isn't JSON: checkContent names the file
+  }
   // a token renamed (no alias: the old name is read nowhere): the new name to set
   const renamed = Object.entries(RENAMED_TOKENS)
     .filter(([old, now]) => own.has(old) && look.includes(now))

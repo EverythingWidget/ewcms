@@ -115,5 +115,7 @@ export function loadContent(root, drafts = {}) {
   return {
     ...contentFromFiles({ ...readContentDir(root), ...drafts }),
     media: read(site.manifest, {}),
+    // the theme's provided fonts (theme/meta.json "fonts"): themeVars expands family names
+    fonts: site.themeMeta?.fonts,
   };
 }

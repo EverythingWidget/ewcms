@@ -10,11 +10,12 @@ export function head(ctx, route, accent) {
   const { site } = ctx;
   const seo = seoOf(ctx, route);
   const photo = seo.photo;
-  // content/theme.json (../theme.js): the brand colour, the text styles' sizes (layout/type.js)
-  // and the layout (layout/contain.js), only what it sets; :root:root, so it beats the theme's
-  // own defaults (tokens.scss :root) whichever stylesheet comes later: in dev and build the
-  // theme's CSS comes after this head, and its 250px title max won until they were set inline (G11)
-  const type = themeVars(ctx.theme);
+  // content/theme.json (../theme.js): the brand colour, the text styles' sizes and fonts
+  // (layout/type.js; fonts: the theme's meta.json list, ctx.fonts) and the layout
+  // (layout/contain.js), only what it sets; :root:root, so it beats the theme's own defaults
+  // (tokens.scss :root) whichever stylesheet comes later: in dev and build the theme's CSS
+  // comes after this head, and its 250px title max won until they were set inline (G11)
+  const type = themeVars(ctx.theme, ctx.fonts);
   const ld =
     route.page === 'home'
       ? html`<script type="application/ld+json">

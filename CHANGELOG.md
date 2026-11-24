@@ -19,6 +19,12 @@ say what a site must do before it bumps its pin.
 - **Theme › Color** has a Color scheme field (`color.scheme`): Dark, Light, Light dark, Dark
   light and Normal; empty writes no meta. The preview updates the color-scheme meta in place,
   with no reload.
+- **Theme › Typography can pick fonts.** The theme lists the families it provides in
+  `theme/meta.json` `"fonts"` (`{ family, fallback? }`). `content/theme.json`
+  `typography.fonts.display` / `body` write `--f-display` / `--f-body`, and
+  `typography.<style>.font` writes `--type-<style>-font`. Empty, the theme's stacks apply. A name
+  the theme doesn't list is kept but not emitted; `ewcms check` warns. Not breaking: every key is
+  optional. See docs/THEME-MIGRATION.md.
 
 ## 0.12.0 (2026-11-24)
 

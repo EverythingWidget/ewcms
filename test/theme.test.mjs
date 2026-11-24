@@ -111,6 +111,11 @@ test('the default site theme: every colour in its tokens; the engine styles none
     fs.readFileSync(new URL('../default-site/content/theme.json', import.meta.url), 'utf8'),
   );
   assert.equal(defaultTheme.color.scheme, 'dark');
+  assert.deepEqual(
+    defaultSite.fonts.map((f) => f.family),
+    ['DM Mono', 'Momo Trust Display'],
+  );
+  assert.match(defaultSite.fonts[0].fallback, /ui-monospace/);
   // what was the engine's theme-default: its chrome and the widgets' looks read the site's tokens
   const files = [
     'src/client/styles/_chrome.scss',
@@ -121,4 +126,61 @@ test('the default site theme: every colour in its tokens; the engine styles none
     const code = fs.readFileSync(f, 'utf8').replace(/\/\/.*$/gm, '');
     assert.doesNotMatch(code, /#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/i, f);
   }
+});
+
+test('theme/meta.json fonts: check warns when the list is missing or typography names an unknown family', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-fonts-'));
+  fs.mkdirSync(path.join(root, 'theme'));
+  fs.mkdirSync(path.join(root, 'content'));
+  fs.writeFileSync(path.join(root, 'theme/tokens.scss'), ':root { --bg: #fff; }\n');
+  // tokens incomplete: look warning, but no fonts warning without meta.json
+  assert.doesNotMatch(themeWarning(loadSiteConfig(root)), /"fonts"/);
+  fs.writeFileSync(path.join(root, 'theme/meta.json'), JSON.stringify({ name: 'X' }));
+  assert.match(
+    themeWarning(loadSiteConfig(root)),
+    /meta\.json should list "fonts".*family/,
+  );
+  fs.writeFileSync(
+    path.join(root, 'theme/meta.json'),
+    JSON.stringify({
+      name: 'X',
+      fonts: [
+        { family: 'DM Mono', fallback: 'monospace' },
+        { family: 'Momo Trust Display' },
+      ],
+    }),
+  );
+  // loadSiteConfig caches per root: a new folder for the listed case
+  const listed = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-fonts-'));
+  fs.mkdirSync(path.join(listed, 'theme'));
+  fs.mkdirSync(path.join(listed, 'content'));
+  fs.writeFileSync(path.join(listed, 'theme/tokens.scss'), ':root { --bg: #fff; }\n');
+  fs.writeFileSync(
+    path.join(listed, 'theme/meta.json'),
+    JSON.stringify({
+      name: 'X',
+      fonts: [
+        { family: 'DM Mono', fallback: 'monospace' },
+        { family: 'Momo Trust Display' },
+      ],
+    }),
+  );
+  assert.doesNotMatch(themeWarning(loadSiteConfig(listed)), /"fonts"/);
+  fs.writeFileSync(
+    path.join(listed, 'content/theme.json'),
+    JSON.stringify({ typography: { heading: { font: 'Comic Sans' }, fonts: { body: 'Comic Sans' } } }),
+  );
+  const w = themeWarning(loadSiteConfig(listed));
+  assert.match(
+    w,
+    /content\/theme\.json "typography\.heading\.font" "Comic Sans" is not a font this theme provides \(DM Mono, Momo Trust Display\)/,
+  );
+  assert.match(w, /"typography\.fonts\.body" "Comic Sans"/);
+  fs.writeFileSync(
+    path.join(listed, 'content/theme.json'),
+    JSON.stringify({ typography: { heading: { font: 'DM Mono' } } }),
+  );
+  assert.doesNotMatch(themeWarning(loadSiteConfig(listed)), /not a font this theme provides/);
+  fs.rmSync(root, { recursive: true, force: true });
+  fs.rmSync(listed, { recursive: true, force: true });
 });

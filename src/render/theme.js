@@ -8,14 +8,18 @@
  *   {
  *     "version": 1,
  *     "color": { "brand": "#cc2020", "themeColor": "#050505", "scheme": "dark" },
- *     "typography": { "heading": { "min": 38, "max": 104, "line": 0.92 } },
+ *     "typography": {
+ *       "fonts": { "display": "Momo Trust Display", "body": "DM Mono" },
+ *       "heading": { "min": 38, "max": 104, "line": 0.92, "font": "DM Mono" }
+ *     },
  *     "layout": { "containedCols": 96, "sectionSpace": 0, "sectionSpacePhone": 0 }
  *   }
  *
  *   color.brand       --brand: links, the menu, the glass, focus rings (#rrggbb)
  *   color.themeColor  the browser's <meta name="theme-color"> (#rrggbb; left out: none)
  *   color.scheme      the browser's <meta name="color-scheme"> (dark, light, …; left out: none)
- *   typography        the text styles' sizes (layout/type.js): --type-<style>-min, -max, -lh
+ *   typography        the text styles' sizes and fonts (layout/type.js): --type-<style>-min,
+ *                     -max, -lh, -font, and typography.fonts display / body (--f-display, --f-body)
  *   layout            contained width and space between sections (layout/contain.js, space.js)
  */
 import { isObject } from './is.js';
@@ -67,14 +71,18 @@ export const schemeOf = (theme) => {
 };
 
 /** theme.json as :root CSS variables: [[name, value]], only what it sets. */
-export function themeVarList(theme) {
+export function themeVarList(theme, fonts) {
   const brand = brandOf(theme);
-  return [...(brand ? [['--brand', brand]] : []), ...typeVarList(theme), ...layoutVarList(theme)];
+  return [
+    ...(brand ? [['--brand', brand]] : []),
+    ...typeVarList(theme, fonts),
+    ...layoutVarList(theme),
+  ];
 }
 
 /** The :root declarations of theme.json ('' when it sets none). */
-export const themeVars = (theme) =>
-  themeVarList(theme)
+export const themeVars = (theme, fonts) =>
+  themeVarList(theme, fonts)
     .map(([name, value]) => `${name}: ${value}`)
     .join('; ');
 
