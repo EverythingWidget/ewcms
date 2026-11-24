@@ -4,7 +4,7 @@
  * (data-sec) and every widget element its id (data-widget): src/render/layout/index.js.
  *
  * On each change of the file, syncLayout applies what the preview can show by itself: the
- * sections' name (their id), height, width, rows and on/off (their classes and CSS variables) and the
+ * sections' name (their id), height, width, rows, space and on/off (their classes and CSS variables) and the
  * widgets' places, sizes, links, text scale, phone areas, layers, on/off and motion (data-motion,
  * src/render/layout/motion.js: those widgets' animations play again). What needs the site's templates (a section added or
  * copied, a widget's content or config changed after a structure edit, a section whose index

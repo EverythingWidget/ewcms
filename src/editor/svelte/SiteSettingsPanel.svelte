@@ -36,6 +36,10 @@
     containedOf,
     containedWidth,
   } from '../../render/layout/contain.js';
+  import {
+    clampSpaceRows,
+    spaceRows,
+  } from '../../render/layout/space.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../preview-runtime.js);
   // actions: showSpecimen, setPanel (main.js)
@@ -101,16 +105,43 @@
   const WINDOWS = [1280, 1366, 1440, 1536, 1920];
   // the (i) tips of Name & Details and SEO fields, by key (the snippets below)
   const TIPS = { name: nameTip, title: titleTip };
+  // space between sections, in grid rows (F90). empty / 0 on desktop is unset (the default).
+  // phone empty follows the desktop count; 0 is stored so it can override the desktop value.
+  const siteSpace = $derived(spaceRows((live.get(SITE, '') || {}).layout?.sectionSpace));
+  const siteSpacePhone = $derived(spaceRows((live.get(SITE, '') || {}).layout?.sectionSpacePhone));
   // the preview follows as it is typed (the page's head has it after Save)
   $effect(() => {
     ui.previewVersion;
-    bridge.doc?.documentElement.style.setProperty('--contain', String(contained));
+    const root = bridge.doc?.documentElement;
+    if (!root) return;
+    root.style.setProperty('--contain', String(contained));
+    const space = siteSpace ?? 0;
+    if (space) root.style.setProperty('--section-space', String(space));
+    else root.style.removeProperty('--section-space');
+    if (siteSpacePhone !== null && siteSpacePhone !== undefined)
+      root.style.setProperty('--section-space-phone', String(siteSpacePhone));
+    else root.style.removeProperty('--section-space-phone');
   });
   function setContained(value) {
     if (!Number.isInteger(value) || value < CONTAINED_MIN || value > COLS) return;
     set('layout/containedCols', value);
   }
+  function setSiteSpace(key, value, allowZero = false) {
+    const n = value === undefined ? undefined : clampSpaceRows(value);
+    if (value !== undefined && n === null) return;
+    const stored = allowZero ? n : n || undefined; // desktop 0 is the default: leave it out
+    set(`layout/${key}`, stored);
+  }
 </script>
+
+{#snippet spaceTip()}<b>Space between sections</b>: a number of grid rows of padding above every
+  section except the first visible one of a page (that one already starts under the header).
+  The first footer section uses it too. Empty or 0: none, so existing pages stay as they are.
+  A section can override this.{/snippet}
+
+{#snippet spacePhoneTip()}<b>Space between sections (phone)</b>: the same setting below 760px.
+  Empty: the same number of rows as desktop. 0 means none on phones, even when the desktop
+  value is set.{/snippet}
 
 {#snippet nameTip()}<b>Site name</b>: your site's name, for the header's logo text, share cards and
   search engines. It also fills <b>{'{site}'}</b> in the other pages' titles, and is Home's title
@@ -231,6 +262,32 @@
         value={contained}
         changed={live.changed(SITE, '/layout/containedCols')}
         onvalue={setContained}
+      />
+      <Field
+        edit="{SITE}#/layout/sectionSpace"
+        label="Space between sections"
+        type="number"
+        half
+        empty
+        placeholder="0"
+        value={siteSpace ?? undefined}
+        help="Rows of the grid between sections. Empty or 0: none. The first section of a page starts under the header and does not use this."
+        tip={spaceTip}
+        changed={live.changed(SITE, '/layout/sectionSpace')}
+        onvalue={(value) => setSiteSpace('sectionSpace', value)}
+      />
+      <Field
+        edit="{SITE}#/layout/sectionSpacePhone"
+        label="Space between sections (phone)"
+        type="number"
+        half
+        empty
+        placeholder={String(siteSpace ?? 0)}
+        value={siteSpacePhone ?? undefined}
+        help="On phones. Empty: the same number of rows as desktop."
+        tip={spacePhoneTip}
+        changed={live.changed(SITE, '/layout/sectionSpacePhone')}
+        onvalue={(value) => setSiteSpace('sectionSpacePhone', value, true)}
       />
     </div>
     <ul class="widths" aria-label="Contained width at common window sizes">

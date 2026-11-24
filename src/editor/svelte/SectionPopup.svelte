@@ -7,7 +7,7 @@
   the session, shared with the widget's: widget-popup.js). × or Esc closes it; it goes when
   the section does.
   Header: the rows icon, the section's name ("Section N" without one), Locate, ×. Then its
-  fields (SectionSettings.svelte: Name, Height, Width), no tabs. Grey: --c-card, its head
+  fields (SectionSettings.svelte: Name, Height, Width, Space above this section), no tabs. Grey: --c-card, its head
   #343433, fields #313131, quiet text #6f6f6f.
     live, bridge, file, id (the section's), popup (createPopup()), onclose
 -->
