@@ -148,23 +148,27 @@
         onclick={() => actions.showSpecimen(!specimen)}
       />
     </div>
-    {#each LINE_STYLES as [k, name, tag] (k)}
-      <p class="tf__label">{name} · {tag.toUpperCase()}</p>
-      <div class="scale">
-        {#each TYPE_FIELDS as [key, label] (key)}
-          <Field
-            edit="{SITE}#/type/{k}/{key}"
-            {label}
-            type="number"
-            empty
-            placeholder={String(themeType[k][key])}
-            value={live.get(SITE, `/type/${k}/${key}`)}
-            changed={live.changed(SITE, `/type/${k}/${key}`)}
-            onvalue={(value) => setType(k, key, value)}
-          />
-        {/each}
-      </div>
-    {/each}
+    <div class="styles">
+      {#each LINE_STYLES as [k, name, tag] (k)}
+        <div class="style-row">
+          <p class="tf__label">{name} · {tag.toUpperCase()}</p>
+          <div class="scale">
+            {#each TYPE_FIELDS as [key, label] (key)}
+              <Field
+                edit="{SITE}#/type/{k}/{key}"
+                {label}
+                type="number"
+                empty
+                placeholder={String(themeType[k][key])}
+                value={live.get(SITE, `/type/${k}/${key}`)}
+                changed={live.changed(SITE, `/type/${k}/${key}`)}
+                onvalue={(value) => setType(k, key, value)}
+              />
+            {/each}
+          </div>
+        </div>
+      {/each}
+    </div>
   </Collapsible>
 
   <Collapsible key="theme:layout" title="Layout">
@@ -221,6 +225,17 @@
 
 <style lang="scss">
   @use '../styles/mixins' as *;
+
+  // a style's name with its Min, Max and Line; more space between styles than under the name
+  .styles {
+    @include stack(var(--space-5));
+  }
+
+  // the name is a <p>: keep its default top margin on the first (Preview stays put),
+  // drop it on the rest so the row gap is the space between styles
+  .style-row + .style-row > .tf__label {
+    margin-top: 0;
+  }
 
   // Type: a style's Min, Max and Line in one row
   .scale {
