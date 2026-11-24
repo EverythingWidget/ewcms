@@ -250,9 +250,11 @@ test('the editor: a Templates group in Theme, its own target, Edit template, no 
   );
   // Edit template: always laid out, hidden while a preset is picked
   const lead = read('src/editor/svelte/ListLead.svelte');
-  assert.match(lead, /class=\{\['ll__edit', !isOwnTemplate && 'is-hidden'\]\}/);
-  assert.match(lead, /ui\.openTemplate\?\.\(templateId, \{ back: true \}\)/);
-  assert.match(lead, /\.ll__edit\.is-hidden/);
+  const actions = read('src/editor/svelte/TemplateActions.svelte');
+  assert.match(lead, /<TemplateActions/);
+  assert.match(actions, /class=\{\['ta__edit', !isOwnTemplate && 'is-hidden'\]\}/);
+  assert.match(actions, /ui\.openTemplate\?\.\(templateId, \{ back: true \}\)/);
+  assert.match(actions, /\.ta__edit\.is-hidden/);
   // the dev server serves the preview
   assert.match(
     read('src/cli/vite-plugin-static-site.mjs'),

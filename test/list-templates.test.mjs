@@ -304,21 +304,22 @@ test('templatesOp: a new t- file next to the language folder, loaded again on re
 test('the panel: a Template picker and Duplicate preset, in both modes, no shift', () => {
   const read = (f) => fs.readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
   const lead = read('src/editor/svelte/ListLead.svelte');
+  const actions = read('src/editor/svelte/TemplateActions.svelte');
   assert.match(lead, /data-template-picker/);
   assert.match(lead, /label="Template"/);
+  assert.match(lead, /<TemplateActions/);
   // Duplicate (a preset) / Duplicate template, both labels in one cell: no shift
-  assert.match(lead, />Duplicate<\/span/);
-  assert.match(lead, />Duplicate template<\/span/);
-  assert.match(lead, /\.ll__dup \{\s*display: inline-grid;\s*> span \{\s*grid-area: 1 \/ 1;/);
+  assert.match(actions, />Duplicate<\/span/);
+  assert.match(actions, />Duplicate template<\/span/);
+  assert.match(actions, /\.ta__dup \{\s*display: inline-grid;\s*> span \{\s*grid-area: 1 \/ 1;/);
   // the switch saved at once unless the page has other unsaved edits; else the note
-  assert.match(lead, /const pending = live\.store\.dirtyFiles\(\)\.includes\(g\.file\)/);
-  assert.match(lead, /await dataLayer\.save\(sent\);\s*live\.store\.markSaved\(\[g\.file\], sent\)/);
-  assert.match(lead, /Saved as template \$\{res\.id\}/);
-  assert.match(lead, /'ll__note', !note && 'is-hidden'/);
-  assert.match(lead, /templatesOp\(\{ op: 'add'/);
+  assert.match(actions, /const pending = live\.store\.dirtyFiles\(\)\.includes\(file\)/);
+  assert.match(actions, /await dataLayer\.save\(sent\);\s*live\.store\.markSaved\(\[file\], sent\)/);
+  assert.match(actions, /Saved as template \$\{res\.id\}/);
+  assert.match(actions, /'ta__note', !note && 'is-hidden'/);
+  assert.match(actions, /templatesOp\(\{ op: 'add'/);
   // the template picker is above Source / Custom, shared by both modes
   assert.ok(lead.indexOf('data-template-picker') < lead.indexOf('ll__source-head'));
-  assert.match(lead, /class="ll__actions"/);
   // the generic settings leave it to ListLead
   assert.equal(WIDGET_TYPES.list.config.find((c) => c.key === 'template').lead, true);
   assert.match(read('src/editor/svelte/GroupFields.svelte'), /!c\.lead &&/);

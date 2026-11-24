@@ -53,7 +53,7 @@ test('the editor loads, saves, checks the status and publishes only through the 
   for (const f of [
     'src/editor/main.js',
     'src/editor/svelte/PublishModal.svelte',
-    'src/editor/svelte/ListLead.svelte',
+    'src/editor/svelte/TemplateActions.svelte',
   ])
     assert.match(read(f), /import \{ dataLayer \} from '(\.\.?\/)+data\/index\.js'/, f);
 });

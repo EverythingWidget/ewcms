@@ -670,7 +670,7 @@ test('ListLead: Source Custom is config.custom, no Items switch', () => {
   assert.match(lead, /ListField/);
   assert.match(lead, /WidgetSource/);
   assert.match(lead, /oncustom/);
-  assert.match(lead, /ll__actions/);
+  assert.match(lead, /<TemplateActions/);
   assert.match(lead, /ll__source-head/);
   // ListField has no second title; Add lives on the Source row when Custom
   assert.match(lead, /label=""/);

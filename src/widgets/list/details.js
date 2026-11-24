@@ -64,6 +64,7 @@ export const details = {
         help: 'What opens below the summary, filled from the same item',
         value: (w) => w.config?.template || '',
         write: (v) => v || undefined,
+        editTemplate: true,
       },
       {
         key: 'config/several',

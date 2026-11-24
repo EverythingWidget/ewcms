@@ -29,12 +29,8 @@
   import { TEXT_TYPES } from '../../render/property-types.js';
   import { pointer } from '../../render/helpers.js';
   import Button from './Button.svelte';
-  import { ui } from './ui.svelte.js';
-  import { PRESETS, cloneTemplate } from '../../widgets/list/presets.js';
-  import { t } from '../../render/strings.js';
-  import { templatesOp } from '../source.js';
-  import { dataLayer } from '../data/index.js';
-  import { toast } from './toasts.svelte.js';
+  import TemplateActions from './TemplateActions.svelte';
+  import { PRESETS } from '../../widgets/list/presets.js';
   import { setListCustom } from '../layout-ops.js';
   import Select from './Select.svelte';
   import { sourceOf } from '../../render/layout/source.js';
@@ -169,40 +165,7 @@
       source: 'panel',
       structure: true,
     });
-  const isOwnTemplate = $derived(templateId.startsWith('t-'));
-  let duplicating = $state(false);
   let note = $state('');
-  async function duplicate() {
-    if (duplicating) return;
-    duplicating = true;
-    note = '';
-    // the page's other unsaved edits: then the switch is not saved on its own
-    const pending = live.store.dirtyFiles().includes(g.file);
-    try {
-      const ctx = live.content;
-      const data = cloneTemplate(ctx, shown?.source || '', templateId, {
-        custom,
-        open: t(ctx, 'list.open'),
-        sep: t(ctx, 'list.sep'),
-      });
-      const { version: _v, ...body } = data; // eslint-disable-line no-unused-vars
-      const res = await templatesOp({ op: 'add', data: body });
-      live.store.files({ [res.file]: res.data });
-      setTemplate(res.id);
-      live.store.seal();
-      if (pending) note = `Saved as template ${res.id}: the List's switch is saved with the page`;
-      else {
-        const sent = { [g.file]: structuredClone(live.store.current[g.file]) };
-        await dataLayer.save(sent);
-        live.store.markSaved([g.file], sent);
-        toast(`Template “${res.data.name}” added and used (content/templates/${res.id}.json)`);
-      }
-    } catch (err) {
-      toast(err.message, { kind: 'error' });
-    } finally {
-      duplicating = false;
-    }
-  }
 
   function setValue(f, value) {
     live.store.set(f.file, f.ptr, value, { source: 'panel', structure: true });
@@ -273,35 +236,15 @@
         A part the source has no property for is left out. To show other properties,
         <b>Duplicate</b> it and pick them in the template.{/snippet}
     </Field>
-    <div class="ll__actions">
-      <Button
-        size="small"
-        icon="clone"
-        title="Copy this template into a new one of the site's (content/templates)"
-        disabled={duplicating}
-        onclick={duplicate}
-        data-duplicate
-        ><span class="ll__dup"
-          ><span class={[isOwnTemplate && 'is-hidden']}>Duplicate</span><span
-            class={[!isOwnTemplate && 'is-hidden']}>Duplicate template</span
-          ></span
-        ></Button
-      >
-      <!-- always laid out (no shift): hidden while a preset is picked -->
-      <span class={['ll__edit', !isOwnTemplate && 'is-hidden']} aria-hidden={!isOwnTemplate}>
-        <Button
-          size="small"
-          icon="pen"
-          title="Open this template in the template editor (Theme › Templates)"
-          disabled={!isOwnTemplate}
-          onclick={() => ui.openTemplate?.(templateId, { back: true })}
-          data-edit-template>Edit template</Button
-        >
-      </span>
-    </div>
-    <p class={['ll__note', !note && 'is-hidden']} data-template-note aria-live="polite">
-      {note || ' '}
-    </p>
+    <TemplateActions
+      {live}
+      file={g.file}
+      {templateId}
+      {setTemplate}
+      source={shown?.source || ''}
+      {custom}
+      bind:note
+    />
   </div>
 
   <div class="ll__source-head">
@@ -397,11 +340,6 @@
     min-width: 0;
   }
 
-  .ll__actions {
-    @include row(var(--space-2));
-    flex-wrap: wrap;
-  }
-
   .ll__show-only {
     @include stack(var(--gap-rows));
     min-width: 0;
@@ -423,24 +361,4 @@
     justify-content: space-between;
   }
 
-  // both labels in one cell: the button keeps the longer one's width
-  .ll__dup {
-    display: inline-grid;
-
-    > span {
-      grid-area: 1 / 1;
-    }
-  }
-
-  .ll__note {
-    min-height: 16px;
-    margin: 0;
-    color: var(--c-text-muted);
-  }
-
-  .ll__dup .is-hidden,
-  .ll__edit.is-hidden,
-  .ll__note.is-hidden {
-    visibility: hidden;
-  }
 </style>

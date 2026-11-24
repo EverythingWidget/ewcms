@@ -8,7 +8,7 @@ test('names: Auto height in both places, Edit text on the widget, Theme › Temp
   assert.match(src('WidgetLayout.svelte'), /<\/i>\s*Auto height\s*<\/button>/);
   assert.match(src('WidgetToolbar.svelte'), /aria-label="Auto height"/);
   assert.match(src('WidgetToolbar.svelte'), /<span>Edit text<\/span>/);
-  assert.match(src('ListLead.svelte'), /template editor \(Theme › Templates\)/);
+  assert.match(src('TemplateActions.svelte'), /template editor \(Theme › Templates\)/);
   assert.doesNotMatch(src('App.svelte'), /people, places, projects/);
   assert.doesNotMatch(src('EntrancePageCurtain.svelte'), /Curtain for this page'/);
 });

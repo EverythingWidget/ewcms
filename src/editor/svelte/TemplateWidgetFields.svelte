@@ -1,13 +1,16 @@
 <!--
   A template widget's Content fields (in the widget pop-up, WidgetInspector.svelte): Role,
   When a value is missing, Between facts, and the type's own rows (its inTemplate, at
-  src/widgets/index.js). A Text's style and wording are edited in the preview, as a page
-  Text's (the widget toolbar: style, marks, + Property). Layout stays WidgetLayout in the
-  inspector. Binds are the sample item's properties, {number}, {back}, and an outer item's
-  parent: keys.
+  src/widgets/index.js). A Template field with editTemplate (an inner List, Summary and
+  details) gets the same Duplicate template / Edit template row a page List has; Back
+  from the inner template returns here (ui.originStack). A Text's style and wording are
+  edited in the preview, as a page Text's (the widget toolbar: style, marks, + Property).
+  Layout stays WidgetLayout in the inspector. Binds are the sample item's properties,
+  {number}, {back}, and an outer item's parent: keys.
 -->
 <script>
   import Field from './Field.svelte';
+  import TemplateActions from './TemplateActions.svelte';
   import { sourceIds as sourceIdsOf, templateIdOf } from '../../render/files.js';
   import { schemaOf } from '../../render/schemas.js';
   import { sampleSource } from '../../widgets/list/template-preview.js';
@@ -138,6 +141,8 @@
   }
 
   const fields = $derived(widgetType(w.type)?.inTemplate?.fields ?? []);
+  let note = $state('');
+
   const at = (obj, path) => path.split('/').reduce((o, k) => o?.[k], obj);
   const valueOf = (f) => (f.value ? f.value(w) : at(w, f.key));
   const helpOf = (f) => (typeof f.help === 'function' ? f.help(w) : f.help);
@@ -241,6 +246,32 @@
           onvalue={(v) => setRule(b, 'parent', v)}
         />
       </div>
+    {:else if f.editTemplate}
+      {@const tid = valueOf(f) || ''}
+      <div class="twf__template" data-template-picker>
+        <Field
+          edit={`${file}#${b}/${f.key}`}
+          label={f.label}
+          type={f.type || 'text'}
+          value={tid}
+          options={optionsOf(f)}
+          disabled={disabledOf(f)}
+          help={helpOf(f)}
+          onvalue={(v) => {
+            note = '';
+            writeField(f, v);
+          }}
+        />
+        <TemplateActions
+          {live}
+          {file}
+          templateId={tid}
+          setTemplate={(id) => writeField(f, id)}
+          source={from || ''}
+          withFile="template"
+          bind:note
+        />
+      </div>
     {:else}
       <Field
         edit={`${file}#${b}/${f.key}`}
@@ -292,5 +323,10 @@
 
   .twf__size--warn {
     color: var(--c-warning);
+  }
+
+  .twf__template {
+    @include stack(var(--gap-rows));
+    min-width: 0;
   }
 </style>

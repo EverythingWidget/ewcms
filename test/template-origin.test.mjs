@@ -126,6 +126,40 @@ test('wired: Edit template pushes, Back pops, going elsewhere clears; the head s
   assert.match(bh, /\.bh__row \{[^}]*height: 20px;/);
 });
 
+
+test('a List inside a template gets Edit template; Back returns to that template', async () => {
+  const { widgetType } = await import('../src/widgets/index.js');
+  const field = (type, key) =>
+    (widgetType(type).inTemplate?.fields || []).find((f) => f.key === key);
+  assert.equal(field('list', 'config/template').editTemplate, true);
+  assert.equal(field('details', 'config/template').editTemplate, true);
+  const twf = read('src/editor/svelte/TemplateWidgetFields.svelte');
+  assert.match(twf, /f\.editTemplate/);
+  assert.match(twf, /<TemplateActions/);
+  assert.match(twf, /withFile="template"/);
+  const actions = read('src/editor/svelte/TemplateActions.svelte');
+  assert.match(actions, /ui\.openTemplate\?\.\(templateId, \{ back: true \}\)/);
+  // Back pops onto the template it was opened from, not Theme or the page above it
+  const main = read('src/editor/main.js');
+  assert.match(main, /target\.kind === 'item-template'/);
+  assert.match(
+    main,
+    /ui\.pages\.find\(\s*\(i\) => i\.kind === 'item-template' && i\.id === target\.id\s*\)/,
+  );
+  assert.match(
+    main,
+    /t\.kind === 'item-template' \? store\.current\[templateFile\(t\.id\)\]\?\.name \|\| t\.title/,
+  );
+  // the subtitle is only the parent path (never the template open)
+  assert.deepEqual(
+    originCrumbs([people, album], (id) => ({ 't-acrp': 'Album card' })[id]).map((c) => c.label),
+    ['People', 'Album card'],
+  );
+  assert.equal(backLabelOf([people, album]), 'Back to Album card (portrait)');
+  assert.notEqual(backLabelOf([people, album]), 'Back to theme');
+  assert.notEqual(backLabelOf([people, album]), 'Back to People');
+});
+
 test('the Columns control above the preview: no pill around the segment', () => {
   const cols = read('src/editor/svelte/TemplateCols.svelte');
   const block = cols.match(/\.ed-cols \{[^}]*\}/)[0];

@@ -76,7 +76,8 @@
  *             (config.missing, ../layout/missing.js); join, Between facts (its join);
  *             fields, its own Content rows (a Photo's photo, a Button's label and link, an
  *             inner List's Items from, Summary and details' template): [{ key, label, type?,
- *             binds?, options?, help?, disabled?, value?, write?, structure?, replace?, empty? }]
+ *             binds?, options?, help?, disabled?, value?, write?, structure?, replace?, empty?,
+ *             editTemplate? }]
  *               key: the path under the widget ('src', 'config/link', 'source/mode')
  *               type: 'text' (default) | 'boolean' | 'select' | 'match' (an inner List's two
  *                     Match fields; theirs, ours, between: the two labels and the text between)
@@ -94,6 +95,9 @@
  *                     Items from)
  *               empty: a first option ['', empty] for a select (a Details template: 'Pick a
  *                     template')
+ *               editTemplate: true: Duplicate template / Edit template under the picker, as
+ *                     a page List has (an inner List's Template, Summary and details' Details
+ *                     template). Edit template's Back returns to this template.
  *   hint      optional: a line the editor shows first in its Content tab (a Text: where its
  *             words are typed)
  *   defaults  a new widget of this type (Add widget)

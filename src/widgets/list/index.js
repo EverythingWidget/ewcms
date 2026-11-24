@@ -262,6 +262,8 @@ const TEMPLATE_FIELDS = [
     options: 'innerTemplates',
     value: (w) => w.config?.template || 'preset:card',
     structure: true,
+    // Duplicate template / Edit template under the picker (TemplateWidgetFields)
+    editTemplate: true,
   },
 ];
 
