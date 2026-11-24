@@ -83,7 +83,7 @@ export const AREAS = [
   {
     id: 'templates',
     label: 'Templates',
-    icon: 'clone',
+    icon: 'table-cells-large',
     subtitle: (n) => plural(n.templates ?? 0, 'template'),
     status: 'ready',
     opens: { panel: () => import('./svelte/TemplatesPanel.svelte') },
