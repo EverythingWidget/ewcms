@@ -34,13 +34,12 @@ test('the places that checked a widget name ask its declaration instead', () => 
     'src/render/defaults.js',
   ])
     assert.doesNotMatch(code(read(f)), nameCheck, f);
-  // the Template editor's When a value is missing and Between facts rows (its other rows per
-  // type aren't moved yet), the Hero photos' phone check in validate.js
+  // the Template editor's rows, the Hero photos' phone check in validate.js
   const twf = code(read('src/editor/svelte/TemplateWidgetFields.svelte'));
-  assert.doesNotMatch(twf, /\[\s*'text',\s*'photo',\s*'button'\s*\]/);
-  assert.doesNotMatch(twf, /type === 'text'/);
+  assert.doesNotMatch(twf, nameCheck, 'TemplateWidgetFields.svelte');
   assert.match(twf, /widgetType\(w\.type\)\?\.inTemplate\?\.missing/);
   assert.match(twf, /widgetType\(w\.type\)\?\.inTemplate\?\.join/);
+  assert.match(twf, /inTemplate\?\.fields/);
   const validate = code(read('src/render/validate.js'));
   assert.doesNotMatch(validate, /'hero'/);
   assert.doesNotMatch(validate, /\.phone`/);
@@ -101,16 +100,63 @@ test("the Hero's photos: stored defaults and the phone check, declared on the se
 test('the editor: a hint, the item-template rows and a drawing, each declared', () => {
   assert.match(widgetType('text').hint, /^Type the text in the preview/);
   for (const t of NAMES.filter((n) => n !== 'text')) assert.equal(widgetType(t).hint, undefined, t);
-  const offers = Object.fromEntries(NAMES.map((n) => [n, widgetType(n).inTemplate ?? null]));
+  const offers = Object.fromEntries(
+    NAMES.map((n) => {
+      const it = widgetType(n).inTemplate;
+      return [
+        n,
+        it
+          ? {
+              missing: !!it.missing,
+              join: !!it.join,
+              fields: (it.fields || []).map((f) => (f.type === 'match' ? 'match' : f.key)),
+            }
+          : null,
+      ];
+    }),
+  );
   assert.deepEqual(offers, {
-    text: { missing: true, join: true },
-    photo: { missing: true },
-    button: { missing: true },
+    text: { missing: true, join: true, fields: [] },
+    photo: { missing: true, join: false, fields: ['src'] },
+    button: { missing: true, join: false, fields: ['label', 'itemLink', 'config/link'] },
     form: null,
     hero: null,
-    list: null,
-    details: null,
+    list: {
+      missing: false,
+      join: false,
+      fields: ['source/mode', 'source/property', 'source/from', 'match', 'config/template'],
+    },
+    details: {
+      missing: false,
+      join: false,
+      fields: [
+        'config/template',
+        'config/several',
+        'config/icon',
+        'config/screenReaderName',
+        'config/open',
+      ],
+    },
   });
+  // the same labels and stored values as the rows they replaced
+  const field = (type, key) =>
+    widgetType(type).inTemplate.fields.find((f) =>
+      key === 'match' ? f.type === 'match' : f.key === key,
+    );
+  assert.equal(field('photo', 'src').label, 'Photo');
+  assert.equal(field('button', 'itemLink').value({ itemLink: true }), true);
+  assert.equal(field('button', 'itemLink').write(false), undefined);
+  assert.deepEqual(field('button', 'config/link').write('url'), [{ t: 'url' }]);
+  assert.equal(field('button', 'config/link').write(''), undefined);
+  assert.equal(field('list', 'source/mode').value({ source: { mode: 'item' } }), 'all');
+  assert.equal(field('list', 'source/mode').replace, 'source');
+  assert.equal(field('list', 'match').between, 'is this item’s');
+  assert.equal(field('details', 'config/open').value({ config: { open: 'first' } }), true);
+  assert.equal(field('details', 'config/open').write(false), undefined);
+  assert.equal(field('details', 'config/open').write(true), 'first');
+  assert.deepEqual(field('details', 'config/screenReaderName').write('title'), [
+    { property: 'title' },
+  ]);
   // every built-in has a drawing for its sketch
   for (const t of NAMES) {
     const d = widgetType(t).drawing;

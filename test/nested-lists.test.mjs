@@ -312,19 +312,21 @@ test('the template editor: Add list, the inner List rows always there, the label
   const panel = read('src/editor/svelte/TemplatePanel.svelte');
   const fields = read('src/editor/svelte/TemplateWidgetFields.svelte');
   const inspector = read('src/editor/svelte/WidgetInspector.svelte');
+  const rows = WIDGET_TYPES.list.inTemplate.fields;
+  const labels = rows.flatMap((f) => [f.label, f.theirs, f.ours, f.between].filter(Boolean));
   for (const label of [
     'Items from',
     'Property',
     'Source',
     'Match: their property',
     'Template',
+    'is this item’s',
   ])
-    assert.match(fields, new RegExp(`label="${label}"`), label);
+    assert.ok(labels.includes(label), label);
   // its Arrangement, Columns and Space between items: the Layout tab (the List's own
   // definitions, as a page List's: WidgetLayout.svelte), not the Content tab
   assert.match(inspector, /<WidgetLayout/);
   assert.doesNotMatch(fields, /label="Space between items"|label="Arrangement"/);
-  assert.match(fields, /is this item’s/);
   assert.match(
     panel,
     /This template is shown inside another List: a list here would be a third level/,

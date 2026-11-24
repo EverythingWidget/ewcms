@@ -1,10 +1,10 @@
 <!--
   A template widget's Content fields (in the widget pop-up, WidgetInspector.svelte): Role,
-  When a value is missing, and the type's own (a Photo, a Button, an inner List, Summary and
-  details; a Text's join when it has one). A Text's style and wording are edited in the
-  preview, as a page Text's (the widget toolbar: style, marks, + Property). Layout stays
-  WidgetLayout in the inspector. Binds are the sample item's properties, {number}, {back},
-  and an outer item's parent: keys.
+  When a value is missing, Between facts, and the type's own rows (its inTemplate, at
+  src/widgets/index.js). A Text's style and wording are edited in the preview, as a page
+  Text's (the widget toolbar: style, marks, + Property). Layout stays WidgetLayout in the
+  inspector. Binds are the sample item's properties, {number}, {back}, and an outer item's
+  parent: keys.
 -->
 <script>
   import Field from './Field.svelte';
@@ -20,7 +20,6 @@
     ITEMS_FROM,
     innerSourceFor,
     TEMPLATE_MISSING,
-    runsOf,
     templateProperties,
   } from '../lib/item-template.js';
 
@@ -101,7 +100,7 @@
     Object.entries(templates)
       .filter(([t]) => t !== id)
       .map(([t, tp]) =>
-        itemSection(tp)?.widgets?.some?.((x) => x?.type === 'details')
+        itemSection(tp)?.widgets?.some?.((x) => widgetType(x?.type)?.templateOnly)
           ? [t, tp.name || t, { disabled: true, hint: 'It has Summary and details of its own' }]
           : [t, tp.name || t],
       ),
@@ -137,208 +136,129 @@
       .replace(/[^a-z0-9-]/g, '');
     set(`${ptr}/role`, role || undefined);
   }
+
+  const fields = $derived(widgetType(w.type)?.inTemplate?.fields ?? []);
+  const at = (obj, path) => path.split('/').reduce((o, k) => o?.[k], obj);
+  const valueOf = (f) => (f.value ? f.value(w) : at(w, f.key));
+  const helpOf = (f) => (typeof f.help === 'function' ? f.help(w) : f.help);
+  const disabledOf = (f) => (typeof f.disabled === 'function' ? f.disabled(w) : !!f.disabled);
+  function optionsOf(f) {
+    const name = f.options;
+    const empty = f.empty != null ? [['', f.empty]] : [];
+    if (Array.isArray(name)) return [...empty, ...name];
+    if (name === 'itemsFrom') return ITEMS_FROM;
+    if (name === 'listProps')
+      return listProps.length ? listProps : [['', 'No list property in the sample']];
+    if (name === 'sources') return sourceIds.map((n) => [n, schemaOf(live.content, n)?.label || n]);
+    if (name === 'innerTemplates') return innerOptions;
+    if (name === 'detailsTemplates') return [...empty, ...detailsOptions];
+    if (name === 'bindsOrSummary')
+      return [['', 'What the summary shows'], ...binds.map((x) => [x.value, x.label])];
+    return empty;
+  }
+  function writeField(f, v) {
+    if (f.replace === 'source') {
+      setInner(b, v);
+      return;
+    }
+    set(`${b}/${f.key}`, f.write ? f.write(v) : v, !!f.structure);
+  }
 </script>
 
 <div class="twf">
-<p
-  class="hint small twf__size"
-  class:twf__size--warn={sizes[w.id] < MIN_TEXT_PX}
-  data-text-size={w.id}
->
-  {sizeLine(sizes[w.id]) || 'No text in the preview'}
-</p>
-<Field
-  edit={`${file}#${b}/role`}
-  label="Role"
-  value={w.role || ''}
-  placeholder="none"
-  help="Its class: .li__<role>"
-  onvalue={(v) => setRole(b, v)}
->
-  {#snippet tip()}<b>Role</b>: this widget's name in the template, and its style hook (the
-    class .li__&lt;role&gt;). It doesn't pick what it shows: its own property does. Only a preset
-    uses it, to fill the part from the source's property of the same name.{/snippet}
-</Field>
-<!-- what its type offers in an item template (its inTemplate: src/widgets/index.js) -->
-{#if widgetType(w.type)?.inTemplate?.missing}
-  <!-- When a value is missing (src/render/layout/missing.js): one full row; Inherit is left out -->
-  <Field
-    edit={`${file}#${b}/config/missing`}
-    label="When a value is missing"
-    type="select"
-    value={w.config?.missing || ''}
-    options={TEMPLATE_MISSING}
-    onvalue={(v) => set(`${b}/config/missing`, v || undefined, true)}
+  <p
+    class="hint small twf__size"
+    class:twf__size--warn={sizes[w.id] < MIN_TEXT_PX}
+    data-text-size={w.id}
   >
-    {#snippet tip()}<b>When a value is missing</b>: an item has no value for a property this
-      widget shows. <b>Hide</b> leaves the widget out of that item when all its properties are
-      empty (a button: its link or label). <b>Show empty</b> keeps it, empty. <b>Inherit</b>:
-      as the List says.{/snippet}
+    {sizeLine(sizes[w.id]) || 'No text in the preview'}
+  </p>
+  <Field
+    edit={`${file}#${b}/role`}
+    label="Role"
+    value={w.role || ''}
+    placeholder="none"
+    help="Its class: .li__<role>"
+    onvalue={(v) => setRole(b, v)}
+  >
+    {#snippet tip()}<b>Role</b>: this widget's name in the template, and its style hook (the class
+      .li__&lt;role&gt;). It doesn't pick what it shows: its own property does. Only a preset uses
+      it, to fill the part from the source's property of the same name.{/snippet}
   </Field>
-{/if}
-{#if widgetType(w.type)?.inTemplate?.join}
-  <!-- Style + Text: edited in the preview (the page Text's toolbar), not here -->
-  {#if w.join !== undefined}
+  <!-- what its type offers in an item template (its inTemplate: src/widgets/index.js) -->
+  {#if widgetType(w.type)?.inTemplate?.missing}
+    <!-- When a value is missing (src/render/layout/missing.js): one full row; Inherit is left out -->
     <Field
-      edit={`${file}#${b}/join`}
-      label="Between facts"
-      value={w.join}
-      help="Its first line’s properties joined by it; an empty one takes none"
-      onvalue={(v) => set(`${b}/join`, v)}
-    />
+      edit={`${file}#${b}/config/missing`}
+      label="When a value is missing"
+      type="select"
+      value={w.config?.missing || ''}
+      options={TEMPLATE_MISSING}
+      onvalue={(v) => set(`${b}/config/missing`, v || undefined, true)}
+    >
+      {#snippet tip()}<b>When a value is missing</b>: an item has no value for a property this
+        widget shows. <b>Hide</b> leaves the widget out of that item when all its properties are
+        empty (a button: its link or label). <b>Show empty</b> keeps it, empty. <b>Inherit</b>: as
+        the List says.{/snippet}
+    </Field>
   {/if}
-{:else if w.type === 'photo'}
-  <Field
-    edit={`${file}#${b}/src`}
-    label="Photo"
-    value={w.src}
-    binds={allBinds}
-    {names}
-    formats
-    {from}
-    onvalue={(v) => set(`${b}/src`, v)}
-  />
-{:else if w.type === 'list'}
-  {@const src = w.source || {}}
-  {@const mode = src.mode === 'item' ? 'all' : src.mode}
-  <!-- every row always there (no shift): the ones the Items from doesn't use disabled -->
-  <Field
-    edit={`${file}#${b}/source/mode`}
-    label="Items from"
-    type="select"
-    value={mode}
-    options={ITEMS_FROM}
-    onvalue={(v) => setInner(b, v)}
-  />
-  <Field
-    edit={`${file}#${b}/source/property`}
-    label="Property"
-    type="select"
-    value={src.property || ''}
-    options={listProps.length ? listProps : [['', 'No list property in the sample']]}
-    disabled={mode !== 'property'}
-    onvalue={(v) => set(`${b}/source/property`, v, true)}
-  />
-  <Field
-    edit={`${file}#${b}/source/from`}
-    label="Source"
-    type="select"
-    value={src.from || ''}
-    options={sourceIds.map((n) => [n, schemaOf(live.content, n)?.label || n])}
-    disabled={mode === 'property'}
-    onvalue={(v) => set(`${b}/source/from`, v, true)}
-  />
-  <div class="twf__match">
-    <Field
-      edit={`${file}#${b}/source/where/rules/0/property`}
-      label="Match: their property"
-      type="select"
-      value={src.where?.rules?.[0]?.property || ''}
-      options={propsOf(src.from)}
-      disabled={mode !== 'match'}
-      onvalue={(v) => setRule(b, 'property', v)}
-    />
-    <span class="twf__is">is this item’s</span>
-    <Field
-      edit={`${file}#${b}/source/where/rules/0/parent`}
-      label="Property"
-      type="select"
-      value={src.where?.rules?.[0]?.parent || ''}
-      options={propsOf(from)}
-      disabled={mode !== 'match'}
-      onvalue={(v) => setRule(b, 'parent', v)}
-    />
-  </div>
-  <Field
-    edit={`${file}#${b}/config/template`}
-    label="Template"
-    type="select"
-    value={w.config?.template || 'preset:card'}
-    options={innerOptions}
-    onvalue={(v) => set(`${b}/config/template`, v, true)}
-  />
-  <!-- its Arrangement, Columns, Space between items and the Carousel's: the Layout tab -->
-{:else if w.type === 'details'}
-  <Field
-    edit={`${file}#${b}/config/template`}
-    label="Details template"
-    type="select"
-    value={w.config?.template || ''}
-    options={[['', 'Pick a template'], ...detailsOptions]}
-    help="What opens below the summary, filled from the same item"
-    onvalue={(v) => set(`${b}/config/template`, v || undefined)}
-  />
-  <Field
-    edit={`${file}#${b}/config/several`}
-    label="Several open at once"
-    type="boolean"
-    value={w.config?.several === true}
-    help="Off: opening one closes the open one"
-    onvalue={(v) => set(`${b}/config/several`, v)}
-  />
-  <Field
-    edit={`${file}#${b}/config/icon`}
-    label="Icon"
-    type="select"
-    value={w.config?.icon || 'plus'}
-    options={[
-      ['plus', '+ / ×'],
-      ['none', 'None'],
-    ]}
-    onvalue={(v) => set(`${b}/config/icon`, v)}
-  />
-  <Field
-    edit={`${file}#${b}/config/screenReaderName`}
-    label="Screen reader name"
-    type="select"
-    value={w.config?.screenReaderName?.[0]?.property || ''}
-    options={[['', 'What the summary shows'], ...binds.map((x) => [x.value, x.label])]}
-    onvalue={(v) => set(`${b}/config/screenReaderName`, v ? [{ property: v }] : undefined)}
-  />
-  <Field
-    edit={`${file}#${b}/config/open`}
-    label="First item open"
-    type="boolean"
-    value={w.config?.open === 'first'}
-    help="Off: every item starts closed"
-    onvalue={(v) => set(`${b}/config/open`, v ? 'first' : undefined)}
-  />
-{:else if w.type === 'button'}
-  <Field
-    edit={`${file}#${b}/label`}
-    label="Label"
-    value={w.label}
-    binds={allBinds}
-    {names}
-    formats
-    {from}
-    onvalue={(v) => set(`${b}/label`, v)}
-  />
-  <Field
-    edit={`${file}#${b}/itemLink`}
-    label="Opens the item’s page"
-    type="boolean"
-    value={w.itemLink === true}
-    onvalue={(v) => set(`${b}/itemLink`, v ? true : undefined)}
-  />
-  <Field
-    edit={`${file}#${b}/config/link`}
-    label="Link"
-    value={Array.isArray(w.config?.link) ? w.config.link : []}
-    binds={allBinds}
-    {names}
-    formats
-    {from}
-    disabled={w.itemLink === true}
-    help={w.itemLink === true ? 'It opens the item’s page' : 'A property: {url}'}
-    onvalue={(v) => {
-      const runs = runsOf(v);
-      set(`${b}/config/link`, runs.length ? runs : undefined, true);
-    }}
-  />
-{/if}
+  {#if widgetType(w.type)?.inTemplate?.join}
+    <!-- Style + Text: edited in the preview (the page Text's toolbar), not here -->
+    {#if w.join !== undefined}
+      <Field
+        edit={`${file}#${b}/join`}
+        label="Between facts"
+        value={w.join}
+        help="Its first line’s properties joined by it; an empty one takes none"
+        onvalue={(v) => set(`${b}/join`, v)}
+      />
+    {/if}
+  {/if}
+  <!-- the type's own rows (its inTemplate.fields); every row always there (no shift): the ones
+     the Items from doesn't use disabled -->
+  {#each fields as f (f.key || f.type)}
+    {#if f.type === 'match'}
+      {@const src = w.source || {}}
+      {@const mode = src.mode === 'item' ? 'all' : src.mode}
+      <div class="twf__match">
+        <Field
+          edit={`${file}#${b}/source/where/rules/0/property`}
+          label={f.theirs}
+          type="select"
+          value={src.where?.rules?.[0]?.property || ''}
+          options={propsOf(src.from)}
+          disabled={mode !== 'match'}
+          onvalue={(v) => setRule(b, 'property', v)}
+        />
+        <span class="twf__is">{f.between}</span>
+        <Field
+          edit={`${file}#${b}/source/where/rules/0/parent`}
+          label={f.ours}
+          type="select"
+          value={src.where?.rules?.[0]?.parent || ''}
+          options={propsOf(from)}
+          disabled={mode !== 'match'}
+          onvalue={(v) => setRule(b, 'parent', v)}
+        />
+      </div>
+    {:else}
+      <Field
+        edit={`${file}#${b}/${f.key}`}
+        label={f.label}
+        type={f.type || 'text'}
+        value={valueOf(f)}
+        binds={f.binds ? allBinds : null}
+        names={f.binds ? names : null}
+        formats={!!f.binds}
+        from={f.binds ? from : ''}
+        options={optionsOf(f)}
+        disabled={disabledOf(f)}
+        help={helpOf(f)}
+        onvalue={(v) => writeField(f, v)}
+      />
+    {/if}
+  {/each}
 </div>
-
 
 <style lang="scss">
   @use '../styles/mixins' as *;
@@ -348,7 +268,7 @@
     align-content: start;
   }
 
-.twf__match {
+  .twf__match {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     gap: var(--space-2);

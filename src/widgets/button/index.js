@@ -20,8 +20,34 @@ export const button = {
   sketch: 'button',
   // the Add widget modal's drawing of it (WidgetsModal.svelte): grey shapes, classes there
   drawing: ['pill'],
-  // in an item template (the Template editor): When a value is missing
-  inTemplate: { missing: true },
+  // in an item template (the Template editor): When a value is missing, its label, whether
+  // it opens the item's page, and its link
+  inTemplate: {
+    missing: true,
+    fields: [
+      { key: 'label', label: 'Label', binds: true },
+      {
+        key: 'itemLink',
+        label: 'Opens the item’s page',
+        type: 'boolean',
+        value: (w) => w.itemLink === true,
+        write: (v) => (v ? true : undefined),
+      },
+      {
+        key: 'config/link',
+        label: 'Link',
+        binds: true,
+        value: (w) => (Array.isArray(w.config?.link) ? w.config.link : []),
+        write: (v) => {
+          const runs = Array.isArray(v) ? v : typeof v === 'string' && v ? [{ t: v }] : [];
+          return runs.length ? runs : undefined;
+        },
+        structure: true,
+        disabled: (w) => w.itemLink === true,
+        help: (w) => (w.itemLink === true ? 'It opens the item’s page' : 'A property: {url}'),
+      },
+    ],
+  },
   // its content box (the button): Fit hugs its label, Fill fills the widget; placed in it
   placement: { axes: 'both', box: true, place: 'left top' },
   // (an emptied label keeps its element: the editor writes it in place)
@@ -54,9 +80,11 @@ export const button = {
     const label = html`<span${widget?.ed('label') ?? ''}>${esc(s.label)}</span> <span aria-hidden="true">→</span>`;
     const wrap = s.config?.textOverflow === 'wrap' ? ' buttonwidget--wrap' : '';
     return html` <div class="buttonwidget${wrap}">
-      ${href
-        ? html`<a class="btn glass" href="${esc(href)}"${extAttrs(href)}>${label}</a>`
-        : html`<span class="btn glass">${label}</span>`}
+      ${
+        href
+          ? html`<a class="btn glass" href="${esc(href)}" ${extAttrs(href)}>${label}</a>`
+          : html`<span class="btn glass">${label}</span>`
+      }
     </div>`;
   },
 };

@@ -212,6 +212,53 @@ function forItem(w, scope, link, sep, { custom = false, href = '' } = {}) {
   return w;
 }
 
+/** An inner List's "Items from" as the editor shows it (one item of a source shows as A source). */
+const innerMode = (w) => (w.source?.mode === 'item' ? 'all' : w.source?.mode);
+
+/** Its Content rows in an item template (TemplateWidgetFields.svelte). */
+const TEMPLATE_FIELDS = [
+  {
+    key: 'source/mode',
+    label: 'Items from',
+    type: 'select',
+    options: 'itemsFrom',
+    value: innerMode,
+    replace: 'source',
+  },
+  {
+    key: 'source/property',
+    label: 'Property',
+    type: 'select',
+    options: 'listProps',
+    value: (w) => w.source?.property || '',
+    disabled: (w) => innerMode(w) !== 'property',
+    structure: true,
+  },
+  {
+    key: 'source/from',
+    label: 'Source',
+    type: 'select',
+    options: 'sources',
+    value: (w) => w.source?.from || '',
+    disabled: (w) => innerMode(w) === 'property',
+    structure: true,
+  },
+  {
+    type: 'match',
+    theirs: 'Match: their property',
+    ours: 'Property',
+    between: 'is this item’s',
+  },
+  {
+    key: 'config/template',
+    label: 'Template',
+    type: 'select',
+    options: 'innerTemplates',
+    value: (w) => w.config?.template || 'preset:card',
+    structure: true,
+  },
+];
+
 export const list = {
   type: 'list',
   // added from the editor: Auto, as tall as what it holds; all columns wide, its tiles a
@@ -230,6 +277,9 @@ export const list = {
   sketch: 'list',
   // the Add widget modal's drawing of it (WidgetsModal.svelte): grey shapes, classes there; { grid: 3 }: a row of 3
   drawing: [{ grid: 3 }, 'w40 h4'],
+  // in an item template (the Template editor): Items from, its source, and its inner template
+  // (Arrangement, Columns, Space between items and the Carousel's: the Layout tab)
+  inTemplate: { fields: TEMPLATE_FIELDS },
   config: [
     // custom + items: Content tab via ListLead (not the generic settings loop)
     { key: 'custom', type: 'boolean' },

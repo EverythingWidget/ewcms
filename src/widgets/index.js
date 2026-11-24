@@ -68,9 +68,29 @@
  *                     the value from the widget's config (default: config[key]; '', null or
  *                     undefined removes the variable). E.g. a List's gap:
  *                     { on: '.list__items--grid', var: '--list-gap', value: (c) => gapOf(c) || null }
- *   inTemplate  optional { missing?, join? }: what the Template editor offers for it in a List's
+ *   inTemplate  optional { missing?, join?, fields? }: what the Template editor offers for it in a List's
  *             item template (TemplateWidgetFields.svelte): missing, When a value is missing
- *             (config.missing, ../layout/missing.js); join, Between facts (its join)
+ *             (config.missing, ../layout/missing.js); join, Between facts (its join);
+ *             fields, its own Content rows (a Photo's photo, a Button's label and link, an
+ *             inner List's Items from, Summary and details' template): [{ key, label, type?,
+ *             binds?, options?, help?, disabled?, value?, write?, structure?, replace?, empty? }]
+ *               key: the path under the widget ('src', 'config/link', 'source/mode')
+ *               type: 'text' (default) | 'boolean' | 'select' | 'match' (an inner List's two
+ *                     Match fields; theirs, ours, between: the two labels and the text between)
+ *               binds: true: a parts field (the sample's properties, {number}, {back}, parent:
+ *                     keys)
+ *               options: a list [[value, label]], or a name of a set the Template editor
+ *                     provides ('itemsFrom', 'listProps', 'sources', 'innerTemplates',
+ *                     'detailsTemplates', 'bindsOrSummary')
+ *               help: a string, or a function of the widget
+ *               disabled: a function of the widget
+ *               value(widget): the field's value (default: the key's)
+ *               write(value): what to store (default: the value)
+ *               structure: true: a structural change (the preview renders again)
+ *               replace: 'source': changing it replaces the widget's source (an inner List's
+ *                     Items from)
+ *               empty: a first option ['', empty] for a select (a Details template: 'Pick a
+ *                     template')
  *   hint      optional: a line the editor shows first in its Content tab (a Text: where its
  *             words are typed)
  *   defaults  a new widget of this type (Add widget)

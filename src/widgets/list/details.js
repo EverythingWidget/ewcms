@@ -47,6 +47,54 @@ export const details = {
   // the Add widget modal's drawing of it (WidgetsModal.svelte): grey shapes, classes there
   drawing: ['w70 h8', 'pill'],
   templateOnly: true,
+  // in an item template (the Template editor): the details' template and how they open
+  inTemplate: {
+    fields: [
+      {
+        key: 'config/template',
+        label: 'Details template',
+        type: 'select',
+        options: 'detailsTemplates',
+        empty: 'Pick a template',
+        help: 'What opens below the summary, filled from the same item',
+        value: (w) => w.config?.template || '',
+        write: (v) => v || undefined,
+      },
+      {
+        key: 'config/several',
+        label: 'Several open at once',
+        type: 'boolean',
+        help: 'Off: opening one closes the open one',
+        value: (w) => w.config?.several === true,
+      },
+      {
+        key: 'config/icon',
+        label: 'Icon',
+        type: 'select',
+        options: [
+          ['plus', '+ / ×'],
+          ['none', 'None'],
+        ],
+        value: (w) => w.config?.icon || 'plus',
+      },
+      {
+        key: 'config/screenReaderName',
+        label: 'Screen reader name',
+        type: 'select',
+        options: 'bindsOrSummary',
+        value: (w) => w.config?.screenReaderName?.[0]?.property || '',
+        write: (v) => (v ? [{ property: v }] : undefined),
+      },
+      {
+        key: 'config/open',
+        label: 'First item open',
+        type: 'boolean',
+        help: 'Off: every item starts closed',
+        value: (w) => w.config?.open === 'first',
+        write: (v) => (v ? 'first' : undefined),
+      },
+    ],
+  },
 };
 
 /** The template's "details" widget, or null. */
