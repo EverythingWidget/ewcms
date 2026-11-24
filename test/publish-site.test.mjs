@@ -11,7 +11,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { useTestEnv } from '../scripts/test-layout.mjs';
 import { Readable } from 'node:stream';
-import { MAX_FILE_BYTES, publish, siteStatus } from '../src/editor/server/local-data-layer.mjs';
+import { MAX_FILE_BYTES, publish, status } from '../src/editor/server/local-data-layer.mjs';
 import { editorMiddleware } from '../src/editor/server/editor-server.mjs';
 
 // Only the temp repos: GIT_DIR & co. from a hook are dropped, and the identity is the test one.
@@ -64,7 +64,7 @@ test('status lists every changed site file, grouped; ignored files never show', 
   write(root, '.env', 'R2_SECRET=1\n');
   write(root, 'dist/index.html', '<p>');
 
-  const s = await siteStatus(root);
+  const s = await status(root);
   assert.deepEqual(
     s.files.map((f) => `${f.group} ${f.status} ${f.path}`),
     [
@@ -95,7 +95,7 @@ test('status in a site that is a subfolder of the repo: only its files, paths fr
   write(repo, 'outside.txt', 'changed\n');
   write(root, 'theme/tokens.scss', '$accent: blue;\n');
   write(root, 'content/en/pages/index.json', '{ "title": "Start" }\n');
-  const s = await siteStatus(root);
+  const s = await status(root);
   assert.deepEqual(
     s.files.map((f) => `${f.group} ${f.path} ${f.name}`),
     ['content content/en/pages/index.json pages/index.json', 'theme theme/tokens.scss undefined'],
@@ -113,7 +113,7 @@ test('status: blocked lists secret-looking files and files over 95 MB, never del
   fs.writeFileSync(big, '');
   fs.truncateSync(big, 96 * 1024 * 1024); // sparse: nothing is written
   write(root, 'media/fine.jpg', Buffer.from([0xff, 0, 1]));
-  const s = await siteStatus(root);
+  const s = await status(root);
   assert.deepEqual(s.blocked.map((b) => b.path).sort(), [
     '.dev.vars',
     '.env.production',
@@ -343,7 +343,7 @@ test('publish: a rejected push keeps the commit; Publish again pushes it without
   assert.match(r.body.hint, /git pull --rebase|login|reach/);
   assert.equal(r.body.committed, true);
   assert.equal(r.body.hash, git(repo, 'rev-parse', 'HEAD'));
-  assert.equal((await siteStatus(root)).ahead, 1);
+  assert.equal((await status(root)).ahead, 1);
 
   fs.rmSync(hook);
   const retry = await publish(root, '');

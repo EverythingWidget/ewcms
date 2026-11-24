@@ -103,7 +103,7 @@ test('widgets and sections added, removed, restyled; page settings; settings fil
   const site = { name: 'A', colors: { bg: '#000', fg: '#fff' }, social: [] };
   const next = { name: 'B', colors: { bg: '#111', fg: '#eee' }, social: [] };
   assert.equal(countEdits(site, next, 'site.json'), 3);
-  // a new or deleted file: 1 (siteStatus); something that isn't an object: 1
+  // a new or deleted file: 1 (status); something that isn't an object: 1
   assert.equal(countEdits(1, 2), 1);
   assert.match(src('server/local-data-layer.mjs'), /countEdits\(before, disk, f\.name\)/);
 });

@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { useTestEnv } from '../scripts/test-layout.mjs';
-import { siteStatus, publish } from '../src/editor/server/local-data-layer.mjs';
+import { status, publish } from '../src/editor/server/local-data-layer.mjs';
 
 // Run from a git hook (pre-push), GIT_DIR & co. point at the real repo: every git here (and the
 // editor's, which inherits this process's environment) must only see the temp repos.
@@ -44,7 +44,7 @@ test('publish: a git mv rename commits the new path and the removal of the old o
   fs.appendFileSync(path.join(root, 'notes.txt'), 'staged, not content\n');
   git(root, 'add', 'notes.txt');
 
-  const s = await siteStatus(root);
+  const s = await status(root);
   assert.deepEqual(
     s.files.map((f) => `${f.status} ${f.name || f.path}`),
     [
@@ -73,7 +73,7 @@ test('status and publish: the shared files at the content root (content/header.j
   fs.writeFileSync(path.join(root, 'content/site.json'), '{ "version": 1, "name": "S" }\n');
   // not content, a stray file next to them: published too
   fs.writeFileSync(path.join(root, 'content/notes.json'), '{}\n');
-  const s = await siteStatus(root);
+  const s = await status(root);
   assert.deepEqual(
     s.files.map((f) => `${f.status} ${f.name} ${f.path} ${f.group}`),
     [

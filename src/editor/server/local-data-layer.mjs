@@ -7,7 +7,7 @@
  *
  *   load()           { mode, files: { [name]: data }, media, photos, r2 }
  *   save(files)      { status, body: { ok, written } | { error, problems } }
- *   status()         the git status (siteStatus below)
+ *   status()         the git status of the site
  *   publish(message) { status, body } (publish below)
  *
  * Only the local one exists for now (a hosted one would answer the same).
@@ -291,7 +291,7 @@ function isBinary(file) {
  * and the number of edits; the others +/- lines, or bytes when binary. blocked: the changed
  * files Publish refuses (blockedReason).
  */
-export async function siteStatus(root) {
+export async function status(root) {
   const inside = await git(root, ['rev-parse', '--is-inside-work-tree']);
   if (!inside.ok)
     return { git: false, error: 'Not a git repository', files: [], blocked: [], ahead: 0 };
@@ -472,7 +472,7 @@ const IDENTITY_HINT =
  * Publish pushes it). Never forces, skips hooks, stashes, resets or cleans.
  */
 export async function publish(root, message) {
-  const s = await siteStatus(root);
+  const s = await status(root);
   if (!s.git) return { status: 400, body: { error: s.error } };
   const problem = await repoStateProblem(root, s);
   if (problem) return { status: 409, body: { error: problem } };
@@ -645,7 +645,7 @@ export function createLocalDataLayer(root, { env = {}, onWrite = () => {} } = {}
       r2: !r2Config(env).missing,
     }),
     save: (files) => save(root, files, onWrite),
-    status: () => siteStatus(root),
+    status: () => status(root),
     publish: (message) => publish(root, message),
   };
 }
