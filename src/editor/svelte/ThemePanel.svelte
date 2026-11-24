@@ -72,13 +72,15 @@
     ['max', 'Max (px)'],
     ['line', 'Line'],
   ];
-  const own = $derived(typeOf(theme()));
+  // (as a string: an edit elsewhere in theme.json, a brand color dragged, doesn't wake the
+  // placeholders below)
+  const ownKey = $derived(JSON.stringify(typeOf(theme())));
   // the theme's sizes (the placeholders): the preview's own (tokens.scss), read where
   // theme.json sets none (main.js has put theme.json's on the preview: ../theme-vars.js)
   let themeType = $state(structuredClone(TYPE_SCALE));
   $effect(() => {
     ui.previewVersion;
-    const mine = own;
+    const mine = JSON.parse(ownKey);
     const root = bridge.doc?.documentElement;
     if (!root) return;
     const css = root.ownerDocument.defaultView.getComputedStyle(root);

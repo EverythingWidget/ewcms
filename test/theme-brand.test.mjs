@@ -2,6 +2,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createStore } from '../src/editor/store.js';
+import { applyThemeVars } from '../src/editor/theme-vars.js';
 import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { head } from '../src/render/shell/layout.js';
 import { brandOf, checkTheme, themeColorOf, themeVarList, themeVars, THEME_VARS } from '../src/render/theme.js';
@@ -169,4 +171,40 @@ test('Theme › Color: Brand color edits theme.json color.brand, #rrggbb only, a
   // set, typed or picked: the preview gets it with no reload (theme-vars.js via main.js)
   const t = themeVarList({ color: { brand: '#CC2020' } });
   assert.deepEqual(t, [['--brand', '#cc2020']]);
+});
+
+test('a color picker dragged: one undo step, no page pass, the style written only when it differs', () => {
+  // ThemePanel's set: one coalescing key per value, like a typed field (text:<file>#<ptr>)
+  const panel = read('src/editor/svelte/ThemePanel.svelte');
+  assert.match(panel, /key: `text:\$\{THEME\}#\/\$\{key\}`, source: 'panel'/);
+  const store = createStore();
+  store.load({ 'theme.json': { version: 1 } });
+  const seen = [];
+  store.on((e) => seen.push(e.files));
+  for (let i = 0; i < 40; i++) {
+    const v = `#${(0x200000 + i * 0x030201).toString(16).padStart(6, '0')}`;
+    store.set('theme.json', '/color/brand', v, { key: 'text:theme.json#/color/brand', source: 'panel' });
+  }
+  assert.equal(seen.length, 40);
+  assert.ok(store.undo());
+  assert.equal(store.current['theme.json'].color?.brand, undefined); // all 40 in one step
+  assert.equal(store.canUndo(), false);
+  // main.js: theme.json alone stops after the variables and the draft (no text or section pass)
+  const main = read('src/editor/main.js');
+  const on = main.slice(main.indexOf('store.on(({ files, source: src'));
+  assert.ok(on.indexOf('applyThemeVars(') < on.indexOf("if (files.every((f) => f === THEME)) return;"));
+  assert.ok(on.indexOf("if (files.every((f) => f === THEME)) return;") < on.indexOf('patchTexts('));
+  // the placeholders' effect follows the typography only (a string), not every theme.json edit
+  assert.match(panel, /const ownKey = \$derived\(JSON\.stringify\(typeOf\(theme\(\)\)\)\);/);
+  // the preview's style: written only when its text changes
+  let writes = 0;
+  let text = '';
+  const el = { id: 'theme-vars', get textContent() { return text; }, set textContent(v) { writes++; text = v; } };
+  const doc = { head: { prepend() {} }, getElementById: () => el };
+  applyThemeVars(doc, { color: { brand: '#cc2020' } });
+  applyThemeVars(doc, { color: { brand: '#cc2020' } });
+  applyThemeVars(doc, { color: { brand: '#cc2020' }, typography: {} });
+  assert.equal(writes, 1);
+  applyThemeVars(doc, { color: { brand: '#2050cc' } });
+  assert.equal(writes, 2);
 });

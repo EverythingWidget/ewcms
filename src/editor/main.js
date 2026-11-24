@@ -898,6 +898,9 @@ store.on(({ files, source: src, structure: _structure, edits }) => {
       templates: typed ? [] : files.map(templateIdOf).filter(Boolean),
       sources: typed ? [] : files.map((f) => sourceIdOf(f) || schemaIdOf(f)).filter(Boolean),
     });
+  // theme.json alone (a Theme field, a color picker dragged): only CSS variables, put in above;
+  // no text, section or page row of the preview changed, so nothing more to look at
+  if (files.every((f) => f === THEME)) return;
   // a template's name: its row in the pages list
   if (files.some(templateIdOf)) updatePages();
   // After a save the files on disk caught up with us: nothing changes in the preview.
