@@ -334,7 +334,7 @@ export function addWidget(store, file, at, type, { shown } = {}) {
   Object.assign(widget, structuredClone(WIDGET_TYPES[type]?.added?.lang?.[lang] || {}));
   // a new List starts on None (its empty state) until a source is picked; another widget's
   // default source only when the site has that list (not "people" on a site without one)
-  if (type === 'list' || !Array.isArray(content.sources?.[widget.source?.from]))
+  if (WIDGET_TYPES[type]?.list || !Array.isArray(content.sources?.[widget.source?.from]))
     delete widget.source;
   // its source fitted to the page: From URL matches this page's params, or can't be here
   if (widget.source) {

@@ -32,6 +32,7 @@ test('the places that checked a widget name ask its declaration instead', () => 
     'src/editor/svelte/WidgetsModal.svelte',
     'src/render/routes.js',
     'src/render/defaults.js',
+    'src/editor/layout-ops.js',
   ])
     assert.doesNotMatch(code(read(f)), nameCheck, f);
   // the Template editor's rows, the Hero photos' phone check in validate.js
