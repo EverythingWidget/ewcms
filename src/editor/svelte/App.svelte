@@ -181,7 +181,7 @@
   <main class={['ed-stage', phone && 'is-phone', templating && 'has-cols']}>
     <!-- only in the item template editor: the row with its Columns control -->
     {#if templating}<div class="ed-cols-slot"><TemplateCols {live} /></div>{/if}
-    <iframe class="ed-frame" title="Site preview" {@attach bridge.attach}></iframe>
+    <iframe class={['ed-frame', editing && 'is-edit']} title="Site preview" {@attach bridge.attach}></iframe>
     <WidgetToolbar {live} {bridge} />
   </main>
 
@@ -319,7 +319,8 @@
     height: var(--size-control);
   }
 
-  // the preview iframe
+  // the preview iframe. Browse: a 1px hairline. Edit (ui.mode): a 2px white line with a
+  // 1px black ring outside it (box-shadow: nothing moves). The phone frame keeps its corners.
   .ed-frame {
     display: block;
     width: 100%;
@@ -334,6 +335,12 @@
       width 0.5s var(--ease-out),
       height 0.5s var(--ease-out);
     background: var(--c-bg-site);
+    &.is-edit {
+      box-shadow:
+        0 0 0 2px var(--white),
+        0 0 0 3px var(--black),
+        0 30px 80px -30px var(--c-scrim);
+    }
   }
 
   .ed-stage.is-phone .ed-frame {

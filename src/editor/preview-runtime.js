@@ -46,7 +46,7 @@ html.__ed-arrange [data-widget], html.__ed-arrange [data-widget] *:not([contente
 html.__ed-arrange .hero__title { z-index: 5; }
 :is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]):not([data-ed-open]) *, :is(html.__ed-arrange, html.__ed-animate):has([data-ed-open]) [data-router-view] * { pointer-events: none !important; }
 :is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]):not([data-ed-open]) { pointer-events: none; }
-:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])[data-ed-open] { outline: 2px solid ${T.accent}; outline-offset: -2px; }
+:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])[data-ed-open] { box-shadow: inset 0 0 0 1px ${T.black}, inset 0 0 0 3px ${T.white}; }
 :is(html.__ed-arrange, html.__ed-animate) [data-footer]:not(:has([data-sec])) { min-height: 96px; }
 html.__ed-animate [data-anim], html.__ed-animate [data-anim] *, html.__ed-animate [data-widget], html.__ed-animate [data-widget] * { cursor: pointer !important; }
 /* a press on a widget's link or button only picks the widget: the press misses it (no :active, :hover or focus look), the widget gets it; Alt+click still clicks through (__ed-alt); a clickable template item's widgets: overlay.js finds them by position */
