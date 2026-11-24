@@ -12,8 +12,12 @@ say what a site must do before it bumps its pin.
   (`theme/tokens.scss`), not `site.json`. `ewcms check` warns if `accent` is still in
   `site.json` (it is ignored; you can delete the key). Album item `accent` values are
   unchanged. First run no longer asks for a look colour; Site settings no longer has
-  Accent color. Set `--brand` (and `--accent`, the glass tint) in the theme. Once the
-  Theme area can edit tokens, those values are changed there.
+  Accent color. Set `--brand` (and `--accent`, the default background glow) in the theme.
+  Once the Theme area can edit tokens, those values are changed there.
+- **Glass follows `--brand`.** The glass surfaces (the header's pill, dropdowns, the phone menu,
+  `.btn` such as the Button widget and the Form's Send, the carousel's arrows) are tinted by
+  `--brand`, so they stay the brand colour on every page. An album's `--accent` now tints only
+  the background glow. A site whose `--accent` already equals `--brand` looks the same.
 
 ## 0.11.0 (2026-11-23)
 
