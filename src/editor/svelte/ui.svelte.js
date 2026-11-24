@@ -4,7 +4,7 @@ import { popupStays } from '../multi-select.js';
  *
  *   ui.mode       'browse' | 'edit', the one source of truth for editing:
  *                   'browse'    the site as visitors see it: the areas, the pages list (Pages),
- *                               Theme, Animations, Site settings; a page row's click only
+ *                               Templates, Theme, Animations, Site settings; a page row's click only
  *                               shows it
  *                   'edit'      the page in the preview (or a site part, a template) open in
  *                               Pages with its page tabs: Edit, or a page opened
@@ -13,7 +13,8 @@ import { popupStays } from '../multi-select.js';
  *   ui.panel      the area the side panel shows (../areas.js):
  *                   'areas'       the areas' list (AreaList.svelte), where each one opens
  *                   'pages'       Pages: the pages list (browse), or the page open (edit)
- *                   'theme'       Theme: the item templates
+ *                   'theme'       Theme: Fonts and styles (Coming soon)
+ *                   'templates'   Templates: the item templates
  *                   'animations'  Animations: the default timing, the library, the page entrance
  *                   'site-settings'  Site settings: what is the same on every page
  *                 (Media and Sources open their windows over it: ui.modals)

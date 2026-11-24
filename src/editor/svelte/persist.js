@@ -2,7 +2,7 @@
  * Keeps the editor where it was across a refresh, in two places:
  *
  *   The URL (shareable): /photography/people/?edit&tab=site-settings (src/editor/lib/editor-url.js)
- *     tab     ui.panel, the area open: areas | pages | theme | animations | site-settings
+ *     tab     ui.panel, the area open: areas | pages | theme | templates | animations | site-settings
  *             (../areas.js; an old tab=settings is site-settings, PANEL_ALIASES; the page's own tab, ui.pageTab, is kept per page in
  *             sessionStorage; an unknown tab: the areas)
  *     (path)  the URL's own path is the page in the preview (main.js keeps it up to date)

@@ -12,7 +12,7 @@ const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 
 test('previewClicks comes from ui.mode only: browse is visitor, edit arranges or animates', async () => {
   const { ui, previewClicks } = await loadUi();
   assert.equal(ui.mode, 'browse', 'the editor opens in browse');
-  for (const panel of ['areas', 'pages', 'theme', 'animations', 'site-settings']) {
+  for (const panel of ['areas', 'pages', 'theme', 'templates', 'animations', 'site-settings']) {
     ui.panel = panel;
     for (const tab of [null, 'sections', 'element-motion']) {
       ui.pageTab = tab;
@@ -74,7 +74,7 @@ test('header: status | Edit / Done (one 80px slot) | Publish; Done saves, then b
   );
   assert.ok(head.indexOf('data-edit-toggle') < head.indexOf('variant="primary"'));
   assert.match(app, /\[data-edit-toggle\]\) \{\s*min-width: 80px;/);
-  // Done: saved, then browse (an item template: back to Theme, setPanel browses)
+  // Done: saved, then browse (an item template: back to Templates, setPanel browses)
   assert.match(
     app,
     /async function done\(\) \{\s*if \(!\(await actions\.save\(\)\)\) return;[\s\S]*?if \(ui\.target\?\.kind === 'item-template'\) actions\.setPanel\(TEMPLATES_PANEL\);\s*else setMode\('browse'\);/,
@@ -129,7 +129,7 @@ test('pages list: no edit pens (their 24px slot kept), the page in the preview i
     /&\.is-active \{\s*background: color-mix\(\s*in srgb,\s*var\(--c-page-accent\) 9%,\s*color-mix\(in srgb, var\(--c-text\) 14%, var\(--c-page-card\)\)\s*\);/,
   );
   // browse: a click only selects and shows; Header or Footer open for editing (F114)
-  // (edit is in Pages: a template opened from Theme moves there first)
+  // (edit is in Pages: a template opened from Templates moves there first)
   assert.match(
     list,
     /function open\(row\) \{\s*show\(row\);\s*if \(ui\.panel !== 'pages'\) actions\.setPanel\('pages'\);\s*setMode\('edit'\);/,

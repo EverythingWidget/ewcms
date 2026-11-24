@@ -1,8 +1,7 @@
 <!--
   Theme (ui.panel 'theme', an area: ../areas.js): under its head (Back to areas) the theme's
-  own look, Fonts and styles (Coming soon), then the item templates (Templates). Their rows are
-  the pages list's (PagesList.svelte, area 'theme'): a click shows one in the preview, a double
-  click (or Edit) opens it in Pages; its ← and Done come back here.
+  own look, Fonts and styles (Coming soon). Their rows are the pages list's (PagesList.svelte,
+  area 'theme').
 -->
 <script>
   import PagesList from './PagesList.svelte';

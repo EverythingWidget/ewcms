@@ -4,7 +4,7 @@
  * template, one level down) the List is on, the List selected, its pop-up's tab and the panel
  * and pop-up scroll, the path the preview showed. Back in the template editor pops one
  * (main.js returnToOrigin); a template opened from the Templates list pushes nothing (Back goes
- * to the pages list, as before), and going anywhere else clears it.
+ * to Templates), and going anywhere else clears it.
  *
  * At most two deep: a page's List opens template A, A's inner List opens template B, and B
  * holds no List (the nested-list rule, src/widgets/list/nested.js).
@@ -40,10 +40,10 @@ export const originCrumbs = (stack, nameOf = () => '') =>
     at,
   }));
 
-/** Back's tooltip: "Back to People" with an origin, else Theme's (its Templates). */
+/** Back's tooltip: "Back to People" with an origin, else Templates. */
 export const backLabelOf = (stack, nameOf) => {
   const top = originCrumbs(stack, nameOf).at(-1);
-  return top ? `Back to ${top.label}` : 'Back to theme';
+  return top ? `Back to ${top.label}` : 'Back to templates';
 };
 
 /** The Lists in `value` (any depth) whose config.template is `id`. */

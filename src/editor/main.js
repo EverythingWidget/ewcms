@@ -6,7 +6,8 @@
  *   Pages         - the pages list, or a page with its tabs: Sections (arrange: pick and move
  *                   widgets, double click a text to type it; animations paused), Motion
  *                   (animate: click a widget or an animated element to edit its animation), SEO
- *   Theme         - the item templates
+ *   Templates     - the item templates
+ *   Theme         - the look (Fonts and styles is still Coming soon)
  *   Animations    - the default timing, the Animations library, the page entrance
  *   Site settings - site-wide values: site name and meta, forms, type, redirects
  *   Preview  - the toolbar's toggle: the site as visitors see it (links work); the panel

@@ -70,8 +70,8 @@ test('the path back: the origins only (never the template open), a template by i
   assert.deepEqual(originCrumbs([]), []);
   assert.equal(backLabelOf([people]), 'Back to People');
   assert.equal(backLabelOf([people, album]), 'Back to Album card (portrait)');
-  // opened from Theme's Templates: back there
-  assert.equal(backLabelOf([]), 'Back to theme');
+  // opened from Templates: back there
+  assert.equal(backLabelOf([]), 'Back to templates');
 });
 
 test('Used in N lists: Lists on pages, the header, the footer and in templates; not other widgets', () => {
@@ -139,7 +139,7 @@ test('a List inside a template gets Edit template; Back returns to that template
   assert.match(twf, /withFile="template"/);
   const actions = read('src/editor/svelte/TemplateActions.svelte');
   assert.match(actions, /ui\.openTemplate\?\.\(templateId, \{ back: true \}\)/);
-  // Back pops onto the template it was opened from, not Theme or the page above it
+  // Back pops onto the template it was opened from, not Templates or the page above it
   const main = read('src/editor/main.js');
   assert.match(main, /target\.kind === 'item-template'/);
   assert.match(
@@ -156,7 +156,7 @@ test('a List inside a template gets Edit template; Back returns to that template
     ['People', 'Album card'],
   );
   assert.equal(backLabelOf([people, album]), 'Back to Album card (portrait)');
-  assert.notEqual(backLabelOf([people, album]), 'Back to theme');
+  assert.notEqual(backLabelOf([people, album]), 'Back to templates');
   assert.notEqual(backLabelOf([people, album]), 'Back to People');
 });
 

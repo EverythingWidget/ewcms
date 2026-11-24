@@ -145,7 +145,7 @@ test('areas in the URL: a library link from before them opens Animations, a site
   assert.equal(ui.mode, 'edit');
   assert.equal(ui.target?.id, 'header');
 
-  for (const tab of ['areas', 'theme', 'animations']) {
+  for (const tab of ['areas', 'theme', 'templates', 'animations']) {
     browser(`/x/?edit&tab=${tab}`);
     restoreUi(bridge, live);
     assert.equal(ui.panel, tab);

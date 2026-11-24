@@ -67,7 +67,7 @@
       a.opens.panel().then((m) => (panels = { ...panels, [a.id]: m.default }));
   // an area opened comes in from the right, Back to areas brings the list from the left (the
   // pages list's slide, lib/slide.js); one area to another (Edit, a link) comes in the same way,
-  // but a template's ← or Done (Pages to Theme) goes back, from the left
+  // but a template's ← or Done (Pages to Templates) goes back, from the left
   let areaView = $state();
   let shownArea = untrack(() => ui.panel);
   $effect.pre(() => {
@@ -94,7 +94,7 @@
   }
   async function done() {
     if (!(await actions.save())) return;
-    // an item template: back to its list, in Theme (setPanel browses)
+    // an item template: back to its list, in Templates (setPanel browses)
     if (ui.target?.kind === 'item-template') actions.setPanel(TEMPLATES_PANEL);
     else setMode('browse');
   }

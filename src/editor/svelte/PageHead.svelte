@@ -3,7 +3,7 @@
   its place while it is open: PagesList.svelte; its ← on the same spot):
     ← (a 32×32 filled square Button)  Title
                                       / photography/ people/   (a page: its address, clickable crumbs)
-                                      Templates                (an item template from Theme's Templates)
+                                      Templates                (an item template from the Templates area)
                                       People › Album card      (one opened by Edit template: the path back,
                                                                 ui.originStack; not its own name)
                                       The menu and its labels  (Header / Footer: the pages list's line)
@@ -12,7 +12,7 @@
   An item template's title row also says how many Lists use it ("Used in 1 list", always, in a
   slot on the right of the name: one 20px line, the head's height never changes). Opened by
   a List's Edit template, ← goes back there (main.js returnToOrigin, "Back to People"), else to
-  Theme ("Back to theme").
+  Templates ("Back to templates").
   Back to pages opens the pages list (in Pages; browse, ui.mode) where the page was opened (its
   own folder, or the one it is in), a path part at that folder. The path's [param]/ parts and
   the Preview line's values are in the widget accent (a param and its value read as a pair).
@@ -27,6 +27,7 @@
   import { parentId, pathOfId } from '../../render/routes.js';
   import { crumbsOf, pageIds, titleOf } from '../lib/page-tree.js';
   import { SITE_PARTS } from '../lib/site-parts.js';
+  import { TEMPLATES_PANEL } from '../areas.js';
   import { isParam, pageFile, paramsOf, templateFile } from '../../render/files.js';
   import { mainProblem } from '../../render/layout/source.js';
   import { backLabelOf, listUses, originCrumbs, usesLabel } from '../lib/template-origin.js';
@@ -73,8 +74,8 @@
     return at === id || at === parentId(id) ? at : parentId(id);
   };
   function list(level = backTo()) {
-    // an item template: its list is in Theme (setPanel browses)
-    if (isItemTemplate) return actions.setPanel('theme');
+    // an item template: its list is in Templates (setPanel browses)
+    if (isItemTemplate) return actions.setPanel(TEMPLATES_PANEL);
     ui.pagesWin = { folder: level };
     if (ui.panel !== 'pages') actions.setPanel('pages');
     setMode('browse');

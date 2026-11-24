@@ -18,9 +18,10 @@
  *   highlight (optional) (counts) => the card highlighted (About: an update to offer)
  *   parts     (optional) rows the area's panel lists at its top, each { id, label, subtitle,
  *             status }: a 'soon' one shows as the areas' do (Theme's Fonts and styles)
- * Pages holds the site parts (Header, Footer) and every page, Theme the item templates,
- * Animations the default timing, the Animations library and the page entrance, Site settings
- * what is the same on every page, redirects too.
+ * Pages holds the site parts (Header, Footer) and every page, Templates the item templates,
+ * Theme the look (Fonts and styles is still Coming soon), Animations the default timing,
+ * the Animations library and the page entrance, Site settings what is the same on every
+ * page, redirects too.
  * (The components and windows load on demand: this file stays plain data for persist.js and
  * the tests.)
  */
@@ -66,7 +67,7 @@ export const AREAS = [
     id: 'theme',
     label: 'Theme',
     icon: 'palette',
-    subtitle: (n) => plural(n.templates ?? 0, 'template'),
+    subtitle: () => 'Fonts and styles',
     status: 'ready',
     opens: { panel: () => import('./svelte/ThemePanel.svelte') },
     // the theme's own look as a form; until it is built, type stays in Site settings
@@ -78,6 +79,14 @@ export const AREAS = [
         status: 'soon',
       },
     ],
+  },
+  {
+    id: 'templates',
+    label: 'Templates',
+    icon: 'clone',
+    subtitle: (n) => plural(n.templates ?? 0, 'template'),
+    status: 'ready',
+    opens: { panel: () => import('./svelte/TemplatesPanel.svelte') },
   },
   {
     id: 'animations',
@@ -124,7 +133,7 @@ export const PANELS = ['areas', ...AREAS.filter((a) => opensIn(a) === 'panel').m
 
 /** Where editing happens (Edit opens the page there) and where the item templates are. */
 export const EDIT_PANEL = 'pages';
-export const TEMPLATES_PANEL = 'theme';
+export const TEMPLATES_PANEL = 'templates';
 
 /**
  * Old names, the one table: an old ui.panel value (a link's tab, a session from before a

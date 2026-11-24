@@ -1,5 +1,5 @@
 <!--
-  An area's head (Pages at the top of its list, Theme, Animations, Site settings): the page
+  An area's head (Pages at the top of its list, Templates, Theme, Animations, Site settings): the page
   head's square ← (back to the areas, ui.panel 'areas'), the area's name over a quiet "Back to
   areas", an optional control on the right (Pages: its square +). BackHead.svelte, the same
   control on the same 12px edge as a page's head and a folder's.

@@ -15,8 +15,8 @@
     Not linked  every page not in the menu (All), or the ones under this folder (This folder;
                 no filter at the top: every page is under /), in the site's order
   The Theme area (area 'theme', ThemePanel.svelte) is this list's other face: its head (Back
-  to areas), Fonts and styles (Coming soon), then the item templates (Templates: open, delete),
-  in the same rows.
+  to areas) and Fonts and styles (Coming soon). The Templates area (area 'templates',
+  TemplatesPanel.svelte) is the item templates (open, delete), in the same rows.
   The whole row drags (the path no longer grabs the pointer: G18): in the menu list to another
   place (the menu's order); from it into Not linked (out of the menu); from Not linked into it
   (into the menu there). Remove from menu does the same, and does not delete the page. The row in hand
@@ -71,9 +71,10 @@
   import { SITE_PARTS } from '../lib/site-parts.js';
 
   // live: reactive store (live.svelte.js); actions: pickTarget, pagesOp, setPanel (main.js);
-  // area: 'pages' (the pages, Header and Footer) or 'theme' (the item templates)
+  // area: 'pages' (the pages, Header and Footer), 'theme' (Fonts and styles) or 'templates' (the item templates)
   let { live, actions, area = 'pages' } = $props();
   const theme = $derived(area === 'theme');
+  const templatesArea = $derived(area === 'templates');
   // the area's own rows at its top (its record's parts: Theme's Fonts and styles)
   const parts = $derived(areaOf(area)?.parts ?? []);
 
@@ -100,8 +101,8 @@
   let subList = $state();
   let nlZone = $state();
 
-  // Theme has no folders
-  const level = $derived(theme ? '' : ui.pagesWin.folder);
+  // Theme and Templates have no folders
+  const level = $derived(area === 'pages' ? ui.pagesWin.folder : '');
   // a folder that is gone (deleted, undone, a stale URL): the top (once the pages are there:
   // a ?pages=/folder/ URL opens before the content is loaded)
   $effect(() => {
@@ -143,7 +144,7 @@
     const entry = entryFor(ui.pages, row);
     if (entry) actions.pickTarget(entry);
   }
-  // edit is in Pages (a template opened from Theme too: its ← and Done come back to Theme)
+  // edit is in Pages (a template opened from Templates too: its ← and Done come back to Templates)
   function open(row) {
     show(row);
     if (ui.panel !== 'pages') actions.setPanel('pages');
@@ -655,8 +656,8 @@
 <div class="pl" bind:this={root} {onkeydown}>
   <!-- in a folder: the page head's square ←, the path as the name, "Back to /parent/", a
        square +; at the top: the area's head (← Back to areas, "Pages") and the same + -->
-  {#if theme}
-    <AreaHead id="theme" {actions} />
+  {#if area !== 'pages'}
+    <AreaHead id={area} {actions} />
   {:else if level}
     <div class="pl-folder">
       <BackHead
@@ -689,6 +690,7 @@
         {/each}
       </ul>
     {/if}
+  {:else if templatesArea}
     {@render head('Templates', templates.length)}
     <ul class="pl-rows" data-templates>
       {#each templates as p (p.id)}{@render row(p)}{/each}
