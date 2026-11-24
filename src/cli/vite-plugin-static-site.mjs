@@ -37,6 +37,7 @@ import { EDITOR_HTML, wantsEditor } from '../editor/lib/editor-url.js';
 import { checkSources } from '../render/schemas.js';
 import { FOLDERS, ROOT_FILES } from '../render/files.js';
 import { THEME_LAYERS, loadSiteConfig } from './site-config.mjs';
+import { fontsOf } from '../render/layout/type.js';
 import { createUpdater } from '../editor/server/update.mjs';
 import { registerSiteWidgets, widgetClientsModule, widgetsModule } from './site-widgets.mjs';
 import { ENGINE, enginePath, fsUrl, posixPath, sameFile, withEngineUrls } from './engine.mjs';
@@ -123,6 +124,7 @@ export const editorConfigModule = (site) =>
     folders: FOLDERS,
     mediaUrl: site.mediaUrl,
     repo: site.config.repo,
+    fonts: fontsOf(site.themeMeta?.fonts),
   })};\n`;
 
 /** The site's own widgets (ewcms.config.mjs widgets): definitions for the editor, styles and

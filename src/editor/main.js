@@ -619,7 +619,7 @@ bridge.on('connect', () => {
   applyPart();
   pushCurtains();
   // the theme's unsaved values (a page the preview loads renders the saved or drafted ones)
-  applyTheme(bridge.doc, store.current[THEME]);
+  applyTheme(bridge.doc, store.current[THEME], editorConfig.fonts);
   ui.previewVersion++;
 });
 
@@ -888,7 +888,7 @@ store.on(({ files, source: src, structure: _structure, edits }) => {
   // again when the edit ends: richDone); an undo or redo while it is edited ends the edit
   const typed = src?.nodeType === 1 && src.isContentEditable;
   // theme.json: CSS variables and the color-scheme meta, put on the preview at once (theme-vars.js)
-  if (files.includes(THEME)) applyTheme(bridge.doc, store.current[THEME]);
+  if (files.includes(THEME)) applyTheme(bridge.doc, store.current[THEME], editorConfig.fonts);
   if (src === 'saved' || src === 'rebase') pushDraft();
   else if (files.some((f) => f !== ANIMATIONS))
     pushDraft({

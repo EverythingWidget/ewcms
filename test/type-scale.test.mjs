@@ -302,6 +302,17 @@ test('Theme › Typography: a row per style with its tag, Preview / Close previe
   assert.doesNotMatch(toolbar, /Theme › Type</);
   assert.match(panel, /\{name\} · \{tag\.toUpperCase\(\)\}/);
   for (const label of ['Min (px)', 'Max (px)', "'Line'"]) assert.ok(panel.includes(label), label);
+  // Display font and Body font at the top; Font per style, empty state names what it follows
+  assert.match(panel, /display: 'Display font', body: 'Body font'/);
+  assert.match(panel, /edit="\{THEME\}#\/typography\/fonts\/\{role\}"/);
+  assert.match(panel, /edit="\{THEME\}#\/typography\/\{k\}\/font"/);
+  assert.match(panel, /label="Font"/);
+  assert.match(panel, /styleFontPlaceholder\(k\)/);
+  assert.match(panel, /`\$\{label\} \(\$\{name\}\)`/);
+  assert.match(panel, /key: `text:\$\{THEME\}#\/typography\/fonts\/\$\{role\}`/);
+  assert.match(panel, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(panel, /\.style-font \{[^}]*margin-top: var\(--gap-fields\)/);
+  assert.match(read('src/editor/svelte/Field.svelte'), /placeholder=\{placeholder \|\| 'Pick…'\}/);
   assert.match(panel, /specimen \? 'Close preview' : 'Preview'/);
   assert.match(panel, /actions\.showSpecimen\(!specimen\)/);
   // the panel only reads the preview's sizes (the placeholders); main.js puts theme.json on it
@@ -309,10 +320,10 @@ test('Theme › Typography: a row per style with its tag, Preview / Close previe
   assert.match(panel, /bridge\.doc\?\.documentElement/);
   const main = read('src/editor/main.js');
   // on every theme.json change (an edit, undo, redo) and every page the preview loads
-  assert.match(main, /if \(files\.includes\(THEME\)\) applyTheme\(bridge\.doc, store\.current\[THEME\]\);/);
+  assert.match(main, /if \(files\.includes\(THEME\)\) applyTheme\(bridge\.doc, store\.current\[THEME\], editorConfig\.fonts\);/);
   assert.match(
     main,
-    /pushCurtains\(\);[\s\S]{0,160}applyTheme\(bridge\.doc, store\.current\[THEME\]\);\s*ui\.previewVersion\+\+;/,
+    /pushCurtains\(\);[\s\S]{0,160}applyTheme\(bridge\.doc, store\.current\[THEME\], editorConfig\.fonts\);\s*ui\.previewVersion\+\+;/,
   );
   // another area closes the specimen, back to the page it replaced
   assert.match(main, /if \(panel !== 'theme'\) showSpecimen\(false\);/);
@@ -360,4 +371,21 @@ test("the preview follows theme.json: its theme-vars style's :root:root block (t
   applyThemeVars(doc, {});
   assert.doesNotMatch(els['theme-vars'].textContent, /--brand/);
   applyThemeVars(null, {}); // no preview yet: nothing
+  // typography fonts: a known name writes the stack; clearing or an unknown name drops the var
+  const fonts = [
+    { family: 'DM Mono', fallback: 'monospace' },
+    { family: 'Momo Trust Display', fallback: 'serif' },
+  ];
+  applyThemeVars(
+    doc,
+    { typography: { fonts: { body: 'DM Mono' }, heading: { font: 'Momo Trust Display' } } },
+    fonts,
+  );
+  assert.match(els['theme-vars'].textContent, /--f-body: 'DM Mono', monospace/);
+  assert.match(els['theme-vars'].textContent, /--type-heading-font: 'Momo Trust Display', serif/);
+  applyThemeVars(doc, { typography: { heading: { font: 'Comic Sans' } } }, fonts);
+  assert.doesNotMatch(els['theme-vars'].textContent, /--f-body|--type-heading-font|Comic Sans/);
+  applyThemeVars(doc, { typography: { fonts: { body: 'DM Mono' } } }, fonts);
+  applyThemeVars(doc, { typography: {} }, fonts);
+  assert.doesNotMatch(els['theme-vars'].textContent, /--f-body/);
 });

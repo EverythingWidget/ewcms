@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { themeMetaHead, writeThemeLayers } from '../src/cli/vite-plugin-static-site.mjs';
+import { editorConfigModule, themeMetaHead, writeThemeLayers } from '../src/cli/vite-plugin-static-site.mjs';
 import { loadSiteConfig, DEFAULT_SITE_THEME } from '../src/cli/site-config.mjs';
 import { themeWarning } from '../src/cli/cli.mjs';
 import { enginePath } from '../src/cli/engine.mjs';
@@ -183,4 +183,19 @@ test('theme/meta.json fonts: check warns when the list is missing or typography 
   assert.doesNotMatch(themeWarning(loadSiteConfig(listed)), /not a font this theme provides/);
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(listed, { recursive: true, force: true });
+});
+
+test("editorConfig includes the theme's fonts list (family and stack)", () => {
+  const src = editorConfigModule({
+    contentRel: 'content',
+    mediaUrl: '/media',
+    config: { repo: {} },
+    themeMeta: { fonts: [{ family: 'DM Mono', fallback: 'monospace' }] },
+  });
+  assert.match(src, /"family":"DM Mono"/);
+  assert.match(src, /"stack":"'DM Mono', monospace"/);
+  assert.match(
+    editorConfigModule({ contentRel: 'c', mediaUrl: '/', config: { repo: {} } }),
+    /"fonts":\[\]/,
+  );
 });

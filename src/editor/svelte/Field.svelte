@@ -342,7 +342,7 @@
       id={uid}
       aria-label={label}
       value={value ?? ''}
-      placeholder="Pick…"
+      placeholder={placeholder || 'Pick…'}
       {disabled}
       options={options.map(([v, text, more]) => ({ value: v, label: text, ...more }))}
       onchange={(v) => onvalue(v)}

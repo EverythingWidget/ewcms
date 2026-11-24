@@ -1,7 +1,7 @@
 /**
  * The preview follows content/theme.json as it is edited, with no reload (lib/needs-reload.js:
  * theme.json is IN_PLACE): its CSS variables (src/render/theme.js themeVars: --brand, the type
- * scale, the layout) replace the :root:root block of the page's <style id="theme-vars">, the
+ * scale and fonts, the layout) replace the :root:root block of the page's <style id="theme-vars">, the
  * one the page head rendered (shell/layout.js), and its color-scheme meta is brought in line
  * with color.scheme. A value cleared is gone from it, so the theme's tokens.scss default shows
  * again (and no color-scheme meta when that is cleared). main.js calls applyTheme on every
@@ -13,17 +13,17 @@ import { schemeOf, themeVars } from '../render/theme.js';
 const ROOT_BLOCK = /\s*:root:root\s*\{[^}]*\}/g;
 
 /** The theme-vars style's text with theme.json's :root:root block (none when it sets nothing). */
-export function themeStyleText(text, theme) {
-  const vars = themeVars(theme);
+export function themeStyleText(text, theme, fonts) {
+  const vars = themeVars(theme, fonts);
   const rest = String(text || '').replace(ROOT_BLOCK, '').trimEnd();
   return vars ? `${rest}\n      :root:root {\n        ${vars};\n      }\n    ` : rest;
 }
 
 /** Put theme.json's variables on the preview's document `doc` (see the top). */
-export function applyThemeVars(doc, theme) {
+export function applyThemeVars(doc, theme, fonts) {
   if (!doc?.head) return;
   let el = doc.getElementById('theme-vars');
-  const text = themeStyleText(el?.textContent, theme);
+  const text = themeStyleText(el?.textContent, theme, fonts);
   if (!el) {
     if (!text.trim()) return;
     el = doc.createElement('style');
@@ -53,7 +53,7 @@ export function applyColorScheme(doc, theme) {
 }
 
 /** Put theme.json on the preview's document: CSS variables and the color-scheme meta. */
-export function applyTheme(doc, theme) {
-  applyThemeVars(doc, theme);
+export function applyTheme(doc, theme, fonts) {
+  applyThemeVars(doc, theme, fonts);
   applyColorScheme(doc, theme);
 }

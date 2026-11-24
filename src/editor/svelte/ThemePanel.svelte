@@ -4,10 +4,10 @@
   color.brand, #rrggbb: --brand; a swatch at the hex field's start opens the native color
   picker; empty: the theme's tokens.scss --brand, read from the preview and shown greyed) and
   the color scheme (theme.json color.scheme: the color-scheme meta; empty: none), then
-  Typography, the text styles' sizes
-  (theme.json typography, px, src/render/layout/type.js; its Preview shows every style: the
-  type specimen, render/layout/type-specimen.js, until Close preview or another area opens;
-  fonts and text styles come here later), and Layout (contained width, space between sections:
+  Typography, the text styles' sizes and fonts
+  (theme.json typography, px and family, src/render/layout/type.js; its Preview shows every style: the
+  type specimen, render/layout/type-specimen.js, until Close preview or another area opens),
+  and Layout (contained width, space between sections:
   theme.json layout, src/render/layout/contain.js and space.js). The preview follows every
   value as it is typed (../theme-vars.js, from main.js).
 -->
@@ -20,7 +20,14 @@
   import { ui } from './ui.svelte.js';
   import { THEME } from '../../render/files.js';
   import { COLS } from '../../render/layout/grid.js';
-  import { TYPE_KEYS, TYPE_SCALE, typeOf } from '../../render/layout/type.js';
+  import {
+    TYPE_FONT_OF,
+    TYPE_KEYS,
+    TYPE_RESERVED,
+    TYPE_SCALE,
+    typeOf,
+  } from '../../render/layout/type.js';
+  import editorConfig from 'virtual:editor-config';
   import { isTypeSpecimen } from '../../render/layout/type-specimen.js';
   import { LINE_STYLES } from '../../render/text.js';
   import { isObject } from '../../render/is.js';
@@ -110,9 +117,61 @@
   });
   const specimen = $derived(isTypeSpecimen(ui.path));
 
+  // typography fonts: the theme's list (theme/meta.json, editor-config); empty, the selects
+  // stay in the layout with no options
+  const fontOptions = (editorConfig.fonts || []).map((f) => [f.family, f.family]);
+  const FONT_ROLE_LABEL = { display: 'Display font', body: 'Body font' };
+  const firstFamily = (stack) =>
+    (stack || '')
+      .split(',')[0]
+      .trim()
+      .replace(/^(['"])(.*)\1$/, '$2');
+  // the theme's current stacks (tokens.scss, or typography.fonts once theme-vars has written them)
+  let themeStacks = $state({ display: '', body: '' });
+  $effect(() => {
+    ui.previewVersion;
+    const root = bridge.doc?.documentElement;
+    if (!root) return;
+    const css = root.ownerDocument.defaultView.getComputedStyle(root);
+    themeStacks = {
+      display: css.getPropertyValue('--f-display').trim(),
+      body: css.getPropertyValue('--f-body').trim(),
+    };
+  });
+  const roleFontName = (role) => firstFamily(themeStacks[role]);
+  const rolePlaceholder = (role) =>
+    fontOptions.length ? roleFontName(role) : 'None listed in the theme';
+  const styleFontPlaceholder = (k) => {
+    const role = TYPE_FONT_OF[k];
+    const label = FONT_ROLE_LABEL[role] || 'Font';
+    const name = roleFontName(role);
+    if (!fontOptions.length) return 'None listed in the theme';
+    return name ? `${label} (${name})` : label;
+  };
+  /** typography.fonts.display / body (undefined: cleared, the theme's stack). */
+  function setFontRole(role, value) {
+    if (!TYPE_RESERVED.fonts.includes(role)) return;
+    const v = typeof value === 'string' ? value.trim() : '';
+    const stored = live.get(THEME, '/typography');
+    const type = isObject(stored) ? structuredClone($state.snapshot(stored)) : {};
+    const fonts = { ...(isObject(type.fonts) ? type.fonts : {}) };
+    if (v) fonts[role] = v;
+    else delete fonts[role];
+    if (Object.keys(fonts).length) type.fonts = fonts;
+    else delete type.fonts;
+    live.store.set(THEME, '/typography', Object.keys(type).length ? type : undefined, {
+      key: `text:${THEME}#/typography/fonts/${role}`,
+      source: 'panel',
+    });
+  }
+
+
   /** A style's setting typed (undefined: cleared, the theme's); empty objects left out. */
   function setType(k, key, value) {
-    if (value !== undefined && !(typeof value === 'number' && value > 0)) return;
+    if (key === 'font') {
+      const v = typeof value === 'string' ? value.trim() : '';
+      value = v || undefined;
+    } else if (value !== undefined && !(typeof value === 'number' && value > 0)) return;
     const stored = live.get(THEME, '/typography');
     const type = isObject(stored) ? structuredClone($state.snapshot(stored)) : {};
     const style = { ...(isObject(type[k]) ? type[k] : {}), [key]: value };
@@ -215,8 +274,32 @@
   <Collapsible key="theme:typography" title="Typography">
     <p class="hint">
       The usual size of each text style, in pixels: it grows with the window between Min and Max.
-      When they are the same, the size is fixed. Empty: the theme's (shown greyed).
+      When they are the same, the size is fixed. Empty: the theme's (shown greyed). Font: empty
+      uses the Display or Body font (the theme's, shown greyed).
     </p>
+    <div class="fields">
+      {#each TYPE_RESERVED.fonts as role (role)}
+        <Field
+          edit="{THEME}#/typography/fonts/{role}"
+          label={FONT_ROLE_LABEL[role]}
+          type="select"
+          options={fontOptions}
+          placeholder={rolePlaceholder(role)}
+          disabled={!fontOptions.length}
+          value={live.get(THEME, `/typography/fonts/${role}`)}
+          changed={live.changed(THEME, `/typography/fonts/${role}`)}
+          reset={{
+            on: !!live.get(THEME, `/typography/fonts/${role}`),
+            label: `Use the theme's ${FONT_ROLE_LABEL[role].toLowerCase()}`,
+            title: roleFontName(role)
+              ? `Use the theme's (${roleFontName(role)})`
+              : "Use the theme's",
+            run: () => setFontRole(role, ''),
+          }}
+          onvalue={(value) => setFontRole(role, value)}
+        />
+      {/each}
+    </div>
     <div>
       <Button
         size="small"
@@ -238,16 +321,35 @@
                 type="number"
                 empty
                 placeholder={String(themeType[k][key])}
-                value={live.get(THEME, `/typography/${k}/${key}`)}
-                changed={live.changed(THEME, `/typography/${k}/${key}`)}
+                value={live.get(THEME, `/typography/${k}/{key}`)}
+                changed={live.changed(THEME, `/typography/${k}/{key}`)}
                 onvalue={(value) => setType(k, key, value)}
               />
             {/each}
           </div>
+          <div class="style-font">
+            <Field
+              edit="{THEME}#/typography/{k}/font"
+              label="Font"
+              type="select"
+              options={fontOptions}
+              placeholder={styleFontPlaceholder(k)}
+              disabled={!fontOptions.length}
+              value={live.get(THEME, `/typography/${k}/font`)}
+              changed={live.changed(THEME, `/typography/${k}/font`)}
+              reset={{
+                on: !!live.get(THEME, `/typography/${k}/font`),
+                label: 'Use the default font for this style',
+                title: styleFontPlaceholder(k),
+                run: () => setType(k, 'font', undefined),
+              }}
+              onvalue={(value) => setType(k, 'font', value)}
+            />
+          </div>
         </div>
       {/each}
     </div>
-  </Collapsible>
+    </Collapsible>
 
   <Collapsible key="theme:layout" title="Layout">
     <p class="hint">
@@ -346,6 +448,11 @@
   // drop it on the rest so the row gap is the space between styles
   .style-row + .style-row > .tf__label {
     margin-top: 0;
+  }
+
+  // a style's Font under its Min, Max and Line; the 3-column scale does not shrink
+  .style-font {
+    margin-top: var(--gap-fields);
   }
 
   // Typography: a style's Min, Max and Line in one row
