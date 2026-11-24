@@ -4,9 +4,24 @@ Releases are tagged `vX.Y.Z` on main; a site pins one in its `package.json`
 (`"ewcms": "github:EverythingWidget/ewcms#vX.Y.Z"`). Breaking changes are marked **Breaking** and
 say what a site must do before it bumps its pin.
 
-## Unreleased
+## 0.12.0 (2026-11-24)
 
-### Breaking
+### Breaking: what a site must do before bumping to 0.12.0
+
+Migration, in the commit that bumps the pin (no automatic conversion; `ewcms check` warns about
+each leftover):
+
+1. `git mv theme/theme.json theme/meta.json`, and take `themeColor` out of it.
+2. Add `content/theme.json` with the look's values: `color.brand` (was `site.json` `accent`),
+   `color.themeColor` (was `theme/theme.json` / `site.json` `themeColor`), `typography` (was
+   `site.json` `type`) and `layout` (was `site.json` `layout`), each only if the site set it:
+   `{ "version": 1, "color": { "brand": "#cfc8b8", "themeColor": "#050505" }, "layout": { "containedCols": 96 } }`.
+3. Remove `accent`, `layout` (and `type`, `themeColor` if present) from `content/site.json`.
+4. In `theme/tokens.scss`, a `--brand: var(--site-accent, …)` becomes a plain `--brand: …;`
+   (`--site-accent` is no longer written).
+5. The page head's `<style id="accent-init">` is `<style id="theme-vars">`: CSS or scripts that
+   looked for `#accent-init` look for `#theme-vars`, and a section named "Theme vars" now clashes
+   (a reserved id) instead of "Accent init".
 
 - **Breaking: `theme/theme.json` is `theme/meta.json`.** The theme folder's manifest (`name`,
   `themeColor`, `colorScheme`, `preloads`) is renamed, so `theme.json` only means
@@ -40,6 +55,17 @@ say what a site must do before it bumps its pin.
   `content/theme.json`; Save makes the
   file when the site has none. The preview follows every value as it is typed, undo and redo
   too, without a reload. A section's space placeholder follows `theme.json` `layout`.
+- **Space between sections** (F90): a number of grid rows (`layout.sectionSpace`,
+  `sectionSpacePhone`, now in `content/theme.json`), with a per-section override in the section
+  popup.
+- **Templates is its own area** (a grid icon), no longer under Theme; Theme holds the look only
+  (Type and Layout moved there from Site settings, then became Typography and Layout).
+- A List's Custom items are border-only cards with Source last; the template editor allows Edit
+  template on a List inside a template, and widget types declare their add rules and Content rows.
+- The preview in edit, and an open header or footer, get a white and black ring; the header's and
+  footer's ring is drawn above their children. The section popup's Height and Width no longer
+  overlap; picking a text style closes the Style menu; Typography's style names sit with their
+  own fields.
 
 ## 0.11.0 (2026-11-23)
 
