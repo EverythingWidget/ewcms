@@ -51,14 +51,14 @@ export function renderRoute(route, content, { editable = false, unbuilt = false 
   // no matching page and no 404 page: an empty placeholder (dev: a site with no pages yet)
   route ||= EMPTY_ROUTE;
   // site.json may still be missing on a brand-new site; the header reads site.name
-  const site = content.site || { name: '', title: '', url: '', accent: '', lang: 'en' };
+  const site = content.site || { name: '', title: '', url: '', lang: 'en' };
   const shown = content.site ? content : { ...content, site };
   const ctx = contextOf(route, shown, unbuilt);
   const file = pageFile(route.id);
   const page = shown.pages?.[route.id];
   const view =
     renderBackdrop(ctx, page?.backdrop) + renderSections(ctx, route, file, page?.sections);
-  const accent = route.album ? accentOf(ctx, route.album) : site.accent || '';
+  const accent = route.album ? accentOf(ctx, route.album) || '' : '';
   const html = body(ctx, route, accent, view, file);
   anchorClashes(route, page?.sections, html);
   return {

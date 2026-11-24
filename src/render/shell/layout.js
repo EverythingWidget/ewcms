@@ -58,10 +58,15 @@ export function head(ctx, route, accent) {
         : ''
     }
     <meta name="twitter:card" content="${photo ? 'summary_large_image' : 'summary'}" />
-    <style id="accent-init">
-      :root {
+    ${
+      accent || type
+        ? `<style id="accent-init">
+      ${
+        accent
+          ? `:root {
         --accent: ${esc(accent)};
-        --site-accent: ${esc(ctx.site.accent || accent)};
+      }`
+          : ''
       }${
         type
           ? `
@@ -70,7 +75,9 @@ export function head(ctx, route, accent) {
       }`
           : ''
       }
-    </style>
+    </style>`
+        : ''
+    }
     ${ld}`;
 }
 
