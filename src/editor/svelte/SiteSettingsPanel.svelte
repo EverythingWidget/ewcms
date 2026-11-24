@@ -3,7 +3,7 @@
   Under its head (AreaHead.svelte: Back to areas) the site's name and details (site.json), its
   search and share defaults (SEO: titles, description, share photo, address, robots, language;
   a page's own are in its SEO tab), where contact forms send (Forms), where uploaded photos are
-  served from (site.json mediaUrl). Type and Layout are in Theme (ThemePanel.svelte).
+  served from (site.json mediaUrl). Typography and Layout are in Theme (ThemePanel.svelte).
   Per-page things stay on the page (sections; Motion: its animations, scroll backdrop and
   curtain; SEO); the header's menu and labels are the Header site part in Pages
   (HeaderPart.svelte). redirects.json is in Redirects (RedirectSettings.svelte). The default

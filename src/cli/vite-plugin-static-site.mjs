@@ -324,7 +324,7 @@ export default function staticSite() {
           // the template editor's preview (/__template/<id>/): one List, one sample item
           const preview = !route && templatePreview(content, templateOfPath(pathname));
           if (preview) ({ route, content: shown } = preview);
-          // Theme › Type's Preview (/__type/): a Text widget per style
+          // Theme › Typography's Preview (/__type/): a Text widget per style
           if (!route && isTypeSpecimen(pathname))
             ({ route, content: shown } = typeSpecimen(content));
           if (route?.redirect) {

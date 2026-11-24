@@ -575,7 +575,7 @@ function toBrowse() {
 }
 
 /**
- * Theme › Type's Preview: the type specimen (/__type/, render/layout/type-specimen.js) in
+ * Theme › Typography's Preview: the type specimen (/__type/, render/layout/type-specimen.js) in
  * the preview (on), or the page it replaced back (off: Close preview, another area).
  */
 function showSpecimen(on) {

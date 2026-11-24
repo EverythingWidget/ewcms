@@ -75,7 +75,7 @@ export const ui = $state({
    */
   focusParam: null,
   /**
-   * The page the type specimen (Theme › Type › Preview, /__type/) replaced in the
+   * The page the type specimen (Theme › Typography › Preview, /__type/) replaced in the
    * preview: Close preview and the Pages area go back to it ('' when it isn't shown).
    */
   specimenFrom: '',

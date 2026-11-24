@@ -203,6 +203,10 @@ test('Theme › Typography: a row per style with its tag, Preview / Close previe
   assert.doesNotMatch(panel, /title="Type"|\bSITE\b|Size \(cells\)|Tracking/);
   assert.match(panel, /edit="\{THEME\}#\/typography\/\{k\}\/\{key\}"/);
   assert.match(panel, /live\.store\.set\(THEME, '\/typography'/);
+  // the section is named Typography wherever the editor points at it
+  const toolbar = read('src/editor/svelte/WidgetToolbar.svelte');
+  assert.match(toolbar, /· Theme › Typography<\/span/);
+  assert.doesNotMatch(toolbar, /Theme › Type</);
   assert.match(panel, /\{name\} · \{tag\.toUpperCase\(\)\}/);
   for (const label of ['Min (px)', 'Max (px)', "'Line'"]) assert.ok(panel.includes(label), label);
   assert.match(panel, /specimen \? 'Close preview' : 'Preview'/);

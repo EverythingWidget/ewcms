@@ -1889,8 +1889,9 @@ the rows it spans, the phone's in the phone preview) and its link (`follows <wid
 or free); links and gaps are dragged in the preview. Then **Size** as buttons (Auto | Aspect |
 Rows; with Aspect its ratio as buttons: 1:1 … 21:9 or Custom "w:h"), the layer with Down / Up (desktop) and **Reset phone** (phone), which removes every phone area
 and link of the section's widgets (they show their desktop layout halved again).
-**Theme › Type** sets the text styles (fitted text keeps their proportions) (size and minimum, line height,
-tracking; the preview follows as you type).
+**Theme › Typography** sets the text styles' sizes (fitted text keeps their proportions): min and
+max in px and the line height, saved in `content/theme.json` `typography`; the preview follows as
+you type.
 
 **Buttons:** action buttons (Save, Publish, Delete, Add, …) are pills. Utility toggles and tools
 (phone view, undo / redo, back, close, and Sources / Pages / Media beside the page
