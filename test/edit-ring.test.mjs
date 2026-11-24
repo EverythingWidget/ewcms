@@ -19,14 +19,15 @@ function frameCss() {
 
 test('an open header or footer gets an inset white line with a black ring, not the accent outline', () => {
   const css = injectedCss();
+  // on a ::after overlay, so a child with its own background (a footer section, a filled nav)
+  // cannot cover the ring. The host stays as it is (the header is position: fixed).
   assert.match(
     css,
-    /:is\(\[data-header\], \[data-footer\]\)\[data-ed-open\] \{ box-shadow: inset 0 0 0 1px \$\{T\.black\}, inset 0 0 0 3px \$\{T\.white\}; \}/,
+    /:is\(\[data-header\], \[data-footer\]\)\[data-ed-open\]::after \{ content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2147483645; box-shadow: inset 0 0 0 1px \$\{T\.black\}, inset 0 0 0 3px \$\{T\.white\}; \}/,
   );
-  assert.doesNotMatch(
-    css,
-    /:is\(\[data-header\], \[data-footer\]\)\[data-ed-open\] \{[^}]*outline:/,
-  );
+  assert.doesNotMatch(css, /\[data-ed-open\] \{[^}]*box-shadow:/);
+  assert.doesNotMatch(css, /\[data-ed-open\] \{[^}]*outline:/);
+  assert.doesNotMatch(css, /\[data-header\][^{]*\{[^}]*position:\s*relative/);
 });
 
 test('widget selection and inline text keep the accent outline', () => {
