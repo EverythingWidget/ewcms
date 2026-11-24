@@ -43,6 +43,10 @@ colour, the body text, the nav, the button, …) need nothing: unset, a site loo
 
 ## 0.8.0: the engine has no theme of its own
 
+> **Now `theme/meta.json`:** the steps below and in 0.1.37 are history and say `theme/theme.json`;
+> since the Unreleased change above that file is `theme/meta.json` (and its `themeColor` is
+> `content/theme.json` `color.themeColor`). Don't recreate a `theme/theme.json`.
+
 `theme-default/` is gone. The look (its tokens, fonts and `theme.json`) moved to `default-site/theme/`,
 which `ewcms dev` copies into a new site (a folder with no site files); the site owns that copy. The rest of the old
 theme was engine UI and now lives with the engine's code: the chrome (header, phone menu,
