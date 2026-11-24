@@ -319,14 +319,16 @@
     height: var(--size-control);
   }
 
-  // the preview iframe. Browse: a 1px hairline. Edit (ui.mode): a 2px white line with a
-  // 1px black ring outside it (box-shadow: nothing moves). The phone frame keeps its corners.
+  // the preview iframe. The edit ring is a 2px white border with a 1px black ring
+  // outside it. Both widths are always reserved (transparent border + 1px shadow
+  // in browse, coloured in edit) so the frame does not change size. The phone
+  // frame keeps its corners.
   .ed-frame {
     display: block;
     width: 100%;
     height: 100%;
     min-height: 0;
-    border: 0;
+    border: 2px solid transparent;
     border-radius: 0; // square: the page's own edges (the phone frame keeps its round corners)
     box-shadow:
       0 0 0 1px var(--c-fill-active),
@@ -336,9 +338,9 @@
       height 0.5s var(--ease-out);
     background: var(--c-bg-site);
     &.is-edit {
+      border-color: var(--white);
       box-shadow:
-        0 0 0 2px var(--white),
-        0 0 0 3px var(--black),
+        0 0 0 1px var(--black),
         0 30px 80px -30px var(--c-scrim);
     }
   }
