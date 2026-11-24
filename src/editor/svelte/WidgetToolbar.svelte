@@ -276,8 +276,7 @@
       view?.removeEventListener('keydown', esc, true);
     };
   });
-  // its id only: `where` is a new object per edit (live.get), and a style picked must not
-  // close its menu (G4)
+  // its id only: `where` is a new object per edit (live.get); a style pick closes its own menu
   const whereId = $derived(where?.id);
   $effect(() => {
     void whereId;
@@ -316,10 +315,11 @@
 
   // ---- text
   const apply = (fn) => bridge.richApply(fn, bodyRef);
-  // a pick keeps its menu open (Esc, a click outside or its button closes it)
+  // a pick closes its menu (G4); Esc, a click outside or its button also close it
   function pickStyle(s) {
     const line = rich ? rich.line : 0;
     apply((body) => ({ body: setStyle(body, line, s) }));
+    open = null;
   }
   // the lines selected (or the caret's) as list items, or no list any more
   const list = (kind) =>

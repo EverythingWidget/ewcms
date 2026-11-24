@@ -78,6 +78,13 @@ test("a press on a widget's body hides the toolbar in place; a resize keeps it",
   assert.doesNotMatch(bar, /&\.is-moving \{[^}]*display:\s*none/);
 });
 
+test('a pick in the Style dropdown closes it (G4)', () => {
+  const fn = bar.slice(bar.indexOf('function pickStyle'), bar.indexOf('\n  // the lines selected'));
+  assert.match(fn, /open = null/);
+  // same-widget edits still do not close menus: only a new widget id does
+  assert.match(bar, /const whereId = \$derived\(where\?\.id\)/);
+});
+
 test('the text toolbar menu: out of the flow, over the bar when there is no room under it', () => {
   const bar = read('src/editor/svelte/WidgetToolbar.svelte');
   assert.match(bar, /popUp = need > below && above > below/);
