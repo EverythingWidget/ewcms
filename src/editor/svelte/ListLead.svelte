@@ -29,15 +29,11 @@
   import { TEXT_TYPES } from '../../render/property-types.js';
   import { pointer } from '../../render/helpers.js';
   import TemplateActions from './TemplateActions.svelte';
-  import { PRESETS } from '../../widgets/list/presets.js';
+  import { PRESETS, templatePickerGroups } from '../../widgets/list/presets.js';
   import { setListCustom } from '../layout-ops.js';
   import Select from './Select.svelte';
   import { sourceOf } from '../../render/layout/source.js';
-  import {
-    showOnlyFields,
-    showOnlyItems,
-    showOnlyValues,
-  } from '../../widgets/list/show-only.js';
+  import { showOnlyFields, showOnlyItems, showOnlyValues } from '../../widgets/list/show-only.js';
 
   let { g, live, base, list = false, shown, sourceIds, onsource, bindings = null } = $props();
 
@@ -154,9 +150,9 @@
   });
   const templateOptions = $derived.by(() => {
     const own = Object.entries(live.content?.templates || {})
-      .map(([id, tpl]) => [id, tpl?.name || id])
-      .sort((a, b) => a[1].localeCompare(b[1]));
-    return [...PRESETS.map((p) => [p.id, p.label]), ...own];
+      .map(([id, tpl]) => ({ value: id, label: tpl?.name || id }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+    return templatePickerGroups(own);
   });
   const setTemplate = (id) =>
     live.store.set(g.file, templatePtr, id, {
@@ -356,5 +352,4 @@
     @include row(var(--space-2));
     justify-content: space-between;
   }
-
 </style>

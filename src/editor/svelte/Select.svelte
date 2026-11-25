@@ -4,8 +4,9 @@
   is aria-activedescendant. Keys: Up/Down, Home/End, Enter/Space pick, Esc/Tab close, typing jumps.
   Props:
     value        the picked option's value: bind:value, or a value the parent updates on onchange
-    options      [{ value, label, hint?, note?, disabled? }], or groups [{ group, options: [...] }]
-                 (note: a line under the option, e.g. why it is off)
+    options      [{ value, label, hint?, note?, disabled? }], or groups
+                 [{ group, options: [...], rule? }] (note: a line under the option, e.g. why it is
+                 off; rule: a thin divider above the group, only when a group before it also shows)
     placeholder  shown when no option has the value
     id           for <label for>; aria-label when there is no label
     onchange     (value, option) on a pick; with it the parent owns the value
@@ -95,7 +96,9 @@
       width: `${compact ? Math.max(r.width, 280) : r.width}px`,
       top: up ? 'auto' : `${r.bottom}px`,
       bottom: up ? `${innerHeight - r.top}px` : 'auto',
-      maxHeight: `${Math.min(360, up ? r.top - 8 : innerHeight - r.bottom - 8)}px`,
+      // 480: the List Template picker's Built-in / Site templates labels, divider, and
+      // a typical site's templates still fit when there is room (360 clipped the last rows)
+      maxHeight: `${Math.min(480, up ? r.top - 8 : innerHeight - r.bottom - 8)}px`,
     });
   }
 
@@ -291,6 +294,9 @@
 
 {#snippet opts(list)}
   {#each list as g, gi (gi)}
+    {#if g.rule && list.slice(0, gi).some((x) => x.options.length)}
+      <li class="sel__rule" role="separator"></li>
+    {/if}
     {#if g.group}<li class="sel__group" role="presentation">{g.group}</li>{/if}
     {#each g.options as o (o.value)}
       {@const i = flat.indexOf(o)}
@@ -561,6 +567,18 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--c-text-faint);
+  }
+
+  // 16px row (4px grid); 1px hairline on --c-tab-line (the remaining line token:
+  // --c-line is transparent in the borderless UI), inset --space-3 like the options
+  .sel__rule {
+    height: var(--space-4);
+    margin: 0 var(--space-3);
+    padding: 0;
+    border: 0;
+    list-style: none;
+    pointer-events: none;
+    background: linear-gradient(var(--c-tab-line), var(--c-tab-line)) center / 100% 1px no-repeat;
   }
 
   .sel__opt {

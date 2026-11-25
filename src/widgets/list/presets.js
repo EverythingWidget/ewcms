@@ -85,6 +85,23 @@ export const PRESET_IDS = PRESETS.map((p) => p.id);
 /** A preset by id (an unknown id: Card). */
 export const presetOf = (id) => PRESETS.find((p) => p.id === id) || PRESETS[0];
 
+/**
+ * The List Template picker's options (Select groups): Built-in presets, then the site's
+ * templates (`site`: `{ value, label, hint?, disabled? }[]`). An empty group is omitted
+ * (no label, no divider). The divider (`rule`) is only on Site templates when both groups
+ * are present.
+ */
+export function templatePickerGroups(site = []) {
+  const groups = [];
+  if (PRESETS.length)
+    groups.push({
+      group: 'Built-in',
+      options: PRESETS.map((p) => ({ value: p.id, label: p.label })),
+    });
+  if (site.length) groups.push({ group: 'Site templates', rule: true, options: site });
+  return groups;
+}
+
 /** Custom List items (no List-level source): title, photo, and Panel's count. */
 export const CUSTOM_NAMES = Object.freeze({
   title: 'title',

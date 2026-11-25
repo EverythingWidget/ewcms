@@ -1,7 +1,8 @@
 <!--
   One field: a label (name, and, changed, a dot before it;, for a value from a source list, a button naming
   its file, e.g. people.json, that opens it in Sources) with an input, or a
-  textarea for longer text, a switch (boolean) or a Select (select, options [[value, label]]).
+  textarea for longer text, a switch (boolean) or a Select (select, options [[value, label]] or
+  Select groups [{ group, options, rule? }]).
   bare: no label row (label is the input's aria-label; say it in the placeholder); help: a hint under it; tip: a snippet, an (i) after
   the label that explains it (InfoHelp.svelte: in the label row, nothing shifts); reset: a quiet undo at the end of the label row, only when reset.on (a stored value; the 24px row does not shift); half: it shares a row with the next field (the parent's grid).
   empty: a number field can be cleared (onvalue(undefined): the default, say it in the placeholder).
@@ -232,11 +233,7 @@
         </span>
       {/if}
       {#if source}
-        <Button
-          size="small"
-          title="Edit in Sources: content/{source}"
-          onclick={onsource}
-        >
+        <Button size="small" title="Edit in Sources: content/{source}" onclick={onsource}>
           {baseName(source)}
         </Button>
       {/if}
@@ -343,7 +340,9 @@
       value={value ?? ''}
       placeholder={placeholder || 'Pick…'}
       {disabled}
-      options={options.map(([v, text, more]) => ({ value: v, label: text, ...more }))}
+      options={options.some((o) => o?.options)
+        ? options
+        : options.map(([v, text, more]) => ({ value: v, label: text, ...more }))}
       onchange={(v) => onvalue(v)}
     />
   {:else if type === 'boolean'}

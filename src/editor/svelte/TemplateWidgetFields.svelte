@@ -15,7 +15,7 @@
   import { schemaOf } from '../../render/schemas.js';
   import { sampleSource } from '../../widgets/list/template-preview.js';
   import { ITEM_WIDGETS, itemSection } from '../../widgets/list/item-grid.js';
-  import { PRESETS } from '../../widgets/list/presets.js';
+  import { templatePickerGroups } from '../../widgets/list/presets.js';
   import { widgetType } from '../../widgets/index.js';
   import { innerChoice, innerTemplates } from '../../widgets/list/nested.js';
   import { MIN_TEXT_PX, sizeLine, textSizes } from '../lib/small-text.js';
@@ -87,18 +87,21 @@
   const sourceIds = $derived(sourceIdsOf(live.store.current));
   const propsOf = (src) =>
     (schemaOf(live.content, src)?.properties || []).map((p) => [p.key, p.label || p.key]);
-  const innerOptions = $derived([
-    ...PRESETS.map((p) => [p.id, p.label]),
-    ...Object.entries(templates)
-      .filter(([t]) => t !== id && innerChoice(templates, id, t) !== 'loop')
-      .map(([t, tp]) =>
-        innerChoice(templates, id, t) === 'deep'
-          ? [t, tp.name || t, { disabled: true, hint: 'It holds a list: a third level' }]
-          : innerChoice(templates, id, t) === 'opens'
-            ? [t, tp.name || t, { disabled: true, hint: 'Its items open: not inside a List' }]
-            : [t, tp.name || t],
-      ),
-  ]);
+  const innerOptions = $derived(
+    templatePickerGroups(
+      Object.entries(templates)
+        .filter(([t]) => t !== id && innerChoice(templates, id, t) !== 'loop')
+        .map(([t, tp]) => {
+          const choice = innerChoice(templates, id, t);
+          const o = { value: t, label: tp.name || t };
+          if (choice === 'deep')
+            return { ...o, disabled: true, hint: 'It holds a list: a third level' };
+          if (choice === 'opens')
+            return { ...o, disabled: true, hint: 'Its items open: not inside a List' };
+          return o;
+        }),
+    ),
+  );
   const detailsOptions = $derived(
     Object.entries(templates)
       .filter(([t]) => t !== id)

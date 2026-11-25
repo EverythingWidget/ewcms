@@ -14,7 +14,7 @@ import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { WIDGET_TYPES } from '../src/widgets/index.js';
 import { checkContent } from '../src/render/validate.js';
-import { cloneTemplate, presetWidgets } from '../src/widgets/list/presets.js';
+import { cloneTemplate, presetWidgets, templatePickerGroups } from '../src/widgets/list/presets.js';
 import { contentPath, isContentFile, templateFile, templateIdOf } from '../src/render/files.js';
 import { SITE_A, withPhoto } from './fixtures/index.mjs';
 
@@ -314,7 +314,10 @@ test('the panel: a Template picker and Duplicate preset, in both modes, no shift
   assert.match(actions, /\.ta__dup \{\s*display: inline-grid;\s*> span \{\s*grid-area: 1 \/ 1;/);
   // the switch saved at once unless the page has other unsaved edits; else the note
   assert.match(actions, /const pending = live\.store\.dirtyFiles\(\)\.includes\(file\)/);
-  assert.match(actions, /await dataLayer\.save\(sent\);\s*live\.store\.markSaved\(\[file\], sent\)/);
+  assert.match(
+    actions,
+    /await dataLayer\.save\(sent\);\s*live\.store\.markSaved\(\[file\], sent\)/,
+  );
   assert.match(actions, /Saved as template \$\{res\.id\}/);
   assert.match(actions, /'ta__note', !note && 'is-hidden'/);
   assert.match(actions, /templatesOp\(\{ op: 'add'/);
@@ -323,6 +326,45 @@ test('the panel: a Template picker and Duplicate preset, in both modes, no shift
   // the generic settings leave it to ListLead
   assert.equal(WIDGET_TYPES.list.config.find((c) => c.key === 'template').lead, true);
   assert.match(read('src/editor/svelte/GroupFields.svelte'), /!c\.lead &&/);
+});
+
+test("the Template picker groups Built-in presets and the site's templates", () => {
+  const builtIn = {
+    group: 'Built-in',
+    options: [
+      { value: 'preset:card', label: 'Card' },
+      { value: 'preset:plain', label: 'Plain' },
+      { value: 'preset:panel', label: 'Panel' },
+      { value: 'preset:row', label: 'Row' },
+      { value: 'preset:photo', label: 'Photo' },
+    ],
+  };
+  // no site templates: only Built-in, no divider
+  assert.deepEqual(templatePickerGroups(), [builtIn]);
+  assert.deepEqual(templatePickerGroups([]), [builtIn]);
+  const album = { value: 't-acrl', label: 'Album card (landscape)' };
+  const groups = templatePickerGroups([album]);
+  assert.equal(groups.length, 2);
+  assert.deepEqual(groups[0], builtIn);
+  assert.equal(groups[1].group, 'Site templates');
+  assert.equal(groups[1].rule, true);
+  assert.deepEqual(groups[1].options, [album]);
+  // a disabled inner-template option is kept
+  const off = {
+    value: 't-deep',
+    label: 'Deep',
+    disabled: true,
+    hint: 'It holds a list: a third level',
+  };
+  assert.deepEqual(templatePickerGroups([off])[1].options, [off]);
+  const read = (f) => fs.readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+  assert.match(read('src/editor/svelte/ListLead.svelte'), /templatePickerGroups\(own\)/);
+  assert.match(read('src/editor/svelte/TemplateWidgetFields.svelte'), /templatePickerGroups\(/);
+  const sel = read('src/editor/svelte/Select.svelte');
+  assert.match(sel, /class="sel__rule"/);
+  assert.match(sel, /g\.rule && list\.slice\(0, gi\)/);
+  const field = read('src/editor/svelte/Field.svelte');
+  assert.match(field, /options\.some\(\(o\) => o\?\.options\)/);
 });
 
 test('a copied facts line drops the separator of an empty fact at render', () => {
