@@ -149,7 +149,7 @@ test('PageHead: a square back button beside a two-line title, shared site-part l
   assert.match(head, /SITE_PARTS\.find/);
   assert.match(head, /padding: var\(--space-3\) var\(--space-3\) var\(--space-2\)/);
   const parts = read('editor/lib/site-parts.js');
-  assert.match(parts, /The menu and its labels/);
+  assert.match(parts, /The menu, logo and button/);
   assert.match(parts, /Its sections and widgets/);
   const list = read('editor/svelte/PagesList.svelte');
   assert.match(list, /from '\.\.\/lib\/site-parts\.js'/);

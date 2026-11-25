@@ -8,8 +8,8 @@ export const SITE_PARTS = [
     id: 'header',
     title: 'Header',
     icon: 'bars',
-    card: 'Menu and labels',
-    sub: 'The menu and its labels',
+    card: 'Menu, logo and button',
+    sub: 'The menu, logo and button',
   },
   {
     id: 'footer',

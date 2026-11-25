@@ -19,6 +19,9 @@
                  then Page entrance (its curtain). The preview's clicks arrange, as on
                  Sections (no widget list here). The top tab stays Pages.
     SEO          SeoSection.svelte
+  The Header has two tabs (the open one in ui.sections.headertab; unknown: Menu):
+    Menu         HeaderPart.svelte: the nav links (border-only cards)
+    Elements     Title, Logo, CTA button and Labels, each a collapsible card
   The footer is sections only (no tabs). While this tab is open the preview is a
   layout canvas (overlay.js): a click picks a widget, a drag moves it, its handles resize it and
   a double click edits a text in place (preview-edit.js); links and buttons don't follow; a click on
@@ -120,6 +123,15 @@
     ['seo', 'SEO'],
   ];
   const isPage = $derived(!!file && ui.target.kind === 'page');
+  const isHeader = $derived(ui.target?.id === 'header');
+  const HEADER_TABS = [
+    ['menu', 'Menu'],
+    ['elements', 'Elements'],
+  ];
+  const headerTab = $derived(isHeader && ui.sections.headertab === 'elements' ? 'elements' : 'menu');
+  function pickHeaderTab(v) {
+    ui.sections.headertab = v;
+  }
   const tab = $derived.by(() => {
     const v = isPage && ui.sections[`pagetab:${file}`];
     return TABS.some(([t]) => t === v) ? v : 'sections';
@@ -278,6 +290,16 @@
         id={tabsId}
         panel="{tabsId}-panel"
       />
+    {:else if isHeader}
+      <Tabs
+        tabs={HEADER_TABS}
+        value={headerTab}
+        onpick={pickHeaderTab}
+        label="Header"
+        class="page-tabs"
+        id={tabsId}
+        panel="{tabsId}-panel"
+      />
     {/if}
     {#if file && !waiting && shownTab === 'sections'}
       <SectionToolbar {live} {file} {bridge} onsection={enterSection} onadd={pickWidget} />
@@ -286,8 +308,12 @@
     <section
       class="ed-body"
       id="{tabsId}-panel"
-      role={isPage ? 'tabpanel' : undefined}
-      aria-labelledby={isPage ? `${tabsId}-${shownTab}` : undefined}
+      role={isPage || isHeader ? 'tabpanel' : undefined}
+      aria-labelledby={isPage
+        ? `${tabsId}-${shownTab}`
+        : isHeader
+          ? `${tabsId}-${headerTab}`
+          : undefined}
       onclick={shownTab === 'sections' ? deselect : undefined}
     >
       {#if waiting}
@@ -311,7 +337,7 @@
         {:else if isPage && shownTab === 'seo'}
           <SeoSection {live} {file} {actions} />
         {:else if ui.target.id === 'header'}
-          <HeaderPart {live} />
+          <HeaderPart {live} tab={headerTab} />
         {:else}
           <p class="hint">No editable content here.</p>
         {/if}

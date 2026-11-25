@@ -24,12 +24,20 @@
   &__logo {
     justify-self: start;
     display: inline-flex;
+    align-items: center;
     gap: 0.3em;
     font-family: var(--f-display);
     font-size: var(--logo-size, 22px);
     line-height: 1;
     font-weight: var(--logo-weight, inherit);
     letter-spacing: var(--logo-tracking, -0.01em);
+
+    // an image logo: the text size, so the header's height does not change
+    img {
+      display: block;
+      height: 1em;
+      width: auto;
+    }
   }
 
   &__right {
@@ -78,6 +86,12 @@
 
   &__group {
     position: static;
+  }
+
+  &__cta {
+    height: 36px;
+    padding: 0 16px;
+    font-size: var(--nav-size, 12px);
   }
 
   &__item {
@@ -324,6 +338,11 @@
   &__nav {
     display: grid;
     gap: 18px;
+  }
+
+  &__cta {
+    justify-self: start;
+    margin-top: 8px;
   }
 
   &__big {

@@ -1,6 +1,7 @@
 /**
- * The header (logo, nav pill with click-to-open dropdowns, local time, menu toggle) and the
- * phone menu, both from content/header.json "header": a list of items
+ * The header (logo, nav pill with click-to-open dropdowns, optional CTA, local time, menu
+ * toggle) and the phone menu, from content/header.json:
+ *   "header": a list of items
  *
  *   { "label": "About", "page": "/about/" }                  a page, by its URL
  *   { "label": "Shop", "href": "https://…" }                 any other link (opens in a new tab)
@@ -12,7 +13,12 @@
  * dropdown; "all" labels its link to the item's own page. Items of a source with pages of their
  * own (a [param] page shows it) are listed with a photo and their photo count; other items (e.g.
  * projects) by title and kind, linking to their spot on the item's page, or to their own site
- * when "linkOut" is on. The menu, close and clock labels are in strings.json "header".
+ * when "linkOut" is on.
+ *   "logo": a photo path; when set it replaces the site name as the header's logo
+ *   "cta": { "show", "label", "page" | "item" | "href" } — a button at the end of the nav pill
+ *     and the phone menu, when show is on and it has a label
+ * The menu, close and clock labels are in strings.json "header". The title text (no logo) is
+ * site.json "name".
  */
 import { hrefOf } from '../hrefs.js';
 import {
@@ -157,17 +163,43 @@ function navItem(ctx, item, i) {
         </div>`;
 }
 
-/** Persistent header: logo, glass nav pill with click-to-open dropdowns, local time, phone menu toggle. */
+/** The CTA when it should show: { href, label }, else null. */
+function ctaOf(ctx) {
+  const cta = ctx.header?.cta;
+  if (!cta?.show || !cta.label) return null;
+  return { href: hrefOf(ctx, cta, `${contentPath(HEADER)}: CTA`) || '#', label: cta.label };
+}
+
+/** The header logo: an image when header.json "logo" is set, else the site name. */
+function logoMark(ctx) {
+  const { site } = ctx;
+  const aria = esc(t(ctx, 'header.home', { name: site.name }));
+  const src = ctx.header?.logo;
+  const inner = src
+    ? img(ctx, src, { decorative: true, sizes: '200px', cls: 'header__logo-img', loading: 'eager', priority: true })
+    : esc(site.name);
+  return html`<a class="header__logo" href="/" aria-label="${aria}">${inner}</a>`;
+}
+
+/** The CTA link at the end of the nav or the phone menu (class is the caller's). */
+function ctaMark(ctx, cls) {
+  const cta = ctaOf(ctx);
+  if (!cta) return '';
+  const own = navPath(ctx, ctx.header.cta) ? ` data-nav="${esc(navPath(ctx, ctx.header.cta))}"` : '';
+  return html`<a class="${cls}" ${hrefAttrs(cta.href)}${own}>${label(['cta', 'label'], cta.label)}</a>`;
+}
+
+/** Persistent header: logo, glass nav pill with click-to-open dropdowns, optional CTA, local time, phone menu toggle. */
 export function header(ctx) {
   const { site } = ctx;
   const items = Array.isArray(ctx.header?.header) ? ctx.header.header : [];
   return html`
   <header class="header" data-header>
-    <a class="header__logo" href="/" aria-label="${esc(t(ctx, 'header.home', { name: site.name }))}">${esc(site.name)}</a>
+    ${logoMark(ctx)}
 
     <nav class="nav" aria-label="${esc(t(ctx, 'header.main'))}">
       <div class="nav__pill">
-        ${items.map((item, i) => navItem(ctx, item, i)).join('\n        ')}
+        ${items.map((item, i) => navItem(ctx, item, i)).join('\n        ')}${ctaOf(ctx) ? `\n        ${ctaMark(ctx, 'btn glass nav__cta')}` : ''}
       </div>
     </nav>
 
@@ -217,7 +249,7 @@ export function phoneMenu(ctx) {
   <div class="mmenu" id="phone-menu" data-phone-menu hidden>
     <div class="mmenu__panel glass">
       <nav class="mmenu__nav" aria-label="${esc(t(ctx, 'header.phone'))}">
-        ${items.map((item, i) => mmItem(ctx, item, i)).join('\n        ')}
+        ${items.map((item, i) => mmItem(ctx, item, i)).join('\n        ')}${ctaOf(ctx) ? html`\n        ${ctaMark(ctx, 'btn glass mmenu__cta')}` : ''}
       </nav>
       <div class="mmenu__foot" data-mm-item>
         ${(site.social || []).slice(0, 2).map((s) => html`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)} ${arrowNE}</a>`)}

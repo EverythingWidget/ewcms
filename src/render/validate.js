@@ -160,12 +160,20 @@ function checkForms(f) {
 }
 
 /**
- * header.json: { header: [items] }, item { label, page | item | href, all?, items?, children? }.
- * Items can have one level of children. Whether a page exists needs the routes: the templates
- * warn about that (header.js linkOf).
+ * header.json: { header: [items], logo?, cta? }, item { label, page | item | href, all?, items?,
+ * children? }. Items can have one level of children. Whether a page exists needs the routes: the
+ * templates warn about that (header.js linkOf). "logo" is a photo path; "cta" is
+ * { show?, label?, page | item | href } — a button at the end of the menu.
  */
 function checkHeader(d) {
-  const out = optional(d, { header: 'array' });
+  const out = optional(d, { header: 'array', logo: 'string', cta: 'object' });
+  if (isObject(d.cta)) {
+    out.push(...optional(d.cta, { show: 'boolean', label: 'string' }).map((p) => `cta: ${p}`));
+    if (['page', 'item', 'href'].some((k) => d.cta[k] !== undefined)) {
+      const p = linkProblem(d.cta, ['show', 'label']);
+      if (p) out.push(`cta: ${p}`);
+    }
+  }
   if (d.footer !== undefined)
     out.push('"footer" is gone: the footer is footer.json, sections like a page');
   const check = (item, where, { nest }) => {

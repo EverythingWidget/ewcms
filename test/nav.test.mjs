@@ -130,3 +130,53 @@ test('links: a page by id, an item by id, an href; made into URLs at build time'
   assert.match(linkProblem({ href: '/x/', page: 'pg-aaaa' }), /one of/);
   assert.match(linkProblem('/about/'), /a link/);
 });
+
+test('header.json validation: optional logo and CTA', () => {
+  const problems = (nav) => checkContent(NAV, { version: 1, ...nav });
+  assert.deepEqual(problems({ header: [{ label: 'A', page: 'pg-aaaa' }], logo: 'about/x100v.jpg' }), []);
+  assert.deepEqual(
+    problems({
+      header: [{ label: 'A', page: 'pg-aaaa' }],
+      cta: { show: true, label: 'Contact', page: 'pg-lyos' },
+    }),
+    [],
+  );
+  // a CTA with no link yet is fine (still being edited)
+  assert.deepEqual(problems({ header: [], cta: { show: true, label: 'Hi' } }), []);
+  assert.match(problems({ logo: 1 })[0], /"logo" must be a string/);
+  assert.match(problems({ cta: 'x' })[0], /"cta" must be an object/);
+  assert.match(problems({ cta: { show: 'yes' } })[0], /cta: "show" must be a boolean/);
+  assert.match(problems({ cta: { page: 'pg-aaaa', href: '/' } })[0], /cta: one of/);
+});
+
+test('render: a logo replaces the site name; a CTA is at the end of the nav and the phone menu', () => {
+  const plain = header(ctxWith(base.header));
+  assert.match(plain, /<a class="header__logo" href="\/" aria-label="[^"]*">Eeliya Rasta<\/a>/);
+  assert.doesNotMatch(plain, /nav__cta/);
+  assert.doesNotMatch(phoneMenu(ctxWith(base.header)), /mmenu__cta/);
+
+  const withLogo = ctxWith({ ...base.header, logo: 'about/x100v.jpg' });
+  const logoHtml = header(withLogo);
+  assert.match(logoHtml, /class="header__logo-img"/);
+  assert.match(logoHtml, /src="\/media\/about\/x100v-1600\.webp"/);
+  assert.doesNotMatch(logoHtml, /header__logo"[^>]*>Eeliya Rasta/);
+
+  const off = ctxWith({ ...base.header, cta: { show: false, label: 'Contact', page: 'pg-lyos' } });
+  assert.doesNotMatch(header(off), /nav__cta/);
+
+  const noLabel = ctxWith({ ...base.header, cta: { show: true, page: 'pg-lyos' } });
+  assert.doesNotMatch(header(noLabel), /nav__cta/);
+
+  const on = ctxWith({ ...base.header, cta: { show: true, label: 'Contact', page: 'pg-lyos' } });
+  assert.match(
+    header(on),
+    /<a class="btn glass nav__cta" href="\/about\/" data-nav="\/about\/"><span>Contact<\/span><\/a>/,
+  );
+  assert.match(
+    phoneMenu(on),
+    /<a class="btn glass mmenu__cta" href="\/about\/" data-nav="\/about\/"><span>Contact<\/span><\/a>/,
+  );
+
+  const noLink = ctxWith({ ...base.header, cta: { show: true, label: 'Hi' } });
+  assert.match(header(noLink), /<a class="btn glass nav__cta" href="#"><span>Hi<\/span><\/a>/);
+});

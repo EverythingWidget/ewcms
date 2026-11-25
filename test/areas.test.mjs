@@ -384,7 +384,7 @@ test("Pages: the site parts are the area list's half-width cards (AreaCard), not
   assert.deepEqual(
     SITE_PARTS.map((p) => [p.id, p.icon, p.card]),
     [
-      ['header', 'bars', 'Menu and labels'],
+      ['header', 'bars', 'Menu, logo and button'],
       ['footer', 'window-minimize', 'Sections, widgets'],
     ],
   );

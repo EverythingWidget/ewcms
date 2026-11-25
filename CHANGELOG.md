@@ -16,6 +16,13 @@ say what a site must do before it bumps its pin.
 
 ### Editor
 
+- **Header has Menu and Elements tabs.** Menu holds the nav links as border-only cards (a
+  dropdown's links too). Elements holds Title, Logo, CTA button and Labels, each a
+  collapsible card; the CTA's show switch sits on the card bar. The logo (a photo) and the
+  CTA (show, label, a link) live in `content/header.json`; when a logo is set it replaces the
+  site name in the header. The CTA, when shown and labelled, is a button at the end of the
+  nav and the phone menu. Title stays `site.json` `name`. Subtitle: “The menu, logo and
+  button.”
 - **Theme opens as Color, Typography and Layout cards.** A click opens that part on its own
   screen (title over a quiet “Theme”, ← back to the list). The open part is kept across a
   refresh. Typography’s Preview is full width under the hint; style names (Title · H1, …) are
