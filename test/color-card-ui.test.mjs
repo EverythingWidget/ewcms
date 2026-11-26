@@ -16,7 +16,7 @@ test('the card: Theme › Color reads its labels from colors.js and writes throu
   assert.match(panel, /live\.store\.set\(THEME/);
   assert.match(panel, /<Popover/); // the custom colour: the shared 190px popover
   assert.match(panel, /<Collapsible/); // the themes: the editor's cards
-  assert.match(panel, /class="seg crole__mode"/); // the Button's Glass / Color / Transparent: the editor's .seg
+  assert.match(panel, /class="seg crole__mode"/); // the Button's Color / Glass / Transparent: the editor's .seg
   // theme.json is IN_PLACE: an edit rewrites #color-themes and theme-vars, no reload, no render job
   assert.equal(needsReload([THEME_FILE], { routes: false, site: false }), false);
   assert.match(read('src/editor/main.js'), /if \(files\.every\(\(f\) => f === THEME\)\) return;/);
@@ -35,8 +35,12 @@ test('the card: Theme › Color reads its labels from colors.js and writes throu
   assert.match(panel, /&\.is-off \{\s*opacity: var\(--o-disabled\);/);
   assert.match(panel, /class=\{\['swatches', !swatches && 'is-off'\]\}/);
   assert.match(panel, /inert=\{!swatches \|\| undefined\}/);
-  // field-style swatches sharing the row evenly; the picked one: a 2px inner ring
-  assert.match(panel, /\.swatch \{[^}]*flex: 1 1 0;[^}]*border-radius: var\(--radius-md\);[^}]*background: var\(--swatch, var\(--field-bg\)\);/);
+  // field-style swatches on a 7-column grid, every box the same size (a row of 6 leaves the 7th
+  // empty, never stretches); the picked one: a 2px inner ring
+  assert.match(panel, /\.swatches \{\s*display: grid;\s*grid-template-columns: repeat\(7, minmax\(0, 1fr\)\);/);
+  assert.doesNotMatch(panel, /flex: 1 1 0/);
+  assert.match(panel, /\['color', 'Color'\],\s*\['glass', 'Glass'\],\s*\['transparent', 'Transparent'\]/);
+  assert.match(panel, /\.swatch \{[^}]*border-radius: var\(--radius-md\);[^}]*background: var\(--swatch, var\(--field-bg\)\);/);
   assert.match(panel, /inset 0 0 0 2px var\(--focus-line\)/);
   assert.doesNotMatch(panel, /class="dot|\.dots \{/);
   // the custom marker: the editor's changed dot, absolute in the row's left padding

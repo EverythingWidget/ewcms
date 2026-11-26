@@ -4,10 +4,10 @@
     Palette        a card of 5 slots, each the hex field with its swatch (the native picker);
                    reset: back to the engine's (or color.brand's slot 4)
     Color themes   a card each (Lightest … Darkest), closed, its bar a fixed-size preview chip; open:
-                   its 11 roles (labels: ROLES), each a row of field-style swatches sharing it
-                   evenly: the 5 palette slots, Transparent on fills and a custom colour (the shared 190px
+                   its 11 roles (labels: ROLES), each a row of field-style swatches on a 7-column
+                   grid (all the same size): the 5 palette slots, Transparent on fills and a custom colour (the shared 190px
                    popover, kept inside the panel: the hex field); the picked one a 2px inner ring.
-                   Button: Glass / Color / Transparent (.seg) on a row of its own, its swatches under it,
+                   Button: Color / Glass / Transparent (.seg) on a row of its own, its swatches under it,
                    greyed out and disabled for Glass and Transparent (kept: the row's height never changes).
                    The 7 text styles, a row each right after Text (TEXT_STYLE_ROWS: no group), in
                    a theme and in a template's sub-roles (a template picked under Templates), greyed
@@ -78,8 +78,8 @@
   }
   const SLOTS = Array.from({ length: PALETTE_SIZE }, (_, i) => i + 1);
   const BUTTON_CHOICES = [
-    ['glass', 'Glass'],
     ['color', 'Color'],
+    ['glass', 'Glass'],
     ['transparent', 'Transparent'],
   ];
 
@@ -567,7 +567,7 @@
     }
   }
 
-  // Button's Glass / Color / Transparent: the editor's .seg, full width, on a row of its own
+  // Button's Color / Glass / Transparent: the editor's .seg, full width, on a row of its own
   .crole__ctl {
     display: flex;
     height: var(--size-control);
@@ -578,11 +578,13 @@
     flex: 1;
   }
 
-  // the swatches: field-style (.tf__input's radius and background), one control tall, sharing
-  // the row evenly (5 slots, Transparent on fills, custom); kept and greyed out (disabled) while Button
+  // the swatches: field-style (.tf__input's radius and background), one control tall, on a
+  // 7-column grid so every box is the same size (5 slots, Transparent on fills, custom; a row
+  // without Transparent leaves the 7th empty); kept and greyed out (disabled) while Button
   // isn't Color, so the row never changes height
   .swatches {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: var(--space-1);
     height: var(--size-control);
 
@@ -594,7 +596,6 @@
   .swatch {
     display: grid;
     place-items: center;
-    flex: 1 1 0;
     min-width: 0;
     height: var(--size-control);
     padding: 0;

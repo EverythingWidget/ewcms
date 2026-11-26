@@ -146,10 +146,11 @@ say what a site must do before it bumps its pin.
 - **Theme › Color is the palette and the color themes (step 5).** The card ("Palette and color
   themes") holds the **Palette** (5 slots, each a hex field with its swatch picker), a card per
   **color theme** (Lightest … Darkest, a fixed-size preview chip on its bar; open: its 11 roles,
-  each a row of field-style swatches sharing it evenly: the 5 palette slots, Transparent on fills and a
+  each a row of field-style swatches on a 7-column grid, every box the same size (a row without
+  Transparent leaves the 7th empty): the 5 palette slots, Transparent on fills and a
   custom colour in the 190px popover, kept inside the panel; the picked one has a 2px inner
-  ring), its read-only **Smart colors** and the **Site color theme** select. Button is Glass /
-  Color / Transparent on a row of its own, its swatches under it, greyed out and disabled for Glass and
+  ring), its read-only **Smart colors** and the **Site color theme** select. Button is Color /
+  Glass / Transparent on a row of its own, its swatches under it, greyed out and disabled for Glass and
   Transparent (the row keeps its height). The 7 text styles are rows of their own right
   after Text (Title, Heading, Subheading, Statement, Paragraph, Label, Small: no group), in a theme
   and in a template's sub-roles (pick the template under Templates), greyed while they follow
