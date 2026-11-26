@@ -9,6 +9,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { requiredPart, themeWarning } from '../src/cli/cli.mjs';
 import { loadSiteConfig } from '../src/cli/site-config.mjs';
+import { RETIRED_COLOR_TOKENS, isOldColorToken } from '../src/render/colors.js';
 
 const root = new URL('..', import.meta.url).pathname;
 const defaultSite = fs.readFileSync(path.join(root, 'default-site/theme/tokens.scss'), 'utf8');
@@ -153,7 +154,7 @@ test('F93: selected text and the skip link: the color theme\'s colours', () => {
 });
 
 test('M2: no old token can override a role: every colour has one source', () => {
-  const OLD = /--(btn-(bg|fg|hover-bg|hover-fg)|nav-active-(bg|fg)|menu-active-fg|selection-(bg|fg)|skip-link-(bg|fg)|tag-border-color)\b/;
+  const OLD = new RegExp(`(${RETIRED_COLOR_TOKENS.join('|')})(?![\\w-])`);
   const files = [];
   const walk = (dir) => {
     for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -164,7 +165,8 @@ test('M2: no old token can override a role: every colour has one source', () => 
   };
   walk(path.join(root, 'src'));
   walk(path.join(root, 'default-site'));
-  for (const f of files) assert.doesNotMatch(fs.readFileSync(f, 'utf8'), OLD, path.relative(root, f));
+  for (const f of files.filter((f) => !f.endsWith(path.join('render', 'colors.js'))))
+    assert.doesNotMatch(fs.readFileSync(f, 'utf8'), OLD, path.relative(root, f));
 });
 
 test('F85: the default site has the type scale, the engine\'s defaults; check asks for it, theme.json "typography" counts', () => {
@@ -214,4 +216,33 @@ test('F98: the Heading has a phone size capped at its max, as the Title', () => 
       s,
     );
   }
+});
+
+test('M1: check warns about colour tokens a site still sets (they colour nothing of the engine)', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-'));
+  try {
+    fs.mkdirSync(path.join(root, 'theme'));
+    const tokens = (body) => fs.writeFileSync(path.join(root, 'theme/tokens.scss'), `:root {\n${body}\n}\n`);
+    tokens(
+      [
+        '  --bg: #050505;',
+        '  --btn-bg: #fff;',
+        '  --type-label-color: #999;',
+        '  // --fg: #fff;',
+        '  --hero-fg: #fff;',
+        '  --error: #e5776b;',
+      ].join('\n'),
+    );
+    const w = themeWarning(loadSiteConfig(root));
+    assert.match(w, /theme\/tokens\.scss sets 3 colour token\(s\) \(--bg, --btn-bg, --type-label-color\)/);
+    assert.match(w, /content\/theme\.json "palette" and "colorThemes"/);
+    // fixed by design (text over a photo, the error colour, shades), or commented out: nothing to say
+    tokens('  --hero-fg: #fff;\n  --error: #e5776b;\n  // --bg: #000;');
+    assert.doesNotMatch(themeWarning(loadSiteConfig(root)), /colour token/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+  // the default site sets none
+  const set = [...defaultSite.replace(/\/\/.*$/gm, '').matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]);
+  assert.deepEqual(set.filter(isOldColorToken), []);
 });

@@ -5,7 +5,8 @@
 // Colours are not here: they are content/theme.json's palette and color themes (Theme › Color;
 // ewcms src/render/colors.js), the roles --color-* and smart colours --smart-* the engine
 // reads. The old names (--fg, --bg, --muted, --brand, …) still work as aliases of those roles in
-// a site's own CSS; set one here and it wins on the page's :root. Left here: what is fixed by design.
+// a site's own CSS; don't set them here: they colour nothing of the engine (ewcms check warns).
+// Left here: what is fixed by design.
 @use 'site-core/tokens' as *;
 
 :root {

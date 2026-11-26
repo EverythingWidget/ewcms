@@ -297,6 +297,31 @@ export const TOKEN_ALIASES = Object.freeze([
   ['--open-fill', toward(16)],
 ]);
 
+/** Colour tokens retired (no alias): each colour is its role's or smart colour's now. */
+export const RETIRED_COLOR_TOKENS = Object.freeze([
+  '--btn-bg',
+  '--btn-fg',
+  '--btn-hover-bg',
+  '--btn-hover-fg',
+  '--nav-active-bg',
+  '--nav-active-fg',
+  '--menu-active-fg',
+  '--selection-bg',
+  '--selection-fg',
+  '--skip-link-bg',
+  '--skip-link-fg',
+  '--tag-border-color',
+]);
+
+/**
+ * The colour tokens a site's tokens.scss may still set that colour nothing of the engine (ewcms
+ * check warns): the aliases, the retired ones and the text styles' old --type-<style>-color.
+ */
+export const isOldColorToken = (name) =>
+  TOKEN_ALIASES.some(([alias]) => alias === name) ||
+  RETIRED_COLOR_TOKENS.includes(name) ||
+  /^--type-[a-z]+-color$/.test(name);
+
 /**
  * The chrome that re-sets Background and Text to its own roles (the header and the phone menu:
  * Header, Header text), so everything in it, smart colours too, follows them.

@@ -18,7 +18,7 @@ import { pathToFileURL } from 'node:url';
 import { ENGINE, enginePath, posixPath, ENGINE_VERSION } from './engine.mjs';
 import { loadSiteConfig, CONFIG_FILE, DEFAULT_SITE_THEME, THEME_META } from './site-config.mjs';
 import { typeFontWarnings } from '../render/layout/type.js';
-import { contrastWarnings } from '../render/colors.js';
+import { contrastWarnings, isOldColorToken } from '../render/colors.js';
 import { buildPhotos } from './photos.mjs';
 import { checkLinks } from './check-links.mjs';
 import { registerSiteWidgets } from './site-widgets.mjs';
@@ -335,6 +335,16 @@ export function themeWarning(site) {
     out.push(
       `[check] ${rel}/meta.json "colorScheme" is not used: the color-scheme is content/theme.json ` +
         `"color": { "scheme" }. Move it there.`,
+    );
+  // colour tokens: the engine reads the color themes' roles (content/theme.json), not these
+  const noComments = (scss) => scss.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\s)\/\/.*$/gm, '$1');
+  const colours = tokensSet(noComments(read('tokens.scss') + '\n' + read('overrides.scss'))).filter(isOldColorToken);
+  if (colours.length)
+    out.push(
+      `[check] ${rel}/tokens.scss sets ${colours.length} colour token(s) (${colours.join(', ')}): ` +
+        `they no longer colour the engine's chrome and widgets, which read the color theme roles. ` +
+        `Put the colours in content/theme.json "palette" and "colorThemes" (Theme › Color) and drop ` +
+        `them (an alias set there still changes the site's own CSS that reads it).`,
     );
   // typography fonts: the theme lists the families Theme › Typography can pick
   const metaFile = site.themeDir && path.join(site.themeDir, THEME_META);

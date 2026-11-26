@@ -75,6 +75,10 @@ say what a site must do before it bumps its pin.
   `basedOn` stays a note and is never followed (a template with no entry of its own uses the
   section's roles). A Background a template sets paints its items when the item style's fill
   is left empty; None is always see-through, Surface a surface of it. `ewcms check` checks a template's text against its own Background.
+- **`ewcms check` names colour tokens a site's `tokens.scss` still sets** (the old aliases
+  `--bg`, `--fg`, `--muted`, `--brand`, …, the retired `--btn-bg`, `--nav-active-bg`, … and
+  `--type-<style>-color`): they colour nothing of the engine, so it says to put the colours in
+  `content/theme.json` `palette` / `colorThemes` and drop them.
 
 ### Editor
 
