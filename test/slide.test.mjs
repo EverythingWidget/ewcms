@@ -30,6 +30,16 @@ test('a folder slides its whole .ed-body, padding too, in the view (the panel ed
   assert.doesNotMatch(list, /swapView\(root/);
 });
 
+test('a Theme part (Color, Typography, Layout) slides in and Back to Theme slides out, as a folder', () => {
+  const theme = read('src/editor/svelte/ThemePanel.svelte');
+  assert.match(theme, /import \{ swapView \} from '\.\.\/lib\/slide\.js';/);
+  assert.match(theme, /<section class="ed-body" aria-label="Theme" bind:this=\{body\}>/);
+  // the cards and a part share the one .ed-body: its whole block slides in the area (the panel edge)
+  assert.match(theme, /const dir = next \? 1 : -1;/);
+  assert.match(theme, /swapView\(body\.parentElement, body\)/);
+  assert.match(theme, /tick\(\)\.then\(\(\) => play\(dir\)\)/);
+});
+
 test('swapView slides one old copy and one new copy, sized to the larger view', () => {
   const slide = read('src/editor/lib/slide.js');
   assert.match(slide, /export function swapView\(host, box = host\)/);

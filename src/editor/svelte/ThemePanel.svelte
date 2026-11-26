@@ -1,7 +1,8 @@
 <!--
   Theme (ui.panel 'theme', an area: ../areas.js): the theme's values, content/theme.json
   (src/render/theme.js). Its head (Back to areas) and three cards (Color, Typography, Layout);
-  a click opens that part on its own screen (← back to Theme, ui.themePart). Color: the palette,
+  a click opens that part on its own screen (← back to Theme, ui.themePart), sliding in as the
+  pages list's levels do (lib/slide.js). Color: the palette,
   the color themes and the site color theme (ColorPart.svelte; theme.json palette, colorThemes,
   colorTheme: src/render/colors.js).
   Typography: the text styles' sizes and fonts (theme.json typography, px and family,
@@ -12,7 +13,7 @@
   (../theme-vars.js, from main.js).
 -->
 <script>
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import Field from './Field.svelte';
   import Button from './Button.svelte';
   import AreaCard from './AreaCard.svelte';
@@ -33,6 +34,7 @@
   import { isTypeSpecimen } from '../../render/layout/type-specimen.js';
   import { LINE_STYLES } from '../../render/text.js';
   import { isObject } from '../../render/is.js';
+  import { swapView } from '../lib/slide.js';
   import {
     CONTAINED,
     CONTAINED_MIN,
@@ -56,6 +58,21 @@
   ];
   const part = $derived(THEME_PARTS.some((p) => p.id === ui.themePart) ? ui.themePart : '');
   const partInfo = $derived(THEME_PARTS.find((p) => p.id === part));
+  // a part slides in from the right, Back to Theme brings the cards from the left (lib/slide.js,
+  // as the pages list's levels): a still copy of the body before (.ed-body, padding and all)
+  // slides out, clipped to the panel's edge
+  let body = $state();
+  let shownPart = untrack(() => part);
+  $effect.pre(() => {
+    const next = part;
+    untrack(() => {
+      if (next === shownPart || !body) return void (shownPart = next);
+      const dir = next ? 1 : -1;
+      shownPart = next;
+      const play = swapView(body.parentElement, body);
+      tick().then(() => play(dir));
+    });
+  });
   function showPart(id) {
     ui.themePart = id;
     queueMicrotask(() => document.querySelector('.ed-body')?.scrollTo(0, 0));
@@ -195,7 +212,7 @@
   Empty: the same number of rows as desktop. 0 means none on phones, even when the desktop
   value is set.{/snippet}
 
-<section class="ed-body" aria-label="Theme">
+<section class="ed-body" aria-label="Theme" bind:this={body}>
   {#if !part}
     <AreaHead id="theme" {actions} />
     <ul class="areas">
