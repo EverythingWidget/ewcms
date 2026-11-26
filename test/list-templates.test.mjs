@@ -266,7 +266,7 @@ test('no config.template: the preset as now; a missing "t-…" warns and shows C
   assert.deepEqual(checkContent('pages/x/index.json', page), []);
 });
 
-test("templatesOp: a template made from another gets a copy of its color theme sub-roles", () => {
+test("templatesOp writes the template only: its color theme copy is the editor's (theme.json untouched)", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-tpl-'));
   try {
     fs.cpSync(SITE_A, root, {
@@ -274,21 +274,13 @@ test("templatesOp: a template made from another gets a copy of its color theme s
       filter: (p) => !/[\\/](dist|\.generated)([\\/]|$)/.test(p),
     });
     const themeFile = path.join(root, 'content', 'theme.json');
-    const before = fs.existsSync(themeFile) ? JSON.parse(fs.readFileSync(themeFile, 'utf8')) : {};
-    const { version: _v, ...data } = cloneTemplate(base, 'people', 'preset:card'); // eslint-disable-line no-unused-vars
-    // no sub-roles for its parent: theme.json is left alone
-    const plain = templatesOp(root, { op: 'add', data }).body;
-    assert.equal(plain.theme, undefined);
-    const card = { background: 3, typography: { title: 5 } };
-    const theme = { ...before, colorThemes: { dark: { templates: { 'preset:card': card } } } };
+    const theme = { version: 1, colorThemes: { dark: { templates: { 'preset:card': { background: 3 } } } } };
     fs.writeFileSync(themeFile, JSON.stringify(theme));
-    let wrote;
-    const res = templatesOp(root, { op: 'add', data }, (m) => (wrote = m)).body;
-    assert.deepEqual(res.changed, ['theme.json']);
-    const disk = JSON.parse(fs.readFileSync(themeFile, 'utf8'));
-    assert.deepEqual(disk.colorThemes.dark.templates[res.id], card);
-    assert.deepEqual(res.theme, disk);
-    assert.ok(wrote.has(themeFile), 'the watcher is told about theme.json too');
+    const { version: _v, ...data } = cloneTemplate(base, 'people', 'preset:card'); // eslint-disable-line no-unused-vars
+    const res = templatesOp(root, { op: 'add', data }).body;
+    assert.equal(res.ok, true);
+    assert.deepEqual(JSON.parse(fs.readFileSync(themeFile, 'utf8')), theme);
+    assert.equal(res.theme, undefined);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

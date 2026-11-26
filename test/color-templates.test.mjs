@@ -6,12 +6,13 @@ import fs from 'node:fs';
 import {
   colorThemeCss,
   contrastWarnings,
-  copyTemplateRoles,
+  templateRoleCopies,
   isOldColorToken,
   templateClass,
   templateRolesOf,
 } from '../src/render/colors.js';
 import { styleMarkup } from '../src/widgets/list/item-style.js';
+import { createStore } from '../src/editor/store.js';
 
 const rule = (css, selector) => css.split('\n').find((l) => l.startsWith(`${selector} {`)) || '';
 
@@ -89,19 +90,37 @@ test("a template is its own: basedOn isn't followed; its parent's are copied onc
   // a template with no entry of its own: the section's roles (no rules), whatever its basedOn
   assert.deepEqual(templateRolesOf(theme, 'dark', 't-aa11'), { roles: {}, typography: {} });
   assert.doesNotMatch(colorThemeCss(theme), /tpl-t-aa11/);
-  // copied: its own entry, in each theme that had the parent's
-  const copy = copyTemplateRoles(theme, 'preset:card', 't-aa11');
-  assert.deepEqual(copy.colorThemes.dark.templates['t-aa11'], { background: 3, typography: { title: 5 } });
-  assert.equal(copy.colorThemes.light.templates, undefined);
-  assert.deepEqual(theme.colorThemes.dark.templates['t-aa11'], undefined, 'theme.json given is not changed');
-  assert.match(rule(colorThemeCss(copy), '.ct-dark .tpl-t-aa11'), /--color-background: var\(--palette-3\)/);
+  // copied: its own entry, in each theme that had the parent's, as edits to theme.json
+  const copies = templateRoleCopies(theme, 'preset:card', 't-aa11');
+  assert.deepEqual(copies, [['/colorThemes/dark/templates/t-aa11', { background: 3, typography: { title: 5 } }]]);
+  assert.equal(theme.colorThemes.dark.templates['t-aa11'], undefined, 'theme.json given is not changed');
+  // the editor applies them to its theme.json, unsaved edits too, as one undo step
+  const store = createStore();
+  store.load({ 'theme.json': theme });
+  store.set('theme.json', '/colorThemes/light/link', 3); // an unsaved edit, before
+  store.batch(() => copies.forEach(([ptr, v]) => store.set('theme.json', ptr, v)));
+  const edited = store.current['theme.json'];
+  assert.deepEqual(edited.colorThemes.dark.templates['t-aa11'], { background: 3, typography: { title: 5 } });
+  assert.match(rule(colorThemeCss(structuredClone(edited)), '.ct-dark .tpl-t-aa11'), /--color-background: var\(--palette-3\)/);
   // then each is its own: the parent's later edit doesn't reach it
-  copy.colorThemes.dark.templates['preset:card'].background = 4;
-  assert.equal(copy.colorThemes.dark.templates['t-aa11'].background, 3);
-  // nothing to copy, or an entry of its own already: null
-  assert.equal(copyTemplateRoles(theme, 'preset:row', 't-bb22'), null);
-  assert.equal(copyTemplateRoles({}, 'preset:card', 't-bb22'), null);
-  assert.equal(copyTemplateRoles(copy, 'preset:card', 't-aa11'), null);
+  store.set('theme.json', '/colorThemes/dark/templates/preset:card/background', 4);
+  assert.equal(edited.colorThemes.dark.templates['t-aa11'].background, 3);
+  // undo: the parent's edit, then the copy (one step), and the edit before stays undoable
+  assert.ok(store.undo() && store.undo());
+  assert.equal(store.current['theme.json'].colorThemes.dark.templates['t-aa11'], undefined);
+  assert.equal(store.current['theme.json'].colorThemes.light.link, 3);
+  assert.ok(store.undo());
+  assert.equal(store.current['theme.json'].colorThemes.light.link, 2);
+  // nothing to copy, or an entry of its own already: none
+  const copied = structuredClone(theme);
+  copied.colorThemes.dark.templates['t-aa11'] = {};
+  assert.deepEqual(templateRoleCopies(theme, 'preset:row', 't-bb22'), []);
+  assert.deepEqual(templateRoleCopies({}, 'preset:card', 't-bb22'), []);
+  assert.deepEqual(templateRoleCopies(copied, 'preset:card', 't-aa11'), []);
+  // Duplicate does it in the editor (the server writes only the template file)
+  const actions = fs.readFileSync(new URL('../src/editor/svelte/TemplateActions.svelte', import.meta.url), 'utf8');
+  assert.match(actions, /templateRoleCopies\(live\.store\.current\[THEME\], templateId, res\.id\)/);
+  assert.match(actions, /live\.store\.batch\(\(\) => copies\.forEach/);
 });
 
 test("contrast: a template's text against its own Background", () => {

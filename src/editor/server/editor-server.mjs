@@ -43,7 +43,6 @@ import { loadSiteConfig } from '../../cli/site-config.mjs';
 import {
   HEADER,
   PHOTOS,
-  THEME,
   REDIRECTS,
   isContentFile,
   isParam,
@@ -94,7 +93,6 @@ import {
   sitePaths,
 } from '../../render/redirects.js';
 import { checkContent } from '../../render/validate.js';
-import { copyTemplateRoles } from '../../render/colors.js';
 import { omitDefaults } from '../../render/defaults.js';
 import { newWidget, newSection } from '../../render/layout/index.js';
 import { eachWidget } from '../../render/layout/ids.js';
@@ -120,10 +118,9 @@ const HEAD_ROW = 17;
 /**
  * POST /templates { op: 'add', data }: write `data` (an item template, src/render/validate.js
  * checkItemTemplate) as a new content/templates/t-<id>.json under a fresh id. The only way a
- * template file is made (Save never creates files). A template made from another (basedOn) gets
- * a copy of its color theme sub-roles in content/theme.json, once (copyTemplateRoles): then it is
- * its own. Returns { status, body }: body { ok, id, file, data, created: [file], changed: [theme
- * file] when it wrote one, theme: its data }.
+ * template file is made (Save never creates files); its color theme sub-roles the editor copies
+ * into its theme.json (TemplateActions.svelte, templateRoleCopies). Returns { status, body }: body
+ * { ok, id, file, data, created: [file] }.
  */
 export function templatesOp(
   root,
@@ -146,29 +143,9 @@ export function templatesOp(
   const abs = contentFilePath(root, file);
   fs.mkdirSync(path.dirname(abs), { recursive: true });
   const text = formatJSON(clean);
-  const themeAbs = contentFilePath(root, THEME);
-  let theme = null;
-  try {
-    theme = copyTemplateRoles(JSON.parse(fs.readFileSync(themeAbs, 'utf8')), clean.basedOn, id);
-  } catch {
-    // no content/theme.json (or not JSON): nothing to copy
-  }
-  const themeText = theme && formatJSON(theme);
-  onWrite(new Map([[abs, text], ...(theme ? [[themeAbs, themeText]] : [])]));
+  onWrite(new Map([[abs, text]]));
   writeFileAtomic(abs, text);
-  if (theme) writeFileAtomic(themeAbs, themeText);
-  return {
-    status: 200,
-    body: {
-      ok: true,
-      id,
-      file,
-      data: clean,
-      created: [file],
-      removed: [],
-      ...(theme ? { changed: [THEME], theme } : {}),
-    },
-  };
+  return { status: 200, body: { ok: true, id, file, data: clean, created: [file], removed: [] } };
 }
 
 /**

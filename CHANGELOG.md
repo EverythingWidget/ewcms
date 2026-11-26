@@ -77,8 +77,9 @@ say what a site must do before it bumps its pin.
   (`colorThemes.<name>.templates."<template id>"`, e.g. `"preset:card"` or `"t-ab12"`:
   Background, Text, Heading, Link, Button, Button text, Line and its text styles), for its items
   only (class `tpl-<id>`). A template is its own thing: one made from a preset or another
-  template (Duplicate) gets a copy of its parent's sub-roles in `content/theme.json`, once;
-  `basedOn` stays a note and is never followed (a template with no entry of its own uses the
+  template (Duplicate) gets a copy of its parent's sub-roles in `content/theme.json`, once (the
+  editor copies them from its theme.json, unsaved edits too, as one undo step; theme.json is then
+  unsaved until Save); `basedOn` stays a note and is never followed (a template with no entry of its own uses the
   section's roles). A Background a template sets paints its items when the item style's fill
   is left empty; None is always see-through, Surface a surface of it. `ewcms check` reads a
   template's text against what renders under it: with fill None (Plain, Photo, a site template

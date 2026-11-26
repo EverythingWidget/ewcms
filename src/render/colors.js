@@ -22,7 +22,7 @@
  *     templates   sub-roles of an item template (its id, as a List's config.template: "preset:card",
  *                 "t-…"): TEMPLATE_ROLES and typography; left out, the section's roles. A template
  *                 is its own thing: one made from another gets a copy of its sub-roles once
- *                 (copyTemplateRoles, when it is added), basedOn is only a note
+ *                 (templateRoleCopies, when it is added), basedOn is only a note
  *   colorTheme    the site color theme: the page, the chrome and every section that picks none
  *
  * Sections (page and footer) and header.json pick a theme with "colorTheme" (class ct-<name>).
@@ -231,22 +231,21 @@ export function templateRolesOf(theme, name, id) {
 }
 
 /**
- * A template made from another (a preset or a site template: its basedOn): theme.json with the
- * parent's sub-roles copied into the new one's own entry, in each color theme that has them;
- * null when there is nothing to copy. Done once, when the template is added; then each is its own.
+ * A template made from another (a preset or a site template: its basedOn): the edits that copy
+ * the parent's sub-roles into the new one's own entry, in each color theme that has them:
+ * [[JSON pointer in theme.json, value]] ([] when there is nothing to copy). The editor applies
+ * them to its theme.json (unsaved edits too) as one undo step, when it adds the template; then
+ * each is its own.
  */
-export function copyTemplateRoles(theme, from, to) {
-  if (!isObject(theme?.colorThemes) || !from || !to || from === to) return null;
-  let copied = false;
-  const colorThemes = {};
-  for (const [name, t] of Object.entries(theme.colorThemes)) {
+export function templateRoleCopies(theme, from, to) {
+  if (!isObject(theme?.colorThemes) || !from || !to || from === to) return [];
+  const ptr = (...parts) => `/${parts.map((p) => String(p).replace(/~/g, '~0').replace(/\//g, '~1')).join('/')}`;
+  return Object.entries(theme.colorThemes).flatMap(([name, t]) => {
     const tpl = isObject(t) && isObject(t.templates) ? t.templates : null;
-    if (tpl && isObject(tpl[from]) && tpl[to] === undefined) {
-      colorThemes[name] = { ...t, templates: { ...tpl, [to]: structuredClone(tpl[from]) } };
-      copied = true;
-    } else colorThemes[name] = t;
-  }
-  return copied ? { ...theme, colorThemes } : null;
+    return tpl && isObject(tpl[from]) && tpl[to] === undefined
+      ? [[ptr('colorThemes', name, 'templates', to), structuredClone(tpl[from])]]
+      : [];
+  });
 }
 
 /** A role value as CSS: a slot's var, a custom colour, or transparent. */
