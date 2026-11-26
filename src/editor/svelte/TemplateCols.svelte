@@ -41,7 +41,7 @@
       bare
       value={String(previewColumns(tpl))}
       options={COLUMNS}
-      changed={live.changed(file, '/preview/columns')}
+      unsaved={live.changed(file, '/preview/columns')}
       onvalue={setColumns}
     />
   </div>

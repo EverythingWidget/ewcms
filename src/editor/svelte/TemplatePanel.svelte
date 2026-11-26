@@ -170,7 +170,7 @@
       onsection={() => {}}
       onopen={(wid) => (selectWidgets([wid]), openPopup())}
       onreorder={(from, to) => setWidgets(moveStack(widgets, from, to))}
-      changed={live.changed(file, ITEM_WIDGETS)}
+      unsaved={live.changed(file, ITEM_WIDGETS)}
     />
   {:else if tab === 'settings'}
     <Field
@@ -178,7 +178,7 @@
       label="Name"
       value={tpl.name}
       help="Its name in a List’s Template picker"
-      changed={live.changed(file, '/name')}
+      unsaved={live.changed(file, '/name')}
       onvalue={(v) => set('/name', v)}
     />
     <Field
@@ -190,7 +190,7 @@
       help={locksClickable
         ? 'An item that opens can’t also be a link'
         : 'The whole item opens the item’s page.'}
-      changed={live.changed(file, '/clickable')}
+      unsaved={live.changed(file, '/clickable')}
       onvalue={(v) => set('/clickable', v)}
     />
     <p class="hint small tp__sample">

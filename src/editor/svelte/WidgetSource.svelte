@@ -309,7 +309,7 @@
     <SourceField
       store={live.store}
       value={{ source: source.from, id: source.id }}
-      changed={live.changed(g.file, `${base}/source`)}
+      unsaved={live.changed(g.file, `${base}/source`)}
       {sourceIds}
       {onsource}
       {itemsOf}
@@ -321,7 +321,7 @@
       store={live.store}
       mode="source"
       value={source.from}
-      changed={live.changed(g.file, `${base}/source/from`)}
+      unsaved={live.changed(g.file, `${base}/source/from`)}
       none={null}
       {sourceIds}
       {onsource}

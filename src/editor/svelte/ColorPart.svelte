@@ -12,8 +12,9 @@
                    The 7 text styles, a row each right after Text (TEXT_STYLE_ROWS: no group), in
                    a theme and in a template's sub-roles (a template picked under Templates), greyed
                    while they follow ("follows Text"). A role that isn't the engine's default, or a sub-role set:
-                   the accent dot in its row's left padding (as Motion's "has its own values", no
-                   shift); a theme with any: the dot on its card. Its smart colours, read only, at
+                   its reset arrow (the own-value marker); a theme with any: a reset arrow on its
+                   card's bar (all its colours back to the defaults), its room always kept. Not
+                   saved yet: the yellow dot after the label or title. Its smart colours, read only, at
                    the bottom (worked out by the preview, the rule on hover)
     Site color theme  the select (empty: Darkest)
   Every pick is one undo step (a typed or dragged colour coalesces); theme.json is IN_PLACE, so
@@ -154,7 +155,7 @@
   {@const swatches = !row.glass || row.mode === 'color'}
   {@const hex = isHexColor(row.shown)}
   <div
-    class={['crole', row.custom && 'is-changed', following && 'is-following']}
+    class={['crole', live.changed(THEME, ptr) && 'is-unsaved', following && 'is-following']}
     data-edit="{THEME}#{ptr}"
     title={row.custom ? (row.follows ? 'Its own color' : 'Its own color (not the default)') : undefined}
   >
@@ -265,11 +266,11 @@
 <div class="part">
   <p class="hint">
     The site's 5 colors and the 5 color themes that give them jobs. A section, the header and the
-    footer use one; the rest of the page uses the site's. A dot marks a role that isn't the
-    default.
+    footer use one; the rest of the page uses the site's. A reset arrow marks a color of its own
+    (not the default).
   </p>
 
-  <Collapsible key="theme-color:palette" title="Palette">
+  <Collapsible key="theme-color:palette" title="Palette" unsaved={live.changed(THEME, '/palette')}>
     <div class="fields">
       {#each SLOTS as slot, i (slot)}
         <div
@@ -284,6 +285,7 @@
             label="Slot {slot}{slot === 1 ? ' · background end' : ''}"
             half
             value={palette[i]}
+            unsaved={live.changed(THEME, `/palette/${i}`)}
             reset={{
               on: isCustomSlot(theme(), i),
               label: `Slot ${slot}: use the default`,
@@ -311,10 +313,25 @@
       title={label}
       name={name === site ? 'Site color theme' : ''}
       open={false}
-      changed={customCount(theme(), name) > 0}
+      unsaved={live.changed(THEME, `/colorThemes/${name}`)}
       class="ctheme"
     >
-      {#snippet bar()}{@render chip(name)}{/snippet}
+      {#snippet bar()}
+        <!-- its own colours: the reset arrow (all back to the defaults), its room always kept -->
+        <span class="ctheme__reset">
+          {#if customCount(theme(), name) > 0}
+            <button
+              type="button"
+              class="crole__reset"
+              title="Use the default colors"
+              aria-label="{label}: use the default colors"
+              onclick={() => live.store.set(THEME, `/colorThemes/${name}`, undefined, opts(`/colorThemes/${name}`))}
+              ><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button
+            >
+          {/if}
+        </span>
+        {@render chip(name)}
+      {/snippet}
       <div class="croles" data-color-theme={name}>
         {#each ROLES as r (r.key)}
           {@render roleRowView({ theme: name, key: r.key })}
@@ -366,6 +383,7 @@
     type="select"
     options={THEME_OPTIONS}
     value={site}
+    unsaved={live.changed(THEME, '/colorTheme')}
     help="The page, the header and every section that picks none. {themeLabel(DEFAULT_COLOR_THEME)} by default."
     reset={{
       on: site !== DEFAULT_COLOR_THEME,
@@ -511,6 +529,7 @@
     @include stack(var(--space-2));
   }
 
+  // the left inset the swatches were sized in (46×32 on the 7-column grid)
   .crole {
     position: relative;
     padding-left: var(--space-3);
@@ -564,6 +583,19 @@
 
     &:focus-visible {
       @include focus-ring;
+    }
+  }
+
+  // a theme card's reset: a 16px slot on its bar, before the chip, kept while empty
+  .ctheme__reset {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 16px;
+    height: 20px;
+
+    > .crole__reset {
+      margin-left: 0;
     }
   }
 

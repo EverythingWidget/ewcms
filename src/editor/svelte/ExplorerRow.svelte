@@ -10,7 +10,7 @@
     name,
     meta = '',
     selected = false,
-    changed = false,
+    unsaved = false,
     enter = false,
     ...rest
   } = $props();
@@ -18,7 +18,7 @@
 
 <button
   type="button"
-  class={['xrow', selected && 'is-selected', changed && 'is-changed']}
+  class={['xrow', selected && 'is-selected', unsaved && 'is-unsaved']}
   {...rest}
 >
   {#if icon}
@@ -35,7 +35,7 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  // lead | name / meta | chevron; changed: a dot in the left padding (.is-changed, editor.scss)
+  // lead | name / meta | chevron; unsaved: the yellow dot in the left padding (.is-unsaved, editor.scss)
   .xrow {
     width: 100%;
     display: grid;

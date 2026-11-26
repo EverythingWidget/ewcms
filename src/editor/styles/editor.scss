@@ -218,53 +218,58 @@ kbd {
   }
 }
 
-// Unsaved changes: a 6px accent dot (mock A). A field's or picker's label: an inline dot first,
-// the label row's gap after it, the label white. A section card: the bar's first item, before
-// the title (the bar's 4px gap), on the title line; the title gives up the room, so the pen at
-// the row's end and the tools below don't move. Explorer rows, Motion parts and Theme › Color's
-// roles (has its own values): centered in their left padding, absolute.
-.tf.is-changed > .tf__label::before,
-.tf.is-changed .sc__label::before,
-.tf.is-changed .photo__label::before,
-.collapsible.is-changed > .collapsible__bar::before,
-.pane__head.is-changed::before,
-:is(.xrow, .mlist__element, .crole).is-changed::before {
-  @include changed-dot;
+// Unsaved changes: the 6px yellow dot (mixins unsaved-dot), right after a field's label and its
+// (i), in its own room that is always kept (hidden while saved), so it never pushes anything; the
+// label row's end items (a reset arrow, a switch, a button, a picker) come after it. A section
+// card or a pane heading: after its title, the same way. Explorer rows: centered in their left
+// padding, absolute. A value of its own is the reset arrow (shown only then), not a dot.
+.tf__label::after,
+.sc__label::after,
+.photo__label::after,
+.pane__head::after {
+  @include unsaved-dot;
   content: '';
-  order: -1;
+  order: 1;
+  visibility: hidden;
   pointer-events: none;
 }
 
-.tf.is-changed > .tf__label,
-.tf.is-changed .sc__label,
-.tf.is-changed .photo__label {
+// the label's own parts stay before the dot; everything else in the row after it
+.tf__label > *,
+.pane__head > * {
+  order: 2;
+}
+
+.tf__label > :is(.ih, .tf__name, .crole__name, .crole__follows, .bs__main, .wl__scale-label),
+.pane__head > .ih {
+  order: 0;
+}
+
+.tf.is-unsaved > .tf__label::after,
+.tf.is-unsaved .sc__label::after,
+.tf.is-unsaved .photo__label::after,
+.crole.is-unsaved > .tf__label::after,
+.pane__head.is-unsaved::after {
+  visibility: visible;
+}
+
+.tf.is-unsaved > .tf__label,
+.tf.is-unsaved .sc__label,
+.tf.is-unsaved .photo__label,
+.crole.is-unsaved > .tf__label {
   color: var(--c-text);
 }
 
-.collapsible.is-changed > .collapsible__bar::before {
-  margin: calc((20px - var(--size-changed)) / 2) 0;
-}
-
-:is(.xrow, .mlist__element).is-changed {
+.xrow.is-unsaved {
   position: relative;
 
   &::before {
+    @include unsaved-dot;
+    content: '';
     position: absolute;
-    top: calc(50% - var(--size-changed) / 2);
-    left: calc((var(--space-3) - var(--size-changed)) / 2);
-  }
-}
-
-// a role (Theme › Color): on its 24px label row, the label white
-.crole.is-changed {
-  &::before {
-    position: absolute;
-    top: calc((24px - var(--size-changed)) / 2);
-    left: calc((var(--space-3) - var(--size-changed)) / 2);
-  }
-
-  > .tf__label {
-    color: var(--c-text);
+    top: calc(50% - var(--size-unsaved) / 2);
+    left: calc((var(--space-3) - var(--size-unsaved)) / 2);
+    pointer-events: none;
   }
 }
 

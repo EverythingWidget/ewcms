@@ -983,7 +983,7 @@
 
   // unsaved changes in its file: the editor's dot
   .prow__dot {
-    @include changed-dot;
+    @include unsaved-dot;
   }
 
   .prow__tag {

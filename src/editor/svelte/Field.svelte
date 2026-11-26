@@ -1,10 +1,10 @@
 <!--
-  One field: a label (name, and, changed, a dot before it;, for a value from a source list, a button naming
+  One field: a label (name, then, unsaved, the yellow dot after it and its (i): its room always kept; for a value from a source list, a button naming
   its file, e.g. people.json, that opens it in Sources) with an input, or a
   textarea for longer text, a switch (boolean) or a Select (select, options [[value, label]] or
   Select groups [{ group, options, rule? }]).
   bare: no label row (label is the input's aria-label; say it in the placeholder); help: a hint under it; tip: a snippet, an (i) after
-  the label that explains it (InfoHelp.svelte: in the label row, nothing shifts); reset: a quiet undo at the end of the label row, only when reset.on (a stored value; the 24px row does not shift); half: it shares a row with the next field (the parent's grid).
+  the label that explains it (InfoHelp.svelte: in the label row, nothing shifts); reset: a quiet undo at the end of the label row, only when reset.on (a value of its own, not the default: the reset arrow is the own-value marker; the 24px row does not shift); half: it shares a row with the next field (the parent's grid).
   empty: a number field can be cleared (onvalue(undefined): the default, say it in the placeholder).
   type 'photo': a photo (its media/ path or R2 key) as a 64px card: the photo, its label
   (inside), file name and sizes, Media and ✕ (clears it; remove: the parent's, a list item's);
@@ -58,7 +58,7 @@
     half = false,
     options = [],
     unset = '',
-    changed = false,
+    unsaved = false,
     selected = false,
     onfocus,
     onvalue,
@@ -186,7 +186,7 @@
   for={tag === 'label' && type !== 'boolean' ? uid : undefined}
   class={[
     'tf',
-    changed && 'is-changed',
+    unsaved && 'is-unsaved',
     selected && 'is-selected',
     half && 'is-half',
     disabled && 'is-disabled',
@@ -509,7 +509,7 @@
     line-height: 16px;
   }
 
-  // (changed: the dot before it, editor.scss)
+  // (unsaved: the dot after it, editor.scss)
   .photo__label {
     @include row(var(--space-2));
     @include muted;

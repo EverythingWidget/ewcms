@@ -13,7 +13,8 @@
     open      open when nothing is remembered yet (default true)
     id        data-section, to find the section (e.g. scroll to it)
     off       dimmed: the section is turned off
-    changed   unsaved changes in it: an accent dot before the title (no layout shift)
+    unsaved   unsaved changes in it: the yellow dot after the title (its room always kept: no
+              layout shift)
     class     extra class on the section
     bar       snippet: controls at the right of the bar (count, buttons, a switch), each 20px tall
               (24px for a file button). A panel's own sections keep their bar on top while
@@ -48,7 +49,7 @@
     open = true,
     id = null,
     off = false,
-    changed = false,
+    unsaved = false,
     class: cls = '',
     bar,
     children,
@@ -108,7 +109,7 @@
 </script>
 
 {#snippet head()}
-  <span>{title}</span>
+  <span class="collapsible__title">{title}</span>
   {#if name}<strong>{name}</strong>{/if}
 {/snippet}
 
@@ -119,7 +120,7 @@
   class={[
     'collapsible',
     off && 'is-off',
-    changed && 'is-changed',
+    unsaved && 'is-unsaved',
     stack && 'collapsible--stack',
     danger ? 'is-danger' : selected && 'is-selected',
     cls,
@@ -357,18 +358,24 @@
     }
   }
 
-  // the changed dot first: the title takes the rest of its row
-  .collapsible--stack.is-changed > .collapsible__bar > .collapsible__toggle {
-    flex-basis: calc(100% - var(--size-changed) - var(--space-1));
-  }
-
-  // a card's pen after the title, on its row (the dot's and the pen's room taken off)
+  // a card's pen after the title, on its row (the pen's room taken off)
   .collapsible--stack > .collapsible__bar > .collapsible__toggle--card {
     flex-basis: calc(100% - 24px - var(--space-1));
   }
 
-  .collapsible--stack.is-changed > .collapsible__bar > .collapsible__toggle--card {
-    flex-basis: calc(100% - var(--size-changed) - 24px - var(--space-2));
+  // unsaved: the yellow dot right after the title, its room always kept (hidden while saved),
+  // so the title never moves
+  .collapsible__title::after {
+    @include unsaved-dot;
+    content: '';
+    display: inline-block;
+    margin: 0 0 1px var(--space-2);
+    vertical-align: middle;
+    visibility: hidden;
+  }
+
+  .collapsible.is-unsaved > .collapsible__bar .collapsible__title::after {
+    visibility: visible;
   }
 
   .collapsible.is-off {

@@ -183,7 +183,7 @@
             ? (widget.config?.[c.key] ?? c.default) === true
             : (widget.config?.[c.key] ?? c.default ?? (c.type === 'number' ? 0 : ''))}
           options={c.options ?? []}
-          changed={live.changed(file, optionPtr(c))}
+          unsaved={live.changed(file, optionPtr(c))}
           onvalue={(v) => setOption(c, v)}
         />
       {/each}

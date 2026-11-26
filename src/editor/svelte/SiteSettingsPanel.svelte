@@ -55,11 +55,11 @@
         {type}
         tip={TIPS[key]}
         value={live.get(SITE, `/${key}`)}
-        changed={live.changed(SITE, `/${key}`)}
+        unsaved={live.changed(SITE, `/${key}`)}
         onvalue={(value) => set(key, value)}
       />
     {/each}
-    <div class={['tf', live.changed(SITE, '/lang') && 'is-changed']}>
+    <div class={['tf', live.changed(SITE, '/lang') && 'is-unsaved']}>
       <label class="tf__label" for="{uid}-lang">Language</label>
       <Select
         id="{uid}-lang"
@@ -85,11 +85,11 @@
         tip={TIPS[key]}
         placeholder={key === 'title' ? live.get(SITE, '/name') || undefined : undefined}
         value={live.get(SITE, `/${key}`)}
-        changed={live.changed(SITE, `/${key}`)}
+        unsaved={live.changed(SITE, `/${key}`)}
         onvalue={(value) => set(key, value)}
       />
     {/each}
-    <div class={['tf', live.changed(SITE, '/robots') && 'is-changed']}>
+    <div class={['tf', live.changed(SITE, '/robots') && 'is-unsaved']}>
       <label class="tf__label" for="{uid}-robots">Search engines</label>
       <Select
         id="{uid}-robots"
@@ -109,7 +109,7 @@
       through Resend with the keys set in the Cloudflare Pages project, never here (see the README,
       "Contact form"). In npm run dev it only logs the message.
     </p>
-    <div class={['tf', live.changed(SITE, '/forms/target') && 'is-changed']}>
+    <div class={['tf', live.changed(SITE, '/forms/target') && 'is-unsaved']}>
       <label class="tf__label" for="{uid}-forms">Forms send to</label>
       <Select
         id="{uid}-forms"
@@ -123,14 +123,14 @@
       label="External endpoint (https://…, e.g. Formspree)"
       placeholder="https://formspree.io/f/…"
       value={live.get(SITE, '/forms/endpoint')}
-      changed={live.changed(SITE, '/forms/endpoint')}
+      unsaved={live.changed(SITE, '/forms/endpoint')}
       onvalue={(value) => set('forms/endpoint', value.trim() || undefined)}
     />
     <Field
       edit="{SITE}#/forms/turnstileSiteKey"
       label="Turnstile site key (optional spam check; empty: off)"
       value={live.get(SITE, '/forms/turnstileSiteKey')}
-      changed={live.changed(SITE, '/forms/turnstileSiteKey')}
+      unsaved={live.changed(SITE, '/forms/turnstileSiteKey')}
       onvalue={(value) => set('forms/turnstileSiteKey', value.trim() || undefined)}
     />
     <p class="hint small">
@@ -152,7 +152,7 @@
       label="Photo address (R2 public URL)"
       placeholder="https://photos.eeliyarasta.com"
       value={live.get(SITE, '/mediaUrl')}
-      changed={live.changed(SITE, '/mediaUrl')}
+      unsaved={live.changed(SITE, '/mediaUrl')}
       onvalue={(value) => set('mediaUrl', value.trim())}
     />
   </Collapsible>

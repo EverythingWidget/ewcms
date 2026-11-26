@@ -252,7 +252,7 @@
               placeholder={rolePlaceholder(role)}
               disabled={!fontOptions.length}
               value={live.get(THEME, `/typography/fonts/${role}`)}
-              changed={live.changed(THEME, `/typography/fonts/${role}`)}
+              unsaved={live.changed(THEME, `/typography/fonts/${role}`)}
               reset={{
                 on: !!live.get(THEME, `/typography/fonts/${role}`),
                 label: `Use the theme's ${FONT_ROLE_LABEL[role].toLowerCase()}`,
@@ -278,7 +278,7 @@
                     empty
                     placeholder={String(themeType[k][key])}
                     value={live.get(THEME, `/typography/${k}/${key}`)}
-                    changed={live.changed(THEME, `/typography/${k}/${key}`)}
+                    unsaved={live.changed(THEME, `/typography/${k}/${key}`)}
                     reset={{
                       on: live.get(THEME, `/typography/${k}/${key}`) != null,
                       label: "Use the theme's",
@@ -298,7 +298,7 @@
                   placeholder={styleFontPlaceholder(k)}
                   disabled={!fontOptions.length}
                   value={live.get(THEME, `/typography/${k}/font`)}
-                  changed={live.changed(THEME, `/typography/${k}/font`)}
+                  unsaved={live.changed(THEME, `/typography/${k}/font`)}
                   reset={{
                     on: !!live.get(THEME, `/typography/${k}/font`),
                     label: 'Use the default font for this style',
@@ -325,7 +325,7 @@
             label="Contained width (columns)"
             type="number"
             value={contained}
-            changed={live.changed(THEME, '/layout/containedCols')}
+            unsaved={live.changed(THEME, '/layout/containedCols')}
             onvalue={setContained}
           />
           <Field
@@ -338,7 +338,7 @@
             value={siteSpace ?? undefined}
             help="Rows of the grid between sections. Empty or 0: none. The first section of a page starts under the header and does not use this."
             tip={spaceTip}
-            changed={live.changed(THEME, '/layout/sectionSpace')}
+            unsaved={live.changed(THEME, '/layout/sectionSpace')}
             onvalue={(value) => setSiteSpace('sectionSpace', value)}
           />
           <Field
@@ -351,7 +351,7 @@
             value={siteSpacePhone ?? undefined}
             help="On phones. Empty: the same number of rows as desktop."
             tip={spacePhoneTip}
-            changed={live.changed(THEME, '/layout/sectionSpacePhone')}
+            unsaved={live.changed(THEME, '/layout/sectionSpacePhone')}
             onvalue={(value) => setSiteSpace('sectionSpacePhone', value, true)}
           />
         </div>

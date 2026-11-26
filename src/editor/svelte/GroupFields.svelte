@@ -154,7 +154,7 @@
       store={live.store}
       mode="source"
       value={live.get(f.file, f.ptr)}
-      changed={live.changed(f.file, f.ptr)}
+      unsaved={live.changed(f.file, f.ptr)}
       none={null}
       {sourceIds}
       {itemsOf}
@@ -168,7 +168,7 @@
       edit={f.edit}
       label={f.label}
       value={live.get(f.file, f.ptr)}
-      changed={live.changed(f.file, f.ptr)}
+      unsaved={live.changed(f.file, f.ptr)}
       empty="No link"
       inline={!!extra.inline}
       binds={bindings ? bindings.binds('link') : null}
@@ -181,7 +181,7 @@
       {...f}
       {half}
       value={live.get(f.file, f.ptr)}
-      changed={live.changed(f.file, f.ptr)}
+      unsaved={live.changed(f.file, f.ptr)}
       selected={ui.selection?.edit === f.edit}
       source={isSource(f.file) ? f.file : ''}
       onsource={() => onsource(f.file, itemOf(f), f.edit)}
@@ -221,7 +221,7 @@
       mode="source"
       label={c.label}
       {value}
-      changed={live.changed(g.file, c.ptr)}
+      unsaved={live.changed(g.file, c.ptr)}
       none={c.empty ?? null}
       {sourceIds}
       {itemsOf}
@@ -235,7 +235,7 @@
       edit="{g.file}#{c.ptr}"
       label={c.label}
       {value}
-      changed={live.changed(g.file, c.ptr)}
+      unsaved={live.changed(g.file, c.ptr)}
       empty="No link"
       binds={bindings ? bindings.binds('link') : null}
       onvalue={(v) => setConfig(c, v)}
@@ -247,7 +247,7 @@
       type={c.type === 'boolean' ? 'boolean' : 'select'}
       value={c.type === 'boolean' ? !!value : (value ?? '')}
       options={c.options ?? []}
-      changed={live.changed(g.file, c.ptr)}
+      unsaved={live.changed(g.file, c.ptr)}
       onvalue={(v) => setConfig(c, v)}
     />
   {/if}
@@ -304,7 +304,7 @@
       type="select"
       value={live.get(g.file, missingPtr) ?? 'hide'}
       options={MISSING_OPTIONS}
-      changed={live.changed(g.file, missingPtr)}
+      unsaved={live.changed(g.file, missingPtr)}
       onvalue={setMissing}
     >
       {#snippet tip()}<b>When a value is missing</b>: what happens on the published page when the

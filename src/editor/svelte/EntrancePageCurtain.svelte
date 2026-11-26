@@ -47,7 +47,7 @@
 {#if page}
   <h3 class="pane__head">Curtain</h3>
   <div class="fields">
-    <div class={['tf', live.changed(page.file, page.ptr) && 'is-changed']}>
+    <div class={['tf', live.changed(page.file, page.ptr) && 'is-unsaved']}>
       <span class="tf__label"
         >{route.template ? 'On every item page' : 'On this page'}<InfoHelp label="About Curtain"
           ><b>Curtain</b>: a panel that covers the screen while a visitor goes from one page to the
@@ -78,7 +78,7 @@
     </p>
     <!-- unset: the page's title (the placeholder); "" (No label): none. One row for both. -->
     {#if stored === ''}
-      <div class={['tf', textChanged && 'is-changed']}>
+      <div class={['tf', textChanged && 'is-unsaved']}>
         <span class="tf__label">{textLabel}</span>
         <div class="page-curtain__row">
           <span class="page-curtain__none">No label</span>
@@ -94,7 +94,7 @@
           label={textLabel}
           placeholder={title}
           value={stored}
-          changed={textChanged}
+          unsaved={textChanged}
           onvalue={(v) => setText(v === '' ? undefined : v)}
         />
         <Button

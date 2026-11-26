@@ -229,7 +229,7 @@
               icon="fa-file-lines"
               name={baseName(f)}
               meta={Array.isArray(items) ? `${items.length} items` : 'not a list'}
-              changed={fileChanged(f)}
+              unsaved={fileChanged(f)}
               data-file={f}
               onclick={() => goTo(f)}
             />
@@ -275,7 +275,7 @@
                 name={itemName(it, schema)}
                 meta={itemMeta(it, schema)}
                 selected={i === index}
-                changed={isChanged(it)}
+                unsaved={isChanged(it)}
                 aria-current={i === index}
                 onclick={() => select(i)}
               />
@@ -333,7 +333,7 @@
               {...f}
               half={halves.has(f.edit)}
               value={valueAt(item, f.path)}
-              changed={fieldChanged(f)}
+              unsaved={fieldChanged(f)}
               selected={ui.sources.property === f.key}
               onfocus={() => {
                 ui.sources.property = f.key;

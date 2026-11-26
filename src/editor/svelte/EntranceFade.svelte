@@ -58,7 +58,7 @@
   behind the curtain otherwise. Duration and ease.
 </p>
 {#each ROWS as [step, label] (step)}
-  <div class={['tf', changed(step) && 'is-changed']}>
+  <div class={['tf', changed(step) && 'is-unsaved']}>
     <span class="tf__label">{label}</span>
     <div class="f__pair">
       <input

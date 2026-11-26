@@ -65,7 +65,7 @@
       label="Title"
       placeholder="The page's heading"
       value={get('title')}
-      changed={changed('title')}
+      unsaved={changed('title')}
       onvalue={(v) => set('title', v.trim())}
       {tip}
     />
@@ -76,7 +76,7 @@
     type="multiline"
     placeholder="The site's description"
     value={get('description')}
-    changed={changed('description')}
+    unsaved={changed('description')}
     onvalue={(v) => set('description', v.trim())}
   />
   <Field
@@ -84,7 +84,7 @@
     label={template ? 'Share photo (items without a cover)' : 'Share photo'}
     type="photo"
     value={get('photo')}
-    changed={changed('photo')}
+    unsaved={changed('photo')}
     onvalue={(v) => set('photo', v)}
   />
   {#if get('photo')}
@@ -94,7 +94,7 @@
       </Button>
     </div>
   {/if}
-  <label class={['tf', changed('noindex') && 'is-changed']}>
+  <label class={['tf', changed('noindex') && 'is-unsaved']}>
     <span class="tf__label"
       >{template ? 'Hide every item page from search' : 'Hide from search'}
       <input
@@ -113,7 +113,7 @@
       label="Canonical URL (when this page copies another)"
       placeholder={seo?.url || ''}
       value={get('canonical')}
-      changed={changed('canonical')}
+      unsaved={changed('canonical')}
       onvalue={(v) => set('canonical', v.trim())}
     />
   {/if}

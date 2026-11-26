@@ -88,7 +88,7 @@
 
 <!-- a value picker (not tabs): a group of buttons, the picked one filled -->
 {#snippet choice(key, title, options, now)}
-  <div class={['tf', changed(key) && 'is-changed']}>
+  <div class={['tf', changed(key) && 'is-unsaved']}>
     <span class="tf__label">{title}</span>
     <div class="seg" role="radiogroup" aria-label={title}>
       {#each options as [value, label] (value)}
@@ -104,7 +104,7 @@
   </div>
 {/snippet}
 
-<h3 class={['pane__head', live.changed(file, '/backdrop') && 'is-changed']} id="backdrop">
+<h3 class={['pane__head', live.changed(file, '/backdrop') && 'is-unsaved']} id="backdrop">
   Backdrop
   {#if name}<span class="pane__name">{name}</span>{/if}
   <input
@@ -137,7 +137,7 @@
       <Field
         {...f}
         value={photos[i]}
-        changed={live.changed(file, f.ptr)}
+        unsaved={live.changed(file, f.ptr)}
         grab={ctl.grab}
         remove={ctl.remove}
         onvalue={(v) => (v ? live.store.set(file, f.ptr, v, { source: 'panel' }) : removeAt(i))}
@@ -148,7 +148,7 @@
     <hr class="scroll-backdrop__line" />
     {@render choice('transition', 'Transition', options(TRANSITIONS), transition)}
     <!-- the dim over the photos, for both transitions; the value has a fixed width -->
-    <div class={['tf', changed('shade') && 'is-changed']}>
+    <div class={['tf', changed('shade') && 'is-unsaved']}>
       <span class="tf__label">Shade</span>
       <div class="scroll-backdrop__shade">
         <input
@@ -174,7 +174,7 @@
             label="Parallax"
             type="boolean"
             value={b.parallax === true}
-            changed={changed('parallax')}
+            unsaved={changed('parallax')}
             onvalue={(v) => set('parallax', v)}
           />
           <Field
@@ -182,7 +182,7 @@
             label="Scrub"
             type="boolean"
             value={b.scrub === true}
-            changed={changed('scrub')}
+            unsaved={changed('scrub')}
             onvalue={(v) => set('scrub', v)}
           />
         </div>

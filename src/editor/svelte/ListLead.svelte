@@ -176,7 +176,7 @@
           store={live.store}
           mode="source"
           value={live.get(f.file, f.ptr)}
-          changed={live.changed(f.file, f.ptr)}
+          unsaved={live.changed(f.file, f.ptr)}
           none={null}
           {sourceIds}
           {itemsOf}
@@ -190,7 +190,7 @@
           edit={f.edit}
           label={f.label}
           value={live.get(f.file, f.ptr)}
-          changed={live.changed(f.file, f.ptr)}
+          unsaved={live.changed(f.file, f.ptr)}
           empty="No link"
           binds={bindings ? bindings.binds('link') : null}
           onvalue={(value) =>
@@ -201,7 +201,7 @@
           {...f}
           half={halves.has(f.edit)}
           value={live.get(f.file, f.ptr)}
-          changed={live.changed(f.file, f.ptr)}
+          unsaved={live.changed(f.file, f.ptr)}
           onvalue={(value) => setValue(f, value)}
         />
       {/if}
@@ -218,7 +218,7 @@
       type="select"
       value={templateId}
       options={templateOptions}
-      changed={live.changed(g.file, templatePtr)}
+      unsaved={live.changed(g.file, templatePtr)}
       onvalue={(v) => {
         note = '';
         setTemplate(v);

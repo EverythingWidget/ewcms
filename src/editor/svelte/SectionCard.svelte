@@ -1,6 +1,6 @@
 <!--
   One page section's card in the Sections tab's list (SectionsList.svelte), not collapsible:
-    title row  the changed dot, its title (its name, else "Section N"; one line, cut with …);
+    title row  its title (its name, else "Section N"; one line, cut with …), the unsaved dot after it;
                a click selects it, a double click opens its settings (onsection)
     its widgets always shown under the title (not collapsible): WidgetRow.svelte each, in their
                order (drag a row's grip to reorder, within the section; their grid areas stay); none:
@@ -10,7 +10,7 @@
   back). A Ctrl/Cmd or Shift click adds it to the selected sections (ui.selSections).
     live, file, at (its index), peek (hovered in the preview)
     selected, onselect, onsection (its settings), onopen(widgetId)
-    changed    overrides the changed dot (the mock kit)
+    unsaved    overrides the unsaved dot (the mock kit)
     section    optional: show this section ({ id, name, widgets }) instead of file.sections[at]
                (the template editor: its one section, its rows titled by their roles)
     onreorder  optional: (from, to) when a row is dragged; the default moves a page widget
@@ -30,7 +30,7 @@
     at,
     peek = false,
     selected = false,
-    changed = undefined,
+    unsaved = undefined,
     onselect,
     onsection,
     onopen,
@@ -96,7 +96,7 @@
   id={s.id}
   {title}
   off={!on}
-  changed={changed ??
+  unsaved={unsaved ??
     (s?.id ? live.changedItem(file, '/sections', s.id) : live.changed(file, `/sections/${at}`))}
   class={peek && !selected ? 'is-peek' : ''}
   foot={n ? list : onadd ? empty : undefined}

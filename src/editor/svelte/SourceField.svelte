@@ -7,7 +7,7 @@
                        it shows "people.json · Eeliya Rasta" and opens on that source's items
               'source' a source id ('' or null: none): it stops at the sources, the current
                        one highlighted; it shows "people.json"
-    value, changed (its changed dot), none (the label of no value, null: none can't be
+    value, unsaved (the unsaved dot after its label), none (the label of no value, null: none can't be
     picked), sourceIds, itemsOf(id) a source's items, nameOf(id, item) an item's name,
     onpick(value | undefined); onclear(): back to empty (the ✕ beside Change, when picked);
     store: the editor's store (the sources' schemas: a list's name, an
@@ -27,7 +27,7 @@
   let {
     mode = 'item',
     value,
-    changed = false,
+    unsaved = false,
     none = 'None',
     sourceIds,
     itemsOf,
@@ -74,7 +74,7 @@
     openItemModal({ mode, value, none, sourceIds, itemsOf, nameOf, onpick, onsource, label });
 </script>
 
-<div class={['tf', changed && 'is-changed']}>
+<div class={['tf', unsaved && 'is-unsaved']}>
   <!-- a click anywhere on the card opens the item modal; the keyboard has its main button -->
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class={['sc', !card && 'is-empty']} onclick={() => open()}>
@@ -186,7 +186,7 @@
     line-height: 16px;
   }
 
-  // (changed: the dot before it, editor.scss)
+  // (unsaved: the dot after it, editor.scss)
   .sc__label {
     @include row(var(--space-2));
     @include muted;

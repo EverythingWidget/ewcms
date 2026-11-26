@@ -68,7 +68,7 @@
       {label}
       {placeholder}
       value={valueOf(key)}
-      changed={live.changed(ANIMATIONS, `/defaults/${key}`)}
+      unsaved={live.changed(ANIMATIONS, `/defaults/${key}`)}
       onvalue={(v) => set(key, v)}
     />
   {/each}

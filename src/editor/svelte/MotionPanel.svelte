@@ -17,7 +17,7 @@
   import { ui, pickElement, selectAnim, hoverElement } from './ui.svelte.js';
   import { motionSections } from './page-motion.js';
   import { ANIMATIONS } from '../../render/files.js';
-  import { animationOf, elementOf } from './motion.js';
+  import { animationOf, elementOf, keepFor, layerPtr } from './motion.js';
 
   // live: reactive store (live.svelte.js); bridge: the preview (../preview-runtime.js); actions: main.js;
   // file: the page file
@@ -49,6 +49,14 @@
   });
   const outside = $derived(items.filter((it) => !it.el.closest('[data-widget]')));
 
+  /** Drop an element's own values in its widget (`base`: the widget's pointer): one undo step. */
+  function resetElement(id, base) {
+    live.store.remove(file, layerPtr(null, { id }, 'element', base), {
+      keep: keepFor('element'),
+      source: 'motion-structure',
+    });
+  }
+
   /** Select an element or widget (the same as a click in the preview picking it). */
   function pick(el) {
     if (!el) return;
@@ -58,21 +66,34 @@
   }
 </script>
 
-{#snippet element({ el, id })}
+<!-- an animated element; base: its widget's pointer (its own values there: the reset arrow,
+     in a slot at the row's end that is always kept) -->
+{#snippet element({ el, id }, base = '')}
   <li>
-    <button
-      type="button"
-      class={['mlist__item', 'mlist__element', elementOf(el, id) && 'is-changed']}
-      title={elementOf(el, id) ? 'Has its own values in this widget' : undefined}
-      onclick={() => pick(el)}
-      onpointerenter={() => hoverElement(el)}
-      onpointerleave={() => hoverElement(null)}
-    >
-      <span class="mlist__id">
-        {id}
-      </span>
-      <span class="muted">{animationOf(cfg, { id, el }) || '?'}</span>
-    </button>
+    <div class="mlist__row">
+      <button
+        type="button"
+        class={['mlist__item', 'mlist__element', base && 'has-reset']}
+        onclick={() => pick(el)}
+        onpointerenter={() => hoverElement(el)}
+        onpointerleave={() => hoverElement(null)}
+      >
+        <span class="mlist__id">
+          {id}
+        </span>
+        <span class="muted">{animationOf(cfg, { id, el }) || '?'}</span>
+      </button>
+      {#if base && elementOf(el, id)}
+        <button
+          type="button"
+          class="mlist__reset"
+          title="Has its own values in this widget: use the animation of all &quot;{id}&quot;"
+          aria-label="{id}: drop its own values in this widget"
+          onclick={() => resetElement(id, base)}
+          ><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button
+        >
+      {/if}
+    </div>
     {#if ui.anim && !ui.anim.widget && ui.anim.el === el}
       {#key ui.anim}
         <AnimEditor
@@ -134,7 +155,10 @@
               {/if}
               {#if widget.elements.length}
                 <ol class="list mlist__elements">
-                  {#each widget.elements as p (p.el)}{@render element(p)}{/each}
+                  {#each widget.elements as p (p.el)}{@render element(
+                      p,
+                      `/sections/${s.at}/widgets/${widget.j}`,
+                    )}{/each}
                 </ol>
               {/if}
             </li>
@@ -166,8 +190,42 @@
     margin: var(--space-1) 0 0 var(--space-4);
   }
 
+  .mlist__row {
+    position: relative;
+  }
+
   .mlist__element {
     font-size: var(--fs-sm);
+
+    // the reset arrow's slot at the row's end, kept while empty (nothing moves when it shows)
+    &.has-reset {
+      padding-right: calc(var(--space-3) + 16px + var(--space-2));
+    }
+  }
+
+  // an element's own values in its widget: a quiet reset over the row's end (as a field's)
+  .mlist__reset {
+    position: absolute;
+    top: calc(50% - 8px);
+    right: var(--space-3);
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-text-muted);
+    font-size: var(--fs-xs);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--c-text);
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
   }
 
   .mlist__count {

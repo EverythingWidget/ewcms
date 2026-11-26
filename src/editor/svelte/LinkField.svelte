@@ -19,7 +19,7 @@
     edit,
     label = 'Link',
     value,
-    changed = false,
+    unsaved = false,
     binds = null,
     empty = '',
     inline = false,
@@ -101,7 +101,7 @@
   }
 </script>
 
-<div class={['tf', changed && 'is-changed']} data-edit={edit}>
+<div class={['tf', unsaved && 'is-unsaved']} data-edit={edit}>
   {#if inline}
     <!-- under its photo (a photo list's row): no label above; the dropdown names it -->
     <Select
@@ -122,7 +122,7 @@
   <Field
     label="URL (https://…, mailto:… or #anchor)"
     value={value.href}
-    {changed}
+    {unsaved}
     {onfocus}
     onvalue={(v) => onvalue({ href: v.trim() })}
   />

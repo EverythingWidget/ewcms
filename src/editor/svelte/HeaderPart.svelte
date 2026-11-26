@@ -122,9 +122,9 @@
   }
 </script>
 
-<!-- a Select with its label, a changed dot before it -->
-{#snippet select(id, label, value, options, changed, onchange)}
-  <div class={['tf', changed && 'is-changed']}>
+<!-- a Select with its label, an unsaved dot after it -->
+{#snippet select(id, label, value, options, unsaved, onchange)}
+  <div class={['tf', unsaved && 'is-unsaved']}>
     <label class="tf__label" for={id}>{label}</label>
     <Select {id} {value} {options} placeholder="Pick…" {onchange} />
   </div>
@@ -138,14 +138,14 @@
     edit="{HEADER}#{ptr('label')}"
     label="Label"
     value={entry.label}
-    changed={live.changed(HEADER, ptr('label'))}
+    unsaved={live.changed(HEADER, ptr('label'))}
     onvalue={(v) => setText(path, 'label', v)}
   />
   <LinkField
     {live}
     edit="{HEADER}#{ptr('page')}"
     value={entry}
-    changed={['page', 'item', 'href'].some((k) => live.changed(HEADER, ptr(k)))}
+    unsaved={['page', 'item', 'href'].some((k) => live.changed(HEADER, ptr(k)))}
     onvalue={(link) => setLink(path, link)}
   />
   {#if !entry.children?.length}
@@ -163,7 +163,7 @@
       edit="{HEADER}#{ptr('all')}"
       label="Link to the page at the end of the dropdown (empty: none)"
       value={entry.all ?? ''}
-      changed={live.changed(HEADER, ptr('all'))}
+      unsaved={live.changed(HEADER, ptr('all'))}
       onvalue={(v) => setText(path, 'all', v)}
     />
   {/if}
@@ -190,7 +190,7 @@
     label={title}
     placeholder={fallback}
     value={live.get(STRINGS, `/header/${key}`)}
-    changed={live.changed(STRINGS, `/header/${key}`)}
+    unsaved={live.changed(STRINGS, `/header/${key}`)}
     onvalue={(v) =>
       live.store.set(STRINGS, `/header/${key}`, v || undefined, {
         source: 'panel',
@@ -228,7 +228,7 @@
         label="Title"
         tip={titleTip}
         value={live.get(SITE, '/name')}
-        changed={live.changed(SITE, '/name')}
+        unsaved={live.changed(SITE, '/name')}
         onvalue={setName}
       />
     </div>
@@ -241,7 +241,7 @@
         type="photo"
         tip={logoTip}
         value={live.get(HEADER, '/logo')}
-        changed={live.changed(HEADER, '/logo')}
+        unsaved={live.changed(HEADER, '/logo')}
         onvalue={setLogo}
       />
     </div>
@@ -264,7 +264,7 @@
         label="Label"
         placeholder="e.g. Contact"
         value={cta.label ?? ''}
-        changed={live.changed(HEADER, '/cta/label')}
+        unsaved={live.changed(HEADER, '/cta/label')}
         onvalue={setCtaLabel}
       />
       <LinkField
@@ -272,7 +272,7 @@
         edit="{HEADER}#/cta/link"
         value={cta}
         empty="None"
-        changed={['page', 'item', 'href'].some((k) => live.changed(HEADER, `/cta/${k}`))}
+        unsaved={['page', 'item', 'href'].some((k) => live.changed(HEADER, `/cta/${k}`))}
         onvalue={setCtaLink}
       />
     </div>

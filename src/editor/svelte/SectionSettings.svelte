@@ -133,7 +133,7 @@
   {@const id = `${sections[at].id}-${key}`}
   {@const ptr = key === 'phoneHeight' ? 'phone/height' : key}
   <div
-    class={['tf', changed(at, ptr) && 'is-changed']}
+    class={['tf', changed(at, ptr) && 'is-unsaved']}
     data-edit="{file}#/sections/{at}/{ptr}"
   >
     <span class="tf__label" {id}
@@ -192,7 +192,7 @@
     placeholder="Name"
     value={s.name ?? ''}
     help={hintOf(s, at)}
-    changed={changed(at, 'name')}
+    unsaved={changed(at, 'name')}
     onvalue={(name) => setName(at, name)}
   />
   <!-- Height (a minimum; its content always centred) and Width: icon buttons, one picked.
@@ -234,7 +234,7 @@
         ? 'Rows of the grid above this section, on phones. Empty: same as desktop.'
         : 'Rows of the grid above this section. Empty uses the site default. The first section of a page starts under the header and does not use this.'}
       tip={spaceTip}
-      changed={changed(at, spaceKey)}
+      unsaved={changed(at, spaceKey)}
       onvalue={(v) => setSpace(at, v)}
       reset={{
         on: spaceOwn(s),
@@ -258,7 +258,7 @@
       help={phoneView
         ? 'Phone only; unset: half the desktop rows'
         : 'Rows below the last widget are space (phones: their own, or half)'}
-      changed={changed(at, phoneView ? 'phone/rows/min' : 'rows/min')}
+      unsaved={changed(at, phoneView ? 'phone/rows/min' : 'rows/min')}
       onvalue={(v) => setMinRows(at, v)}
     />
   {/if}

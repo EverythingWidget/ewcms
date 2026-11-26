@@ -74,10 +74,10 @@
         edit="{REDIRECTS}#/redirects/{i}/from"
         label="From (a path on this site)"
         value={r.from}
-        changed={live.changed(REDIRECTS, `/redirects/${i}/from`)}
+        unsaved={live.changed(REDIRECTS, `/redirects/${i}/from`)}
         onvalue={(v) => setKey(i, 'from', v.trim())}
       />
-      <div class={['tf', live.changed(REDIRECTS, `/redirects/${i}/to`) && 'is-changed']}>
+      <div class={['tf', live.changed(REDIRECTS, `/redirects/${i}/to`) && 'is-unsaved']}>
         <label class="tf__label" for="{uid}-to-{i}">To</label>
         <Select
           id="{uid}-to-{i}"
@@ -91,11 +91,11 @@
           edit="{REDIRECTS}#/redirects/{i}/to"
           label="URL"
           value={r.to}
-          changed={live.changed(REDIRECTS, `/redirects/${i}/to`)}
+          unsaved={live.changed(REDIRECTS, `/redirects/${i}/to`)}
           onvalue={(v) => setKey(i, 'to', v.trim())}
         />
       {/if}
-      <div class={['tf', live.changed(REDIRECTS, `/redirects/${i}/status`) && 'is-changed']}>
+      <div class={['tf', live.changed(REDIRECTS, `/redirects/${i}/status`) && 'is-unsaved']}>
         <label class="tf__label" for="{uid}-status-{i}">Status</label>
         <Select
           id="{uid}-status-{i}"

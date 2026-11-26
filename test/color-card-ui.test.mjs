@@ -43,8 +43,13 @@ test('the card: Theme › Color reads its labels from colors.js and writes throu
   assert.match(panel, /\.swatch \{[^}]*border-radius: var\(--radius-md\);[^}]*background: var\(--swatch, var\(--field-bg\)\);/);
   assert.match(panel, /inset 0 0 0 2px var\(--focus-line\)/);
   assert.doesNotMatch(panel, /class="dot|\.dots \{/);
-  // the custom marker: the editor's changed dot, absolute in the row's left padding
-  assert.match(read('src/editor/styles/editor.scss'), /:is\(\.xrow, \.mlist__element, \.crole\)\.is-changed::before/);
+  // a colour of its own: its reset arrow, no dot; not saved yet: the yellow dot after its label;
+  // a theme with any own colour: a reset arrow on its card's bar, in a slot kept while empty
+  assert.match(panel, /class=\{\['crole', live\.changed\(THEME, ptr\) && 'is-unsaved'/);
+  assert.match(panel, /\{#if row\.custom\}\s*<button\s+type="button"\s+class="crole__reset"/);
+  assert.match(panel, /<span class="ctheme__reset">\s*\{#if customCount\(theme\(\), name\) > 0\}/);
+  assert.match(panel, /unsaved=\{live\.changed\(THEME, `\/colorThemes\/\$\{name\}`\)\}/);
+  assert.match(read('src/editor/styles/editor.scss'), /\.crole\.is-unsaved > \.tf__label::after/);
   const themePanel = read('src/editor/svelte/ThemePanel.svelte');
   assert.match(themePanel, /sub: 'Palette and color themes'/);
   assert.doesNotMatch(themePanel, /label="Brand color"|label="Color scheme"/);

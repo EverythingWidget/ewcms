@@ -96,7 +96,7 @@
     title="Replay: play the curtain over this page with these values (no navigation)"
     onclick={() => bridge.api?.replayCurtain?.(undefined, edit.get(edit.base) ?? true)}
   />
-  <label class={['tf', changed('/total') && 'is-changed']}>
+  <label class={['tf', changed('/total') && 'is-unsaved']}>
     <span class="tf__label">Total duration (s)</span>
     {@render number('/total', 'tf__input')}
     <span class="hint small tf__hint">
@@ -140,7 +140,7 @@
           <div
             class={[
               'tf',
-              (changed(row.pair + '/duration') || changed(ease)) && 'is-changed',
+              (changed(row.pair + '/duration') || changed(ease)) && 'is-unsaved',
               !individual && 'is-ease-inactive',
             ]}
           >
@@ -159,7 +159,7 @@
             </div>
           </div>
         {:else}
-          <label class={['tf', changed(row.rel) && 'is-changed']}>
+          <label class={['tf', changed(row.rel) && 'is-unsaved']}>
             <span class="tf__label">{row.label}</span>
             {@render number(row.rel, 'tf__input')}
             {#if row.hint}<span class="hint small tf__hint">{row.hint}</span>{/if}

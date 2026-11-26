@@ -143,6 +143,15 @@ say what a site must do before it bumps its pin.
 
 ### Editor
 
+- **The dots: yellow means unsaved, the reset arrow means a value of its own.** Every field's
+  unsaved dot is the top bar's yellow and sits right after its label (and its (i)); a section
+  card's or a pane heading's after its title. Its room is always kept, so nothing moves when it
+  shows. A value of its own (not the default) is shown only by the reset arrow, never a cyan dot:
+  Motion's elements with their own values in a widget get a reset arrow (drop them: the
+  animation of all), and a color theme card with any own colour gets one on its bar (all back to
+  the defaults), in a slot kept while empty. Theme › Color's roles, palette slots and site color
+  theme show the unsaved dot too. Components take `unsaved` (was `changed`).
+
 - **Theme › Color is the palette and the color themes (step 5).** The card ("Palette and color
   themes") holds the **Palette** (5 slots, each a hex field with its swatch picker), a card per
   **color theme** (Lightest … Darkest, a fixed-size preview chip on its bar; open: its 11 roles,
