@@ -52,7 +52,7 @@ test('the marks go into … by the frame width only', () => {
 
 test('every widget gets the toolbar: divider (text only), Auto, its size', () => {
   const s = src('svelte/WidgetToolbar.svelte');
-  assert.match(s, /const shown = \$derived\(!!\(where && widget && pos && !peeking\)\)/);
+  assert.match(s, /const shown = \$derived\(!!\(where && widget && pos\)\)/);
   assert.match(s, /\{#if hasText\}<span class="btb__div"/);
   assert.match(s, /fa-solid fa-up-down/);
   assert.match(s, /class="btb__size"/);
@@ -60,7 +60,7 @@ test('every widget gets the toolbar: divider (text only), Auto, its size', () =>
 });
 
 test('the toolbar stays mounted while a widget is dragged', () => {
-  assert.match(bar, /const shown = \$derived\(!!\(where && widget && pos && !peeking\)\);/);
+  assert.match(bar, /const shown = \$derived\(!!\(where && widget && pos\)\);/);
   assert.match(bar, /if \(drag !== dragging\) dragging = drag;/);
 });
 

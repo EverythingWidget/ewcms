@@ -136,8 +136,6 @@ const STYLE = `
 .dot[data-dot='top']:hover { box-shadow: 0 0 0 4px rgb(${T.accentRgb} / .35); }
 .dot[data-dot='bottom'] { top: calc(100% + ${DOT}px); cursor: default; pointer-events: none; }
 .sel.is-dragging .dot, .is-linking .box .dot { display: none; }
-/* the widget's section card hovered: its section only (no grid, links or targets) */
-.is-peeking .grids, .is-peeking .links, .is-peeking .targets { display: none; }
 .target { position: absolute; width: 12px; height: 12px; translate: -50% -50%; box-sizing: border-box; border: 2px solid rgb(255 255 255 / .7); border-radius: 50%; background: ${T.black}; }
 .target.is-near { width: 16px; height: 16px; border-color: ${T.accent}; background: ${T.accent}; box-shadow: 0 0 0 4px rgb(${T.accentRgb} / .35); }
 .tframe { position: absolute; box-sizing: border-box; border: 1px solid rgb(255 255 255 / .25); border-radius: ${T.radiusXs}; }
@@ -195,6 +193,7 @@ export function createOverlay({
   const S = {
     doc: null,
     win: null,
+    host: null, // #__ed-layout, the preview's body (clipHost)
     root: null, // the shadow root's layer
     els: {},
     drag: null, // a widget being moved or resized
@@ -336,7 +335,11 @@ export function createOverlay({
   function build() {
     const host = S.doc.createElement('div');
     host.id = '__ed-layout';
-    host.style.cssText = 'position:absolute;left:0;top:0;width:0;height:0;z-index:2147483645;';
+    // sized to the page in clipHost() (overflow hidden): a selected widget's bottom
+    // circle must not grow the preview's scroll height (that jumped the page when the
+    // overlay hid at the bottom of a short footer)
+    host.style.cssText =
+      'position:absolute;left:0;top:0;width:100%;height:0;overflow:hidden;pointer-events:none;z-index:2147483645;';
     const shadow = host.attachShadow({ mode: 'open' });
     const dots = '<i class="dot" data-dot="top"></i><i class="dot" data-dot="bottom"></i>';
     resetLinks();
@@ -396,6 +399,7 @@ export function createOverlay({
     shadow.addEventListener('pointerout', (e) => {
       if (e.target.dataset?.dot === 'top' && !S.linking) S.els.targets.replaceChildren();
     });
+    S.host = host;
     S.doc.body.appendChild(host);
     return host;
   }
@@ -521,14 +525,31 @@ export function createOverlay({
       S.raf = S.win.requestAnimationFrame(frame);
   }
 
+  /**
+   * The overlay host is as tall as the page's own content, and clips what it draws: a
+   * selected widget's bottom circle (DOT px past its box) must not extend the preview's
+   * scrollable overflow, or hiding that chrome jumps a page scrolled to the bottom.
+   */
+  function clipHost() {
+    if (!S.host || !S.win) return;
+    let bottom = S.win.innerHeight;
+    for (const el of S.doc.body.children) {
+      if (el === S.host || el.id === '__ed-style' || el.classList?.contains('__ed-box')) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width || r.height) bottom = Math.max(bottom, r.bottom + S.win.scrollY);
+    }
+    const h = `${Math.ceil(bottom)}px`;
+    if (S.host.style.height !== h) S.host.style.height = h;
+  }
+
   function layout() {
+    clipHost();
     drawGrids();
     drawLinks();
-    // the widget's section card hovered (ui.peek from the panel): only its section shows
-    // (not over a widget row: its widget shows, selected or outlined)
-    const peeking = !!ui.widget && ui.peek?.from === 'panel' && ui.hot?.from !== 'panel';
-    S.root.classList.toggle('is-peeking', peeking);
-    const arrange = arranging() && !peeking;
+    // a section card hovered in the aside: its section is outlined (drawPeek); the selected
+    // widget's box, handles, grid and toolbar stay (hiding them shrank the preview's scroll
+    // height when a bottom-of-page widget was selected, and the page jumped)
+    const arrange = arranging();
     S.root.classList.toggle('is-linking', !!S.linking);
     const sel = arrange ? widgetEl(ui.widget) : null;
     S.els.sel.hidden = !sel;
@@ -562,7 +583,7 @@ export function createOverlay({
         : ui.peek?.from === 'panel'
           ? ui.peek.id
           : !ui.widget && !ui.section && ui.selSection;
-    const p = (arrange || peeking) && !S.drag && peekId ? secById(peekId) : null;
+    const p = (arrange || ui.peek?.from === 'panel') && !S.drag && peekId ? secById(peekId) : null;
     drawPeek(p);
     // a Custom section's bottom edge: the one being dragged, hovered, or the selected widget's
     const rs =

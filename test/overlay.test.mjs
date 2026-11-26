@@ -290,3 +290,20 @@ test("the overlay's parts are wired in order: each reads only what ctx has when 
   assert.ok(order.indexOf('createOverlayRows') < order.indexOf('createOverlayDrag'));
   assert.ok(order.indexOf('createOverlayDrag') < order.indexOf('createOverlaySelect'));
 });
+
+test('a section card hovered keeps the selected widget\'s box, handles and grid', () => {
+  const ov = src('overlay.js');
+  assert.match(ov, /const arrange = arranging\(\);/);
+  assert.doesNotMatch(ov, /arranging\(\) && !peeking/);
+  assert.doesNotMatch(ov, /is-peeking/);
+  const bar = read('src/editor/svelte/WidgetToolbar.svelte');
+  assert.match(bar, /const shown = \$derived\(!!\(where && widget && pos\)\)/);
+  assert.doesNotMatch(bar, /!peeking/);
+});
+
+test("the overlay is clipped to the page so a selected widget's circle cannot grow it", () => {
+  const ov = src('overlay.js');
+  assert.match(ov, /function clipHost\(\)/);
+  assert.match(ov, /overflow:hidden/);
+  assert.match(ov, /clipHost\(\);\s*drawGrids\(\)/);
+});

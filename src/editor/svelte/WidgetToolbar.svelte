@@ -98,10 +98,9 @@
   // in place (visibility) until release
   let dragging = $state(false);
   let moving = $state(false);
-  // its section shown from the panel (the widget's section card hovered): none, as the frame
-  const peeking = $derived(ui.peek?.from === 'panel');
-  // shown: a widget picked, its box known, no peek (else hidden, still mounted)
-  const shown = $derived(!!(where && widget && pos && !peeking));
+  // shown: a widget picked, its box known (a section card hovered in the aside still
+  // leaves this bar up: only the section's peek outline is added)
+  const shown = $derived(!!(where && widget && pos));
   $effect(() => {
     if (!where) return void (box = null);
     const id = where.id;
@@ -198,7 +197,7 @@
 
   // the preview's label of the selected text steps aside on the toolbar's side (no shift)
   $effect(() => {
-    const side = where && widget && pos && !peeking ? pos.side : null;
+    const side = where && widget && pos ? pos.side : null;
     bridge.toolbarSide(side);
     return () => bridge.toolbarSide(null);
   });
