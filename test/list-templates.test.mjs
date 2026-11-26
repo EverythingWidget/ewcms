@@ -266,6 +266,34 @@ test('no config.template: the preset as now; a missing "t-…" warns and shows C
   assert.deepEqual(checkContent('pages/x/index.json', page), []);
 });
 
+test("templatesOp: a template made from another gets a copy of its color theme sub-roles", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-tpl-'));
+  try {
+    fs.cpSync(SITE_A, root, {
+      recursive: true,
+      filter: (p) => !/[\\/](dist|\.generated)([\\/]|$)/.test(p),
+    });
+    const themeFile = path.join(root, 'content', 'theme.json');
+    const before = fs.existsSync(themeFile) ? JSON.parse(fs.readFileSync(themeFile, 'utf8')) : {};
+    const { version: _v, ...data } = cloneTemplate(base, 'people', 'preset:card'); // eslint-disable-line no-unused-vars
+    // no sub-roles for its parent: theme.json is left alone
+    const plain = templatesOp(root, { op: 'add', data }).body;
+    assert.equal(plain.theme, undefined);
+    const card = { background: 3, typography: { title: 5 } };
+    const theme = { ...before, colorThemes: { dark: { templates: { 'preset:card': card } } } };
+    fs.writeFileSync(themeFile, JSON.stringify(theme));
+    let wrote;
+    const res = templatesOp(root, { op: 'add', data }, (m) => (wrote = m)).body;
+    assert.deepEqual(res.changed, ['theme.json']);
+    const disk = JSON.parse(fs.readFileSync(themeFile, 'utf8'));
+    assert.deepEqual(disk.colorThemes.dark.templates[res.id], card);
+    assert.deepEqual(res.theme, disk);
+    assert.ok(wrote.has(themeFile), 'the watcher is told about theme.json too');
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('templatesOp: a new t- file next to the language folder, loaded again on rebuild', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-tpl-'));
   try {

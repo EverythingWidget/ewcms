@@ -12,6 +12,7 @@
   import Button from './Button.svelte';
   import { ui } from './ui.svelte.js';
   import { cloneTemplate } from '../../widgets/list/presets.js';
+  import { THEME } from '../../render/files.js';
   import { t } from '../../render/strings.js';
   import { templatesOp } from '../source.js';
   import { dataLayer } from '../data/index.js';
@@ -48,6 +49,10 @@
       const { version: _v, ...body } = data; // eslint-disable-line no-unused-vars
       const res = await templatesOp({ op: 'add', data: body });
       live.store.files({ [res.file]: res.data });
+      // its color theme sub-roles, copied from its parent's into theme.json: unsaved edits stay on top
+      if (res.theme)
+        if (live.store.dirtyFiles().includes(THEME)) live.store.rebase({ [THEME]: res.theme });
+        else live.store.files({ [THEME]: res.theme });
       setTemplate(res.id);
       live.store.seal();
       if (pending)

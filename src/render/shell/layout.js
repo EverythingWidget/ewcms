@@ -60,7 +60,7 @@ export function head(ctx, route, accent) {
     }
     <meta name="twitter:card" content="${photo ? 'summary_large_image' : 'summary'}" />
     <style id="color-themes">
-      ${colorThemeCss(ctx.theme, ctx.templates).replace(/</g, "\\3c ")}
+      ${colorThemeCss(ctx.theme).replace(/</g, "\\3c ")}
     </style>
     ${
       accent || type

@@ -20,8 +20,9 @@
  *                 the palette) or "none" (fill roles only: no fill, transparent)
  *     typography  sub-roles: one text style's colour (TYPE_PARENT: left out, it follows Heading or Text)
  *     templates   sub-roles of an item template (its id, as a List's config.template: "preset:card",
- *                 "t-…"): TEMPLATE_ROLES and typography; left out, it follows its parent (a site
- *                 template's basedOn, then the section)
+ *                 "t-…"): TEMPLATE_ROLES and typography; left out, the section's roles. A template
+ *                 is its own thing: one made from another gets a copy of its sub-roles once
+ *                 (copyTemplateRoles, when it is added), basedOn is only a note
  *   colorTheme    the site color theme: the page, the chrome and every section that picks none
  *
  * Sections (page and footer) and header.json pick a theme with "colorTheme" (class ct-<name>).
@@ -221,43 +222,46 @@ export function typeRolesOf(set) {
 }
 
 /**
- * A template's sub-roles in a theme, resolved: its own over its parent's (a site template's
- * basedOn, another site template or a preset), only what is set: { roles, typography }.
- * templates: the site's (content/templates, by id).
+ * A template's own sub-roles in a theme, only what is set: { roles, typography } (none: the
+ * section's roles; its parent's are never read, see copyTemplateRoles).
  */
-export function templateRolesOf(theme, name, id, templates = {}, seen = new Set()) {
+export function templateRolesOf(theme, name, id) {
   const all = own(theme, name).templates;
   const set = isObject(all) && isObject(all[id]) ? all[id] : {};
-  const parent = templates?.[id]?.basedOn;
-  const base =
-    typeof parent === 'string' && parent !== id && !seen.has(parent)
-      ? templateRolesOf(theme, name, parent, templates, seen.add(id))
-      : { roles: {}, typography: {} };
-  const roles = { ...base.roles };
+  const roles = {};
   for (const k of TEMPLATE_ROLES) if (isRoleValue(set[k], roleOf(k).none)) roles[k] = normal(set[k]);
-  return { roles, typography: { ...base.typography, ...typeRolesOf(set) } };
+  return { roles, typography: typeRolesOf(set) };
+}
+
+/**
+ * A template made from another (a preset or a site template: its basedOn): theme.json with the
+ * parent's sub-roles copied into the new one's own entry, in each color theme that has them;
+ * null when there is nothing to copy. Done once, when the template is added; then each is its own.
+ */
+export function copyTemplateRoles(theme, from, to) {
+  if (!isObject(theme?.colorThemes) || !from || !to || from === to) return null;
+  let copied = false;
+  const colorThemes = {};
+  for (const [name, t] of Object.entries(theme.colorThemes)) {
+    const tpl = isObject(t) && isObject(t.templates) ? t.templates : null;
+    if (tpl && isObject(tpl[from]) && tpl[to] === undefined) {
+      colorThemes[name] = { ...t, templates: { ...tpl, [to]: structuredClone(tpl[from]) } };
+      copied = true;
+    } else colorThemes[name] = t;
+  }
+  return copied ? { ...theme, colorThemes } : null;
 }
 
 /** A role value as CSS: a slot's var, a custom colour, or transparent. */
 export const valueCss = (v) =>
   v === 'none' ? 'transparent' : isSlot(v) ? `var(--palette-${v})` : String(v);
 
-/** The template ids any theme sets sub-roles for, with their site templates' children. */
-function templateIds(theme, templates) {
+/** The template ids any theme sets sub-roles for. */
+function templateIds(theme) {
   const ids = new Set();
   for (const name of THEME_NAMES) {
     const t = own(theme, name).templates;
     if (isObject(t)) for (const id of Object.keys(t)) ids.add(id);
-  }
-  // a site template follows its parent's sub-roles: it needs its own rules too
-  let grew = true;
-  while (grew) {
-    grew = false;
-    for (const [id, tpl] of Object.entries(templates || {}))
-      if (!ids.has(id) && ids.has(tpl?.basedOn)) {
-        ids.add(id);
-        grew = true;
-      }
   }
   return [...ids];
 }
@@ -304,7 +308,6 @@ let builds = 0;
 export const colorCssBuilds = () => builds;
 const cache = new WeakMap();
 const NO_THEME = {};
-const NO_TEMPLATES = {};
 
 /**
  * The color themes as one static stylesheet ('' never: the engine's always apply):
@@ -312,30 +315,27 @@ const NO_TEMPLATES = {};
  *   :root, .ct-<site> / .ct-<name> { … }   each theme's roles (and its set sub-roles)
  *   …, .tpl-<id> { --smart-…; aliases }    the smart colours, worked out on each element
  *   .ct-<name> .tpl-<id> { … }            a template's sub-roles inside a theme
- * Built once per theme.json (and templates) object.
+ * Built once per theme.json object.
  */
-export function colorThemeCss(theme, templates) {
-  const a = theme || NO_THEME;
-  const b = templates || NO_TEMPLATES;
-  let byTpl = cache.get(a);
-  if (!byTpl) cache.set(a, (byTpl = new WeakMap()));
-  if (byTpl.has(b)) return byTpl.get(b);
+export function colorThemeCss(theme) {
+  const key = theme || NO_THEME;
+  if (cache.has(key)) return cache.get(key);
   builds++;
-  const css = buildCss(theme, templates);
-  byTpl.set(b, css);
+  const css = buildCss(theme);
+  cache.set(key, css);
   return css;
 }
 
-function buildCss(theme, templates) {
+function buildCss(theme) {
   const site = siteColorThemeOf(theme);
   const sel = (name) => (name === site ? `:root, .ct-${name}` : `.ct-${name}`);
-  const ids = templateIds(theme, templates);
+  const ids = templateIds(theme);
   // a text style set in any theme or template: the others reset it, so it follows its parent
   const typeSet = new Set();
   for (const name of THEME_NAMES) {
     Object.keys(typeRolesOf(own(theme, name))).forEach((s) => typeSet.add(s));
     for (const id of ids)
-      Object.keys(templateRolesOf(theme, name, id, templates).typography).forEach((s) =>
+      Object.keys(templateRolesOf(theme, name, id).typography).forEach((s) =>
         typeSet.add(s),
       );
   }
@@ -368,12 +368,12 @@ function buildCss(theme, templates) {
   // the templates that set a Background in some theme
   const paints = new Set(
     ids.filter((id) =>
-      THEME_NAMES.some((n) => templateRolesOf(theme, n, id, templates).roles.background !== undefined),
+      THEME_NAMES.some((n) => templateRolesOf(theme, n, id).roles.background !== undefined),
     ),
   );
   for (const name of order)
     for (const id of ids) {
-      const { roles, typography } = templateRolesOf(theme, name, id, templates);
+      const { roles, typography } = templateRolesOf(theme, name, id);
       const cls = templateClass(id);
       const selector =
         name === site ? `:root .${cls}, .ct-${name} .${cls}` : `.ct-${name} .${cls}`;
@@ -490,7 +490,7 @@ const hexOf = (v, palette) => (v === 'none' ? null : isSlot(v) ? palette[v - 1] 
  * background (a template's, the section's, the site theme's: "none" is see-through). WCAG
  * 4.5:1, 3:1 for headings. Only once a site has its own palette or color themes.
  */
-export function contrastWarnings(theme, templates = {}) {
+export function contrastWarnings(theme) {
   if (!ownPaletteOf(theme) && !isObject(theme?.colorThemes)) return [];
   const palette = paletteOf(theme);
   const siteBg = hexOf(rolesOf(theme, siteColorThemeOf(theme)).background, palette);
@@ -520,8 +520,8 @@ export function contrastWarnings(theme, templates = {}) {
     const roles = rolesOf(theme, name);
     const where = `colorThemes.${name}`;
     const bg = check(where, roles, typeRolesOf(own(theme, name)), siteBg);
-    for (const id of templateIds(theme, templates)) {
-      const t = templateRolesOf(theme, name, id, templates);
+    for (const id of templateIds(theme)) {
+      const t = templateRolesOf(theme, name, id);
       if (!Object.keys(t.roles).length && !Object.keys(t.typography).length) continue;
       // a template's own background: all its text against it; else only what it sets
       const eff = { ...roles, ...t.roles };

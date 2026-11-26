@@ -61,9 +61,11 @@ say what a site must do before it bumps its pin.
   (not a faded colour any more). It can set a template's roles too
   (`colorThemes.<name>.templates."<template id>"`, e.g. `"preset:card"` or `"t-ab12"`:
   Background, Text, Heading, Link, Button, Button text, Line and its text styles), for its items
-  only (class `tpl-<id>`). A site template copies its parent's (`basedOn`) and its own win. A
-  Background a template sets paints its items (its style's None); its style's Surface is a
-  surface of it. `ewcms check` checks a template's text against its own Background.
+  only (class `tpl-<id>`). A template is its own thing: one made from a preset or another
+  template (Duplicate) gets a copy of its parent's sub-roles in `content/theme.json`, once;
+  `basedOn` stays a note and is never followed (a template with no entry of its own uses the
+  section's roles). A Background a template sets paints its items (its style's None); its
+  style's Surface is a surface of it. `ewcms check` checks a template's text against its own Background.
 
 ### Editor
 

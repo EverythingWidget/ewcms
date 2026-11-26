@@ -1,11 +1,12 @@
 // Palette step 4: sub-roles. Text styles (colorThemes.<name>.typography) and each template's
-// roles (colorThemes.<name>.templates."<id>"), a site template copying its parent's (basedOn).
+// roles (colorThemes.<name>.templates."<id>"); a template made from another gets a copy, once.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {
   colorThemeCss,
   contrastWarnings,
+  copyTemplateRoles,
   templateClass,
   templateRolesOf,
 } from '../src/render/colors.js';
@@ -14,13 +15,13 @@ import { styleMarkup } from '../src/widgets/list/item-style.js';
 const rule = (css, selector) => css.split('\n').find((l) => l.startsWith(`${selector} {`)) || '';
 
 test('no sub-roles: no template rules, no --color-type-* set', () => {
-  const css = colorThemeCss({}, {});
+  const css = colorThemeCss({});
   assert.doesNotMatch(css, /\.tpl-/);
   assert.doesNotMatch(css, /--color-type-/);
 });
 
 test('a text style set in one theme: the others reset it, so it follows Heading / Text', () => {
-  const css = colorThemeCss({ colorThemes: { light: { typography: { label: 3 } } } }, {});
+  const css = colorThemeCss({ colorThemes: { light: { typography: { label: 3 } } } });
   assert.match(rule(css, '.ct-light'), /--color-type-label: var\(--palette-3\)/);
   assert.match(rule(css, '.ct-dark'), /--color-type-label: initial/);
   // only the set style is written
@@ -37,7 +38,7 @@ test("a template's sub-roles apply only inside its items, in that theme", () => 
   const theme = {
     colorThemes: { dark: { templates: { 'preset:card': { background: 3, text: '#333' } } } },
   };
-  const css = colorThemeCss(theme, {});
+  const css = colorThemeCss(theme);
   const dark = rule(css, '.ct-dark .tpl-preset-card');
   assert.match(dark, /--color-background: var\(--palette-3\)/);
   assert.match(dark, /--color-text: #333/);
@@ -58,7 +59,7 @@ test("a template's sub-roles apply only inside its items, in that theme", () => 
   assert.match(scss, /\.li \{[^}]*--item-fill: initial;/);
   // a template that sets no Background anywhere: no fill rules
   assert.doesNotMatch(
-    colorThemeCss({ colorThemes: { dark: { templates: { 'preset:row': { text: 2 } } } } }, {}),
+    colorThemeCss({ colorThemes: { dark: { templates: { 'preset:row': { text: 2 } } } } }),
     /--item-/,
   );
   // the site theme's (darkest) first, as :root: a section's theme comes after it and wins
@@ -75,30 +76,29 @@ test("a template's sub-roles apply only inside its items, in that theme", () => 
   assert.equal(templateClass('t-ab12'), 'tpl-t-ab12');
 });
 
-test("a site template copies its parent's sub-roles (basedOn), and its own win", () => {
+test("a template is its own: basedOn isn't followed; its parent's are copied once, when it is added", () => {
   const theme = {
     colorThemes: {
-      dark: {
-        templates: {
-          'preset:card': { background: 3, typography: { title: 5 } },
-          't-bb22': { text: 2 },
-        },
-      },
+      dark: { templates: { 'preset:card': { background: 3, typography: { title: 5 } } } },
+      light: { link: 2 },
     },
   };
-  const templates = { 't-aa11': { basedOn: 'preset:card' }, 't-bb22': { basedOn: 't-aa11' } };
-  const b = templateRolesOf(theme, 'dark', 't-bb22', templates);
-  assert.deepEqual(b.roles, { background: 3, text: 2 });
-  assert.deepEqual(b.typography, { title: 5 });
-  const css = colorThemeCss(theme, templates);
-  assert.match(rule(css, '.ct-dark .tpl-t-aa11'), /--color-background: var\(--palette-3\)/);
-  assert.match(rule(css, '.ct-dark .tpl-t-aa11'), /--color-type-title: var\(--palette-5\)/);
-  // a cycle doesn't loop
-  assert.deepEqual(
-    templateRolesOf(theme, 'dark', 't-x', { 't-x': { basedOn: 't-y' }, 't-y': { basedOn: 't-x' } })
-      .roles,
-    {},
-  );
+  // a template with no entry of its own: the section's roles (no rules), whatever its basedOn
+  assert.deepEqual(templateRolesOf(theme, 'dark', 't-aa11'), { roles: {}, typography: {} });
+  assert.doesNotMatch(colorThemeCss(theme), /tpl-t-aa11/);
+  // copied: its own entry, in each theme that had the parent's
+  const copy = copyTemplateRoles(theme, 'preset:card', 't-aa11');
+  assert.deepEqual(copy.colorThemes.dark.templates['t-aa11'], { background: 3, typography: { title: 5 } });
+  assert.equal(copy.colorThemes.light.templates, undefined);
+  assert.deepEqual(theme.colorThemes.dark.templates['t-aa11'], undefined, 'theme.json given is not changed');
+  assert.match(rule(colorThemeCss(copy), '.ct-dark .tpl-t-aa11'), /--color-background: var\(--palette-3\)/);
+  // then each is its own: the parent's later edit doesn't reach it
+  copy.colorThemes.dark.templates['preset:card'].background = 4;
+  assert.equal(copy.colorThemes.dark.templates['t-aa11'].background, 3);
+  // nothing to copy, or an entry of its own already: null
+  assert.equal(copyTemplateRoles(theme, 'preset:row', 't-bb22'), null);
+  assert.equal(copyTemplateRoles({}, 'preset:card', 't-bb22'), null);
+  assert.equal(copyTemplateRoles(copy, 'preset:card', 't-aa11'), null);
 });
 
 test("contrast: a template's text against its own Background", () => {
