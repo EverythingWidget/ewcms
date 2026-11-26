@@ -9,27 +9,17 @@
  *                   buttons and forms don't act (Alt+click clicks through); a double click on a
  *                   Text widget edits it in place, on any other text, photo or bound value
  *                   opens its field, then the widget's pop-up (overlay.js)
- *   animate clicks  a click picks the data-anim element or widget under it ('pick'), the
- *                   pointer outlines it ('hover')
  *   visitor clicks  the site's own (links work), nothing picked
  * A locked Header or Footer takes no click (CSS); while one is open a click outside it does
  * nothing.
  *
  * bridge: preview-runtime.js (its emit and edit); overlay: overlay.js (its pointer handlers);
- * clicks(): previewClicks; hovered(): ui.hoverEl; widget(): ui.widget.
+ * clicks(): previewClicks; widget(): ui.widget.
  */
-/** What animate clicks pick under the pointer: a data-anim element, else its widget. */
-const MOTION_PICK = '[data-anim], [data-widget]';
 /** What would act on a click (follow, open, send): off with arrange clicks. */
 const ACTIVE = 'a, button, [role="button"], label, summary, input, select, textarea';
 
-export function createPointer({
-  bridge,
-  overlay,
-  clicks,
-  hovered = () => null,
-  widget = () => null,
-}) {
+export function createPointer({ bridge, overlay, clicks, widget = () => null }) {
   const { emit, edit } = bridge;
   let doc = null;
   let win = null;
@@ -64,25 +54,13 @@ export function createPointer({
     win = siteWin;
     doc = siteWin.document;
     const ov = overlay.pointer;
-    doc.addEventListener(
-      'pointermove',
-      (e) => {
-        // (arrange clicks: the overlay shows the widget under the pointer, CSS the text)
-        if (clicks() !== 'animate') return;
-        const t = e.target instanceof win.Element ? e.target : null;
-        const el = t?.closest(MOTION_PICK) || null;
-        if (el !== hovered()) emit('hover', el);
-      },
-      { passive: true },
-    );
     doc.documentElement.addEventListener('pointerleave', () => {
       emit('hover', null);
       ov.leave(); // no widget outlined
     });
 
-    // Clicks: arrange and animate clicks select instead of navigating. With arrange clicks no link,
-    // button or form acts (a click in a widget picks it: overlay.js; outside the widgets it
-    // picks the text's field); with animate clicks a click on an animated element picks it. Hold Alt
+    // Clicks: arrange clicks select instead of navigating: no link, button or form acts (a click
+    // in a widget picks it: overlay.js; outside the widgets it picks the text's field). Hold Alt
     // to click through.
     win.addEventListener(
       'click',
@@ -98,34 +76,26 @@ export function createPointer({
           e.stopPropagation();
           return;
         }
-        if (clicks() === 'arrange') {
-          if (t?.closest('[contenteditable]')) {
-            if (t.closest('a, button')) e.preventDefault(); // the caret moves, nothing follows
-            if (edit.richEditing && e.detail === 1 && t.closest('a')) edit.linkBoxSoon();
-            return;
-          }
-          // a link in the picked Text widget (its links take no pointer, so a click there picks
-          // the widget): its text edited, the caret in the link, its link box opened (F108)
-          const link = e.detail === 1 ? pickedLinkAt(e.clientX, e.clientY) : null;
-          if (link) {
-            e.preventDefault();
-            e.stopPropagation();
-            edit.startRich(link.body, e.clientX, e.clientY);
-            edit.linkBoxSoon();
-            return;
-          }
-          const hit = t?.closest('[data-edit], [data-bound]');
-          if (!hit && !t?.closest(ACTIVE)) return;
-          e.preventDefault();
-          e.stopPropagation();
-          if (hit && !hit.closest('[data-widget]')) pickField(hit);
+        if (t?.closest('[contenteditable]')) {
+          if (t.closest('a, button')) e.preventDefault(); // the caret moves, nothing follows
+          if (edit.richEditing && e.detail === 1 && t.closest('a')) edit.linkBoxSoon();
           return;
         }
-        const hit = t?.closest(MOTION_PICK);
-        if (!hit) return;
+        // a link in the picked Text widget (its links take no pointer, so a click there picks
+        // the widget): its text edited, the caret in the link, its link box opened (F108)
+        const link = e.detail === 1 ? pickedLinkAt(e.clientX, e.clientY) : null;
+        if (link) {
+          e.preventDefault();
+          e.stopPropagation();
+          edit.startRich(link.body, e.clientX, e.clientY);
+          edit.linkBoxSoon();
+          return;
+        }
+        const hit = t?.closest('[data-edit], [data-bound]');
+        if (!hit && !t?.closest(ACTIVE)) return;
         e.preventDefault();
         e.stopPropagation();
-        emit('pick', hit, 'anim');
+        if (hit && !hit.closest('[data-widget]')) pickField(hit);
       },
       true,
     );

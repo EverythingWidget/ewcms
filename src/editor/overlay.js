@@ -49,8 +49,8 @@
  * The overlay follows the page with a frame loop that runs only while something moves (a
  * gesture, a running animation, a box that just moved, or for a moment after a pointer, a
  * scroll, a key or a page change) and otherwise asks for no frame: the editor's own writes in
- * the page (its boxes, this layer) never wake it. Accepted: on Element motion a style animated
- * on another element that shifts the picked one's layout (a height above it) is followed only on
+ * the page (its boxes, this layer) never wake it. Accepted: without arrange clicks a style animated
+ * on another element that shifts a boxed one's layout (a height above it) is followed only on
  * the next pointer move, scroll or key. It reads `ui` (clicks(), widget, link) every
  * frame it runs, and the section metrics once per drag, so the grid doesn't move under the
  * pointer while the page reflows.
@@ -244,8 +244,8 @@ export function createOverlay({
   const own = (n) => !!(n.nodeType === 1 ? n : n.parentElement)?.closest?.(OWN);
   /**
    * A page mutation that may move what the editor draws: not its own (one of its own nodes
-   * changed, added or removed), and, when the overlay shows nothing of its own (Element motion:
-   * the preview's boxes only), not a style written on an element no box is on or under (a
+   * changed, added or removed), and, when the overlay shows nothing of its own (no arrange
+   * clicks: the preview's boxes only), not a style written on an element no box is on or under (a
    * script's motion elsewhere, an endless drift: as an endless CSS animation, not followed).
    */
   const pageMutation = (r) =>
@@ -780,7 +780,7 @@ export function createOverlay({
       gridKey = '';
       build();
       // (its pointer handlers: preview-pointer.js listens and calls them, `pointer` below)
-      // what moves the page or picks in it (a press and its release: Element motion's pick
+      // what moves the page or picks in it (a press and its release: a pick
       // draws its box): the loop runs for it, then idles
       S.anims = 0;
       const opts = { capture: true, passive: true };

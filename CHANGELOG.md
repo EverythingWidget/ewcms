@@ -143,6 +143,20 @@ say what a site must do before it bumps its pin.
 
 ### Editor
 
+- **A widget card's motion opens and closes smoothly; a panel header is clickable all over.**
+  The card's motion and an animated widget's element list grow and shrink with the panel
+  sections' own speed and ease (0.25s, one shared setting), only their own height moving, and
+  appear at once with reduced motion. The card's motion sits 4px under its row, 12px at the
+  sides and below. A collapsible header (the panel sections, Theme's colour themes, Header's CTA
+  button, the motion editor's groups) opens and closes from a click anywhere on it, its padding
+  and the card's top edge too, not only on its title or chevron; the controls in it (a switch, a
+  reset button) still act alone, and the title stays the keyboard's toggle. Nothing moves on
+  screen.
+- **Fixed: hovering an element in the motion tree outlines it in the preview again.** An
+  element outside the widgets no longer breaks the preview's boxes.
+- The old Element motion click mode's leftover code is removed (no change in use); the mockup
+  kit's page tabs are Sections | Page motion | SEO (an old `element-motion` tab shows Sections).
+
 - **A page's motion is in its Sections tab (no Element motion tab).** A page's tabs are
   Sections | Page motion | SEO; a saved Element motion tab opens Sections. One tree: each widget
   row shows its animation as a quiet tag ("none" without one) and a 32px ▶ Replay (its room

@@ -25,10 +25,13 @@
     body        optional snippet: the card's body under its 48px row (the widget's motion while
                 it is selected, WidgetMotion.svelte); the ring goes round the whole card
     after       optional snippet: under the card (its animated elements, MotionElements.svelte)
+                Both open and close as the cards do (lib/grow.js: their height, 0.25s power2.out;
+                reduced motion: at once)
 -->
 <script>
   import Button from './Button.svelte';
   import { nameOf } from './content-groups.js';
+  import { grow } from '../lib/grow.js';
   import { widgetType } from '../../widgets/index.js';
 
   let {
@@ -128,9 +131,13 @@
         </span>
       {/if}
     </div>
-    {@render body?.()}
+    {#if body}
+      <div class="brow__body" transition:grow>{@render body()}</div>
+    {/if}
   </div>
-  {@render after?.()}
+  {#if after}
+    <div class="brow__after" transition:grow>{@render after()}</div>
+  {/if}
 </li>
 
 <style lang="scss">
@@ -171,6 +178,14 @@
         cursor: not-allowed;
       }
     }
+  }
+
+  // the body and the elements: blocks of their own (a child's margin inside their height, which
+  // grows and shrinks as they open and close)
+  .brow__body,
+  .brow__after {
+    display: flow-root;
+    min-width: 0;
   }
 
   // [ grip  (chevron)  Type / its title  (animation  Replay) ]: 48px

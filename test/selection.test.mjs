@@ -106,7 +106,8 @@ test('the preview pick and hover live in ui only: the bridge reports them, keeps
   const b = src('preview-runtime.js');
   assert.doesNotMatch(b, /let (selected|hoverEl)\b/);
   assert.doesNotMatch(b, /\bselect\(el, kind|setHover\(/);
-  assert.match(src('preview-pointer.js'), /emit\('hover', el\)/);
+  // the hover box: an element row's (ui.hoverEl, hoverElement); the preview only clears it
+  assert.match(src('preview-pointer.js'), /emit\('hover', null\)/);
   const m = src('main.js');
   assert.doesNotMatch(m, /bridge\.(select|selected)\b|on\('select'/);
   assert.match(m, /bridge\.on\('hover', hoverElement\)/);
@@ -116,7 +117,7 @@ test('the preview pick and hover live in ui only: the bridge reports them, keeps
   assert.match(b, /clicks = \(\) => 'visitor',/);
   assert.doesNotMatch(b, /let clicks|clicks = next|setClickMode|\bclicks (===|!==)/);
   const u = src('svelte/ui.svelte.js');
-  for (const fn of ['pickElement', 'hoverElement', 'clearPick', 'clearSelection', 'pickAnim'])
+  for (const fn of ['pickElement', 'hoverElement', 'clearPick', 'clearSelection'])
     assert.match(u, new RegExp(`export function ${fn}\\(`));
 });
 
@@ -142,7 +143,7 @@ test('Esc and the panels select through the ui helpers', async () => {
   const persist = src('svelte/persist.js');
   assert.doesNotMatch(persist, /ui\.selection =/);
   // visitor clicks: no pick, the text field still restored (quietly)
-  assert.match(persist, /if \(el && !motion\) selectText\(edit, \{ quiet: true \}\);/);
+  assert.match(persist, /if \(el\) selectText\(edit, \{ quiet: true \}\);/);
   selectText('pages/index.json#/title', { quiet: true });
   assert.deepEqual(ui.selection, { edit: 'pages/index.json#/title', quiet: true });
 });

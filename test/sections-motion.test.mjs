@@ -5,7 +5,7 @@
 // of the shared Popover.svelte; the others stay as they were).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 
 const src = (f) => readFileSync(new URL(`../src/editor/svelte/${f}`, import.meta.url), 'utf8');
 
@@ -116,10 +116,11 @@ test('a widget row: its animation tag, the 16px chevron room, Replay; its motion
   // Replay: 32px, its room kept, disabled without an animation
   assert.match(row, /disabled=\{!motion\.animation\}\s*onclick=\{motion\.onreplay\}/);
   assert.match(row, /\.brow__play \{[^}]*width: 32px;[^}]*height: 32px;/);
-  // the card: its 48px row, then its body; the ring goes round the whole card
+  // the card: its 48px row, then its body (opening and closing animated); the ring goes round
+  // the whole card; the element list under it, animated too
   assert.match(
     row,
-    /<div class="brow__head">[\s\S]*<\/div>\s*\{@render body\?\.\(\)\}\s*<\/div>\s*\{@render after\?\.\(\)\}/,
+    /<div class="brow__head">[\s\S]*<\/div>\s*\{#if body\}\s*<div class="brow__body" transition:grow>\{@render body\(\)\}<\/div>\s*\{\/if\}\s*<\/div>\s*\{#if after\}\s*<div class="brow__after" transition:grow>\{@render after\(\)\}<\/div>\s*\{\/if\}/,
   );
   assert.match(row, /\.brow__head \{[^}]*min-height: 48px;/);
   assert.match(row, /&\.is-open \{\s*box-shadow: inset 0 0 0 1px var\(--c-widget-accent\);/);
@@ -162,4 +163,53 @@ test('animated elements: under their widget, each with its motion editor; the fi
   // the element's motion closes outside the Sections tab and in browse
   const main = readFileSync(new URL('../src/editor/main.js', import.meta.url), 'utf8');
   assert.match(main, /if \(clicks !== 'arrange' \|\| ui\.pageTab !== 'sections'\) clearAnim\(\);/);
+});
+
+test("a widget card's motion: 4px under its row, 12px at the sides and below", () => {
+  assert.match(
+    src('WidgetMotion.svelte'),
+    /\.wmotion \{[^}]*padding: var\(--space-1\) var\(--space-3\) var\(--space-3\);/,
+  );
+});
+
+test("opening and closing a widget card and its element list: the Collapsible's speed and ease", async () => {
+  const g = src('../lib/grow.js');
+  assert.match(g, /export const OPEN = \{ duration: 0\.25, ease: 'power2\.out' \};/);
+  assert.match(g, /import \{ cubicOut \} from 'svelte\/easing';/); // power2.out's curve
+  assert.match(src('Collapsible.svelte'), /gsap\.fromTo\([\s\S]{0,200}\.\.\.OPEN,/);
+  assert.doesNotMatch(src('Collapsible.svelte'), /duration: 0\.25/);
+  // only its own height moves (a flow-root body: its margins inside, measured whole)
+  assert.match(src('WidgetRow.svelte'), /import \{ grow \} from '\.\.\/lib\/grow\.js';/);
+  assert.match(src('WidgetRow.svelte'), /\.brow__body,\s*\.brow__after \{[^}]*display: flow-root;/);
+  const realMatch = globalThis.matchMedia;
+  try {
+    const { grow, OPEN } = await import('../src/editor/lib/grow.js');
+    const { cubicOut } = await import('svelte/easing');
+    globalThis.matchMedia = () => ({ matches: false });
+    const t = grow({ offsetHeight: 120 });
+    assert.equal(t.duration, OPEN.duration * 1000);
+    assert.equal(t.easing, cubicOut);
+    assert.equal(t.css(0.5), 'height: 60px; overflow: hidden;');
+    assert.equal(t.css(1), 'height: 120px; overflow: hidden;');
+    // reduced motion: no animation
+    globalThis.matchMedia = () => ({ matches: true });
+    assert.deepEqual(grow({ offsetHeight: 120 }), { duration: 0 });
+  } finally {
+    globalThis.matchMedia = realMatch;
+  }
+});
+
+test('the old Element motion click mode is gone: arrange and visitor clicks only', () => {
+  const dir = new URL('../src/editor/', import.meta.url);
+  const files = readdirSync(dir, { recursive: true }).filter((f) => /\.(js|svelte)$/.test(f));
+  for (const f of files) {
+    const s = readFileSync(new URL(f, dir), 'utf8');
+    assert.doesNotMatch(s, /__ed-animate|\bpickAnim\b|\bselectAnim\b|MOTION_PICK/, f);
+    assert.doesNotMatch(s, /clicks\(\) === 'animate'|=== 'animate'/, f);
+  }
+  assert.doesNotMatch(src('ui.svelte.js'), /export function choose\(/);
+  const kit = readFileSync(new URL('../sandbox/kit/Panel.svelte', import.meta.url), 'utf8');
+  assert.doesNotMatch(kit, /\['element-motion'/);
+  assert.match(kit, /\['sections', 'Sections'\],\s*\['page-motion', 'Page motion'\],/);
+  assert.match(kit, /tab === 'element-motion' \? 'sections' : tab/);
 });

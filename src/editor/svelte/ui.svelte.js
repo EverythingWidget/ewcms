@@ -26,8 +26,7 @@ import { popupStays } from '../multi-select.js';
  *   previewClicks()  what a click in the preview does, from ui.mode only:
  *                   'visitor'   browse: links work, nothing is picked
  *                   'arrange'   edit: pick and move widgets, double click to type
- *                 ('animate', picking animated elements in the preview, was the Element motion
- *                 tab's; that tab is part of Sections now, its elements open from the tree)
+ *                 (animated elements open from the Sections tab's tree, not from a click)
  *
  * Editor UI state. main.js changes it, the Svelte shell (App.svelte) shows it: it is a
  * $state object, so a change re-renders whatever uses that field.
@@ -35,9 +34,10 @@ import { popupStays } from '../multi-select.js';
  * The selection and hover fields (picked, hoverEl, anim, selection, widget, multi, popup,
  * section, selSection, selSections, peek, hot, link, anchor, mod, secRows) are written only by
  * the helpers below, never directly from other files. Their names follow one vocabulary:
- *   pick    a click in the preview (pickElement, pickAnim, clearPick)
+ *   pick    a click in the preview (pickElement, clearPick)
  *   select  a choice in a panel (selectWidgets, selectSection(s), selectText, selectLink,
- *           selectAnim, deselect, clearSelection); open / close: a pop-up shown or not
+ *           deselect, clearSelection); open: an element's motion (openElement, clearAnim);
+ *           open / close: a pop-up shown or not
  *   hover   the pointer (hoverElement, peekSection, hotWidget)
  */
 export const ui = $state({
@@ -152,11 +152,11 @@ export const ui = $state({
   /** Sections tab: the link selected in the preview (its follower's widget id), or null. */
   link: null,
   /**
-   * The element picked in the preview (its outline there): { el, kind: 'text' | 'anim' }, or
-   * null. preview-runtime.js reports clicks and draws the outline; pickElement() sets it.
+   * The element picked in the preview (its outline there): { el, kind: 'text' }, or null.
+   * preview-runtime.js reports clicks and draws the outline; pickElement() sets it.
    */
   picked: null,
-  /** The element under the pointer in the preview (animate clicks) or a Motion row's, or null. */
+  /** The animated element whose row is hovered in the Sections tab's tree (outlined), or null. */
   hoverEl: null,
   /** Open/closed per Section key ("text:hero", "site-settings:site", ...), once toggled. */
   sections: {},
@@ -247,49 +247,15 @@ export function selectSections(ids, last = ids.at(-1) ?? null) {
 }
 
 /**
- * A pick in the preview's Element motion tab: a widget ({ el, widget }) or a data-anim element
- * ({ el, id, key, owner, scope }). The widget (or the element's) is also the Sections tab's widget
- * (ui.widget), so both tabs show the same one.
+ * Element `el` of the preview picked (null: none): a text's ui.selection ({ edit }). quiet: put
+ * back (a reload, a refresh), not picked: the panel opens nothing for it.
  */
-export function pickAnim(sel) {
-  if (sel?.kind !== 'anim') return null;
-  const { el } = sel;
-  const owner = el.closest('[data-widget]')?.dataset.widget;
-  if (owner) ui.widget = owner;
-  if (el.dataset.anim === undefined)
-    return el.dataset.widget ? { el, widget: el.dataset.widget } : null;
-  // scope: where edits go, set by AnimEditor (its widget's elements if they have values, else All)
-  return { el, id: el.dataset.anim, key: el.dataset.animKey, owner, scope: null };
-}
-
-/**
- * Element `el` of the preview picked (null: none): with animate clicks it is ui.anim, else a
- * text's ui.selection ({ edit }). quiet: put back (a reload, a refresh), not picked: the panel
- * opens nothing for it.
- */
-export function pickElement(
-  el,
-  kind = previewClicks() === 'arrange' ? 'text' : 'anim',
-  { quiet = false } = {},
-) {
-  choose(el, kind, quiet);
-}
-
-/** A panel's choice of an animated element (Element motion's list): the same as a preview
- *  click picking it, so it also sets ui.widget to the widget that owns it (pickAnim). */
-export function selectAnim(el) {
-  choose(el, 'anim', false);
-}
-
-/** The one path pickElement and selectAnim share. */
-function choose(el, kind, quiet) {
+export function pickElement(el, kind = 'text', { quiet = false } = {}) {
   ui.picked = el ? { el, kind } : null;
-  if (previewClicks() === 'animate') ui.anim = pickAnim(ui.picked);
-  else
-    ui.selection =
-      el && kind === 'text'
-        ? { edit: el.dataset.edit ?? el.dataset.bound, ...(quiet && { quiet }) }
-        : null;
+  ui.selection =
+    el && kind === 'text'
+      ? { edit: el.dataset.edit ?? el.dataset.bound, ...(quiet && { quiet }) }
+      : null;
 }
 
 /** The selected widget's pop-up shown (a double click, the toolbar's gear). */

@@ -289,9 +289,9 @@
 <style lang="scss">
   @use '../styles/mixins' as *;
 
-  // the card's body: 12px over and under, 8px at the sides (the header's row above it)
+  // the card's body: 4px under the header's row, 12px at the sides and below
   .wmotion {
-    padding: var(--space-3) var(--space-2) var(--space-3);
+    padding: var(--space-1) var(--space-3) var(--space-3);
   }
 
   // [ the animation's select | its info button ]

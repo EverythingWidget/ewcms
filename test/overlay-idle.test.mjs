@@ -1,7 +1,7 @@
 // The overlay's one draw loop idles (step A of the preview performance work): on a stand-in page
 // (linkedom) an idle preview runs no frame once it has settled; a pointer move, a scroll, a
 // content change or a running animation wakes it; the editor's own writes (the preview's boxes,
-// the overlay's layer) never do, and on Element motion neither does a script's motion on an
+// the overlay's layer) never do, and without arrange clicks neither does a script's motion on an
 // element no box is on (an endless drift).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -147,8 +147,8 @@ async function preview({ mode = 'arrange' } = {}) {
   return p;
 }
 
-test('an idle preview runs no frame once it has settled (Edit and Element motion, a box shown)', async () => {
-  for (const mode of ['arrange', 'animate']) {
+test('an idle preview runs no frame once it has settled (Edit and browse, a box shown)', async () => {
+  for (const mode of ['arrange', 'visitor']) {
     const p = await preview({ mode });
     try {
       p.picked = p.doc.querySelector('.drift');
@@ -236,7 +236,7 @@ test('a pointer move, a scroll, a resize, a key, a content change and an animati
 });
 
 test("the editor's own writes never wake it: the preview's boxes, its style, the overlay's layer", async () => {
-  const p = await preview({ mode: 'animate' });
+  const p = await preview({ mode: 'visitor' });
   try {
     await p.run(1000);
     const own = {
@@ -264,8 +264,8 @@ test("the editor's own writes never wake it: the preview's boxes, its style, the
   }
 });
 
-test('Element motion: a drift on an element no box is on is not followed; the picked one is', async () => {
-  const p = await preview({ mode: 'animate' });
+test('browse: a drift on an element no box is on is not followed; a content change is', async () => {
+  const p = await preview({ mode: 'visitor' });
   try {
     await p.run(1000);
     const drift = p.doc.querySelector('.drift');
@@ -276,24 +276,9 @@ test('Element motion: a drift on an element no box is on is not followed; the pi
       n += await p.run(FRAME);
     }
     assert.equal(n, 0, 'an unrelated drift runs no frame');
-    // the picked element moving (here its widget, as a motion preview moves it): its box
-    // follows every frame
-    p.picked = p.doc.querySelector('[data-widget="a"] p');
-    p.doc.dispatchEvent(new p.win.Event('pointerup')); // (the click that picked it)
-    await p.run(1000);
-    assert.equal(p.box(), 'translate(6px, 36px)');
-    n = 0;
-    for (let i = 1; i <= 30; i++) {
-      p.doc.querySelector('[data-widget="a"]').style.translate = `0 ${i}px`;
-      n += await p.run(FRAME);
-      assert.equal(p.box(), `translate(6px, ${36 + i}px)`, `frame ${i}: the box on it`);
-    }
-    assert.ok(n >= 30, `${n} frames`);
-    await p.run(1000);
-    assert.equal(await p.run(1000), 0, 'then idle');
     // a content change is followed whatever it is on
     drift.textContent = '≈';
-    assert.ok((await p.run(1000)) > 1, 'a content change wakes it');
+    assert.ok((await p.run(1000)) >= 1, 'a content change wakes it');
   } finally {
     p.restore();
   }

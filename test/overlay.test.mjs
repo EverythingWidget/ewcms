@@ -114,7 +114,7 @@ test("a press on a widget's link or button only picks it: no pressed look, Alt s
     .find((l) => l.includes('pointer-events: none;') && l.includes('[data-widget] :is(a, button'));
   assert.ok(rule, "the injected CSS takes the pointer off a widget's links and buttons");
   // only with arrange or animate clicks (visitor clicks press as on the site), never while Alt is held
-  assert.match(rule, /^html:is\(\.__ed-arrange, \.__ed-animate\):not\(\.__ed-alt\) /);
+  assert.match(rule, /^html\.__ed-arrange:not\(\.__ed-alt\) /);
   // an animated element stays pickable (animate clicks), a text being typed stays clickable
   assert.match(
     rule,

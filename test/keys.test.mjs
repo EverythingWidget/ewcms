@@ -124,8 +124,8 @@ test('keys: Esc closes the modal in front, else drops the selection; a Header st
   Object.assign(ui, { widget: 'w-1', picked: { el: {} } });
   onKey(key('Escape'));
   assert.deepEqual(calls.splice(0), [['pick', null], ['deselect']]);
-  // animate clicks: the pick only
-  state.clicks = 'animate';
+  // browse clicks: the pick only
+  state.clicks = 'visitor';
   onKey(key('Escape'));
   assert.deepEqual(calls.splice(0), [['pick', null]]);
 });

@@ -12,9 +12,8 @@
  *    until it loses focus (a single click picks its widget: overlay.js); any other double-clicked
  *    text, photo (data-edit-type="photo") or bound value opens its field in the panel. Links,
  *    buttons and forms don't act on clicks (Alt+click does),
- *  - lets you hover/click widgets ([data-widget]) and [data-anim] elements to select them (animate
- *    clicks, 'animate': the innermost one under the pointer); visitor clicks ('visitor'):
- *    links work, nothing is picked,
+ *  - visitor clicks ('visitor'): links work, nothing is picked; an animated element whose row
+ *    is hovered in the Sections tab's tree is outlined (ui.hoverEl),
  *  - a bound value ([data-bound], src/render/layout/bindings.js) is not typed in the preview:
  *    its field in the panel shows the binding.
  */
@@ -45,15 +44,14 @@ html.__ed-arrange [data-edit-inline].__ed-invalid { outline-color: ${T.error} !i
 html.__ed-arrange [data-widget], html.__ed-arrange [data-widget] *:not([contenteditable], [contenteditable] *) { cursor: default !important; }
 [data-bound-missing] { opacity: .4; }
 html.__ed-arrange .hero__title { z-index: 5; }
-:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]):not([data-ed-open]) *, :is(html.__ed-arrange, html.__ed-animate):has([data-ed-open]) [data-router-view] * { pointer-events: none !important; }
-:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer]):not([data-ed-open]) { pointer-events: none; }
-:is(html.__ed-arrange, html.__ed-animate) :is([data-header], [data-footer])[data-ed-open]::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2147483645; box-shadow: inset 0 0 0 1px ${T.black}, inset 0 0 0 3px ${T.white}; }
-:is(html.__ed-arrange, html.__ed-animate) [data-footer]:not(:has([data-sec])) { min-height: 96px; }
-html.__ed-animate [data-anim], html.__ed-animate [data-anim] *, html.__ed-animate [data-widget], html.__ed-animate [data-widget] * { cursor: pointer !important; }
+html.__ed-arrange :is([data-header], [data-footer]):not([data-ed-open]) *, html.__ed-arrange:has([data-ed-open]) [data-router-view] * { pointer-events: none !important; }
+html.__ed-arrange :is([data-header], [data-footer]):not([data-ed-open]) { pointer-events: none; }
+html.__ed-arrange :is([data-header], [data-footer])[data-ed-open]::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2147483645; box-shadow: inset 0 0 0 1px ${T.black}, inset 0 0 0 3px ${T.white}; }
+html.__ed-arrange [data-footer]:not(:has([data-sec])) { min-height: 96px; }
 /* a press on a widget's link or button only picks the widget: the press misses it (no :active, :hover or focus look), the widget gets it; Alt+click still clicks through (__ed-alt); a clickable template item's widgets: overlay.js finds them by position */
 /* a link saved as the editor's own preview address (F50): marked, a click asks for it again (F107) */
-html:is(.__ed-arrange, .__ed-animate) a:is([href*="?draft="], [href*="&draft="], [data-ts-link*="draft="]) { text-decoration: underline wavy ${T.error} !important; text-decoration-thickness: 1.5px !important; text-underline-offset: 3px; }
-html:is(.__ed-arrange, .__ed-animate):not(.__ed-alt) [data-widget] :is(a, button, [role="button"], summary, label):not([data-anim], :has([data-anim], [contenteditable]), [contenteditable] *) { pointer-events: none; }
+html.__ed-arrange a:is([href*="?draft="], [href*="&draft="], [data-ts-link*="draft="]) { text-decoration: underline wavy ${T.error} !important; text-decoration-thickness: 1.5px !important; text-underline-offset: 3px; }
+html.__ed-arrange:not(.__ed-alt) [data-widget] :is(a, button, [role="button"], summary, label):not([data-anim], :has([data-anim], [contenteditable]), [contenteditable] *) { pointer-events: none; }
 .__ed-box { position: fixed; z-index: 2147483646; pointer-events: none; border-radius: ${T.radiusSm}; opacity: 0; transition: opacity .15s; left: 0; top: 0; }
 .__ed-box.is-on { opacity: 1; }
 .__ed-box--hover { border: 1px dashed rgb(255 255 255 / .6); }
@@ -108,7 +106,7 @@ export function createBridge({
     connect: [],
     navigate: [],
     pick: [], // an element picked in the preview (el, kind, { quiet }), or null: none
-    hover: [], // the element under the pointer (animate clicks), or null
+    hover: [], // null: the pointer left the preview
     key: [],
     textPick: [],
     part: [],
@@ -121,7 +119,7 @@ export function createBridge({
   let api = null;
   let win = null;
   let doc = null;
-  let boxes = null; // the hover and selected boxes (animate clicks; drawn: drawBoxes)
+  let boxes = null; // the hover and selected boxes (drawn: drawBoxes)
   const written = new WeakMap(); // box -> the styles drawBoxes last wrote on it
   const frameFns = new Set(); // called after each of the overlay's frames (onFrame)
   let applied = new WeakMap(); // element -> value it currently shows
@@ -237,7 +235,6 @@ export function createBridge({
     clicksChanged() {
       if (!doc) return;
       doc.documentElement.classList.toggle('__ed-arrange', clicks() === 'arrange');
-      doc.documentElement.classList.toggle('__ed-animate', clicks() === 'animate');
       // Freeze first: reverting split-text animations re-creates their inner elements,
       // which would drop contenteditable from editable text inside them (page titles, hero name).
       // Only into or out of arrange: freeze and unfreeze revert and play the page's animations
@@ -351,8 +348,7 @@ export function createBridge({
     updateAnimations(cfg, { replay = true } = {}) {
       if (!api) return;
       api.setAnimations(cfg);
-      if (replay && clicks() !== 'arrange')
-        bridge.replay(picked()?.kind === 'anim' ? picked().el : null, { scroll: false });
+      if (replay && clicks() !== 'arrange') bridge.replay(null, { scroll: false });
     },
 
     /**
@@ -510,11 +506,8 @@ export function createBridge({
     // a text in a widget (arrange clicks): the overlay's frame on the widget is its one border
     const boxTarget = (el) =>
       clicks() === 'arrange' && el?.closest?.('[data-widget]') ? null : el;
-    const a = placeBox(
-      boxes.hover,
-      sameAsSel ? null : boxTarget(hoverEl),
-      clicks() === 'arrange' ? 'text' : 'anim',
-    );
+    // the hover box: an animated element whose row is hovered in the Sections tab's tree
+    const a = placeBox(boxes.hover, sameAsSel ? null : hoverEl, 'anim');
     const b = placeBox(boxes.sel, boxTarget(selected?.el), selected?.kind);
     return a || b;
   }
@@ -551,7 +544,6 @@ export function createBridge({
       api.hooks.beforeMount.add(() => bridge.applyTexts({ force: true, plain: true }));
       api.hooks.afterMount.add(() => {
         doc.documentElement.classList.toggle('__ed-arrange', clicks() === 'arrange');
-        doc.documentElement.classList.toggle('__ed-animate', clicks() === 'animate');
         emit('pick', null);
         emit('navigate', win.location.pathname);
         restore?.();

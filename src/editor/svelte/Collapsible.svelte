@@ -40,6 +40,7 @@
 <script>
   import { untrack } from 'svelte';
   import { gsap } from 'gsap';
+  import { OPEN } from '../lib/grow.js';
   import { ui } from './ui.svelte.js';
 
   let {
@@ -86,8 +87,7 @@
       { gridTemplateRows: opening ? '0fr' : '1fr' },
       {
         gridTemplateRows: opening ? '1fr' : '0fr',
-        duration: 0.25,
-        ease: 'power2.out',
+        ...OPEN,
         onComplete: () => gsap.set(body, { clearProps: 'gridTemplateRows' }),
       },
     );
@@ -96,6 +96,16 @@
   function toggle() {
     if (key) ui.sections[key] = !isOpen;
     else toggled = !isOpen;
+  }
+
+  // the whole bar opens and closes it (its padding and the card's top edge too, not just the
+  // title and caret): a pointer shortcut, the title is the keyboard's; the bar's own controls
+  // (the `bar` snippet: a count's link, buttons, a switch) act alone
+  const BAR_CONTROLS =
+    'a, button, input, select, textarea, label, [contenteditable], [role="switch"]';
+  function barClick(e) {
+    if (onenter || e.target.closest?.(BAR_CONTROLS)) return;
+    toggle();
   }
 
   // a card (onenter): a click selects it, a double click goes in; not on its controls
@@ -132,7 +142,8 @@
   ondblclick={onenter && enter}
   onmousedown={onenter && noSelect}
 >
-  <div class="collapsible__bar">
+  <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+  <div class={['collapsible__bar', !onenter && 'is-toggle']} onclick={barClick}>
     {#if onenter}
       <span id="{uid}-head" class="collapsible__toggle collapsible__toggle--card"
         >{@render head()}</span
@@ -178,7 +189,9 @@
   .collapsible {
     display: flex;
     flex-direction: column;
-    padding: var(--space-3) 0; // the sides: the bar's and the inner's (a foot's line is edge to edge)
+    // the top: the bar's (all of the header a click target); the sides: the bar's and the
+    // inner's (a foot's line is edge to edge)
+    padding: 0 0 var(--space-3);
     position: relative;
     border: 1px solid transparent;
     @include surface(var(--c-card), $quiet: 45%);
@@ -209,7 +222,7 @@
   // (a toggle with a name has a second 20px line)
   .collapsible__bar {
     display: flex;
-    padding-inline: var(--space-2);
+    padding: var(--space-3) var(--space-2) 0;
     align-items: flex-start;
     gap: var(--space-1);
     font-size: var(--fs-base);
@@ -226,16 +239,21 @@
     > :global(*) {
       flex: none;
     }
+
+    // a click anywhere on it opens and closes it
+    &.is-toggle {
+      cursor: pointer;
+    }
   }
 
   // a panel's own sections (not nested ones): the bar stays on top of the scroll area while
   // its section scrolls by, on the panel's color so the fields pass under it
   :global(.ed-body) > .collapsible > .collapsible__bar {
     position: sticky;
-    top: -12px; // the scroll area's top edge, over its padding
+    top: -16px; // its title 4px under the scroll area's top edge, over its padding (as before)
     z-index: 1;
-    margin: -8px 0;
-    padding: var(--space-2);
+    margin-bottom: -8px;
+    padding: var(--space-3) var(--space-2) var(--space-2);
   }
 
   // the title, with the name under it

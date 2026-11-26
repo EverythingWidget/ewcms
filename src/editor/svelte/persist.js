@@ -153,7 +153,6 @@ export function restoreUi(preview, content) {
         modals: ui.modals.filter((name) => KEPT.includes(name)),
         path: bridge.path(),
         edit: ui.selection?.edit,
-        anim: ui.anim?.widget ? `widget:${ui.anim.widget}` : ui.anim?.key,
         panelY: document.querySelector('.ed-body')?.scrollTop || 0,
         previewY: bridge.api?.scrollTop() || 0,
       }),
@@ -167,7 +166,7 @@ export function restoreUi(preview, content) {
  */
 export async function restorePlace() {
   if (!saved) return;
-  const { sources, modals, item, path, edit, anim, panelY, previewY } = saved;
+  const { sources, modals, item, path, edit, panelY, previewY } = saved;
   saved = null; // only after the refresh, not on later page changes
 
   // Sources, under Media when both were open
@@ -180,20 +179,12 @@ export async function restorePlace() {
 
   if (path !== bridge.path()) return;
   bridge.api.scrollTop(previewY);
-  // the picked element ('animate' clicks: no longer used); Pages: the selected field
-  const clicks = previewClicks();
-  const motion = clicks === 'animate';
-  const sel = motion
-    ? anim &&
-      (anim.startsWith('widget:')
-        ? `[data-widget="${CSS.escape(anim.slice(6))}"]`
-        : `[data-anim-key="${CSS.escape(anim)}"]`)
-    : edit && `[data-edit="${CSS.escape(edit)}"]`;
-  const el = sel && bridge.doc.querySelector(sel);
-  if (el && clicks !== 'visitor') pickElement(el, motion ? 'anim' : 'text', { quiet: true });
+  // Pages: the selected field
+  const el = edit && bridge.doc.querySelector(`[data-edit="${CSS.escape(edit)}"]`);
+  if (el && previewClicks() !== 'visitor') pickElement(el, 'text', { quiet: true });
   // quiet: the Pages panel doesn't scroll to the field, the panel scroll is put back below (visitor
   // clicks pick nothing in the preview, the field is still the one open)
-  if (el && !motion) selectText(edit, { quiet: true });
+  if (el) selectText(edit, { quiet: true });
   await tick();
   requestAnimationFrame(() => {
     const panel = document.querySelector('.ed-body');

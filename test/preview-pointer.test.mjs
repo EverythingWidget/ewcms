@@ -87,15 +87,12 @@ test('arrange clicks: a text outside the widgets opens its field; a double click
   assert.deepEqual(log.splice(0), ['emit pick h text', 'emit textPick p#/h', 'overlay.dblclick']);
 });
 
-test('animate clicks pick the animated element; visitor clicks are the site own', () => {
-  const s = setup('animate');
+test('visitor clicks are the site own: nothing picked, nothing prevented', () => {
+  const s = setup('visitor');
   s.document.querySelector('header').removeAttribute('data-ed-open');
-  s.fire('win', 'click', s.$('#anim'));
-  assert.deepEqual(s.log.splice(0), ['emit pick anim anim']);
-  s.fire('doc', 'dblclick', s.$('#t'));
-  assert.deepEqual(s.log.splice(0), ['overlay.dblclick']); // no in-place edit
-  s.mode.clicks = 'visitor';
-  const e = s.fire('win', 'click', s.$('#nav'));
-  assert.equal(e.prevented, false);
+  for (const id of ['#anim', '#nav']) {
+    const e = s.fire('win', 'click', s.$(id));
+    assert.equal(e.prevented, false);
+  }
   assert.deepEqual(s.log, []);
 });

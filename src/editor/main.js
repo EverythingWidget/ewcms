@@ -4,8 +4,8 @@
  * The side panel shows an area (ui.panel; the names are explained in svelte/ui.svelte.js and
  * areas.js), opened from the areas' list:
  *   Pages         - the pages list, or a page with its tabs: Sections (arrange: pick and move
- *                   widgets, double click a text to type it; animations paused), Motion
- *                   (animate: click a widget or an animated element to edit its animation), SEO
+ *                   widgets, double click a text to type it; animations paused; the widgets'
+ *                   and elements' motion in the same tree), Page motion, SEO
  *   Templates     - the item templates
  *   Theme         - the look, content/theme.json: color, typography and layout
  *   Animations    - the default timing, the Animations library, the page entrance
@@ -225,7 +225,6 @@ const pointer = createPointer({
   bridge,
   overlay,
   clicks: previewClicks,
-  hovered: () => ui.hoverEl,
   widget: () => ui.widget,
 });
 // the panels change what the overlay shows (a row picked or hovered, a key): its loop runs
@@ -529,20 +528,14 @@ async function refreshStatus() {
   }
 }
 
-/** Tell the preview what a click does now (previewClicks); entering animate picks the widget. */
-function applyClicks(before) {
+/** Tell the preview what a click does now (previewClicks). */
+function applyClicks() {
   const clicks = previewClicks();
   bridge.clicksChanged();
   clearPick();
   // an element's motion editor lives in the Sections tab's tree: closed anywhere else
   if (clicks !== 'arrange' || ui.pageTab !== 'sections') clearAnim();
   overlay.refresh();
-  if (clicks === 'animate' && before !== 'animate') {
-    clearAnim();
-    // the widget open in the Sections tab is the one picked here
-    const el = ui.widget && bridge.doc?.querySelector(`[data-widget="${CSS.escape(ui.widget)}"]`);
-    if (el) pickElement(el, 'anim');
-  }
 }
 
 /**

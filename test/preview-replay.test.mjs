@@ -67,8 +67,8 @@ test('the animations stop into arrange clicks and play again only out of them', 
   const p = preview('visitor');
   assert.deepEqual(p.to('arrange'), ['freeze']); // Edit: the Sections tab
   assert.deepEqual(p.to('arrange'), []); // still arranging (another pop-up, a tab of the same)
-  assert.deepEqual(p.to('animate'), ['unfreeze']); // Element motion
-  assert.deepEqual(p.to('visitor'), []); // back to browse: already playing
+  assert.deepEqual(p.to('visitor'), ['unfreeze']); // Done: browse
+  assert.deepEqual(p.to('visitor'), []); // another area: already playing
   assert.deepEqual(p.to('arrange'), ['freeze']);
   assert.deepEqual(p.to('visitor'), ['unfreeze']); // Done, or another area
 });

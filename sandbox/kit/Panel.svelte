@@ -45,10 +45,11 @@
   ];
   const PAGE_TABS = [
     ['sections', 'Sections'],
-    ['element-motion', 'Element motion'],
     ['page-motion', 'Page motion'],
     ['seo', 'SEO'],
   ];
+  // the old Element motion tab is in Sections now (as the editor: persist.js)
+  const pageTab = $derived(tab === 'element-motion' ? 'sections' : tab);
 </script>
 
 <div class={APP}>
@@ -76,7 +77,7 @@
     {#if tabs && area === 'pages'}
       <Tabs
         tabs={PAGE_TABS}
-        value={tab}
+        value={pageTab}
         onpick={() => {}}
         label="Page"
         class="page-tabs"
