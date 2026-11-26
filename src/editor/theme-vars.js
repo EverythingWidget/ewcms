@@ -4,11 +4,13 @@
  * scale and fonts, the layout) replace the :root:root block of the page's <style id="theme-vars">, the
  * one the page head rendered (shell/layout.js), and its color-scheme meta is brought in line
  * with color.scheme. A value cleared is gone from it, so the theme's tokens.scss default shows
- * again (and no color-scheme meta when that is cleared). main.js calls applyTheme on every
+ * again (and no color-scheme meta when that is cleared). Its palette's color themes (src/render/
+ * colors.js) replace the text of the page's <style id="color-themes">. main.js calls applyTheme on every
  * theme.json change (an edit, undo, redo, the panel open or not) and whenever a page loads in
  * the preview.
  */
 import { schemeOf, themeVars } from '../render/theme.js';
+import { colorThemeStyle } from '../render/colors.js';
 
 const ROOT_BLOCK = /\s*:root:root\s*\{[^}]*\}/g;
 
@@ -52,8 +54,22 @@ export function applyColorScheme(doc, theme) {
   if (el.getAttribute('content') !== scheme) el.setAttribute('content', scheme);
 }
 
-/** Put theme.json on the preview's document: CSS variables and the color-scheme meta. */
+/** Put theme.json's color themes on the preview's document `doc`: the color-themes style's text. */
+export function applyColorThemes(doc, theme) {
+  if (!doc?.head) return;
+  let el = doc.getElementById('color-themes');
+  const text = colorThemeStyle(theme);
+  if (!el) {
+    el = doc.createElement('style');
+    el.id = 'color-themes';
+    doc.head.prepend(el);
+  }
+  if (el.textContent.trim() !== text) el.textContent = text;
+}
+
+/** Put theme.json on the preview's document: color themes, CSS variables and the color-scheme meta. */
 export function applyTheme(doc, theme, fonts) {
+  applyColorThemes(doc, theme);
   applyThemeVars(doc, theme, fonts);
   applyColorScheme(doc, theme);
 }

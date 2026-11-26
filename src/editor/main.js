@@ -887,7 +887,7 @@ store.on(({ files, source: src, structure: _structure, edits }) => {
   // a Text widget typed into in place: the preview shows it already (its section renders
   // again when the edit ends: richDone); an undo or redo while it is edited ends the edit
   const typed = src?.nodeType === 1 && src.isContentEditable;
-  // theme.json: CSS variables and the color-scheme meta, put on the preview at once (theme-vars.js)
+  // theme.json: color themes, CSS variables and the color-scheme meta, put on the preview at once (theme-vars.js)
   if (files.includes(THEME)) applyTheme(bridge.doc, store.current[THEME], editorConfig.fonts);
   if (src === 'saved' || src === 'rebase') pushDraft();
   else if (files.some((f) => f !== ANIMATIONS))

@@ -335,6 +335,13 @@ const cache = new WeakMap();
 const NO_THEME = {};
 
 /**
+ * The color themes as one static stylesheet ('' never: the engine's always apply), as the page
+ * head writes it in <style id="color-themes"> ("<" escaped: it can't end the element). Not cached:
+ * the editor's theme.json changes in place (colorThemeCss caches it per object).
+ */
+export const colorThemeStyle = (theme) => buildCss(theme).replace(/</g, '\\3c ');
+
+/**
  * The color themes as one static stylesheet ('' never: the engine's always apply):
  *   :root { --palette-n }                  the engine's palette (theme.json's is :root:root)
  *   :root, .ct-<site> / .ct-<name> { … }   each theme's roles (and its set sub-roles)
@@ -346,7 +353,7 @@ export function colorThemeCss(theme) {
   const key = theme || NO_THEME;
   if (cache.has(key)) return cache.get(key);
   builds++;
-  const css = buildCss(theme);
+  const css = buildCss(theme).replace(/</g, '\\3c ');
   cache.set(key, css);
   return css;
 }

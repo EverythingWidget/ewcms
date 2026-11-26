@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createStore } from '../src/editor/store.js';
 import { parseHTML } from 'linkedom';
-import { applyColorScheme, applyThemeVars } from '../src/editor/theme-vars.js';
+import { applyColorScheme, applyColorThemes, applyThemeVars } from '../src/editor/theme-vars.js';
 import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { head } from '../src/render/shell/layout.js';
 import { brandOf, checkTheme, schemeOf, themeColorOf, themeVarList, themeVars, THEME_VARS } from '../src/render/theme.js';
@@ -259,4 +259,31 @@ test('Theme › Color: Color scheme edits theme.json color.scheme, in place, no 
   assert.equal(document.querySelector('meta[name="color-scheme"]').getAttribute('content'), 'light');
   applyColorScheme(document, {});
   assert.equal(document.querySelector('meta[name="color-scheme"]'), null);
+});
+
+test('M4: the editor puts theme.json\'s color themes on the preview in place (the #color-themes style)', async () => {
+  const { parseHTML } = await import('linkedom');
+  const { colorThemeCss } = await import('../src/render/colors.js');
+  const theme = { colorThemes: { dark: { link: '#c9a27a' } } };
+  // the style the head rendered: the same text, nothing written
+  const { document } = parseHTML(
+    `<!doctype html><html><head><style id="color-themes">\n      ${colorThemeCss({})}\n    </style></head><body></body></html>`,
+  );
+  const el = document.getElementById('color-themes');
+  const before = el.textContent;
+  applyColorThemes(document, {});
+  assert.equal(el.textContent, before);
+  // an edit (theme.json changes in place in the editor: not the cached CSS)
+  applyColorThemes(document, theme);
+  assert.match(el.textContent, /\.ct-dark \{[^}]*--color-link: #c9a27a/);
+  theme.colorThemes.dark.link = '#333333';
+  applyColorThemes(document, theme);
+  assert.match(el.textContent, /\.ct-dark \{[^}]*--color-link: #333333/);
+  assert.equal(document.querySelectorAll('#color-themes').length, 1);
+  // no style yet: one is made
+  const bare = parseHTML('<!doctype html><html><head></head><body></body></html>').document;
+  applyColorThemes(bare, theme);
+  assert.match(bare.getElementById('color-themes').textContent, /--palette-1/);
+  // main.js applies the whole theme on a theme.json change
+  assert.match(read('src/editor/theme-vars.js'), /export function applyTheme\(doc, theme, fonts\) \{\s*applyColorThemes\(doc, theme\);/);
 });
