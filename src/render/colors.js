@@ -310,13 +310,17 @@ export const RETIRED_COLOR_TOKENS = Object.freeze([
   '--tag-border-color',
 ]);
 
+/** A list item's fill, once a site token: each item sets its own now (src/widgets/list/style.scss). */
+const ITEM_FILL_TOKENS = ['--item-bg', '--item-bg-hover'];
+
 /**
  * The colour tokens a site's tokens.scss may still set that colour nothing of the engine (ewcms
- * check warns): the aliases, the retired ones and the text styles' old --type-<style>-color.
+ * check warns): the aliases, the retired ones, the item fill and the old --type-<style>-color.
  */
 export const isOldColorToken = (name) =>
   TOKEN_ALIASES.some(([alias]) => alias === name) ||
   RETIRED_COLOR_TOKENS.includes(name) ||
+  ITEM_FILL_TOKENS.includes(name) ||
   /^--type-[a-z]+-color$/.test(name);
 
 /**
@@ -409,12 +413,8 @@ function buildCss(theme) {
       const all = { ...rolesOf(theme, name), ...roles };
       // its item paints a Background it sets, when its style's fill is left empty (a fill set,
       // inline, wins: None is see-through, Surface a surface of it); a theme where it sets none:
-      // the item's own fill
-      const bg = roles.background !== undefined ? 'var(--color-background)' : 'inherit';
-      const fill = [
-        ['--item-bg', bg],
-        ['--item-bg-hover', bg],
-      ];
+      // none (over the site theme's rule, which matches everywhere). Hover: .li's, its own fill
+      const fill = [['--item-bg', roles.background !== undefined ? 'var(--color-background)' : 'transparent']];
       out.push(
         `${selector} { ${decls([
           ...TEMPLATE_ROLES.map((k) => [roleOf(k).css, roles[k] !== undefined ? valueCss(roles[k]) : 'inherit']),

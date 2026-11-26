@@ -36,8 +36,9 @@
   // today's cards (the places' cards): no box, a 4px photo radius, 16px between
   // the photo and the text. Change them here to restyle every List. The List widget's
   // presets use them (ewcms src/widgets/list/style.scss):
-  // every item takes --item-radius, -border, -shadow, -pad, -gap, -bg, -bg-hover and its
-  // photo's -photo-ratio and -photo-fit; the --item-pad-s/-m/-l steps space its text.
+  // every item takes --item-radius, -border, -shadow, -pad, -gap and its photo's -photo-ratio
+  // and -photo-fit; the --item-pad-s/-m/-l steps space its text. Its fill is its template's
+  // (Surface, or the Background its color theme sets: Theme › Color), not a token here.
   // --item-border is an inset box-shadow ring (no layout shift) and --item-shadow a shadow:
   // both box-shadow values, never "none" (they are listed together). A template's item style
   // (ewcms src/widgets/list/item-style.js) overrides them per item.
@@ -52,8 +53,6 @@
   --item-pad-m: 16px;
   --item-pad-l: 24px;
   --item-gap: 16px;
-  --item-bg: transparent;
-  --item-bg-hover: var(--item-bg);
   --item-photo-ratio: 4 / 5;
   --item-photo-fit: cover;
 

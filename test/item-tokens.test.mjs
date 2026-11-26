@@ -32,8 +32,6 @@ test('the theme defines every item token', () => {
     'pad-m',
     'pad-l',
     'gap',
-    'bg',
-    'bg-hover',
     'photo-ratio',
     'photo-fit',
   ])
@@ -44,12 +42,13 @@ test("the defaults are today's cards: no box, 4px radius, 16px gap; paddings on 
   assert.equal(root['--item-radius'], '4px');
   assert.equal(root['--item-gap'], '16px');
   assert.deepEqual(
-    [root['--item-border'], root['--item-shadow'], root['--item-pad'], root['--item-bg']],
-    ['inset 0 0 0 0 transparent', '0 0 0 0 transparent', '0px', 'transparent'],
+    [root['--item-border'], root['--item-shadow'], root['--item-pad']],
+    ['inset 0 0 0 0 transparent', '0 0 0 0 transparent', '0px'],
   );
   // border and shadow are box-shadow values listed together (never "none"); the photo 4:5, filled
   assert.deepEqual([root['--item-photo-ratio'], root['--item-photo-fit']], ['4 / 5', 'cover']);
-  assert.equal(root['--item-bg-hover'], 'var(--item-bg)');
+  // the fill is no token: each item sets its own (an item in another's, test/color-templates)
+  assert.equal(root['--item-bg'], undefined);
   for (const k of ['pad-s', 'pad-m', 'pad-l'])
     assert.equal(parseInt(root[`--item-${k}`]) % 4, 0, k);
 });

@@ -7,6 +7,7 @@ import {
   colorThemeCss,
   contrastWarnings,
   copyTemplateRoles,
+  isOldColorToken,
   templateClass,
   templateRolesOf,
 } from '../src/render/colors.js';
@@ -44,11 +45,13 @@ test("a template's sub-roles apply only inside its items, in that theme", () => 
   assert.match(dark, /--color-text: #333/);
   assert.match(dark, /--color-heading: inherit/);
   // its item paints the Background it sets (a fill its style sets, inline, still wins)
-  assert.match(dark, /--item-bg: var\(--color-background\); --item-bg-hover: var\(--color-background\)/);
+  assert.match(dark, /--item-bg: var\(--color-background\);/);
+  assert.doesNotMatch(dark, /--item-bg-hover/); // hover: .li's, its own fill
   // another theme: inherit all, its own fill (not the site theme's rule, which matches everywhere)
   const light = rule(css, '.ct-light .tpl-preset-card');
   assert.match(light, /--color-background: inherit/);
-  assert.match(light, /--item-bg: inherit; --item-bg-hover: inherit/);
+  assert.match(light, /--item-bg: transparent;/);
+  assert.doesNotMatch(css, /--item-bg: inherit/);
   // a style's fill wins (inline): None is see-through, Surface a surface of that Background;
   // left empty, nothing inline, so the template's Background shows
   assert.equal(styleMarkup({ background: 'none' }).vars, '--item-bg:transparent');
@@ -146,4 +149,25 @@ test('contrast: a template whose fill is None is read against the section, not i
   assert.ok(real.some((w) => /templates\.preset:plain: Text on Background/.test(w)), real.join('\n'));
   // its Heading it leaves to the section: nothing new to say about it
   assert.ok(!real.some((w) => /templates\.preset:plain: Heading/.test(w)), real.join('\n'));
+});
+
+test("an item in another's takes its own template's Background, never the outer item's", () => {
+  // each item sets its fill (.li): nothing inherits from an outer item
+  const scss = fs.readFileSync(new URL('../src/widgets/list/style.scss', import.meta.url), 'utf8');
+  const li = scss.slice(scss.indexOf('\n.li {'), scss.indexOf('&:hover', scss.indexOf('\n.li {')));
+  assert.match(li, /--item-bg: transparent;\s*--item-bg-hover: var\(--item-bg\);/);
+  // the outer template paints in Dark; the inner one sets none there: transparent (its own), and
+  // its own Background where it sets one; never inherit
+  const css = colorThemeCss({
+    colorThemes: {
+      dark: { templates: { 't-out1': { background: 4 } } },
+      light: { templates: { 't-in22': { background: 2 } } },
+    },
+  });
+  assert.match(rule(css, '.ct-dark .tpl-t-out1'), /--item-bg: var\(--color-background\)/);
+  assert.match(rule(css, '.ct-dark .tpl-t-in22'), /--item-bg: transparent/);
+  assert.match(rule(css, '.ct-light .tpl-t-in22'), /--item-bg: var\(--color-background\)/);
+  assert.doesNotMatch(css, /--item-bg: inherit/);
+  // a site still setting the old item fill tokens: check names them (they colour nothing now)
+  assert.ok(isOldColorToken('--item-bg') && isOldColorToken('--item-bg-hover'));
 });

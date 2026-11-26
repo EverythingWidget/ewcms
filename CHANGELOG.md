@@ -33,6 +33,12 @@ say what a site must do before it bumps its pin.
   button's shape, type and blur tokens (`--btn-radius`, `--btn-backdrop`, …) stay. In the commit
   that bumps the pin: drop them from `theme/tokens.scss`.
 
+- **Breaking: a list item's fill is no token any more: `--item-bg` and `--item-bg-hover` in
+  `theme/tokens.scss` are not read.** Each item sets its own fill (its style's Surface or None,
+  else the Background its own template sets in the color theme, else none), so an item inside
+  another never takes the outer one's; hover keeps its own fill unless its style sets one.
+  `ewcms check` names them. In the commit that bumps the pin: drop them from `theme/tokens.scss`.
+
 - **Breaking: the text styles' colour tokens `--type-<style>-color` are gone.** A text style's
   colour is its sub-role in `content/theme.json` `colorThemes.<name>.typography.<style>`.
   Paragraph, Label and Small now follow Text instead of the faded colour, and a List's facts
