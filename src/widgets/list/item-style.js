@@ -15,7 +15,8 @@
  *   shadow           "none" | "s" | "m" | "l"
  *   padding          0 | 8 | 12 | 16 | 24 | 32
  *   spacing          0 | 4 | 8 | 12 | 16 | 24  between the item's widgets
- *   background       "none" | "surface" | "surface-2"
+ *   background       "none" | "surface" | "surface-2"   none: see-through; left out: the
+ *                    Background its template sets in the color theme, else none
  *   hoverBackground  "none" | "surface" | "surface-2"
  *   textOverPhoto    "none" | "bottom"         the text over the photo's foot, a shade under it
  *   hoverEffect      "none" | "accent" | "zoom" | "shift" | "lift"   on hover: the title in the
@@ -124,11 +125,11 @@ export const cleanStyle = (style) =>
     : {};
 
 // the item's fill and ring: the color theme's roles (src/render/colors.js), a surface a step
-// (two) from Background toward Text; None: the Background its template sets in a color theme
-// (--item-fill), else see-through
+// (two) from Background toward Text; None: no fill (see-through). Left empty: the Background its
+// template sets in the color theme (--item-bg, src/render/colors.js), else none
 const surface = (n) => `color-mix(in oklab, var(--color-background), var(--color-text) ${n}%)`;
 const FILL = {
-  none: 'var(--item-fill, transparent)',
+  none: 'transparent',
   surface: surface(6),
   'surface-2': surface(12),
 };

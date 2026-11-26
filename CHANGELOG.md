@@ -64,8 +64,8 @@ say what a site must do before it bumps its pin.
   only (class `tpl-<id>`). A template is its own thing: one made from a preset or another
   template (Duplicate) gets a copy of its parent's sub-roles in `content/theme.json`, once;
   `basedOn` stays a note and is never followed (a template with no entry of its own uses the
-  section's roles). A Background a template sets paints its items (its style's None); its
-  style's Surface is a surface of it. `ewcms check` checks a template's text against its own Background.
+  section's roles). A Background a template sets paints its items when the item style's fill
+  is left empty; None is always see-through, Surface a surface of it. `ewcms check` checks a template's text against its own Background.
 
 ### Editor
 

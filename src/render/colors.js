@@ -378,19 +378,14 @@ function buildCss(theme) {
       const selector =
         name === site ? `:root .${cls}, .ct-${name} .${cls}` : `.ct-${name} .${cls}`;
       const all = { ...rolesOf(theme, name), ...roles };
-      // its item paints a Background it sets (--item-fill: a template style's None; its Surface,
-      // inline, wins: a surface of it); a theme where it sets none: the item's own fill
-      const fill =
-        roles.background !== undefined
-          ? [
-              ['--item-fill', 'var(--color-background)'],
-              ['--item-bg', 'var(--item-fill)'],
-              ['--item-bg-hover', 'var(--item-fill)'],
-            ]
-          : [
-              ['--item-bg', 'inherit'],
-              ['--item-bg-hover', 'inherit'],
-            ];
+      // its item paints a Background it sets, when its style's fill is left empty (a fill set,
+      // inline, wins: None is see-through, Surface a surface of it); a theme where it sets none:
+      // the item's own fill
+      const bg = roles.background !== undefined ? 'var(--color-background)' : 'inherit';
+      const fill = [
+        ['--item-bg', bg],
+        ['--item-bg-hover', bg],
+      ];
       out.push(
         `${selector} { ${decls([
           ...TEMPLATE_ROLES.map((k) => [roleOf(k).css, roles[k] !== undefined ? valueCss(roles[k]) : 'inherit']),

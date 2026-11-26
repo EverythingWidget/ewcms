@@ -43,20 +43,20 @@ test("a template's sub-roles apply only inside its items, in that theme", () => 
   assert.match(dark, /--color-background: var\(--palette-3\)/);
   assert.match(dark, /--color-text: #333/);
   assert.match(dark, /--color-heading: inherit/);
-  // its item paints the Background it sets (a template style's inline fill still wins)
-  assert.match(
-    dark,
-    /--item-fill: var\(--color-background\); --item-bg: var\(--item-fill\); --item-bg-hover: var\(--item-fill\)/,
-  );
+  // its item paints the Background it sets (a fill its style sets, inline, still wins)
+  assert.match(dark, /--item-bg: var\(--color-background\); --item-bg-hover: var\(--color-background\)/);
   // another theme: inherit all, its own fill (not the site theme's rule, which matches everywhere)
   const light = rule(css, '.ct-light .tpl-preset-card');
   assert.match(light, /--color-background: inherit/);
   assert.match(light, /--item-bg: inherit; --item-bg-hover: inherit/);
-  assert.doesNotMatch(light, /--item-fill/);
-  // a style's None is that Background; its Surface (inline) a surface of it; reset per item
-  assert.equal(styleMarkup({ background: 'none' }).vars, '--item-bg:var(--item-fill, transparent)');
-  const scss = fs.readFileSync(new URL('../src/widgets/list/style.scss', import.meta.url), 'utf8');
-  assert.match(scss, /\.li \{[^}]*--item-fill: initial;/);
+  // a style's fill wins (inline): None is see-through, Surface a surface of that Background;
+  // left empty, nothing inline, so the template's Background shows
+  assert.equal(styleMarkup({ background: 'none' }).vars, '--item-bg:transparent');
+  assert.match(styleMarkup({ background: 'surface' }).vars, /--item-bg:color-mix\(in oklab, var\(--color-background\)/);
+  assert.equal(styleMarkup({}).vars, '');
+  // one name: no --item-fill anywhere
+  for (const f of ['../src/widgets/list/style.scss', '../src/widgets/list/item-style.js', '../src/render/colors.js'])
+    assert.doesNotMatch(fs.readFileSync(new URL(f, import.meta.url), 'utf8'), /--item-fill/, f);
   // a template that sets no Background anywhere: no fill rules
   assert.doesNotMatch(
     colorThemeCss({ colorThemes: { dark: { templates: { 'preset:row': { text: 2 } } } } }),

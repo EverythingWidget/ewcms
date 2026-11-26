@@ -68,10 +68,9 @@
   align-content: start;
   padding: var(--item-pad);
   border-radius: var(--item-radius);
+  // its style's fill, else the Background its template sets in the color theme (.ct-<name>
+  // .tpl-<id>, src/render/colors.js), else the theme's --item-bg
   background: var(--item-bg);
-  // the Background its template sets in a color theme (.ct-<name> .tpl-<id>, src/render/colors.js);
-  // not a nested item's parent's
-  --item-fill: initial;
   // border: an inset ring, no layout shift; then the shadow
   box-shadow: var(--item-border), var(--item-shadow);
   color: inherit;
