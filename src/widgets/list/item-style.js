@@ -118,6 +118,19 @@ export function styleProblems(style) {
   return out;
 }
 
+/**
+ * The templates whose item style's fill is None (see-through: a Background their color theme
+ * sets never shows): the presets' and the site's (`templates`: { id: template }).
+ */
+export const seeThroughTemplates = (templates = {}) => [
+  ...Object.entries(PRESET_STYLES)
+    .filter(([, s]) => s.background === 'none')
+    .map(([id]) => id),
+  ...Object.entries(templates)
+    .filter(([, t]) => isObject(t?.style) && t.style.background === 'none')
+    .map(([id]) => id),
+];
+
 /** Only the valid keys (a broken one shows the theme's). */
 export const cleanStyle = (style) =>
   isObject(style)

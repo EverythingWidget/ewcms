@@ -131,3 +131,19 @@ test('one source: the text styles are layout/type.js\'s, a template id a preset 
   for (const id of ['preset:nope', 't-X', 'card'])
     assert.ok(tpl(id).some((p) => /is not a template id/.test(p)), id);
 });
+
+test('contrast: a template whose fill is None is read against the section, not its Background', async () => {
+  const { seeThroughTemplates } = await import('../src/widgets/list/item-style.js');
+  const palette = ['#000000', '#111111', '#777777', '#cccccc', '#ffffff'];
+  // dark text on a light template Background: fine where it shows, not over the dark section
+  const theme = { palette, colorThemes: { dark: { templates: { 'preset:plain': { background: 5, text: 1 }, 't-ab12': { background: 5, text: 1, heading: 1, link: 1 } } } } };
+  const seeThrough = seeThroughTemplates({ 't-ab12': { style: { background: 'none' } }, 't-cd34': { style: {} } });
+  assert.deepEqual(seeThrough, ['preset:plain', 'preset:photo', 't-ab12']);
+  const shown = contrastWarnings(theme);
+  assert.ok(!shown.some((w) => /templates\.t-ab12: Text/.test(w)), shown.join('\n'));
+  const real = contrastWarnings(theme, { seeThrough });
+  assert.ok(real.some((w) => /templates\.t-ab12: Text on Background/.test(w)), real.join('\n'));
+  assert.ok(real.some((w) => /templates\.preset:plain: Text on Background/.test(w)), real.join('\n'));
+  // its Heading it leaves to the section: nothing new to say about it
+  assert.ok(!real.some((w) => /templates\.preset:plain: Heading/.test(w)), real.join('\n'));
+});

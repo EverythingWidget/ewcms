@@ -509,11 +509,13 @@ export const contrastOf = (a, b) => {
 const hexOf = (v, palette) => (v === 'none' ? null : isSlot(v) ? palette[v - 1] : v);
 
 /**
- * Contrast warnings (ewcms check): per theme, each text colour against the nearest real
- * background (a template's, the section's, the site theme's: "none" is see-through). WCAG
- * 4.5:1, 3:1 for headings. Only once a site has its own palette or color themes.
+ * Contrast warnings (ewcms check): per theme, each text colour against the background that
+ * renders under it (a template's, the section's, the site theme's: "none" is see-through). WCAG
+ * 4.5:1, 3:1 for headings. Only once a site has its own palette or color themes. seeThrough: the
+ * templates whose item style's fill is None (src/widgets/list/item-style.js): their Background
+ * never shows, so their text is read against the section's.
  */
-export function contrastWarnings(theme) {
+export function contrastWarnings(theme, { seeThrough = [] } = {}) {
   if (!ownPaletteOf(theme) && !isObject(theme?.colorThemes)) return [];
   const palette = paletteOf(theme);
   const siteBg = hexOf(rolesOf(theme, siteColorThemeOf(theme)).background, palette);
@@ -546,9 +548,12 @@ export function contrastWarnings(theme) {
     for (const id of templateIds(theme)) {
       const t = templateRolesOf(theme, name, id);
       if (!Object.keys(t.roles).length && !Object.keys(t.typography).length) continue;
-      // a template's own background: all its text against it; else only what it sets
-      const eff = { ...roles, ...t.roles };
-      const keys = t.roles.background !== undefined ? TEMPLATE_ROLES : Object.keys(t.roles);
+      // a template's own background (when its fill lets it show): all its text against it; else
+      // only what it sets, against the section's
+      const { background, ...set } = t.roles;
+      const shows = background !== undefined && !seeThrough.includes(id);
+      const eff = { ...roles, ...set, ...(shows ? { background } : {}) };
+      const keys = shows ? TEMPLATE_ROLES : Object.keys(set);
       const merged = Object.fromEntries(
         ['background', 'button', ...keys].map((k) => [k, eff[k]]),
       );
