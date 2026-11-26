@@ -27,14 +27,13 @@ stay the same colour in every color theme.
 
 ## The roles: `--color-*`
 
-Each color theme sets all 12; a value is a palette slot 1-5, a custom `#rrggbb` (it doesn't follow
+Each color theme sets all 11; a value is a palette slot 1-5, a custom `#rrggbb` (it doesn't follow
 the palette), or `"none"` (transparent) on a fill.
 
 | Variable | Role | Kind | Notes |
 | --- | --- | --- | --- |
 | `--color-background` | Background | fill (can be none) | the section's surface |
 | `--color-text` | Text | text | body text, on Background |
-| `--color-heading` | Heading | text | titles and headings, on Background |
 | `--color-link` | Link | text | on Background |
 | `--color-accent` | Accent | text | highlights, focus, selection; tints the glass |
 | `--color-button` | Button | fill (colour, glass or none) | see [Button modes](#button-modes) |
@@ -49,16 +48,17 @@ Inside the header (`.header`, `.mmenu`) Background and Text are the Header and H
 CSS there reads `--color-background` / `--color-text` like anywhere else.
 
 A color theme can also colour each text style (sub-roles, its `textStyles` in
-`content/theme.json`): `--color-type-title`,
-`--color-type-heading`, `--color-type-subheading`, `--color-type-statement` (they follow Heading)
-and `--color-type-paragraph`, `--color-type-label`, `--color-type-small` (they follow Text). They
-are only set when a theme sets them, so always read them with their parent as the fallback:
+`content/theme.json`): `--color-type-title`, `--color-type-heading`, `--color-type-subheading`,
+`--color-type-statement`, `--color-type-paragraph`, `--color-type-label` and `--color-type-small`.
+Left out, a text style follows Text (Heading is a text style, not a role). They are only set when
+a theme sets them, so always read them with Text as the fallback:
 `color: var(--color-type-label, var(--color-text));`.
 In CSS, `type` (and `ts` in class names) is the short form of "text style": `--color-type-label`,
 `--type-label-min` and `.ts--label` all belong to the Label text style.
 
-An item template (a List's `config.template`) can set its own Background, Text, Heading, Link,
-Button, Button text, Line and text styles per color theme; inside its items (class `tpl-<id>`) the same
+An item template (a List's `config.template`) can set its own Background, Text, Link, Button,
+Button text, Line and text styles per color theme (a text style it leaves out follows its Text, when it
+sets one); inside its items (class `tpl-<id>`) the same
 variables carry them, so nothing changes in the CSS.
 
 ## Smart colours: `--smart-*`

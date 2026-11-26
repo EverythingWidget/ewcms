@@ -103,14 +103,15 @@ test('Button: Glass / Color / None; Color keeps a colour, else starts from Accen
 });
 
 test('sub-roles: empty follows the parent and says so; set, it is custom; cleared, it follows again', () => {
-  assert.deepEqual(textStylesUnder('heading'), ['title', 'heading', 'subheading', 'statement']);
-  assert.deepEqual(textStylesUnder('text'), ['paragraph', 'label', 'small']);
+  // every text style follows Text (Heading is a text style, not a role)
+  assert.deepEqual(textStylesUnder('heading'), []);
+  assert.deepEqual(textStylesUnder('text'), ['title', 'heading', 'paragraph', 'label', 'subheading', 'statement', 'small']);
   const title = { theme: 'light', textStyle: 'title' };
-  assert.equal(followsOf(title), 'Heading');
+  assert.equal(followsOf(title), 'Text');
   assert.equal(followsOf({ theme: 'light', textStyle: 'label' }), 'Text');
   assert.equal(followsOf({ theme: 'light', key: 'background', template: 'preset:card' }), "the section's Background");
   assert.equal(followsOf({ theme: 'light', textStyle: 'small', template: 'preset:card' }), "the template's Text");
-  const t = { colorThemes: { light: { heading: 3 } } };
+  const t = { colorThemes: { light: { text: 3 } } };
   assert.deepEqual([roleRow(t, title).own, roleRow(t, title).shown, roleRow(t, title).custom], [undefined, 3, false]);
   assert.equal(rolePointer(title), '/colorThemes/light/textStyles/title');
   const s = storeWith({ version: 1 });
@@ -119,12 +120,21 @@ test('sub-roles: empty follows the parent and says so; set, it is custom; cleare
   assert.equal(roleRow(s.get(THEME, ''), title).custom, true);
   apply(s, roleEdit(s.get(THEME, ''), title, undefined), 'b');
   assert.equal(s.get(THEME, '/colorThemes'), undefined);
-  // a template's: its roles follow the section's, its text styles its own Heading / Text
+  // a template's: its roles follow the section's, its text styles its own Text
   const card = { theme: 'dark', key: 'background', template: 'preset:card' };
   assert.equal(rolePointer(card), '/colorThemes/dark/templates/preset:card/background');
   assert.equal(roleRow({}, card).shown, 2);
-  const tt = { colorThemes: { dark: { templates: { 'preset:card': { heading: 1 } } } } };
-  assert.equal(roleRow(tt, { theme: 'dark', textStyle: 'title', template: 'preset:card' }).shown, 1);
+  const tt = { colorThemes: { dark: { templates: { 'preset:card': { text: 1 } } } } };
+  const cardTitle = { theme: 'dark', textStyle: 'title', template: 'preset:card' };
+  assert.equal(roleRow(tt, cardTitle).shown, 1);
+  assert.equal(roleRow(tt, cardTitle).follows, "the template's Text");
+  // its Text wins over the section's Title, as colors.js writes it; without one, the section's Title
+  const both = { colorThemes: { dark: { textStyles: { title: 3 }, templates: { 'preset:card': { text: 1 } } } } };
+  assert.equal(roleRow(both, cardTitle).shown, 1);
+  const sectionOnly = { colorThemes: { dark: { textStyles: { title: 3 } } } };
+  assert.equal(roleRow(sectionOnly, cardTitle).shown, 3);
+  assert.equal(roleRow(sectionOnly, cardTitle).follows, "the section's Title");
+  assert.equal(roleRow({}, cardTitle).follows, "the section's Text");
   assert.equal(roleEdit({}, { theme: 'dark', key: 'header', template: 'preset:card' }, 1), null); // not a template role
   // a template's value equal to the section's is still its own (it is its own thing)
   assert.deepEqual(roleEdit({}, card, 2), { ptr: card && rolePointer(card), value: 2 });
@@ -138,6 +148,8 @@ test('chips, dots and counts; the site color theme', () => {
   assert.equal(swatchOf({}, 'none'), '');
   assert.equal(swatchOf({}, 'glass'), '');
   assert.deepEqual(previewOf({}, 'lightest'), { background: DEFAULT_PALETTE[4], text: DEFAULT_PALETTE[0], heading: DEFAULT_PALETTE[0], accent: DEFAULT_PALETTE[2] });
+  // the chip's Aa is the Title text style (it follows Text)
+  assert.equal(previewOf({ colorThemes: { lightest: { textStyles: { title: 4 } } } }, 'lightest').heading, DEFAULT_PALETTE[3]);
   assert.equal(customCount({}, 'dark'), 0);
   assert.equal(customCount({ colorThemes: { dark: { text: 5, link: 1, textStyles: { title: 2 }, templates: { 'preset:card': { background: 3, textStyles: { small: 1 } } } } } }, 'dark'), 4);
   assert.equal(siteThemeEdit('light'), 'light');

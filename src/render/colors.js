@@ -19,7 +19,7 @@
  *                 value: a palette slot 1-5, a custom colour (#rgb or #rrggbb: it doesn't follow
  *                 the palette) or "none" (fill roles only: no fill, transparent). Button also
  *                 takes "glass" (the engine's glass pill, its default): see BUTTON_MODES
- *     textStyles  sub-roles: one text style's colour (TEXT_STYLE_PARENT: left out, it follows Heading or Text)
+ *     textStyles  sub-roles: one text style's colour (Title, Heading, …; left out, it follows Text)
  *     templates   sub-roles of an item template (its id, as a List's config.template: "preset:card",
  *                 "t-…"): TEMPLATE_ROLES and textStyles; left out, the section's roles. A template
  *                 is its own thing: one made from another gets a copy of its sub-roles once
@@ -66,7 +66,6 @@ export const ROLES = Object.freeze(
   [
     { key: 'background', label: 'Background', kind: 'fill', none: true, template: true },
     { key: 'text', label: 'Text', kind: 'text', template: true, on: 'background', min: 4.5 },
-    { key: 'heading', label: 'Heading', kind: 'text', template: true, on: 'background', min: 3 },
     { key: 'link', label: 'Link', kind: 'text', template: true, on: 'background', min: 4.5 },
     { key: 'accent', label: 'Accent', kind: 'text' },
     { key: 'button', label: 'Button', kind: 'fill', none: true, glass: true, template: true },
@@ -84,16 +83,16 @@ const roleOf = (key) => ROLES.find((r) => r.key === key);
 /** The roles a template may set (besides its textStyles). */
 export const TEMPLATE_ROLES = Object.freeze(ROLES.filter((r) => r.template).map((r) => r.key));
 
-/** Each text style's parent role (the text styles: layout/text-styles.js TEXT_STYLES): a sub-role left out follows it. */
+/**
+ * Each text style's parent role (the text styles: layout/text-styles.js TEXT_STYLES): Text, for
+ * all of them; a sub-role left out follows it. Heading is a text style, not a role.
+ */
+export const TEXT_STYLE_PARENT = Object.freeze(Object.fromEntries(Object.keys(TEXT_STYLES).map((textStyle) => [textStyle, 'text'])));
+/** The heading text styles: when set, they need 3:1 on Background (the others 4.5:1). */
 const HEADING_TEXT_STYLES = ['title', 'heading', 'subheading', 'statement'];
-export const TEXT_STYLE_PARENT = Object.freeze(
-  Object.fromEntries(
-    Object.keys(TEXT_STYLES).map((textStyle) => [textStyle, HEADING_TEXT_STYLES.includes(textStyle) ? 'heading' : 'text']),
-  ),
-);
 export const TEXT_STYLE_NAMES = Object.freeze(Object.keys(TEXT_STYLE_PARENT));
 
-/** A text style's sub-role variable (--color-type-<text style>; the role Heading is --color-heading). */
+/** A text style's sub-role variable (--color-type-<text style>; left out, the text style's colour is --color-text). */
 export const textStyleVar = (textStyle) => `--color-type-${textStyle}`;
 
 /**
@@ -101,11 +100,11 @@ export const textStyleVar = (textStyle) => `--color-type-${textStyle}`;
  * glass, today's pill; its text the theme's Text, as the glass pill's was.
  */
 export const COLOR_THEME_DEFAULTS = Object.freeze({
-  lightest: { background: 5, text: 1, heading: 1, link: 3, accent: 3, button: 'glass', buttonText: 1, line: 4, header: 5, headerText: 1, curtain: 4, curtainText: 1 },
-  light: { background: 4, text: 1, heading: 1, link: 2, accent: 2, button: 'glass', buttonText: 1, line: 5, header: 4, headerText: 1, curtain: 5, curtainText: 1 },
-  accent: { background: 3, text: 5, heading: 5, link: 4, accent: 4, button: 'glass', buttonText: 5, line: 2, header: 3, headerText: 5, curtain: 1, curtainText: 5 },
-  dark: { background: 2, text: 5, heading: 5, link: 4, accent: 4, button: 'glass', buttonText: 5, line: 3, header: 1, headerText: 5, curtain: 1, curtainText: 5 },
-  darkest: { background: 1, text: 5, heading: 5, link: 5, accent: 4, button: 'glass', buttonText: 5, line: 3, header: 2, headerText: 5, curtain: 2, curtainText: 5 },
+  lightest: { background: 5, text: 1, link: 3, accent: 3, button: 'glass', buttonText: 1, line: 4, header: 5, headerText: 1, curtain: 4, curtainText: 1 },
+  light: { background: 4, text: 1, link: 2, accent: 2, button: 'glass', buttonText: 1, line: 5, header: 4, headerText: 1, curtain: 5, curtainText: 1 },
+  accent: { background: 3, text: 5, link: 4, accent: 4, button: 'glass', buttonText: 5, line: 2, header: 3, headerText: 5, curtain: 1, curtainText: 5 },
+  dark: { background: 2, text: 5, link: 4, accent: 4, button: 'glass', buttonText: 5, line: 3, header: 1, headerText: 5, curtain: 1, curtainText: 5 },
+  darkest: { background: 1, text: 5, link: 5, accent: 4, button: 'glass', buttonText: 5, line: 3, header: 2, headerText: 5, curtain: 2, curtainText: 5 },
 });
 
 /**
@@ -508,9 +507,15 @@ function buildCss(theme) {
           ]),
           ...(paints.has(id) ? fill : []),
           ['color', 'var(--color-text)'],
+          // a text style it leaves out: its own Text when it sets one (over the section's text
+          // style, as the editor shows it), else the section's
           ...[...textStyleSet].map((textStyle) => [
             textStyleVar(textStyle),
-            textStyles[textStyle] !== undefined ? valueCss(textStyles[textStyle]) : 'inherit',
+            textStyles[textStyle] !== undefined
+              ? valueCss(textStyles[textStyle])
+              : roles.text !== undefined
+                ? 'var(--color-text)'
+                : 'inherit',
           ]),
           ...modeSmart(all, true),
         ])} }`,
@@ -558,6 +563,10 @@ function checkRoles(where, t, keys, extra) {
           : [`"${where}.templates.${id}" is not a template id ("preset:card", "t-…")`],
       );
     }
+    if (k === 'heading')
+      return [
+        `"${where}.heading" is not a role any more: Heading is a text style ("${where}.textStyles": { "heading": … }, as Title, Subheading and Statement); left out, a text style follows Text`,
+      ];
     if (!keys.includes(k)) return [`"${where}.${k}" is not a role (${[...keys, ...extra].join(', ')})`];
     return checkValue(`${where}.${k}`, v, roleOf(k).none, roleOf(k).glass);
   });
@@ -606,7 +615,7 @@ const hexOf = (v, palette) => (v === 'none' || v === 'glass' ? null : isSlot(v) 
 /**
  * Contrast warnings (ewcms check): per theme, each text colour against the background that
  * renders under it (a template's, the section's, the site theme's: "none" is see-through). WCAG
- * 4.5:1, 3:1 for headings. Only once a site has its own palette or color themes. seeThrough: the
+ * 4.5:1, 3:1 for the heading text styles. Only once a site has its own palette or color themes. seeThrough: the
  * templates whose item style's fill is None (src/widgets/list/item-style.js): their Background
  * never shows, so their text is read against the section's.
  */
@@ -630,7 +639,7 @@ export function contrastWarnings(theme, { seeThrough = [] } = {}) {
     }
     for (const [textStyle, v] of Object.entries(textStyles)) {
       const fg = hexOf(v, palette);
-      const min = TEXT_STYLE_PARENT[textStyle] === 'heading' ? 3 : 4.5;
+      const min = HEADING_TEXT_STYLES.includes(textStyle) ? 3 : 4.5;
       const c = contrastOf(fg, bg);
       if (c < min)
         out.push(`${where}: the ${textStyle} text style on Background has contrast ${c.toFixed(1)}:1 (needs ${min}:1)`);

@@ -11,6 +11,7 @@ import {
   SMART,
   THEME_NAMES,
   TEXT_STYLE_NAMES,
+  TEXT_STYLE_PARENT,
   checkColors,
   colorCssBuilds,
   colorThemeCss,
@@ -33,10 +34,13 @@ const rule = (css, selector) => {
   return at || '';
 };
 
-test('defaults: every theme gives all 12 roles a slot (Button: glass); the engine palette is the default site', () => {
+test('defaults: every theme gives all 11 roles a slot (Button: glass); the engine palette is the default site', () => {
   assert.deepEqual(DEFAULT_PALETTE, PALETTE);
   assert.deepEqual(THEME_NAMES, ['lightest', 'light', 'accent', 'dark', 'darkest']);
-  assert.equal(ROLES.length, 12);
+  assert.equal(ROLES.length, 11);
+  // Heading is a text style, not a role: every text style follows Text
+  assert.ok(!ROLES.some((r) => r.key === 'heading'));
+  assert.ok(Object.values(TEXT_STYLE_PARENT).every((p) => p === 'text'));
   for (const name of THEME_NAMES) {
     assert.deepEqual(Object.keys(COLOR_THEME_DEFAULTS[name]), ROLES.map((r) => r.key));
     for (const [k, v] of Object.entries(COLOR_THEME_DEFAULTS[name]))
@@ -49,11 +53,11 @@ test('defaults: every theme gives all 12 roles a slot (Button: glass); the engin
   assert.equal(COLOR_THEME_DEFAULTS.dark.background, 2);
   assert.equal(COLOR_THEME_DEFAULTS.lightest.background, 5);
   // a theme set in theme.json overrides only what it sets; a bad value is the default's
-  const r = rolesOf({ colorThemes: { dark: { text: 3, link: '#C9A27A', button: 'none', heading: 'none' } } }, 'dark');
+  const r = rolesOf({ colorThemes: { dark: { text: 3, link: '#C9A27A', button: 'none', accent: 'none' } } }, 'dark');
   assert.equal(r.text, 3);
   assert.equal(r.link, '#c9a27a');
   assert.equal(r.button, 'none');
-  assert.equal(r.heading, COLOR_THEME_DEFAULTS.dark.heading); // "none" is no text colour
+  assert.equal(r.accent, COLOR_THEME_DEFAULTS.dark.accent); // "none" is no text colour
 });
 
 test('the palette: theme.json\'s 5, else the engine\'s; until then color.brand is slot 4', () => {
@@ -116,13 +120,18 @@ test('check: palette, color themes, roles, slots; "none" only on fills', () => {
   });
   // the text-style colours are "textStyles": the old key is not a role
   assert.match(checkColors({ colorThemes: { dark: { typography: { label: 4 } } } }).join(), /"colorThemes\.dark\.typography" is not a role/);
+  // Heading was a role: the check says where it went, in a theme and in a template entry
+  assert.deepEqual(checkColors({ colorThemes: { dark: { heading: 4, templates: { 'preset:card': { heading: 2 } } } } }), [
+    '"colorThemes.dark.heading" is not a role any more: Heading is a text style ("colorThemes.dark.textStyles": { "heading": … }, as Title, Subheading and Statement); left out, a text style follows Text',
+    '"colorThemes.dark.templates.preset:card.heading" is not a role any more: Heading is a text style ("colorThemes.dark.templates.preset:card.textStyles": { "heading": … }, as Title, Subheading and Statement); left out, a text style follows Text',
+  ]);
   assert.deepEqual(bad, [
     '"palette" must be 5 colors "#rrggbb", slot 1 first',
     '"colorTheme" must be "lightest", "light", "accent", "dark", "darkest", not "blue"',
     `"colorThemes.dark.text" can't be "none": only a fill can (Background, Button, Line, Header)`,
     `"colorThemes.dark.curtain" can't be "none": only a fill can (Background, Button, Line, Header)`,
     '"colorThemes.dark.link" must be a palette slot 1-5 or a color "#rrggbb", not 6',
-    '"colorThemes.dark.glow" is not a role (background, text, heading, link, accent, button, buttonText, line, header, headerText, curtain, curtainText, textStyles, templates)',
+    '"colorThemes.dark.glow" is not a role (background, text, link, accent, button, buttonText, line, header, headerText, curtain, curtainText, textStyles, templates)',
     `"colorThemes.dark.textStyles.label" can't be "none": only a fill can (Background, Button, Line, Header)`,
     '"colorThemes.dark.textStyles.note" is not a text style (title, heading, paragraph, label, subheading, statement, small)',
     '"colorThemes.blue" is not a color theme (lightest, light, accent, dark, darkest)',
@@ -132,7 +141,7 @@ test('check: palette, color themes, roles, slots; "none" only on fills', () => {
   assert.match(checkContent('theme.json', { version: 1, colorTheme: 'blue' }).join('\n'), /"colorTheme" must be/);
 });
 
-test('contrast: text against its nearest real background; "none" sees through; 3:1 for headings', () => {
+test('contrast: text against its nearest real background; "none" sees through; 3:1 for heading text styles', () => {
   assert.equal(Math.round(contrastOf('#000', '#fff')), 21);
   assert.deepEqual(contrastWarnings({}), []); // no palette or themes of its own: nothing to say
   assert.deepEqual(contrastWarnings({ palette: PALETTE }), []); // the engine's themes pass
@@ -140,12 +149,14 @@ test('contrast: text against its nearest real background; "none" sees through; 3
     palette: PALETTE,
     colorThemes: {
       // dark: no fill, so Text is read against the site theme's (darkest) background #050505
-      dark: { background: 'none', text: 2, heading: 3, button: 'none', buttonText: 1 },
+      dark: { background: 'none', text: 2, button: 'none', buttonText: 1, textStyles: { title: 3, statement: 1 } },
       light: { curtainText: 5, textStyles: { small: 5 } },
     },
   });
   assert.ok(w.some((m) => /^colorThemes\.dark: Text on Background has contrast 1\.\d:1 \(needs 4\.5:1\)/.test(m)), w.join('\n'));
-  assert.ok(w.some((m) => /^colorThemes\.dark: Heading on Background has contrast 1\.\d:1 \(needs 3:1\)/.test(m)));
+  assert.ok(w.some((m) => /^colorThemes\.dark: the title text style on Background has contrast 1\.\d:1 \(needs 3:1\)/.test(m)), w.join('\n'));
+  // Statement (#050505 on #050505) too, at 3:1: a heading text style
+  assert.ok(w.some((m) => /^colorThemes\.dark: the statement text style on Background has contrast 1\.0:1 \(needs 3:1\)/.test(m)));
   // a no-fill button: its text against the background (#050505)
   assert.ok(w.some((m) => /^colorThemes\.dark: Button text on Button has contrast 1\.0:1/.test(m)));
   assert.ok(w.some((m) => /^colorThemes\.light: Curtain text on Curtain/.test(m)));

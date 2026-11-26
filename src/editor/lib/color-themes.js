@@ -87,7 +87,11 @@ export function rolePointer({ theme: name, key, textStyle, template }) {
   return textStyle ? `${at}/textStyles/${textStyle}` : `${at}/${key}`;
 }
 
-/** What a sub-role follows when it is empty: its parent's label ("Heading", "the section's Text"). */
+/**
+ * What a sub-role follows when it is empty: its parent's label ("Text", "the section's
+ * Background"; a template's text style: "the template's Text", roleRow says the section's when
+ * the template sets no Text).
+ */
 export function followsOf({ key, textStyle, template }) {
   if (textStyle) {
     const parent = roleOf(TEXT_STYLE_PARENT[textStyle]).label;
@@ -108,13 +112,18 @@ export function roleRow(theme, spec) {
   let ownValue;
   let shown;
   let r;
+  let follows = followsOf(spec);
   if (textStyle) {
     r = { label: textStyleLabel(textStyle), none: false, glass: false };
     const parentKey = TEXT_STYLE_PARENT[textStyle];
     if (template) {
+      // as colors.js writes it: the template's Text, else the section's text style, else its Text
       const t = templateRolesOf(theme, name, template);
+      const section = textStyleRolesOf(own(theme, name))[textStyle];
       ownValue = t.textStyles[textStyle];
-      shown = ownValue ?? t.roles[parentKey] ?? roles[parentKey];
+      shown = ownValue ?? t.roles[parentKey] ?? section ?? roles[parentKey];
+      if (t.roles[parentKey] === undefined)
+        follows = `the section's ${section !== undefined ? textStyleLabel(textStyle) : roleOf(parentKey).label}`;
     } else {
       ownValue = textStyleRolesOf(own(theme, name))[textStyle];
       shown = ownValue ?? roles[parentKey];
@@ -139,7 +148,7 @@ export function roleRow(theme, spec) {
     own: ownValue,
     shown,
     custom,
-    follows: followsOf(spec),
+    follows,
     none: !!r.none,
     glass: !!r.glass,
     mode: r.glass ? buttonModeOf(shown) : '',
@@ -181,13 +190,13 @@ export function swatchOf(theme, v) {
   return isHexColor(v) ? longHex(v) : '';
 }
 
-/** A theme's preview chip: { background, text, heading, accent } as colours ('' for none). */
+/** A theme's preview chip: { background, text, heading (its Title), accent } as colours ('' for none). */
 export function previewOf(theme, name) {
   const r = rolesOf(theme, name);
   return {
     background: swatchOf(theme, r.background),
     text: swatchOf(theme, r.text),
-    heading: swatchOf(theme, r.heading),
+    heading: swatchOf(theme, roleRow(theme, { theme: name, textStyle: 'title' }).shown),
     accent: swatchOf(theme, r.accent),
   };
 }

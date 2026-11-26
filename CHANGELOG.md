@@ -53,11 +53,21 @@ say what a site must do before it bumps its pin.
   `--color-type-<text style>`. `ewcms check` names a leftover `typography` there as not a role. No
   migration: no site has color themes saved yet; one that does renames the key.
 
+- **Breaking: Heading is a text style, not a color theme role.** The roles are 11: `heading` is
+  gone from `colorThemes.<name>` and from template entries (`colorThemes.<name>.templates.<id>`),
+  and `--color-heading` is no longer set. Every text style left out follows Text, Title, Heading,
+  Subheading and Statement too (the engine's Heading was Text's slot in every theme, so nothing
+  looks different); a template's text style it leaves out follows its own Text when it sets one,
+  over the section's text style. `ewcms check` names a leftover `heading` key and where it goes
+  (`textStyles.heading`, `title`, `subheading`, `statement`). In a site's CSS, read
+  `var(--color-type-<text style>, var(--color-text))` instead of `--color-heading`. No migration: no
+  site has color themes saved yet.
+
 ### Engine
 
 - **Palette and color themes (step 1 of the colour plan, no UI yet).** `content/theme.json` can set
   `palette` (5 × `#rrggbb`, slot 1 the calm, background end), `colorThemes` (Lightest, Light,
-  Accent, Dark, Darkest: each of the 12 roles a palette slot 1-5, a custom `#rgb`/`#rrggbb`, or
+  Accent, Dark, Darkest: each of the 11 roles a palette slot 1-5, a custom `#rgb`/`#rrggbb`, or
   `"none"` on fills: Background, Button, Line, Header) and `colorTheme` (the site color theme,
   default `darkest`). Left out, the engine's defaults apply. The page head gets one static
   `<style id="color-themes">`: `--palette-1…5`, each theme's `--color-*` roles on `.ct-<name>`
@@ -79,11 +89,10 @@ say what a site must do before it bumps its pin.
   allows no hex, `rgb()` or `hsl()` in the client, the widgets or the default theme but the
   named shades, scrims, the error colour and text over a photo.
 - **Sub-roles: text styles and templates (step 4).** A color theme can set each text style's
-  colour (`colorThemes.<name>.textStyles.<text style>`, `--color-type-<text style>`); unset, Title,
-  Heading, Subheading and Statement follow Heading, and Paragraph, Label and Small follow Text
-  (not a faded colour any more). It can set a template's roles too
+  colour (`colorThemes.<name>.textStyles.<text style>`, `--color-type-<text style>`); unset, every
+  text style follows Text (Paragraph, Label and Small: not a faded colour any more). It can set a template's roles too
   (`colorThemes.<name>.templates."<template id>"`, e.g. `"preset:card"` or `"t-ab12"`:
-  Background, Text, Heading, Link, Button, Button text, Line and its text styles), for its items
+  Background, Text, Link, Button, Button text, Line and its text styles), for its items
   only (class `tpl-<id>`). A template is its own thing: one made from a preset or another
   template (Duplicate) gets a copy of its parent's sub-roles in `content/theme.json`, once (the
   editor copies them from its theme.json, unsaved edits too, as one undo step; theme.json is then

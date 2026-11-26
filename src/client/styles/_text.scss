@@ -9,7 +9,7 @@
  * case: --type-label-case): unset, the fallback here is today's look (inherit: what is around the
  * line, as before). A theme sets them (ewcms default-site/theme/tokens.scss). Its colour is its
  * sub-role (as --color-type-label: content/theme.json colorThemes.<name>.textStyles; src/render/
- * colors.js): unset, Heading's for Title, Heading, Subheading and Statement, Text's for the rest.
+ * colors.js): unset, every style's is Text's (--color-text).
  * A style's font is --type-<style>-font (content/theme.json typography.<style>.font); unset, Title,
  * Heading, Subheading and Statement use --f-display, Label uses --f-body, Paragraph and Small inherit.
  */
@@ -37,7 +37,7 @@
   font-size: clamp(var(--type-title-min), 15vw, var(--type-title-max));
   line-height: var(--type-title-lh);
   letter-spacing: var(--type-title-tracking, -0.02em);
-  color: var(--color-type-title, var(--color-heading));
+  color: var(--color-type-title, var(--color-text));
   // a phone: its own size with the width (--type-title-phone), the max its cap (it may go under
   // the min)
   @media (width <= 480px) {
@@ -50,7 +50,7 @@
   font-size: clamp(var(--type-heading-min), 6vw, var(--type-heading-max));
   line-height: var(--type-heading-lh);
   letter-spacing: var(--type-heading-tracking, inherit);
-  color: var(--color-type-heading, var(--color-heading));
+  color: var(--color-type-heading, var(--color-text));
   // a phone, as the Title: a size with the width (--type-heading-phone), the max its cap, so a
   // heading whose min is large (min = max: fixed) still shrinks on a phone (F98)
   @media (width <= 480px) {
@@ -63,7 +63,7 @@
   font-size: clamp(var(--type-subheading-min), 2.4vw, var(--type-subheading-max));
   line-height: var(--type-subheading-lh);
   letter-spacing: var(--type-subheading-tracking, -0.005em);
-  color: var(--color-type-subheading, var(--color-heading));
+  color: var(--color-type-subheading, var(--color-text));
 }
 .ts--statement {
   max-width: 1280px;
@@ -72,7 +72,7 @@
   font-size: clamp(var(--type-statement-min), 4.3vw, var(--type-statement-max));
   line-height: var(--type-statement-lh);
   letter-spacing: var(--type-statement-tracking, -0.005em);
-  color: var(--color-type-statement, var(--color-heading));
+  color: var(--color-type-statement, var(--color-text));
 }
 .ts--paragraph {
   max-width: 64ch;

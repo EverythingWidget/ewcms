@@ -22,18 +22,38 @@ test('no sub-roles: no template rules, no --color-type-* set', () => {
   assert.doesNotMatch(css, /--color-type-/);
 });
 
-test('a text style set in one theme: the others reset it, so it follows Heading / Text', () => {
+test('a text style set in one theme: the others reset it, so it follows Text', () => {
   const css = colorThemeCss({ colorThemes: { light: { textStyles: { label: 3 } } } });
   assert.match(rule(css, '.ct-light'), /--color-type-label: var\(--palette-3\)/);
   assert.match(rule(css, '.ct-dark'), /--color-type-label: initial/);
   // only the set text style is written
   assert.doesNotMatch(css, /--color-type-paragraph/);
-  // the text styles read it, else their parent (Label and Small: Text, not the faded colour)
+  // the text styles read it, else Text (all of them: Heading is a text style, not a role)
   const scss = fs.readFileSync(new URL('../src/client/styles/_text.scss', import.meta.url), 'utf8');
   assert.match(scss, /color: var\(--color-type-label, var\(--color-text\)\);/);
   assert.match(scss, /color: var\(--color-type-small, var\(--color-text\)\);/);
-  assert.match(scss, /color: var\(--color-type-title, var\(--color-heading\)\);/);
+  assert.match(scss, /color: var\(--color-type-title, var\(--color-text\)\);/);
+  assert.doesNotMatch(scss, /--color-heading/);
+  assert.doesNotMatch(css, /--color-heading/);
   assert.doesNotMatch(scss, /--type-[a-z]+-color/);
+});
+
+test("a template's text style it leaves out: its own Text when it sets one, over the section's text style", () => {
+  const theme = {
+    colorThemes: {
+      dark: {
+        textStyles: { title: 3 },
+        templates: { 'preset:card': { text: 4 }, 'preset:row': { background: 2 }, 't-ab12': { textStyles: { title: 1 } } },
+      },
+    },
+  };
+  const css = colorThemeCss(theme);
+  // it sets Text: its Title follows it (the editor shows "follows the template's Text")
+  assert.match(rule(css, '.ct-dark .tpl-preset-card'), /--color-type-title: var\(--color-text\);/);
+  // no Text of its own: the section's Title
+  assert.match(rule(css, '.ct-dark .tpl-preset-row'), /--color-type-title: inherit;/);
+  // its own Title wins
+  assert.match(rule(css, '.ct-dark .tpl-t-ab12'), /--color-type-title: var\(--palette-1\);/);
 });
 
 test("a template's sub-roles apply only inside its items, in that theme", () => {
@@ -44,7 +64,8 @@ test("a template's sub-roles apply only inside its items, in that theme", () => 
   const dark = rule(css, '.ct-dark .tpl-preset-card');
   assert.match(dark, /--color-background: var\(--palette-3\)/);
   assert.match(dark, /--color-text: #333/);
-  assert.match(dark, /--color-heading: inherit/);
+  assert.match(dark, /--color-link: inherit/);
+  assert.doesNotMatch(dark, /--color-heading/);
   // its item paints the Background it sets (a fill its style sets, inline, still wins)
   assert.match(dark, /--item-bg: var\(--color-background\);/);
   assert.doesNotMatch(dark, /--item-bg-hover/); // hover: .li's, its own fill
