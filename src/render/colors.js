@@ -101,7 +101,7 @@ export const COLOR_THEME_DEFAULTS = Object.freeze({
   light: { background: 4, text: 1, heading: 1, link: 2, accent: 2, button: 1, buttonText: 4, line: 5, header: 4, headerText: 1, curtain: 5, curtainText: 1 },
   accent: { background: 3, text: 5, heading: 5, link: 4, accent: 4, button: 4, buttonText: 1, line: 2, header: 3, headerText: 5, curtain: 1, curtainText: 5 },
   dark: { background: 2, text: 5, heading: 5, link: 4, accent: 4, button: 4, buttonText: 1, line: 3, header: 1, headerText: 5, curtain: 1, curtainText: 5 },
-  darkest: { background: 1, text: 5, heading: 5, link: 4, accent: 4, button: 4, buttonText: 1, line: 3, header: 2, headerText: 5, curtain: 2, curtainText: 5 },
+  darkest: { background: 1, text: 5, heading: 5, link: 5, accent: 4, button: 4, buttonText: 1, line: 3, header: 2, headerText: 5, curtain: 2, curtainText: 5 },
 });
 
 /**
@@ -272,7 +272,32 @@ const noneSmart = (roles) =>
  * Old token names (a site's own CSS, tokens.scss) as aliases of the roles and smart colours,
  * set wherever a color theme is: a site's tokens.scss value still wins on :root. [[name, css]]
  */
-export const TOKEN_ALIASES = Object.freeze([]);
+const faded = (n) => `color-mix(in oklab, var(--color-text) ${n}%, var(--color-background))`;
+const toward = (n) => `color-mix(in oklab, var(--color-background), var(--color-text) ${n}%)`;
+export const TOKEN_ALIASES = Object.freeze([
+  ['--bg', 'var(--color-background)'],
+  ['--bg-2', 'var(--color-curtain)'],
+  ['--fg', 'var(--color-text)'],
+  ['--muted', 'var(--smart-faded)'],
+  ['--faint', 'var(--smart-disabled)'],
+  ['--solid-faint', 'var(--smart-faded)'],
+  ['--soft', faded(78)],
+  ['--line', 'var(--color-line)'],
+  ['--brand', 'var(--color-accent)'],
+  ['--on-fg', 'var(--color-background)'],
+  ['--solid-card', toward(12)],
+  ['--solid-card-peek', toward(18)],
+  ['--header-fill', 'var(--smart-header-glass)'],
+  ['--hover-fill', 'color-mix(in oklab, var(--color-text) 8%, transparent)'],
+  ['--hover-fill-soft', 'color-mix(in oklab, var(--color-text) 7%, transparent)'],
+  ['--open-fill', toward(16)],
+]);
+
+/**
+ * The chrome that re-sets Background and Text to its own roles (the header and the phone menu:
+ * Header, Header text), so everything in it, smart colours too, follows them.
+ */
+export const CHROME_ROLES = Object.freeze([['.header, .mmenu', [['background', 'header'], ['text', 'headerText']]]]);
 
 let builds = 0;
 /** How many times colorThemeCss built its CSS (a test guards it is once per theme). */
@@ -314,9 +339,12 @@ function buildCss(theme, templates) {
         typeSet.add(s),
       );
   }
+  const chrome = CHROME_ROLES.map(([selector]) => selector);
   const out = [
-    `:root { ${decls(DEFAULT_PALETTE.map((c, i) => [`--palette-${i + 1}`, c]))} }`,
-    `${[':root', ...THEME_NAMES.map((n) => `.ct-${n}`), ...ids.map((id) => `.${templateClass(id)}`)].join(', ')} { ${decls([
+    // the album glow (--accent: client/theme.js tweens it; a theme's tokens.scss may set it) is
+    // the site theme's Accent until an album sets its own
+    `:root { ${decls([...DEFAULT_PALETTE.map((c, i) => [`--palette-${i + 1}`, c]), ['--accent', 'var(--color-accent)']])} }`,
+    `${[':root', ...THEME_NAMES.map((n) => `.ct-${n}`), ...chrome, ...ids.map((id) => `.${templateClass(id)}`)].join(', ')} { ${decls([
       ...SMART.map((s) => [s.var, s.css]),
       ...TOKEN_ALIASES,
     ])} }`,
@@ -332,6 +360,8 @@ function buildCss(theme, templates) {
       ])} }`,
     );
   }
+  for (const [selector, map] of CHROME_ROLES)
+    out.push(`${selector} { ${decls(map.map(([to, from]) => [roleOf(to).css, `var(${roleOf(from).css})`]))} }`);
   // templates: after the themes; the site theme's first (it matches everywhere, as :root),
   // so a section's theme wins inside it. A role a template leaves out in a theme: inherit.
   const order = [site, ...THEME_NAMES.filter((n) => n !== site)];

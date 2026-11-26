@@ -78,7 +78,7 @@ $hero-em-per-char: 0.6;
     max-width: 340px;
     text-align: right;
     font-size: 12px;
-    color: var(--muted);
+    color: var(--smart-faded);
   }
   &__scroll {
     display: inline-flex;
@@ -89,7 +89,7 @@ $hero-em-per-char: 0.6;
       position: relative;
       width: 1px;
       height: 46px;
-      background: var(--line);
+      background: var(--color-line);
       overflow: hidden;
     }
     i::after {
@@ -99,7 +99,7 @@ $hero-em-per-char: 0.6;
       top: -50%;
       width: 1px;
       height: 50%;
-      background: var(--fg);
+      background: var(--color-text);
       animation: scrollcue 2s var(--ease-out) infinite;
     }
   }
@@ -227,10 +227,12 @@ $hero-em-per-char: 0.6;
   }
 }
 
-// the first photo full-bleed under a dark gradient, the name bottom-left
+// the first photo full-bleed under a dark gradient, the name bottom-left: its text in the
+// fixed colours over a photo (--hero-fg, --hero-muted: the theme's), not the color theme's
 .hero--behind {
-  --fg: var(--hero-fg);
-  --muted: var(--hero-muted);
+  --color-text: var(--hero-fg);
+  --smart-faded: var(--hero-muted);
+
   color: var(--hero-fg);
   .hero__photo {
     inset: 0;

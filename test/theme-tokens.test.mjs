@@ -47,10 +47,10 @@ const optionalTokens = () =>
     [...optional.matchAll(/^\s*\/\/ (--[\w-]+): (.+);$/gm)].map((m) => [m[1], m[2].trim()]),
   );
 
-// a default of their own, said so in the default site's comment: the Form's Send (--fg, as before)
+// a default of their own, said so in the default site's comment: the Form's Send (Text, as before)
 const own = {
-  '--btn-fg': ['var(--fg)'],
-  '--btn-hover-fg': ['var(--btn-fg, var(--fg))'],
+  '--btn-fg': ['var(--color-text)'],
+  '--btn-hover-fg': ['var(--btn-fg, var(--color-text))'],
 };
 
 test("the default site's optional tokens: each read by the engine with that default (today's look)", () => {
@@ -157,21 +157,21 @@ test("F96: the current page's nav item reads its shape and colours", () => {
   const active = rule('src/client/styles/_chrome.scss', '&.is-active {');
   for (const t of [
     '--nav-active-radius',
-    '--nav-active-bg, var(--fg)',
-    '--nav-active-fg, var(--on-fg)',
+    '--nav-active-bg, var(--color-text)',
+    '--nav-active-fg, var(--color-background)',
   ])
     assert.ok(active.includes(`var(${t}`), t);
   const chrome = fs.readFileSync(path.join(root, 'src/client/styles/_chrome.scss'), 'utf8');
-  assert.ok(chrome.includes('color: var(--menu-active-fg, var(--brand))'));
+  assert.ok(chrome.includes('color: var(--menu-active-fg, var(--color-accent))'));
 });
 
 test('F93: selected text and the skip link read their colours', () => {
   const base = fs.readFileSync(path.join(root, 'src/client/styles/_base.scss'), 'utf8');
   for (const t of [
-    '--selection-bg, var(--accent)',
-    '--selection-fg, #000',
-    '--skip-link-bg, var(--fg)',
-    '--skip-link-fg, #000',
+    '--selection-bg, var(--smart-selection)',
+    '--selection-fg, var(--color-text)',
+    '--skip-link-bg, var(--color-text)',
+    '--skip-link-fg, var(--color-background)',
   ])
     assert.ok(base.includes(`var(${t})`), t);
 });

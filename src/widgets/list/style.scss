@@ -128,7 +128,7 @@
 
 .li__facts .ts,
 .li__count .ts {
-  color: var(--muted);
+  color: var(--smart-faded);
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -217,12 +217,12 @@ a.li:not(.li--hover-none):hover .li__title .ts {
     }
 
     .li__count .ts {
-      color: var(--muted);
+      color: var(--smart-faded);
     }
   }
 
   .li__count .ts {
-    color: var(--fg);
+    color: var(--color-text);
   }
 }
 
@@ -273,7 +273,7 @@ a.li:not(.li--hover-none):hover .li__title .ts {
   outline: none;
 
   &:focus-visible {
-    box-shadow: 0 0 0 2px var(--accent);
+    box-shadow: 0 0 0 2px var(--smart-focus);
   }
 }
 
@@ -358,7 +358,7 @@ a.li:not(.li--hover-none):hover .li__title .ts {
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--fg);
+    box-shadow: 0 0 0 2px var(--color-text);
   }
 }
 
@@ -463,7 +463,7 @@ a.li:not(.li--hover-none):hover .li__title .ts {
 
   > span:not(.car__current) {
     font-size: 20px;
-    color: var(--muted);
+    color: var(--smart-faded);
   }
 }
 
@@ -513,8 +513,8 @@ a.li:not(.li--hover-none):hover .li__title .ts {
   &.is-active {
     opacity: 1;
     box-shadow:
-      0 0 0 1px var(--bg),
-      0 0 0 2px var(--fg);
+      0 0 0 1px var(--color-background),
+      0 0 0 2px var(--color-text);
   }
 
   img {
@@ -563,7 +563,7 @@ a.li:not(.li--hover-none):hover .li__title .ts {
 
     &.is-active {
       opacity: 1;
-      box-shadow: inset 0 0 0 1px var(--fg);
+      box-shadow: inset 0 0 0 1px var(--color-text);
     }
   }
 }

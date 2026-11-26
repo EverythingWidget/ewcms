@@ -67,7 +67,7 @@ test('the palette: theme.json\'s 5, else the engine\'s; until then color.brand i
 
 test('the CSS: palette defaults, each theme\'s roles as --color-*, the site theme on :root too', () => {
   const css = colorThemeCss({ colorTheme: 'dark' });
-  assert.match(css, /^:root \{ --palette-1: #050505; .* --palette-5: #f2efe9 \}/);
+  assert.match(css, /^:root \{ --palette-1: #050505; .* --palette-5: #f2efe9; --accent: var\(--color-accent\) \}/);
   assert.match(rule(css, ':root, .ct-dark'), /--color-background: var\(--palette-2\); --color-text: var\(--palette-5\);/);
   assert.match(rule(css, '.ct-darkest'), /--color-background: var\(--palette-1\)/);
   assert.equal(rule(css, ':root, .ct-darkest'), '');
@@ -82,7 +82,7 @@ test('the CSS: palette defaults, each theme\'s roles as --color-*, the site them
 
 test('smart colours: worked out from the roles on every theme element; "none" has its own rule', () => {
   const css = colorThemeCss({ colorThemes: { lightest: { button: 'none', line: 'none' } } });
-  const smart = rule(css, ':root, .ct-lightest, .ct-light, .ct-accent, .ct-dark, .ct-darkest');
+  const smart = rule(css, ':root, .ct-lightest, .ct-light, .ct-accent, .ct-dark, .ct-darkest, .header, .mmenu');
   for (const s of SMART) assert.match(smart, new RegExp(`${s.var}: `));
   assert.match(smart, /--smart-button-hover: color-mix\(in oklab, var\(--color-button\), var\(--color-button-text\) 12%\)/);
   assert.match(smart, /--smart-link-hover: color-mix\(in oklab, var\(--color-link\) 65%, var\(--color-background\)\)/);

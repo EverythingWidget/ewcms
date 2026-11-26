@@ -96,7 +96,7 @@ test('markup: overrides as --item-* on the item, the rest as li--<style> classes
   });
   assert.equal(
     m.vars,
-    '--item-photo-ratio:3 / 2;--item-photo-fit:contain;--item-radius:8px;--item-border:inset 0 -1px 0 var(--line);--item-shadow:var(--item-shadow-m);--item-pad:16px;--item-gap:4px;--item-bg:var(--bg-2);--item-bg-hover:var(--solid-card)',
+    '--item-photo-ratio:3 / 2;--item-photo-fit:contain;--item-radius:8px;--item-border:inset 0 -1px 0 var(--color-line);--item-shadow:var(--item-shadow-m);--item-pad:16px;--item-gap:4px;--item-bg:color-mix(in oklab, var(--color-background), var(--color-text) 6%);--item-bg-hover:color-mix(in oklab, var(--color-background), var(--color-text) 12%)',
   );
   assert.deepEqual(m.cls, [
     'li--border-bottom',
@@ -108,7 +108,7 @@ test('markup: overrides as --item-* on the item, the rest as li--<style> classes
   assert.deepEqual(styleMarkup(undefined), { cls: [], vars: '' });
   assert.deepEqual(styleMarkup({ radius: 7, foo: 1 }), { cls: [], vars: '' });
   // border is an inset box-shadow, listed with the shadow (no layout shift)
-  assert.match(styleMarkup({ border: 'line' }).vars, /--item-border:inset 0 0 0 1px var\(--line\)/);
+  assert.match(styleMarkup({ border: 'line' }).vars, /--item-border:inset 0 0 0 1px var\(--color-line\)/);
 });
 
 test('presets are style values; Duplicate writes them out; a template copy keeps its own', () => {

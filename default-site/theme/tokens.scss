@@ -1,37 +1,16 @@
-// This site's design tokens, its look: colours, fonts, radius, easing and the header's height.
+// This site's design tokens, its look: fonts, radius, easing and the header's height.
 // The engine's chrome and widgets read them (the engine's grid, breakpoints and text styles:
-// site-core/_tokens.scss). The site owns this copy: change any value. --accent is tweened per
-// album by the engine (the background glow); --brand never is (glass tints, links, the menu).
+// site-core/_tokens.scss). The site owns this copy: change any value.
+
+// Colours are not here: they are content/theme.json's palette and color themes (Theme › Color;
+// ewcms src/render/colors.js), the roles --color-* and smart colours --smart-* the engine
+// reads. The old names (--fg, --bg, --muted, --brand, …) still work as aliases of those roles in
+// a site's own CSS; set one here and it wins on the page's :root. Left here: what is fixed by design.
 @use 'site-core/tokens' as *;
 
 :root {
-  --bg: #050505;
-  --bg-2: #101010;
-  --fg: #f2efe9;
-  --muted: rgb(242 239 233 / 0.55);
-  --faint: rgb(242 239 233 / 0.32);
-  --solid-faint: #aaa;
-  --line: rgb(255 255 255 / 0.1);
-  --accent: #cfc8b8;
-  // the brand colour: fixed, never tweened per album like --accent. Links, the menu, focus
-  // rings, the header's dot, the glass tint: what stays on-brand. The default: a site sets its
-  // own in content/theme.json "color": { "brand" } (Theme › Color), which wins over this.
-  --brand: #cfc8b8;
-  --solid-card: #212121;
-  --solid-card-peek: #2f2f2f;
-  // text a step stronger than --muted (nav links, album summaries); on a --fg fill
-  --soft: rgb(242 239 233 / 0.78);
-  --on-fg: #000;
+  // the error colour (a form's message), and shades: scrims, gradients and shadows (black at n%)
   --error: #e5776b;
-  // the header bar, a nav link's hover and open fills, a card's hover
-  --header-fill: #111e;
-  --hover-fill: rgb(255 255 255 / 0.08);
-  --hover-fill-soft: rgb(255 255 255 / 0.07);
-  --open-fill: #333;
-  // the glass surfaces' base (tinted by --brand: _glass.scss)
-  --glass-base: rgb(30 30 30 / 0.42);
-  --glass-base-hover: rgb(52 52 52 / 0.5);
-  // shades: scrims, gradients and shadows (black at n%)
   --shade-15: rgb(0 0 0 / 0.15);
   --shade-35: rgb(0 0 0 / 0.35);
   --shade-40: rgb(0 0 0 / 0.4);
@@ -40,7 +19,7 @@
   --shade-78: rgb(0 0 0 / 0.78);
   --shade-80: rgb(0 0 0 / 0.8);
   --shade-90: rgb(0 0 0 / 0.9);
-  // the hero over its photo (.hero--behind)
+  // the hero's text over its photo (.hero--behind): over a photo, not a color theme
   --hero-fg: #fff;
   --hero-muted: rgb(255 255 255 / 0.72);
 
@@ -133,9 +112,9 @@
   // --type-statement-color: inherit;
   // --type-paragraph-weight: inherit;
   // --type-paragraph-tracking: inherit;
-  // --type-paragraph-color: var(--solid-faint);
+  // --type-paragraph-color: var(--smart-faded);
   // --type-label-weight: 400;
-  // --type-label-color: var(--muted);
+  // --type-label-color: var(--smart-faded);
   // the Label's tracking and case, the chrome's small labels (.label) too: none for as typed
   // --type-label-tracking: 0.08em;
   // --type-label-case: uppercase;
@@ -159,14 +138,16 @@
   // fill and text colour; the phone menu's current page's colour
   // --nav-radius: 0;
   // --nav-active-radius: var(--nav-radius, 0);
-  // --nav-active-bg: var(--fg);
-  // --nav-active-fg: var(--on-fg);
-  // --menu-active-fg: var(--brand);
+  // --nav-active-bg: var(--color-text);
+  // --nav-active-fg: var(--color-background);
+  // --menu-active-fg: var(--color-accent);
 
   // the button (the Button widget, the Form's Send; src/client/styles/_glass.scss .btn): today a
   // glass pill. Its fill and hover fill (on the glass layer), their blur (none: a solid fill),
-  // its text colour (inherit: the text around it; the Form's: --fg) and hover colour, its type and
-  // padding. A solid button: --btn-bg: var(--brand); --btn-backdrop: none; --btn-fg: #fff;
+  // its text colour (inherit: the text around it; the Form's: Text) and hover colour, its type and
+  // padding. A solid button in the color theme's Button and Button text: --btn-bg:
+  // var(--color-button); --btn-hover-bg: var(--smart-button-hover); --btn-backdrop: none;
+  // --btn-fg: var(--color-button-text);
   // --btn-bg: var(--glass-fill);
   // --btn-hover-bg: var(--glass-fill-hover);
   // --btn-backdrop: blur(22px) saturate(180%);
@@ -182,15 +163,15 @@
   // --btn-radius: 999px;
 
   // selected text, and the skip link (a keyboard's first Tab: "Skip to content")
-  // --selection-bg: var(--accent);
-  // --selection-fg: #000;
-  // --skip-link-bg: var(--fg);
-  // --skip-link-fg: #000;
+  // --selection-bg: var(--smart-selection);
+  // --selection-fg: var(--color-text);
+  // --skip-link-bg: var(--color-text);
+  // --skip-link-fg: var(--color-background);
 
   // a .tag's border (src/client/styles/_base.scss)
   // --tag-border-style: dashed;
-  // --tag-border-color: rgb(255 255 255 / 0.3);
+  // --tag-border-color: var(--smart-disabled);
   // --type-small-weight: inherit;
   // --type-small-tracking: inherit;
-  // --type-small-color: var(--muted);
+  // --type-small-color: var(--smart-faded);
 }

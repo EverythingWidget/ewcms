@@ -80,7 +80,7 @@
   line-height: var(--type-paragraph-lh);
   font-weight: var(--type-paragraph-weight, inherit);
   letter-spacing: var(--type-paragraph-tracking, inherit);
-  color: var(--type-paragraph-color, var(--solid-faint));
+  color: var(--type-paragraph-color, var(--smart-faded));
 }
 .ts--label {
   font-family: var(--type-label-font, var(--f-body));
@@ -89,7 +89,7 @@
   font-weight: var(--type-label-weight, 400);
   letter-spacing: var(--type-label-tracking, 0.08em);
   text-transform: var(--type-label-case, uppercase);
-  color: var(--type-label-color, var(--muted));
+  color: var(--type-label-color, var(--smart-faded));
 }
 .ts--small {
   max-width: 64ch;
@@ -98,11 +98,15 @@
   line-height: var(--type-small-lh);
   font-weight: var(--type-small-weight, inherit);
   letter-spacing: var(--type-small-tracking, inherit);
-  color: var(--type-small-color, var(--muted));
+  color: var(--type-small-color, var(--smart-faded));
 }
 .text__body a {
+  color: var(--color-link);
   text-decoration: underline;
   text-underline-offset: 0.15em;
+  &:hover {
+    color: var(--smart-link-hover);
+  }
 }
 // lists (a line's "list": src/render/text.js): one <ul> / <ol> of <li>s on the site, flat lines
 // with [data-list] while edited; the marker drawn here either way, a hanging indent.

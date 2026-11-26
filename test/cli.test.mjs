@@ -125,7 +125,7 @@ test('check: a warning for a theme that misses tokens of the look, none for a wh
   const bare = tmp();
   assert.match(
     themeWarning(loadSiteConfig(bare)),
-    /theme\/tokens\.scss misses \d+ token\(s\) of the look \(--bg, --bg-2, .*default-site\/theme.*THEME-MIGRATION/,
+    /theme\/tokens\.scss misses \d+ token\(s\) of the look \(--error, --shade-15, .*default-site\/theme.*THEME-MIGRATION/,
   );
   // a whole copy of the default site's tokens
   const part = tmp();
@@ -140,11 +140,13 @@ test('check: a warning for a theme that misses tokens of the look, none for a wh
   fs.mkdirSync(path.join(partial, 'theme'));
   fs.writeFileSync(
     path.join(partial, 'theme/tokens.scss'),
-    ':root { --bg: #fff; --bg-2: #eee; }\n',
+    ':root { --error: #f00; --shade-15: #0002; }\n',
   );
   const w = themeWarning(loadSiteConfig(partial));
-  assert.match(w, /\(--fg, --muted,/);
-  assert.doesNotMatch(w, /--bg\b/);
+  assert.match(w, /\(--shade-35, --shade-40,/);
+  assert.doesNotMatch(w, /--error\b/);
+  // colours are content/theme.json's palette now: never asked for
+  assert.doesNotMatch(w, /--bg\b|--fg\b|--brand\b/);
   // overrides.scss counts too
   fs.writeFileSync(
     path.join(partial, 'theme/overrides.scss'),

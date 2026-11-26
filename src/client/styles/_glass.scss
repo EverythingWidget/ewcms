@@ -1,6 +1,7 @@
 // Glass surfaces (the header's pills, dropdowns, the phone menu, buttons, the carousel's arrows):
-// engine UI. The fill mixes the theme's --glass-base with its --brand (the site's theme tokens),
-// so glass stays on-brand on every page; the album's --accent tints only the background glow. The blur lives on ::before so a glass element never becomes a
+// engine UI. The fill is the color theme's Background a step toward Text, see-through, tinted by its
+// Button (src/render/colors.js), worked out on each glass element, so glass follows a section's,
+// the header's or a template's theme; the album's --accent tints only the background glow. The blur lives on ::before so a glass element never becomes a
 // "backdrop root": glass inside glass (nav pill > dropdown) still blurs the page.
 @mixin glass-surface {
   content: '';
@@ -24,12 +25,20 @@
   transition: background 0.5s var(--ease-out);
 }
 
-:root {
-  --glass-fill: color-mix(in oklab, var(--brand) 8%, var(--glass-base));
-  --glass-fill-hover: color-mix(in oklab, var(--brand) 12%, var(--glass-base-hover));
-}
-
 .glass {
+  --glass-base: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--color-background), var(--color-text) 10%) 42%,
+    transparent
+  );
+  --glass-base-hover: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--color-background), var(--color-text) 20%) 50%,
+    transparent
+  );
+  --glass-fill: color-mix(in oklab, var(--color-button) 8%, var(--glass-base));
+  --glass-fill-hover: color-mix(in oklab, var(--color-button) 12%, var(--glass-base-hover));
+
   position: relative;
   isolation: isolate;
   border-radius: 999px;
@@ -40,7 +49,9 @@
 
 // A button (the Button widget, the Form's Send: .btn.glass). Its look is tokens (--btn-*, a theme's
 // tokens.scss), the defaults today's glass pill: the fill and its blur on the glass ::before
-// (--btn-bg, --btn-backdrop: none for a solid fill), the text colour inherited (the Form's: --fg).
+// (--btn-bg, --btn-backdrop: none for a solid fill), the text colour inherited (the Form's: Text).
+// A solid button in the theme's colours: --btn-bg: var(--color-button); --btn-fg:
+// var(--color-button-text); --btn-hover-bg: var(--smart-button-hover); --btn-backdrop: none.
 .btn {
   display: inline-flex;
   align-items: center;

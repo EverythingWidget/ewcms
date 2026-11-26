@@ -123,12 +123,15 @@ export const cleanStyle = (style) =>
     ? Object.fromEntries(Object.entries(style).filter(([k, v]) => STYLE_KEYS[k]?.includes(v)))
     : {};
 
-const FILL = { none: 'transparent', surface: 'var(--bg-2)', 'surface-2': 'var(--solid-card)' };
+// the item's fill and ring: the color theme's roles (src/render/colors.js), a surface a step
+// (two) from Background toward Text
+const surface = (n) => `color-mix(in oklab, var(--color-background), var(--color-text) ${n}%)`;
+const FILL = { none: 'transparent', surface: surface(6), 'surface-2': surface(12) };
 const RING = {
   none: 'inset 0 0 0 0 transparent',
-  line: 'inset 0 0 0 1px var(--line)',
-  strong: 'inset 0 0 0 1px var(--muted)',
-  bottom: 'inset 0 -1px 0 var(--line)',
+  line: 'inset 0 0 0 1px var(--color-line)',
+  strong: 'inset 0 0 0 1px var(--smart-faded)',
+  bottom: 'inset 0 -1px 0 var(--color-line)',
 };
 const TITLE = {
   s: 'clamp(28px, 2.6vw, 44px)',

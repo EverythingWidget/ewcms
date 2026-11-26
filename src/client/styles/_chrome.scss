@@ -1,5 +1,7 @@
 // The site's chrome, engine UI around every page: the header, the phone menu, the page
-// entrance curtain and the footer. Colours and fonts come from the site's theme tokens.
+// entrance curtain and the footer. Colours are the color theme's roles and smart colours
+// (src/render/colors.js): in the header and the phone menu, Background and Text are its Header
+// and Header text (the color-themes style re-sets them there); fonts come from the theme tokens.
 @use 'tokens' as *;
 
 /* ---------------- Header ---------------- */
@@ -14,7 +16,8 @@
   align-items: center;
   gap: 16px;
   pointer-events: none;
-  background-color: var(--header-fill);
+  color: var(--color-text);
+  background-color: var(--smart-header-glass);
   // -webkit-backdrop-filter: blur(2px) saturate(180%);
   // backdrop-filter: blur(2px) saturate(180%);
   > * {
@@ -54,15 +57,15 @@
     font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: var(--smart-faded);
   }
 
   &__clock-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--brand);
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand) 60%, transparent);
+    background: var(--color-accent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-accent) 60%, transparent);
     animation: pulse 2.4s infinite;
   }
 }
@@ -106,19 +109,19 @@
     font-weight: var(--nav-weight, inherit);
     letter-spacing: var(--nav-tracking, 0.06em);
     text-transform: var(--nav-case, uppercase);
-    color: var(--soft);
+    color: color-mix(in oklab, var(--color-text) 78%, var(--color-background));
     transition:
       background 0.35s var(--ease-out),
       color 0.35s var(--ease-out);
 
     &:hover {
-      background: var(--hover-fill);
-      color: var(--fg);
+      background: color-mix(in oklab, var(--color-text) 8%, transparent);
+      color: var(--color-text);
     }
 
     &[aria-expanded='true'] {
-      background: var(--open-fill);
-      color: var(--fg);
+      background: color-mix(in oklab, var(--color-background), var(--color-text) 16%);
+      color: var(--color-text);
 
       .caret {
         transform: rotate(180deg);
@@ -128,8 +131,8 @@
     // the current page's item: its fill, text colour and shape are tokens (a pill: 999px)
     &.is-active {
       border-radius: var(--nav-active-radius, var(--nav-radius, 0));
-      background: var(--nav-active-bg, var(--fg));
-      color: var(--nav-active-fg, var(--on-fg));
+      background: var(--nav-active-bg, var(--color-text));
+      color: var(--nav-active-fg, var(--color-background));
     }
   }
 
@@ -171,11 +174,11 @@
 
     sup {
       font-size: 10px;
-      color: var(--muted);
+      color: var(--smart-faded);
     }
 
     &:hover {
-      color: var(--brand);
+      color: var(--color-accent);
     }
   }
 
@@ -189,19 +192,19 @@
     justify-content: space-between;
     margin-bottom: 18px;
     padding-bottom: 14px;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--color-line);
     font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: var(--smart-faded);
 
     &:hover {
-      color: var(--fg);
+      color: var(--color-text);
     }
   }
 
   .is-active + & {
-    border-color: var(--fg);
+    border-color: var(--color-text);
   }
 }
 
@@ -216,7 +219,7 @@
   transition: background 0.3s;
 
   &:hover {
-    background: var(--hover-fill-soft);
+    background: color-mix(in oklab, var(--color-text) 7%, transparent);
   }
 
   &__thumb {
@@ -238,7 +241,7 @@
 
   &__count {
     font-size: 10px;
-    color: var(--muted);
+    color: var(--smart-faded);
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
@@ -266,14 +269,14 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: var(--fg);
+    background: var(--color-text);
 
     i {
       position: absolute;
       left: 8px;
       right: 8px;
       height: 1.5px;
-      background: var(--on-fg);
+      background: var(--color-background);
       transition: transform 0.5s var(--ease-out);
     }
 
@@ -319,6 +322,7 @@
   inset: 0;
   z-index: $z-mmenu;
   padding: calc(var(--header-h) + 4px) 10px 10px;
+  color: var(--color-text);
   background: var(--shade-35);
 
   &[hidden] {
@@ -352,7 +356,7 @@
     line-height: 0.95;
 
     &.is-active {
-      color: var(--menu-active-fg, var(--brand));
+      color: var(--menu-active-fg, var(--color-accent));
     }
   }
 
@@ -374,12 +378,12 @@
 
     a {
       font-size: 13px;
-      color: var(--muted);
+      color: var(--smart-faded);
     }
   }
 
   &__head {
-    color: var(--fg) !important;
+    color: var(--color-text) !important;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-size: 11px !important;
@@ -409,7 +413,7 @@
   &__panel {
     position: absolute;
     inset: 0;
-    background: var(--bg-2);
+    background: var(--color-curtain);
     transform: scaleY(0);
 
     &::after {
@@ -430,6 +434,7 @@
     font-family: var(--f-display);
     font-size: clamp(48px, 9vw, 150px);
     line-height: 1;
+    color: var(--color-curtain-text);
     opacity: 0;
   }
 }

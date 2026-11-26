@@ -16,7 +16,7 @@
     max-width: 64ch;
     font-size: 16px;
     line-height: 1.75;
-    color: var(--solid-faint);
+    color: var(--smart-faded);
     white-space: pre-line;
   }
 }
@@ -32,22 +32,22 @@
     font-size: 12px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: var(--smart-faded);
   }
   &__input {
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid var(--line);
+    border: 1px solid var(--color-line);
     border-radius: var(--radius);
-    background: var(--bg-2);
-    color: var(--fg);
+    background: var(--smart-field);
+    color: var(--color-text);
     font: inherit;
     font-size: 16px; // no zoom on focus in iOS Safari
     &::placeholder {
-      color: var(--faint);
+      color: var(--smart-disabled);
     }
     &:focus-visible {
-      outline: 2px solid var(--brand);
+      outline: 2px solid var(--smart-focus);
       outline-offset: 2px;
     }
     &[aria-invalid='true'] {
@@ -79,11 +79,11 @@
   }
   &__submit {
     border: 0;
-    // the button's text colour (.btn: --btn-fg, --btn-hover-fg), --fg unset
-    color: var(--btn-fg, var(--fg));
+    // the button's text colour (.btn: --btn-fg, --btn-hover-fg), Text unset
+    color: var(--btn-fg, var(--color-text));
     font-family: var(--btn-font, inherit);
     &:hover {
-      color: var(--btn-hover-fg, var(--btn-fg, var(--fg)));
+      color: var(--btn-hover-fg, var(--btn-fg, var(--color-text)));
     }
     cursor: pointer;
     &:disabled {

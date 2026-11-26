@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "palette": ["#050505", "#101010", "#212121", "#cfc8b8", "#f2efe9"],
   "color": { "themeColor": "#050505", "scheme": "dark" },
   "layout": { "containedCols": 96 }
 }

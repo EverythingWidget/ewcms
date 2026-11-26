@@ -11,27 +11,35 @@ import { brandOf, checkTheme, schemeOf, themeColorOf, themeVarList, themeVars, T
 
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 
-test('--brand is the theme token, fixed; theme.js tweens --accent only', () => {
-  assert.match(read('default-site/theme/tokens.scss'), /--brand: #cfc8b8;/);
+test('colours are the palette (content/theme.json), not tokens; theme.js tweens --accent only', () => {
+  assert.doesNotMatch(read('default-site/theme/tokens.scss'), /^\s*--(brand|accent|fg|bg): /m);
+  assert.deepEqual(JSON.parse(read('default-site/content/theme.json')).palette, [
+    '#050505',
+    '#101010',
+    '#212121',
+    '#cfc8b8',
+    '#f2efe9',
+  ]);
   assert.doesNotMatch(read('default-site/theme/tokens.scss'), /--site-accent/);
   assert.doesNotMatch(read('src/render/shell/layout.js'), /--site-accent/);
   assert.doesNotMatch(read('src/render/render.js'), /site\.accent/);
   const theme = read('src/client/theme.js').replace(/\/\*\*[\s\S]*?\*\//, '');
   assert.doesNotMatch(theme, /--brand/);
   const chrome = read('src/client/styles/_chrome.scss');
-  assert.match(chrome, /&\.is-active \{\s*color: var\(--menu-active-fg, var\(--brand\)\);/); // the phone menu's current page (F96: a token, --brand its default)
+  assert.match(chrome, /&\.is-active \{\s*color: var\(--menu-active-fg, var\(--color-accent\)\);/); // the phone menu's current page (F96: a token, Accent its default)
 });
 
-test('glass follows --brand; the album --accent tints only the background glow (F91)', () => {
+test('glass follows the color theme (Button tint) on each glass element; the album --accent tints only the glow (F91)', () => {
   const glass = read('src/client/styles/_glass.scss').replace(/\/\/.*$/gm, '');
   assert.match(
     glass,
-    /--glass-fill: color-mix\(in oklab, var\(--brand\) 8%, var\(--glass-base\)\);/,
+    /\.glass \{[\s\S]*?--glass-fill: color-mix\(in oklab, var\(--color-button\) 8%, var\(--glass-base\)\);/,
   );
   assert.match(
     glass,
-    /--glass-fill-hover: color-mix\(in oklab, var\(--brand\) 12%, var\(--glass-base-hover\)\);/,
+    /--glass-fill-hover: color-mix\(in oklab, var\(--color-button\) 12%, var\(--glass-base-hover\)\);/,
   );
+  assert.doesNotMatch(glass, /:root \{/); // not once on :root: a section's theme re-tints its glass
   assert.doesNotMatch(glass, /--accent/);
   assert.match(glass, /\.btn \{[\s\S]*?background: var\(--btn-bg, var\(--glass-fill\)\);/); // .btn, Send
   const base = read('src/client/styles/_base.scss');
@@ -148,7 +156,8 @@ test('the page head: theme.json brand, typography and layout in :root:root (beat
     { page: 'home' },
     '',
   );
-  assert.doesNotMatch(none, /theme-vars|--brand|--type-|--contain/);
+  // (the color themes' static style always comes: src/render/colors.js)
+  assert.doesNotMatch(none.replace(/<style id="color-themes">[\s\S]*?<\/style>/, ''), /theme-vars|--brand|--type-|--contain/);
   // the theme's stylesheet comes after this head in dev and build: :root:root wins over its :root
   assert.match(read('src/render/shell/layout.js'), /:root:root \{/);
 });
@@ -158,7 +167,7 @@ test('the page head sets --accent only for an album colour, never --site-accent 
   const album = head(ctx, { page: 'home' }, '#c9a27a');
   assert.match(album, /--accent: #c9a27a/);
   assert.doesNotMatch(album, /--site-accent/);
-  const plain = head(ctx, { page: 'home' }, '');
+  const plain = head(ctx, { page: 'home' }, '').replace(/<style id="color-themes">[\s\S]*?<\/style>/, '');
   assert.doesNotMatch(plain, /--accent:/);
   assert.doesNotMatch(plain, /--site-accent/);
 });

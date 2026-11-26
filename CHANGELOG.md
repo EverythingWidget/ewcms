@@ -14,6 +14,16 @@ say what a site must do before it bumps its pin.
   `ewcms check` warns about a leftover `colorScheme` in `theme/meta.json` (ignored). In the
   commit that bumps the pin, move it into `content/theme.json` and drop it from `theme/meta.json`.
 
+- **Breaking: the engine's chrome and widgets read the palette's roles, not the theme's colour
+  tokens.** Colours come from `content/theme.json` `palette` and `colorThemes` (the engine's
+  defaults are today's default-site look). A theme's `tokens.scss` colour tokens (`--bg`,
+  `--fg`, `--muted`, `--brand`, `--line`, `--header-fill`, …) no longer colour the engine: they
+  are aliases of the roles for a site's own CSS only. Until a site sets a palette, its
+  `color.brand` is slot 4 (Accent). In the commit that bumps the pin: put the site's colours in
+  `content/theme.json` `"palette"` (slot 1 the background end) and drop the colour literals from
+  `theme/tokens.scss` (keep the shades, `--error` and `--hero-*`). The text over a photo
+  (`--hero-fg`, `--hero-muted`), the shades (`--shade-*`) and `--error` stay tokens.
+
 ### Engine
 
 - **Palette and color themes (step 1 of the colour plan, no UI yet).** `content/theme.json` can set
@@ -31,6 +41,14 @@ say what a site must do before it bumps its pin.
   `ct-<name>`; left out, they follow the site color theme. A section that picks one paints its
   background edge to edge (contained or not) and sets its text colour. `ewcms check` flags an
   unknown name.
+- **Chrome and widgets read roles and smart colours only (step 3).** Text, backgrounds, lines,
+  the header (Header, Header text; its bar is the smart Header glass), the phone menu, the
+  curtain (Curtain, Curtain text), glass (Background a step toward Text, tinted by Button),
+  links in text (Link, Link hover), focus rings, selection and form fields follow the color
+  theme of the section, header or page they are in. The default site's `tokens.scss` drops its
+  colour literals and its `theme.json` gets the palette that draws the same look. A guard test
+  allows no hex, `rgb()` or `hsl()` in the client, the widgets or the default theme but the
+  named shades, scrims, the error colour and text over a photo.
 
 ### Editor
 
