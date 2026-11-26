@@ -47,16 +47,18 @@
   }
 }
 
-// A button (the Button widget, the Form's Send: .btn.glass): today's glass pill. Its colours are
-// the color theme's (the glass fill, tinted by Button; the text inherited, the Form's: Text); its
-// shape, type and blur are tokens (--btn-*, a theme's tokens.scss; --btn-backdrop: none, no blur).
+// A button (the Button widget, the Form's Send, the header's CTA: .btn.glass). Its colours are the
+// color theme's Button role: here its default, glass (the glass pill); a colour or None: the
+// color-themes style (src/render/colors.js buttonRules) sets its fill. Its text is Button text,
+// hover and pressed the smart colours; shape, type and blur are tokens (--btn-*, a theme's
+// tokens.scss; --btn-backdrop: none, no blur).
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   padding: var(--btn-pad-y, 12px) var(--btn-pad-x, 20px);
   border-radius: var(--btn-radius, 999px);
-  color: inherit;
+  color: var(--color-button-text);
   font-family: var(--btn-font, inherit);
   font-size: var(--btn-size, 12px);
   font-weight: var(--btn-weight, inherit);
@@ -74,7 +76,7 @@
   }
   &:hover {
     &::before {
-      background: var(--glass-fill-hover);
+      background: var(--smart-button-hover);
     }
     span:last-child {
       transform: translateX(3px);
@@ -82,5 +84,8 @@
   }
   &:active {
     transform: scale(0.97);
+    &::before {
+      background: var(--smart-button-pressed);
+    }
   }
 }

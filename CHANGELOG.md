@@ -27,8 +27,8 @@ say what a site must do before it bumps its pin.
 - **Breaking: the colour tokens that could override a role are gone:** `--btn-bg`, `--btn-fg`,
   `--btn-hover-bg`, `--btn-hover-fg`, `--nav-active-bg`, `--nav-active-fg`, `--menu-active-fg`,
   `--selection-bg`, `--selection-fg`, `--skip-link-bg`, `--skip-link-fg` and
-  `--tag-border-color`. Each colour has one source, the color theme (the button: glass tinted by
-  Button; the current nav item: Text and Background; the phone menu's: Accent; selection: the
+  `--tag-border-color`. Each colour has one source, the color theme (the button: its Button role,
+  glass by default; the current nav item: Text and Background; the phone menu's: Accent; selection: the
   smart Selection; the skip link: Text and Background; a tag's border: the smart Disabled). The
   button's shape, type and blur tokens (`--btn-radius`, `--btn-backdrop`, …) stay. In the commit
   that bumps the pin: drop them from `theme/tokens.scss`.
@@ -91,6 +91,21 @@ say what a site must do before it bumps its pin.
   `--bg`, `--fg`, `--muted`, `--brand`, …, the retired `--btn-bg`, `--nav-active-bg`, … and
   `--type-<style>-color`): they colour nothing of the engine, so it says to put the colours in
   `content/theme.json` `palette` / `colorThemes` and drop them.
+
+- **Buttons take a mode from the color theme's Button role: a colour, glass or none.** Button (a
+  theme's or a template's) is a palette slot or `#hex` (a solid fill), `"glass"` (the glass pill,
+  the default in every theme, so a site that sets nothing looks as before) or `"none"` (text
+  only). The Button widget, the Form's Send and the header's CTA read it; Button text applies in
+  all modes (its defaults are each theme's Text, as the pill's text was); hover and pressed are
+  the smart Button hover / Button pressed, with their own rule for glass (the glass a step and two
+  lighter) and none (Text at 10% / 18%), so hover always shows. The glass is tinted by Accent now,
+  not Button (the same slot in Accent, Dark and Darkest; Lightest and Light move from slot 1 to
+  their Accent). A template that sets Text but no Button text: its glass or no-fill button's text
+  follows its Text. Only once some Button is not glass does the color-themes style write the
+  `.btn` fill per theme. `ewcms check` takes `"glass"` on Button only; the contrast check reads
+  Button text on the button colour, or on the section's Background for glass and none. The
+  chrome (a header with no color theme of its own) works its smart colours out with the site
+  theme's modes. No per-button setting and no editor field yet (the Color card is step 5).
 
 ### Editor
 

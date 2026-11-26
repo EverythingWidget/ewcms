@@ -33,13 +33,17 @@ const rule = (css, selector) => {
   return at || '';
 };
 
-test('defaults: every theme gives all 12 roles a slot; the engine palette is the default site', () => {
+test('defaults: every theme gives all 12 roles a slot (Button: glass); the engine palette is the default site', () => {
   assert.deepEqual(DEFAULT_PALETTE, PALETTE);
   assert.deepEqual(THEME_NAMES, ['lightest', 'light', 'accent', 'dark', 'darkest']);
   assert.equal(ROLES.length, 12);
   for (const name of THEME_NAMES) {
     assert.deepEqual(Object.keys(COLOR_THEME_DEFAULTS[name]), ROLES.map((r) => r.key));
-    for (const v of Object.values(COLOR_THEME_DEFAULTS[name])) assert.ok(v >= 1 && v <= 5);
+    for (const [k, v] of Object.entries(COLOR_THEME_DEFAULTS[name]))
+      if (k === 'button') assert.equal(v, 'glass');
+      else assert.ok(v >= 1 && v <= 5);
+    // the glass pill's text was the theme's Text: its Button text is the same slot
+    assert.equal(COLOR_THEME_DEFAULTS[name].buttonText, COLOR_THEME_DEFAULTS[name].text);
   }
   // the Dark and Lightest of the mockup (review-notes/mocks/smart-colors)
   assert.equal(COLOR_THEME_DEFAULTS.dark.background, 2);
@@ -92,9 +96,15 @@ test('smart colours: worked out from the roles on every theme element; "none" ha
   assert.match(lightest, /--smart-button-hover: color-mix\(in oklab, var\(--color-text\) 10%, var\(--color-background\)\)/);
   assert.match(lightest, /--smart-button-pressed: color-mix\(in oklab, var\(--color-text\) 18%, var\(--color-background\)\)/);
   assert.match(lightest, /--smart-line-hover: transparent/);
-  assert.doesNotMatch(rule(css, '.ct-light'), /--smart-/);
+  // the default button, glass: its hover and pressed are the glass a step and two lighter
+  assert.match(rule(css, '.ct-light'), /--smart-button-hover: color-mix\(in oklab, var\(--color-accent\) 12%, color-mix\(in oklab, color-mix\(in oklab, var\(--color-background\), var\(--color-text\) 20%\) 50%, transparent\)\);/);
+  assert.match(rule(css, '.ct-light'), /--smart-button-pressed: color-mix\(in oklab, var\(--color-accent\) 16%,/);
+  assert.doesNotMatch(rule(css, '.ct-light'), /--smart-line-hover/); // the base rule's
+  // a colour button: the base rule's, nothing on the theme
+  const solid = colorThemeCss({ colorThemes: { light: { button: 2 } } });
+  assert.doesNotMatch(rule(solid, '.ct-light'), /--smart-/);
   // no fixed colour in any smart rule: only roles
-  for (const s of SMART) assert.doesNotMatch(`${s.css} ${s.none || ''}`, /#|rgb|hsl/);
+  for (const s of SMART) assert.doesNotMatch(`${s.css} ${s.none || ''} ${s.glass || ''}`, /#|rgb|hsl/);
 });
 
 test('check: palette, color themes, roles, slots; "none" only on fills', () => {
