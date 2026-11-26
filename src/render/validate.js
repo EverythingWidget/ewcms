@@ -59,6 +59,9 @@ import { bindTypeOf } from './layout/bindings.js';
 import { isPropertyPart, isParts, isWhole, NAME } from './layout/parts.js';
 import { FORMAT_TYPES, storedAs } from './property-types.js';
 import { isObject } from './is.js';
+import { THEME_NAMES } from './colors.js';
+
+const THEME_LIST = THEME_NAMES.map((n) => `"${n}"`).join(', ');
 import { styleProblems } from '../widgets/list/item-style.js';
 import { innerSourceProblems } from '../widgets/list/nested.js';
 import { gapProblem } from '../widgets/list/index.js';
@@ -160,13 +163,16 @@ function checkForms(f) {
 }
 
 /**
- * header.json: { header: [items], logo?, cta? }, item { label, page | item | href, all?, items?,
+ * header.json: { header: [items], logo?, cta?, colorTheme? }, item { label, page | item | href, all?, items?,
  * children? }. Items can have one level of children. Whether a page exists needs the routes: the
  * templates warn about that (header.js linkOf). "logo" is a photo path; "cta" is
  * { show?, label?, page | item | href } — a button at the end of the menu.
  */
 function checkHeader(d) {
   const out = optional(d, { header: 'array', logo: 'string', cta: 'object' });
+  // its color theme (left out: the site's); the header's background options come later
+  if (d.colorTheme !== undefined && !THEME_NAMES.includes(d.colorTheme))
+    out.push(`"colorTheme" must be a color theme: ${THEME_LIST}`);
   if (isObject(d.cta)) {
     out.push(...optional(d.cta, { show: 'boolean', label: 'string' }).map((p) => `cta: ${p}`));
     if (['page', 'item', 'href'].some((k) => d.cta[k] !== undefined)) {
@@ -408,6 +414,8 @@ function checkSection(s, at) {
       bad('phone.rows.min', `a whole number of rows from 1 to ${MAX_MIN_ROWS}`);
   }
   if (s.width !== undefined && !WIDTHS.includes(s.width)) bad('width', WIDTHS.join(' or '));
+  if (s.colorTheme !== undefined && !THEME_NAMES.includes(s.colorTheme))
+    bad('colorTheme', `a color theme: ${THEME_LIST}`);
   if (s.enabled !== undefined && typeof s.enabled !== 'boolean') bad('enabled', 'true or false');
   // space between sections, in grid rows (layout/space.js); 0 is an override of the site default
   const spaceKey = (key) => {

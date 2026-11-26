@@ -26,6 +26,11 @@ say what a site must do before it bumps its pin.
   `color-mix`). A palette set in theme.json is on `:root:root`; until a site has one,
   `color.brand` stands in for slot 4. `ewcms check` validates the shape and warns about text
   under WCAG contrast against its nearest real background. Nothing reads the roles yet.
+- **Sections, the header and the phone menu pick a color theme (step 2).** A section (page or
+  footer) and `content/header.json` take `"colorTheme": "<name>"`, rendered as class
+  `ct-<name>`; left out, they follow the site color theme. A section that picks one paints its
+  background edge to edge (contained or not) and sets its text colour. `ewcms check` flags an
+  unknown name.
 
 ### Editor
 

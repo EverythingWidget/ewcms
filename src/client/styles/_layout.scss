@@ -95,6 +95,13 @@
   }
 }
 
+// a section that picks a color theme (class ct-<name>, src/render/colors.js): its background
+// edge to edge (contained or not: the section box is the full width) and its text colour
+.sec[class*=' ct-'] {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
 // a page's first section: its grid below the navbar (see the top)
 :root {
   --nav-h: var(--header-h, 0px);

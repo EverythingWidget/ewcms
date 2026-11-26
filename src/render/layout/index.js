@@ -73,6 +73,7 @@ import { linkOf } from './links.js';
 import { scaledToFit } from './type.js';
 import { placeClass, placeVars } from './place.js';
 import { contentPath, FOOTER } from '../files.js';
+import { colorThemeClass } from '../colors.js';
 
 export {
   COLS,
@@ -224,7 +225,9 @@ export function sectionClass(s) {
     'sec' +
     (h !== 'fit' ? ` sec--h-${h}` : '') +
     (own ? ` sec--mh-${m}` : '') +
-    (s?.width === 'full' ? ' sec--full' : '')
+    (s?.width === 'full' ? ' sec--full' : '') +
+    // its color theme (src/render/colors.js): its roles, and its background edge to edge
+    (colorThemeClass(s?.colorTheme) ? ` ${colorThemeClass(s.colorTheme)}` : '')
   );
 }
 
