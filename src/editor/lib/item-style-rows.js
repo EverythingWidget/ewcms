@@ -17,7 +17,7 @@ const NAMES = {
   photoFit: { fill: 'Fill', fit: 'Fit' },
   border: { none: 'None', line: 'Line', strong: 'Strong', bottom: 'Bottom' },
   shadow: { none: 'None', s: 'Small', m: 'Medium', l: 'Large' },
-  background: { none: 'None', surface: 'Surface', 'surface-2': 'Surface 2' },
+  background: { transparent: 'Transparent', surface: 'Surface', 'surface-2': 'Surface 2' },
   textOverPhoto: { none: 'None', bottom: 'Bottom' },
   hoverEffect: {
     none: 'None',

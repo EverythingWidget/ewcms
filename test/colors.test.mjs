@@ -53,10 +53,10 @@ test('defaults: every theme gives all 11 roles a slot (Button: glass); the engin
   assert.equal(COLOR_THEME_DEFAULTS.dark.background, 2);
   assert.equal(COLOR_THEME_DEFAULTS.lightest.background, 5);
   // a theme set in theme.json overrides only what it sets; a bad value is the default's
-  const r = rolesOf({ colorThemes: { dark: { text: 3, link: '#C9A27A', button: 'none', accent: 'none' } } }, 'dark');
+  const r = rolesOf({ colorThemes: { dark: { text: 3, link: '#C9A27A', button: 'transparent', accent: 'transparent' } } }, 'dark');
   assert.equal(r.text, 3);
   assert.equal(r.link, '#c9a27a');
-  assert.equal(r.button, 'none');
+  assert.equal(r.button, 'transparent');
   assert.equal(r.accent, COLOR_THEME_DEFAULTS.dark.accent); // "none" is no text colour
 });
 
@@ -83,13 +83,13 @@ test('the CSS: palette defaults, each theme\'s roles as --color-*, the site them
   assert.match(ROLES.find((r) => r.key === 'buttonText').css, /^--color-button-text$/);
   assert.match(ROLES.find((r) => r.key === 'curtainText').css, /^--color-curtain-text$/);
   // a custom colour stays as it is (it doesn't follow the palette); none is transparent
-  const own = colorThemeCss({ colorThemes: { light: { link: '#333', button: 'none' } } });
+  const own = colorThemeCss({ colorThemes: { light: { link: '#333', button: 'transparent' } } });
   assert.match(rule(own, '.ct-light'), /--color-link: #333;/);
   assert.match(rule(own, '.ct-light'), /--color-button: transparent;/);
 });
 
 test('smart colours: worked out from the roles on every theme element; "none" has its own rule', () => {
-  const css = colorThemeCss({ colorThemes: { lightest: { button: 'none', line: 'none' } } });
+  const css = colorThemeCss({ colorThemes: { lightest: { button: 'transparent', line: 'transparent' } } });
   const smart = rule(css, ':root, .ct-lightest, .ct-light, .ct-accent, .ct-dark, .ct-darkest, .header, .mmenu');
   for (const s of SMART) assert.match(smart, new RegExp(`${s.var}: `));
   assert.match(smart, /--smart-button-hover: color-mix\(in oklab, var\(--color-button\), var\(--color-button-text\) 12%\)/);
@@ -108,15 +108,15 @@ test('smart colours: worked out from the roles on every theme element; "none" ha
   const solid = colorThemeCss({ colorThemes: { light: { button: 2 } } });
   assert.doesNotMatch(rule(solid, '.ct-light'), /--smart-/);
   // no fixed colour in any smart rule: only roles
-  for (const s of SMART) assert.doesNotMatch(`${s.css} ${s.none || ''} ${s.glass || ''}`, /#|rgb|hsl/);
+  for (const s of SMART) assert.doesNotMatch(`${s.css} ${s.transparent || ''} ${s.glass || ''}`, /#|rgb|hsl/);
 });
 
 test('check: palette, color themes, roles, slots; "none" only on fills', () => {
-  assert.deepEqual(checkColors({ palette: PALETTE, colorTheme: 'dark', colorThemes: { dark: { button: 'none', line: 'none', header: 'none', background: 'none', text: '#333', textStyles: { label: 4 } } } }), []);
+  assert.deepEqual(checkColors({ palette: PALETTE, colorTheme: 'dark', colorThemes: { dark: { button: 'transparent', line: 'transparent', header: 'transparent', background: 'transparent', text: '#333', textStyles: { label: 4 } } } }), []);
   const bad = checkColors({
     palette: ['#fff', '#000'],
     colorTheme: 'blue',
-    colorThemes: { dark: { text: 'none', curtain: 'none', link: 6, glow: 1, textStyles: { label: 'none', note: 2 } }, blue: {} },
+    colorThemes: { dark: { text: 'transparent', curtain: 'transparent', link: 6, glow: 1, textStyles: { label: 'transparent', note: 2 } }, blue: {} },
   });
   // the text-style colours are "textStyles": the old key is not a role
   assert.match(checkColors({ colorThemes: { dark: { typography: { label: 4 } } } }).join(), /"colorThemes\.dark\.typography" is not a role/);
@@ -125,14 +125,24 @@ test('check: palette, color themes, roles, slots; "none" only on fills', () => {
     '"colorThemes.dark.heading" is not a role any more: Heading is a text style ("colorThemes.dark.textStyles": { "heading": … }, as Title, Subheading and Statement); left out, a text style follows Text',
     '"colorThemes.dark.templates.preset:card.heading" is not a role any more: Heading is a text style ("colorThemes.dark.templates.preset:card.textStyles": { "heading": … }, as Title, Subheading and Statement); left out, a text style follows Text',
   ]);
+  // "none" was renamed "transparent": a leftover one says so (a fill), and is never a colour
+  assert.deepEqual(
+    checkColors({ colorThemes: { dark: { button: 'none', text: 'none', templates: { 'preset:card': { background: 'none' } } } } }),
+    [
+      '"colorThemes.dark.button" is "none": use "transparent" (no fill; "none" was renamed)',
+      `"colorThemes.dark.text" can't be "none" (now "transparent"): only a fill can be transparent (Background, Button, Line, Header)`,
+      '"colorThemes.dark.templates.preset:card.background" is "none": use "transparent" (no fill; "none" was renamed)',
+    ],
+  );
+  assert.equal(rolesOf({ colorThemes: { dark: { button: 'none' } } }, 'dark').button, 'glass');
   assert.deepEqual(bad, [
     '"palette" must be 5 colors "#rrggbb", slot 1 first',
     '"colorTheme" must be "lightest", "light", "accent", "dark", "darkest", not "blue"',
-    `"colorThemes.dark.text" can't be "none": only a fill can (Background, Button, Line, Header)`,
-    `"colorThemes.dark.curtain" can't be "none": only a fill can (Background, Button, Line, Header)`,
+    `"colorThemes.dark.text" can't be "transparent": only a fill can (Background, Button, Line, Header)`,
+    `"colorThemes.dark.curtain" can't be "transparent": only a fill can (Background, Button, Line, Header)`,
     '"colorThemes.dark.link" must be a palette slot 1-5 or a color "#rrggbb", not 6',
     '"colorThemes.dark.glow" is not a role (background, text, link, accent, button, buttonText, line, header, headerText, curtain, curtainText, textStyles, templates)',
-    `"colorThemes.dark.textStyles.label" can't be "none": only a fill can (Background, Button, Line, Header)`,
+    `"colorThemes.dark.textStyles.label" can't be "transparent": only a fill can (Background, Button, Line, Header)`,
     '"colorThemes.dark.textStyles.note" is not a text style (title, heading, paragraph, label, subheading, statement, small)',
     '"colorThemes.blue" is not a color theme (lightest, light, accent, dark, darkest)',
   ]);
@@ -149,7 +159,7 @@ test('contrast: text against its nearest real background; "none" sees through; 3
     palette: PALETTE,
     colorThemes: {
       // dark: no fill, so Text is read against the site theme's (darkest) background #050505
-      dark: { background: 'none', text: 2, button: 'none', buttonText: 1, textStyles: { title: 3, statement: 1 } },
+      dark: { background: 'transparent', text: 2, button: 'transparent', buttonText: 1, textStyles: { title: 3, statement: 1 } },
       light: { curtainText: 5, textStyles: { small: 5 } },
     },
   });

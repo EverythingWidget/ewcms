@@ -76,7 +76,7 @@ test("a template's sub-roles apply only inside its items, in that theme", () => 
   assert.doesNotMatch(css, /--item-bg: inherit/);
   // a style's fill wins (inline): None is see-through, Surface a surface of that Background;
   // left empty, nothing inline, so the template's Background shows
-  assert.equal(styleMarkup({ background: 'none' }).vars, '--item-bg:transparent');
+  assert.equal(styleMarkup({ background: 'transparent' }).vars, '--item-bg:transparent');
   assert.match(styleMarkup({ background: 'surface' }).vars, /--item-bg:color-mix\(in oklab, var\(--color-background\)/);
   assert.equal(styleMarkup({}).vars, '');
   // one name: no --item-fill anywhere
@@ -180,7 +180,7 @@ test('contrast: a template whose fill is None is read against the section, not i
   const palette = ['#000000', '#111111', '#777777', '#cccccc', '#ffffff'];
   // dark text on a light template Background: fine where it shows, not over the dark section
   const theme = { palette, colorThemes: { dark: { templates: { 'preset:plain': { background: 5, text: 1 }, 't-ab12': { background: 5, text: 1, heading: 1, link: 1 } } } } };
-  const seeThrough = seeThroughTemplates({ 't-ab12': { style: { background: 'none' } }, 't-cd34': { style: {} } });
+  const seeThrough = seeThroughTemplates({ 't-ab12': { style: { background: 'transparent' } }, 't-cd34': { style: {} } });
   assert.deepEqual(seeThrough, ['preset:plain', 'preset:photo', 't-ab12']);
   const shown = contrastWarnings(theme);
   assert.ok(!shown.some((w) => /templates\.t-ab12: Text/.test(w)), shown.join('\n'));

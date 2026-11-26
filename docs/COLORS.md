@@ -28,24 +28,28 @@ stay the same colour in every color theme.
 ## The roles: `--color-*`
 
 Each color theme sets all 11; a value is a palette slot 1-5, a custom `#rrggbb` (it doesn't follow
-the palette), or `"none"` (transparent) on a fill.
+the palette), or `"transparent"` (no fill) on a fill.
 
 | Variable | Role | Kind | Notes |
 | --- | --- | --- | --- |
-| `--color-background` | Background | fill (can be none) | the section's surface |
+| `--color-background` | Background | fill (can be transparent) | the section's surface |
 | `--color-text` | Text | text | body text, on Background |
 | `--color-link` | Link | text | on Background |
 | `--color-accent` | Accent | text | highlights, focus, selection; tints the glass |
-| `--color-button` | Button | fill (colour, glass or none) | see [Button modes](#button-modes) |
-| `--color-button-text` | Button text | text | on Button (glass and none: on Background) |
-| `--color-line` | Line | fill (can be none) | rules, borders |
-| `--color-header` | Header | fill (can be none) | the header bar |
+| `--color-button` | Button | fill (colour, glass or transparent) | see [Button modes](#button-modes) |
+| `--color-button-text` | Button text | text | on Button (glass and transparent: on Background) |
+| `--color-line` | Line | fill (can be transparent) | rules, borders |
+| `--color-header` | Header | fill (can be transparent) | the header bar |
 | `--color-header-text` | Header text | text | on Header |
 | `--color-curtain` | Curtain | fill | the page-change curtain (`.curtain`) |
 | `--color-curtain-text` | Curtain text | text | on Curtain |
 
 Inside the header (`.header`, `.mmenu`) Background and Text are the Header and Header text, so
 CSS there reads `--color-background` / `--color-text` like anywhere else.
+
+The colour value `"none"` was renamed `"transparent"` (in color themes, template entries and an
+item template's `style.background` / `style.hoverBackground`); `ewcms check` names a leftover
+`"none"`.
 
 A color theme can also colour each text style (sub-roles, its `textStyles` in
 `content/theme.json`): `--color-type-title`, `--color-type-heading`, `--color-type-subheading`,
@@ -68,13 +72,13 @@ your own, so they follow every color theme.
 
 | Variable | Worked out as |
 | --- | --- |
-| `--smart-button-hover` | Button, 12% toward Button text (none: Text at 10% over Background; glass: the glass a step lighter) |
-| `--smart-button-pressed` | Button, 18% toward Background (none: Text at 18% over Background; glass: the glass two steps lighter) |
+| `--smart-button-hover` | Button, 12% toward Button text (transparent: Text at 10% over Background; glass: the glass a step lighter) |
+| `--smart-button-pressed` | Button, 18% toward Background (transparent: Text at 18% over Background; glass: the glass two steps lighter) |
 | `--smart-link-hover` | Link at 65% over Background |
 | `--smart-faded` | Text at 60% over Background (secondary text) |
 | `--smart-focus` | Accent (a focus ring outside the element) |
 | `--smart-disabled` | Text at 35% over Background |
-| `--smart-line-hover` | Line, 35% toward Text (none: transparent) |
+| `--smart-line-hover` | Line, 35% toward Text (transparent Line: transparent) |
 | `--smart-selection` | Accent at 35% over Background |
 | `--smart-header-glass` | Header, a little see-through over the page |
 | `--smart-field` | Background, 6% toward Text (an input's fill) |
@@ -87,15 +91,15 @@ CTA), per color theme and per item template. There is no per-button setting.
 | Value | Mode | Looks like |
 | --- | --- | --- |
 | `"glass"` | glass (the default) | the glass pill: Background a step toward Text, see-through and blurred (`--btn-backdrop`), tinted by Accent |
-| `"none"` | none | text only, no fill |
+| `"transparent"` | transparent | text only, no fill |
 | `1` … `5` | colour (palette slot) | a solid pill in that slot |
 | `"#c9a27a"` | colour (hex) | a solid pill in that colour |
 
 Button text (`--color-button-text`) is the text in all four. Hover and pressed are
-`--smart-button-hover` and `--smart-button-pressed`, which always show, glass and none included.
-`--color-button` is `transparent` for glass and none, so a site's CSS that needs the button's
+`--smart-button-hover` and `--smart-button-pressed`, which always show, glass and transparent included.
+`--color-button` is `transparent` for glass and transparent buttons, so a site's CSS that needs the button's
 look should style `.btn`'s own rules rather than read `--color-button`. `ewcms check` warns when
-Button text is under 4.5:1 on the button colour (glass and none: on the section's Background).
+Button text is under 4.5:1 on the button colour (glass and transparent: on the section's Background).
 
 The button's shape, type and blur are tokens in `theme/tokens.scss` (`--btn-radius`,
 `--btn-backdrop`, …), not colours.

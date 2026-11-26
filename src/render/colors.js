@@ -6,7 +6,7 @@
  *     "palette": ["#050505", "#101010", "#212121", "#cfc8b8", "#f2efe9"],
  *     "colorThemes": {
  *       "dark": {
- *         "background": 2, "text": 5, "link": "#c9a27a", "button": "none",
+ *         "background": 2, "text": 5, "link": "#c9a27a", "button": "transparent",
  *         "textStyles": { "label": 4 },
  *         "templates": { "preset:card": { "background": 3 }, "t-pmor": { "text": 4 } }
  *       }
@@ -17,7 +17,7 @@
  *   palette       5 × #rrggbb; slot 1 is the calm, background end (--palette-1 … --palette-5)
  *   colorThemes   per theme (THEME_NAMES), only what differs from COLOR_THEME_DEFAULTS. A role's
  *                 value: a palette slot 1-5, a custom colour (#rgb or #rrggbb: it doesn't follow
- *                 the palette) or "none" (fill roles only: no fill, transparent). Button also
+ *                 the palette) or "transparent" (fill roles only: no fill). Button also
  *                 takes "glass" (the engine's glass pill, its default): see BUTTON_MODES
  *     textStyles  sub-roles: one text style's colour (Title, Heading, …; left out, it follows Text)
  *     templates   sub-roles of an item template (its id, as a List's config.template: "preset:card",
@@ -58,24 +58,24 @@ export const DEFAULT_COLOR_THEME = 'darkest';
 const kebab = (s) => s.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 
 /**
- * The roles, the one table every name comes from. key: JSON; css: its variable; none: may be
- * "none" (no fill); template: a template may set it (TEMPLATE_ROLES); on: the role whose colour
+ * The roles, the one table every name comes from. key: JSON; css: its variable; transparent: may
+ * be "transparent" (no fill); template: a template may set it (TEMPLATE_ROLES); on: the role whose colour
  * it is read against (the contrast check), min: the contrast it needs (WCAG).
  */
 export const ROLES = Object.freeze(
   [
-    { key: 'background', label: 'Background', kind: 'fill', none: true, template: true },
+    { key: 'background', label: 'Background', kind: 'fill', transparent: true, template: true },
     { key: 'text', label: 'Text', kind: 'text', template: true, on: 'background', min: 4.5 },
     { key: 'link', label: 'Link', kind: 'text', template: true, on: 'background', min: 4.5 },
     { key: 'accent', label: 'Accent', kind: 'text' },
-    { key: 'button', label: 'Button', kind: 'fill', none: true, glass: true, template: true },
+    { key: 'button', label: 'Button', kind: 'fill', transparent: true, glass: true, template: true },
     { key: 'buttonText', label: 'Button text', kind: 'text', template: true, on: 'button', min: 4.5 },
-    { key: 'line', label: 'Line', kind: 'fill', none: true, template: true },
-    { key: 'header', label: 'Header', kind: 'fill', none: true },
+    { key: 'line', label: 'Line', kind: 'fill', transparent: true, template: true },
+    { key: 'header', label: 'Header', kind: 'fill', transparent: true },
     { key: 'headerText', label: 'Header text', kind: 'text', on: 'header', min: 4.5 },
     { key: 'curtain', label: 'Curtain', kind: 'fill' },
     { key: 'curtainText', label: 'Curtain text', kind: 'text', on: 'curtain', min: 4.5 },
-  ].map((r) => ({ none: false, glass: false, template: false, ...r, css: `--color-${kebab(r.key)}` })),
+  ].map((r) => ({ transparent: false, glass: false, template: false, ...r, css: `--color-${kebab(r.key)}` })),
 );
 export const ROLE_KEYS = Object.freeze(ROLES.map((r) => r.key));
 const roleOf = (key) => ROLES.find((r) => r.key === key);
@@ -110,16 +110,16 @@ export const COLOR_THEME_DEFAULTS = Object.freeze({
 /**
  * The Button role's modes (the Button widget, the Form's Send, the header's CTA: .btn): a colour
  * (a palette slot or a custom hex: a solid fill), "glass" (the glass pill: the theme's Background a
- * step toward Text, see-through, blurred) or "none" (text only). Button text in all of them; hover
+ * step toward Text, see-through, blurred) or "transparent" (text only). Button text in all of them; hover
  * and pressed are the smart colours (button-hover, button-pressed), visible in each mode.
  */
-export const BUTTON_MODES = Object.freeze(['color', 'glass', 'none']);
-/** A Button value's mode: "glass", "none" or "color". */
-export const buttonModeOf = (v) => (v === 'glass' || v === 'none' ? v : 'color');
+export const BUTTON_MODES = Object.freeze(['color', 'glass', 'transparent']);
+/** A Button value's mode: "glass", "transparent" or "color". */
+export const buttonModeOf = (v) => (v === 'glass' || v === 'transparent' ? v : 'color');
 
 /**
  * Smart colours: worked out from the roles, never picked: [name, CSS (with --color-* of the
- * same element), the rule in words, CSS when the fill it depends on is "none"].
+ * same element), the rule in words, CSS when the fill it depends on is "transparent"].
  */
 const mix = (a, pa, b) => `color-mix(in oklab, var(${a}) ${pa}%, ${b})`;
 // the glass (client/styles/_glass.scss .glass): Background a step toward Text, see-through, tinted
@@ -130,17 +130,17 @@ export const SMART = Object.freeze([
   {
     name: 'button-hover',
     css: `color-mix(in oklab, var(--color-button), var(--color-button-text) 12%)`,
-    rule: 'Button, mixed 12% toward Button text (None: Text at 10% over Background; Glass: the glass a step lighter)',
-    whenNone: 'button',
-    none: mix('--color-text', 10, 'var(--color-background)'),
+    rule: 'Button, mixed 12% toward Button text (Transparent: Text at 10% over Background; Glass: the glass a step lighter)',
+    whenTransparent: 'button',
+    transparent: mix('--color-text', 10, 'var(--color-background)'),
     glass: glassMix(12, 20, 50),
   },
   {
     name: 'button-pressed',
     css: `color-mix(in oklab, var(--color-button), var(--color-background) 18%)`,
-    rule: 'Button, mixed 18% toward Background (None: Text at 18% over Background; Glass: the glass two steps lighter)',
-    whenNone: 'button',
-    none: mix('--color-text', 18, 'var(--color-background)'),
+    rule: 'Button, mixed 18% toward Background (Transparent: Text at 18% over Background; Glass: the glass two steps lighter)',
+    whenTransparent: 'button',
+    transparent: mix('--color-text', 18, 'var(--color-background)'),
     glass: glassMix(16, 30, 58),
   },
   { name: 'link-hover', css: mix('--color-link', 65, 'var(--color-background)'), rule: 'Link at 65% over Background' },
@@ -151,8 +151,8 @@ export const SMART = Object.freeze([
     name: 'line-hover',
     css: `color-mix(in oklab, var(--color-line), var(--color-text) 35%)`,
     rule: 'Line, mixed 35% toward Text',
-    whenNone: 'line',
-    none: 'transparent',
+    whenTransparent: 'line',
+    transparent: 'transparent',
   },
   { name: 'selection', css: mix('--color-accent', 35, 'var(--color-background)'), rule: 'Accent at 35% over Background' },
   {
@@ -170,9 +170,9 @@ const isHex = (v) => typeof v === 'string' && HEX.test(v);
 /** A palette colour: #rrggbb. */
 export const isPaletteColor = (v) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
 
-/** A role's value is valid: a slot, a custom hex, or "none" / "glass" where the role allows it. */
-export const isRoleValue = (v, none = false, glass = false) =>
-  isSlot(v) || isHex(v) || (none && v === 'none') || (glass && v === 'glass');
+/** A role's value is valid: a slot, a custom hex, or "transparent" / "glass" where the role allows it. */
+export const isRoleValue = (v, transparent = false, glass = false) =>
+  isSlot(v) || isHex(v) || (transparent && v === 'transparent') || (glass && v === 'glass');
 
 /** theme.json's palette (5 × #rrggbb), or null when it sets none or it isn't valid. */
 export function ownPaletteOf(theme) {
@@ -219,13 +219,13 @@ const own = (theme, name) => {
   return isObject(t) ? t : {};
 };
 
-/** A theme's 12 roles: its theme.json values over the engine's ({ key: slot | hex | "none" }). */
+/** A theme's 12 roles: its theme.json values over the engine's ({ key: slot | hex | "transparent" }). */
 export function rolesOf(theme, name) {
   const set = own(theme, name);
   const out = {};
   for (const r of ROLES) {
     const v = set[r.key];
-    out[r.key] = isRoleValue(v, r.none, r.glass) ? normal(v) : COLOR_THEME_DEFAULTS[name][r.key];
+    out[r.key] = isRoleValue(v, r.transparent, r.glass) ? normal(v) : COLOR_THEME_DEFAULTS[name][r.key];
   }
   return out;
 }
@@ -249,7 +249,7 @@ export function templateRolesOf(theme, name, id) {
   const set = isObject(all) && isObject(all[id]) ? all[id] : {};
   const roles = {};
   for (const k of TEMPLATE_ROLES)
-    if (isRoleValue(set[k], roleOf(k).none, roleOf(k).glass)) roles[k] = normal(set[k]);
+    if (isRoleValue(set[k], roleOf(k).transparent, roleOf(k).glass)) roles[k] = normal(set[k]);
   return { roles, textStyles: textStyleRolesOf(set) };
 }
 
@@ -271,9 +271,9 @@ export function templateRoleCopies(theme, from, to) {
   });
 }
 
-/** A role value as CSS: a slot's var, a custom colour, or transparent ("none"; "glass": no colour of its own). */
+/** A role value as CSS: a slot's var, a custom colour, or transparent ("transparent"; "glass": no colour of its own). */
 export const valueCss = (v) =>
-  v === 'none' || v === 'glass' ? 'transparent' : isSlot(v) ? `var(--palette-${v})` : String(v);
+  v === 'transparent' || v === 'glass' ? 'transparent' : isSlot(v) ? `var(--palette-${v})` : String(v);
 
 /** The template ids any theme sets sub-roles for. */
 function templateIds(theme) {
@@ -288,20 +288,20 @@ function templateIds(theme) {
 const decls = (list) => list.map(([k, v]) => `${k}: ${v}`).join('; ');
 
 /**
- * The smart colours that depend on a fill's mode ("none", Button's "glass"), for these roles:
+ * The smart colours that depend on a fill's mode ("transparent", Button's "glass"), for these roles:
  * [[var, css]]; only the ones a mode changes, unless `all` (a template: over its section's).
  */
 const modeSmart = (roles, all = false) =>
-  SMART.filter((s) => s.whenNone)
+  SMART.filter((s) => s.whenTransparent)
     .map((s) => {
-      const v = roles[s.whenNone];
-      return [s.var, v === 'none' ? s.none : v === 'glass' && s.glass ? s.glass : s.css];
+      const v = roles[s.whenTransparent];
+      return [s.var, v === 'transparent' ? s.transparent : v === 'glass' && s.glass ? s.glass : s.css];
     })
     .filter(([v, css]) => all || css !== SMART.find((s) => s.var === v).css);
 
 /**
  * A template that sets Text but no Button text, in a theme whose Button text is the default and
- * whose button is glass or none (it shows the template's text): its Button text follows its Text,
+ * whose button is glass or transparent (it shows the template's text): its Button text follows its Text,
  * as the glass pill's text always did.
  */
 const buttonTextFollows = (theme, name, set) =>
@@ -314,7 +314,7 @@ const buttonTextFollows = (theme, name, set) =>
 export const BUTTON_BLUR = 'var(--btn-backdrop, blur(22px) saturate(180%))';
 /**
  * The button rules for the roles' Button under `scope` (selectors; '' for none): its fill and blur
- * at rest (glass: the .glass fill; a colour: Button; none: no fill), hover and pressed the smart
+ * at rest (glass: the .glass fill; a colour: Button; transparent: no fill), hover and pressed the smart
  * colours. Only written when some theme or template's Button is not glass (the engine's .btn is
  * the glass pill): then each theme says its own, so a section's wins over the site theme's.
  */
@@ -492,7 +492,7 @@ function buildCss(theme) {
         name === site ? `:root .${cls}, .ct-${name} .${cls}` : `.ct-${name} .${cls}`;
       const all = { ...rolesOf(theme, name), ...roles };
       // its item paints a Background it sets, when its style's fill is left empty (a fill set,
-      // inline, wins: None is see-through, Surface a surface of it); a theme where it sets none:
+      // inline, wins: Transparent is see-through, Surface a surface of it); a theme where it sets none:
       // none (over the site theme's rule, which matches everywhere). Hover: .li's, its own fill
       const fill = [['--item-bg', roles.background !== undefined ? 'var(--color-background)' : 'transparent']];
       out.push(
@@ -531,12 +531,19 @@ function buildCss(theme) {
 const show = (v) => JSON.stringify(v);
 const SLOT_TEXT = `a palette slot 1-${PALETTE_SIZE} or a color "#rrggbb"`;
 
-function checkValue(where, v, none, glass = false) {
-  if (isRoleValue(v, none, glass)) return [];
+function checkValue(where, v, transparent, glass = false) {
+  if (isRoleValue(v, transparent, glass)) return [];
+  // "none" was renamed "transparent": a leftover one says so
   if (v === 'none')
-    return [`"${where}" can't be "none": only a fill can (Background, Button, Line, Header)`];
+    return [
+      transparent
+        ? `"${where}" is "none": use "transparent" (no fill; "none" was renamed)`
+        : `"${where}" can't be "none" (now "transparent"): only a fill can be transparent (Background, Button, Line, Header)`,
+    ];
+  if (v === 'transparent')
+    return [`"${where}" can't be "transparent": only a fill can (Background, Button, Line, Header)`];
   if (v === 'glass') return [`"${where}" can't be "glass": only Button can`];
-  const more = [glass && '"glass"', none && '"none"'].filter(Boolean).join(', ');
+  const more = [glass && '"glass"', transparent && '"transparent"'].filter(Boolean).join(', ');
   return [`"${where}" must be ${SLOT_TEXT}${more ? `, ${more}` : ''}, not ${show(v)}`];
 }
 
@@ -568,7 +575,7 @@ function checkRoles(where, t, keys, extra) {
         `"${where}.heading" is not a role any more: Heading is a text style ("${where}.textStyles": { "heading": … }, as Title, Subheading and Statement); left out, a text style follows Text`,
       ];
     if (!keys.includes(k)) return [`"${where}.${k}" is not a role (${[...keys, ...extra].join(', ')})`];
-    return checkValue(`${where}.${k}`, v, roleOf(k).none, roleOf(k).glass);
+    return checkValue(`${where}.${k}`, v, roleOf(k).transparent, roleOf(k).glass);
   });
 }
 
@@ -610,13 +617,13 @@ export const contrastOf = (a, b) => {
   return (x + 0.05) / (y + 0.05);
 };
 
-const hexOf = (v, palette) => (v === 'none' || v === 'glass' ? null : isSlot(v) ? palette[v - 1] : v);
+const hexOf = (v, palette) => (v === 'transparent' || v === 'glass' ? null : isSlot(v) ? palette[v - 1] : v);
 
 /**
  * Contrast warnings (ewcms check): per theme, each text colour against the background that
- * renders under it (a template's, the section's, the site theme's: "none" is see-through). WCAG
+ * renders under it (a template's, the section's, the site theme's: "transparent" is see-through). WCAG
  * 4.5:1, 3:1 for the heading text styles. Only once a site has its own palette or color themes. seeThrough: the
- * templates whose item style's fill is None (src/widgets/list/item-style.js): their Background
+ * templates whose item style's fill is Transparent (src/widgets/list/item-style.js): their Background
  * never shows, so their text is read against the section's.
  */
 export function contrastWarnings(theme, { seeThrough = [] } = {}) {

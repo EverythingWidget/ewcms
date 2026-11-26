@@ -48,7 +48,7 @@
 }
 
 // A button (the Button widget, the Form's Send, the header's CTA: .btn.glass). Its colours are the
-// color theme's Button role: here its default, glass (the glass pill); a colour or None: the
+// color theme's Button role: here its default, glass (the glass pill); a colour or Transparent: the
 // color-themes style (src/render/colors.js buttonRules) sets its fill. Its text is Button text,
 // hover and pressed the smart colours; shape, type and blur are tokens (--btn-*, a theme's
 // tokens.scss; --btn-backdrop: none, no blur).

@@ -20,18 +20,19 @@ const rule = (css, selector) => css.split('\n').find((l) => l.startsWith(`${sele
 const PALETTE = ['#000000', '#111111', '#777777', '#cccccc', '#ffffff'];
 
 test('modes: a slot or hex is a colour; glass is the default everywhere; only Button takes glass', () => {
-  assert.deepEqual(BUTTON_MODES, ['color', 'glass', 'none']);
+  assert.deepEqual(BUTTON_MODES, ['color', 'glass', 'transparent']);
   assert.equal(buttonModeOf(3), 'color');
   assert.equal(buttonModeOf('#c9a27a'), 'color');
   assert.equal(buttonModeOf('glass'), 'glass');
-  assert.equal(buttonModeOf('none'), 'none');
+  assert.equal(buttonModeOf('transparent'), 'transparent');
+  assert.equal(buttonModeOf('none'), 'color'); // renamed: not a mode (ewcms check says so)
   for (const n of THEME_NAMES) assert.equal(rolesOf({}, n).button, 'glass');
   assert.equal(rolesOf({ colorThemes: { dark: { button: 'glass' } } }, 'dark').button, 'glass');
   assert.equal(rolesOf({ colorThemes: { dark: { background: 'glass' } } }, 'dark').background, COLOR_THEME_DEFAULTS.dark.background);
-  assert.deepEqual(checkColors({ colorThemes: { dark: { button: 'glass', templates: { 'preset:card': { button: 'none' } } }, light: { button: '#123456' } } }), []);
+  assert.deepEqual(checkColors({ colorThemes: { dark: { button: 'glass', templates: { 'preset:card': { button: 'transparent' } } }, light: { button: '#123456' } } }), []);
   assert.deepEqual(checkColors({ colorThemes: { dark: { line: 'glass', button: 'blue' } } }), [
     `"colorThemes.dark.line" can't be "glass": only Button can`,
-    `"colorThemes.dark.button" must be a palette slot 1-5 or a color "#rrggbb", "glass", "none", not "blue"`,
+    `"colorThemes.dark.button" must be a palette slot 1-5 or a color "#rrggbb", "glass", "transparent", not "blue"`,
   ]);
 });
 
@@ -56,7 +57,7 @@ test('all glass (the engine default): no button rules, the .btn is the styleshee
 });
 
 test('a colour or none somewhere: every theme writes its button, the site theme first', () => {
-  const css = colorThemeCss({ colorTheme: 'dark', colorThemes: { light: { button: 2 }, accent: { button: 'none' }, lightest: { button: '#c9a27a' } } });
+  const css = colorThemeCss({ colorTheme: 'dark', colorThemes: { light: { button: 2 }, accent: { button: 'transparent' }, lightest: { button: '#c9a27a' } } });
   const lines = css.split('\n').filter((l) => l.includes('.btn'));
   assert.equal(lines.length, 15); // 5 themes × rest, hover, pressed
   assert.match(lines[0], /^:root \.btn::before, \.ct-dark \.btn::before \{ background: var\(--glass-fill\); -webkit-backdrop-filter: var\(--btn-backdrop, blur\(22px\) saturate\(180%\)\);/);
@@ -79,9 +80,9 @@ test('contrast: Button text on the button colour; glass and none against the sec
   assert.equal(warn({ button: 5, buttonText: 5 }).length, 1);
   // dark: Background slot 2 (#111111)
   assert.deepEqual(warn({ button: 'glass' }), []);
-  assert.deepEqual(warn({ button: 'none', buttonText: 4 }), []);
+  assert.deepEqual(warn({ button: 'transparent', buttonText: 4 }), []);
   assert.match(warn({ button: 'glass', buttonText: 1 })[0], /Button text on Button has contrast 1\.1:1/);
-  assert.equal(warn({ button: 'none', buttonText: 2 }).length, 1);
+  assert.equal(warn({ button: 'transparent', buttonText: 2 }).length, 1);
 });
 
 test('a template that sets Text: its glass button\'s text follows it, unless Button text is set', () => {

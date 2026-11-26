@@ -106,7 +106,7 @@ export function followsOf({ key, textStyle, template }) {
 /**
  * A role or sub-role's row: { label, own (its value in theme.json, else undefined), shown (what
  * applies: own, else the default or what it follows), custom (a base role not the engine's
- * default; a sub-role set at all), follows ('' for a base role), none, glass, mode (Button) }.
+ * default; a sub-role set at all), follows ('' for a base role), transparent, glass, mode (Button) }.
  */
 export function roleRow(theme, spec) {
   const { theme: name, key, textStyle, template } = spec;
@@ -116,7 +116,7 @@ export function roleRow(theme, spec) {
   let r;
   let follows = followsOf(spec);
   if (textStyle) {
-    r = { label: textStyleLabel(textStyle), none: false, glass: false };
+    r = { label: textStyleLabel(textStyle), transparent: false, glass: false };
     const parentKey = TEXT_STYLE_PARENT[textStyle];
     if (template) {
       // as colors.js writes it: the template's Text, else the section's text style, else its Text
@@ -137,7 +137,7 @@ export function roleRow(theme, spec) {
       shown = ownValue ?? roles[key];
     } else {
       const v = own(theme, name)[key];
-      ownValue = isRoleValue(v, r.none, r.glass) ? norm(v) : undefined;
+      ownValue = isRoleValue(v, r.transparent, r.glass) ? norm(v) : undefined;
       shown = roles[key];
     }
   }
@@ -151,7 +151,7 @@ export function roleRow(theme, spec) {
     shown,
     custom,
     follows,
-    none: !!r.none,
+    transparent: !!r.transparent,
     glass: !!r.glass,
     mode: r.glass ? buttonModeOf(shown) : '',
   };
@@ -165,34 +165,34 @@ export function roleRow(theme, spec) {
 export function roleEdit(theme, spec, value) {
   const { theme: name, key, textStyle, template } = spec;
   if (!THEME_NAMES.includes(name)) return null;
-  const r = textStyle ? { none: false, glass: false } : roleOf(key);
+  const r = textStyle ? { transparent: false, glass: false } : roleOf(key);
   if (!r || (template && !textStyle && !TEMPLATE_ROLES.includes(key))) return null;
   const ptr = rolePointer(spec);
   if (value === undefined) return { ptr, value: undefined };
   const v = norm(value);
-  if (!isRoleValue(v, r.none, r.glass)) return null;
+  if (!isRoleValue(v, r.transparent, r.glass)) return null;
   if (!textStyle && !template && v === COLOR_THEME_DEFAULTS[name][key]) return { ptr, value: undefined };
   return { ptr, value: v };
 }
 
 /**
- * The Button row's Glass / Color / None: the value a mode stores. Color keeps the colour already
+ * The Button row's Glass / Color / Transparent: the value a mode stores. Color keeps the colour already
  * there, else takes the theme's Accent (a colour to start from; the dots change it).
  */
 export function buttonModeValue(theme, spec, mode) {
-  if (mode === 'glass' || mode === 'none') return mode;
+  if (mode === 'glass' || mode === 'transparent') return mode;
   const now = roleRow(theme, spec).shown;
   if (buttonModeOf(now) === 'color') return now;
   return rolesOf(theme, spec.theme).accent;
 }
 
-/** A role value as a colour for a dot or a chip: '#rrggbb', or '' for none / glass. */
+/** A role value as a colour for a dot or a chip: '#rrggbb', or '' for transparent / glass. */
 export function swatchOf(theme, v) {
   if (Number.isInteger(v)) return paletteOf(theme)[v - 1] || '';
   return isHexColor(v) ? longHex(v) : '';
 }
 
-/** A theme's preview chip: { background, text, title (the Title text style), accent } as colours ('' for none). */
+/** A theme's preview chip: { background, text, title (the Title text style), accent } as colours ('' for transparent). */
 export function previewOf(theme, name) {
   const r = rolesOf(theme, name);
   return {

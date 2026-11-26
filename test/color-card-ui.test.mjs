@@ -16,7 +16,7 @@ test('the card: Theme › Color reads its labels from colors.js and writes throu
   assert.match(panel, /live\.store\.set\(THEME/);
   assert.match(panel, /<Popover/); // the custom colour: the shared 190px popover
   assert.match(panel, /<Collapsible/); // the themes: the editor's cards
-  assert.match(panel, /class="seg crole__mode"/); // the Button's Glass / Color / None: the editor's .seg
+  assert.match(panel, /class="seg crole__mode"/); // the Button's Glass / Color / Transparent: the editor's .seg
   // theme.json is IN_PLACE: an edit rewrites #color-themes and theme-vars, no reload, no render job
   assert.equal(needsReload([THEME_FILE], { routes: false, site: false }), false);
   assert.match(read('src/editor/main.js'), /if \(files\.every\(\(f\) => f === THEME\)\) return;/);

@@ -61,6 +61,9 @@ test('the keys and their values: sizes on the 4px grid, Fill / Fit, Border as a 
   assert.deepEqual(STYLE_KEYS.photoFit, ['fill', 'fit']);
   assert.deepEqual(STYLE_KEYS.border, ['none', 'line', 'strong', 'bottom']);
   assert.deepEqual(STYLE_KEYS.textOverPhoto, ['none', 'bottom']);
+  // the fills are "transparent" (the colour value's name), not "none"
+  assert.deepEqual(STYLE_KEYS.background, ['transparent', 'surface', 'surface-2']);
+  assert.deepEqual(STYLE_KEYS.hoverBackground, ['transparent', 'surface', 'surface-2']);
 });
 
 test('the validator: a valid style passes, a wrong key or value is named, "theme" is never a value', () => {
@@ -70,6 +73,10 @@ test('the validator: a valid style passes, a wrong key or value is named, "theme
   assert.match(msg({ radius: 6 }), /style\.radius must be one of 0, 4, 8, 12, 16, 24/);
   assert.match(msg({ ring: 'line' }), /style\.ring is not an item style key/);
   assert.match(msg({ gap: 8 }), /style\.gap is not an item style key/);
+  // "none" was renamed "transparent": a leftover fill says so; the other keys' "none" stays
+  assert.match(msg({ background: 'none' }), /style\.background is "none": use "transparent"/);
+  assert.match(msg({ hoverBackground: 'none' }), /style\.hoverBackground is "none": use "transparent"/);
+  assert.deepEqual(checkContent(T, tpl({ background: 'transparent', border: 'none', shadow: 'none' })), []);
   // the keys the template grid took over (a preset keeps them): each names what replaced it
   assert.match(msg({ photoFit: 'cover' }), /"style\.photoFit" is gone: the photo widget's own fit/);
   for (const k of GRID_STYLE_KEYS)

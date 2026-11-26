@@ -5,10 +5,10 @@
                    reset: back to the engine's (or color.brand's slot 4)
     Color themes   a card each (Lightest … Darkest), closed, its bar a fixed-size preview chip; open:
                    its 11 roles (labels: ROLES), each a row of field-style swatches sharing it
-                   evenly: the 5 palette slots, None on fills and a custom colour (the shared 190px
+                   evenly: the 5 palette slots, Transparent on fills and a custom colour (the shared 190px
                    popover, kept inside the panel: the hex field); the picked one a 2px inner ring.
-                   Button: Glass / Color / None (.seg) on a row of its own, its swatches under it,
-                   greyed out and disabled for Glass and None (kept: the row's height never changes).
+                   Button: Glass / Color / Transparent (.seg) on a row of its own, its swatches under it,
+                   greyed out and disabled for Glass and Transparent (kept: the row's height never changes).
                    The 7 text styles, a row each right after Text (TEXT_STYLE_ROWS: no group), in
                    a theme and in a template's sub-roles (a template picked under Templates), greyed
                    while they follow ("follows Text"). A role that isn't the engine's default, or a sub-role set:
@@ -80,7 +80,7 @@
   const BUTTON_CHOICES = [
     ['glass', 'Glass'],
     ['color', 'Color'],
-    ['none', 'None'],
+    ['transparent', 'Transparent'],
   ];
 
   // the custom colour popover: the row it is open for ({ spec, anchor })
@@ -205,15 +205,15 @@
           onclick={() => pick(spec, slot)}
         ></button>
       {/each}
-      {#if row.none && !row.glass}
+      {#if row.transparent && !row.glass}
         <button
           type="button"
           role="radio"
-          class="swatch swatch--none"
-          aria-checked={row.shown === 'none'}
-          title="None: no fill"
-          aria-label="None"
-          onclick={() => pick(spec, 'none')}><i class="fa-solid fa-ban" aria-hidden="true"></i></button
+          class="swatch swatch--transparent"
+          aria-checked={row.shown === 'transparent'}
+          title="Transparent: no fill"
+          aria-label="Transparent"
+          onclick={() => pick(spec, 'transparent')}><i class="fa-solid fa-ban" aria-hidden="true"></i></button
         >
       {/if}
       <button
@@ -251,7 +251,7 @@
 {#snippet chip(name)}
   {@const p = previewOf(theme(), name)}
   <span
-    class={['cchip', !p.background && 'is-none']}
+    class={['cchip', !p.background && 'is-transparent']}
     style:--bg={p.background || 'transparent'}
     style:--fg={p.title || 'currentColor'}
     style:--tx={p.text || 'currentColor'}
@@ -479,7 +479,7 @@
     letter-spacing: 0;
     text-transform: none;
 
-    &.is-none {
+    &.is-transparent {
       box-shadow: inset 0 0 0 1px var(--c-line);
       outline: 1px dashed var(--c-text-faint);
       outline-offset: -1px;
@@ -567,7 +567,7 @@
     }
   }
 
-  // Button's Glass / Color / None: the editor's .seg, full width, on a row of its own
+  // Button's Glass / Color / Transparent: the editor's .seg, full width, on a row of its own
   .crole__ctl {
     display: flex;
     height: var(--size-control);
@@ -579,7 +579,7 @@
   }
 
   // the swatches: field-style (.tf__input's radius and background), one control tall, sharing
-  // the row evenly (5 slots, None on fills, custom); kept and greyed out (disabled) while Button
+  // the row evenly (5 slots, Transparent on fills, custom); kept and greyed out (disabled) while Button
   // isn't Color, so the row never changes height
   .swatches {
     display: flex;

@@ -34,8 +34,8 @@ say what a site must do before it bumps its pin.
   that bumps the pin: drop them from `theme/tokens.scss`.
 
 - **Breaking: a list item's fill is no token any more: `--item-bg` and `--item-bg-hover` in
-  `theme/tokens.scss` are not read.** Each item sets its own fill (its style's Surface or None,
-  else the Background its own template sets in the color theme, else none), so an item inside
+  `theme/tokens.scss` are not read.** Each item sets its own fill (its style's Surface or Transparent,
+  else the Background its own template sets in the color theme, else transparent), so an item inside
   another never takes the outer one's; hover keeps its own fill unless its style sets one.
   `ewcms check` names them. In the commit that bumps the pin: drop them from `theme/tokens.scss`.
 
@@ -63,12 +63,23 @@ say what a site must do before it bumps its pin.
   `var(--color-type-<text style>, var(--color-text))` instead of `--color-heading`. No migration: no
   site has color themes saved yet.
 
+- **Breaking: the colour value `"none"` is `"transparent"`.** A fill with no colour of its own is
+  `"transparent"` everywhere: a color theme's roles and template entries in `content/theme.json`
+  (Background, Button, Line, Header; Button's mode is Glass / Color / Transparent) and an item
+  template's `style.background` / `style.hoverBackground` (`content/templates/t-….json`; the
+  presets Plain and Photo say it too). `"none"` is no longer read: a role falls back to the
+  engine's default and an item style fill to the theme's. `ewcms check` names a leftover `"none"`
+  and says to use `"transparent"`. Other `"none"` values (border, shadow, text over photo, hover
+  effect, motion, sources) are unchanged. In the commit that bumps the pin: change
+  `"background": "none"` / `"hoverBackground": "none"` in `content/templates/*.json` (and any
+  colour role set to `"none"` in `content/theme.json`) to `"transparent"`.
+
 ### Engine
 
 - **Palette and color themes (step 1 of the colour plan, no UI yet).** `content/theme.json` can set
   `palette` (5 × `#rrggbb`, slot 1 the calm, background end), `colorThemes` (Lightest, Light,
   Accent, Dark, Darkest: each of the 11 roles a palette slot 1-5, a custom `#rgb`/`#rrggbb`, or
-  `"none"` on fills: Background, Button, Line, Header) and `colorTheme` (the site color theme,
+  `"transparent"` on fills: Background, Button, Line, Header) and `colorTheme` (the site color theme,
   default `darkest`). Left out, the engine's defaults apply. The page head gets one static
   `<style id="color-themes">`: `--palette-1…5`, each theme's `--color-*` roles on `.ct-<name>`
   (the site theme on `:root` too) and the smart colours (`--smart-*`, worked out with
@@ -98,9 +109,9 @@ say what a site must do before it bumps its pin.
   editor copies them from its theme.json, unsaved edits too, as one undo step; theme.json is then
   unsaved until Save); `basedOn` stays a note and is never followed (a template with no entry of its own uses the
   section's roles). A Background a template sets paints its items when the item style's fill
-  is left empty; None is always see-through, Surface a surface of it. `ewcms check` reads a
-  template's text against what renders under it: with fill None (Plain, Photo, a site template
-  whose style says None) the section's background, not the template's Background. `ewcms check` checks a template's text against its own Background.
+  is left empty; Transparent is always see-through, Surface a surface of it. `ewcms check` reads a
+  template's text against what renders under it: with fill Transparent (Plain, Photo, a site template
+  whose style says Transparent) the section's background, not the template's Background. `ewcms check` checks a template's text against its own Background.
 - **The editor's preview follows theme.json's color themes in place:** a palette, role or
   sub-role edit rewrites the page's `<style id="color-themes">` (no reload), as it already does
   the theme's CSS variables.
@@ -109,24 +120,24 @@ say what a site must do before it bumps its pin.
   `--type-<style>-color`): they colour nothing of the engine, so it says to put the colours in
   `content/theme.json` `palette` / `colorThemes` and drop them.
 
-- **Buttons take a mode from the color theme's Button role: a colour, glass or none.** Button (a
+- **Buttons take a mode from the color theme's Button role: a colour, glass or transparent.** Button (a
   theme's or a template's) is a palette slot or `#hex` (a solid fill), `"glass"` (the glass pill,
-  the default in every theme, so a site that sets nothing looks as before) or `"none"` (text
+  the default in every theme, so a site that sets nothing looks as before) or `"transparent"` (text
   only). The Button widget, the Form's Send and the header's CTA read it; Button text applies in
   all modes (its defaults are each theme's Text, as the pill's text was); hover and pressed are
   the smart Button hover / Button pressed, with their own rule for glass (the glass a step and two
-  lighter) and none (Text at 10% / 18%), so hover always shows. The glass is tinted by Accent now,
+  lighter) and transparent (Text at 10% / 18%), so hover always shows. The glass is tinted by Accent now,
   not Button (the same slot in Accent, Dark and Darkest; Lightest and Light move from slot 1 to
   their Accent). A template that sets Text but no Button text: its glass or no-fill button's text
   follows its Text. Only once some Button is not glass does the color-themes style write the
   `.btn` fill per theme. `ewcms check` takes `"glass"` on Button only; the contrast check reads
-  Button text on the button colour, or on the section's Background for glass and none. The
+  Button text on the button colour, or on the section's Background for glass and transparent. The
   chrome (a header with no color theme of its own) works its smart colours out with the site
   theme's modes. No per-button setting and no editor field yet (the Color card is step 5).
 
 - **docs/COLORS.md: the colours a site's CSS may use.** The palette (`--palette-1…5`), the 12
   roles (`--color-*`) and the text-style sub-roles, the smart colours (`--smart-*`) and the Button
-  modes (glass, none, slot, hex), with the code's names (a test keeps them in step). Prefer roles
+  modes (glass, transparent, slot, hex), with the code's names (a test keeps them in step). Prefer roles
   over palette slots, so a section's color theme keeps working; overriding a colour is the
   exception. The default site's `theme/tokens.scss` points to it.
 
@@ -135,11 +146,11 @@ say what a site must do before it bumps its pin.
 - **Theme › Color is the palette and the color themes (step 5).** The card ("Palette and color
   themes") holds the **Palette** (5 slots, each a hex field with its swatch picker), a card per
   **color theme** (Lightest … Darkest, a fixed-size preview chip on its bar; open: its 11 roles,
-  each a row of field-style swatches sharing it evenly: the 5 palette slots, None on fills and a
+  each a row of field-style swatches sharing it evenly: the 5 palette slots, Transparent on fills and a
   custom colour in the 190px popover, kept inside the panel; the picked one has a 2px inner
   ring), its read-only **Smart colors** and the **Site color theme** select. Button is Glass /
-  Color / None on a row of its own, its swatches under it, greyed out and disabled for Glass and
-  None (the row keeps its height). The 7 text styles are rows of their own right
+  Color / Transparent on a row of its own, its swatches under it, greyed out and disabled for Glass and
+  Transparent (the row keeps its height). The 7 text styles are rows of their own right
   after Text (Title, Heading, Subheading, Statement, Paragraph, Label, Small: no group), in a theme
   and in a template's sub-roles (pick the template under Templates), greyed while they follow
   ("follows Text"); the chip's Aa is the Title's colour. A role that isn't the default, or a sub-role set, gets the editor's

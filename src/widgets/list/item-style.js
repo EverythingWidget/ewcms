@@ -15,9 +15,9 @@
  *   shadow           "none" | "s" | "m" | "l"
  *   padding          0 | 8 | 12 | 16 | 24 | 32
  *   spacing          0 | 4 | 8 | 12 | 16 | 24  between the item's widgets
- *   background       "none" | "surface" | "surface-2"   none: see-through; left out: the
- *                    Background its template sets in the color theme, else none
- *   hoverBackground  "none" | "surface" | "surface-2"
+ *   background       "transparent" | "surface" | "surface-2"   transparent: see-through; left
+ *                    out: the Background its template sets in the color theme, else transparent
+ *   hoverBackground  "transparent" | "surface" | "surface-2"
  *   textOverPhoto    "none" | "bottom"         the text over the photo's foot, a shade under it
  *   hoverEffect      "none" | "accent" | "zoom" | "shift" | "lift"   on hover: the title in the
  *                    accent (a linked item), plus zoom the photo, slide the title or lift the item
@@ -37,8 +37,8 @@ export const STYLE_KEYS = {
   shadow: ['none', 's', 'm', 'l'],
   padding: PX(0, 8, 12, 16, 24, 32),
   spacing: PX(0, 4, 8, 12, 16, 24),
-  background: ['none', 'surface', 'surface-2'],
-  hoverBackground: ['none', 'surface', 'surface-2'],
+  background: ['transparent', 'surface', 'surface-2'],
+  hoverBackground: ['transparent', 'surface', 'surface-2'],
   textOverPhoto: ['none', 'bottom'],
   hoverEffect: ['none', 'accent', 'zoom', 'shift', 'lift'],
   titleSize: ['s', 'm', 'l'],
@@ -61,7 +61,7 @@ export const PRESET_STYLES = {
     padding: 0,
     border: 'none',
     shadow: 'none',
-    background: 'none',
+    background: 'transparent',
     hoverEffect: 'accent',
     titleSize: 's',
     textBody: 'prose',
@@ -91,8 +91,8 @@ export const PRESET_STYLES = {
     spacing: 0,
     border: 'none',
     shadow: 'none',
-    background: 'none',
-    hoverBackground: 'none',
+    background: 'transparent',
+    hoverBackground: 'transparent',
     textOverPhoto: 'none',
     hoverEffect: 'none',
     titleSize: 's',
@@ -100,6 +100,9 @@ export const PRESET_STYLES = {
   },
 };
 export const presetStyle = (id) => ({ ...(PRESET_STYLES[id] || PRESET_STYLES['preset:card']) });
+
+// the fills: "transparent", never "none" (renamed; ewcms check says so)
+const FILL_KEYS = ['background', 'hoverBackground'];
 
 /** Problems with a template's "style" ([] when fine). */
 export function styleProblems(style) {
@@ -110,6 +113,8 @@ export function styleProblems(style) {
     const allowed = STYLE_KEYS[k];
     if (!allowed)
       out.push(`style.${k} is not an item style key (${Object.keys(STYLE_KEYS).join(', ')})`);
+    else if (v === 'none' && FILL_KEYS.includes(k))
+      out.push(`style.${k} is "none": use "transparent" (no fill; "none" was renamed)`);
     else if (!allowed.includes(v))
       out.push(
         `style.${k} must be one of ${allowed.map((a) => JSON.stringify(a)).join(', ')} (left out: the theme's)`,
@@ -119,15 +124,15 @@ export function styleProblems(style) {
 }
 
 /**
- * The templates whose item style's fill is None (see-through: a Background their color theme
+ * The templates whose item style's fill is Transparent (see-through: a Background their color theme
  * sets never shows): the presets' and the site's (`templates`: { id: template }).
  */
 export const seeThroughTemplates = (templates = {}) => [
   ...Object.entries(PRESET_STYLES)
-    .filter(([, s]) => s.background === 'none')
+    .filter(([, s]) => s.background === 'transparent')
     .map(([id]) => id),
   ...Object.entries(templates)
-    .filter(([, t]) => isObject(t?.style) && t.style.background === 'none')
+    .filter(([, t]) => isObject(t?.style) && t.style.background === 'transparent')
     .map(([id]) => id),
 ];
 
@@ -138,11 +143,11 @@ export const cleanStyle = (style) =>
     : {};
 
 // the item's fill and ring: the color theme's roles (src/render/colors.js), a surface a step
-// (two) from Background toward Text; None: no fill (see-through). Left empty: the Background its
-// template sets in the color theme (--item-bg, src/render/colors.js), else none
+// (two) from Background toward Text; Transparent: no fill (see-through). Left empty: the Background
+// its template sets in the color theme (--item-bg, src/render/colors.js), else transparent
 const surface = (n) => `color-mix(in oklab, var(--color-background), var(--color-text) ${n}%)`;
 const FILL = {
-  none: 'transparent',
+  transparent: 'transparent',
   surface: surface(6),
   'surface-2': surface(12),
 };

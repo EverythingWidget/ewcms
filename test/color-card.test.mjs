@@ -53,10 +53,10 @@ test('palette: the slots show theme.json\'s, else the engine\'s (color.brand as 
 test('roles: a row shows what applies; custom is a base role not the engine\'s default', () => {
   const row = roleRow({}, { theme: 'dark', key: 'text' });
   assert.deepEqual(
-    { label: row.label, own: row.own, shown: row.shown, custom: row.custom, none: row.none },
-    { label: 'Text', own: undefined, shown: 5, custom: false, none: false },
+    { label: row.label, own: row.own, shown: row.shown, custom: row.custom, transparent: row.transparent },
+    { label: 'Text', own: undefined, shown: 5, custom: false, transparent: false },
   );
-  assert.equal(roleRow({}, { theme: 'dark', key: 'background' }).none, true);
+  assert.equal(roleRow({}, { theme: 'dark', key: 'background' }).transparent, true);
   // the default's value stored is not custom; another is
   assert.equal(roleRow({ colorThemes: { dark: { text: 5 } } }, { theme: 'dark', key: 'text' }).custom, false);
   assert.equal(roleRow({ colorThemes: { dark: { text: '#ABC' } } }, { theme: 'dark', key: 'text' }).shown, '#abc');
@@ -70,9 +70,10 @@ test('roles: a pick stores only what differs; None only on fills; one undo step 
   const theme = () => s.get(THEME, '');
   apply(s, roleEdit(theme(), { theme: 'dark', key: 'link' }, 2), 'a');
   assert.deepEqual(s.get(THEME, '/colorThemes'), { dark: { link: 2 } });
-  apply(s, roleEdit(theme(), { theme: 'dark', key: 'line' }, 'none'), 'b');
-  assert.equal(s.get(THEME, '/colorThemes/dark/line'), 'none');
-  assert.equal(roleEdit(theme(), { theme: 'dark', key: 'text' }, 'none'), null);
+  apply(s, roleEdit(theme(), { theme: 'dark', key: 'line' }, 'transparent'), 'b');
+  assert.equal(s.get(THEME, '/colorThemes/dark/line'), 'transparent');
+  assert.equal(roleEdit(theme(), { theme: 'dark', key: 'text' }, 'transparent'), null);
+  assert.equal(roleEdit(theme(), { theme: 'dark', key: 'line' }, 'none'), null); // renamed
   assert.equal(roleEdit(theme(), { theme: 'dark', key: 'text' }, 'glass'), null);
   assert.equal(roleEdit(theme(), { theme: 'dark', key: 'text' }, 9), null);
   assert.equal(roleEdit(theme(), { theme: 'nope', key: 'text' }, 1), null);
@@ -93,13 +94,13 @@ test('Button: Glass / Color / None; Color keeps a colour, else starts from Accen
   assert.equal(roleRow({}, spec).mode, 'glass');
   assert.equal(buttonModeValue({}, spec, 'color'), 4); // dark's Accent
   assert.equal(buttonModeValue({ colorThemes: { dark: { button: '#123456' } } }, spec, 'color'), '#123456');
-  assert.equal(buttonModeValue({}, spec, 'none'), 'none');
+  assert.equal(buttonModeValue({}, spec, 'transparent'), 'transparent');
   assert.equal(roleRow({ colorThemes: { dark: { button: 2 } } }, spec).mode, 'color');
-  assert.equal(roleRow({ colorThemes: { dark: { button: 'none' } } }, spec).mode, 'none');
+  assert.equal(roleRow({ colorThemes: { dark: { button: 'transparent' } } }, spec).mode, 'transparent');
   // glass is the default: picking it again leaves the key out
   assert.deepEqual(roleEdit({ colorThemes: { dark: { button: 2 } } }, spec, 'glass'), { ptr: '/colorThemes/dark/button', value: undefined });
   assert.equal(roleRow({}, spec).custom, false);
-  assert.equal(roleRow({ colorThemes: { dark: { button: 'none' } } }, spec).custom, true);
+  assert.equal(roleRow({ colorThemes: { dark: { button: 'transparent' } } }, spec).custom, true);
 });
 
 test('sub-roles: empty follows the parent and says so; set, it is custom; cleared, it follows again', () => {
@@ -146,7 +147,7 @@ test('sub-roles: empty follows the parent and says so; set, it is custom; cleare
 test('chips, dots and counts; the site color theme', () => {
   assert.equal(swatchOf({}, 1), DEFAULT_PALETTE[0]);
   assert.equal(swatchOf({}, '#abc'), '#aabbcc');
-  assert.equal(swatchOf({}, 'none'), '');
+  assert.equal(swatchOf({}, 'transparent'), '');
   assert.equal(swatchOf({}, 'glass'), '');
   assert.deepEqual(previewOf({}, 'lightest'), { background: DEFAULT_PALETTE[4], text: DEFAULT_PALETTE[0], title: DEFAULT_PALETTE[0], accent: DEFAULT_PALETTE[2] });
   // the chip's Aa is the Title text style (it follows Text)
