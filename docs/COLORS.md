@@ -48,14 +48,15 @@ the palette), or `"none"` (transparent) on a fill.
 Inside the header (`.header`, `.mmenu`) Background and Text are the Header and Header text, so
 CSS there reads `--color-background` / `--color-text` like anywhere else.
 
-A color theme can also colour one text style (sub-roles): `--color-type-title`,
+A color theme can also colour each text style (sub-roles, its `textStyles` in
+`content/theme.json`): `--color-type-title`,
 `--color-type-heading`, `--color-type-subheading`, `--color-type-statement` (they follow Heading)
 and `--color-type-paragraph`, `--color-type-label`, `--color-type-small` (they follow Text). They
 are only set when a theme sets them, so always read them with their parent as the fallback:
 `color: var(--color-type-label, var(--color-text));`.
 
 An item template (a List's `config.template`) can set its own Background, Text, Heading, Link,
-Button, Button text and Line per color theme; inside its items (class `tpl-<id>`) the same
+Button, Button text, Line and text styles per color theme; inside its items (class `tpl-<id>`) the same
 variables carry them, so nothing changes in the CSS.
 
 ## Smart colours: `--smart-*`

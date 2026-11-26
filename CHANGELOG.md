@@ -40,10 +40,18 @@ say what a site must do before it bumps its pin.
   `ewcms check` names them. In the commit that bumps the pin: drop them from `theme/tokens.scss`.
 
 - **Breaking: the text styles' colour tokens `--type-<style>-color` are gone.** A text style's
-  colour is its sub-role in `content/theme.json` `colorThemes.<name>.typography.<style>`.
+  colour is its sub-role in `content/theme.json` `colorThemes.<name>.textStyles.<text style>`.
   Paragraph, Label and Small now follow Text instead of the faded colour, and a List's facts
   and count follow Label. In the commit that bumps the pin: move any `--type-<style>-color`
-  from `theme/tokens.scss` into the site theme's `typography` (a palette slot or `#hex`).
+  from `theme/tokens.scss` into the site theme's `textStyles` (a palette slot or `#hex`).
+
+- **Breaking: a color theme's text-style colours are `textStyles`, not `typography`.** In
+  `content/theme.json` `colorThemes.<name>` and in each template entry
+  (`colorThemes.<name>.templates.<id>`), the per-text-style colour sub-roles moved from
+  `"typography": { "label": 4 }` to `"textStyles": { "label": 4 }`, so they no longer share a name
+  with theme.json's `typography` (sizes and `typography.fonts`, unchanged). The CSS variables stay
+  `--color-type-<text style>`. `ewcms check` names a leftover `typography` there as not a role. No
+  migration: no site has color themes saved yet; one that does renames the key.
 
 ### Engine
 
@@ -71,7 +79,7 @@ say what a site must do before it bumps its pin.
   allows no hex, `rgb()` or `hsl()` in the client, the widgets or the default theme but the
   named shades, scrims, the error colour and text over a photo.
 - **Sub-roles: text styles and templates (step 4).** A color theme can set each text style's
-  colour (`colorThemes.<name>.typography.<style>`, `--color-type-<style>`); unset, Title,
+  colour (`colorThemes.<name>.textStyles.<text style>`, `--color-type-<text style>`); unset, Title,
   Heading, Subheading and Statement follow Heading, and Paragraph, Label and Small follow Text
   (not a faded colour any more). It can set a template's roles too
   (`colorThemes.<name>.templates."<template id>"`, e.g. `"preset:card"` or `"t-ab12"`:

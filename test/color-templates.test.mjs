@@ -1,4 +1,4 @@
-// Palette step 4: sub-roles. Text styles (colorThemes.<name>.typography) and each template's
+// Palette step 4: sub-roles. Text styles (colorThemes.<name>.textStyles) and each template's
 // roles (colorThemes.<name>.templates."<id>"); a template made from another gets a copy, once.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -23,12 +23,12 @@ test('no sub-roles: no template rules, no --color-type-* set', () => {
 });
 
 test('a text style set in one theme: the others reset it, so it follows Heading / Text', () => {
-  const css = colorThemeCss({ colorThemes: { light: { typography: { label: 3 } } } });
+  const css = colorThemeCss({ colorThemes: { light: { textStyles: { label: 3 } } } });
   assert.match(rule(css, '.ct-light'), /--color-type-label: var\(--palette-3\)/);
   assert.match(rule(css, '.ct-dark'), /--color-type-label: initial/);
-  // only the set style is written
+  // only the set text style is written
   assert.doesNotMatch(css, /--color-type-paragraph/);
-  // the styles read it, else their parent (Label and Small: Text, not the faded colour)
+  // the text styles read it, else their parent (Label and Small: Text, not the faded colour)
   const scss = fs.readFileSync(new URL('../src/client/styles/_text.scss', import.meta.url), 'utf8');
   assert.match(scss, /color: var\(--color-type-label, var\(--color-text\)\);/);
   assert.match(scss, /color: var\(--color-type-small, var\(--color-text\)\);/);
@@ -83,16 +83,16 @@ test("a template's sub-roles apply only inside its items, in that theme", () => 
 test("a template is its own: basedOn isn't followed; its parent's are copied once, when it is added", () => {
   const theme = {
     colorThemes: {
-      dark: { templates: { 'preset:card': { background: 3, typography: { title: 5 } } } },
+      dark: { templates: { 'preset:card': { background: 3, textStyles: { title: 5 } } } },
       light: { link: 2 },
     },
   };
   // a template with no entry of its own: the section's roles (no rules), whatever its basedOn
-  assert.deepEqual(templateRolesOf(theme, 'dark', 't-aa11'), { roles: {}, typography: {} });
+  assert.deepEqual(templateRolesOf(theme, 'dark', 't-aa11'), { roles: {}, textStyles: {} });
   assert.doesNotMatch(colorThemeCss(theme), /tpl-t-aa11/);
   // copied: its own entry, in each theme that had the parent's, as edits to theme.json
   const copies = templateRoleCopies(theme, 'preset:card', 't-aa11');
-  assert.deepEqual(copies, [['/colorThemes/dark/templates/t-aa11', { background: 3, typography: { title: 5 } }]]);
+  assert.deepEqual(copies, [['/colorThemes/dark/templates/t-aa11', { background: 3, textStyles: { title: 5 } }]]);
   assert.equal(theme.colorThemes.dark.templates['t-aa11'], undefined, 'theme.json given is not changed');
   // the editor applies them to its theme.json, unsaved edits too, as one undo step
   const store = createStore();
@@ -100,7 +100,7 @@ test("a template is its own: basedOn isn't followed; its parent's are copied onc
   store.set('theme.json', '/colorThemes/light/link', 3); // an unsaved edit, before
   store.batch(() => copies.forEach(([ptr, v]) => store.set('theme.json', ptr, v)));
   const edited = store.current['theme.json'];
-  assert.deepEqual(edited.colorThemes.dark.templates['t-aa11'], { background: 3, typography: { title: 5 } });
+  assert.deepEqual(edited.colorThemes.dark.templates['t-aa11'], { background: 3, textStyles: { title: 5 } });
   assert.match(rule(colorThemeCss(structuredClone(edited)), '.ct-dark .tpl-t-aa11'), /--color-background: var\(--palette-3\)/);
   // then each is its own: the parent's later edit doesn't reach it
   store.set('theme.json', '/colorThemes/dark/templates/preset:card/background', 4);
@@ -143,11 +143,11 @@ test("contrast: a template's text against its own Background", () => {
   );
 });
 
-test('one source: the text styles are layout/type.js\'s, a template id a preset or "t-…" (files.js)', async () => {
-  const { checkColors, TYPE_PARENT } = await import('../src/render/colors.js');
-  const { TEXT_STYLES } = await import('../src/render/layout/type.js');
+test('one source: the text styles are layout/text-styles.js\'s, a template id a preset or "t-…" (files.js)', async () => {
+  const { checkColors, TEXT_STYLE_PARENT } = await import('../src/render/colors.js');
+  const { TEXT_STYLES } = await import('../src/render/layout/text-styles.js');
   const { PRESET_FROM } = await import('../src/render/files.js');
-  assert.deepEqual(Object.keys(TYPE_PARENT), Object.keys(TEXT_STYLES));
+  assert.deepEqual(Object.keys(TEXT_STYLE_PARENT), Object.keys(TEXT_STYLES));
   const tpl = (id) => checkColors({ colorThemes: { dark: { templates: { [id]: { text: 2 } } } } });
   for (const id of [...PRESET_FROM, 't-ab12']) assert.deepEqual(tpl(id), [], id);
   for (const id of ['preset:nope', 't-X', 'card'])

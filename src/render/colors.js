@@ -7,7 +7,7 @@
  *     "colorThemes": {
  *       "dark": {
  *         "background": 2, "text": 5, "link": "#c9a27a", "button": "none",
- *         "typography": { "label": 4 },
+ *         "textStyles": { "label": 4 },
  *         "templates": { "preset:card": { "background": 3 }, "t-pmor": { "text": 4 } }
  *       }
  *     },
@@ -19,9 +19,9 @@
  *                 value: a palette slot 1-5, a custom colour (#rgb or #rrggbb: it doesn't follow
  *                 the palette) or "none" (fill roles only: no fill, transparent). Button also
  *                 takes "glass" (the engine's glass pill, its default): see BUTTON_MODES
- *     typography  sub-roles: one text style's colour (TYPE_PARENT: left out, it follows Heading or Text)
+ *     textStyles  sub-roles: one text style's colour (TEXT_STYLE_PARENT: left out, it follows Heading or Text)
  *     templates   sub-roles of an item template (its id, as a List's config.template: "preset:card",
- *                 "t-…"): TEMPLATE_ROLES and typography; left out, the section's roles. A template
+ *                 "t-…"): TEMPLATE_ROLES and textStyles; left out, the section's roles. A template
  *                 is its own thing: one made from another gets a copy of its sub-roles once
  *                 (templateRoleCopies, when it is added), basedOn is only a note
  *   colorTheme    the site color theme: the page, the chrome and every section that picks none
@@ -81,18 +81,20 @@ export const ROLES = Object.freeze(
 export const ROLE_KEYS = Object.freeze(ROLES.map((r) => r.key));
 const roleOf = (key) => ROLES.find((r) => r.key === key);
 
-/** The roles a template may set (besides its typography). */
+/** The roles a template may set (besides its textStyles). */
 export const TEMPLATE_ROLES = Object.freeze(ROLES.filter((r) => r.template).map((r) => r.key));
 
-/** Each text style's parent role (the styles: layout/type.js TEXT_STYLES): a sub-role left out follows it. */
-const HEADING_STYLES = ['title', 'heading', 'subheading', 'statement'];
-export const TYPE_PARENT = Object.freeze(
-  Object.fromEntries(Object.keys(TEXT_STYLES).map((s) => [s, HEADING_STYLES.includes(s) ? 'heading' : 'text'])),
+/** Each text style's parent role (the text styles: layout/text-styles.js TEXT_STYLES): a sub-role left out follows it. */
+const HEADING_TEXT_STYLES = ['title', 'heading', 'subheading', 'statement'];
+export const TEXT_STYLE_PARENT = Object.freeze(
+  Object.fromEntries(
+    Object.keys(TEXT_STYLES).map((textStyle) => [textStyle, HEADING_TEXT_STYLES.includes(textStyle) ? 'heading' : 'text']),
+  ),
 );
-export const TYPE_STYLES = Object.freeze(Object.keys(TYPE_PARENT));
+export const TEXT_STYLE_NAMES = Object.freeze(Object.keys(TEXT_STYLE_PARENT));
 
-/** A text style's sub-role variable (--color-type-<style>; the role Heading is --color-heading). */
-export const typeVar = (style) => `--color-type-${style}`;
+/** A text style's sub-role variable (--color-type-<text style>; the role Heading is --color-heading). */
+export const textStyleVar = (textStyle) => `--color-type-${textStyle}`;
 
 /**
  * The engine's color themes: each role's palette slot (a theme.json theme overrides any). Button:
@@ -231,16 +233,16 @@ export function rolesOf(theme, name) {
 
 const normal = (v) => (typeof v === 'string' ? v.toLowerCase() : v);
 
-/** A theme's text-style sub-roles that are set: { style: value }. */
-export function typeRolesOf(set) {
-  const t = isObject(set?.typography) ? set.typography : {};
+/** A theme's (or template's) text-style sub-roles that are set: { textStyle: value }. */
+export function textStyleRolesOf(set) {
+  const t = isObject(set?.textStyles) ? set.textStyles : {};
   const out = {};
-  for (const s of TYPE_STYLES) if (isRoleValue(t[s])) out[s] = normal(t[s]);
+  for (const textStyle of TEXT_STYLE_NAMES) if (isRoleValue(t[textStyle])) out[textStyle] = normal(t[textStyle]);
   return out;
 }
 
 /**
- * A template's own sub-roles in a theme, only what is set: { roles, typography } (none: the
+ * A template's own sub-roles in a theme, only what is set: { roles, textStyles } (none: the
  * section's roles; its parent's are never read, see copyTemplateRoles).
  */
 export function templateRolesOf(theme, name, id) {
@@ -249,7 +251,7 @@ export function templateRolesOf(theme, name, id) {
   const roles = {};
   for (const k of TEMPLATE_ROLES)
     if (isRoleValue(set[k], roleOf(k).none, roleOf(k).glass)) roles[k] = normal(set[k]);
-  return { roles, typography: typeRolesOf(set) };
+  return { roles, textStyles: textStyleRolesOf(set) };
 }
 
 /**
@@ -375,7 +377,7 @@ const ITEM_FILL_TOKENS = ['--item-bg', '--item-bg-hover'];
 
 /**
  * The colour tokens a site's tokens.scss may still set that colour nothing of the engine (ewcms
- * check warns): the aliases, the retired ones, the item fill and the old --type-<style>-color.
+ * check warns): the aliases, the retired ones, the item fill and the old --type-<text style>-color.
  */
 export const isOldColorToken = (name) =>
   TOKEN_ALIASES.some(([alias]) => alias === name) ||
@@ -424,12 +426,12 @@ function buildCss(theme) {
   const sel = (name) => (name === site ? `:root, .ct-${name}` : `.ct-${name}`);
   const ids = templateIds(theme);
   // a text style set in any theme or template: the others reset it, so it follows its parent
-  const typeSet = new Set();
+  const textStyleSet = new Set();
   for (const name of THEME_NAMES) {
-    Object.keys(typeRolesOf(own(theme, name))).forEach((s) => typeSet.add(s));
+    Object.keys(textStyleRolesOf(own(theme, name))).forEach((textStyle) => textStyleSet.add(textStyle));
     for (const id of ids)
-      Object.keys(templateRolesOf(theme, name, id).typography).forEach((s) =>
-        typeSet.add(s),
+      Object.keys(templateRolesOf(theme, name, id).textStyles).forEach((textStyle) =>
+        textStyleSet.add(textStyle),
       );
   }
   const chrome = CHROME_ROLES.map(([selector]) => selector);
@@ -444,11 +446,14 @@ function buildCss(theme) {
   ];
   for (const name of THEME_NAMES) {
     const roles = rolesOf(theme, name);
-    const type = typeRolesOf(own(theme, name));
+    const textStyles = textStyleRolesOf(own(theme, name));
     out.push(
       `${sel(name)} { ${decls([
         ...ROLES.map((r) => [r.css, valueCss(roles[r.key])]),
-        ...[...typeSet].map((s) => [typeVar(s), type[s] !== undefined ? valueCss(type[s]) : 'initial']),
+        ...[...textStyleSet].map((textStyle) => [
+          textStyleVar(textStyle),
+          textStyles[textStyle] !== undefined ? valueCss(textStyles[textStyle]) : 'initial',
+        ]),
         ...modeSmart(roles),
       ])} }`,
     );
@@ -482,7 +487,7 @@ function buildCss(theme) {
   );
   for (const name of order)
     for (const id of ids) {
-      const { roles, typography } = templateRolesOf(theme, name, id);
+      const { roles, textStyles } = templateRolesOf(theme, name, id);
       const cls = templateClass(id);
       const selector =
         name === site ? `:root .${cls}, .ct-${name} .${cls}` : `.ct-${name} .${cls}`;
@@ -503,7 +508,10 @@ function buildCss(theme) {
           ]),
           ...(paints.has(id) ? fill : []),
           ['color', 'var(--color-text)'],
-          ...[...typeSet].map((s) => [typeVar(s), typography[s] !== undefined ? valueCss(typography[s]) : 'inherit']),
+          ...[...textStyleSet].map((textStyle) => [
+            textStyleVar(textStyle),
+            textStyles[textStyle] !== undefined ? valueCss(textStyles[textStyle]) : 'inherit',
+          ]),
           ...modeSmart(all, true),
         ])} }`,
       );
@@ -527,13 +535,13 @@ function checkValue(where, v, none, glass = false) {
   return [`"${where}" must be ${SLOT_TEXT}${more ? `, ${more}` : ''}, not ${show(v)}`];
 }
 
-function checkTypography(where, t) {
+function checkTextStyles(where, t) {
   if (t === undefined) return [];
-  if (!isObject(t)) return [`"${where}" must be an object { ${TYPE_STYLES.join(', ')} }`];
-  return Object.entries(t).flatMap(([k, v]) =>
-    TYPE_STYLES.includes(k)
-      ? checkValue(`${where}.${k}`, v, false)
-      : [`"${where}.${k}" is not a text style (${TYPE_STYLES.join(', ')})`],
+  if (!isObject(t)) return [`"${where}" must be an object of text styles { ${TEXT_STYLE_NAMES.join(', ')} }`];
+  return Object.entries(t).flatMap(([textStyle, v]) =>
+    TEXT_STYLE_NAMES.includes(textStyle)
+      ? checkValue(`${where}.${textStyle}`, v, false)
+      : [`"${where}.${textStyle}" is not a text style (${TEXT_STYLE_NAMES.join(', ')})`],
   );
 }
 
@@ -541,12 +549,12 @@ function checkTypography(where, t) {
 function checkRoles(where, t, keys, extra) {
   if (!isObject(t)) return [`"${where}" must be an object of roles`];
   return Object.entries(t).flatMap(([k, v]) => {
-    if (k === 'typography') return checkTypography(`${where}.typography`, v);
+    if (k === 'textStyles') return checkTextStyles(`${where}.textStyles`, v);
     if (k === 'templates' && extra.includes('templates')) {
       if (!isObject(v)) return [`"${where}.templates" must be an object { "<template id>": { … } }`];
       return Object.entries(v).flatMap(([id, s]) =>
         isTemplateRef(id)
-          ? checkRoles(`${where}.templates.${id}`, s, TEMPLATE_ROLES, ['typography'])
+          ? checkRoles(`${where}.templates.${id}`, s, TEMPLATE_ROLES, ['textStyles'])
           : [`"${where}.templates.${id}" is not a template id ("preset:card", "t-…")`],
       );
     }
@@ -568,7 +576,7 @@ export function checkColors(d) {
   for (const [name, t] of Object.entries(d.colorThemes))
     out.push(
       ...(THEME_NAMES.includes(name)
-        ? checkRoles(`colorThemes.${name}`, t, ROLE_KEYS, ['typography', 'templates'])
+        ? checkRoles(`colorThemes.${name}`, t, ROLE_KEYS, ['textStyles', 'templates'])
         : [`"colorThemes.${name}" is not a color theme (${THEME_NAMES.join(', ')})`]),
     );
   return out;
@@ -608,7 +616,7 @@ export function contrastWarnings(theme, { seeThrough = [] } = {}) {
   const siteBg = hexOf(rolesOf(theme, siteColorThemeOf(theme)).background, palette);
   const out = [];
   const label = (k) => roleOf(k)?.label || k;
-  const check = (where, roles, type, fallbackBg) => {
+  const check = (where, roles, textStyles, fallbackBg) => {
     const bg = hexOf(roles.background, palette) || fallbackBg;
     const against = { background: bg, button: hexOf(roles.button, palette) || bg, header: hexOf(roles.header, palette) || siteBg, curtain: hexOf(roles.curtain, palette) };
     for (const r of ROLES) {
@@ -620,21 +628,22 @@ export function contrastWarnings(theme, { seeThrough = [] } = {}) {
       if (c < r.min)
         out.push(`${where}: ${label(r.key)} on ${label(r.on)} has contrast ${c.toFixed(1)}:1 (needs ${r.min}:1)`);
     }
-    for (const [s, v] of Object.entries(type)) {
+    for (const [textStyle, v] of Object.entries(textStyles)) {
       const fg = hexOf(v, palette);
-      const min = TYPE_PARENT[s] === 'heading' ? 3 : 4.5;
+      const min = TEXT_STYLE_PARENT[textStyle] === 'heading' ? 3 : 4.5;
       const c = contrastOf(fg, bg);
-      if (c < min) out.push(`${where}: ${s} text on Background has contrast ${c.toFixed(1)}:1 (needs ${min}:1)`);
+      if (c < min)
+        out.push(`${where}: the ${textStyle} text style on Background has contrast ${c.toFixed(1)}:1 (needs ${min}:1)`);
     }
     return bg;
   };
   for (const name of THEME_NAMES) {
     const roles = rolesOf(theme, name);
     const where = `colorThemes.${name}`;
-    const bg = check(where, roles, typeRolesOf(own(theme, name)), siteBg);
+    const bg = check(where, roles, textStyleRolesOf(own(theme, name)), siteBg);
     for (const id of templateIds(theme)) {
       const t = templateRolesOf(theme, name, id);
-      if (!Object.keys(t.roles).length && !Object.keys(t.typography).length) continue;
+      if (!Object.keys(t.roles).length && !Object.keys(t.textStyles).length) continue;
       // a template's own background (when its fill lets it show): all its text against it; else
       // only what it sets, against the section's
       const { background, ...set } = t.roles;
@@ -645,7 +654,7 @@ export function contrastWarnings(theme, { seeThrough = [] } = {}) {
       const merged = Object.fromEntries(
         ['background', 'button', ...keys].map((k) => [k, eff[k]]),
       );
-      check(`${where}.templates.${id}`, merged, t.typography, bg);
+      check(`${where}.templates.${id}`, merged, t.textStyles, bg);
     }
   }
   return out;

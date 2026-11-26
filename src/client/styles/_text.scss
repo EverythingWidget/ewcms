@@ -8,7 +8,7 @@
  * Each style's weight and tracking are tokens too (--type-<style>-weight, -tracking; the Label's
  * case: --type-label-case): unset, the fallback here is today's look (inherit: what is around the
  * line, as before). A theme sets them (ewcms default-site/theme/tokens.scss). Its colour is its
- * sub-role (as --color-type-label: content/theme.json colorThemes.<name>.typography; src/render/
+ * sub-role (as --color-type-label: content/theme.json colorThemes.<name>.textStyles; src/render/
  * colors.js): unset, Heading's for Title, Heading, Subheading and Statement, Text's for the rest.
  * A style's font is --type-<style>-font (content/theme.json typography.<style>.font); unset, Title,
  * Heading, Subheading and Statement use --f-display, Label uses --f-body, Paragraph and Small inherit.

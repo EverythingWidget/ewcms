@@ -10,7 +10,7 @@ import {
   ROLES,
   SMART,
   THEME_NAMES,
-  TYPE_STYLES,
+  TEXT_STYLE_NAMES,
   checkColors,
   colorCssBuilds,
   colorThemeCss,
@@ -19,7 +19,7 @@ import {
   paletteOf,
   paletteVarList,
   rolesOf,
-  typeVar,
+  textStyleVar,
 } from '../src/render/colors.js';
 import { checkContent } from '../src/render/validate.js';
 import { themeVarList } from '../src/render/theme.js';
@@ -108,21 +108,23 @@ test('smart colours: worked out from the roles on every theme element; "none" ha
 });
 
 test('check: palette, color themes, roles, slots; "none" only on fills', () => {
-  assert.deepEqual(checkColors({ palette: PALETTE, colorTheme: 'dark', colorThemes: { dark: { button: 'none', line: 'none', header: 'none', background: 'none', text: '#333', typography: { label: 4 } } } }), []);
+  assert.deepEqual(checkColors({ palette: PALETTE, colorTheme: 'dark', colorThemes: { dark: { button: 'none', line: 'none', header: 'none', background: 'none', text: '#333', textStyles: { label: 4 } } } }), []);
   const bad = checkColors({
     palette: ['#fff', '#000'],
     colorTheme: 'blue',
-    colorThemes: { dark: { text: 'none', curtain: 'none', link: 6, glow: 1, typography: { label: 'none', note: 2 } }, blue: {} },
+    colorThemes: { dark: { text: 'none', curtain: 'none', link: 6, glow: 1, textStyles: { label: 'none', note: 2 } }, blue: {} },
   });
+  // the text-style colours are "textStyles": the old key is not a role
+  assert.match(checkColors({ colorThemes: { dark: { typography: { label: 4 } } } }).join(), /"colorThemes\.dark\.typography" is not a role/);
   assert.deepEqual(bad, [
     '"palette" must be 5 colors "#rrggbb", slot 1 first',
     '"colorTheme" must be "lightest", "light", "accent", "dark", "darkest", not "blue"',
     `"colorThemes.dark.text" can't be "none": only a fill can (Background, Button, Line, Header)`,
     `"colorThemes.dark.curtain" can't be "none": only a fill can (Background, Button, Line, Header)`,
     '"colorThemes.dark.link" must be a palette slot 1-5 or a color "#rrggbb", not 6',
-    '"colorThemes.dark.glow" is not a role (background, text, heading, link, accent, button, buttonText, line, header, headerText, curtain, curtainText, typography, templates)',
-    `"colorThemes.dark.typography.label" can't be "none": only a fill can (Background, Button, Line, Header)`,
-    '"colorThemes.dark.typography.note" is not a text style (title, heading, paragraph, label, subheading, statement, small)',
+    '"colorThemes.dark.glow" is not a role (background, text, heading, link, accent, button, buttonText, line, header, headerText, curtain, curtainText, textStyles, templates)',
+    `"colorThemes.dark.textStyles.label" can't be "none": only a fill can (Background, Button, Line, Header)`,
+    '"colorThemes.dark.textStyles.note" is not a text style (title, heading, paragraph, label, subheading, statement, small)',
     '"colorThemes.blue" is not a color theme (lightest, light, accent, dark, darkest)',
   ]);
   // through theme.json's check (validate.js)
@@ -139,7 +141,7 @@ test('contrast: text against its nearest real background; "none" sees through; 3
     colorThemes: {
       // dark: no fill, so Text is read against the site theme's (darkest) background #050505
       dark: { background: 'none', text: 2, heading: 3, button: 'none', buttonText: 1 },
-      light: { curtainText: 5, typography: { small: 5 } },
+      light: { curtainText: 5, textStyles: { small: 5 } },
     },
   });
   assert.ok(w.some((m) => /^colorThemes\.dark: Text on Background has contrast 1\.\d:1 \(needs 4\.5:1\)/.test(m)), w.join('\n'));
@@ -147,7 +149,7 @@ test('contrast: text against its nearest real background; "none" sees through; 3
   // a no-fill button: its text against the background (#050505)
   assert.ok(w.some((m) => /^colorThemes\.dark: Button text on Button has contrast 1\.0:1/.test(m)));
   assert.ok(w.some((m) => /^colorThemes\.light: Curtain text on Curtain/.test(m)));
-  assert.ok(w.some((m) => /^colorThemes\.light: small text on Background/.test(m)));
+  assert.ok(w.some((m) => /^colorThemes\.light: the small text style on Background/.test(m)));
 });
 
 test('the page head: one static color-themes style, built once per theme.json', () => {
@@ -167,7 +169,7 @@ test('the page head: one static color-themes style, built once per theme.json', 
 });
 
 test('one name per concept: every --color-* and --smart-* in the engine comes from the one table', () => {
-  const known = new Set([...ROLES.map((r) => r.css), ...TYPE_STYLES.map(typeVar), ...SMART.map((s) => s.var)]);
+  const known = new Set([...ROLES.map((r) => r.css), ...TEXT_STYLE_NAMES.map(textStyleVar), ...SMART.map((s) => s.var)]);
   const files = [];
   const walk = (dir) => {
     for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -184,6 +186,6 @@ test('one name per concept: every --color-* and --smart-* in the engine comes fr
       if (!known.has(m[0]) && !f.endsWith('colors.js')) unknown.push(`${path.relative(root, f)}: ${m[0]}`);
   assert.deepEqual(unknown, []);
   // and the CSS writes nothing else
-  const css = colorThemeCss({ colorThemes: { dark: { typography: { label: 4 } } } });
+  const css = colorThemeCss({ colorThemes: { dark: { textStyles: { label: 4 } } } });
   for (const m of css.matchAll(/--(?:color|smart)-[a-z-]+(?=:)/g)) assert.ok(known.has(m[0]), m[0]);
 });
