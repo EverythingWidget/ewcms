@@ -14,6 +14,19 @@ say what a site must do before it bumps its pin.
   `ewcms check` warns about a leftover `colorScheme` in `theme/meta.json` (ignored). In the
   commit that bumps the pin, move it into `content/theme.json` and drop it from `theme/meta.json`.
 
+### Engine
+
+- **Palette and color themes (step 1 of the colour plan, no UI yet).** `content/theme.json` can set
+  `palette` (5 × `#rrggbb`, slot 1 the calm, background end), `colorThemes` (Lightest, Light,
+  Accent, Dark, Darkest: each of the 12 roles a palette slot 1-5, a custom `#rgb`/`#rrggbb`, or
+  `"none"` on fills: Background, Button, Line, Header) and `colorTheme` (the site color theme,
+  default `darkest`). Left out, the engine's defaults apply. The page head gets one static
+  `<style id="color-themes">`: `--palette-1…5`, each theme's `--color-*` roles on `.ct-<name>`
+  (the site theme on `:root` too) and the smart colours (`--smart-*`, worked out with
+  `color-mix`). A palette set in theme.json is on `:root:root`; until a site has one,
+  `color.brand` stands in for slot 4. `ewcms check` validates the shape and warns about text
+  under WCAG contrast against its nearest real background. Nothing reads the roles yet.
+
 ### Editor
 
 - **Header has Menu and Elements tabs.** Menu holds the nav links as border-only cards (a

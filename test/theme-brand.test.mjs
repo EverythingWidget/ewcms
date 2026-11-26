@@ -118,7 +118,7 @@ test('theme.json: color (#rrggbb only), typography, layout; nothing else', () =>
   assert.equal(themeVars({}), '');
   assert.match(
     themeVars(ok),
-    /^--brand: #cc2020; --type-heading-min: 30px; .*--contain: 96; --section-space: 2$/,
+    /^--brand: #cc2020; --palette-4: #cc2020; --type-heading-min: 30px; .*--contain: 96; --section-space: 2$/,
   );
   assert.ok(THEME_VARS.includes('--brand') && THEME_VARS.includes('--contain'));
 });
@@ -133,7 +133,7 @@ test('the page head: theme.json brand, typography and layout in :root:root (beat
   const h = head({ site, theme, route: {} }, { page: 'home' }, '');
   assert.match(
     h,
-    /:root:root \{\s*--brand: #cc2020; --type-title-max: 200px; --contain: 100;\s*\}/,
+    /:root:root \{\s*--brand: #cc2020; --palette-4: #cc2020; --type-title-max: 200px; --contain: 100;\s*\}/,
   );
   // the block's style is <style id="theme-vars"> (the editor's preview rewrites it: theme-vars.js)
   assert.match(h, /<style id="theme-vars">/);
@@ -182,7 +182,7 @@ test('Theme › Color: Brand color edits theme.json color.brand, #rrggbb only, a
   assert.match(panel, /run: \(\) => setBrand\(''\)/);
   // set, typed or picked: the preview gets it with no reload (theme-vars.js via main.js)
   const t = themeVarList({ color: { brand: '#CC2020' } });
-  assert.deepEqual(t, [['--brand', '#cc2020']]);
+  assert.deepEqual(t, [['--brand', '#cc2020'], ['--palette-4', '#cc2020']]); // until a palette: slot 4 (colors.js)
 });
 
 test('a color picker dragged: one undo step, no page pass, the style written only when it differs', () => {

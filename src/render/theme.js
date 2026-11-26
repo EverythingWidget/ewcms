@@ -15,7 +15,10 @@
  *     "layout": { "containedCols": 96, "sectionSpace": 0, "sectionSpacePhone": 0 }
  *   }
  *
- *   color.brand       --brand: links, the menu, the glass, focus rings (#rrggbb)
+ *   palette, colorThemes, colorTheme   the palette and its color themes (./colors.js): the
+ *                     palette is --palette-1 … 5 here, the themes a static block (colorThemeCss)
+ *   color.brand       --brand: links, the menu, the glass, focus rings (#rrggbb); with no
+ *                     palette it is the palette's slot 4 too (colors.js paletteOf)
  *   color.themeColor  the browser's <meta name="theme-color"> (#rrggbb; left out: none)
  *   color.scheme      the browser's <meta name="color-scheme"> (dark, light, …; left out: none)
  *   typography        the text styles' sizes and fonts (layout/type.js): --type-<style>-min,
@@ -25,6 +28,7 @@
 import { isObject } from './is.js';
 import { TYPE_VARS, checkType, typeVarList } from './layout/type.js';
 import { LAYOUT_VARS, checkLayout, layoutVarList } from './layout/contain.js';
+import { PALETTE_VARS, checkColors, paletteVarList } from './colors.js';
 
 /** A colour in theme.json: #rrggbb only. */
 export const isThemeColor = (v) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
@@ -75,6 +79,7 @@ export function themeVarList(theme, fonts) {
   const brand = brandOf(theme);
   return [
     ...(brand ? [['--brand', brand]] : []),
+    ...paletteVarList(theme),
     ...typeVarList(theme, fonts),
     ...layoutVarList(theme),
   ];
@@ -87,9 +92,9 @@ export const themeVars = (theme, fonts) =>
     .join('; ');
 
 /** Every variable theme.json can set (the editor's preview clears the ones no longer set). */
-export const THEME_VARS = ['--brand', ...TYPE_VARS, ...LAYOUT_VARS];
+export const THEME_VARS = ['--brand', ...PALETTE_VARS, ...TYPE_VARS, ...LAYOUT_VARS];
 
-const THEME_KEYS = ['color', 'typography', 'layout'];
+const THEME_KEYS = ['palette', 'colorThemes', 'colorTheme', 'color', 'typography', 'layout'];
 
 const COLOR_SHAPE = COLOR_KEYS.map(([key]) => key).join(', ');
 
@@ -119,5 +124,5 @@ export function checkTheme(d) {
           out.push(`"color.${k}" must be a hex color #rrggbb, not ${JSON.stringify(v)}`);
       }
   }
-  return [...out, ...checkType(d.typography), ...checkLayout(d.layout)];
+  return [...out, ...checkColors(d), ...checkType(d.typography), ...checkLayout(d.layout)];
 }

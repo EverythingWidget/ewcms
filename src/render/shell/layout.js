@@ -2,6 +2,7 @@ import { html, esc, editable } from '../helpers.js';
 import { seoOf } from '../seo.js';
 import { header, phoneMenu } from './header.js';
 import { themeVars } from '../theme.js';
+import { colorThemeCss } from '../colors.js';
 import { footer } from './footer.js';
 import { t } from '../strings.js';
 
@@ -58,6 +59,9 @@ export function head(ctx, route, accent) {
         : ''
     }
     <meta name="twitter:card" content="${photo ? 'summary_large_image' : 'summary'}" />
+    <style id="color-themes">
+      ${colorThemeCss(ctx.theme, ctx.templates).replace(/</g, "\\3c ")}
+    </style>
     ${
       accent || type
         ? `<style id="theme-vars">

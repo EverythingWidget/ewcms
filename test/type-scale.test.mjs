@@ -364,7 +364,7 @@ test("the preview follows theme.json: its theme-vars style's :root:root block (t
   // replaced, the album's --accent kept
   const t = themeStyleText(head, { color: { brand: '#00FF00' }, typography: { heading: { min: 40 } } });
   assert.match(t, /:root \{ --accent: #123456; \}/);
-  assert.match(t, /:root:root \{\s*--brand: #00ff00; --type-heading-min: 40px;\s*\}/);
+  assert.match(t, /:root:root \{\s*--brand: #00ff00; --palette-4: #00ff00; --type-heading-min: 40px;\s*\}/);
   assert.doesNotMatch(t, /#cc2020|--contain/);
   assert.equal(t.match(/:root:root/g).length, 1);
   // all cleared: no block, so tokens.scss's defaults show
@@ -385,7 +385,7 @@ test("the preview follows theme.json: its theme-vars style's :root:root block (t
   applyThemeVars(doc, {});
   assert.equal(els['theme-vars'], undefined);
   applyThemeVars(doc, { color: { brand: '#cc2020' } });
-  assert.match(els['theme-vars'].textContent, /:root:root \{\s*--brand: #cc2020;\s*\}/);
+  assert.match(els['theme-vars'].textContent, /:root:root \{\s*--brand: #cc2020; --palette-4: #cc2020;\s*\}/);
   applyThemeVars(doc, {});
   assert.doesNotMatch(els['theme-vars'].textContent, /--brand/);
   applyThemeVars(null, {}); // no preview yet: nothing
