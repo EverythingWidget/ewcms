@@ -107,6 +107,12 @@ say what a site must do before it bumps its pin.
   chrome (a header with no color theme of its own) works its smart colours out with the site
   theme's modes. No per-button setting and no editor field yet (the Color card is step 5).
 
+- **docs/COLORS.md: the colours a site's CSS may use.** The palette (`--palette-1…5`), the 12
+  roles (`--color-*`) and the text-style sub-roles, the smart colours (`--smart-*`) and the Button
+  modes (glass, none, slot, hex), with the code's names (a test keeps them in step). Prefer roles
+  over palette slots, so a section's color theme keeps working; overriding a colour is the
+  exception. The default site's `theme/tokens.scss` points to it.
+
 ### Editor
 
 - **Header has Menu and Elements tabs.** Menu holds the nav links as border-only cards (a

@@ -1,3 +1,5 @@
+// Colours a site's CSS may use (--palette-*, the --color-* roles, the --smart-* colours, the
+// Button modes): ewcms docs/COLORS.md. Prefer roles over palette slots; overriding is the exception.
 // This site's design tokens, its look: fonts, radius, easing and the header's height.
 // The engine's chrome and widgets read them (the engine's grid, breakpoints and text styles:
 // site-core/_tokens.scss). The site owns this copy: change any value.
