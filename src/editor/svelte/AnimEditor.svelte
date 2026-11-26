@@ -1,24 +1,26 @@
 <!--
-  Element motion tab, one animated element (ui.anim, picked in the preview or in the page's widgets list):
+  One animated element (ui.anim, opened from its row in the Sections tab's tree: MotionElements.svelte):
   replay and scroll it, pick where edits go (this widget's elements with its data-anim name, the
   widget's motion.elements in the page file; or every element with that name), its animation, and its timing (a Custom switch per field, MotionGroups).
   What the animation does is shown read-only: it is edited in the Animations library (Animations > Motion)
   (AnimLibrary.svelte). Older overrides of those values get a notice: move them into the
   animation, or drop them.
   (In code and animations.json an animation is a "animation".)
-  MotionPanel creates a new one for every pick.
+  MotionElements creates a new one for every element opened; closing it (Elements, its row again)
+  stops the page's animations again for arranging (a Replay played them).
 -->
 <script>
   import Button from './Button.svelte';
   import MotionGroups from './MotionGroups.svelte';
   import Select from './Select.svelte';
-  import { ui, pickElement } from './ui.svelte.js';
+  import { ui, clearAnim } from './ui.svelte.js';
   import { GENERIC_TYPES, animModel, keepFor, layerPtr } from './motion.js';
   import { ANIMATIONS } from '../../render/files.js';
 
   // cfg: animations.json as edited; items: the page's animated elements; gsap: the preview's;
   // onlibrary(name): open the Animations library (Animations > Motion) at that animation;
-  // file, sections: the page file and its sections (MotionPanel), to find the element's widget
+  // file, sections: the page file and its sections (page-motion.js motionSections), to find the
+  // element's widget
   let { live, bridge, cfg, items, gsap, onlibrary, file, sections } = $props();
 
   const sel = ui.anim; // { el, id, key, owner, scope }
@@ -62,6 +64,9 @@
   const scrolled = () => Math.round(bridge.scrubProgress(sel.el) * 100);
   let progress = $state(scrolled());
 
+  // closed: the page's animations stop again for arranging (a Replay played them)
+  $effect(() => () => bridge.settle?.());
+
   const ptr = () => layerPtr(m, sel, scope, base);
   const fileOf = () => (scope === 'element' ? file : ANIMATIONS);
   const removeAnimation = () =>
@@ -80,7 +85,7 @@
 </script>
 
 <div class="msel__head">
-  <Button size="small" icon="arrow-left" onclick={() => pickElement(null)}>Elements</Button>
+  <Button size="small" icon="arrow-left" onclick={clearAnim}>Elements</Button>
   <h3 class="msel__title">{sel.id}</h3>
 </div>
 

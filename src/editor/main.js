@@ -534,6 +534,8 @@ function applyClicks(before) {
   const clicks = previewClicks();
   bridge.clicksChanged();
   clearPick();
+  // an element's motion editor lives in the Sections tab's tree: closed anywhere else
+  if (clicks !== 'arrange' || ui.pageTab !== 'sections') clearAnim();
   overlay.refresh();
   if (clicks === 'animate' && before !== 'animate') {
     clearAnim();
@@ -590,7 +592,7 @@ function showSpecimen(on) {
   }
 }
 
-/** The open page's tab: 'sections' | 'element-motion' | 'page-motion' | 'seo', or null (no page open). */
+/** The open page's tab: 'sections' | 'page-motion' | 'seo', or null (no page open). */
 function setPageTab(tab) {
   const before = previewClicks();
   ui.pageTab = tab;

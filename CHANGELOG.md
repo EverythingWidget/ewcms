@@ -143,6 +143,26 @@ say what a site must do before it bumps its pin.
 
 ### Editor
 
+- **A page's motion is in its Sections tab (no Element motion tab).** A page's tabs are
+  Sections | Page motion | SEO; a saved Element motion tab opens Sections. One tree: each widget
+  row shows its animation as a quiet tag ("none" without one) and a 32px ▶ Replay (its room
+  always kept, disabled without an animation); a 16px chevron room is kept on every row, the
+  chevron drawn when the widget has `data-anim` elements, which list under its card, each with
+  its own motion editor (per element, This widget or All, as before). The animated elements
+  outside the widgets (Fixed elements) follow Add section. Select a widget and its motion opens
+  in its own card: the 48px row stays its header, the slim panel is the body, the accent ring
+  goes round the whole card. The slim panel: the Animation select beside a 32px info button
+  (disabled for none) whose popover lists the animation's properties with their start and end
+  values; no From/To, Target or summary. Timing shows only the fields the widget sets, the rest
+  behind **Customize timing**; Scroll start, Scrub and the **Scroll** field only when it plays
+  On scroll, Stagger only with several elements. The inherit/Custom switches give way to the
+  reset arrow rule: an own value is bright with its reset arrow, an inherited one dimmed but
+  editable. In the Sections tab the preview's clicks always arrange (a click picks the widget,
+  not an animated element); a Replay or the Scroll field plays the page's animations until the
+  motion closes, a text edit starts or the clicks change. The shared Popover gets an opt-in
+  `tip` (an 8×4.5 tip on the trigger's centre, the same surface and ring, no seam); the other
+  popovers are unchanged. No content change.
+
 - **The dots: yellow means unsaved, the reset arrow means a value of its own.** Every field's
   unsaved dot is the top bar's yellow and sits right after its label (and its (i)); a section
   card's or a pane heading's after its title. Its room is always kept, so nothing moves when it

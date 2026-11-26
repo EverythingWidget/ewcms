@@ -1,5 +1,6 @@
 /**
- * The page's sections and widgets as the Motion views list them (MotionPanel.svelte, and the
+ * The page's sections and widgets as the motion views list them (the Sections tab's tree,
+ * SectionsList.svelte, and the
  * library's "uses on this page" in MotionSettings.svelte): each widget with its element in the
  * preview, its animation and its animated elements (data-anim inside it).
  *   list   the page file's sections; doc  the preview's document; items  bridge.animElements()

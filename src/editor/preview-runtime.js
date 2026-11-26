@@ -135,7 +135,15 @@ export function createBridge({
     clicks,
     reveal: (el) => bridge.reveal(el),
     markApplied: (el, value) => applied.set(el, value),
+    beforeEdit: () => bridge.settle(),
   });
+  // A Replay (or the Scroll slider) with arrange clicks plays the page's animations for a while
+  // (thaw); they stop again (settle) when the motion closes, an edit starts or the clicks change.
+  function thaw() {
+    if (!api || !still) return;
+    still = false;
+    api.unfreeze();
+  }
 
   const bridge = {
     /** The hover and selected boxes drawn (the overlay's frame: overlay.js); true: again. */
@@ -244,6 +252,18 @@ export function createBridge({
       wake();
     },
 
+    /**
+     * Arrange clicks with the page's animations playing (a Replay thawed them): stop them again
+     * (a widget's motion closed, an edit starting). True when it stopped them.
+     */
+    settle() {
+      if (!api || !doc || still || clicks() !== 'arrange') return false;
+      still = true;
+      api.freeze();
+      wake();
+      return true;
+    },
+
     /** Unique [data-edit] fields on the current page, in document order. */
     editFields() {
       if (!doc) return [];
@@ -302,8 +322,9 @@ export function createBridge({
       const run = () => {
         for (const [el, value] of pending) writeText(el, value);
       };
-      // Without arrange clicks, split-text animations own the DOM: revert, write, re-mount.
-      if (!plain && clicks() !== 'arrange' && api) {
+      // While the animations play (not frozen: no arrange clicks, or a Replay thawed them),
+      // split-text animations own the DOM: revert, write, re-mount.
+      if (!plain && !still && api) {
         api.freeze();
         run();
         api.unfreeze();
@@ -340,6 +361,7 @@ export function createBridge({
      */
     replayOne(el) {
       if (!api || !el) return;
+      thaw();
       reveal(el, { when: 'play', smooth: false });
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
@@ -351,6 +373,7 @@ export function createBridge({
     /** Re-run the page's animations, optionally bringing `el` into view first. */
     replay(el, { scroll = true } = {}) {
       if (!api) return;
+      thaw();
       if (el && scroll) reveal(el, { when: 'play', smooth: false });
       // (api is null again if a save reloads the preview in between)
       requestAnimationFrame(() => requestAnimationFrame(() => api?.remount()));
@@ -359,6 +382,7 @@ export function createBridge({
     /** Scroll helper: 0 = element just entering the viewport, 1 = just left it. */
     scrubTo(el, p) {
       if (!api) return;
+      thaw(); // the scroll-driven animations follow the scroll only while they run
       const { start, end, max } = api.scrollRange(el);
       api.scrollTop(Math.max(0, Math.min(max, start + (end - start) * p)));
     },

@@ -17,7 +17,7 @@
 
   // live: reactive store (live.svelte.js); bridge: the preview (../preview-runtime.js);
   // cfg: animations.json as edited; items: the page's animated elements; sections: the page's
-  // widgets (MotionPanel); gsap: the preview's
+  // widgets (page-motion.js motionSections); gsap: the preview's
   let { live, bridge, cfg, items, sections = [], gsap } = $props();
 
   let root = $state();

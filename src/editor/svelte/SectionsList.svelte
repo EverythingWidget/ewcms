@@ -8,20 +8,49 @@
   selection made in the preview); a widget's
   row opens its settings (onopen), as a click on the widget in the preview does. Widgets have no
   order here: they are placed in the preview. Every change is one undo step (layout-ops.js).
+  A page's widgets show their motion in the same tree (motion, onlibrary: SectionCard.svelte's
+  motion), and after Add section the animated elements outside the widgets (the curtain, the
+  header: Outside the widgets, Fixed elements), each with its own motion editor
+  (MotionElements.svelte).
 -->
 <script>
   import { tick } from 'svelte';
   import SectionCard from './SectionCard.svelte';
+  import Collapsible from './Collapsible.svelte';
+  import MotionElements from './MotionElements.svelte';
+  import { motionSections } from './page-motion.js';
+  import { ANIMATIONS } from '../../render/files.js';
   import { ui, selectSection, selectSections, peekSection } from './ui.svelte.js';
   import { addSection } from '../layout-ops.js';
   import { locate } from '../reveal.js';
 
-  let { live, bridge, file, onopen, onsection, onadd } = $props();
+  let { live, bridge, file, onopen, onsection, onadd, motion = false, onlibrary } = $props();
 
   const sections = $derived.by(() => {
     const list = live.current(file)?.sections;
     return Array.isArray(list) ? list : [];
   });
+
+  // ---- motion (a page): animations.json as edited, the preview's GSAP and animated elements
+  // (re-read when it shows another page), its widgets and the elements inside each
+  const cfg = $derived(motion ? live.current(ANIMATIONS) : null);
+  const gsap = $derived.by(() => {
+    ui.previewVersion;
+    return motion ? bridge.api?.gsap : undefined;
+  });
+  const items = $derived.by(() => {
+    ui.previewVersion;
+    return motion && bridge.api ? live.read(() => bridge.animElements()) : [];
+  });
+  const tree = $derived.by(() => {
+    ui.previewVersion;
+    if (!motion) return [];
+    return live.read(() =>
+      motionSections(file ? live.get(file, '/sections') : null, bridge.doc, items),
+    );
+  });
+  const outside = $derived(items.filter((it) => !it.el.closest('[data-widget]')));
+  const mctx = $derived(motion ? { tree, bridge, cfg, items, gsap, onlibrary } : null);
 
   // Add section: an empty section after the last one, scrolled into view
   async function add() {
@@ -89,6 +118,7 @@
     }}
     {onopen}
     onadd={onadd && (() => onadd(at))}
+    motion={mctx}
   />
 {/each}
 
@@ -96,8 +126,30 @@
   <i class="fa-solid fa-plus" aria-hidden="true"></i>Add section
 </button>
 
+{#if mctx && outside.length}
+  <Collapsible key="motion:elements" title="Outside the widgets" name="Fixed elements">
+    {#snippet bar()}<span class="count">{outside.length}</span>{/snippet}
+    <MotionElements
+      {live}
+      {bridge}
+      {cfg}
+      {items}
+      {gsap}
+      {file}
+      sections={tree}
+      elements={outside}
+      {onlibrary}
+    />
+  </Collapsible>
+{/if}
+
 <style lang="scss">
   @use '../styles/mixins' as *;
+
+  // Fixed elements: how many, quiet in its bar
+  .count {
+    @include muted;
+  }
 
   // Add section: a dashed card the section cards' width, + and its name centred
   .add {

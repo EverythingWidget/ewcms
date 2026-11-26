@@ -9,7 +9,7 @@ import { entryShows } from '../src/editor/lib/page-tree.js';
 
 const src = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
 
-test('previewClicks comes from ui.mode only: browse is visitor, edit arranges or animates', async () => {
+test('previewClicks comes from ui.mode only: browse is visitor, edit arranges', async () => {
   const { ui, previewClicks } = await loadUi();
   assert.equal(ui.mode, 'browse', 'the editor opens in browse');
   for (const panel of ['areas', 'pages', 'theme', 'templates', 'animations', 'site-settings']) {
@@ -19,7 +19,8 @@ test('previewClicks comes from ui.mode only: browse is visitor, edit arranges or
       ui.mode = 'browse';
       assert.equal(previewClicks(), 'visitor', `${panel} ${tab}`);
       ui.mode = 'edit';
-      assert.equal(previewClicks(), tab === 'element-motion' ? 'animate' : 'arrange');
+      // (the old Element motion tab is in Sections: its tree opens the elements, no animate)
+      assert.equal(previewClicks(), 'arrange', `${panel} ${tab}`);
     }
   }
 });
@@ -35,7 +36,7 @@ test('setMode: browse or edit only, and the preview is told what its clicks did 
   setMode('browse');
   assert.deepEqual(calls, [
     ['visitor', 'edit'],
-    ['animate', 'browse'],
+    ['arrange', 'browse'],
   ]);
   assert.equal(ui.mode, 'browse');
 });

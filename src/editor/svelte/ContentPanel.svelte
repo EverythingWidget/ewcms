@@ -4,17 +4,19 @@
   TemplatePanel.svelte) under PageHead.svelte
   (Back to pages: back to the pages list, browse). The two swap with a slide (lib/slide.js):
   a page or a template opened comes in from the right, the list comes back from the left. A page is a list of sections
-  holding widgets (src/render/layout/), and nothing else. A page's panel has four tabs (Tabs.svelte,
-  the open one kept per page in ui.sections["pagetab:<file>"]; unknown: Sections):
+  holding widgets (src/render/layout/), and nothing else. A page's panel has three tabs (Tabs.svelte,
+  the open one kept per page in ui.sections["pagetab:<file>"]; unknown, or the old Element
+  motion: Sections):
     Sections     SectionsList.svelte: the section cards and the dashed Add section card. One
                  Settings are not in the panel: a section's open in a floating pop-up
                  (SectionPopup.svelte, ui.section; a card's double click or the toolbar's
                  gear), a widget's in another (WidgetPopup.svelte, ui.widget; a widget row's
                  double click or Enter, or the widget clicked in the preview); one at a time.
                  The Add widget modal (WidgetsModal.svelte, openWidgets): the widget added opens
-    Element motion  MotionPanel.svelte: the widgets' animations and the fixed elements.
-                 While it is open (ui.pageTab 'element-motion') the preview's clicks animate
-                 (previewClicks, ui.svelte.js): they pick a widget or an animated part.
+                 The widgets' motion is in the same tree (SectionCard.svelte's motion): each
+                 row's animation and Replay, the selected widget's motion in its card, its
+                 animated elements under it, then the ones outside the widgets (Fixed
+                 elements) after Add section.
     Page motion  PageMotionPanel.svelte: the page's cards, Scroll backdrop (its backdrop)
                  then Page entrance (its curtain). The preview's clicks arrange, as on
                  Sections (no widget list here). The top tab stays Pages.
@@ -53,7 +55,6 @@
   import PageHead from './PageHead.svelte';
   import TemplatePanel from './TemplatePanel.svelte';
   import PagesList from './PagesList.svelte';
-  import MotionPanel from './MotionPanel.svelte';
   import PageMotionPanel from './PageMotionPanel.svelte';
   import Tabs from './Tabs.svelte';
   import WidgetPopup from './WidgetPopup.svelte';
@@ -118,7 +119,6 @@
   // a page's tabs, the open one per page file
   const TABS = [
     ['sections', 'Sections'],
-    ['element-motion', 'Element motion'],
     ['page-motion', 'Page motion'],
     ['seo', 'SEO'],
   ];
@@ -143,10 +143,9 @@
     actions.setPageTab(v);
   }
   // ui.pageTab is the open page's tab (kept per page), null for the pages list or a site part;
-  // on Element motion the preview's clicks animate (main.js setPageTab). A motion tab (Element
-  // or Page motion) stays open from page to page (and after a refresh); the pages list or a
-  // site part ends it.
-  const MOTION_TABS = ['element-motion', 'page-motion'];
+  // Page motion stays open from page to page (and after a refresh); the pages list or a site
+  // part ends it.
+  const MOTION_TABS = ['page-motion'];
   $effect(() => {
     const listing = ui.mode === 'browse' || ui.target.kind !== 'page';
     const f = file;
@@ -163,6 +162,12 @@
 
   const onsource = (file, index, edit) => openSources({ file, index, edit });
   const itemOf = (f) => Number(parse(f.ptr)[0]) || 0; // a source field's item
+
+  /** Open animation `name` in the library (Animations > Motion). */
+  function openLibrary(name = '') {
+    ui.library = { name };
+    actions.setPanel('animations');
+  }
 
   function openWidget(id) {
     selectWidgets([id]);
@@ -327,12 +332,12 @@
             onopen={openWidget}
             onsection={openSectionPopup}
             onadd={pickWidget}
+            motion={isPage}
+            onlibrary={openLibrary}
           />
         </div>
       {:else}
-        {#if isPage && shownTab === 'element-motion'}
-          <MotionPanel {live} {bridge} {actions} {file} />
-        {:else if isPage && shownTab === 'page-motion'}
+        {#if isPage && shownTab === 'page-motion'}
           <PageMotionPanel {live} {actions} {file} />
         {:else if isPage && shownTab === 'seo'}
           <SeoSection {live} {file} {actions} />

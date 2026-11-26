@@ -187,7 +187,8 @@ test("one draw loop: the preview's boxes are drawn in the overlay's frame, its o
   assert.doesNotMatch(b, /function loop\(|let raf\b/);
   assert.match(b, /function drawBoxes\(\) \{\s*if \(!boxes\?\.hover\.isConnected\) return false;/);
   assert.match(b, /return a \|\| b;\s*\}/); // a box moved: one more frame
-  assert.equal((b.match(/\bwake\(\);/g) || []).length, 3); // a page mounted, the clicks changed, onFrame
+  // a page mounted, the clicks changed, onFrame, the animations stopped again (settle)
+  assert.equal((b.match(/\bwake\(\);/g) || []).length, 4);
   const m = src('main.js');
   assert.match(m, /wake: \(\) => overlay\.wake\(\),/);
   assert.match(m, /draw: \(\) => bridge\.drawBoxes\(\),/);

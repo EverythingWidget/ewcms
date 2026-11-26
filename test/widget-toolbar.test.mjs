@@ -22,7 +22,10 @@ test('one widget selected: the section toolbar has its actions and a gear; rows 
   ])
     assert.ok(st.includes(s), s);
   const row = src('svelte/WidgetRow.svelte');
-  assert.doesNotMatch(row, /<Button|onduplicate|ondelete|onshow/);
+  // the row's one button is Replay (its motion, a page's Sections tab): no row actions
+  assert.doesNotMatch(row, /onduplicate|ondelete|onshow/);
+  assert.equal((row.match(/<Button/g) || []).length, 1);
+  assert.match(row, /<Button\s+size="small"\s+icon="play"\s+iconOnly\s+label="Replay"/);
 });
 
 test('one widget: toolbar order add, gear, locate, eye, copy, trash; layers only for several', () => {

@@ -19,15 +19,15 @@ import { popupStays } from '../multi-select.js';
  *                   'animations'  Animations: the default timing, the library, the page entrance
  *                   'site-settings'  Site settings: what is the same on every page
  *                 (Media and Sources open their windows over it: ui.modals)
- *   ui.pageTab    the open page's tab, under Pages: 'sections' | 'element-motion' (Element
+ *   ui.pageTab    the open page's tab, under Pages: 'sections' (its sections, widgets and their
  *                 motion) | 'page-motion' (Page motion) | 'seo'; null when no
  *                 page is open (the pages list, the Header or Footer). Kept per page in
  *                 ui.sections["pagetab:<file>"] (ContentPanel.svelte).
- *   previewClicks()  what a click in the preview does, from ui.mode only (and the edit tab):
+ *   previewClicks()  what a click in the preview does, from ui.mode only:
  *                   'visitor'   browse: links work, nothing is picked
- *                   'arrange'   edit: pick and move widgets, double click to type (not on
- *                               Element motion)
- *                   'animate'   edit on Element motion: pick a widget or an animated element
+ *                   'arrange'   edit: pick and move widgets, double click to type
+ *                 ('animate', picking animated elements in the preview, was the Element motion
+ *                 tab's; that tab is part of Sections now, its elements open from the tree)
  *
  * Editor UI state. main.js changes it, the Svelte shell (App.svelte) shows it: it is a
  * $state object, so a change re-renders whatever uses that field.
@@ -105,7 +105,7 @@ export const ui = $state({
   /** A custom section's rows while its bottom edge is dragged in the preview: { id, rows } (overlay.js). */
   secRows: null,
   /**
-   * The animated element picked in the Element motion tab: { el, id, key, scope }, or null.
+   * The animated element open in the Sections tab's tree: { el, id, key, scope }, or null.
    * scope: where its edits go: 'element' | 'target' (see motion.js).
    */
   anim: null,
@@ -188,10 +188,9 @@ export const ui = $state({
   themePart: '',
 });
 
-/** What a click in the preview does now: 'arrange' | 'animate' | 'visitor' (see above). */
+/** What a click in the preview does now: 'arrange' | 'visitor' (see above). */
 export function previewClicks() {
-  if (ui.mode !== 'edit') return 'visitor';
-  return ui.pageTab === 'element-motion' ? 'animate' : 'arrange';
+  return ui.mode === 'edit' ? 'arrange' : 'visitor';
 }
 
 /**
@@ -348,9 +347,19 @@ export function deselectSections() {
   ui.selSections = [];
 }
 
-/** No animated element picked (the Element motion tab starts over). */
+/** No animated element open (its motion editor closed). */
 export function clearAnim() {
   ui.anim = null;
+}
+
+/**
+ * An animated element of a widget opened from the Sections tab's tree (its row; again: closed):
+ * ui.anim, its motion editor under its row (AnimEditor.svelte). The widget selection stays.
+ */
+export function openElement(el) {
+  if (!el || ui.anim?.el === el) return void (ui.anim = null);
+  const owner = el.closest('[data-widget]')?.dataset.widget;
+  ui.anim = { el, id: el.dataset.anim, key: el.dataset.animKey, owner, scope: null };
 }
 
 /** A text's field focused (its `data-edit` path): the panel shows that field. */

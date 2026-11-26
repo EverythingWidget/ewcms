@@ -3,7 +3,7 @@
   (animations.json). Under its head (AreaHead.svelte: Back to areas) Motion (MotionSettings.svelte:
   the default timing and the Animations library, the animation open is ui.library.name), then
   the Page entrance (the site's curtain and the page fade). A page's own animations, scroll
-  backdrop and curtain are on the page (its Element motion and Page motion tabs).
+  backdrop and curtain are on the page (its Sections and Page motion tabs).
 -->
 <script>
   import Collapsible from './Collapsible.svelte';

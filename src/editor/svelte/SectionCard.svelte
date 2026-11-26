@@ -15,12 +15,22 @@
                (the template editor: its one section, its rows titled by their roles)
     onreorder  optional: (from, to) when a row is dragged; the default moves a page widget
     onadd      optional: Add widget, shown in an empty section
+    motion     optional (a page): its widgets' motion, in the same tree. { tree (page-motion.js
+               motionSections: the preview's widgets and their animated elements), bridge, cfg,
+               items, gsap, onlibrary }. Each row then shows its animation (a quiet tag, "none")
+               and Replay; the selected widget's card holds its motion (WidgetMotion.svelte: the
+               row stays its header, the ring goes round the whole card); a widget with animated
+               elements (data-anim) has a chevron listing them under its card (kept open or closed
+               in ui.sections['motion:els:<id>']), each with its own motion editor
+               (MotionElements.svelte)
 -->
 <script>
   import { ui, selectWidgets, reveal, setAnchor, hotWidget } from './ui.svelte.js';
   import { range, selectedIds, toggle } from '../multi-select.js';
   import Collapsible from './Collapsible.svelte';
   import WidgetRow from './WidgetRow.svelte';
+  import WidgetMotion from './WidgetMotion.svelte';
+  import MotionElements from './MotionElements.svelte';
   import { listDrag, rowsOf } from './list-drag.svelte.js';
   import { moveWidget } from '../layout-ops.js';
 
@@ -37,7 +47,25 @@
     section: sectionProp,
     onreorder,
     onadd = undefined,
+    motion = null,
   } = $props();
+
+  // this section in the preview (its widgets' elements), when it shows the page
+  const shown = $derived(motion?.tree?.[at]);
+  const elsKey = (id) => `motion:els:${id}`;
+
+  /** A row's motion (WidgetRow's motion prop): its animation, Replay, its elements' chevron. */
+  function motionOf(widget, j) {
+    const w = shown?.widgets[j]?.id === widget.id ? shown.widgets[j] : null;
+    return {
+      w,
+      animation: widget.motion?.animation || '',
+      elements: !!w?.elements.length,
+      expanded: !!ui.sections[elsKey(widget.id)],
+      ontoggle: () => (ui.sections[elsKey(widget.id)] = !ui.sections[elsKey(widget.id)]),
+      onreplay: () => w?.el && motion.bridge.replayOne(w.el),
+    };
+  }
 
   const s = $derived.by(() => {
     return sectionProp ?? (live.current(file)?.sections?.[at] || {});
@@ -119,6 +147,7 @@
 {#snippet list()}
   <ul class="widgets" aria-label="Widgets of {title}" bind:this={listEl}>
     {#each widgets as widget, j (widget.id)}
+      {@const mo = motion ? motionOf(widget, j) : null}
       <WidgetRow
         {widget}
         onopen={() => onopen(widget.id)}
@@ -132,7 +161,40 @@
         lifted={drag?.id === widget.id && drag.moving}
         dy={drag?.dy ?? 0}
         drop={ld.dropAt(j)}
+        motion={mo}
+        body={mo && ui.widget === widget.id && !ui.multi.length ? motionBody : undefined}
+        after={mo?.expanded && mo.elements ? elements : undefined}
       />
+      {#snippet motionBody()}
+        {#key widget.id}
+          <WidgetMotion
+            {live}
+            bridge={motion.bridge}
+            gsap={motion.gsap}
+            cfg={motion.cfg}
+            {file}
+            {at}
+            {j}
+            el={mo.w?.el}
+            onlibrary={motion.onlibrary}
+          />
+        {/key}
+      {/snippet}
+      {#snippet elements()}
+        <MotionElements
+          {live}
+          bridge={motion.bridge}
+          cfg={motion.cfg}
+          items={motion.items}
+          gsap={motion.gsap}
+          {file}
+          sections={motion.tree}
+          elements={mo.w.elements}
+          base="/sections/{at}/widgets/{j}"
+          nested
+          onlibrary={motion.onlibrary}
+        />
+      {/snippet}
     {/each}
   </ul>
 {/snippet}

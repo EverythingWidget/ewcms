@@ -1804,7 +1804,7 @@ show a folder's "All …" link first, as its root row is first here.
 Rows show only their own segment under the folder (`people/`; elsewhere the full path) and
 titles and paths as written. A click selects a row and shows it in the preview; a double click
 (or Enter) goes into the page's level (any page: a plain one shows its root row and "No sub
-pages yet"), and on a level's root row, Home, 404, Header or Footer opens it (its Sections, Element motion,
+pages yet"), and on a level's root row, Home, 404, Header or Footer opens it (its Sections,
 Page motion, SEO tabs; Header and Footer have their own). Every row also has a quiet **edit** button (a pen, 30% until hovered or
 focused, like the trash) that opens that page's Sections the same way in one click (no select,
 no drag; Header and Footer open theirs; a `[param]` page that builds no pages too, to fix its main widget). A row's end is fixed 24px slots, `copy | trash | ›` (copy: Duplicate; `›`: a click goes inside)
@@ -1879,8 +1879,7 @@ is for the selection, the circles and the link lines). Nothing selected: no grid
 a Shadow DOM). In the **phone preview** a drag edits the widget's phone area on the 60-column
 grid, snapping to its cells, and links are the phone's: a widget without a phone area starts
 from its desktop area halved, and its first phone drag or link gives it its own (its desktop
-link comes along, the gap halved). The Element motion tab picks animated elements instead (no
-dragging); Preview uses the site normally.
+link comes along, the gap halved). Preview uses the site normally.
 
 The **Layout** tab (`LayoutTab.svelte`) holds only what can't be dragged, for the layout the
 preview shows (switch it with the phone toggle in the panel's head). At the top, read only,
@@ -1952,7 +1951,7 @@ in the URL reopens it.
 
 **Refresh** keeps your place. The URL holds the page (its path), the tab, Menu/Footer and the open Sources item, so a shared link opens the same view:
 `/photography/people/?edit&source=people&item=noor-vermeer` (`tab`: pages (the **Pages** tab), settings, preview;
-the page's own tab, Sections | Element motion | Page motion | SEO, is kept per page in sessionStorage; `view`: header,
+the page's own tab, Sections | Page motion | SEO, is kept per page in sessionStorage; `view`: header,
 footer; `animation`: Animations > Motion's Animations library, open on that animation). Open/closed sections, the selected field or Motion
 element and the scroll positions are kept per browser tab in sessionStorage. See
 `src/editor/svelte/persist.js`.
@@ -1961,20 +1960,24 @@ element and the scroll positions are kept per browser tab in sessionStorage. See
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Preview** | The ▶ toggle in the toolbar (or Ctrl/⌘+E), not a tab: use the site normally. The mode tabs hide (the toolbar stays put); the panel shows unsaved changes per file with _Discard_, and what is saved but not published. Off again: back to the tab you were in.                                                                                                                                                                                                               |
 | **Content** | Animations pause. The preview is a layout canvas: click a widget to open it, drag it and its handles to move and resize it, double-click a text to type in it (Enter ends a single-line field; multi-line fields take Enter as a line break). The panel lists the same fields as inputs, and both stay in sync.                                                                                                                                                              |
-| **Motion**  | Click a widget or an animated element (or pick its row in the page's widgets list). Pick its animation and set its own timing (duration, ease, delay, stagger, trigger, scroll start/end/scrub); what the animation does (from/to properties, type-specific values) is shown read-only and edited in Animations > Motion's Animations library. Changes replay live. **Replay** runs that widget (or the page) again, and the **Scroll** slider moves the page through it. |
+| **Motion**  | In the Sections tab too: select a widget's row and its motion opens in its card. Pick its animation (the info button lists what it moves, start and end) and set its own timing (duration, ease, delay, stagger, trigger, scroll start/end/scrub); what the animation does is edited in Animations > Motion's Animations library. A row's ▶ (**Replay**) runs that widget again, and the **Scroll** field moves the page through it. |
 
 In the edit modes, clicks select instead of following links (in Content no link, button or
 form acts). Hold **Alt** to click through.
 
-In the editor and in `animations.json` (`animations`) it is an **animation**. The
-Element motion tab's list is the page's **widgets**, grouped by section (each with its
-animation or "none", and the `data-anim` elements inside it nested below), then **Outside the
-widgets** (curtain, header…). Selecting a widget in the preview selects it in the list
-and the other way round; a widget selected in the Content tab is the one shown when you switch
-to Element motion. A **widget** shows its Animation (none or any widget animation; the edit button opens
-it in the library), its timing (Custom switches, stored in the widget's `motion`) and **Use the
-animation's timing** (drops all its overrides); **Replay** plays just that widget. An **element**
-or global element is edited as before; choose where its edits go:
+In the editor and in `animations.json` (`animations`) it is an **animation**. A page's
+motion is in its **Sections** tab, in the same tree as its sections and widgets (there is no
+Element motion tab any more). Each widget row shows its animation as a quiet tag ("none"
+without one) and a ▶ **Replay** button (disabled without an animation); a widget with
+`data-anim` elements inside it has a chevron that lists them under its card. Select a widget
+and its motion opens in its own card, under its row: its **Animation** (none or any widget
+animation; the pen opens it in the library, the info button lists its properties with their
+start and end values), then its timing (stored in the widget's `motion`). Only the timing
+fields the widget sets for itself show; **Customize timing** shows the rest. Scroll start and
+Scrub show only when it plays On scroll, Stagger only when the animation moves several
+elements in it, and the **Scroll** field (after them) moves the page through the widget. Click
+an **element** in a widget's list (or under **Outside the widgets**, the curtain and header,
+after Add section) to edit it in place; choose where its edits go:
 
 - **This widget**: the widget's `motion.elements["<target>"]` in the page file, e.g.
   `"motion": { "elements": { "hero.title": { "animation": "stagger-up" } } }`. Only the elements with
@@ -1983,16 +1986,19 @@ or global element is edited as before; choose where its edits go:
   has no `animation`. Elements outside the widgets (header) only have **All**.
 - **All "target"**: `targets["hero.title"]`. Every element with that `data-anim`.
 
-Timing fields (`TIMING_KEYS` in `src/editor/svelte/motion.js`) each have a **Custom**
-switch. Off (a faint "inherit" before it): the field's control shows the inherited value,
-dimmed and inert (no clicks, no focus); nothing is stored. On: the inherited value is copied
-to the chosen scope as a start and can be edited; switching off removes it (one undo step). Everything else
-the animation does is read-only here.
+A widget's timing fields (`TIMING_KEYS` in `src/editor/svelte/motion.js`) follow the reset
+arrow rule: a value of its own is bright with a reset arrow (back to the animation's value, one
+undo step); an inherited value is dimmed but still editable (an edit gives the widget its own);
+the yellow dot after a label means unsaved, as everywhere. An element's timing fields each have
+a **Custom** switch. Off (a faint "inherit" before it): the field's control shows the inherited
+value, dimmed and inert (no clicks, no focus); nothing is stored. On: the inherited value is
+copied to the chosen scope as a start and can be edited; switching off removes it (one undo
+step). Everything else the animation does is read-only here.
 
-A page's Element motion tab is always the whole page: its widgets, grouped by section (a picked widget
-or element opens in place, under its row), then Outside the widgets; the preview's clicks pick
-what to animate. Its Page motion tab holds the page's own cards (the preview's clicks arrange
-there, as on Sections): **Scroll backdrop** (its backdrop), then **Page entrance**
+In the Sections tab the preview's clicks arrange (a click picks a widget): the page's
+animations stand still, except while a Replay or the Scroll field plays them; they stop again
+when the widget's motion closes, a text edit starts or the clicks change. A page's Page motion
+tab holds the page's own cards (the preview's clicks arrange there, as on Sections): **Scroll backdrop** (its backdrop), then **Page entrance**
 (how visitors arrive at this page: the page's curtain, Site default or Off (page fade), with
 a link to Animations > Page entrance). The Animations library and the default timing are in Animations > Motion (an
 element's Animation edit button opens the library there), next to the one **Page entrance**

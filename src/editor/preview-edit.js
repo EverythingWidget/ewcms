@@ -52,7 +52,7 @@ import { isDraftHref, isSafeHref } from '../render/hrefs.js';
 /** How long a click on a link waits for a second click before its link box opens, ms. */
 const LINK_BOX_WAIT = 300;
 
-export function createEdit({ store, emit, clicks, reveal, markApplied }) {
+export function createEdit({ store, emit, clicks, reveal, markApplied, beforeEdit = () => false }) {
   let doc = null;
   let win = null; // null while a reload is on its way (the bridge's too)
   let plaintext = true;
@@ -137,6 +137,8 @@ export function createEdit({ store, emit, clicks, reveal, markApplied }) {
    * the caret where it was clicked (x, y).
    */
   function startEdit(el, x, y) {
+    el = settled(el);
+    if (!el) return;
     el.setAttribute('contenteditable', plaintext ? 'plaintext-only' : 'true');
     el.setAttribute('spellcheck', 'true');
     el.closest('a')?.setAttribute('draggable', 'false');
@@ -233,11 +235,24 @@ export function createEdit({ store, emit, clicks, reveal, markApplied }) {
     }, LINK_BOX_WAIT);
   }
 
+  /**
+   * Before an edit starts: the page's animations stopped again when a Replay had played them
+   * (beforeEdit: the bridge's settle; split text owns the DOM while they run). Returns the
+   * element to edit: `el`, or the one now in its place when stopping them re-created it.
+   */
+  function settled(el) {
+    if (!beforeEdit() || el.isConnected) return el;
+    const edit = el.dataset.edit;
+    return (edit && doc?.querySelector(`[data-edit="${CSS.escape(edit)}"]`)) || null;
+  }
+
   /** A widget's Text body (the element edited in its edit mode), or null. */
   const richOf = (w) => w?.querySelector('[data-edit-inline][data-edit-type="rich"]') || null;
 
   function startRich(el, x, y) {
     if (rich?.el === el) return;
+    el = settled(el);
+    if (!el) return;
     if (rich) finishRich();
     const edit = el.dataset.edit;
     const { file, ptr } = splitEdit(edit);

@@ -40,7 +40,7 @@ const KEY = 'editor:ui';
 // the modals open again after a refresh (the others are opened with callbacks: modals.svelte.js)
 const KEPT = ['sources', 'media'];
 // the URL's tab is ui.panel (ui.svelte.js): one of PANELS (../areas.js)
-const PAGE_TABS = ['sections', 'element-motion', 'page-motion', 'seo'];
+const PAGE_TABS = ['sections', 'page-motion', 'seo'];
 const VIEWS = { header: 'Header', footer: 'Footer' };
 
 let bridge, live; // the preview (../preview-runtime.js) and the content (live.svelte.js)
@@ -110,7 +110,9 @@ export function restoreUi(preview, content) {
   live = content;
   saved = readState();
   if (PANELS.includes(saved.panel)) ui.panel = saved.panel;
-  if (PAGE_TABS.includes(saved.pageTab)) ui.pageTab = saved.pageTab;
+  // (the old Element motion tab is in Sections now)
+  if (saved.pageTab === 'element-motion') ui.pageTab = 'sections';
+  else if (PAGE_TABS.includes(saved.pageTab)) ui.pageTab = saved.pageTab;
   // browse or edit (ui.mode: only Pages edits)
   if (['browse', 'edit'].includes(saved.mode) && ui.panel === 'pages') ui.mode = saved.mode;
   // Header or Footer open (pages: the URL's path; browse: the page in the preview)
@@ -178,7 +180,7 @@ export async function restorePlace() {
 
   if (path !== bridge.path()) return;
   bridge.api.scrollTop(previewY);
-  // a page's Element motion tab: the picked element; Pages (and the others, for later): the selected field
+  // the picked element ('animate' clicks: no longer used); Pages: the selected field
   const clicks = previewClicks();
   const motion = clicks === 'animate';
   const sel = motion

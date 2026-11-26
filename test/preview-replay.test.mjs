@@ -44,6 +44,8 @@ function preview(mode) {
     unfreeze: () => calls.push('unfreeze'),
     hooks: { beforeMount: new Set(), afterMount: new Set() },
     resolve: () => null,
+    scrollRange: () => ({ start: 0, end: 100, max: 1000 }),
+    scrollTop: () => 0,
   };
   globalThis.window.__siteEditor.connect(api, win);
   const to = (next) => {
@@ -51,7 +53,7 @@ function preview(mode) {
     bridge.clicksChanged();
     return calls.splice(0);
   };
-  return { calls, to };
+  return { calls, to, bridge };
 }
 
 test('area switches in browse (visitor clicks before and after) never replay the page', () => {
@@ -77,4 +79,42 @@ test('a page connected while arranging starts frozen; leaving arrange plays it o
   assert.deepEqual(p.to('arrange'), []);
   assert.deepEqual(p.to('visitor'), ['unfreeze']);
   assert.deepEqual(p.to('visitor'), []);
+});
+
+// The Sections tab is arrange clicks: the page stands still for arranging, yet a widget's Replay
+// and its Scroll field play its animations (thaw: unfreeze once); they stop again (settle:
+// freeze) when its motion closes, an edit in place starts or the clicks change.
+test('arranging: Replay and Scroll play the page once; settle stops it again', () => {
+  globalThis.requestAnimationFrame ??= () => 0;
+  const p = preview('arrange');
+  assert.deepEqual(p.calls.splice(0), ['freeze']);
+  p.bridge.replay(null);
+  assert.deepEqual(p.calls.splice(0), ['unfreeze']);
+  p.bridge.replay(null); // already playing
+  p.bridge.scrubTo(null, 0.5);
+  assert.deepEqual(p.calls.splice(0), []);
+  assert.equal(p.bridge.settle(), true); // the motion closed
+  assert.deepEqual(p.calls.splice(0), ['freeze']);
+  assert.equal(p.bridge.settle(), false); // already still
+  assert.deepEqual(p.calls.splice(0), []);
+  p.bridge.scrubTo(null, 0.2); // the Scroll field
+  assert.deepEqual(p.calls.splice(0), ['unfreeze']);
+  // a clicks change while playing: arranging again stops it
+  assert.deepEqual(p.to('arrange'), ['freeze']);
+  assert.deepEqual(p.to('visitor'), ['unfreeze']);
+  // with visitor clicks the page plays anyway: nothing to thaw or settle
+  p.bridge.replay(null);
+  assert.equal(p.bridge.settle(), false);
+  assert.deepEqual(p.calls.splice(0), []);
+});
+
+test('an edit in place stops the animations first; the motion views settle when closed', async () => {
+  const { readFileSync } = await import('node:fs');
+  const read = (f) => readFileSync(new URL(`../src/editor/${f}`, import.meta.url), 'utf8');
+  assert.match(read('preview-runtime.js'), /beforeEdit: \(\) => bridge\.settle\(\),/);
+  const pe = read('preview-edit.js');
+  assert.match(pe, /function settled\(el\) \{/);
+  assert.match(pe, /function startEdit\(el[^)]*\) \{\s*el = settled\(el\);/);
+  for (const f of ['svelte/WidgetMotion.svelte', 'svelte/AnimEditor.svelte'])
+    assert.match(read(f), /\$effect\(\(\) => \(\) => bridge\.settle\?\.\(\)\);/, f);
 });

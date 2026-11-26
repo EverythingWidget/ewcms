@@ -12,7 +12,9 @@
     value    its value, an array of two for a pair
     view     'edit' the control; 'read' the value as text in the top row (element view: what the
              animation does); 'inherit' the same control showing the inherited value, dimmed and
-             out of reach (inert: no clicks, no focus), for a timing value the scope doesn't set
+             out of reach (inert: no clicks, no focus), for a timing value the scope doesn't set;
+             'dim' the same dimmed control, but in reach: an edit gives the scope its own value
+             (a widget's motion, WidgetMotion.svelte: the reset-arrow rule)
     onvalue  (path, value) on an edit
     actions  snippet for the end of the top row
 -->
@@ -45,7 +47,10 @@
   </div>
 
   {#if view !== 'read'}
-    <div class={['f__ctrl', view === 'inherit' && 'is-inherited']} inert={view === 'inherit'}>
+    <div
+      class={['f__ctrl', (view === 'inherit' || view === 'dim') && 'is-inherited']}
+      inert={view === 'inherit'}
+    >
       {#if def.kind === 'number'}
         <div class="f__row">
           <input

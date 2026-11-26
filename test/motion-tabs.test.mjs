@@ -41,24 +41,30 @@ test("the engine starts every spec from the defaults (not the scroll types' ease
   assert.match(e, /SCROLLED = new Set\(\['scroll', 'scrub-words', 'parallax'\]\)/);
 });
 
-test('no top tabs (the areas instead); page tabs Sections | Element motion | Page motion | SEO', () => {
+test('no top tabs (the areas instead); page tabs Sections | Page motion | SEO', () => {
   const app = read('editor/svelte/App.svelte');
   assert.doesNotMatch(app, /<Tabs|TABS/);
   assert.doesNotMatch(app, /MotionPanel/);
   const c = read('editor/svelte/ContentPanel.svelte');
   assert.match(
     c,
-    /\['sections', 'Sections'\],\s*\['element-motion', 'Element motion'\],\s*\['page-motion', 'Page motion'\],\s*\['seo', 'SEO'\],/,
+    /const TABS = \[\s*\['sections', 'Sections'\],\s*\['page-motion', 'Page motion'\],\s*\['seo', 'SEO'\],\s*\];/,
   );
-  assert.match(c, /shownTab === 'element-motion'\}\s*<MotionPanel /);
+  // Element motion is in Sections now: no tab, no panel, no Colors tab
+  assert.doesNotMatch(c, /element-motion|\bMotionPanel|'colors'/);
+  assert.match(c, /<SectionsList[^>]*motion=\{isPage\}\s*onlibrary=\{openLibrary\}/);
   assert.match(c, /shownTab === 'page-motion'\}\s*<PageMotionPanel /);
+  assert.match(c, /const MOTION_TABS = \['page-motion'\];/);
   assert.match(read('editor/svelte/PageHead.svelte'), /: 'Back to pages',?\s*\)?;/);
   // the Animations library: in Animations (its own area), not Site settings
-  assert.match(read('editor/svelte/MotionPanel.svelte'), /actions\.setPanel\('animations'\);/);
+  assert.match(
+    c,
+    /function openLibrary\(name = ''\) \{\s*ui\.library = \{ name \};\s*actions\.setPanel\('animations'\);/,
+  );
   assert.doesNotMatch(c, /transitions/);
-  const m = read('editor/svelte/MotionPanel.svelte');
-  assert.doesNotMatch(m, /AnimLibrary|Tabs/);
-  assert.doesNotMatch(m, /<EntranceCard |<ScrollBackdropCard /);
+  const sl = read('editor/svelte/SectionsList.svelte');
+  assert.doesNotMatch(sl, /AnimLibrary|Tabs/);
+  assert.doesNotMatch(sl, /<EntranceCard |<ScrollBackdropCard /);
   const pm = read('editor/svelte/PageMotionPanel.svelte');
   assert.match(pm, /<ScrollBackdropCard \{live\} \{file\} \/>\s*<EntranceCard /);
   assert.match(read('editor/svelte/AnimationsPanel.svelte'), /<MotionSettings /);
@@ -66,16 +72,17 @@ test('no top tabs (the areas instead); page tabs Sections | Element motion | Pag
   assert.match(read('editor/svelte/MotionSettings.svelte'), /<AnimLibrary /);
 });
 
-test('URL tabs are ui.panel: areas, pages, theme, animations, site-settings; clicks: arrange, animate, visitor', () => {
+test('URL tabs are ui.panel: areas, pages, theme, animations, site-settings; clicks: arrange, visitor', () => {
   const p = read('editor/svelte/persist.js');
   assert.match(p, /import \{ MOVED_OUT, PANELS, panelOf, sectionKeyOf \} from '\.\.\/areas\.js';/);
   assert.match(p, /set\('tab', ui\.panel\)/);
   const u = read('editor/svelte/ui.svelte.js');
   // browse or edit (ui.mode) is the one source: browse is visitor clicks
-  assert.match(u, /if \(ui\.mode !== 'edit'\) return 'visitor';/);
-  // Element motion animates; Page motion arranges (as Sections and SEO)
-  assert.match(u, /ui\.pageTab === 'element-motion' \? 'animate' : 'arrange'/);
-  assert.match(p, /PAGE_TABS = \['sections', 'element-motion', 'page-motion', 'seo'\]/);
+  // edit always arranges (an element's motion opens from the Sections tree, not a click)
+  assert.match(u, /return ui\.mode === 'edit' \? 'arrange' : 'visitor';/);
+  assert.match(p, /PAGE_TABS = \['sections', 'page-motion', 'seo'\]/);
+  // a saved Element motion tab opens Sections
+  assert.match(p, /if \(saved\.pageTab === 'element-motion'\) ui\.pageTab = 'sections';/);
   // the page tab is editor state (sessionStorage), never content
   assert.match(p, /sessionStorage\.setItem\(/);
   assert.match(
@@ -98,10 +105,13 @@ test('URL tabs are ui.panel: areas, pages, theme, animations, site-settings; cli
     assert.doesNotMatch(read(f), /lastEdit|previewMode|pagesWin\.open/, f);
 });
 
-test('Motion shows the whole page; the widget pop-up has no Motion tab and stays on Motion', () => {
-  const mp = esrc('svelte/MotionPanel.svelte');
-  assert.doesNotMatch(mp, /picks/);
-  assert.match(mp, /\{#if ui\.anim\?\.widget === widget\.id\}/);
+test("a widget's motion is in its card in Sections; the widget pop-up has no Motion tab", () => {
+  const sc = esrc('svelte/SectionCard.svelte');
+  assert.match(
+    sc,
+    /body=\{mo && ui\.widget === widget\.id && !ui\.multi\.length \? motionBody : undefined\}/,
+  );
+  assert.match(sc, /<WidgetMotion/);
   const wi = esrc('svelte/WidgetInspector.svelte');
   assert.match(wi, /tabs=\{WIDGET_TABS\}/);
   assert.doesNotMatch(wi, /WidgetMotion/);
