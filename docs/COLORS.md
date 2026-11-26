@@ -54,6 +54,8 @@ A color theme can also colour each text style (sub-roles, its `textStyles` in
 and `--color-type-paragraph`, `--color-type-label`, `--color-type-small` (they follow Text). They
 are only set when a theme sets them, so always read them with their parent as the fallback:
 `color: var(--color-type-label, var(--color-text));`.
+In CSS, `type` (and `ts` in class names) is the short form of "text style": `--color-type-label`,
+`--type-label-min` and `.ts--label` all belong to the Label text style.
 
 An item template (a List's `config.template`) can set its own Background, Text, Heading, Link,
 Button, Button text, Line and text styles per color theme; inside its items (class `tpl-<id>`) the same
