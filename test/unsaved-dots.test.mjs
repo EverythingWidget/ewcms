@@ -35,7 +35,10 @@ test('a field\'s dot: after its label and (i), its room always kept, the row\'s 
 
 test('a value of its own is the reset arrow: Motion\'s elements and Theme › Color\'s cards get one, no dot', () => {
   const motion = svelte('MotionPanel');
-  assert.doesNotMatch(motion, /is-unsaved/);
+  // an unsaved change to an element's own values: the yellow dot after its id, its room kept
+  assert.match(motion, /base && live\.changed\(file, layerPtr\(null, \{ id \}, 'element', base\)\) && 'is-unsaved'/);
+  assert.match(motion, /\.mlist__id::after \{\s*@include unsaved-dot;[^}]*visibility: hidden;/);
+  assert.match(motion, /&\.is-unsaved \.mlist__id::after \{\s*visibility: visible;/);
   assert.match(motion, /\{#if base && elementOf\(el, id\)\}\s*<button\s+type="button"\s+class="mlist__reset"/);
   assert.match(motion, /live\.store\.remove\(file, layerPtr\(null, \{ id \}, 'element', base\)/);
   // its slot at the row's end is always kept
@@ -43,4 +46,16 @@ test('a value of its own is the reset arrow: Motion\'s elements and Theme › Co
   const color = svelte('ColorPart');
   assert.match(color, /\.ctheme__reset \{[^}]*width: 16px;/);
   assert.match(color, /live\.store\.set\(THEME, `\/colorThemes\/\$\{name\}`, undefined/);
+});
+
+test('small fixes: palette slots are full rows, section cards have no second line, the backdrop card says On/Off', () => {
+  const color = svelte('ColorPart');
+  const palette = color.slice(color.indexOf('key="theme-color:palette"'), color.indexOf('</Collapsible>', color.indexOf('key="theme-color:palette"')));
+  assert.doesNotMatch(palette, /\bhalf\b/);
+  assert.doesNotMatch(color, /\.fields > \.hexf/);
+  const motion = svelte('MotionPanel');
+  assert.match(motion, /<Collapsible key="motion:\{s\.id\}" title="Section \{s\.at \+ 1\}">/);
+  const backdrop = svelte('ScrollBackdropCard');
+  assert.match(backdrop, /name=\{backdrop\}/);
+  assert.match(backdrop, /'On' : 'Off'/);
 });

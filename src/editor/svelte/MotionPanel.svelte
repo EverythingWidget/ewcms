@@ -1,7 +1,7 @@
 <!--
   A page's Element motion tab (ContentPanel.svelte, ui.pageTab 'element-motion'), always the
   whole page: its widgets, a card per
-  section, each with its animation and its elements that have their own (data-anim inside it:
+  section (its title only, no second line for now), each with its animation and its elements that have their own (data-anim inside it:
   the hero's photos, a heading's title, ...), then the animated elements outside the widgets
   (fixed elements). The page's own cards (Scroll backdrop, Page entrance) are the Page motion
   tab's (PageMotionPanel.svelte). The widget or element picked (ui.anim, from the preview or the list; a second click
@@ -73,7 +73,12 @@
     <div class="mlist__row">
       <button
         type="button"
-        class={['mlist__item', 'mlist__element', base && 'has-reset']}
+        class={[
+          'mlist__item',
+          'mlist__element',
+          base && 'has-reset',
+          base && live.changed(file, layerPtr(null, { id }, 'element', base)) && 'is-unsaved',
+        ]}
         onclick={() => pick(el)}
         onpointerenter={() => hoverElement(el)}
         onpointerleave={() => hoverElement(null)}
@@ -120,7 +125,7 @@
       click through to links.
     </p>
     {#each sections as s (s.id)}
-      <Collapsible key="motion:{s.id}" title="Section {s.at + 1}" name={s.name}>
+      <Collapsible key="motion:{s.id}" title="Section {s.at + 1}">
         <ol class="list">
           {#each s.widgets as widget (widget.id)}
             <li>
@@ -200,6 +205,21 @@
     // the reset arrow's slot at the row's end, kept while empty (nothing moves when it shows)
     &.has-reset {
       padding-right: calc(var(--space-3) + 16px + var(--space-2));
+    }
+
+    // unsaved changes to its own values in this widget: the yellow dot after its id, as a
+    // field's after its label, in its own room that is always kept (hidden while saved)
+    .mlist__id::after {
+      @include unsaved-dot;
+      content: '';
+      display: inline-block;
+      margin: 0 0 1px var(--space-2);
+      vertical-align: middle;
+      visibility: hidden;
+    }
+
+    &.is-unsaved .mlist__id::after {
+      visibility: visible;
     }
   }
 

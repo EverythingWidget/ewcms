@@ -283,7 +283,6 @@
           <Field
             edit="{THEME}#/palette/{i}"
             label="Slot {slot}{slot === 1 ? ' · background end' : ''}"
-            half
             value={palette[i]}
             unsaved={live.changed(THEME, `/palette/${i}`)}
             reset={{
@@ -470,11 +469,6 @@
       opacity: 0;
       cursor: pointer;
     }
-  }
-
-  // the palette's half fields: the swatch field shares the grid's column
-  .fields > .hexf {
-    grid-column: auto;
   }
 
   // a theme's preview chip: fixed size in the card's bar (20px tall, as the bar's controls)

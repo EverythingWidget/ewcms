@@ -61,7 +61,7 @@ test('Page entrance: one Animations section (curtain, page fade); the page card 
   assert.doesNotMatch(esrc('svelte/EntranceCard.svelte'), /<ScrollBackdrop|Backdrop:/);
   assert.match(
     esrc('svelte/ScrollBackdropCard.svelte'),
-    /title="Scroll backdrop"\s*name="Scroll backdrop: \{backdrop\}"/,
+    /title="Scroll backdrop"\s*name=\{backdrop\}/,
   );
   assert.match(
     esrc('svelte/PageMotionPanel.svelte'),
