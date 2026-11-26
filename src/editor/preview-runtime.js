@@ -32,7 +32,8 @@ import { createEdit } from './preview-edit.js';
 // still too): it repainted the preview every frame, idle or not (F65, F66, F83)
 const INJECTED_CSS = `
 html .header__clock-dot { animation-play-state: paused; }
-html { scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / .2) transparent; }
+/* a short page and a long one keep the same width when the bar appears (editor only) */
+html { scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / .2) transparent; scrollbar-gutter: stable; }
 html::-webkit-scrollbar { width: 8px; height: 8px; }
 html::-webkit-scrollbar-track, html::-webkit-scrollbar-corner { background: transparent; }
 html::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: 999px; background: rgb(255 255 255 / .2) padding-box; }

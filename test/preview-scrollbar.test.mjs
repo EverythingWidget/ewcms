@@ -23,8 +23,11 @@ test("the preview's page gets the editor's scrollbar, injected (editor only)", (
   );
   assert.match(
     css,
-    /html \{ scrollbar-width: thin; scrollbar-color: rgb\(255 255 255 \/ \.2\) transparent; \}/,
+    /html \{ scrollbar-width: thin; scrollbar-color: rgb\(255 255 255 \/ \.2\) transparent; scrollbar-gutter: stable; \}/,
   );
   assert.match(css, /html::-webkit-scrollbar \{ width: 8px; height: 8px; \}/);
-  for (const f of ['client/styles/_base.scss']) assert.doesNotMatch(read(f), /scrollbar-width/);
+  for (const f of ['client/styles/_base.scss']) {
+    assert.doesNotMatch(read(f), /scrollbar-width/);
+    assert.doesNotMatch(read(f), /scrollbar-gutter/);
+  }
 });

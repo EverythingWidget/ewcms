@@ -115,6 +115,10 @@ say what a site must do before it bumps its pin.
 
 ### Editor
 
+- **The preview keeps a stable scrollbar gutter,** so a short page and a long one
+  have the same width when the bar appears. Injected by the editor only; the
+  published site is unchanged.
+
 - **Header has Menu and Elements tabs.** Menu holds the nav links as border-only cards (a
   dropdown's links too). Elements holds Title, Logo, CTA button and Labels, each a
   collapsible card; the CTA's show switch sits on the card bar. The logo (a photo) and the
