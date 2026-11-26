@@ -4,9 +4,11 @@
     Palette        a card of 5 slots, each the hex field with its swatch (the native picker);
                    reset: back to the engine's (or color.brand's slot 4)
     Color themes   a card each (Lightest … Darkest), closed, its bar a fixed-size preview chip; open:
-                   its 11 roles (labels: ROLES), each a row of 5 palette dots, None on fills and a
-                   custom colour (the shared 190px popover: the hex field). Button: Glass / Color /
-                   None (.seg); the dots show only with Color (kept in the row: nothing moves).
+                   its 11 roles (labels: ROLES), each a row of field-style swatches sharing it
+                   evenly: the 5 palette slots, None on fills and a custom colour (the shared 190px
+                   popover, kept inside the panel: the hex field); the picked one a 2px inner ring.
+                   Button: Glass / Color / None (.seg) on a row of its own, its swatches under it,
+                   greyed out and disabled for Glass and None (kept: the row's height never changes).
                    The 7 text styles, a row each right after Text (TEXT_STYLE_ROWS: no group), in
                    a theme and in a template's sub-roles (a template picked under Templates), greyed
                    while they follow ("follows Text"). A role that isn't the engine's default, or a sub-role set:
@@ -149,7 +151,7 @@
   {@const row = roleRow(theme(), spec)}
   {@const ptr = rolePointer(spec)}
   {@const following = !!row.follows && !row.custom}
-  {@const dots = !row.glass || row.mode === 'color'}
+  {@const swatches = !row.glass || row.mode === 'color'}
   {@const hex = isHexColor(row.shown)}
   <div
     class={['crole', row.custom && 'is-changed', following && 'is-following']}
@@ -169,8 +171,8 @@
         >
       {/if}
     </span>
-    <div class="crole__ctl">
-      {#if row.glass}
+    {#if row.glass}
+      <div class="crole__ctl">
         <div class="seg crole__mode" role="radiogroup" aria-label="{row.label}: fill">
           {#each BUTTON_CHOICES as [mode, text] (mode)}
             <button
@@ -182,49 +184,48 @@
             >
           {/each}
         </div>
-      {/if}
-      <div
-        class={['dots', !dots && 'is-hidden']}
-        role="radiogroup"
-        aria-label="{row.label}: color"
-        aria-hidden={!dots || undefined}
-        inert={!dots || undefined}
-      >
-        {#each SLOTS as slot (slot)}
-          <button
-            type="button"
-            role="radio"
-            class="dot"
-            aria-checked={row.shown === slot}
-            style:--swatch={palette[slot - 1]}
-            title="Slot {slot} · {palette[slot - 1]}"
-            aria-label="Slot {slot}"
-            onclick={() => pick(spec, slot)}
-          ></button>
-        {/each}
-        {#if row.none && !row.glass}
-          <button
-            type="button"
-            role="radio"
-            class="dot dot--none"
-            aria-checked={row.shown === 'none'}
-            title="None: no fill"
-            aria-label="None"
-            onclick={() => pick(spec, 'none')}><i class="fa-solid fa-ban" aria-hidden="true"></i></button
-          >
-        {/if}
+      </div>
+    {/if}
+    <div
+      class={['swatches', !swatches && 'is-off']}
+      role="radiogroup"
+      aria-label="{row.label}: color"
+      aria-disabled={!swatches || undefined}
+      inert={!swatches || undefined}
+    >
+      {#each SLOTS as slot (slot)}
         <button
           type="button"
-          class={['dot', 'dot--custom', hex && 'is-set']}
-          aria-haspopup="dialog"
-          aria-expanded={!!custom && rolePointer(custom.spec) === ptr}
-          style:--swatch={hex ? longHex(row.shown) : null}
-          title={hex ? `Custom · ${longHex(row.shown)}` : 'A custom color'}
-          aria-label={hex ? `Custom color, picked: ${longHex(row.shown)}` : 'Custom color'}
-          onclick={(e) => openCustom(spec, e)}
-          >{#if !hex}<i class="fa-solid fa-eyedropper" aria-hidden="true"></i>{/if}</button
+          role="radio"
+          class="swatch"
+          aria-checked={swatches && row.shown === slot}
+          style:--swatch={palette[slot - 1]}
+          title="Slot {slot} · {palette[slot - 1]}"
+          aria-label="Slot {slot}"
+          onclick={() => pick(spec, slot)}
+        ></button>
+      {/each}
+      {#if row.none && !row.glass}
+        <button
+          type="button"
+          role="radio"
+          class="swatch swatch--none"
+          aria-checked={row.shown === 'none'}
+          title="None: no fill"
+          aria-label="None"
+          onclick={() => pick(spec, 'none')}><i class="fa-solid fa-ban" aria-hidden="true"></i></button
         >
-      </div>
+      {/if}
+      <button
+        type="button"
+        class={['swatch', 'swatch--custom', swatches && hex && 'is-set']}
+        aria-haspopup="dialog"
+        aria-expanded={!!custom && rolePointer(custom.spec) === ptr}
+        style:--swatch={swatches && hex ? longHex(row.shown) : null}
+        title={hex ? `Custom · ${longHex(row.shown)}` : 'A custom color'}
+        aria-label={hex ? `Custom color, picked: ${longHex(row.shown)}` : 'Custom color'}
+        onclick={(e) => openCustom(spec, e)}><i class="fa-solid fa-eyedropper" aria-hidden="true"></i></button
+      >
     </div>
   </div>
 {/snippet}
@@ -532,13 +533,13 @@
     letter-spacing: 0;
   }
 
-  .crole.is-following .crole__ctl {
+  .crole.is-following .swatches {
     opacity: var(--o-disabled);
     transition: opacity 0.2s;
   }
 
-  .crole.is-following:hover .crole__ctl,
-  .crole.is-following:focus-within .crole__ctl {
+  .crole.is-following:hover .swatches,
+  .crole.is-following:focus-within .swatches {
     opacity: 1;
   }
 
@@ -566,69 +567,78 @@
     }
   }
 
-  // the picker: one control's height, whatever it holds (Button's .seg, the dots)
+  // Button's Glass / Color / None: the editor's .seg, full width, on a row of its own
   .crole__ctl {
     display: flex;
-    align-items: center;
-    gap: var(--space-3);
     height: var(--size-control);
+    margin-bottom: var(--space-1);
   }
 
   .crole__mode {
-    flex: none;
-    width: 168px;
+    flex: 1;
   }
 
-  // the dots: 20px, 4px apart; kept in the row (hidden) while Button isn't Color
-  .dots {
+  // the swatches: field-style (.tf__input's radius and background), one control tall, sharing
+  // the row evenly (5 slots, None on fills, custom); kept and greyed out (disabled) while Button
+  // isn't Color, so the row never changes height
+  .swatches {
     display: flex;
-    flex: none;
-    align-items: center;
     gap: var(--space-1);
+    height: var(--size-control);
 
-    &.is-hidden {
-      visibility: hidden;
+    &.is-off {
+      opacity: var(--o-disabled);
     }
   }
 
-  .dot {
+  .swatch {
     display: grid;
     place-items: center;
-    flex: none;
-    width: 20px;
-    height: 20px;
+    flex: 1 1 0;
+    min-width: 0;
+    height: var(--size-control);
     padding: 0;
     border: 0;
-    border-radius: var(--radius-round);
+    border-radius: var(--radius-md);
     background: var(--swatch, var(--field-bg));
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--white) 24%, transparent);
+    box-shadow: inset 0 0 0 1px var(--c-line);
     color: var(--c-text-muted);
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
+    transition: box-shadow 0.2s;
     cursor: pointer;
 
     &:hover {
       color: var(--c-text);
     }
 
-    // the picked one: ringed (outside the dot: nothing moves)
+    // a colour: the swatch edge (.hexf__swatch's), so a slot the card's colour still shows
+    &[style*='--swatch'] {
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--white) 24%, transparent);
+    }
+
+    // the picked one: the field focus colour as a 2px inner ring, a 1px gap inside it (nothing moves)
     &[aria-checked='true'],
-    &.dot--custom.is-set {
+    &.swatch--custom.is-set {
       box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--white) 24%, transparent),
-        0 0 0 2px var(--c-surface),
-        0 0 0 3px var(--c-text);
+        inset 0 0 0 2px var(--focus-line),
+        inset 0 0 0 3px var(--c-surface);
     }
 
     &:focus-visible {
       outline: 1px solid var(--focus-line);
-      outline-offset: 3px;
+      outline-offset: 2px;
     }
   }
 
-  .dot--none,
-  .dot--custom:not(.is-set) {
-    background: var(--field-bg);
-    box-shadow: inset 0 0 0 1px var(--c-line);
+  // the custom one picked: its colour, the eyedropper on a small plate
+  .swatch--custom.is-set i {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--c-surface) 70%, transparent);
+    color: var(--c-text);
   }
 
   // the theme's Templates fold: the curtain's Advanced

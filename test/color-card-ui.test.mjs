@@ -26,11 +26,19 @@ test('the card: Theme › Color reads its labels from colors.js and writes throu
   assert.doesNotMatch(panel, /Text styles \(|textStylesUnder|HEADING_TEXT/);
   assert.match(panel, /style:--fg=\{p\.title /); // the chip's Aa: Title
   // nothing moves: fixed-size chip,
-  // one control's height per picker, the dots hidden (not removed) while Button isn't Color
+  // one control's height per row (the Button's .seg, its swatches under it), the swatches kept
+  // and greyed out (disabled) while Button isn't Color
   assert.match(panel, /const isOpen = \(name, what\) => !!ui\.sections\[foldKey\(name, what\)\];/);
   assert.match(panel, /\.cchip \{[^}]*width: 64px;[^}]*height: 20px;/);
   assert.match(panel, /\.crole__ctl \{[^}]*height: var\(--size-control\);/);
-  assert.match(panel, /&\.is-hidden \{\s*visibility: hidden;/);
+  assert.match(panel, /\.swatches \{[^}]*height: var\(--size-control\);/);
+  assert.match(panel, /&\.is-off \{\s*opacity: var\(--o-disabled\);/);
+  assert.match(panel, /class=\{\['swatches', !swatches && 'is-off'\]\}/);
+  assert.match(panel, /inert=\{!swatches \|\| undefined\}/);
+  // field-style swatches sharing the row evenly; the picked one: a 2px inner ring
+  assert.match(panel, /\.swatch \{[^}]*flex: 1 1 0;[^}]*border-radius: var\(--radius-md\);[^}]*background: var\(--swatch, var\(--field-bg\)\);/);
+  assert.match(panel, /inset 0 0 0 2px var\(--focus-line\)/);
+  assert.doesNotMatch(panel, /class="dot|\.dots \{/);
   // the custom marker: the editor's changed dot, absolute in the row's left padding
   assert.match(read('src/editor/styles/editor.scss'), /:is\(\.xrow, \.mlist__element, \.crole\)\.is-changed::before/);
   const themePanel = read('src/editor/svelte/ThemePanel.svelte');
