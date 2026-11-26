@@ -20,7 +20,7 @@ import { popupStays } from '../multi-select.js';
  *                   'site-settings'  Site settings: what is the same on every page
  *                 (Media and Sources open their windows over it: ui.modals)
  *   ui.pageTab    the open page's tab, under Pages: 'sections' (its sections, widgets and their
- *                 motion) | 'page-motion' (Page motion) | 'seo'; null when no
+ *                 motion) | 'page-motion' (Page motion) | 'style' (its own palette) | 'seo'; null when no
  *                 page is open (the pages list, the Header or Footer). Kept per page in
  *                 ui.sections["pagetab:<file>"] (ContentPanel.svelte).
  *   previewClicks()  what a click in the preview does, from ui.mode only:

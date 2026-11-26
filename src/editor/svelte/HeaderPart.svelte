@@ -1,9 +1,11 @@
 <!--
   Pages > Header, a site part (picked under Site parts at the top of the pages list, or by
-  clicking the header in the preview): two tabs (Tabs.svelte, the open one in
+  clicking the header in the preview): three tabs (Tabs.svelte, the open one in
   ui.sections.headertab; unknown: Menu). Menu is the nav of content/header.json
   (src/render/shell/header.js: the nav pill and the phone menu); each item is a border-only
-  card (ListField cards). Elements holds the title (site.json name, the header's logo text),
+  card (ListField cards). Style is the header's height in grid rows, desktop and phone
+  (header.json rows and rowsPhone: src/render/header-rows.js; site-wide, the preview takes them
+  at once, no reload: ../theme-vars.js applyHeaderRows). Elements holds the title (site.json name, the header's logo text),
   the logo and CTA button (header.json "logo" and "cta": show, label, a link), and the labels
   (strings.json "header": the menu and close buttons, the clock). (The footer is page-like:
   footer.json.) An item: its label, its link (a page of the site, or an external URL), and a
@@ -17,9 +19,11 @@
   import ListField from './ListField.svelte';
   import Select from './Select.svelte';
   import { ui } from './ui.svelte.js';
-  import { HEADER, SITE, STRINGS } from '../../render/files.js';
+  import { HEADER, SITE, STRINGS, THEME } from '../../render/files.js';
+  import { MAX_HEADER_ROWS, headerRows } from '../../render/header-rows.js';
+  import { containedOf, gridRowPx } from '../../render/layout/contain.js';
 
-  // live: reactive store (live.svelte.js); tab: 'menu' | 'elements' (ContentPanel)
+  // live: reactive store (live.svelte.js); tab: 'menu' | 'elements' | 'style' (ContentPanel)
   let { live, tab = 'menu' } = $props();
 
   const uid = $props.id();
@@ -69,6 +73,19 @@
       delete item.href;
       Object.assign(item, link);
     });
+  }
+
+  // ---- Style: the header's height in grid rows (empty: the theme's; phone empty: desktop's)
+  const rows = $derived(headerRows(live.get(HEADER, '/rows')));
+  const rowsPhone = $derived(headerRows(live.get(HEADER, '/rowsPhone')));
+  const contained = $derived(containedOf(live.get(THEME, '') || {}));
+  /** A row count as px at a common window (1440 desktop, 390 a phone): the heights list. */
+  const px = (n, phone) => Math.round(n * gridRowPx(phone ? 390 : 1440, contained, phone));
+  function setRows(key, value) {
+    if (value !== undefined && !Number.isFinite(value)) return;
+    const n =
+      value === undefined ? undefined : Math.min(MAX_HEADER_ROWS, Math.max(1, Math.round(value)));
+    live.store.set(HEADER, `/${key}`, n, { key: `text:${HEADER}#/${key}`, source: 'panel' });
   }
 
   /** A dropdown's list: '' none, else the source whose items it lists. */
@@ -204,6 +221,12 @@
 {#snippet logoTip()}<b>Logo</b>: an optional image in the header. When set, it replaces the title
   text.{/snippet}
 
+{#snippet rowsTip()}<b>Height</b>: the header's height as a number of grid rows (a contained
+  section's square cells), so it grows with the window as the sections do. Empty: the theme's own
+  height. The first section of every page starts under it.{/snippet}
+{#snippet rowsPhoneTip()}<b>Height (phone)</b>: the same below 760px, in the phone grid's rows.
+  Empty: the same number of rows as desktop.{/snippet}
+
 {#if tab === 'menu'}
   <p class="hint">The nav at the top and the phone menu. An item can open a dropdown.</p>
   <div class="fields">
@@ -219,6 +242,56 @@
       {#snippet item(it, i)}{@render fields(it, [i])}{/snippet}
     </ListField>
   </div>
+{:else if tab === 'style'}
+  <p class="hint">The header on every page. Its height is rows of the grid.</p>
+  <div class="fields">
+    <Field
+      edit="{HEADER}#/rows"
+      label="Height (rows)"
+      type="number"
+      half
+      empty
+      placeholder="Theme's"
+      value={rows ?? undefined}
+      help="Rows of the grid. Empty: the theme's height."
+      tip={rowsTip}
+      unsaved={live.changed(HEADER, '/rows')}
+      reset={{
+        on: rows !== null,
+        label: "Height: use the theme's",
+        title: "Use the theme's height",
+        run: () => setRows('rows', undefined),
+      }}
+      onvalue={(v) => setRows('rows', v)}
+    />
+    <Field
+      edit="{HEADER}#/rowsPhone"
+      label="Height (phone)"
+      type="number"
+      half
+      empty
+      placeholder={rows ? String(rows) : "Theme's"}
+      value={rowsPhone ?? undefined}
+      help="On phones. Empty: the same rows as desktop."
+      tip={rowsPhoneTip}
+      unsaved={live.changed(HEADER, '/rowsPhone')}
+      reset={{
+        on: rowsPhone !== null,
+        label: 'Height (phone): follow desktop',
+        title: rows ? `Follow desktop (${rows} rows)` : 'Follow desktop',
+        run: () => setRows('rowsPhone', undefined),
+      }}
+      onvalue={(v) => setRows('rowsPhone', v)}
+    />
+  </div>
+  <ul class="heights" aria-label="The header's height at common window sizes">
+    <li><span>1440 window</span><strong>{rows ? `${px(rows, false)} px` : "Theme's"}</strong></li>
+    <li>
+      <span>390 phone</span><strong
+        >{rowsPhone || rows ? `${px(rowsPhone ?? rows, true)} px` : "Theme's"}</strong
+      >
+    </li>
+  </ul>
 {:else}
   <p class="hint">The site name, logo and a button in the menu.</p>
   <Collapsible key="header:title" title="Title">
@@ -285,3 +358,26 @@
     </div>
   </Collapsible>
 {/if}
+
+<style lang="scss">
+  @use '../styles/mixins' as *;
+
+  // the height at two common windows, as Theme › Layout's widths: always two rows (no shift)
+  .heights {
+    @include stack(var(--space-1));
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    @include muted;
+    list-style: none;
+
+    li {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    strong {
+      color: var(--c-text);
+      font-weight: 400;
+    }
+  }
+</style>

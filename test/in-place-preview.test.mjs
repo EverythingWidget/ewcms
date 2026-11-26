@@ -241,7 +241,7 @@ test('swapWidget: a Text edit ended swaps only its widget, its section and the o
 test('the editor: in place by default, a reload only by the rule, on Save too', () => {
   const main = read('src/editor/main.js');
   // one rule, no hand-set reload flags
-  assert.match(main, /reload: needsReload\(files, \{ routes, site \}\)/);
+  assert.match(main, /reload: needsReload\(files, \{ routes, site, header \}\)/);
   assert.doesNotMatch(main, /refreshPending|refresh: /);
   assert.doesNotMatch(main, /files\.some\(templateIdOf\)\s*,?\s*\n?\s*sources:/);
   // an item template's or a source's sections: rendered again in place after the draft

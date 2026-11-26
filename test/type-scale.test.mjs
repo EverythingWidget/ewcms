@@ -340,7 +340,7 @@ test('Theme › Typography: a row per style with its tag, Preview / Close previe
   assert.match(main, /if \(files\.includes\(THEME\)\) applyTheme\(bridge\.doc, store\.current\[THEME\], editorConfig\.fonts\);/);
   assert.match(
     main,
-    /pushCurtains\(\);[\s\S]{0,160}applyTheme\(bridge\.doc, store\.current\[THEME\], editorConfig\.fonts\);\s*ui\.previewVersion\+\+;/,
+    /pushCurtains\(\);[\s\S]{0,160}applyTheme\(bridge\.doc, store\.current\[THEME\], editorConfig\.fonts\);\s*applyLook\(\);/,
   );
   // another area closes the specimen, back to the page it replaced
   assert.match(main, /if \(panel !== 'theme'\) showSpecimen\(false\);/);

@@ -25,6 +25,22 @@ fonts, radius, easing, `--error`, the shades `--shade-*` and the text over a pho
 Slot 1 is the calm, background end, slot 5 the other end. Read a slot only for something that must
 stay the same colour in every color theme.
 
+A page can have its own palette (its **Style** tab; the page file's `"palette"`): 5 entries, slot 1
+first, each a colour `"#rrggbb"` or `null` (that slot follows the site's). Left out, the page uses
+the site's palette. Its slots are put on `:root` for that page only (`<style id="page-palette">` in
+the head, then the view's `data-palette` on `<html>` on every page change: `src/client/palette.js`),
+so every role and smart colour on the page follows them.
+
+```json
+{
+  "version": 1,
+  "kind": "page",
+  "id": "pg-k3x9",
+  "palette": [null, "#2a241e", null, null, null],
+  "sections": []
+}
+```
+
 ## The roles: `--color-*`
 
 Each color theme sets all 11; a value is a palette slot 1-5, a custom `#rrggbb` (it doesn't follow

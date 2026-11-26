@@ -24,6 +24,13 @@ $z-skip: 200; // .skip-link: always on top when focused
   --mcols: 60;
 
   --pad: clamp(16px, 2.6vw, 40px);
+  // a grid row: a contained section's square cell (_layout.scss .sec --cell; phones below). The
+  // header's height is a number of them when header.json sets rows (src/render/header-rows.js)
+  --grid-pad: max(
+    var(--pad),
+    calc((var(--cols) - var(--contain, 115)) * 100vw / (2 * var(--cols)))
+  );
+  --grid-row: calc((100vw - 2 * var(--grid-pad)) / var(--cols));
   --gap: clamp(12px, 1.4vw, 22px);
   // a full-width line's starting sizes, in cells (src/render/layout/type.js TEXT_STYLES): its
   // own --tkf scales them to the widget's width
@@ -79,4 +86,11 @@ $z-skip: 200; // .skip-link: always on top when focused
   --type-small-min: 12px;
   --type-small-max: 12px;
   --type-small-lh: 1.5;
+}
+
+@media (width <= $bp-sm) {
+  :root {
+    --grid-pad: var(--pad);
+    --grid-row: calc((100vw - 2 * var(--grid-pad)) / var(--mcols));
+  }
 }

@@ -61,10 +61,10 @@ export function renderRoute(route, content, { editable = false, unbuilt = false 
   const view =
     renderBackdrop(ctx, page?.backdrop) + renderSections(ctx, route, file, page?.sections);
   const accent = route.album ? accentOf(ctx, route.album) || '' : '';
-  const html = body(ctx, route, accent, view, file);
+  const html = body(ctx, route, accent, view, file, page);
   anchorClashes(route, page?.sections, html);
   return {
-    head: head(ctx, route, accent),
+    head: head(ctx, route, accent, page),
     body: html,
     lang: site.lang || 'en',
     themeColor: themeColorOf(shown.theme),

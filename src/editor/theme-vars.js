@@ -8,9 +8,17 @@
  * colors.js) replace the text of the page's <style id="color-themes">. main.js calls applyTheme on every
  * theme.json change (an edit, undo, redo, the panel open or not) and whenever a page loads in
  * the preview.
+ *
+ * Two more look edits outside theme.json go in the same way, with no reload: a page's own palette
+ * (its page file's "palette", the page's Style tab: applyPagePalette, the view's data-palette and
+ * <html>'s --palette-n, as the client does on a page change) and the header's height in grid rows
+ * (header.json rows and rowsPhone, the Header's Style tab: applyHeaderRows, the head's
+ * <style id="header-rows">; lib/needs-reload.js headerKey leaves them out).
  */
 import { schemeOf, themeVars } from '../render/theme.js';
-import { colorThemeStyle } from '../render/colors.js';
+import { colorThemeStyle, pagePaletteAttr } from '../render/colors.js';
+import { headerRowsCss } from '../render/header-rows.js';
+import { applyPalette } from '../client/palette.js';
 
 const ROOT_BLOCK = /\s*:root:root\s*\{[^}]*\}/g;
 
@@ -72,4 +80,28 @@ export function applyTheme(doc, theme, fonts) {
   applyColorThemes(doc, theme);
   applyThemeVars(doc, theme, fonts);
   applyColorScheme(doc, theme);
+}
+
+/** Put a page's own palette on the preview's document `doc` (page: its page file's data). */
+export function applyPagePalette(doc, page) {
+  const view = doc?.querySelector?.('[data-router-view]');
+  if (!view) return;
+  const value = pagePaletteAttr(page);
+  if (value) view.dataset.palette = value;
+  else delete view.dataset.palette;
+  applyPalette(value, doc);
+}
+
+/** Put header.json's rows on the preview's document `doc`: the header-rows style (none: removed). */
+export function applyHeaderRows(doc, header) {
+  if (!doc?.head) return;
+  const css = headerRowsCss(header);
+  let el = doc.getElementById('header-rows');
+  if (!css) return void el?.remove();
+  if (!el) {
+    el = doc.createElement('style');
+    el.id = 'header-rows';
+    doc.head.append(el);
+  }
+  if (el.textContent.trim() !== css) el.textContent = css;
 }

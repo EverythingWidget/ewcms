@@ -40,7 +40,7 @@ const KEY = 'editor:ui';
 // the modals open again after a refresh (the others are opened with callbacks: modals.svelte.js)
 const KEPT = ['sources', 'media'];
 // the URL's tab is ui.panel (ui.svelte.js): one of PANELS (../areas.js)
-const PAGE_TABS = ['sections', 'page-motion', 'seo'];
+const PAGE_TABS = ['sections', 'page-motion', 'style', 'seo'];
 const VIEWS = { header: 'Header', footer: 'Footer' };
 
 let bridge, live; // the preview (../preview-runtime.js) and the content (live.svelte.js)

@@ -17,6 +17,7 @@ import { initRouter, navigate, replayCurtain, setPageCurtains } from './router.j
 import { initMenu, updateActiveNav } from './ui/menu.js';
 import { initClock, updateClocks } from './ui/clock.js';
 import { applyAccent } from './theme.js';
+import { applyPalette } from './palette.js';
 import { photoFade } from './modules/misc.js';
 import { contactForms } from './modules/form.js';
 import { watchRows } from './modules/rows.js';
@@ -82,6 +83,7 @@ function mount(view, { first = false } = {}) {
   const portal = movePortals(view);
   hooks.beforeMount.forEach((fn) => fn(view));
   applyAccent(view.dataset.accent, { instant: first });
+  applyPalette(view.dataset.palette);
   updateActiveNav(location.pathname);
   updateClocks();
   document.documentElement.dataset.page = view.dataset.page;

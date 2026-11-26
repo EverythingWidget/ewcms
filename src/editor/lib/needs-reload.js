@@ -9,7 +9,7 @@
  *                                      or a page added or removed, moved, a slug, or the name or
  *                                      cover of an item the menu lists
  *   the site's settings                when they changed (siteKey)
- *   the menu (header.json), the photos' and the UI strings
+ *   the menu (header.json: not its rows, headerKey), the photos' and the UI strings
  *   any other file the rule doesn't know (a reload is always right)
  *
  * Never: item templates, the footer, animations, redirects (none of them is a route), and
@@ -32,6 +32,7 @@ import {
 } from '../../render/files.js';
 import { getRoutes } from '../../render/routes.js';
 import { isObject } from '../../render/is.js';
+import { HEADER_ROW_KEYS } from '../../render/header-rows.js';
 
 /** Files that never reload the preview: rendered in place, or never shown. */
 export const IN_PLACE = [FOOTER, ANIMATIONS, REDIRECTS, THEME];
@@ -79,15 +80,30 @@ export function siteKey(files) {
 }
 
 /**
+ * header.json as one string, without its rows (the header's height: ../theme-vars.js puts them
+ * on the preview as typed): equal before and after, only the rows changed (or nothing).
+ */
+export function headerKey(files) {
+  const header = files?.[HEADER];
+  if (!isObject(header)) return JSON.stringify(header ?? null);
+  const rest = Object.fromEntries(
+    Object.entries(header).filter(([k]) => !HEADER_ROW_KEYS.includes(k)),
+  );
+  return JSON.stringify(rest);
+}
+
+/**
  * True when an edit of `files` needs the preview loaded again. `routes`: whether the site's
  * routes changed with it (routesKey before and after; asked only when routesFile(file) is one);
- * `site`: whether site.json changed (siteKey; left out: it did).
+ * `site`: whether site.json changed (siteKey; left out: it did); `header`: whether header.json
+ * changed beyond its rows (headerKey; left out: it did).
  */
-export function needsReload(files, { routes = false, site = true } = {}) {
+export function needsReload(files, { routes = false, site = true, header = true } = {}) {
   return files.some((f) => {
     if (templateIdOf(f) || IN_PLACE.includes(f)) return false;
     if (routesFile(f)) return routes;
     if (f === SITE) return site;
+    if (f === HEADER) return header;
     return true; // RELOADS, and anything else
   });
 }

@@ -14,7 +14,7 @@
  * The CSS (_layout.scss) reads --contain on :root (head, shell/layout.js); Theme › Layout
  * shows the widths at common window sizes (containedWidth).
  */
-import { COLS } from './grid.js';
+import { COLS, MCOLS } from './grid.js';
 import { layoutSpaceVars, spaceRows } from './space.js';
 
 export const CONTAINED = 115;
@@ -30,6 +30,14 @@ export function containedOf(theme) {
 
 /** A contained section's content width, px, in a window `vw` px wide (desktop). */
 export const containedWidth = (vw, n = CONTAINED) => Math.min(vw - 2 * padAt(vw), (vw * n) / COLS);
+
+/**
+ * A grid row, px, in a window `vw` px wide (--grid-row in _tokens.scss: a contained section's
+ * square cell): desktop with `n` contained columns, or a phone's (`phone`: the 60-column grid
+ * inside the side margins). The Header's Style tab shows its rows in px with it.
+ */
+export const gridRowPx = (vw, n = CONTAINED, phone = false) =>
+  phone ? (vw - 2 * padAt(vw)) / MCOLS : containedWidth(vw, n) / COLS;
 
 /** The :root variables, when they aren't the default: [[name, value]]. */
 export function layoutVarList(theme) {

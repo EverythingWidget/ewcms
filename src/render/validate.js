@@ -60,7 +60,8 @@ import { bindTypeOf } from './layout/bindings.js';
 import { isPropertyPart, isParts, isWhole, NAME } from './layout/parts.js';
 import { FORMAT_TYPES, storedAs } from './property-types.js';
 import { isObject } from './is.js';
-import { THEME_NAMES } from './colors.js';
+import { THEME_NAMES, checkPagePalette } from './colors.js';
+import { checkHeaderRows } from './header-rows.js';
 
 const THEME_LIST = THEME_NAMES.map((n) => `"${n}"`).join(', ');
 import { styleProblems } from '../widgets/list/item-style.js';
@@ -164,7 +165,7 @@ function checkForms(f) {
 }
 
 /**
- * header.json: { header: [items], logo?, cta?, colorTheme? }, item { label, page | item | href, all?, items?,
+ * header.json: { header: [items], logo?, cta?, colorTheme?, rows?, rowsPhone? }, item { label, page | item | href, all?, items?,
  * children? }. Items can have one level of children. Whether a page exists needs the routes: the
  * templates warn about that (header.js linkOf). "logo" is a photo path; "cta" is
  * { show?, label?, page | item | href } — a button at the end of the menu.
@@ -174,6 +175,8 @@ function checkHeader(d) {
   // its color theme (left out: the site's); the header's background options come later
   if (d.colorTheme !== undefined && !THEME_NAMES.includes(d.colorTheme))
     out.push(`"colorTheme" must be a color theme: ${THEME_LIST}`);
+  // its height in grid rows (the Header's Style tab: header-rows.js); left out, the theme's
+  out.push(...checkHeaderRows(d));
   if (isObject(d.cta)) {
     out.push(...optional(d.cta, { show: 'boolean', label: 'string' }).map((p) => `cta: ${p}`));
     if (['page', 'item', 'href'].some((k) => d.cta[k] !== undefined)) {
@@ -270,6 +273,8 @@ function checkDoc(file, d) {
     return [...out, ...checkSections(d.sections)];
   }
   out.push(...optional(d, { meta: 'object' }), ...checkMeta(d.meta), ...checkBackdrop(d.backdrop));
+  // its own palette (the page's Style tab: colors.js pagePaletteOf); left out, the site's
+  out.push(...checkPagePalette(d.palette));
   // its stable id: what links point at (its folder, the URL, can change)
   if (!isId(d.id, 'pg')) out.push('"id" must be a page id like "pg-k3x9"');
   // the grid is always COLS (120) columns: not stored

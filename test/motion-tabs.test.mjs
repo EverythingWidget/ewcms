@@ -41,14 +41,14 @@ test("the engine starts every spec from the defaults (not the scroll types' ease
   assert.match(e, /SCROLLED = new Set\(\['scroll', 'scrub-words', 'parallax'\]\)/);
 });
 
-test('no top tabs (the areas instead); page tabs Sections | Page motion | SEO', () => {
+test('no top tabs (the areas instead); page tabs Sections | Page motion | Style | SEO', () => {
   const app = read('editor/svelte/App.svelte');
   assert.doesNotMatch(app, /<Tabs|TABS/);
   assert.doesNotMatch(app, /MotionPanel/);
   const c = read('editor/svelte/ContentPanel.svelte');
   assert.match(
     c,
-    /const TABS = \[\s*\['sections', 'Sections'\],\s*\['page-motion', 'Page motion'\],\s*\['seo', 'SEO'\],\s*\];/,
+    /const TABS = \[\s*\['sections', 'Sections'\],\s*\['page-motion', 'Page motion'\],\s*\['style', 'Style'\],\s*\['seo', 'SEO'\],\s*\];/,
   );
   // Element motion is in Sections now: no tab, no panel, no Colors tab
   assert.doesNotMatch(c, /element-motion|\bMotionPanel|'colors'/);
@@ -80,7 +80,7 @@ test('URL tabs are ui.panel: areas, pages, theme, animations, site-settings; cli
   // browse or edit (ui.mode) is the one source: browse is visitor clicks
   // edit always arranges (an element's motion opens from the Sections tree, not a click)
   assert.match(u, /return ui\.mode === 'edit' \? 'arrange' : 'visitor';/);
-  assert.match(p, /PAGE_TABS = \['sections', 'page-motion', 'seo'\]/);
+  assert.match(p, /PAGE_TABS = \['sections', 'page-motion', 'style', 'seo'\]/);
   // a saved Element motion tab opens Sections
   assert.match(p, /if \(saved\.pageTab === 'element-motion'\) ui\.pageTab = 'sections';/);
   // the page tab is editor state (sessionStorage), never content

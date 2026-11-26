@@ -69,6 +69,7 @@ import { curtainOverrides, pathOfId } from '../render/routes.js';
 import { BACKDROP } from '../render/backdrop.js';
 import {
   ANIMATIONS,
+  HEADER,
   REDIRECTS,
   SITE,
   THEME,
@@ -76,7 +77,7 @@ import {
   schemaIdOf,
   sourceIdOf,
 } from '../render/files.js';
-import { applyTheme } from './theme-vars.js';
+import { applyHeaderRows, applyPagePalette, applyTheme } from './theme-vars.js';
 import {
   itemMoves,
   moveLinks,
@@ -116,7 +117,7 @@ import editorConfig from 'virtual:editor-config';
 import { contentFromFiles, setContentDir, templateFile, templateIdOf } from '../render/files.js';
 import { PREVIEW_PAGE, templateOfPath, templatePreview } from '../widgets/list/template-preview.js';
 import { sectionsUsing } from '../widgets/list/template-uses.js';
-import { needsReload, routesFile, routesKey, siteKey } from './lib/needs-reload.js';
+import { headerKey, needsReload, routesFile, routesKey, siteKey } from './lib/needs-reload.js';
 import { TYPE_SPECIMEN, isTypeSpecimen } from '../render/layout/type-specimen.js';
 import { keepUnsaved, restoreUnsaved } from './keep-unsaved.js';
 import { applyDraft, clearDraft, draftKey, readDraft, writeDraft } from './draft-copy.js';
@@ -585,7 +586,7 @@ function showSpecimen(on) {
   }
 }
 
-/** The open page's tab: 'sections' | 'page-motion' | 'seo', or null (no page open). */
+/** The open page's tab: 'sections' | 'page-motion' | 'style' | 'seo', or null (no page open). */
 function setPageTab(tab) {
   const before = previewClicks();
   ui.pageTab = tab;
@@ -615,6 +616,8 @@ bridge.on('connect', () => {
   pushCurtains();
   // the theme's unsaved values (a page the preview loads renders the saved or drafted ones)
   applyTheme(bridge.doc, store.current[THEME], editorConfig.fonts);
+  applyLook();
+  headerSeen = headerKey(store.current); // the preview shows this header (a rows edit: no reload)
   ui.previewVersion++;
 });
 
@@ -834,6 +837,25 @@ function pushDraft({ reload = false, templates = [], sources = [] } = {}) {
   }, 250);
 }
 
+/**
+ * The page's own palette and the header's rows, unsaved, on the preview (theme-vars.js): a page
+ * the preview loads renders the saved or drafted ones.
+ */
+function applyLook() {
+  const page = previewFile(bridge.doc);
+  if (page) applyPagePalette(bridge.doc, store.current[page]);
+  applyHeaderRows(bridge.doc, store.current[HEADER]);
+}
+
+/** Whether header.json changed beyond its rows (lib/needs-reload.js headerKey) since last looked at. */
+let headerSeen = null;
+function headerMoved() {
+  const key = headerKey(store.current);
+  const moved = headerSeen === null || key !== headerSeen;
+  headerSeen = key;
+  return moved;
+}
+
 /** Whether site.json changed (lib/needs-reload.js siteKey) since last looked at. */
 let siteSeen = null;
 function siteMoved() {
@@ -877,6 +899,7 @@ store.on(({ files, source: src, structure: _structure, edits }) => {
   const roots = syncRoots(bridge.doc);
   const routes = files.some(routesFile) && routesMoved();
   const site = files.includes(SITE) && siteMoved();
+  const header = files.includes(HEADER) && headerMoved();
   // saved: the files on disk caught up (Save reloads when it needs to); from disk: the
   // preview reloads itself (onDiskChange)
   // a Text widget typed into in place: the preview shows it already (its section renders
@@ -884,10 +907,12 @@ store.on(({ files, source: src, structure: _structure, edits }) => {
   const typed = src?.nodeType === 1 && src.isContentEditable;
   // theme.json: color themes, CSS variables and the color-scheme meta, put on the preview at once (theme-vars.js)
   if (files.includes(THEME)) applyTheme(bridge.doc, store.current[THEME], editorConfig.fonts);
+  // a page's own palette, the header's rows: the same, in place (theme-vars.js)
+  if (files.includes(page) || files.includes(HEADER)) applyLook();
   if (src === 'saved' || src === 'rebase') pushDraft();
   else if (files.some((f) => f !== ANIMATIONS))
     pushDraft({
-      reload: needsReload(files, { routes, site }),
+      reload: needsReload(files, { routes, site, header }),
       // an item template: every List using it renders again (the template editor's preview too)
       // not while its Text is being typed: that would swap the List and end the edit
       templates: typed ? [] : files.map(templateIdOf).filter(Boolean),

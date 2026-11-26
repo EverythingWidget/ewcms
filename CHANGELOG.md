@@ -76,6 +76,17 @@ say what a site must do before it bumps its pin.
 
 ### Engine
 
+- **The header's height in grid rows: `header.json` `rows` and `rowsPhone`.** Whole numbers from 1
+  to 30 (`ewcms check`); a row is a contained section's square cell (`--grid-row`), so the header
+  grows with the window as the sections' rows do. An unset `rowsPhone` is the same number of rows
+  as `rows`. Site-wide, no per-page value. They set `--header-h` in the head, over the theme's
+  `tokens.scss`. Not breaking: without them the theme's `--header-h` is the height, as before.
+  **A site can drop its `tokens.scss` `--header-h` (and its phone value) once it sets `rows`.**
+- **A page's own palette: the page file's `palette`.** 5 entries, slot 1 first, each `"#rrggbb"`
+  or `null` (that slot is the site's); left out, the site's palette (`ewcms check` validates it).
+  Its slots go on `:root` for that page (the head, then the view's `data-palette` on `<html>` on
+  each page change, instantly for now). Nothing is rendered for a page without one.
+
 - **Palette and color themes (step 1 of the colour plan, no UI yet).** `content/theme.json` can set
   `palette` (5 × `#rrggbb`, slot 1 the calm, background end), `colorThemes` (Lightest, Light,
   Accent, Dark, Darkest: each of the 11 roles a palette slot 1-5, a custom `#rgb`/`#rrggbb`, or
@@ -142,6 +153,15 @@ say what a site must do before it bumps its pin.
   exception. The default site's `theme/tokens.scss` points to it.
 
 ### Editor
+
+- **A page's Style tab: Sections | Page motion | Style | SEO.** Its own palette: five full-width
+  rows (the hex field with its swatch), a slot that follows the site shown dimmed (bright on hover
+  or focus), one of its own bright with a reset arrow back to the site's, and the yellow unsaved
+  dot. The preview takes it as you type (no reload).
+- **The Header's Style tab: Menu | Elements | Style.** **Height (rows)** and **Height (phone)**
+  (empty: the theme's height and desktop's rows, a reset arrow on a value of its own), with the
+  height in px at a 1440 window and a 390 phone. The preview takes it at once: a rows edit no
+  longer reloads it (other header edits still do).
 
 - **A widget card's motion opens and closes smoothly; a panel header is clickable all over.**
   The card's motion and an animated widget's element list grow and shrink with the panel

@@ -573,7 +573,7 @@ every section is a grid of **widgets** (`src/render/layout/`):
   the navbar, in the editor (grid, drag and resize, link circles) as on the site. `--nav-h` is
   the header's real height (`[data-header]` when it is fixed or absolute, else 0), measured by
   `src/client/modules/navbar.js` on load and when the header or window resizes (each
-  breakpoint); the theme's `--header-h` before that. A theme's first-section widgets (hero,
+  breakpoint); `--header-h` before that (header.json `rows`, see "Menu", else the theme's). A theme's first-section widgets (hero,
   album) no longer add the header's height themselves. Other sections are unchanged.
 - **Free widgets and links** (`src/render/layout/links.js`): widgets are **free**: each stays at
   the row it was placed on whatever the widgets above it do, and widgets may overlap (`layer` orders
@@ -1305,6 +1305,15 @@ opens in a new tab). A page or item that isn't there gives a `[links]` build war
 { "label": "Projects", "page": "pg-cwyg", "all": "All projects", "items": "projects" }
 ```
 
+The header's height is a number of grid rows (the Header's **Style** tab; `src/render/header-rows.js`):
+`"rows": 8` on desktop and `"rowsPhone": 11` on phones (below 760px), whole numbers from 1 to 30.
+A row is a contained section's square cell (`--grid-row`: on desktop 1/120 of the contained width,
+on phones 1/60 of the width inside the side margins), so the header grows with the window as the
+sections' rows do. An unset `rowsPhone` is the same number of rows as `rows`. They are site-wide
+(no per-page value) and set `--header-h` in the head (`<style id="header-rows">`, over the theme's
+`tokens.scss`). Without them the theme's `tokens.scss` `--header-h` is the height, as before; once
+`rows` is set, a site can drop its `--header-h` from `tokens.scss`.
+
 ### Footer
 
 `content/footer.json` is the footer: `{ "version": 1, "kind": "part", "sections": [] }`.
@@ -1805,7 +1814,7 @@ Rows show only their own segment under the folder (`people/`; elsewhere the full
 titles and paths as written. A click selects a row and shows it in the preview; a double click
 (or Enter) goes into the page's level (any page: a plain one shows its root row and "No sub
 pages yet"), and on a level's root row, Home, 404, Header or Footer opens it (its Sections,
-Page motion, SEO tabs; Header and Footer have their own). Every row also has a quiet **edit** button (a pen, 30% until hovered or
+Page motion, Style, SEO tabs; Header and Footer have their own). Every row also has a quiet **edit** button (a pen, 30% until hovered or
 focused, like the trash) that opens that page's Sections the same way in one click (no select,
 no drag; Header and Footer open theirs; a `[param]` page that builds no pages too, to fix its main widget). A row's end is fixed 24px slots, `copy | trash | ›` (copy: Duplicate; `›`: a click goes inside)
 (an empty slot where a row has no trash, as Home, 404, Header and Footer), so the buttons line up; the
@@ -1915,7 +1924,9 @@ animations and redirects never. Other pages render from the unsaved edits too: t
 
 **Pages › Header** (a site part: **Site parts** at the top of the pages list, or click the header
 in the preview) edits `header.json` and the header's labels (`strings.json` `header`: the menu and close
-buttons, the clock). The menu with its items: label,
+buttons, the clock) in three tabs: **Menu**, **Elements** (title, logo, CTA button, labels) and
+**Style** (the header's height: **Height (rows)** and **Height (phone)**, empty: the theme's and
+desktop's, a reset arrow on a value of its own; the preview takes them at once, no reload). The menu with its items: label,
 link (a page from the page tree, or External URL with its URL), ↑ / ↓ / Remove, **Add link**,
 and a dropdown: the items of a source, or **Dropdown links** (one level) and the
 "all" link's label. The preview renders the menu again on each change; undo works as anywhere. On a `[param]` page the page head's **Preview** line
@@ -1951,7 +1962,7 @@ in the URL reopens it.
 
 **Refresh** keeps your place. The URL holds the page (its path), the tab, Menu/Footer and the open Sources item, so a shared link opens the same view:
 `/photography/people/?edit&source=people&item=noor-vermeer` (`tab`: pages (the **Pages** tab), settings, preview;
-the page's own tab, Sections | Page motion | SEO, is kept per page in sessionStorage; `view`: header,
+the page's own tab, Sections | Page motion | Style | SEO, is kept per page in sessionStorage; `view`: header,
 footer; `animation`: Animations > Motion's Animations library, open on that animation). Open/closed sections, the selected field or Motion
 element and the scroll positions are kept per browser tab in sessionStorage. See
 `src/editor/svelte/persist.js`.

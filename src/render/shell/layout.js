@@ -2,12 +2,13 @@ import { html, esc, editable } from '../helpers.js';
 import { seoOf } from '../seo.js';
 import { header, phoneMenu } from './header.js';
 import { themeVars } from '../theme.js';
-import { colorThemeCss } from '../colors.js';
+import { colorThemeCss, pagePaletteAttr, pagePaletteVarList } from '../colors.js';
+import { headerRowsCss } from '../header-rows.js';
 import { footer } from './footer.js';
 import { t } from '../strings.js';
 
-/** <head> contents injected into index.html at <!--ssr-head--> (meta: src/render/seo.js) */
-export function head(ctx, route, accent) {
+/** <head> contents injected into index.html at <!--ssr-head--> (meta: src/render/seo.js); page: its page file */
+export function head(ctx, route, accent, page) {
   const { site } = ctx;
   const seo = seoOf(ctx, route);
   const photo = seo.photo;
@@ -17,6 +18,13 @@ export function head(ctx, route, accent) {
   // (tokens.scss :root) whichever stylesheet comes later: in dev and build the theme's CSS
   // comes after this head, and its 250px title max won until they were set inline (G11)
   const type = themeVars(ctx.theme, ctx.fonts);
+  // the page's own palette slots (../colors.js pagePaletteOf): over theme.json's (:root:root),
+  // until the client puts the view's data-palette on <html> (client/palette.js); none: nothing
+  const own = pagePaletteVarList(page)
+    .map(([name, value]) => `${name}: ${esc(value)}`)
+    .join('; ');
+  // header.json rows: the header's height in grid rows (../header-rows.js); none: the theme's
+  const rows = headerRowsCss(ctx.header);
   const ld =
     route.page === 'home'
       ? html`<script type="application/ld+json">
@@ -81,6 +89,22 @@ export function head(ctx, route, accent) {
       }
     </style>`
         : ''
+    }${
+      own
+        ? `
+    <style id="page-palette">
+      :root:root:root {
+        ${own};
+      }
+    </style>`
+        : ''
+    }${
+      rows
+        ? `
+    <style id="header-rows">
+      ${rows}
+    </style>`
+        : ''
     }
     ${ld}`;
 }
@@ -95,9 +119,11 @@ function pageCurtains(curtains) {
   return `<script type="application/json" id="page-curtains">${json}</script>`;
 }
 
-/** Full <body> contents injected at <!--ssr-body-->; file: the page file of its sections. */
-export function body(ctx, route, accent, view, file) {
+/** Full <body> contents injected at <!--ssr-body-->; file: the page file of its sections, pageDoc: its data. */
+export function body(ctx, route, accent, view, file, pageDoc) {
   const curtain = route.curtain ?? '';
+  // the page's own palette slots (../colors.js), only when it has some
+  const palette = pagePaletteAttr(pageDoc);
   // the editor: where the curtain text and the sections are stored
   const curtainEdit = editable
     ? `${route.curtainEdit ? ` data-curtain-edit="${esc(route.curtainEdit)}"` : ''} data-page-file="${esc(file)}"`
@@ -116,7 +142,7 @@ export function body(ctx, route, accent, view, file) {
       data-router-view
       data-page="${esc(route.page)}"
       data-accent="${esc(accent)}"
-      data-curtain="${esc(curtain)}"
+      data-curtain="${esc(curtain)}"${palette ? ` data-palette="${esc(palette)}"` : ''}
       ${curtainEdit}
     >
       ${view}

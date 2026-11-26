@@ -21,6 +21,7 @@ import {
   buttonModeOf,
   isRoleValue,
   ownPaletteOf,
+  pagePaletteOf,
   paletteOf,
   rolesOf,
   siteColorThemeOf,
@@ -69,6 +70,30 @@ export function paletteEdit(theme, i, hex) {
   const next = [...(ownPaletteOf(theme) || def)];
   next[i] = hex === undefined ? def[i] : longHex(hex);
   return next.every((c, j) => c === def[j]) ? undefined : next;
+}
+
+/* ---------- a page's own palette (the page's Style tab, PageStylePanel.svelte) ---------- */
+
+/**
+ * A page's 5 slots as its Style tab shows them: [{ hex, own }], hex its own colour or the site's
+ * (theme.json's palette, else the engine's), own whether the page sets it.
+ */
+export function pagePaletteShown(theme, page) {
+  const own = pagePaletteOf(page);
+  return paletteOf(theme).map((site, i) => ({ hex: own?.[i] || site, own: !!own?.[i] }));
+}
+
+/**
+ * Slot i of a page set to `hex` (undefined: the site's again): the value for the page's
+ * /palette, 5 × (#rrggbb | null), undefined when every slot is the site's (left out); null when
+ * `hex` isn't a colour.
+ */
+export function pagePaletteEdit(page, i, hex) {
+  if (!(i >= 0 && i < PALETTE_SIZE)) return null;
+  if (hex !== undefined && !isHexColor(hex)) return null;
+  const next = [...(pagePaletteOf(page) || Array(PALETTE_SIZE).fill(null))];
+  next[i] = hex === undefined ? null : longHex(hex);
+  return next.some(Boolean) ? next : undefined;
 }
 
 /* ---------- roles ---------- */

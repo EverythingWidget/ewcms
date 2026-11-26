@@ -204,6 +204,38 @@ export function paletteVarList(theme) {
 }
 export const PALETTE_VARS = Array.from({ length: PALETTE_SIZE }, (_, i) => `--palette-${i + 1}`);
 
+/*
+ * A page's own palette (its page file's "palette", the page's Style tab): 5 entries, slot 1 first,
+ * each a colour "#rrggbb" or null, that slot the site's (theme.json's, else the engine's). Left
+ * out: all five the site's. It goes on :root for that page only: the head's
+ * <style id="page-palette"> (shell/layout.js, before the scripts run) and the view's
+ * data-palette, which the client puts on <html> on every page change (client/palette.js).
+ */
+
+/** A page's own palette: 5 × (#rrggbb | null), or null when it sets none (or it isn't valid). */
+export function pagePaletteOf(page) {
+  const p = page?.palette;
+  if (!Array.isArray(p) || p.length !== PALETTE_SIZE) return null;
+  if (!p.every((c) => c === null || isPaletteColor(c)) || p.every((c) => c === null)) return null;
+  return p.map((c) => (c === null ? null : c.toLowerCase()));
+}
+
+/** A page's own palette as :root variables ([[name, value]], only its own slots). */
+export const pagePaletteVarList = (page) =>
+  (pagePaletteOf(page) || []).flatMap((c, i) => (c ? [[`--palette-${i + 1}`, c]] : []));
+
+/** A page's own palette as the view's data-palette ('' when none): "#2a241e,,,," (empty: the site's). */
+export const pagePaletteAttr = (page) => (pagePaletteOf(page) || []).map((c) => c || '').join(',');
+
+/** Problems of a page file's "palette" (validate.js, ewcms check). */
+export function checkPagePalette(v) {
+  if (v === undefined) return [];
+  const ok = Array.isArray(v) && v.length === PALETTE_SIZE && v.every((c) => c === null || isPaletteColor(c));
+  return ok
+    ? []
+    : [`"palette" must be ${PALETTE_SIZE} entries, slot 1 first, each a color "#rrggbb" or null (the site's)`];
+}
+
 /** The site color theme's name (theme.json colorTheme, else DEFAULT_COLOR_THEME). */
 export const siteColorThemeOf = (theme) =>
   THEME_NAMES.includes(theme?.colorTheme) ? theme.colorTheme : DEFAULT_COLOR_THEME;

@@ -4,7 +4,7 @@
   TemplatePanel.svelte) under PageHead.svelte
   (Back to pages: back to the pages list, browse). The two swap with a slide (lib/slide.js):
   a page or a template opened comes in from the right, the list comes back from the left. A page is a list of sections
-  holding widgets (src/render/layout/), and nothing else. A page's panel has three tabs (Tabs.svelte,
+  holding widgets (src/render/layout/), and nothing else. A page's panel has four tabs (Tabs.svelte,
   the open one kept per page in ui.sections["pagetab:<file>"]; unknown, or the old Element
   motion: Sections):
     Sections     SectionsList.svelte: the section cards and the dashed Add section card. One
@@ -20,10 +20,12 @@
     Page motion  PageMotionPanel.svelte: the page's cards, Scroll backdrop (its backdrop)
                  then Page entrance (its curtain). The preview's clicks arrange, as on
                  Sections (no widget list here). The top tab stays Pages.
+    Style        PageStylePanel.svelte: the page's own palette (5 slots, each the site's until set)
     SEO          SeoSection.svelte
-  The Header has two tabs (the open one in ui.sections.headertab; unknown: Menu):
+  The Header has three tabs (the open one in ui.sections.headertab; unknown: Menu):
     Menu         HeaderPart.svelte: the nav links (border-only cards)
     Elements     Title, Logo, CTA button and Labels, each a collapsible card
+    Style        the header's height in grid rows, desktop and phone (header.json rows, rowsPhone)
   The footer is sections only (no tabs). While this tab is open the preview is a
   layout canvas (overlay.js): a click picks a widget, a drag moves it, its handles resize it and
   a double click edits a text in place (preview-edit.js); links and buttons don't follow; a click on
@@ -56,6 +58,7 @@
   import TemplatePanel from './TemplatePanel.svelte';
   import PagesList from './PagesList.svelte';
   import PageMotionPanel from './PageMotionPanel.svelte';
+  import PageStylePanel from './PageStylePanel.svelte';
   import Tabs from './Tabs.svelte';
   import WidgetPopup from './WidgetPopup.svelte';
   import { createPopup } from '../widget-popup.js';
@@ -120,6 +123,7 @@
   const TABS = [
     ['sections', 'Sections'],
     ['page-motion', 'Page motion'],
+    ['style', 'Style'],
     ['seo', 'SEO'],
   ];
   const isPage = $derived(!!file && ui.target.kind === 'page');
@@ -127,8 +131,12 @@
   const HEADER_TABS = [
     ['menu', 'Menu'],
     ['elements', 'Elements'],
+    ['style', 'Style'],
   ];
-  const headerTab = $derived(isHeader && ui.sections.headertab === 'elements' ? 'elements' : 'menu');
+  const headerTab = $derived.by(() => {
+    const v = isHeader && ui.sections.headertab;
+    return HEADER_TABS.some(([t]) => t === v) ? v : 'menu';
+  });
   function pickHeaderTab(v) {
     ui.sections.headertab = v;
   }
@@ -339,6 +347,8 @@
       {:else}
         {#if isPage && shownTab === 'page-motion'}
           <PageMotionPanel {live} {actions} {file} />
+        {:else if isPage && shownTab === 'style'}
+          <PageStylePanel {live} {file} />
         {:else if isPage && shownTab === 'seo'}
           <SeoSection {live} {file} {actions} />
         {:else if ui.target.id === 'header'}
