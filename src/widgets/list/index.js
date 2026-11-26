@@ -37,6 +37,7 @@
  * (the A1 rule: an item's own "items" property wins; ../../layout/parts.js).
  * No items: the List's empty state, never nothing.
  */
+import { templateClass } from '../../render/colors.js';
 import {
   esc,
   ed,
@@ -483,7 +484,9 @@ export const list = {
     const link = opens ? false : own ? own.clickable !== false : preset.link;
     // the item style (./item-style.js): the template's own, else the preset's
     const look = styleMarkup(own ? own.style : presetStyle(preset.id));
-    const liClass = ['li', `li--${shape}`, ...look.cls].join(' ');
+    // tpl-<id>: its colours, the color theme's sub-roles of this template (src/render/colors.js)
+    const tplClass = templateClass(own ? c.template : preset.id);
+    const liClass = ['li', `li--${shape}`, tplClass, ...look.cls].join(' ');
     const liStyle = look.vars ? ` style="${esc(look.vars)}"` : '';
     const photoFirst = !opens && !own && preset.photoFirst && template[0]?.type === 'photo';
     const siteTemplate = !!own; // (`own` below is each item's own properties)

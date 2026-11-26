@@ -65,13 +65,14 @@ test("the default site's optional tokens: each read by the engine with that defa
   }
 });
 
-test('F86: each text style reads its weight, tracking and colour', () => {
+test('F86: each text style reads its weight and tracking, and its colour sub-role', () => {
   const t = fs.readFileSync(path.join(root, 'src/client/styles/_text.scss'), 'utf8');
   for (const s of ['title', 'heading', 'subheading', 'statement', 'paragraph', 'label', 'small']) {
     const rule = t.slice(t.indexOf(`.ts--${s} {`), t.indexOf('}', t.indexOf(`.ts--${s} {`)));
     assert.match(rule, new RegExp(`font-weight: var\\(--type-${s}-weight, `), s);
     assert.match(rule, new RegExp(`letter-spacing: var\\(--type-${s}-tracking, `), s);
-    assert.match(rule, new RegExp(`color: var\\(--type-${s}-color, `), s);
+    const parent = ['title', 'heading', 'subheading', 'statement'].includes(s) ? 'heading' : 'text';
+    assert.match(rule, new RegExp(`color: var\\(--color-type-${s}, var\\(--color-${parent}\\)\\);`), s);
   }
 });
 

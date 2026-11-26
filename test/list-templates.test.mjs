@@ -219,6 +219,8 @@ test('a List with config.template "t-…" renders the template, from a source an
   assert.ok(items[0].querySelector('.li__photo img'));
   // its look is its own style alone: "basedOn" is only a note (a Row basedOn changes nothing)
   assert.ok(items[0].classList.contains('li--template'));
+  // its colours: the color themes' sub-roles of this template (src/render/colors.js)
+  assert.ok(items[0].classList.contains('tpl-t-ab12'));
   const row = list({ template: 't-ab12' }, {}, withTemplate(card({ basedOn: 'preset:row' }))).el;
   assert.ok(!row.querySelector('.li--beside'));
   assert.equal(row.querySelector('.li').getAttribute('style'), null);
@@ -239,8 +241,10 @@ test('a List with config.template "t-…" renders the template, from a source an
 test('no config.template: the preset as now; a missing "t-…" warns and shows Card', () => {
   const none = list({ template: undefined }).el;
   assert.ok(none.querySelector('[data-list-item]').classList.contains('li--card'));
+  assert.ok(none.querySelector('[data-list-item]').classList.contains('tpl-preset-card'));
   const { el, seen } = list({ template: 't-zzzz' });
   assert.ok(el.querySelector('[data-list-item]').classList.contains('li--card'));
+  assert.ok(el.querySelector('[data-list-item]').classList.contains('tpl-preset-card'));
   assert.ok(
     seen.some((w) => /template "t-zzzz" is missing/.test(w)),
     seen.join(),

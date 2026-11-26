@@ -124,9 +124,14 @@ export const cleanStyle = (style) =>
     : {};
 
 // the item's fill and ring: the color theme's roles (src/render/colors.js), a surface a step
-// (two) from Background toward Text
+// (two) from Background toward Text; None: the Background its template sets in a color theme
+// (--item-fill), else see-through
 const surface = (n) => `color-mix(in oklab, var(--color-background), var(--color-text) ${n}%)`;
-const FILL = { none: 'transparent', surface: surface(6), 'surface-2': surface(12) };
+const FILL = {
+  none: 'var(--item-fill, transparent)',
+  surface: surface(6),
+  'surface-2': surface(12),
+};
 const RING = {
   none: 'inset 0 0 0 0 transparent',
   line: 'inset 0 0 0 1px var(--color-line)',

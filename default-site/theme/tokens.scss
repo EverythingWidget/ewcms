@@ -60,7 +60,7 @@
   // equal: a fixed size) and its line height (× the size). These are the engine's defaults
   // (site-core/_tokens.scss); content/theme.json "typography" (Theme › Typography) wins over
   // them per site.
-  // The styles' weight, tracking and colour: below (@optional).
+  // The styles' weight and tracking: below (@optional).
   --type-title-min: 72px;
   --type-title-max: 250px;
   --type-title-lh: 0.82;
@@ -97,24 +97,19 @@
   // --type-title-phone: 13vw;
   // --type-heading-phone: 10vw;
 
-  // the text styles' weight, tracking and colour (src/client/styles/_text.scss .ts--<style>)
+  // the text styles' weight and tracking (src/client/styles/_text.scss .ts--<style>; their colour:
+  // content/theme.json colorThemes typography, Theme › Color)
   // --type-title-weight: 400;
   // --type-title-tracking: -0.02em;
-  // --type-title-color: inherit;
   // --type-heading-weight: 400;
   // --type-heading-tracking: inherit;
-  // --type-heading-color: inherit;
   // --type-subheading-weight: 400;
   // --type-subheading-tracking: -0.005em;
-  // --type-subheading-color: inherit;
   // --type-statement-weight: 400;
   // --type-statement-tracking: -0.005em;
-  // --type-statement-color: inherit;
   // --type-paragraph-weight: inherit;
   // --type-paragraph-tracking: inherit;
-  // --type-paragraph-color: var(--smart-faded);
   // --type-label-weight: 400;
-  // --type-label-color: var(--smart-faded);
   // the Label's tracking and case, the chrome's small labels (.label) too: none for as typed
   // --type-label-tracking: 0.08em;
   // --type-label-case: uppercase;
@@ -173,5 +168,4 @@
   // --tag-border-color: var(--smart-disabled);
   // --type-small-weight: inherit;
   // --type-small-tracking: inherit;
-  // --type-small-color: var(--smart-faded);
 }

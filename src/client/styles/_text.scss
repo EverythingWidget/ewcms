@@ -5,9 +5,11 @@
  * same at any widget width; a fit line (Full-width line)
  * and Shrink to fit: _layout.scss ([data-fit], .wgt--scale). A word longer than the line still
  * breaks rather than spill out of the widget (not under Shrink to fit: it scales down instead).
- * Each style's weight, tracking and colour are tokens too (--type-<style>-weight, -tracking,
- * -color; the Label's case: --type-label-case): unset, the fallback here is today's look (inherit:
- * what is around the line, as before). A theme sets them (ewcms default-site/theme/tokens.scss).
+ * Each style's weight and tracking are tokens too (--type-<style>-weight, -tracking; the Label's
+ * case: --type-label-case): unset, the fallback here is today's look (inherit: what is around the
+ * line, as before). A theme sets them (ewcms default-site/theme/tokens.scss). Its colour is its
+ * sub-role (as --color-type-label: content/theme.json colorThemes.<name>.typography; src/render/
+ * colors.js): unset, Heading's for Title, Heading, Subheading and Statement, Text's for the rest.
  * A style's font is --type-<style>-font (content/theme.json typography.<style>.font); unset, Title,
  * Heading, Subheading and Statement use --f-display, Label uses --f-body, Paragraph and Small inherit.
  */
@@ -35,7 +37,7 @@
   font-size: clamp(var(--type-title-min), 15vw, var(--type-title-max));
   line-height: var(--type-title-lh);
   letter-spacing: var(--type-title-tracking, -0.02em);
-  color: var(--type-title-color, inherit);
+  color: var(--color-type-title, var(--color-heading));
   // a phone: its own size with the width (--type-title-phone), the max its cap (it may go under
   // the min)
   @media (width <= 480px) {
@@ -48,7 +50,7 @@
   font-size: clamp(var(--type-heading-min), 6vw, var(--type-heading-max));
   line-height: var(--type-heading-lh);
   letter-spacing: var(--type-heading-tracking, inherit);
-  color: var(--type-heading-color, inherit);
+  color: var(--color-type-heading, var(--color-heading));
   // a phone, as the Title: a size with the width (--type-heading-phone), the max its cap, so a
   // heading whose min is large (min = max: fixed) still shrinks on a phone (F98)
   @media (width <= 480px) {
@@ -61,7 +63,7 @@
   font-size: clamp(var(--type-subheading-min), 2.4vw, var(--type-subheading-max));
   line-height: var(--type-subheading-lh);
   letter-spacing: var(--type-subheading-tracking, -0.005em);
-  color: var(--type-subheading-color, inherit);
+  color: var(--color-type-subheading, var(--color-heading));
 }
 .ts--statement {
   max-width: 1280px;
@@ -70,7 +72,7 @@
   font-size: clamp(var(--type-statement-min), 4.3vw, var(--type-statement-max));
   line-height: var(--type-statement-lh);
   letter-spacing: var(--type-statement-tracking, -0.005em);
-  color: var(--type-statement-color, inherit);
+  color: var(--color-type-statement, var(--color-heading));
 }
 .ts--paragraph {
   max-width: 64ch;
@@ -80,7 +82,7 @@
   line-height: var(--type-paragraph-lh);
   font-weight: var(--type-paragraph-weight, inherit);
   letter-spacing: var(--type-paragraph-tracking, inherit);
-  color: var(--type-paragraph-color, var(--smart-faded));
+  color: var(--color-type-paragraph, var(--color-text));
 }
 .ts--label {
   font-family: var(--type-label-font, var(--f-body));
@@ -89,7 +91,7 @@
   font-weight: var(--type-label-weight, 400);
   letter-spacing: var(--type-label-tracking, 0.08em);
   text-transform: var(--type-label-case, uppercase);
-  color: var(--type-label-color, var(--smart-faded));
+  color: var(--color-type-label, var(--color-text));
 }
 .ts--small {
   max-width: 64ch;
@@ -98,7 +100,7 @@
   line-height: var(--type-small-lh);
   font-weight: var(--type-small-weight, inherit);
   letter-spacing: var(--type-small-tracking, inherit);
-  color: var(--type-small-color, var(--smart-faded));
+  color: var(--color-type-small, var(--color-text));
 }
 .text__body a {
   color: var(--color-link);

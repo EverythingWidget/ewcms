@@ -365,6 +365,12 @@ function buildCss(theme, templates) {
   // templates: after the themes; the site theme's first (it matches everywhere, as :root),
   // so a section's theme wins inside it. A role a template leaves out in a theme: inherit.
   const order = [site, ...THEME_NAMES.filter((n) => n !== site)];
+  // the templates that set a Background in some theme
+  const paints = new Set(
+    ids.filter((id) =>
+      THEME_NAMES.some((n) => templateRolesOf(theme, n, id, templates).roles.background !== undefined),
+    ),
+  );
   for (const name of order)
     for (const id of ids) {
       const { roles, typography } = templateRolesOf(theme, name, id, templates);
@@ -372,9 +378,24 @@ function buildCss(theme, templates) {
       const selector =
         name === site ? `:root .${cls}, .ct-${name} .${cls}` : `.ct-${name} .${cls}`;
       const all = { ...rolesOf(theme, name), ...roles };
+      // its item paints a Background it sets (--item-fill: a template style's None; its Surface,
+      // inline, wins: a surface of it); a theme where it sets none: the item's own fill
+      const fill =
+        roles.background !== undefined
+          ? [
+              ['--item-fill', 'var(--color-background)'],
+              ['--item-bg', 'var(--item-fill)'],
+              ['--item-bg-hover', 'var(--item-fill)'],
+            ]
+          : [
+              ['--item-bg', 'inherit'],
+              ['--item-bg-hover', 'inherit'],
+            ];
       out.push(
         `${selector} { ${decls([
           ...TEMPLATE_ROLES.map((k) => [roleOf(k).css, roles[k] !== undefined ? valueCss(roles[k]) : 'inherit']),
+          ...(paints.has(id) ? fill : []),
+          ['color', 'var(--color-text)'],
           ...[...typeSet].map((s) => [typeVar(s), typography[s] !== undefined ? valueCss(typography[s]) : 'inherit']),
           ...SMART.filter((s) => s.whenNone).map((s) => [s.var, all[s.whenNone] === 'none' ? s.none : s.css]),
         ])} }`,

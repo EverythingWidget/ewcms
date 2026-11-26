@@ -24,6 +24,12 @@ say what a site must do before it bumps its pin.
   `theme/tokens.scss` (keep the shades, `--error` and `--hero-*`). The text over a photo
   (`--hero-fg`, `--hero-muted`), the shades (`--shade-*`) and `--error` stay tokens.
 
+- **Breaking: the text styles' colour tokens `--type-<style>-color` are gone.** A text style's
+  colour is its sub-role in `content/theme.json` `colorThemes.<name>.typography.<style>`.
+  Paragraph, Label and Small now follow Text instead of the faded colour, and a List's facts
+  and count follow Label. In the commit that bumps the pin: move any `--type-<style>-color`
+  from `theme/tokens.scss` into the site theme's `typography` (a palette slot or `#hex`).
+
 ### Engine
 
 - **Palette and color themes (step 1 of the colour plan, no UI yet).** `content/theme.json` can set
@@ -49,6 +55,15 @@ say what a site must do before it bumps its pin.
   colour literals and its `theme.json` gets the palette that draws the same look. A guard test
   allows no hex, `rgb()` or `hsl()` in the client, the widgets or the default theme but the
   named shades, scrims, the error colour and text over a photo.
+- **Sub-roles: text styles and templates (step 4).** A color theme can set each text style's
+  colour (`colorThemes.<name>.typography.<style>`, `--color-type-<style>`); unset, Title,
+  Heading, Subheading and Statement follow Heading, and Paragraph, Label and Small follow Text
+  (not a faded colour any more). It can set a template's roles too
+  (`colorThemes.<name>.templates."<template id>"`, e.g. `"preset:card"` or `"t-ab12"`:
+  Background, Text, Heading, Link, Button, Button text, Line and its text styles), for its items
+  only (class `tpl-<id>`). A site template copies its parent's (`basedOn`) and its own win. A
+  Background a template sets paints its items (its style's None); its style's Surface is a
+  surface of it. `ewcms check` checks a template's text against its own Background.
 
 ### Editor
 
