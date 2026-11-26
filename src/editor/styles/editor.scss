@@ -221,14 +221,14 @@ kbd {
 // Unsaved changes: a 6px accent dot (mock A). A field's or picker's label: an inline dot first,
 // the label row's gap after it, the label white. A section card: the bar's first item, before
 // the title (the bar's 4px gap), on the title line; the title gives up the room, so the pen at
-// the row's end and the tools below don't move. Explorer rows and Motion
-// parts (has its own values): centered in their left padding, absolute.
+// the row's end and the tools below don't move. Explorer rows, Motion parts and Theme › Color's
+// roles (has its own values): centered in their left padding, absolute.
 .tf.is-changed > .tf__label::before,
 .tf.is-changed .sc__label::before,
 .tf.is-changed .photo__label::before,
 .collapsible.is-changed > .collapsible__bar::before,
 .pane__head.is-changed::before,
-:is(.xrow, .mlist__element).is-changed::before {
+:is(.xrow, .mlist__element, .crole).is-changed::before {
   @include changed-dot;
   content: '';
   order: -1;
@@ -252,6 +252,19 @@ kbd {
     position: absolute;
     top: calc(50% - var(--size-changed) / 2);
     left: calc((var(--space-3) - var(--size-changed)) / 2);
+  }
+}
+
+// a role (Theme › Color): on its 24px label row, the label white
+.crole.is-changed {
+  &::before {
+    position: absolute;
+    top: calc((24px - var(--size-changed)) / 2);
+    left: calc((var(--space-3) - var(--size-changed)) / 2);
+  }
+
+  > .tf__label {
+    color: var(--c-text);
   }
 }
 

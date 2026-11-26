@@ -172,24 +172,12 @@ test('the page head sets --accent only for an album colour, never --site-accent 
   assert.doesNotMatch(plain, /--site-accent/);
 });
 
-test('Theme › Color: Brand color edits theme.json color.brand, #rrggbb only, a swatch picks it', () => {
+test('Theme › Color: the palette replaces the Brand color field; color.brand still reads as slot 4 until a palette', () => {
   const panel = read('src/editor/svelte/ThemePanel.svelte');
-  assert.match(panel, /id: 'color', icon: 'droplet', name: 'Color'/);
-  assert.match(panel, /part === 'color'/);
-  assert.doesNotMatch(panel, /<Collapsible|key="theme:color"/);
-  assert.match(panel, /edit="\{THEME\}#\/color\/brand"/);
-  assert.match(panel, /label="Brand color"/);
-  // only a #rrggbb is stored (lowercase); empty clears it (the theme's --brand)
-  assert.match(panel, /if \(v && !isThemeColor\(v\)\) return;\s*set\('color\/brand', v \? v\.toLowerCase\(\) : undefined\);/);
-  // the swatch: the native picker, its value always #rrggbb
-  assert.match(panel, /<input\s+type="color"\s+value=\{pickerValue\}/);
-  assert.match(panel, /oninput=\{\(e\) => setBrand\(e\.currentTarget\.value\)\}/);
-  // unset: the placeholder is the theme's --brand, read from the preview
-  assert.match(panel, /getPropertyValue\('--brand'\)/);
-  assert.match(panel, /placeholder=\{themeBrand\}/);
-  // the reset goes back to the theme's
-  assert.match(panel, /run: \(\) => setBrand\(''\)/);
-  // set, typed or picked: the preview gets it with no reload (theme-vars.js via main.js)
+  assert.match(panel, /id: 'color', icon: 'droplet', name: 'Color', sub: 'Palette and color themes'/);
+  assert.match(panel, /\{#if part === 'color'\}\s*<ColorPart \{live\} \{bridge\} \/>/);
+  assert.doesNotMatch(panel, /color\/brand|label="Brand color"/);
+  // a site with color.brand and no palette: the preview gets it with no reload (theme-vars.js via main.js)
   const t = themeVarList({ color: { brand: '#CC2020' } });
   assert.deepEqual(t, [['--brand', '#cc2020'], ['--palette-4', '#cc2020']]); // until a palette: slot 4 (colors.js)
 });
@@ -230,16 +218,9 @@ test('a color picker dragged: one undo step, no page pass, the style written onl
   assert.equal(writes, 2);
 });
 
-test('Theme › Color: Color scheme edits theme.json color.scheme, in place, no reload', () => {
+test('color.scheme: no field any more (step 5), still put on the preview in place, no reload', () => {
   const panel = read('src/editor/svelte/ThemePanel.svelte');
-  assert.match(panel, /id: 'color', icon: 'droplet', name: 'Color'/);
-  assert.match(panel, /part === 'color'/);
-  assert.doesNotMatch(panel, /<Collapsible|key="theme:color"/);
-  assert.match(panel, /edit="\{THEME\}#\/color\/scheme"/);
-  assert.match(panel, /label="Color scheme"/);
-  assert.match(panel, /type="select"/);
-  assert.match(panel, /set\('color\/scheme', v \|\| undefined\)/);
-  assert.match(panel, /run: \(\) => setScheme\(''\)/);
+  assert.doesNotMatch(panel, /color\/scheme|label="Color scheme"/);
   // main.js: theme.json applies the look (variables and the color-scheme meta) and returns
   const main = read('src/editor/main.js');
   const on = main.slice(main.indexOf('store.on(({ files, source: src'));

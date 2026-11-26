@@ -1,10 +1,9 @@
 <!--
   Theme (ui.panel 'theme', an area: ../areas.js): the theme's values, content/theme.json
   (src/render/theme.js). Its head (Back to areas) and three cards (Color, Typography, Layout);
-  a click opens that part on its own screen (← back to Theme, ui.themePart). Color: the brand
-  color (theme.json color.brand, #rrggbb: --brand; a swatch at the hex field's start opens the
-  native color picker; empty: the theme's tokens.scss --brand, read from the preview and shown
-  greyed) and the color scheme (theme.json color.scheme: the color-scheme meta; empty: none).
+  a click opens that part on its own screen (← back to Theme, ui.themePart). Color: the palette,
+  the color themes and the site color theme (ColorPart.svelte; theme.json palette, colorThemes,
+  colorTheme: src/render/colors.js).
   Typography: the text styles' sizes and fonts (theme.json typography, px and family,
   src/render/layout/type.js; its Preview, full width at the top, shows every style: the type
   specimen, render/layout/type-specimen.js, until Close preview, Back to Theme, or another area
@@ -19,6 +18,7 @@
   import AreaCard from './AreaCard.svelte';
   import AreaHead from './AreaHead.svelte';
   import BackHead from './BackHead.svelte';
+  import ColorPart from './ColorPart.svelte';
   import { ui } from './ui.svelte.js';
   import { THEME } from '../../render/files.js';
   import { COLS } from '../../render/layout/grid.js';
@@ -33,7 +33,6 @@
   import { isTypeSpecimen } from '../../render/layout/type-specimen.js';
   import { LINE_STYLES } from '../../render/text.js';
   import { isObject } from '../../render/is.js';
-  import { brandOf, isScheme, isThemeColor, schemeOf, schemeValue } from '../../render/theme.js';
   import {
     CONTAINED,
     CONTAINED_MIN,
@@ -51,7 +50,7 @@
 
   // the part open: '' the card list, else Color, Typography or Layout (ui.themePart, kept)
   const THEME_PARTS = [
-    { id: 'color', icon: 'droplet', name: 'Color', sub: 'Brand color and color scheme' },
+    { id: 'color', icon: 'droplet', name: 'Color', sub: 'Palette and color themes' },
     { id: 'typography', icon: 'font', name: 'Typography', sub: 'Fonts and text styles' },
     { id: 'layout', icon: 'table-columns', name: 'Layout', sub: 'Contained width and section space' },
   ];
@@ -72,50 +71,13 @@
     live.store.set(THEME, `/${key}`, value, { key: `text:${THEME}#/${key}`, source: 'panel' });
   }
 
-  // Color: the brand color. brand: theme.json's (lowercase), '' when unset; themeBrand: the
-  // theme's own (the preview's --brand where theme.json sets none), the placeholder
-  const brand = $derived(brandOf(theme()) || '');
-  let themeBrand = $state('');
-  $effect(() => {
-    ui.previewVersion;
-    if (brand) return;
-    const root = bridge.doc?.documentElement;
-    if (!root) return;
-    const v = root.ownerDocument.defaultView.getComputedStyle(root).getPropertyValue('--brand');
-    themeBrand = v.trim().toLowerCase();
-  });
-  // what the swatch shows: theme.json's, else the theme's; the native picker needs #rrggbb
-  const swatch = $derived(brand || themeBrand);
-  const pickerValue = $derived(isThemeColor(swatch) ? swatch : '#000000');
-  /** A brand color typed or picked: stored when it is #rrggbb, cleared when empty. */
-  function setBrand(value) {
-    const v = String(value ?? '').trim();
-    if (v && !isThemeColor(v)) return;
-    set('color/brand', v ? v.toLowerCase() : undefined);
-  }
-
-  // Color scheme: the color-scheme meta. Empty writes none. The usual values only.
-  const SCHEME_OPTIONS = [
-    ['dark', 'Dark'],
-    ['light', 'Light'],
-    ['light dark', 'Light dark'],
-    ['dark light', 'Dark light'],
-    ['normal', 'Normal'],
-  ];
-  const scheme = $derived(schemeOf(theme()) || '');
-  function setScheme(value) {
-    const v = schemeValue(value);
-    if (v && !isScheme(v)) return;
-    set('color/scheme', v || undefined);
-  }
-
   // Typography: [key, label] of a style's fields (theme.json typography, by style and key)
   const TYPE_FIELDS = [
     ['min', 'Min (px)'],
     ['max', 'Max (px)'],
     ['line', 'Line'],
   ];
-  // (as a string: an edit elsewhere in theme.json, a brand color dragged, doesn't wake the
+  // (as a string: an edit elsewhere in theme.json, a color dragged, doesn't wake the
   // placeholders below)
   const ownKey = $derived(JSON.stringify(typeOf(theme())));
   // the theme's sizes (the placeholders): the preview's own (tokens.scss), read where
@@ -263,60 +225,7 @@
     </div>
 
     {#if part === 'color'}
-      <div class="part">
-        <p class="hint">
-          The brand color: the header's glass, menus, buttons and links take it. Empty: the theme's
-          (shown greyed).
-        </p>
-        <!-- leaving the hex field: it shows what is stored (a half-typed or picked value) -->
-        <div
-          class={['brand', !brand && 'is-unset']}
-          style:--swatch={swatch || 'transparent'}
-          onfocusout={(e) => {
-            if (e.target.classList?.contains('tf__input')) e.target.value = brand;
-          }}
-        >
-          <Field
-            edit="{THEME}#/color/brand"
-            label="Brand color"
-            placeholder={themeBrand}
-            value={brand}
-            help="A hex color, #rrggbb. The swatch opens the color picker."
-            reset={{
-              on: !!brand,
-              label: "Use the theme's brand color",
-              title: themeBrand ? `Use the theme's (${themeBrand})` : "Use the theme's",
-              run: () => setBrand(''),
-            }}
-            changed={live.changed(THEME, '/color/brand')}
-            onvalue={setBrand}
-          />
-          <label class="brand__swatch" title="Pick a color">
-            <input
-              type="color"
-              value={pickerValue}
-              aria-label="Brand color: pick"
-              oninput={(e) => setBrand(e.currentTarget.value)}
-            />
-          </label>
-        </div>
-        <Field
-          edit="{THEME}#/color/scheme"
-          label="Color scheme"
-          type="select"
-          options={SCHEME_OPTIONS}
-          value={scheme}
-          help="Tells the browser whether the page is light or dark (the color-scheme meta). Empty: none."
-          reset={{
-            on: !!scheme,
-            label: 'Use no color-scheme meta',
-            title: 'Use no color-scheme meta',
-            run: () => setScheme(''),
-          }}
-          changed={live.changed(THEME, '/color/scheme')}
-          onvalue={setScheme}
-        />
-      </div>
+      <ColorPart {live} {bridge} />
     {:else if part === 'typography'}
       <div class="part">
         <p class="hint">
@@ -495,41 +404,6 @@
 
   .preview :global(.btn) {
     width: 100%;
-  }
-
-  // Color: the swatch sits in the hex field, at its start (the native picker under it)
-  .brand {
-    position: relative;
-
-    :global(.tf__input) {
-      padding-left: calc(var(--space-2) + 20px + var(--space-2));
-      font-variant-numeric: tabular-nums;
-    }
-  }
-
-  .brand__swatch {
-    position: absolute;
-    // under the label row (24px and its 8px margin), centred in the input's height
-    top: calc(24px + var(--space-2) + (var(--size-control) - 20px) / 2);
-    left: calc((var(--size-control) - 20px) / 2);
-    width: 20px;
-    height: 20px;
-    border-radius: var(--radius-sm);
-    background: var(--swatch);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--white) 24%, transparent);
-    cursor: pointer;
-    overflow: hidden;
-
-    input {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-    }
-  }
-
-  .brand.is-unset .brand__swatch {
-    opacity: 0.6;
   }
 
   // a style's name with its Min, Max and Line; more space between styles than under the name
