@@ -1,9 +1,10 @@
 <!--
   The editor's shared floating popover (the Aspect ratios, a Position's grid): portalled to the
   page's top level (document.body), position fixed, so a popup's overflow never clips it.
-  Centred on its trigger (anchor) 4px below it, kept 8px inside the popup (the anchor's
-  [role="dialog"]; the window without one) left and right; it may hang below the popup. Above
-  the trigger only when it would leave the window. Closes (onclose) on a click outside it and its
+  Centred on its trigger (anchor) 4px below it, kept 8px inside the editor panel (.ed-panel) when
+  its trigger is in it, on every side, and inside the popup (the anchor's [role="dialog"]) left
+  and right (it may hang below the popup); always inside the window. Above the trigger when it
+  would leave the bottom; neither fits: as far up as it fits from below. Closes (onclose) on a click outside it and its
   trigger, and on Esc; follows its trigger on scroll and resize.
   width: px (190 by default) or 'anchor' (a select's: its trigger's width, at least
   min: 190 by default, more when its content needs it).
@@ -35,16 +36,27 @@
     if (!anchor || !el) return;
     const a = anchor.getBoundingClientRect();
     const w = width === 'anchor' ? Math.max(a.width, min) : width;
-    const box = anchor.closest('[role="dialog"]')?.getBoundingClientRect() || {
-      left: 0,
-      right: innerWidth,
-    };
+    // the bounds: the window, the panel (all sides), the popup it is in (left and right)
+    const box = { left: 0, right: innerWidth, top: 0, bottom: innerHeight };
+    const panel = anchor.closest('.ed-panel')?.getBoundingClientRect();
+    const popup = anchor.closest('[role="dialog"]')?.getBoundingClientRect();
+    for (const r of [panel, popup].filter(Boolean)) {
+      box.left = Math.max(box.left, r.left);
+      box.right = Math.min(box.right, r.right);
+    }
+    if (panel) {
+      box.top = Math.max(box.top, panel.top);
+      box.bottom = Math.min(box.bottom, panel.bottom);
+    }
     let left = a.left + a.width / 2 - w / 2;
     left = Math.min(left, box.right - EDGE - w);
     left = Math.max(left, box.left + EDGE);
     let top = a.bottom + GAP;
     const h = el.offsetHeight;
-    if (top + h > innerHeight - EDGE && a.top - GAP - h >= EDGE) top = a.top - GAP - h;
+    if (top + h > box.bottom - EDGE) {
+      if (a.top - GAP - h >= box.top + EDGE) top = a.top - GAP - h;
+      else top = Math.max(box.top + EDGE, box.bottom - EDGE - h);
+    }
     pos = { left: Math.round(left), top: Math.round(top), w };
   }
 

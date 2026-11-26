@@ -17,6 +17,10 @@ test('popover: portalled, fixed, centred and clamped, its look', () => {
   assert.match(pov, /const GAP = 4;/);
   assert.match(pov, /const EDGE = 8;/);
   assert.match(pov, /a\.left \+ a\.width \/ 2 - w \/ 2/);
+  // inside the editor panel (all sides, 8px in) when its trigger is in it, not only the window
+  assert.match(pov, /anchor\.closest\('\.ed-panel'\)\?\.getBoundingClientRect\(\)/);
+  assert.match(pov, /left = Math\.min\(left, box\.right - EDGE - w\);/);
+  assert.match(pov, /if \(top \+ h > box\.bottom - EDGE\)/);
   assert.match(pov, /width = 190/);
   assert.match(pov, /width === 'anchor'/);
   assert.match(pov, /@include surface\(var\(--c-surface\), \$quiet: 38%\)/);
