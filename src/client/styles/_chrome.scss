@@ -131,8 +131,8 @@
     // the current page's item: its fill, text colour and shape are tokens (a pill: 999px)
     &.is-active {
       border-radius: var(--nav-active-radius, var(--nav-radius, 0));
-      background: var(--nav-active-bg, var(--color-text));
-      color: var(--nav-active-fg, var(--color-background));
+      background: var(--color-text);
+      color: var(--color-background);
     }
   }
 
@@ -356,7 +356,7 @@
     line-height: 0.95;
 
     &.is-active {
-      color: var(--menu-active-fg, var(--color-accent));
+      color: var(--color-accent);
     }
   }
 

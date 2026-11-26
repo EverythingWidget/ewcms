@@ -47,11 +47,8 @@ const optionalTokens = () =>
     [...optional.matchAll(/^\s*\/\/ (--[\w-]+): (.+);$/gm)].map((m) => [m[1], m[2].trim()]),
   );
 
-// a default of their own, said so in the default site's comment: the Form's Send (Text, as before)
-const own = {
-  '--btn-fg': ['var(--color-text)'],
-  '--btn-hover-fg': ['var(--btn-fg, var(--color-text))'],
-};
+// a default of their own, said so in the default site's comment
+const own = {};
 
 test("the default site's optional tokens: each read by the engine with that default (today's look)", () => {
   const listed = optionalTokens();
@@ -131,50 +128,43 @@ test('F89: the body text and the nav read their size, weight, tracking (and case
   }
 });
 
-test('F88: the button reads its fill, blur, colours, type, padding and radius', () => {
+test('F88: the button reads its blur, type, padding and radius; its colours are the color theme\'s', () => {
   const btn = rule('src/client/styles/_glass.scss', '\n.btn {');
-  for (const t of [
-    '--btn-pad-y',
-    '--btn-pad-x',
-    '--btn-radius',
-    '--btn-fg',
-    '--btn-size',
-    '--btn-weight',
-  ])
+  for (const t of ['--btn-pad-y', '--btn-pad-x', '--btn-radius', '--btn-size', '--btn-weight'])
     assert.ok(btn.includes(`var(${t},`), t);
   const glass = fs.readFileSync(path.join(root, 'src/client/styles/_glass.scss'), 'utf8');
-  for (const t of [
-    '--btn-bg',
-    '--btn-hover-bg',
-    '--btn-backdrop',
-    '--btn-hover-fg',
-    '--btn-tracking',
-    '--btn-case',
-  ])
+  for (const t of ['--btn-backdrop', '--btn-tracking', '--btn-case'])
     assert.ok(glass.includes(`var(${t},`), t);
 });
 
-test("F96: the current page's nav item reads its shape and colours", () => {
+test("F96: the current page's nav item reads its shape; its colours are the color theme's", () => {
   const active = rule('src/client/styles/_chrome.scss', '&.is-active {');
-  for (const t of [
-    '--nav-active-radius',
-    '--nav-active-bg, var(--color-text)',
-    '--nav-active-fg, var(--color-background)',
-  ])
-    assert.ok(active.includes(`var(${t}`), t);
+  assert.ok(active.includes('var(--nav-active-radius'));
+  assert.ok(active.includes('background: var(--color-text)'));
+  assert.ok(active.includes('color: var(--color-background)'));
   const chrome = fs.readFileSync(path.join(root, 'src/client/styles/_chrome.scss'), 'utf8');
-  assert.ok(chrome.includes('color: var(--menu-active-fg, var(--color-accent))'));
+  assert.ok(chrome.includes('color: var(--color-accent)'));
 });
 
-test('F93: selected text and the skip link read their colours', () => {
+test('F93: selected text and the skip link: the color theme\'s colours', () => {
   const base = fs.readFileSync(path.join(root, 'src/client/styles/_base.scss'), 'utf8');
-  for (const t of [
-    '--selection-bg, var(--smart-selection)',
-    '--selection-fg, var(--color-text)',
-    '--skip-link-bg, var(--color-text)',
-    '--skip-link-fg, var(--color-background)',
-  ])
-    assert.ok(base.includes(`var(${t})`), t);
+  for (const t of ['background: var(--smart-selection)', 'background: var(--color-text)', 'color: var(--color-background)'])
+    assert.ok(base.includes(t), t);
+});
+
+test('M2: no old token can override a role: every colour has one source', () => {
+  const OLD = /--(btn-(bg|fg|hover-bg|hover-fg)|nav-active-(bg|fg)|menu-active-fg|selection-(bg|fg)|skip-link-(bg|fg)|tag-border-color)\b/;
+  const files = [];
+  const walk = (dir) => {
+    for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, f.name);
+      if (f.isDirectory()) walk(p);
+      else if (/\.(js|mjs|scss|svelte)$/.test(f.name)) files.push(p);
+    }
+  };
+  walk(path.join(root, 'src'));
+  walk(path.join(root, 'default-site'));
+  for (const f of files) assert.doesNotMatch(fs.readFileSync(f, 'utf8'), OLD, path.relative(root, f));
 });
 
 test('F85: the default site has the type scale, the engine\'s defaults; check asks for it, theme.json "typography" counts', () => {

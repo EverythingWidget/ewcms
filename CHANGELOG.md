@@ -24,6 +24,15 @@ say what a site must do before it bumps its pin.
   `theme/tokens.scss` (keep the shades, `--error` and `--hero-*`). The text over a photo
   (`--hero-fg`, `--hero-muted`), the shades (`--shade-*`) and `--error` stay tokens.
 
+- **Breaking: the colour tokens that could override a role are gone:** `--btn-bg`, `--btn-fg`,
+  `--btn-hover-bg`, `--btn-hover-fg`, `--nav-active-bg`, `--nav-active-fg`, `--menu-active-fg`,
+  `--selection-bg`, `--selection-fg`, `--skip-link-bg`, `--skip-link-fg` and
+  `--tag-border-color`. Each colour has one source, the color theme (the button: glass tinted by
+  Button; the current nav item: Text and Background; the phone menu's: Accent; selection: the
+  smart Selection; the skip link: Text and Background; a tag's border: the smart Disabled). The
+  button's shape, type and blur tokens (`--btn-radius`, `--btn-backdrop`, …) stay. In the commit
+  that bumps the pin: drop them from `theme/tokens.scss`.
+
 - **Breaking: the text styles' colour tokens `--type-<style>-color` are gone.** A text style's
   colour is its sub-role in `content/theme.json` `colorThemes.<name>.typography.<style>`.
   Paragraph, Label and Small now follow Text instead of the faded colour, and a List's facts

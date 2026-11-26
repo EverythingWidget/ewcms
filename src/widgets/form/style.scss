@@ -79,12 +79,9 @@
   }
   &__submit {
     border: 0;
-    // the button's text colour (.btn: --btn-fg, --btn-hover-fg), Text unset
-    color: var(--btn-fg, var(--color-text));
+    // the button's text: Text (the color theme's)
+    color: var(--color-text);
     font-family: var(--btn-font, inherit);
-    &:hover {
-      color: var(--btn-hover-fg, var(--btn-fg, var(--color-text)));
-    }
     cursor: pointer;
     &:disabled {
       cursor: progress;

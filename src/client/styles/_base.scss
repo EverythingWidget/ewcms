@@ -86,8 +86,8 @@ sup {
 }
 // selected text and the skip link's colours: tokens (a theme's tokens.scss), these defaults
 ::selection {
-  background: var(--selection-bg, var(--smart-selection));
-  color: var(--selection-fg, var(--color-text));
+  background: var(--smart-selection);
+  color: var(--color-text);
 }
 
 :focus-visible {
@@ -112,8 +112,8 @@ html.anim-pending [data-motion] > * {
   top: -60px;
   z-index: $z-skip;
   padding: 10px 14px;
-  background: var(--skip-link-bg, var(--color-text));
-  color: var(--skip-link-fg, var(--color-background));
+  background: var(--color-text);
+  color: var(--color-background);
   border-radius: 999px;
   &:focus {
     top: 12px;
@@ -142,7 +142,7 @@ html.anim-pending [data-motion] > * {
   display: inline-flex;
   align-items: center;
   padding: 3px 8px;
-  border: 1px var(--tag-border-style, dashed) var(--tag-border-color, var(--smart-disabled));
+  border: 1px var(--tag-border-style, dashed) var(--smart-disabled);
   border-radius: 999px;
   font-size: 10px;
   letter-spacing: 0.08em;

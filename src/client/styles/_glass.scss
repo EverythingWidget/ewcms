@@ -47,18 +47,16 @@
   }
 }
 
-// A button (the Button widget, the Form's Send: .btn.glass). Its look is tokens (--btn-*, a theme's
-// tokens.scss), the defaults today's glass pill: the fill and its blur on the glass ::before
-// (--btn-bg, --btn-backdrop: none for a solid fill), the text colour inherited (the Form's: Text).
-// A solid button in the theme's colours: --btn-bg: var(--color-button); --btn-fg:
-// var(--color-button-text); --btn-hover-bg: var(--smart-button-hover); --btn-backdrop: none.
+// A button (the Button widget, the Form's Send: .btn.glass): today's glass pill. Its colours are
+// the color theme's (the glass fill, tinted by Button; the text inherited, the Form's: Text); its
+// shape, type and blur are tokens (--btn-*, a theme's tokens.scss; --btn-backdrop: none, no blur).
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   padding: var(--btn-pad-y, 12px) var(--btn-pad-x, 20px);
   border-radius: var(--btn-radius, 999px);
-  color: var(--btn-fg, inherit);
+  color: inherit;
   font-family: var(--btn-font, inherit);
   font-size: var(--btn-size, 12px);
   font-weight: var(--btn-weight, inherit);
@@ -67,7 +65,7 @@
   white-space: nowrap;
   transition: transform 0.5s var(--ease-out);
   &::before {
-    background: var(--btn-bg, var(--glass-fill));
+    background: var(--glass-fill);
     -webkit-backdrop-filter: var(--btn-backdrop, blur(22px) saturate(180%));
     backdrop-filter: var(--btn-backdrop, blur(22px) saturate(180%));
   }
@@ -75,9 +73,8 @@
     transition: transform 0.5s var(--ease-out);
   }
   &:hover {
-    color: var(--btn-hover-fg, var(--btn-fg, inherit));
     &::before {
-      background: var(--btn-hover-bg, var(--glass-fill-hover));
+      background: var(--glass-fill-hover);
     }
     span:last-child {
       transform: translateX(3px);

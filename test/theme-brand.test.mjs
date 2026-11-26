@@ -26,7 +26,7 @@ test('colours are the palette (content/theme.json), not tokens; theme.js tweens 
   const theme = read('src/client/theme.js').replace(/\/\*\*[\s\S]*?\*\//, '');
   assert.doesNotMatch(theme, /--brand/);
   const chrome = read('src/client/styles/_chrome.scss');
-  assert.match(chrome, /&\.is-active \{\s*color: var\(--menu-active-fg, var\(--color-accent\)\);/); // the phone menu's current page (F96: a token, Accent its default)
+  assert.match(chrome, /&\.is-active \{\s*color: var\(--color-accent\);/); // the phone menu's current page: Accent
 });
 
 test('glass follows the color theme (Button tint) on each glass element; the album --accent tints only the glow (F91)', () => {
@@ -41,7 +41,7 @@ test('glass follows the color theme (Button tint) on each glass element; the alb
   );
   assert.doesNotMatch(glass, /:root \{/); // not once on :root: a section's theme re-tints its glass
   assert.doesNotMatch(glass, /--accent/);
-  assert.match(glass, /\.btn \{[\s\S]*?background: var\(--btn-bg, var\(--glass-fill\)\);/); // .btn, Send
+  assert.match(glass, /\.btn \{[\s\S]*?background: var\(--glass-fill\);/); // .btn, Send
   const base = read('src/client/styles/_base.scss');
   assert.match(base, /color-mix\(in oklab, var\(--accent\) 26%, transparent\)/); // the glow keeps the album tint
   // header pill, dropdowns, phone menu, carousel arrows, Button and Send are all .glass

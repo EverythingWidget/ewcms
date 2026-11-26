@@ -129,25 +129,14 @@
   // --nav-weight: inherit;
   // --nav-tracking: 0.06em;
   // --nav-case: uppercase;
-  // the nav items' corners (their hover fill's shape) and the current page's item: its shape,
-  // fill and text colour; the phone menu's current page's colour
+  // the nav items' corners (their hover fill's shape) and the current page's item's (its colours:
+  // the color theme's Text and Background; the phone menu's current page: Accent)
   // --nav-radius: 0;
   // --nav-active-radius: var(--nav-radius, 0);
-  // --nav-active-bg: var(--color-text);
-  // --nav-active-fg: var(--color-background);
-  // --menu-active-fg: var(--color-accent);
 
   // the button (the Button widget, the Form's Send; src/client/styles/_glass.scss .btn): today a
-  // glass pill. Its fill and hover fill (on the glass layer), their blur (none: a solid fill),
-  // its text colour (inherit: the text around it; the Form's: Text) and hover colour, its type and
-  // padding. A solid button in the color theme's Button and Button text: --btn-bg:
-  // var(--color-button); --btn-hover-bg: var(--smart-button-hover); --btn-backdrop: none;
-  // --btn-fg: var(--color-button-text);
-  // --btn-bg: var(--glass-fill);
-  // --btn-hover-bg: var(--glass-fill-hover);
+  // glass pill in the color theme's colours. Its blur (none: no blur), its type and padding
   // --btn-backdrop: blur(22px) saturate(180%);
-  // --btn-fg: inherit;
-  // --btn-hover-fg: var(--btn-fg, inherit);
   // --btn-font: inherit;
   // --btn-size: 12px;
   // --btn-weight: inherit;
@@ -157,15 +146,8 @@
   // --btn-pad-x: 20px;
   // --btn-radius: 999px;
 
-  // selected text, and the skip link (a keyboard's first Tab: "Skip to content")
-  // --selection-bg: var(--smart-selection);
-  // --selection-fg: var(--color-text);
-  // --skip-link-bg: var(--color-text);
-  // --skip-link-fg: var(--color-background);
-
-  // a .tag's border (src/client/styles/_base.scss)
+  // a .tag's border style (src/client/styles/_base.scss; its colour: the smart Disabled)
   // --tag-border-style: dashed;
-  // --tag-border-color: var(--smart-disabled);
   // --type-small-weight: inherit;
   // --type-small-tracking: inherit;
 }
