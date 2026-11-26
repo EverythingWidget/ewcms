@@ -126,6 +126,8 @@ export function createBridge({
   const frameFns = new Set(); // called after each of the overlay's frames (onFrame)
   let applied = new WeakMap(); // element -> value it currently shows
   let restore = null; // after a reload(): puts scroll and selection back once mounted
+  // the page's animations stopped for arrange clicks (api.freeze), per connected page
+  let still = false;
   // editing in place (a Text widget's body; preview-edit.js)
   const edit = createEdit({
     store,
@@ -230,8 +232,12 @@ export function createBridge({
       doc.documentElement.classList.toggle('__ed-animate', clicks() === 'animate');
       // Freeze first: reverting split-text animations re-creates their inner elements,
       // which would drop contenteditable from editable text inside them (page titles, hero name).
-      if (api) {
-        if (clicks() === 'arrange') api.freeze();
+      // Only into or out of arrange: freeze and unfreeze revert and play the page's animations
+      // again, which looked like a reload on every area switch (visitor clicks before and after)
+      const arrange = clicks() === 'arrange';
+      if (api && arrange !== still) {
+        still = arrange;
+        if (arrange) api.freeze();
         else api.unfreeze();
       }
       if (clicks() !== 'arrange') edit.endEdits();
@@ -516,7 +522,8 @@ export function createBridge({
       edit.connect(doc, win);
       boxes = null;
       api.setAnimations(store.current[ANIMATIONS]);
-      if (clicks() === 'arrange') api.freeze();
+      still = clicks() === 'arrange';
+      if (still) api.freeze();
       api.hooks.beforeMount.add(() => bridge.applyTexts({ force: true, plain: true }));
       api.hooks.afterMount.add(() => {
         doc.documentElement.classList.toggle('__ed-arrange', clicks() === 'arrange');
