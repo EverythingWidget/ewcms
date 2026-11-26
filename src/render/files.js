@@ -42,6 +42,10 @@ export const setContentDir = (dir) => {
 export const TEMPLATES = 'templates';
 export const TEMPLATE_ID = /^t-[a-z0-9]{4,12}$/;
 export const isTemplateId = (id) => typeof id === 'string' && TEMPLATE_ID.test(id);
+/** Presets a template can come from (src/widgets/list/presets.js PRESETS ids). */
+export const PRESET_FROM = Object.freeze(['preset:card', 'preset:plain', 'preset:panel', 'preset:row', 'preset:photo']);
+/** A List's or a template's template: a preset (PRESET_FROM) or a site template id ("t-…"). */
+export const isTemplateRef = (id) => PRESET_FROM.includes(id) || isTemplateId(id);
 export const templateFile = (id) => `${TEMPLATES}/${id}.json`;
 const TEMPLATE_FILE = /^templates\/(t-[a-z0-9]{4,12})\.json$/;
 /** "templates/t-ab12.json" -> "t-ab12" (null for anything else). */

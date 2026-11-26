@@ -120,3 +120,14 @@ test("contrast: a template's text against its own Background", () => {
     bad.join('\n'),
   );
 });
+
+test('one source: the text styles are layout/type.js\'s, a template id a preset or "t-…" (files.js)', async () => {
+  const { checkColors, TYPE_PARENT } = await import('../src/render/colors.js');
+  const { TEXT_STYLES } = await import('../src/render/layout/type.js');
+  const { PRESET_FROM } = await import('../src/render/files.js');
+  assert.deepEqual(Object.keys(TYPE_PARENT), Object.keys(TEXT_STYLES));
+  const tpl = (id) => checkColors({ colorThemes: { dark: { templates: { [id]: { text: 2 } } } } });
+  for (const id of [...PRESET_FROM, 't-ab12']) assert.deepEqual(tpl(id), [], id);
+  for (const id of ['preset:nope', 't-X', 'card'])
+    assert.ok(tpl(id).some((p) => /is not a template id/.test(p)), id);
+});

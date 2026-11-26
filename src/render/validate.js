@@ -31,7 +31,8 @@ import {
   schemaIdOf,
   sourceIdOf,
   contentPath,
-  isTemplateId,
+  isTemplateRef,
+  PRESET_FROM,
   templateIdOf,
 } from './files.js';
 import { CORE_STRINGS } from './strings.js';
@@ -693,8 +694,6 @@ export function checkContent(file, data) {
   return [];
 }
 
-/** Presets a template can come from (src/widgets/list/presets.js PRESETS ids). */
-const PRESET_FROM = ['preset:card', 'preset:plain', 'preset:panel', 'preset:row', 'preset:photo'];
 const ROLE = /^[a-z][a-z0-9-]*$/;
 
 /**
@@ -714,7 +713,7 @@ export function checkItemTemplate(d) {
   if (d.kind !== 'template') out.push('"kind" must be "template"');
   if (typeof d.name !== 'string' || !d.name.trim())
     out.push('"name" must be a text (its name in the List\'s Template picker)');
-  if (d.basedOn !== undefined && !PRESET_FROM.includes(d.basedOn) && !isTemplateId(d.basedOn))
+  if (d.basedOn !== undefined && !isTemplateRef(d.basedOn))
     out.push(`"basedOn" must be a preset (${PRESET_FROM.join(', ')}) or a template id ("t-…")`);
   if (d.clickable !== undefined && typeof d.clickable !== 'boolean')
     out.push('"clickable" must be true or false');
@@ -908,7 +907,7 @@ function checkTemplateWidget(w, at) {
     // an inner List (two levels: widgets/list/nested.js; loops and depth: bindingProblems)
     out.push(...innerSourceProblems(w.source, at));
     const tp = w.config?.template;
-    if (tp !== undefined && !PRESET_FROM.includes(tp) && !isTemplateId(tp))
+    if (tp !== undefined && !isTemplateRef(tp))
       out.push(`${at}.config.template must be a preset or a template id ("t-…")`);
     const allowed = [
       'template',

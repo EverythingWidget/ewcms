@@ -32,6 +32,8 @@
  * edit swaps 5 values and everything follows.
  */
 import { isObject } from './is.js';
+import { isTemplateRef } from './files.js';
+import { TEXT_STYLES } from './layout/text-styles.js';
 
 export const PALETTE_SIZE = 5;
 
@@ -81,16 +83,11 @@ const roleOf = (key) => ROLES.find((r) => r.key === key);
 /** The roles a template may set (besides its typography). */
 export const TEMPLATE_ROLES = Object.freeze(ROLES.filter((r) => r.template).map((r) => r.key));
 
-/** Each text style's parent role: a sub-role left out follows it. */
-export const TYPE_PARENT = Object.freeze({
-  title: 'heading',
-  heading: 'heading',
-  subheading: 'heading',
-  statement: 'heading',
-  paragraph: 'text',
-  label: 'text',
-  small: 'text',
-});
+/** Each text style's parent role (the styles: layout/type.js TEXT_STYLES): a sub-role left out follows it. */
+const HEADING_STYLES = ['title', 'heading', 'subheading', 'statement'];
+export const TYPE_PARENT = Object.freeze(
+  Object.fromEntries(Object.keys(TEXT_STYLES).map((s) => [s, HEADING_STYLES.includes(s) ? 'heading' : 'text'])),
+);
 export const TYPE_STYLES = Object.freeze(Object.keys(TYPE_PARENT));
 
 /** A text style's sub-role variable (--color-type-<style>; the role Heading is --color-heading). */
@@ -453,7 +450,6 @@ function checkTypography(where, t) {
   );
 }
 
-const isTemplateId = (id) => /^preset:[a-z]+$/.test(id) || /^t-[\w-]+$/.test(id);
 
 function checkRoles(where, t, keys, extra) {
   if (!isObject(t)) return [`"${where}" must be an object of roles`];
@@ -462,7 +458,7 @@ function checkRoles(where, t, keys, extra) {
     if (k === 'templates' && extra.includes('templates')) {
       if (!isObject(v)) return [`"${where}.templates" must be an object { "<template id>": { … } }`];
       return Object.entries(v).flatMap(([id, s]) =>
-        isTemplateId(id)
+        isTemplateRef(id)
           ? checkRoles(`${where}.templates.${id}`, s, TEMPLATE_ROLES, ['typography'])
           : [`"${where}.templates.${id}" is not a template id ("preset:card", "t-…")`],
       );

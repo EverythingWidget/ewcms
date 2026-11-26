@@ -112,7 +112,7 @@ test('check: palette, color themes, roles, slots; "none" only on fills', () => {
     '"colorThemes.dark.link" must be a palette slot 1-5 or a color "#rrggbb", not 6',
     '"colorThemes.dark.glow" is not a role (background, text, heading, link, accent, button, buttonText, line, header, headerText, curtain, curtainText, typography, templates)',
     `"colorThemes.dark.typography.label" can't be "none": only a fill can (Background, Button, Line, Header)`,
-    '"colorThemes.dark.typography.note" is not a text style (title, heading, subheading, statement, paragraph, label, small)',
+    '"colorThemes.dark.typography.note" is not a text style (title, heading, paragraph, label, subheading, statement, small)',
     '"colorThemes.blue" is not a color theme (lightest, light, accent, dark, darkest)',
   ]);
   // through theme.json's check (validate.js)
