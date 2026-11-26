@@ -4,12 +4,12 @@
     Palette        a card of 5 slots, each the hex field with its swatch (the native picker);
                    reset: back to the engine's (or color.brand's slot 4)
     Color themes   a card each (Lightest … Darkest), closed, its bar a fixed-size preview chip; open:
-                   its 12 roles (labels: ROLES), each a row of 5 palette dots, None on fills and a
+                   its 11 roles (labels: ROLES), each a row of 5 palette dots, None on fills and a
                    custom colour (the shared 190px popover: the hex field). Button: Glass / Color /
                    None (.seg); the dots show only with Color (kept in the row: nothing moves).
-                   Heading's and Text's text styles, and a template's sub-roles (a template picked
-                   under Templates), fold under them, greyed while they follow their parent
-                   ("follows Heading"). A role that isn't the engine's default, or a sub-role set:
+                   The 7 text styles, a row each right after Text (TEXT_STYLE_ROWS: no group), in
+                   a theme and in a template's sub-roles (a template picked under Templates), greyed
+                   while they follow ("follows Text"). A role that isn't the engine's default, or a sub-role set:
                    the accent dot in its row's left padding (as Motion's "has its own values", no
                    shift); a theme with any: the dot on its card. Its smart colours, read only, at
                    the bottom (worked out by the preview, the rule on hover)
@@ -51,7 +51,7 @@
     siteColorThemeOf,
     siteThemeEdit,
     swatchOf,
-    textStylesUnder,
+    TEXT_STYLE_ROWS,
     themeLabel,
   } from '../lib/color-themes.js';
 
@@ -80,7 +80,6 @@
     ['color', 'Color'],
     ['none', 'None'],
   ];
-  const HEADING_TEXT = { heading: textStylesUnder('heading'), text: textStylesUnder('text') };
 
   // the custom colour popover: the row it is open for ({ spec, anchor })
   let custom = $state(null);
@@ -92,7 +91,7 @@
     custom = custom?.anchor === anchor ? null : { spec, anchor };
   }
 
-  // ---- folds (text styles under Heading and Text, Templates): remembered in ui.sections
+  // ---- the Templates fold: remembered in ui.sections
   const foldKey = (name, what) => `theme-color:${name}:${what}`;
   const isOpen = (name, what) => !!ui.sections[foldKey(name, what)];
   const toggle = (name, what) => (ui.sections[foldKey(name, what)] = !isOpen(name, what));
@@ -247,13 +246,13 @@
   </div>
 {/snippet}
 
-<!-- a color theme's preview: its Background, "Aa" in Heading, a Text line and an Accent dot -->
+<!-- a color theme's preview: its Background, "Aa" in Title, a Text line and an Accent dot -->
 {#snippet chip(name)}
   {@const p = previewOf(theme(), name)}
   <span
     class={['cchip', !p.background && 'is-none']}
     style:--bg={p.background || 'transparent'}
-    style:--fg={p.heading || 'currentColor'}
+    style:--fg={p.title || 'currentColor'}
     style:--tx={p.text || 'currentColor'}
     style:--ac={p.accent || 'currentColor'}
     aria-hidden="true"
@@ -318,13 +317,10 @@
       <div class="croles" data-color-theme={name}>
         {#each ROLES as r (r.key)}
           {@render roleRowView({ theme: name, key: r.key })}
-          {#if HEADING_TEXT[r.key]}
-            {#snippet styles()}
-              {#each HEADING_TEXT[r.key] as textStyle (textStyle)}
-                {@render roleRowView({ theme: name, textStyle })}
-              {/each}
-            {/snippet}
-            {@render fold(name, r.key, `Text styles (${HEADING_TEXT[r.key].length})`, styles)}
+          {#if r.key === 'text'}
+            {#each TEXT_STYLE_ROWS as textStyle (textStyle)}
+              {@render roleRowView({ theme: name, textStyle })}
+            {/each}
           {/if}
         {/each}
         {#snippet templates()}
@@ -339,8 +335,8 @@
           />
           {#each TEMPLATE_ROLES as key (key)}
             {@render roleRowView({ theme: name, key, template: id })}
-            {#if HEADING_TEXT[key]}
-              {#each HEADING_TEXT[key] as textStyle (textStyle)}
+            {#if key === 'text'}
+              {#each TEXT_STYLE_ROWS as textStyle (textStyle)}
                 {@render roleRowView({ theme: name, textStyle, template: id })}
               {/each}
             {/if}
@@ -635,7 +631,7 @@
     box-shadow: inset 0 0 0 1px var(--c-line);
   }
 
-  // a fold under a role (its text styles) or the theme's Templates: the curtain's Advanced
+  // the theme's Templates fold: the curtain's Advanced
   .cfold__toggle {
     display: block;
     width: 100%;

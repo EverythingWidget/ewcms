@@ -134,12 +134,13 @@ say what a site must do before it bumps its pin.
 
 - **Theme › Color is the palette and the color themes (step 5).** The card ("Palette and color
   themes") holds the **Palette** (5 slots, each a hex field with its swatch picker), a card per
-  **color theme** (Lightest … Darkest, a fixed-size preview chip on its bar; open: its 12 roles,
+  **color theme** (Lightest … Darkest, a fixed-size preview chip on its bar; open: its 11 roles,
   each 5 palette dots, None on fills and a custom colour in the 190px popover), its read-only
   **Smart colors** and the **Site color theme** select. Button is Glass / Color / None, its dots
-  shown only with Color (the row keeps its height). Heading's and Text's text styles and a
-  template's sub-roles (pick the template under Templates) fold under them, greyed while they
-  follow ("follows Heading"). A role that isn't the default, or a sub-role set, gets the editor's
+  shown only with Color (the row keeps its height). The 7 text styles are rows of their own right
+  after Text (Title, Heading, Subheading, Statement, Paragraph, Label, Small: no group), in a theme
+  and in a template's sub-roles (pick the template under Templates), greyed while they follow
+  ("follows Text"); the chip's Aa is the Title's colour. A role that isn't the default, or a sub-role set, gets the editor's
   changed dot in its row's padding (no shift); a theme with any, on its card. theme.json keeps only
   what differs. Every pick is one undo step and the preview's `#color-themes` / theme-vars are
   rewritten in place (no reload, no render job). The Brand color and Color scheme fields leave

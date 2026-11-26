@@ -16,9 +16,9 @@ import {
   rolePointer,
   siteThemeEdit,
   swatchOf,
-  textStylesUnder,
+  TEXT_STYLE_ROWS,
 } from '../src/editor/lib/color-themes.js';
-import { DEFAULT_PALETTE, ROLES, colorThemeCss } from '../src/render/colors.js';
+import { DEFAULT_PALETTE, ROLES, TEXT_STYLE_PARENT, colorThemeCss } from '../src/render/colors.js';
 
 const THEME = 'theme.json';
 const storeWith = (theme) => {
@@ -104,8 +104,9 @@ test('Button: Glass / Color / None; Color keeps a colour, else starts from Accen
 
 test('sub-roles: empty follows the parent and says so; set, it is custom; cleared, it follows again', () => {
   // every text style follows Text (Heading is a text style, not a role)
-  assert.deepEqual(textStylesUnder('heading'), []);
-  assert.deepEqual(textStylesUnder('text'), ['title', 'heading', 'paragraph', 'label', 'subheading', 'statement', 'small']);
+  // one flat list of rows, the picker's order, all 7 (no group under Heading or Text)
+  assert.deepEqual(TEXT_STYLE_ROWS, ['title', 'heading', 'subheading', 'statement', 'paragraph', 'label', 'small']);
+  assert.deepEqual([...TEXT_STYLE_ROWS].sort(), Object.keys(TEXT_STYLE_PARENT).sort());
   const title = { theme: 'light', textStyle: 'title' };
   assert.equal(followsOf(title), 'Text');
   assert.equal(followsOf({ theme: 'light', textStyle: 'label' }), 'Text');
@@ -147,9 +148,9 @@ test('chips, dots and counts; the site color theme', () => {
   assert.equal(swatchOf({}, '#abc'), '#aabbcc');
   assert.equal(swatchOf({}, 'none'), '');
   assert.equal(swatchOf({}, 'glass'), '');
-  assert.deepEqual(previewOf({}, 'lightest'), { background: DEFAULT_PALETTE[4], text: DEFAULT_PALETTE[0], heading: DEFAULT_PALETTE[0], accent: DEFAULT_PALETTE[2] });
+  assert.deepEqual(previewOf({}, 'lightest'), { background: DEFAULT_PALETTE[4], text: DEFAULT_PALETTE[0], title: DEFAULT_PALETTE[0], accent: DEFAULT_PALETTE[2] });
   // the chip's Aa is the Title text style (it follows Text)
-  assert.equal(previewOf({ colorThemes: { lightest: { textStyles: { title: 4 } } } }, 'lightest').heading, DEFAULT_PALETTE[3]);
+  assert.equal(previewOf({ colorThemes: { lightest: { textStyles: { title: 4 } } } }, 'lightest').title, DEFAULT_PALETTE[3]);
   assert.equal(customCount({}, 'dark'), 0);
   assert.equal(customCount({ colorThemes: { dark: { text: 5, link: 1, textStyles: { title: 2 }, templates: { 'preset:card': { background: 3, textStyles: { small: 1 } } } } } }, 'dark'), 4);
   assert.equal(siteThemeEdit('light'), 'light');

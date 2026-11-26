@@ -14,6 +14,7 @@ import {
   PALETTE_SIZE,
   ROLES,
   TEMPLATE_ROLES,
+  TEXT_STYLE_NAMES,
   TEXT_STYLE_PARENT,
   THEMES,
   THEME_NAMES,
@@ -27,6 +28,7 @@ import {
   textStyleRolesOf,
 } from '../../render/colors.js';
 import { TEXT_STYLES } from '../../render/layout/text-styles.js';
+import { LINE_STYLES } from '../../render/text.js';
 import { isObject } from '../../render/is.js';
 
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
@@ -190,13 +192,13 @@ export function swatchOf(theme, v) {
   return isHexColor(v) ? longHex(v) : '';
 }
 
-/** A theme's preview chip: { background, text, heading (its Title), accent } as colours ('' for none). */
+/** A theme's preview chip: { background, text, title (the Title text style), accent } as colours ('' for none). */
 export function previewOf(theme, name) {
   const r = rolesOf(theme, name);
   return {
     background: swatchOf(theme, r.background),
     text: swatchOf(theme, r.text),
-    heading: swatchOf(theme, roleRow(theme, { theme: name, textStyle: 'title' }).shown),
+    title: swatchOf(theme, roleRow(theme, { theme: name, textStyle: 'title' }).shown),
     accent: swatchOf(theme, r.accent),
   };
 }
@@ -218,6 +220,10 @@ export const siteThemeEdit = (name) =>
   THEME_NAMES.includes(name) && name !== DEFAULT_COLOR_THEME ? name : undefined;
 export { siteColorThemeOf };
 
-/** The text styles under a role (Heading's: Title, Heading, …; Text's: Paragraph, …). */
-export const textStylesUnder = (parentKey) =>
-  Object.keys(TEXT_STYLE_PARENT).filter((textStyle) => TEXT_STYLE_PARENT[textStyle] === parentKey);
+/**
+ * The text style rows, right after Text in a theme and a template entry: the 7 text styles in the
+ * editor's picker order (Title, Heading, Subheading, Statement, Paragraph, Label, Small).
+ */
+export const TEXT_STYLE_ROWS = Object.freeze(
+  LINE_STYLES.map(([textStyle]) => textStyle).filter((textStyle) => TEXT_STYLE_NAMES.includes(textStyle)),
+);

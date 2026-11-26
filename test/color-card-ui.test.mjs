@@ -20,7 +20,12 @@ test('the card: Theme › Color reads its labels from colors.js and writes throu
   // theme.json is IN_PLACE: an edit rewrites #color-themes and theme-vars, no reload, no render job
   assert.equal(needsReload([THEME_FILE], { routes: false, site: false }), false);
   assert.match(read('src/editor/main.js'), /if \(files\.every\(\(f\) => f === THEME\)\) return;/);
-  // sub-roles folded by default (ui.sections, unset: closed); nothing moves: fixed-size chip,
+  // the text styles: one flat list right after Text, in a theme and a template entry (no fold
+  // under Heading or Text); Templates folded by default (ui.sections, unset: closed)
+  assert.equal(panel.match(/\{#if (r\.key|key) === 'text'\}\s*\{#each TEXT_STYLE_ROWS as textStyle/g).length, 2);
+  assert.doesNotMatch(panel, /Text styles \(|textStylesUnder|HEADING_TEXT/);
+  assert.match(panel, /style:--fg=\{p\.title /); // the chip's Aa: Title
+  // nothing moves: fixed-size chip,
   // one control's height per picker, the dots hidden (not removed) while Button isn't Color
   assert.match(panel, /const isOpen = \(name, what\) => !!ui\.sections\[foldKey\(name, what\)\];/);
   assert.match(panel, /\.cchip \{[^}]*width: 64px;[^}]*height: 20px;/);
