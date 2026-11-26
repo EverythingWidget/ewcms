@@ -56,7 +56,7 @@ test('Page entrance: one Animations section (curtain, page fade); the page card 
   assert.match(pc, /onclick=\{onsettings\}>Page entrance settings<\/button>/);
   assert.match(
     esrc('svelte/EntranceCard.svelte'),
-    /title="Page entrance"\s*name="Curtain: \{curtain === 'off' \? 'off \(page fade\)' : 'site default'\}"/,
+    /title="Page entrance"\s*name=\{curtain === 'off' \? 'Off \(page fade\)' : 'Site default'\}/,
   );
   assert.doesNotMatch(esrc('svelte/EntranceCard.svelte'), /<ScrollBackdrop|Backdrop:/);
   assert.match(
