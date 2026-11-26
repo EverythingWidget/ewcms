@@ -1,6 +1,6 @@
 // Glass surfaces (the header's pills, dropdowns, the phone menu, buttons, the carousel's arrows):
 // engine UI. The fill is the color theme's Background a step toward Text, see-through, tinted by its
-// Button (src/render/colors.js), worked out on each glass element, so glass follows a section's,
+// Accent (src/render/colors.js), worked out on each glass element, so glass follows a section's,
 // the header's or a template's theme; the album's --accent tints only the background glow. The blur lives on ::before so a glass element never becomes a
 // "backdrop root": glass inside glass (nav pill > dropdown) still blurs the page.
 @mixin glass-surface {
@@ -36,8 +36,8 @@
     color-mix(in oklab, var(--color-background), var(--color-text) 20%) 50%,
     transparent
   );
-  --glass-fill: color-mix(in oklab, var(--color-button) 8%, var(--glass-base));
-  --glass-fill-hover: color-mix(in oklab, var(--color-button) 12%, var(--glass-base-hover));
+  --glass-fill: color-mix(in oklab, var(--color-accent) 8%, var(--glass-base));
+  --glass-fill-hover: color-mix(in oklab, var(--color-accent) 12%, var(--glass-base-hover));
 
   position: relative;
   isolation: isolate;

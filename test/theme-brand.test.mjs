@@ -29,15 +29,15 @@ test('colours are the palette (content/theme.json), not tokens; theme.js tweens 
   assert.match(chrome, /&\.is-active \{\s*color: var\(--color-accent\);/); // the phone menu's current page: Accent
 });
 
-test('glass follows the color theme (Button tint) on each glass element; the album --accent tints only the glow (F91)', () => {
+test('glass follows the color theme (Accent tint) on each glass element; the album --accent tints only the glow (F91)', () => {
   const glass = read('src/client/styles/_glass.scss').replace(/\/\/.*$/gm, '');
   assert.match(
     glass,
-    /\.glass \{[\s\S]*?--glass-fill: color-mix\(in oklab, var\(--color-button\) 8%, var\(--glass-base\)\);/,
+    /\.glass \{[\s\S]*?--glass-fill: color-mix\(in oklab, var\(--color-accent\) 8%, var\(--glass-base\)\);/,
   );
   assert.match(
     glass,
-    /--glass-fill-hover: color-mix\(in oklab, var\(--color-button\) 12%, var\(--glass-base-hover\)\);/,
+    /--glass-fill-hover: color-mix\(in oklab, var\(--color-accent\) 12%, var\(--glass-base-hover\)\);/,
   );
   assert.doesNotMatch(glass, /:root \{/); // not once on :root: a section's theme re-tints its glass
   assert.doesNotMatch(glass, /--accent/);
