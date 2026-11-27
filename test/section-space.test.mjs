@@ -1,53 +1,35 @@
-// Space between sections, in grid rows (F90): site.json layout.sectionSpace /
-// layout.sectionSpacePhone and a section's sectionSpace / sectionSpacePhone.
+// Space between sections, in grid rows (F90): site-wide only, theme.json layout.sectionSpace /
+// layout.sectionSpacePhone (Theme › Layout). A section's own sectionSpace / sectionSpacePhone
+// is gone: a warning, ignored by the renderer.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { checkContent } from '../src/render/validate.js';
+import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { checkLayout, layoutVars } from '../src/render/layout/contain.js';
-import {
-  clampSpaceRows,
-  hasOwnSectionSpace,
-  phoneSectionSpaceOf,
-  sectionSpaceOf,
-  sectionVars,
-  siteSectionSpaceOf,
-  siteSectionSpacePhoneOf,
-} from '../src/render/layout/index.js';
+import * as layout from '../src/render/layout/index.js';
 
+const { clampSpaceRows, sectionVars, siteSectionSpaceOf, siteSectionSpacePhoneOf } = layout;
 const F = 'pages/test/index.json';
 const page = (sections) => ({ version: 1, kind: 'page', id: 'pg-t090', sections });
 const sec = (more = {}) => ({ id: 's-aaaa', widgets: [], ...more });
 
-test('unset is 0: a site or section without sectionSpace adds no space', () => {
+test('unset is 0: a site without sectionSpace adds no space', () => {
   assert.equal(siteSectionSpaceOf({}), 0);
   assert.equal(siteSectionSpaceOf({ layout: { containedCols: 96 } }), 0);
   assert.equal(siteSectionSpacePhoneOf({}), 0);
-  assert.equal(sectionSpaceOf(sec(), {}), 0);
-  assert.equal(phoneSectionSpaceOf(sec(), {}), 0);
-  assert.equal(hasOwnSectionSpace(sec()), false);
-  assert.doesNotMatch(sectionVars(sec()), /--sspace|--msspace/);
   assert.equal(layoutVars({}), '');
 });
 
-test("a site default applies until a section sets its own (0 is an override)", () => {
+test('the site default: the same for every section', () => {
   const site = { layout: { sectionSpace: 8, sectionSpacePhone: 12 } };
   assert.equal(siteSectionSpaceOf(site), 8);
   assert.equal(siteSectionSpacePhoneOf(site), 12);
-  assert.equal(sectionSpaceOf(sec(), site), 8);
-  assert.equal(phoneSectionSpaceOf(sec(), site), 12);
-  assert.equal(sectionSpaceOf(sec({ sectionSpace: 0 }), site), 0);
-  assert.equal(phoneSectionSpaceOf(sec({ sectionSpace: 0 }), site), 0);
-  assert.equal(phoneSectionSpaceOf(sec({ sectionSpace: 0, sectionSpacePhone: 4 }), site), 4);
-  // a desktop override without a phone value: the same row count, not the site's phone value
-  assert.equal(phoneSectionSpaceOf(sec({ sectionSpace: 8 }), site), 8);
+  assert.equal(layoutVars(site), '--section-space: 8; --section-space-phone: 12');
 });
 
 test("on phones, an unset phone value uses the same row count as the desktop's", () => {
   const site = { layout: { sectionSpace: 8 } };
   assert.equal(siteSectionSpacePhoneOf(site), 8);
-  assert.equal(phoneSectionSpaceOf(sec(), site), 8);
-  assert.equal(phoneSectionSpaceOf(sec({ sectionSpacePhone: 0 }), site), 0);
   assert.equal(layoutVars(site), '--section-space: 8');
   assert.equal(
     layoutVars({ layout: { sectionSpace: 8, sectionSpacePhone: 0 } }),
@@ -55,29 +37,9 @@ test("on phones, an unset phone value uses the same row count as the desktop's",
   );
 });
 
-test('a section writes --sspace / --msspace only for its own value, including 0', () => {
-  assert.equal(sectionVars(sec()), '--rows:1;--mrows:1');
-  assert.match(sectionVars(sec({ sectionSpace: 8 })), /;--sspace:8$/);
-  assert.match(sectionVars(sec({ sectionSpace: 0 })), /;--sspace:0$/);
-  assert.match(sectionVars(sec({ sectionSpacePhone: 4 })), /;--msspace:4$/);
-  assert.match(sectionVars(sec({ sectionSpace: 8, sectionSpacePhone: 0 })), /;--sspace:8;--msspace:0$/);
-  assert.doesNotMatch(sectionVars(sec({ sectionSpace: 8 })), /--msspace/);
-});
-
-test('sectionSpace is a whole number of rows from 0 to 999', () => {
-  const of = (more) => checkContent(F, page([sec(more)]));
-  assert.deepEqual(of({ sectionSpace: 8 }), []);
-  assert.deepEqual(of({ sectionSpace: 0, sectionSpacePhone: 0 }), []);
-  assert.deepEqual(of({ sectionSpace: -1 }), [
-    'section 1: "sectionSpace" must be a whole number of rows from 0 to 999',
-  ]);
-  assert.deepEqual(of({ sectionSpace: 8.5 }), [
-    'section 1: "sectionSpace" must be a whole number of rows from 0 to 999',
-  ]);
-  assert.deepEqual(of({ sectionSpacePhone: 1000 }), [
-    'section 1: "sectionSpacePhone" must be a whole number of rows from 0 to 999',
-  ]);
-  assert.deepEqual(checkLayout({ sectionSpace: 8 }), []);
+test('layout.sectionSpace is a whole number of rows from 0 to 999', () => {
+  assert.deepEqual(checkLayout({ sectionSpace: 8, sectionSpacePhone: 0 }), []);
+  assert.ok(checkLayout({ sectionSpace: -1 }).some((m) => m.includes('"layout.sectionSpace"')));
   assert.ok(checkLayout({ gap: 1 }).some((m) => m.includes('"layout.gap"')));
   assert.equal(clampSpaceRows(8.4), 8);
   assert.equal(clampSpaceRows(-3), 0);
@@ -85,12 +47,38 @@ test('sectionSpace is a whole number of rows from 0 to 999', () => {
   assert.equal(clampSpaceRows(undefined), null);
 });
 
-test('the first visible page section keeps --nav-h; later sections and the footer use the space', () => {
+test("a section's own sectionSpace / sectionSpacePhone is gone: a warning, never a problem", () => {
+  assert.deepEqual(checkContent(F, page([sec()])), []);
+  assert.deepEqual(contentWarnings(), []);
+  assert.deepEqual(checkContent(F, page([sec({ sectionSpace: 8 })])), []);
+  assert.deepEqual(contentWarnings(), [
+    'section 1: "sectionSpace" is gone: the space between sections is the site\'s, Space between sections in Theme › Layout ("layout.sectionSpace" in content/theme.json); for more above one section, leave empty rows above its widgets. Remove "sectionSpace" (it was 8)',
+  ]);
+  // any value, even one that was never valid: still only a warning (the key is ignored)
+  assert.deepEqual(checkContent(F, page([sec(), sec({ id: 's-bbbb', sectionSpace: -1, sectionSpacePhone: 0 })])), []);
+  assert.deepEqual(
+    contentWarnings().map((w) => w.split(' is gone')[0]),
+    ['section 2: "sectionSpace"', 'section 2: "sectionSpacePhone"'],
+  );
+});
+
+test('the renderer ignores a section\'s sectionSpace: no --sspace / --msspace, nothing else changes', () => {
+  assert.equal(sectionVars(sec()), '--rows:1;--mrows:1');
+  for (const more of [{ sectionSpace: 8 }, { sectionSpace: 0 }, { sectionSpacePhone: 4 }])
+    assert.equal(sectionVars(sec(more)), sectionVars(sec()));
+  // the per-section helpers are gone too
+  for (const name of ['sectionSpaceOf', 'phoneSectionSpaceOf', 'hasOwnSectionSpace', 'hasOwnSectionSpacePhone'])
+    assert.equal(layout[name], undefined, name);
+});
+
+test('the first visible page section keeps --nav-h; later sections and the footer use the site space', () => {
   const css = readFileSync(new URL('../src/client/styles/_layout.scss', import.meta.url), 'utf8');
+  assert.match(css, /padding-top: calc\(var\(--section-space, 0\) \* var\(--cell\)\);/);
   assert.match(
     css,
-    /padding-top: calc\(var\(--sspace, var\(--section-space, 0\)\) \* var\(--cell\)\);/,
+    /padding-top: calc\(var\(--section-space-phone, var\(--section-space, 0\)\) \* var\(--cell\)\);/,
   );
+  assert.doesNotMatch(css, /--sspace|--msspace/);
   assert.match(
     css,
     /\[data-router-view\] > \.sec:nth-child\(1 of :not\(\[hidden\]\)\) \{\s*padding-top: var\(--nav-h\);/,
@@ -104,31 +92,22 @@ test('the first visible page section keeps --nav-h; later sections and the foote
     ].length,
     2,
   );
-  assert.match(css, /--section-space-phone/);
   // the footer is not under [data-router-view], so its first section keeps the space
   assert.doesNotMatch(css, /data-footer.*padding-top: var\(--nav-h\)/s);
   assert.doesNotMatch(css, /\.site-footer[^{]*padding-top: var\(--nav-h\)/);
 });
 
-test('the editor labels: Theme › Layout and the section popup; the keys are sectionSpace', () => {
-  const site = readFileSync(
-    new URL('../src/editor/svelte/ThemePanel.svelte', import.meta.url),
-    'utf8',
-  );
-  const section = readFileSync(
-    new URL('../src/editor/svelte/SectionSettings.svelte', import.meta.url),
-    'utf8',
-  );
+test('the editor: Theme › Layout keeps the site fields; the section popup has no space field', () => {
+  const read = (f) => readFileSync(new URL(`../src/editor/svelte/${f}`, import.meta.url), 'utf8');
+  const site = read('ThemePanel.svelte');
+  const section = read('SectionSettings.svelte');
   assert.match(site, /label="Space between sections"/);
   assert.match(site, /label="Space between sections \(phone\)"/);
   assert.match(site, /layout\/sectionSpace/);
   assert.match(site, /layout\/sectionSpacePhone/);
-  assert.match(section, /label="Space above this section"/);
-  assert.match(section, /<b>Space between\s*sections<\/b> in Theme/);
-  assert.match(section, /sectionSpacePhone/);
-  assert.match(section, /Reset space \(follow the site\)/);
-  assert.doesNotMatch(site, /spaceAbove/);
-  assert.doesNotMatch(section, /spaceAbove/);
-  assert.doesNotMatch(site, /label="[^"]*[Gg]ap/);
-  assert.doesNotMatch(section, /label="[^"]*[Gg]ap/);
+  assert.doesNotMatch(site, /A section can override/);
+  assert.doesNotMatch(section, /Space above this section|sectionSpace|SectionSpace/);
+  assert.doesNotMatch(read('SectionPopup.svelte'), /Space above this section/);
+  const ops = readFileSync(new URL('../src/editor/layout-ops.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(ops, /sectionSpace/);
 });

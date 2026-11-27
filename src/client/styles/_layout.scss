@@ -13,8 +13,8 @@
  * sets where every widget sits now (a linked widget below its leader) and how many rows it
  * spans (--fr / --frs) and the section's rows (--frows), which win over the stored ones.
  * While it measures, a section has .sec--measure. Space between sections is a number of
- * grid rows (padding-top: N * --cell; --sspace on the section, or the site's
- * --section-space on :root; on phones --msspace / --section-space-phone, else the same
+ * grid rows (padding-top: N * --cell; the site's --section-space on :root, theme.json
+ * layout.sectionSpace; on phones --section-space-phone, else the same
  * count as desktop). The first visible section of a page does not use it (its padding-top
  * is --nav-h, so row 1 starts under the header); the first footer section does. Empty
  * rows above a widget or below a custom height still work and add to this padding. At
@@ -68,10 +68,9 @@
   // holds: under a cell is left over)
   place-content: center;
   padding: 0 var(--cpad);
-  // space between sections (F90): N rows of this section's cells. The first visible
-  // page section overrides this with --nav-h alone (below). A section's own --sspace
-  // (including 0) beats the site default on :root.
-  padding-top: calc(var(--sspace, var(--section-space, 0)) * var(--cell));
+  // space between sections (F90): N rows of this section's cells, the site's (on :root).
+  // The first visible page section overrides this with --nav-h alone (below).
+  padding-top: calc(var(--section-space, 0) * var(--cell));
   scroll-margin-top: var(--header-h);
   &--full {
     --cell: calc(100vw / var(--cols));
@@ -234,9 +233,7 @@
     grid-template-columns: repeat(var(--mcols), var(--cell));
     grid-template-rows: repeat(var(--frows, var(--mrows)), var(--cell));
     // same row count as desktop when a phone value is unset
-    padding-top: calc(
-      var(--msspace, var(--sspace, var(--section-space-phone, var(--section-space, 0)))) * var(--cell)
-    );
+    padding-top: calc(var(--section-space-phone, var(--section-space, 0)) * var(--cell));
     > .wgt {
       grid-column: var(--mc, 1) / span var(--ms, var(--mcols));
       grid-row: var(--fr, var(--mr, 1)) / span var(--frs, var(--mrs, 1));

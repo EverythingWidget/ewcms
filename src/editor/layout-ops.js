@@ -195,7 +195,7 @@ export function removeSection(store, file, at) {
 }
 
 /**
- * Section `at`'s settings (name, height, width, enabled, sectionSpace) changed
+ * Section `at`'s settings (name, height, width, enabled) changed
  * by `patch` (a key set to undefined is removed);
  * key: see writeSection.
  */

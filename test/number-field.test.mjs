@@ -108,7 +108,8 @@ test('number fields pass their limits; the motion numbers beside sliders are lef
   assert.equal((theme.match(/type="number"\s+min=\{0\}\s+max=\{MAX_MIN_ROWS\}/g) || []).length, 2);
   assert.match(theme, /min=\{key === 'line' \? 0\.05 : 1\}\s+step=\{key === 'line' \? 0\.05 : 1\}/);
   const sec = read('src/editor/svelte/SectionSettings.svelte');
-  assert.match(sec, /type="number"\s+min=\{0\}\s+max=\{MAX_MIN_ROWS\}/);
+  // (its space above field is gone: the space between sections is the site's, Theme › Layout)
+  assert.doesNotMatch(sec, /type="number"\s+min=\{0\}\s+max=\{MAX_MIN_ROWS\}/);
   assert.match(sec, /type="number"\s+min=\{1\}\s+max=\{MAX_MIN_ROWS\}/);
   const wl = read('src/editor/svelte/WidgetLayout.svelte');
   assert.match(wl, /min=\{c\.min\}\s+max=\{c\.max\}\s+step=\{c\.step \?\? 1\}/);

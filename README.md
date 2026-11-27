@@ -522,9 +522,18 @@ every section is a grid of **widgets** (`src/render/layout/`):
   vertically** (`align-content: center`), and content taller than the minimum makes the
   section taller. `width` is `contained` (inside the page's side margins, `--pad`) or `full`
   (edge to edge); `enabled: false` turns it off: the public page leaves it out, the editor's preview
-  renders it hidden (so the switch shows it again at once). A section has **no space above or below**: the
-  space between sections is empty rows (cells: a widget placed lower leaves rows above it), so
-  it scales with the width like everything else (the side margins, `--pad`, stay).
+  renders it hidden (so the switch shows it again at once). A section has **no space of its own
+  above or below**: the space between sections is the site's (**Space between sections**, below),
+  and more above one section is empty rows (cells: a widget placed lower leaves rows above it),
+  so it scales with the width like everything else (the side margins, `--pad`, stay). An old
+  section's `sectionSpace` / `sectionSpacePhone` is a gone key: `ewcms check` warns, the render
+  ignores it.
+- **Space between sections** (`content/theme.json` `"layout": { "sectionSpace": 8,
+  "sectionSpacePhone": 4 }`, Theme › Layout, 0–999 grid rows): padding above every section, that
+  many of its cells, except the first visible one of a page (it already starts under the header);
+  the first footer section uses it too. Unset or 0: none. On phones an unset `sectionSpacePhone`
+  is the desktop count; its 0 is none on phones. The same for every section (no per-section
+  setting).
 - **Contained width** (`content/theme.json` `"layout": { "containedCols": 115 }`, Theme › Layout, 60–120):
   a contained section is that many columns of the full-width grid's cell (window width / 120)
   wide, centred, and never nearer the window's edges than the side margins (`--pad`). Its

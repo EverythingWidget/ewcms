@@ -207,7 +207,8 @@
 {#snippet spaceTip()}<b>Space between sections</b>: a number of grid rows of padding above every
   section except the first visible one of a page (that one already starts under the header).
   The first footer section uses it too. Empty or 0: none, so existing pages stay as they are.
-  A section can override this.{/snippet}
+  It is the same for every section: for more above one, leave empty rows above its
+  widgets.{/snippet}
 
 {#snippet spacePhoneTip()}<b>Space between sections (phone)</b>: the same setting below 760px.
   Empty: the same number of rows as desktop. 0 means none on phones, even when the desktop

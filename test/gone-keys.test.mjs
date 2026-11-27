@@ -90,3 +90,35 @@ test('the renderer ignores the gone keys: no inline fill, no grid style keys on 
   // its border still applies
   assert.match(items[0].getAttribute('style') || '', /--item-border:inset 0 -1px 0/);
 });
+
+// a section's own space above it (Space above this section) is gone: the site's
+// layout.sectionSpace is the space between sections
+test("a page section's sectionSpace / sectionSpacePhone: it loads, check warns, the render ignores it", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ewcms-gone-'));
+  fs.cpSync(path.join(SITE_A, 'content'), path.join(root, 'content'), { recursive: true });
+  const file = path.join(root, 'content', 'en', 'pages', 'about', 'index.json');
+  const about = JSON.parse(fs.readFileSync(file, 'utf8'));
+  about.sections[0] = { ...about.sections[0], sectionSpace: 8, sectionSpacePhone: 0 };
+  fs.writeFileSync(file, JSON.stringify(about, null, 2));
+  assert.doesNotThrow(() => assertContent('pages/about/index.json', about));
+  const content = loadContent(root);
+  const found = [];
+  assert.deepEqual(await checkContentOf(root, { warnings: found }), []);
+  const ours = found.filter((w) => w.includes('is gone: the space between sections'));
+  assert.deepEqual(ours, [
+    'content/en/pages/about/index.json: section 1: "sectionSpace" is gone: the space between sections is the site\'s, Space between sections in Theme › Layout ("layout.sectionSpace" in content/theme.json); for more above one section, leave empty rows above its widgets. Remove "sectionSpace" (it was 8)',
+    'content/en/pages/about/index.json: section 1: "sectionSpacePhone" is gone: the space between sections is the site\'s, Space between sections in Theme › Layout ("layout.sectionSpacePhone" in content/theme.json); for more above one section, leave empty rows above its widgets. Remove "sectionSpacePhone" (it was 0)',
+  ]);
+  const { routes } = buildRoutes(content);
+  const page = routes.find((r) => r.path === '/about/');
+  const [html] = warnings(() =>
+    renderSections(
+      { ...content, route: page, routes, curtains: {} },
+      page,
+      'pages/about/index.json',
+      page.page?.sections || about.sections,
+    ),
+  );
+  assert.match(html, /--rows:/);
+  assert.doesNotMatch(html, /--sspace|--msspace/);
+});

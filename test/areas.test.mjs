@@ -343,7 +343,8 @@ test("Theme: Typography and Layout of theme.json, no Fonts and styles row; a tem
   assert.match(theme, /backLabel="Back to Theme"/);
   assert.match(theme, /<span class="ah__to">Theme<\/span>/);
   assert.match(theme, /edit="\{THEME\}#\/layout\/containedCols"/);
-  assert.match(src('svelte/SectionSettings.svelte'), /const themeOf = \(\) => live\.get\(THEME, ''\) \|\| \{\};/);
+  // a section has no space of its own (the site's, in Layout): the section popup reads no theme
+  assert.doesNotMatch(src('svelte/SectionSettings.svelte'), /THEME|sectionSpace/);
   assert.doesNotMatch(theme, /site-settings:(type|layout)/);
 });
 

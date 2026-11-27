@@ -8,6 +8,18 @@ say what a site must do before it bumps its pin.
 
 ### Breaking: what a site must do before bumping to the next release
 
+- **Breaking: a section's own space above it is gone (Space above this section).** A section's
+  `sectionSpace` / `sectionSpacePhone` and the section popup's **Space above this section** field
+  are removed: the space between sections is the site's, the same for every section (Theme ›
+  Layout's **Space between sections**, `content/theme.json` `layout.sectionSpace` /
+  `layout.sectionSpacePhone`, unchanged: not on the first visible section of a page, on the first
+  footer section). For more above one section, leave empty rows above its widgets. A leftover is a
+  gone key: the content still loads, the renderer ignores it (no `--sspace` / `--msspace`), and
+  `ewcms check` warns: `section 2: "sectionSpace" is gone: the space between sections is the
+site's, Space between sections in Theme › Layout ("layout.sectionSpace" in content/theme.json);
+for more above one section, leave empty rows above its widgets. Remove "sectionSpace" (it was
+8)`. Migration: remove the keys (to keep the space, add that many empty rows above the
+  section's widgets, or set the site's).
 - **Breaking: an item template's `style.background` and `style.hoverBackground` are gone: one
   fill, the color theme's.** An item's fill (on hover too) is the Background its template sets in
   `content/theme.json` (`colorThemes.<theme>.templates.<id>.background`; left out or

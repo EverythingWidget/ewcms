@@ -2,8 +2,9 @@
   A page section's settings (SectionsList.svelte's cards, and the widget view's top,
   WidgetInspector.svelte): its name (the whole row, its #anchor or what is wrong with it under
   it, right), then side by side its height (the phone's own in the phone preview, with its
-  reset) and width as quiet icon buttons, Space above this section (a number of grid rows,
-  the phone's own in the phone preview, with its reset), and a custom height's rows. One undo step per change.
+  reset) and width as quiet icon buttons, and a custom height's rows. One undo step per change.
+  (No space of its own above a section: the space between sections is the site's, Theme ›
+  Layout; more above one section is empty rows above its widgets.)
     live, file, at (its index), sections (the page's, a fresh copy after every edit)
 -->
 <script>
@@ -12,20 +13,14 @@
   import SectionIcon from './SectionIcon.svelte';
   import { ui } from './ui.svelte.js';
   import { setPhoneHeight, setSection, setSectionRows } from '../layout-ops.js';
-  import { THEME, templateIdOf } from '../../render/files.js';
   import {
     anchorOf,
-    clampSpaceRows,
-    hasOwnSectionSpace,
-    hasOwnSectionSpacePhone,
     heightOf,
     MAX_MIN_ROWS,
     phoneMinRowsOf,
     phoneHeightOf,
-    phoneSectionSpaceOf,
     nameProblems,
     rowsOf,
-    sectionSpaceOf,
   } from '../../render/layout/index.js';
 
   let { live, bridge = null, file, at, sections } = $props();
@@ -85,24 +80,6 @@
       phone: phoneView,
       key: `section:${file}#${at}/${phoneView ? 'phone/' : ''}rows/min`,
     });
-  };
-  // space above this section, in grid rows (F90). A template's section has no such key.
-  // empty / reset: follow the site (desktop) or the desktop value (phone).
-  const themeOf = () => live.get(THEME, '') || {};
-  const pageSection = $derived(!templateIdOf(file));
-  const spaceKey = $derived(phoneView ? 'sectionSpacePhone' : 'sectionSpace');
-  const spaceOwn = (s) => (phoneView ? hasOwnSectionSpacePhone(s) : hasOwnSectionSpace(s));
-  const spaceValue = (s) =>
-    spaceOwn(s) ? (phoneView ? s.sectionSpacePhone : s.sectionSpace) : undefined;
-  const spacePlaceholder = (s) =>
-    String(phoneView ? phoneSectionSpaceOf(s, themeOf()) : sectionSpaceOf(s, themeOf()));
-  const setSpace = (at, v) => {
-    const n = v === undefined ? undefined : clampSpaceRows(v);
-    if (v !== undefined && n === null) return;
-    const s = sections[at];
-    const now = phoneView ? s?.sectionSpacePhone : s?.sectionSpace;
-    if (n === now || (n === undefined && now === undefined)) return;
-    set(at, { [spaceKey]: n }, `section:${file}#${at}/${spaceKey}`);
   };
   // its name: empty removes it (no anchor)
   const setName = (at, name) =>
@@ -178,11 +155,6 @@
   <SectionIcon kind="height" arg={share} />
 {/snippet}
 
-{#snippet spaceTip()}<b>Space above this section</b>: a number of grid rows of padding above
-  this section (the section's own square cells). Empty: the site default (<b>Space between
-  sections</b> in Theme). 0 means none. The first visible section of a page does not
-  use it (it already starts under the header). The first footer section does.{/snippet}
-
 <!-- Name (no label: its placeholder says it; its #anchor under it) the whole row; then Height
      and Width side by side, each column as wide as its buttons -->
 <div class="fields">
@@ -220,35 +192,6 @@
     {/if}
     {@render choices(at, 'width', 'Width', WIDTHS, widthOf(s), widthIcon)}
   </div>
-  {#if pageSection}
-    <!-- space above this section: always on this row (no layout shift); empty uses the site
-         default (placeholder). The first visible page section does not show this padding;
-         the first footer section does. -->
-    <Field
-      edit="{file}#/sections/{at}/{spaceKey}"
-      label="Space above this section"
-      type="number"
-      min={0}
-      max={MAX_MIN_ROWS}
-      empty
-      placeholder={spacePlaceholder(s)}
-      value={spaceValue(s)}
-      help={phoneView
-        ? 'Rows of the grid above this section, on phones. Empty: same as desktop.'
-        : 'Rows of the grid above this section. Empty uses the site default. The first section of a page starts under the header and does not use this.'}
-      tip={spaceTip}
-      unsaved={changed(at, spaceKey)}
-      onvalue={(v) => setSpace(at, v)}
-      reset={{
-        on: spaceOwn(s),
-        run: () => setSpace(at, undefined),
-        title: phoneView
-          ? 'Reset phone space (follow the desktop)'
-          : 'Reset space (follow the site)',
-        label: phoneView ? 'Reset phone space' : 'Reset space',
-      }}
-    />
-  {/if}
   {#if (phoneView ? phoneHeightOf(s) : heightOf(s)) === 'custom'}
     <!-- custom: its rows (square cells, from the top; those below its last widget are empty
          space; on phones half as many) -->

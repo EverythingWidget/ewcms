@@ -1,13 +1,12 @@
 /**
  * Space between sections, in grid rows (F90). Not a px/rem token: a whole number of the
- * section's own square cells (--cell). The keys are laid out so they can be renamed:
+ * section's own square cells (--cell). Site-wide only: theme.json layout.sectionSpace and
+ * layout.sectionSpacePhone (Theme › Layout). A section has no space of its own (its old
+ * sectionSpace / sectionSpacePhone is a gone key, ignored: more above one section is empty
+ * rows above its widgets).
  *
- *   theme.json  layout.sectionSpace, layout.sectionSpacePhone
- *   a section  sectionSpace, sectionSpacePhone
- *
- * Unset at the site means 0 (existing pages stay put). A section without its own value
- * follows the site; a section's 0 is an override (no extra space there). On phones, an
- * unset phone value uses the same row count as the desktop value (not half). The first
+ * Unset means 0 (existing pages stay put). On phones, an unset phone value uses the same
+ * row count as the desktop value (not half). The first
  * visible section of a page does not use this (it already starts under the header);
  * the first footer section does (src/client/styles/_layout.scss).
  */
@@ -32,31 +31,9 @@ export function siteSectionSpacePhoneOf(theme) {
   return spaceRows(theme?.layout?.sectionSpacePhone) ?? siteSectionSpaceOf(theme);
 }
 
-/** Does this section store its own desktop space (including 0)? */
-export const hasOwnSectionSpace = (s) => spaceRows(s?.sectionSpace) !== null;
-
-/** Does this section store its own phone space (including 0)? */
-export const hasOwnSectionSpacePhone = (s) => spaceRows(s?.sectionSpacePhone) !== null;
-
-/** A section's desktop space: its own, else the site's, else 0. */
-export function sectionSpaceOf(s, theme) {
-  return spaceRows(s?.sectionSpace) ?? siteSectionSpaceOf(theme);
-}
-
-/**
- * A section's phone space: its own, else its desktop override, else the site's phone
- * value (which itself falls back to the site's desktop count).
- */
-export function phoneSectionSpaceOf(s, theme) {
-  const own = spaceRows(s?.sectionSpacePhone);
-  if (own !== null) return own;
-  if (hasOwnSectionSpace(s)) return s.sectionSpace;
-  return siteSectionSpacePhoneOf(theme);
-}
-
 /**
  * A typed value turned into a stored row count (0..999, rounded). null: clear
- * (the site default, or the phone following the desktop).
+ * (unset: 0, or the phone following the desktop).
  */
 export function clampSpaceRows(v) {
   if (v === undefined || v === null) return null;
