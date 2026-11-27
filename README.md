@@ -680,7 +680,8 @@ shape): the build renders with it, and the editor reads it for each widget's set
 and for **Add widget**. A type is `{ type, label, icon, settings, config, defaults, render(data,
 ctx, widget) }`; `list` makes it show a list of items, `item` skips the widget when it has no item.
 Which items a widget shows is its `source` (see "Widget sources"). A widget's content
-sits next to its type, how it works under `config` (`enabled`: on/off; look, …):
+sits next to its type, how it works under `config` (`enabled`: on/off, `false` leaves it out of the
+public page as a section that is off, the editor's preview keeps it hidden; look, …):
 
 | type     | what                                                                                                                                                                                                                     |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

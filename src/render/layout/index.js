@@ -313,6 +313,9 @@ const linkAttrs = (widget, widgets) =>
 
 /** One widget of section `at` (its index `j`), rendered with its grid area. */
 function renderWidget(ctx, route, file, at, j, widget, siblings) {
+  // off (config.enabled false): not on the public page, as a section that is off; the editor's
+  // preview renders it hidden (so it can be turned on live)
+  if (widget?.config?.enabled === false && !editable) return '';
   const t = WIDGET_TYPES[widget?.type];
   const where = `${contentPath(file)} (sections/${at}/widgets/${j})`;
   if (!t) {
@@ -372,6 +375,7 @@ function renderWidget(ctx, route, file, at, j, widget, siblings) {
     )
       ? ` data-lead="${esc(widget.id)}"`
       : '';
+  // only in the editor (off is left out of the public page above)
   const hidden = widget.config?.enabled === false ? ' hidden' : '';
   return `<div class="${widgetClass(widget)}"${marker}${lead} style="${widgetVars(widget, siblings)}"${linkAttrs(widget, siblings)}${motionAttrs(widget)}${noValue}${hidden}>${t.render(data, ctx, api)}</div>`;
 }

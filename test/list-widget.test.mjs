@@ -1008,3 +1008,32 @@ test('a joined template line keeps the text typed around its properties (F40: "â
     [{ property: 'a' }, { property: 'b' }, { property: 'c' }],
   );
 });
+
+test('a template widget that is off (config.enabled false): not on the public page; the editor: hidden', () => {
+  const tpl = template({
+    name: 'Off',
+    widgets: onGrid([
+      { type: 'text', role: 'title', body: [{ style: 'label', text: [{ t: 'Shown' }] }] },
+      {
+        type: 'text',
+        role: 'note',
+        body: [{ style: 'label', text: [{ t: 'Switched off' }] }],
+        config: { enabled: false },
+      },
+    ]),
+  });
+  const content = { ...shown, templates: { ...shown.templates, 't-off1': tpl } };
+  const pub = list({ template: 't-off1' }, {}, content);
+  assert.match(pub.html, /Shown/);
+  assert.doesNotMatch(pub.html, /Switched off/);
+  setEditable(true);
+  try {
+    const ed = list({ template: 't-off1' }, {}, content);
+    const off = [...ed.el.querySelectorAll('[hidden]')].filter((e) =>
+      e.textContent.includes('Switched off'),
+    );
+    assert.equal(off.length, people.length);
+  } finally {
+    setEditable(false);
+  }
+});

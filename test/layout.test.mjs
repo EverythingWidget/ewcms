@@ -143,7 +143,7 @@ test("the public page: a leader names itself (data-lead), so its followers' link
   }
 });
 
-test('render: sections are grids, widgets carry their area; off is hidden', () => {
+test('render: sections are grids, widgets carry their area; off is left out (the editor: hidden)', () => {
   const list = [
     section([
       widget('text', {
@@ -170,12 +170,16 @@ test('render: sections are grids, widgets carry their area; off is hidden', () =
   );
   // a name: its anchor (id); a height preset: its min-height class
   assert.match(out, /<section id="our-people" class="sec sec--h-full sec--full"/);
-  assert.match(out, /style="--c:1;--s:120;--r:1;--rs:1;--mc:1;--ms:60;--mr:1;--mrs:1" hidden>/); // no pos: full width
+  // a widget that is off (config.enabled false): not on the public page, as a section that is off
+  assert.doesNotMatch(out, /Two/);
+  assert.doesNotMatch(out, / hidden>/);
   // a section that is off: not on the public page; in the editor's preview rendered hidden
   assert.doesNotMatch(out, /Three/);
   setEditable(true);
   const ed = renderSections(ctxOf(page), page, F, list);
   setEditable(false);
+  // the editor keeps the widget that is off, hidden (no pos: full width)
+  assert.match(ed, /style="--c:1;--s:120;--r:1;--rs:1;--mc:1;--ms:60;--mr:1;--mrs:1" hidden>[\s\S]*Two/);
   assert.match(ed, /data-sec="[^"]+" style="--rows:1;--mrows:1" hidden>[\s\S]*Three/);
   assert.ok(ed.indexOf('One') < ed.indexOf('Two') && ed.indexOf('Two') < ed.indexOf('Three'));
   // a phone area of its own: on the 60-column phone grid

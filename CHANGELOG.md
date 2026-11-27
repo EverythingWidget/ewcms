@@ -76,6 +76,11 @@ say what a site must do before it bumps its pin.
 
 ### Engine
 
+- **A widget that is off is left out of the published page.** `config.enabled: false` on a page's
+  or footer's widget now drops it from the built HTML, as a section that is off (it used to be
+  there with `hidden`). A template's widgets were already left out. The editor's preview still
+  renders it hidden, so it can be switched on live. The key stays `config.enabled`.
+
 - **One color theme check and one class helper for every kind.** `theme.json` `colorTheme`, a
   section's and `header.json`'s are checked by one function (`colorThemeProblems`, colors.js) and
   get their `ct-<name>` class from one (`withColorTheme`). The message is now the same everywhere:

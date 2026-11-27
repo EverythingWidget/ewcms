@@ -59,7 +59,7 @@
  *             widget again.
  *   config    how it works (its look, on/off): [{ key, label, type, options?, empty?, inPlace?, default?, writeConfig? }]
  *               type: 'source' (a content/en/sources file) | 'select' (options [[value, label]])
- *                     | 'text' | 'boolean'; every widget also has config.enabled (on/off)
+ *                     | 'text' | 'boolean'; every widget also has config.enabled (on/off; off: left out of the public page)
  *               inPlace: how the editor's preview shows a changed value in place, as render()
  *                     writes it, instead of rendering the widget again (src/editor/
  *                     widget-fields.js configStep): { on, var } sets the CSS variable var on
