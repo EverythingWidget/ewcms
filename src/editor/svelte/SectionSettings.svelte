@@ -19,6 +19,7 @@
     hasOwnSectionSpace,
     hasOwnSectionSpacePhone,
     heightOf,
+    MAX_MIN_ROWS,
     phoneMinRowsOf,
     phoneHeightOf,
     phoneSectionSpaceOf,
@@ -227,6 +228,8 @@
       edit="{file}#/sections/{at}/{spaceKey}"
       label="Space above this section"
       type="number"
+      min={0}
+      max={MAX_MIN_ROWS}
       empty
       placeholder={spacePlaceholder(s)}
       value={spaceValue(s)}
@@ -253,6 +256,8 @@
       edit="{file}#/sections/{at}/{phoneView ? 'phone/' : ''}rows/min"
       label={phoneView ? 'Phone rows' : 'Rows'}
       type="number"
+      min={1}
+      max={MAX_MIN_ROWS}
       half
       value={rowsShown(s)}
       help={phoneView

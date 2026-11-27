@@ -738,6 +738,106 @@ textarea.tf__input {
   max-height: 320px;
 }
 
+// a number field (Field.svelte): the value (left), then − and + (32 x 32 each, flush right,
+// the + following the field's right radius). No dividers. The line is an overlay (::after) so
+// it stays on top of a button's hover fill; the focus ring goes around the whole control. The
+// buttons are always there (no shift); native spinners hidden (the arrow keys still step).
+.nf {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: var(--size-control);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px var(--c-line);
+    pointer-events: none;
+    z-index: 1;
+    transition: box-shadow 0.2s;
+  }
+
+  &:focus-within::after {
+    box-shadow: var(--focus-ring);
+  }
+
+  &.is-invalid::after {
+    box-shadow: inset 0 0 0 1px var(--c-error);
+  }
+
+  > .tf__input,
+  > .tf__input:focus {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    height: 100%;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    appearance: textfield;
+    -moz-appearance: textfield;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      appearance: none;
+      margin: 0;
+    }
+  }
+}
+
+.tf.is-selected .nf::after {
+  box-shadow: var(--focus-ring);
+}
+
+.nf__steps {
+  display: flex;
+  flex: none;
+}
+
+.nf__step {
+  display: grid;
+  place-items: center;
+  width: var(--size-control);
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--c-text-muted);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+
+  &:last-child {
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  }
+
+  &:hover:not(:disabled) {
+    color: var(--c-text);
+    background: var(--field-hover);
+  }
+
+  &:disabled {
+    opacity: var(--o-disabled);
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+}
+
 // ------------------------------------------------------------ dialogs
 @keyframes fade {
   from {

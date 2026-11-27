@@ -179,6 +179,9 @@
           label={c.label}
           type={['boolean', 'seg', 'number'].includes(c.type) ? c.type : 'select'}
           half={c.width === 'half'}
+          min={c.min}
+          max={c.max}
+          step={c.step ?? 1}
           value={c.type === 'boolean'
             ? (widget.config?.[c.key] ?? c.default) === true
             : (widget.config?.[c.key] ?? c.default ?? (c.type === 'number' ? 0 : ''))}

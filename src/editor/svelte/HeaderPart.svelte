@@ -249,6 +249,8 @@
       edit="{HEADER}#/rows"
       label="Height (rows)"
       type="number"
+      min={1}
+      max={MAX_HEADER_ROWS}
       half
       empty
       placeholder="Theme's"
@@ -268,6 +270,8 @@
       edit="{HEADER}#/rowsPhone"
       label="Height (phone)"
       type="number"
+      min={1}
+      max={MAX_HEADER_ROWS}
       half
       empty
       placeholder={rows ? String(rows) : "Theme's"}

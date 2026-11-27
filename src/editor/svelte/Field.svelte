@@ -30,6 +30,7 @@
   import PartsInput from './PartsInput.svelte';
   import { partOfName } from '../lib/parts-input.js';
   import { showValue } from '../lib/show-value.js';
+  import { atLimit, stepNumber } from '../lib/number-step.js';
   import Button from './Button.svelte';
   import InfoHelp from './InfoHelp.svelte';
   import Select from './Select.svelte';
@@ -43,6 +44,8 @@
   // 'seg' (options as a button group, like Source; unset: the option shown when unset) |
   // 'spot' (nine options, row by row: a Position.svelte, its 3 x 3 grid in a popover; a photo's position).
   // onvalue(value) gets every valid input.
+  // A number has − / + buttons at its end (min / max: their limits, either may be missing;
+  // step: a click's change, 1 by default; lib/number-step.js).
   // source: the content/en/sources/ file the value comes from ('' for the page's own), with
   // onsource() opening it.
   let {
@@ -75,6 +78,9 @@
     disabled = false,
     empty = false,
     reset = null,
+    min = undefined,
+    max = undefined,
+    step = 1,
   } = $props();
 
   const uid = $props.id();
@@ -102,6 +108,20 @@
     const next = parseValue(type, e.currentTarget.value);
     invalid = next === undefined;
     if (!invalid) onvalue(next);
+  }
+
+  // ---- a number's − / + (lib/number-step.js): from the value shown (an inherited placeholder
+  // too), clamped; the caller's undo key joins quick clicks into one step, as typing does
+  let numEl = $state(null);
+  const atMin = $derived(atLimit({ value, placeholder, min, max, dir: -1 }));
+  const atMax = $derived(atLimit({ value, placeholder, min, max, dir: 1 }));
+  function stepBy(dir) {
+    const next = stepNumber({ value, placeholder, min, max, step, dir });
+    if (next === null) return;
+    invalid = false;
+    // the input shows it now, focused or not (show() skips a focused input)
+    if (numEl) numEl.value = String(next);
+    onvalue(next);
   }
 
   // ---- bindings: a value with properties (parts)
@@ -355,13 +375,56 @@
       {@attach show(value)}
       {onfocus}
       {oninput}></textarea>
+  {:else if type === 'number'}
+    <!-- the value, then − and + (32 x 32 each, flush right); one line around it all (::after,
+         over the buttons' hover fill), the focus ring on the whole control -->
+    <span class={['nf', invalid && 'is-invalid']}>
+      <input
+        id={uid}
+        class="tf__input nf__input"
+        type="number"
+        aria-label={bare ? label : undefined}
+        spellcheck={false}
+        {min}
+        {max}
+        {step}
+        {placeholder}
+        {disabled}
+        bind:this={numEl}
+        {@attach show(value)}
+        {onfocus}
+        {oninput}
+      />
+      <span class="nf__steps" role="group" aria-label="Change {label}">
+        <!-- not in the tab order (the arrow keys step the input); a click keeps the focus where it is -->
+        <button
+          type="button"
+          class="nf__step"
+          aria-label="Decrease {label}"
+          title="Decrease"
+          tabindex="-1"
+          disabled={disabled || atMin}
+          onmousedown={(e) => e.preventDefault()}
+          onclick={() => stepBy(-1)}><i class="fa-solid fa-minus" aria-hidden="true"></i></button
+        ><button
+          type="button"
+          class="nf__step"
+          aria-label="Increase {label}"
+          title="Increase"
+          tabindex="-1"
+          disabled={disabled || atMax}
+          onmousedown={(e) => e.preventDefault()}
+          onclick={() => stepBy(1)}><i class="fa-solid fa-plus" aria-hidden="true"></i></button
+        >
+      </span>
+    </span>
   {:else}
     <input
       id={uid}
       class={['tf__input', invalid && 'is-invalid']}
-      type={type === 'number' || type === 'date' ? type : 'text'}
+      type={type === 'date' ? type : 'text'}
       aria-label={bare ? label : undefined}
-      spellcheck={type !== 'number'}
+      spellcheck={true}
       {placeholder}
       {@attach show(value)}
       {onfocus}

@@ -23,6 +23,7 @@
   import { ui } from './ui.svelte.js';
   import { THEME } from '../../render/files.js';
   import { COLS } from '../../render/layout/grid.js';
+  import { MAX_MIN_ROWS } from '../../render/layout/index.js';
   import {
     TYPE_FONT_OF,
     TYPE_KEYS,
@@ -292,6 +293,8 @@
                     edit="{THEME}#/typography/{k}/{key}"
                     {label}
                     type="number"
+                    min={key === 'line' ? 0.05 : 1}
+                    step={key === 'line' ? 0.05 : 1}
                     empty
                     placeholder={String(themeType[k][key])}
                     value={live.get(THEME, `/typography/${k}/${key}`)}
@@ -341,6 +344,8 @@
             edit="{THEME}#/layout/containedCols"
             label="Contained width (columns)"
             type="number"
+            min={CONTAINED_MIN}
+            max={COLS}
             value={contained}
             unsaved={live.changed(THEME, '/layout/containedCols')}
             onvalue={setContained}
@@ -349,6 +354,8 @@
             edit="{THEME}#/layout/sectionSpace"
             label="Space between sections"
             type="number"
+            min={0}
+            max={MAX_MIN_ROWS}
             half
             empty
             placeholder="0"
@@ -362,6 +369,8 @@
             edit="{THEME}#/layout/sectionSpacePhone"
             label="Space between sections (phone)"
             type="number"
+            min={0}
+            max={MAX_MIN_ROWS}
             half
             empty
             placeholder={String(siteSpace ?? 0)}

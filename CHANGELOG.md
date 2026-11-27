@@ -162,6 +162,12 @@ say what a site must do before it bumps its pin.
   (empty: the theme's height and desktop's rows, a reset arrow on a value of its own), with the
   height in px at a 1440 window and a 390 phone. The preview takes it at once: a rows edit no
   longer reloads it (other header edits still do).
+- **Number fields have − and + buttons.** Every number setting drawn as a field (the Header's
+  height, Theme › Layout and Typography, a section's space above and custom rows, a List's space
+  between items, other widget numbers) shows its value on the left and two 32 x 32 buttons flush
+  right, no dividers. A click steps by the field's step from the value shown (an inherited,
+  dimmed value too), clamped: − is disabled at the minimum, + at the maximum. The arrow keys
+  still step; quick clicks are one undo step. The motion numbers beside sliders are unchanged.
 
 - **A widget card's motion opens and closes smoothly; a panel header is clickable all over.**
   The card's motion and an animated widget's element list grow and shrink with the panel
