@@ -111,10 +111,11 @@ section's colour that see-through inside its items.
 0-100. Its contrast warnings blend a see-through fill over what is behind it first (opacity × colour +
 (1 − opacity) × behind, as the browser does): a template's Background over its section's, a
 section's over the site's, Button and Line over their Background, Header and Curtain over the
-site's Background. What is behind the site color theme's own Background (the browser's canvas or a
-page's backdrop photo) isn't known, so text on a see-through site Background isn't checked.
-Theme › Color shows each text role's and Line's contrast under its swatches the same way (Line:
-3:1, shown in the editor only; the check doesn't warn about lines).
+site's Background (the site color theme's own Header and Curtain too). What is behind the site
+color theme's own Background (the browser's canvas or a page's backdrop photo) isn't known, so text
+on a see-through site Background isn't checked. Theme › Color shows each text role's and Line's
+contrast under its swatches the same way, as a hint, never a gate: a text role Pass or Fail, Line
+(decorative) only its ratio (3:1 shows well; the check doesn't warn about lines).
 
 ## Smart colours: `--smart-*`
 

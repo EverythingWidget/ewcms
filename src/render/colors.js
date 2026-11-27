@@ -753,7 +753,12 @@ export const LINE_CONTRAST = Object.freeze({ key: 'line', on: 'background', min:
 export function contrastResults(theme, name, { template = null, seeThrough = [] } = {}) {
   const palette = paletteOf(theme);
   const site = siteColorThemeOf(theme);
-  const siteFills = fillsOf(rolesOf(theme, site), opacityOf(own(theme, site)), palette, null, null);
+  const siteRoles = rolesOf(theme, site);
+  const siteOpacity = opacityOf(own(theme, site));
+  // the site's own Background (null when it is see-through or Transparent: what is behind the
+  // page isn't known) is what its Header and Curtain sit over
+  const siteOwnBg = fillsOf(siteRoles, siteOpacity, palette, null, null).background;
+  const siteFills = fillsOf(siteRoles, siteOpacity, palette, null, siteOwnBg);
   const siteBg = siteFills.background;
   const roles = rolesOf(theme, name);
   const opacity = opacityOf(own(theme, name));
@@ -783,7 +788,11 @@ export function contrastResults(theme, name, { template = null, seeThrough = [] 
     out.push({ key, on, fg: fgHex, bg, ratio, min, pass, seeThrough: seen[on] !== undefined, ...extra });
   };
   for (const r of ROLES) if (r.on) result(r.key, hexOf(raw[r.key], palette), r.on, r.min);
-  result('line', fills.line, 'background', LINE_CONTRAST.min, { seeThrough: seen.line !== undefined || seen.background !== undefined });
+  // Line is decorative: its ratio is a hint (hint: true), never a warning or a fail
+  result('line', fills.line, 'background', LINE_CONTRAST.min, {
+    seeThrough: seen.line !== undefined || seen.background !== undefined,
+    hint: true,
+  });
   for (const [textStyle, v] of Object.entries(textStyles))
     result(`textStyles.${textStyle}`, hexOf(v, palette), 'background', HEADING_TEXT_STYLES.includes(textStyle) ? 3 : 4.5, { textStyle });
   return out;

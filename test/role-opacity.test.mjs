@@ -17,6 +17,7 @@ import {
   roleCss,
 } from '../src/render/colors.js';
 import {
+  contrastIndex,
   contrastRow,
   contrastText,
   customCount,
@@ -270,7 +271,12 @@ test('the editor: a fill row has an opacity (empty: 100, a template the sectionâ
   assert.equal(customCount(theme, 'darkest'), 3);
   // contrast in words
   const c = contrastText(contrastRow(theme, { theme: 'darkest', key: 'line' }));
-  assert.deepEqual(c, { ratio: '1.6:1', verdict: 'Fail', need: '3:1 on Background (blended)' });
+  // Line is decorative: its ratio as a hint, never a Fail
+  assert.deepEqual(c, {
+    ratio: '1.6:1',
+    verdict: '',
+    need: 'on Background (blended) Â· a hint: 3:1 shows well',
+  });
   assert.equal(contrastRow(theme, { theme: 'darkest', textStyle: 'title' }), null);
   assert.equal(contrastRow(theme, { theme: 'darkest', key: 'background' }), null);
 });
@@ -294,4 +300,55 @@ test('docs and changelog describe opacity on roles', () => {
   assert.match(docs, /## Opacity on a fill/);
   assert.match(docs, /"opacity": \{ "line": 20 \}/);
   assert.match(read('CHANGELOG.md'), /Opacity on a color theme's fill roles/);
+});
+
+test("the site theme's see-through Header and Curtain are read over its own Background", () => {
+  // the repro: Darkest (the site's) + Header 50% was "Not checked", Dark + Header 50% 17.7:1
+  for (const name of ['darkest', 'dark']) {
+    const all = contrastResults(
+      { colorThemes: { [name]: { opacity: { header: 50, curtain: 50 } } } },
+      name,
+    );
+    for (const key of ['headerText', 'curtainText']) {
+      const c = all.find((r) => r.key === key);
+      assert.ok(c.ratio > 4.5, `${name} ${key}: ${c.ratio}`);
+      assert.equal(c.seeThrough, true);
+    }
+  }
+  // Darkest: Header slot 2 (#101010) at 50% over its Background slot 1 (#050505)
+  const h = contrastResults(
+    { colorThemes: { darkest: { opacity: { header: 50 } } } },
+    'darkest',
+  ).find((r) => r.key === 'headerText');
+  assert.equal(h.bg, '#0b0b0b');
+  // its own Background see-through: what is behind the page isn't known, so still not checked
+  const unknown = contrastResults(
+    { colorThemes: { darkest: { opacity: { background: 50, header: 50 } } } },
+    'darkest',
+  ).find((r) => r.key === 'headerText');
+  assert.equal(unknown.ratio, null);
+  assert.deepEqual(contrastText(unknown), {
+    ratio: '',
+    verdict: 'Not checked',
+    need: "what's behind the page isn't known",
+  });
+});
+
+test('contrast is a hint: text roles Pass / Fail, Line its ratio only; worked out once per theme', () => {
+  const theme = { palette: PALETTE, colorThemes: { dark: { background: 5, text: 3, line: 5 } } };
+  const index = contrastIndex(theme, 'dark');
+  assert.ok(index instanceof Map);
+  assert.equal(contrastText(index.get('text')).verdict, 'Fail');
+  const line = contrastText(index.get('line'));
+  assert.equal(line.verdict, '');
+  assert.match(line.ratio, /^1\.0:1$/);
+  assert.equal(index.get('line').hint, true);
+  assert.deepEqual(contrastRow(theme, { theme: 'dark', key: 'text' }), index.get('text'));
+  // the panel: one index per theme (and per template a fold shows), each row a lookup
+  const part = read('src/editor/svelte/ColorPart.svelte');
+  assert.match(part, /const contrasts = \$derived\.by\(\(\) => \{/);
+  assert.match(part, /out\[name\] = contrastIndex\(t, name, null, seeThrough\);/);
+  assert.match(part, /if \(isOpen\(name, 'templates'\)\) \{/);
+  assert.doesNotMatch(part, /contrastRow\(/);
+  assert.match(part, /\{#if contrast\.verdict\}<b>\{contrast\.verdict\}<\/b>\{\/if\}/);
 });

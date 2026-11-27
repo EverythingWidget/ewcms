@@ -47,7 +47,7 @@
   import { atLimit, stepNumber } from '../lib/number-step.js';
   import {
     buttonModeValue,
-    contrastRow,
+    contrastIndex,
     contrastText,
     customCount,
     defaultPaletteOf,
@@ -157,6 +157,20 @@
     return templatePickerGroups(own);
   });
   const templateFor = (name) => templateOf[name] || PRESETS[0].id;
+  // the contrast results, worked out once per theme and per template a Templates fold shows
+  // (each row looks its own up): { name | "name:template": Map }
+  const contrasts = $derived.by(() => {
+    const t = theme();
+    const out = {};
+    for (const [name] of THEMES) {
+      out[name] = contrastIndex(t, name, null, seeThrough);
+      if (isOpen(name, 'templates')) {
+        const id = templateFor(name);
+        out[`${name}:${id}`] = contrastIndex(t, name, id, seeThrough);
+      }
+    }
+    return out;
+  });
 
   // ---- the site color theme
   const site = $derived(siteColorThemeOf(theme()));
@@ -206,7 +220,9 @@
   {@const op = opacityRow(theme(), spec)}
   {@const opPtr = op ? opacityPointer(spec) : ''}
   {@const resettable = row.custom || op?.own !== undefined}
-  {@const contrast = contrastText(contrastRow(theme(), spec, seeThrough))}
+  {@const contrast = spec.textStyle
+    ? null
+    : contrastText(contrasts[spec.template ? `${spec.theme}:${spec.template}` : spec.theme]?.get(spec.key))}
   <div
     class={[
       'crole',
@@ -284,7 +300,7 @@
       <!-- its contrast (a text role on its fill, Line on Background): one line, always there -->
       <p class={['crole__contrast', contrast.verdict === 'Fail' && 'is-fail', contrast.verdict === 'Pass' && 'is-pass']}>
         {#if contrast.ratio}<b>{contrast.ratio}</b>{/if}
-        <b>{contrast.verdict}</b>
+        {#if contrast.verdict}<b>{contrast.verdict}</b>{/if}
         <span>{contrast.need}</span>
       </p>
     {/if}

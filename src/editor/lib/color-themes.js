@@ -339,16 +339,34 @@ export function roleResetEdit(theme, spec) {
  */
 export function contrastRow(theme, spec, seeThrough = []) {
   if (spec.textStyle) return null;
-  const all = contrastResults(theme, spec.theme, { template: spec.template || null, seeThrough });
-  return all.find((c) => c.key === spec.key && !c.textStyle) || null;
+  return contrastIndex(theme, spec.theme, spec.template, seeThrough).get(spec.key) || null;
 }
 
-/** A contrast result in words: "15.4:1", "Pass" / "Fail", "4.5:1 on Background (blended)". */
+/**
+ * A theme's (or one template's in it) contrast results by role key, worked out once: the panel
+ * builds one per theme card and one for the template its Templates fold shows, then each row
+ * looks its own up (not a check per row).
+ */
+export function contrastIndex(theme, name, template = null, seeThrough = []) {
+  const all = contrastResults(theme, name, { template: template || null, seeThrough });
+  return new Map(all.filter((c) => !c.textStyle).map((c) => [c.key, c]));
+}
+
+/**
+ * A contrast result in words, a hint (never a gate): { ratio "15.4:1", verdict "Pass" / "Fail"
+ * (a text role; '' for Line, decorative: its ratio only, never a fail), need }.
+ */
 export function contrastText(c) {
   if (!c) return null;
   const on = roleOf(c.on).label;
-  const need = `${c.min}:1 on ${on}${c.seeThrough ? ' (blended)' : ''}`;
+  const blended = c.seeThrough ? ' (blended)' : '';
   if (c.ratio === null)
-    return { ratio: '', verdict: 'Not checked', need: c.key === 'line' && !c.fg ? 'no line' : 'nothing known behind it' };
-  return { ratio: `${(Math.floor(c.ratio * 10) / 10).toFixed(1)}:1`, verdict: c.pass ? 'Pass' : 'Fail', need };
+    return {
+      ratio: '',
+      verdict: 'Not checked',
+      need: c.key === 'line' && !c.fg ? 'no line' : "what's behind the page isn't known",
+    };
+  const ratio = `${(Math.floor(c.ratio * 10) / 10).toFixed(1)}:1`;
+  if (c.hint) return { ratio, verdict: '', need: `on ${on}${blended} · a hint: 3:1 shows well` };
+  return { ratio, verdict: c.pass ? 'Pass' : 'Fail', need: `${c.min}:1 on ${on}${blended}` };
 }
