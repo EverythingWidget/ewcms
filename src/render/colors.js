@@ -572,9 +572,9 @@ function buildCss(theme) {
       const selector =
         name === site ? `:root .${cls}, .ct-${name} .${cls}` : `.ct-${name} .${cls}`;
       const all = { ...rolesOf(theme, name), ...roles };
-      // its item paints a Background it sets, when its style's fill is left empty (a fill set,
-      // inline, wins: Transparent is see-through, Surface a surface of it); a theme where it sets none:
-      // none (over the site theme's rule, which matches everywhere). Hover: .li's, its own fill
+      // its item paints a Background it sets (its one fill; "transparent": see-through); a theme
+      // where it sets none: none (over the site theme's rule, which matches everywhere). Hover:
+      // .li's, the same fill
       const fill = [['--item-bg', setsFill(t, 'background') ? 'var(--color-background)' : 'transparent']];
       out.push(
         `${selector} { ${decls([
@@ -762,11 +762,11 @@ export const LINE_CONTRAST = Object.freeze({ key: 'line', on: 'background', min:
  * read against a fill (ROLES' on, min) and Line against Background, each { key, on, fg, bg,
  * ratio, min, pass, seeThrough }. fg, bg as they render ("#rrggbb"): a see-through fill blended
  * over what is behind it first; ratio null (not checked) when either can't be known (a
- * Transparent Line; a see-through Background over a photo). A template's Background shows
- * unless it is one of seeThrough (its item style's fill is Transparent): then its text is read
- * against the section's. textStyles: the text styles set, each { textStyle, … } against Background.
+ * Transparent Line; a see-through Background over a photo). A template's Background, when it
+ * sets one, is its items' one fill ("transparent": its text is read against the section's).
+ * textStyles: the text styles set, each { textStyle, … } against Background.
  */
-export function contrastResults(theme, name, { template = null, seeThrough = [] } = {}) {
+export function contrastResults(theme, name, { template = null } = {}) {
   const palette = paletteOf(theme);
   const site = siteColorThemeOf(theme);
   const siteRoles = rolesOf(theme, site);
@@ -786,7 +786,7 @@ export function contrastResults(theme, name, { template = null, seeThrough = [] 
     const t = templateRolesOf(theme, name, template);
     const { background, ...set } = t.roles;
     if (buttonTextFollows(theme, name, t.roles)) set.buttonText = set.text;
-    const shows = (background !== undefined || t.opacity.background !== undefined) && !seeThrough.includes(template);
+    const shows = background !== undefined || t.opacity.background !== undefined;
     const top = { ...opacity, ...t.opacity };
     if (!shows) delete top.background;
     raw = { ...roles, ...set, ...(shows ? { background: background ?? roles.background } : {}) };
@@ -818,12 +818,11 @@ export function contrastResults(theme, name, { template = null, seeThrough = [] 
  * Contrast warnings (ewcms check): per theme, each text colour against the fill that renders
  * under it (a template's, the section's, the site theme's: "transparent" is see-through; a fill
  * with an opacity is blended over what is behind it first). WCAG 4.5:1, 3:1 for the heading text
- * styles. Only once a site has its own palette or color themes. seeThrough: the templates whose
- * item style's fill is Transparent (src/widgets/list/item-style.js): their Background never
- * shows, so their text is read against the section's. A template is checked for what it sets
- * (all its text when its Background shows), not for what it leaves to the section.
+ * styles. Only once a site has its own palette or color themes. A template is checked for what
+ * it sets (all its text when it sets a Background: its items' one fill), not for what it leaves
+ * to the section.
  */
-export function contrastWarnings(theme, { seeThrough = [] } = {}) {
+export function contrastWarnings(theme) {
   if (!ownPaletteOf(theme) && !isObject(theme?.colorThemes)) return [];
   const out = [];
   const label = (k) => roleOf(k)?.label || k;
@@ -844,11 +843,11 @@ export function contrastWarnings(theme, { seeThrough = [] } = {}) {
       const t = templateRolesOf(theme, name, id);
       const sets = [...Object.keys(t.roles), ...Object.keys(t.opacity)];
       if (!sets.length && !Object.keys(t.textStyles).length) continue;
-      const shows = sets.includes('background') && !seeThrough.includes(id);
+      const shows = sets.includes('background');
       if (buttonTextFollows(theme, name, t.roles)) sets.push('buttonText');
       // what it sets: a text role, or the fill a text role is read against
       const checked = (c) => c.textStyle || shows || sets.includes(c.key) || sets.includes(c.on);
-      say(`${where}.templates.${id}`, contrastResults(theme, name, { template: id, seeThrough }).filter(checked));
+      say(`${where}.templates.${id}`, contrastResults(theme, name, { template: id }).filter(checked));
     }
   }
   return out;

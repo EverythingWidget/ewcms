@@ -68,9 +68,9 @@
   align-content: start;
   padding: var(--item-pad);
   border-radius: var(--item-radius);
-  // its fill: its style's (inline), else the Background its own template sets in the color theme
-  // (.ct-<name> .tpl-<id>, src/render/colors.js), else none. Set on each item, so an item in
-  // another's never takes the outer one's; hover: its own fill unless its style sets one
+  // its fill: the Background its own template sets in the color theme (.ct-<name> .tpl-<id>,
+  // src/render/colors.js), else none. Set on each item, so an item in another's never takes the
+  // outer one's; hover: the same fill
   --item-bg: transparent;
   --item-bg-hover: var(--item-bg);
 

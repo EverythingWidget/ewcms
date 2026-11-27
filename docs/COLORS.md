@@ -63,9 +63,13 @@ the palette), or `"transparent"` (no fill) on a fill.
 Inside the header (`.header`, `.mmenu`) Background and Text are the Header and Header text, so
 CSS there reads `--color-background` / `--color-text` like anywhere else.
 
-The colour value `"none"` was renamed `"transparent"` (in color themes, template entries and an
-item template's `style.background` / `style.hoverBackground`); `ewcms check` names a leftover
-`"none"`.
+The colour value `"none"` was renamed `"transparent"` (in color themes and template entries);
+`ewcms check` names a leftover `"none"`.
+
+An item's fill is its template's Background, one fill: `colorThemes.<theme>.templates.<id>.background`
+(left out or `"transparent"`: no fill of its own, the section shows through), the same on
+hover. An item template's old `style.background` /
+`style.hoverBackground` are gone: `ewcms check` names a leftover and where the fill went.
 
 A color theme can also colour each text style (sub-roles, its `textStyles` in
 `content/theme.json`): `--color-type-title`, `--color-type-heading`, `--color-type-subheading`,

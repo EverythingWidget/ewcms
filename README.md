@@ -1198,8 +1198,6 @@ A List is a simple list: only its items, no heading and no See all link. A headi
   | `shadow`          | Shadow                | `"none"`, `"s"`, `"m"`, `"l"`                                                                                                                            |
   | `padding`         | Padding               | 0, 8, 12, 16, 24, 32                                                                                                                                     |
   | `spacing`         | Space between widgets | 0, 4, 8, 12, 16, 24                                                                                                                                      |
-  | `background`      | Background            | `"none"`, `"surface"`, `"surface-2"`                                                                                                                     |
-  | `hoverBackground` | Background on hover   | as `background`                                                                                                                                          |
   | `textOverPhoto`   | Text over photo       | `"none"`, `"bottom"` (on a shade at the photo's foot)                                                                                                    |
   | `hoverEffect`     | Hover effect          | `"none"`, `"accent"` (Accent title), `"zoom"` (Zoom photo), `"shift"` (Slide title), `"lift"` (Lift); all but none turn a linked item's title the accent |
   | `align`           | Align                 | `"start"`, `"center"`, `"end"`                                                                                                                           |
@@ -1217,15 +1215,18 @@ A List is a simple list: only its items, no heading and no See all link. A headi
   ```
 
   A border is an inset box-shadow ring (`--item-border`, listed with `--item-shadow`), so it
-  never shifts the layout. The presets are style values only (`PRESET_STYLES` in
+  never shifts the layout. An item's fill is not a style key: it is the Background its template
+  sets in `content/theme.json` (`colorThemes.<theme>.templates.<id>.background`; left out: no
+  fill), the same on hover. The old `style.background` / `style.hoverBackground` are gone
+  (`ewcms check` names a leftover). The presets are style values only (`PRESET_STYLES` in
   `src/widgets/list/item-style.js`): Card `photoRatio 4/5, photoPlacement above,
 hoverEffect accent, titleSize m, textBody lines`; Plain `photoRatio 4/3, photoPlacement above,
-padding 0, border none, shadow none, background none, hoverEffect accent, titleSize s,
+padding 0, border none, shadow none, hoverEffect accent, titleSize s,
 textBody prose`; Panel `photoRatio 4/5, photoPlacement above, padding 0, textOverPhoto bottom,
 hoverEffect zoom, titleSize m, textBody lines`; Row `photoRatio 4/3, photoPlacement beside,
 border bottom, hoverEffect shift, titleSize l, textBody lines`; Photo `photoRatio 4/5, photoFit
-fill, photoPlacement above, padding 0, spacing 0, border none, shadow none, background none,
-hoverBackground none, textOverPhoto none, hoverEffect none, titleSize s, textBody lines` (its
+fill, photoPlacement above, padding 0, spacing 0, border none, shadow none, textOverPhoto none,
+hoverEffect none, titleSize s, textBody lines` (its
   radius the theme's). Duplicate writes the preset's
   style into the new template (a template copy keeps its own). A template looks as its own
   `style` says, nothing else: `basedOn` is only a note of where it came from (its columns'

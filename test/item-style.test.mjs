@@ -15,7 +15,6 @@ import {
   styleMarkup,
   styleProblems,
 } from '../src/widgets/list/item-style.js';
-import { STYLE_ROWS } from '../src/editor/lib/item-style-rows.js';
 import { WIDGET_TYPES } from '../src/widgets/index.js';
 import { SITE_A } from './fixtures/index.mjs';
 
@@ -42,8 +41,6 @@ test('the keys and their values: sizes on the 4px grid, Fill / Fit, Border as a 
     'shadow',
     'padding',
     'spacing',
-    'background',
-    'hoverBackground',
     'textOverPhoto',
     'hoverEffect',
     'titleSize',
@@ -61,9 +58,6 @@ test('the keys and their values: sizes on the 4px grid, Fill / Fit, Border as a 
   assert.deepEqual(STYLE_KEYS.photoFit, ['fill', 'fit']);
   assert.deepEqual(STYLE_KEYS.border, ['none', 'line', 'strong', 'bottom']);
   assert.deepEqual(STYLE_KEYS.textOverPhoto, ['none', 'bottom']);
-  // the fills are "transparent" (the colour value's name), not "none"
-  assert.deepEqual(STYLE_KEYS.background, ['transparent', 'surface', 'surface-2']);
-  assert.deepEqual(STYLE_KEYS.hoverBackground, ['transparent', 'surface', 'surface-2']);
 });
 
 test('the validator: a valid style passes, a wrong key or value is named, "theme" is never a value', () => {
@@ -73,10 +67,8 @@ test('the validator: a valid style passes, a wrong key or value is named, "theme
   assert.match(msg({ radius: 6 }), /style\.radius must be one of 0, 4, 8, 12, 16, 24/);
   assert.match(msg({ ring: 'line' }), /style\.ring is not an item style key/);
   assert.match(msg({ gap: 8 }), /style\.gap is not an item style key/);
-  // "none" was renamed "transparent": a leftover fill says so; the other keys' "none" stays
-  assert.match(msg({ background: 'none' }), /style\.background is "none": use "transparent"/);
-  assert.match(msg({ hoverBackground: 'none' }), /style\.hoverBackground is "none": use "transparent"/);
-  assert.deepEqual(checkContent(T, tpl({ background: 'transparent', border: 'none', shadow: 'none' })), []);
+  // the other keys' "none" stays (an item's fill is not a style key: theme.json's Background)
+  assert.deepEqual(checkContent(T, tpl({ border: 'none', shadow: 'none' })), []);
   // the keys the template grid took over (a preset keeps them): each names what replaced it
   assert.match(msg({ photoFit: 'cover' }), /"style\.photoFit" is gone: the photo widget's own fit/);
   for (const k of GRID_STYLE_KEYS)
@@ -95,15 +87,13 @@ test('markup: overrides as --item-* on the item, the rest as li--<style> classes
     shadow: 'm',
     padding: 16,
     spacing: 4,
-    background: 'surface',
-    hoverBackground: 'surface-2',
     textOverPhoto: 'bottom',
     hoverEffect: 'lift',
     align: 'center',
   });
   assert.equal(
     m.vars,
-    '--item-photo-ratio:3 / 2;--item-photo-fit:contain;--item-radius:8px;--item-border:inset 0 -1px 0 var(--color-line);--item-shadow:var(--item-shadow-m);--item-pad:16px;--item-gap:4px;--item-bg:color-mix(in oklab, var(--color-background), var(--color-text) 6%);--item-bg-hover:color-mix(in oklab, var(--color-background), var(--color-text) 12%)',
+    '--item-photo-ratio:3 / 2;--item-photo-fit:contain;--item-radius:8px;--item-border:inset 0 -1px 0 var(--color-line);--item-shadow:var(--item-shadow-m);--item-pad:16px;--item-gap:4px',
   );
   assert.deepEqual(m.cls, [
     'li--border-bottom',
@@ -159,27 +149,31 @@ test('no preset-only CSS: the List stylesheet names no preset', () => {
   assert.match(css, /box-shadow: var\(--item-border\), var\(--item-shadow\)/);
 });
 
-test('the Style tab: Theme first and never saved, the agreed labels, Space between items', () => {
-  const labels = Object.fromEntries(STYLE_ROWS.map((r) => [r.key, r.label]));
-  assert.equal(labels.border, 'Border');
-  assert.equal(labels.spacing, 'Space between widgets');
-  assert.equal(labels.textOverPhoto, 'Text over photo');
-  assert.equal(labels.hoverEffect, 'Hover effect');
-  assert.equal(labels.titleSize, 'Title size');
-  assert.equal(labels.photoPlacement, 'Photo placement');
-  assert.equal(labels.textBody, 'Text body');
-  const fit = STYLE_ROWS.find((r) => r.key === 'photoFit');
-  assert.deepEqual(fit.options, [
-    ['', 'Theme'],
-    ['fill', 'Fill'],
-    ['fit', 'Fit'],
-  ]);
-  for (const r of STYLE_ROWS) {
-    assert.deepEqual(r.options[0], ['', 'Theme'], r.key);
-    assert.equal(r.parse(''), undefined, r.key);
-  }
-  assert.equal(STYLE_ROWS.find((r) => r.key === 'radius').parse('8'), 8);
+test('one fill: no item style background; the Style tab rows are retired', () => {
+  // the dead editor rows (item-style-rows.js) are gone; the List's own gap label stays
+  assert.equal(fs.existsSync(new URL('../src/editor/lib/item-style-rows.js', import.meta.url)), false);
   assert.equal(WIDGET_TYPES.list.config.find((c) => c.key === 'gap').label, 'Space between items');
+  // no fill key, no preset fill, no --item-bg written by a style: theme.json's Background is it
+  assert.equal(STYLE_KEYS.background, undefined);
+  assert.equal(STYLE_KEYS.hoverBackground, undefined);
+  for (const [id, st] of Object.entries(PRESET_STYLES)) {
+    assert.equal(st.background, undefined, id);
+    assert.equal(st.hoverBackground, undefined, id);
+  }
+  assert.doesNotMatch(styleMarkup({ background: 'surface', hoverBackground: 'surface-2' }).vars, /--item-bg/);
+  assert.doesNotMatch(read('src/widgets/list/item-style.js'), /seeThroughTemplates|put\('--item-bg/);
+});
+
+test('ewcms check: a leftover style.background or hoverBackground says where the fill went', () => {
+  const msg = (s) => checkContent('templates/t-prow.json', tpl(s)).join('\n');
+  const bg = msg({ border: 'bottom', background: 'transparent' });
+  assert.match(bg, /"style\.background" is gone: an item's fill \(on hover too\) is its template's Background in content\/theme\.json/);
+  assert.match(bg, /"colorThemes\.<theme>\.templates\.t-prow\.background"/);
+  assert.match(bg, /Remove "style\.background" \(it was "transparent"\)/);
+  assert.equal(checkContent('templates/t-prow.json', tpl({ border: 'bottom', background: 'transparent' })).length, 1);
+  assert.match(msg({ hoverBackground: 'surface' }), /"style\.hoverBackground" is gone: .*\(it was "surface"\)/);
+  // without it: fine
+  assert.deepEqual(checkContent('templates/t-prow.json', tpl({ border: 'bottom' })), []);
 });
 
 test('Title size: Large is never smaller than Medium, nor Medium than Small, at any width', () => {

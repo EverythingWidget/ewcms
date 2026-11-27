@@ -704,7 +704,7 @@ export function checkContent(file, data) {
   if (file === PHOTOS)
     return isObject(d.photos) ? checkPhotos(d.photos) : ['"photos" must be an object'];
   if (docKindOf(file)) return checkDoc(file, d);
-  if (templateIdOf(file)) return checkItemTemplate(d);
+  if (templateIdOf(file)) return checkItemTemplate(d, templateIdOf(file));
   return [];
 }
 
@@ -722,7 +722,7 @@ const ROLE = /^[a-z][a-z0-9-]*$/;
  * out) or "custom" with rows.min. No "source" on a widget but an inner List's (the List gives
  * each copy its item).
  */
-export function checkItemTemplate(d) {
+export function checkItemTemplate(d, id = '<template id>') {
   const out = [];
   if (d.kind !== 'template') out.push('"kind" must be "template"');
   if (typeof d.name !== 'string' || !d.name.trim())
@@ -735,13 +735,27 @@ export function checkItemTemplate(d) {
   // retired by the template grid (step I): what replaced each
   for (const [k, msg] of Object.entries(RETIRED_TEMPLATE_KEYS))
     if (d[k] !== undefined) out.push(`"${k}" is gone: ${msg}`);
-  if (isObject(d.style))
+  if (isObject(d.style)) {
     for (const [k, msg] of Object.entries(RETIRED_STYLE_KEYS))
       if (d.style[k] !== undefined) out.push(`"style.${k}" is gone: ${msg}`);
+    // the item's fill: the color theme's (one fill), its value named for the move
+    for (const k of FILL_STYLE_KEYS)
+      if (d.style[k] !== undefined)
+        out.push(
+          `"style.${k}" is gone: an item's fill (on hover too) is its template's Background in` +
+            ` content/theme.json, "colorThemes.<theme>.templates.${id}.background" (left out or` +
+            ` "transparent": no fill, the section shows through). Remove "style.${k}"` +
+            ` (it was ${JSON.stringify(d.style[k])})`,
+        );
+  }
   out.push(
     ...styleProblems(
       isObject(d.style)
-        ? Object.fromEntries(Object.entries(d.style).filter(([k]) => !RETIRED_STYLE_KEYS[k]))
+        ? Object.fromEntries(
+            Object.entries(d.style).filter(
+              ([k]) => !RETIRED_STYLE_KEYS[k] && !FILL_STYLE_KEYS.includes(k),
+            ),
+          )
         : d.style,
     ),
   );
@@ -864,6 +878,8 @@ const RETIRED_TEMPLATE_KEYS = {
     'a "details" widget (Summary and details) on the template: its "config.template" holds the details, "config.several" is "opens.several"',
   photoFirst: 'the photo\'s place is its own "layout" on the template\'s grid',
 };
+/** An item template's old fill keys: its color theme's Background is its one fill now. */
+const FILL_STYLE_KEYS = ['background', 'hoverBackground'];
 /** Item style keys the template grid took over. */
 const RETIRED_STYLE_KEYS = {
   padding: "the space inside an item is the template's grid: place the widgets where they go",

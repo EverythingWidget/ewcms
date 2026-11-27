@@ -8,6 +8,19 @@ say what a site must do before it bumps its pin.
 
 ### Breaking: what a site must do before bumping to the next release
 
+- **Breaking: an item template's `style.background` and `style.hoverBackground` are gone: one
+  fill, the color theme's.** An item's fill (on hover too) is the Background its template sets in
+  `content/theme.json` (`colorThemes.<theme>.templates.<id>.background`; left out or
+  `"transparent"`: no fill, the section shows through). The presets lost theirs too (Plain and
+  Photo were `transparent`, which is now simply the default). `ewcms check` names a leftover:
+  `"style.background" is gone: … Remove "style.background" (it was "transparent")`. Migration: drop
+  the key from each `content/templates/t-*.json`; where a color theme gives that template a
+  Background and the item should stay see-through, set it to `"transparent"` there. The editor
+  never showed these keys (the dead `item-style-rows.js` is removed), and contrast reads
+  `theme.json` only (no "see-through templates" list). eeliyarasta: `content/templates/t-prow.json`
+  `"style": { "border": "bottom", "background": "transparent" }` becomes
+  `"style": { "border": "bottom" }` (its `theme.json` has no `colorThemes`, so nothing to add there).
+
 - **Breaking: `theme/meta.json` `colorScheme` moves to `content/theme.json` `color.scheme`.** The
   color-scheme meta is written from `color.scheme` (`dark`, `light`, `light dark`, and the other
   usual values; left out: none), the same way `color.themeColor` already is. No migration:

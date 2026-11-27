@@ -343,12 +343,11 @@ export function roleResetEdit(theme, spec) {
 /**
  * A row's contrast result, as the check works it out (a see-through fill blended over what is
  * behind it first): { ratio, min, pass, on, seeThrough } for a text role read against a fill and
- * for Line; null for the others (and the text styles). seeThrough: the templates whose items
- * show no Background of their own.
+ * for Line; null for the others (and the text styles).
  */
-export function contrastRow(theme, spec, seeThrough = []) {
+export function contrastRow(theme, spec) {
   if (spec.textStyle) return null;
-  return contrastIndex(theme, spec.theme, spec.template, seeThrough).get(spec.key) || null;
+  return contrastIndex(theme, spec.theme, spec.template).get(spec.key) || null;
 }
 
 /**
@@ -356,8 +355,8 @@ export function contrastRow(theme, spec, seeThrough = []) {
  * builds one per theme card and one for the template its Templates fold shows, then each row
  * looks its own up (not a check per row).
  */
-export function contrastIndex(theme, name, template = null, seeThrough = []) {
-  const all = contrastResults(theme, name, { template: template || null, seeThrough });
+export function contrastIndex(theme, name, template = null) {
+  const all = contrastResults(theme, name, { template: template || null });
   return new Map(all.filter((c) => !c.textStyle).map((c) => [c.key, c]));
 }
 

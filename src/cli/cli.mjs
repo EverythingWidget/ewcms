@@ -19,7 +19,6 @@ import { ENGINE, enginePath, posixPath, ENGINE_VERSION } from './engine.mjs';
 import { loadSiteConfig, CONFIG_FILE, DEFAULT_SITE_THEME, THEME_META } from './site-config.mjs';
 import { typeFontWarnings } from '../render/layout/type.js';
 import { contrastWarnings, isOldColorToken } from '../render/colors.js';
-import { seeThroughTemplates } from '../widgets/list/item-style.js';
 import { buildPhotos } from './photos.mjs';
 import { checkLinks } from './check-links.mjs';
 import { registerSiteWidgets } from './site-widgets.mjs';
@@ -370,8 +369,7 @@ export function themeWarning(site) {
     for (const w of typeFontWarnings(theme.typography, listed))
       out.push(`[check] ${rootRel}/theme.json ${w}`);
     // colours: text against its nearest real background (src/render/colors.js)
-    const seeThrough = seeThroughTemplates(siteTemplates(site));
-    for (const w of contrastWarnings(theme, { seeThrough }))
+    for (const w of contrastWarnings(theme))
       out.push(`[check] ${rootRel}/theme.json ${w}`);
   } catch {
     // no content/theme.json, or it isn't JSON: checkContent names the file
@@ -396,20 +394,6 @@ export function themeWarning(site) {
         `in content/theme.json "typography"`,
     );
   return out.join('\n');
-}
-
-/** The site's item templates (content/templates/t-*.json) by id; one that isn't JSON is left out. */
-function siteTemplates(site) {
-  const dir = site.templatesDir;
-  if (!dir || !fs.existsSync(dir)) return {};
-  const out = {};
-  for (const f of fs.readdirSync(dir).filter((n) => /^t-[\w-]+\.json$/.test(n)))
-    try {
-      out[f.slice(0, -5)] = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
-    } catch {
-      // not JSON: checkContent names the file
-    }
-  return out;
 }
 
 /** Tokens of the look renamed, old: new (CHANGELOG, Breaking): check names the new one. */

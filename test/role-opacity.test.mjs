@@ -177,11 +177,12 @@ test("contrast: a template's see-through Background over its section's; a see-th
   );
   assert.equal(text.bg, '#cccccc'); // 80% white over the section's black
   assert.equal(text.pass, true);
-  // its items show no Background (item style Transparent): the section's
-  const through = contrastResults(card, 'darkest', {
-    template: 'preset:card',
-    seeThrough: ['preset:card'],
-  }).find((c) => c.key === 'text');
+  // its Background Transparent (its one fill, theme.json): the section's
+  const clear = structuredClone(card);
+  clear.colorThemes.darkest.templates['preset:card'] = { background: 'transparent', text: 1 };
+  const through = contrastResults(clear, 'darkest', { template: 'preset:card' }).find(
+    (c) => c.key === 'text',
+  );
   assert.equal(through.bg, '#000000');
   // the site's own Background see-through: what is behind the page (the canvas, a backdrop
   // photo) isn't known, so its text (and a section see-through over it) is not checked
@@ -347,7 +348,7 @@ test('contrast is a hint: text roles Pass / Fail, Line its ratio only; worked ou
   // the panel: one index per theme (and per template a fold shows), each row a lookup
   const part = read('src/editor/svelte/ColorPart.svelte');
   assert.match(part, /const contrasts = \$derived\.by\(\(\) => \{/);
-  assert.match(part, /out\[name\] = contrastIndex\(t, name, null, seeThrough\);/);
+  assert.match(part, /out\[name\] = contrastIndex\(t, name, null\);/);
   assert.match(part, /if \(isOpen\(name, 'templates'\)\) \{/);
   assert.doesNotMatch(part, /contrastRow\(/);
   assert.match(part, /\{#if contrast\.verdict\}<b>\{contrast\.verdict\}<\/b>\{\/if\}/);

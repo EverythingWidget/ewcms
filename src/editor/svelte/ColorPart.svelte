@@ -44,7 +44,6 @@
     colorThemeClass,
   } from '../../render/colors.js';
   import { templatePickerGroups, PRESETS } from '../../widgets/list/presets.js';
-  import { seeThroughTemplates } from '../../widgets/list/item-style.js';
   import { atLimit, stepNumber } from '../lib/number-step.js';
   import {
     buttonModeValue,
@@ -123,9 +122,6 @@
     if (Number.isInteger(n) && n >= 0 && n <= 100) setOpacity(spec, n);
   }
 
-  // the templates whose items show no Background of their own (contrast: the section's)
-  const seeThrough = $derived(seeThroughTemplates(live.content?.templates || {}));
-
   const SLOTS = Array.from({ length: PALETTE_SIZE }, (_, i) => i + 1);
   const BUTTON_CHOICES = [
     ['color', 'Color'],
@@ -163,10 +159,10 @@
     const t = theme();
     const out = {};
     for (const [name] of THEMES) {
-      out[name] = contrastIndex(t, name, null, seeThrough);
+      out[name] = contrastIndex(t, name, null);
       if (isOpen(name, 'templates')) {
         const id = templateFor(name);
-        out[`${name}:${id}`] = contrastIndex(t, name, id, seeThrough);
+        out[`${name}:${id}`] = contrastIndex(t, name, id);
       }
     }
     return out;

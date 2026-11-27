@@ -66,7 +66,7 @@ test("a template's sub-roles apply only inside its items, in that theme", () => 
   assert.match(dark, /--color-text: #333/);
   assert.match(dark, /--color-link: inherit/);
   assert.doesNotMatch(dark, /--color-heading/);
-  // its item paints the Background it sets (a fill its style sets, inline, still wins)
+  // its item paints the Background it sets (its one fill: no item style fill any more)
   assert.match(dark, /--item-bg: var\(--color-background\);/);
   assert.doesNotMatch(dark, /--item-bg-hover/); // hover: .li's, its own fill
   // another theme: inherit all, its own fill (not the site theme's rule, which matches everywhere)
@@ -74,10 +74,9 @@ test("a template's sub-roles apply only inside its items, in that theme", () => 
   assert.match(light, /--color-background: inherit/);
   assert.match(light, /--item-bg: transparent;/);
   assert.doesNotMatch(css, /--item-bg: inherit/);
-  // a style's fill wins (inline): None is see-through, Surface a surface of that Background;
-  // left empty, nothing inline, so the template's Background shows
-  assert.equal(styleMarkup({ background: 'transparent' }).vars, '--item-bg:transparent');
-  assert.match(styleMarkup({ background: 'surface' }).vars, /--item-bg:color-mix\(in oklab, var\(--color-background\)/);
+  // one fill: a leftover style fill writes nothing inline, so the template's Background shows
+  assert.equal(styleMarkup({ background: 'transparent' }).vars, '');
+  assert.equal(styleMarkup({ background: 'surface', hoverBackground: 'surface-2' }).vars, '');
   assert.equal(styleMarkup({}).vars, '');
   // one name: no --item-fill anywhere
   for (const f of ['../src/widgets/list/style.scss', '../src/widgets/list/item-style.js', '../src/render/colors.js'])
@@ -175,20 +174,18 @@ test('one source: the text styles are layout/text-styles.js\'s, a template id a 
     assert.ok(tpl(id).some((p) => /is not a template id/.test(p)), id);
 });
 
-test('contrast: a template whose fill is None is read against the section, not its Background', async () => {
-  const { seeThroughTemplates } = await import('../src/widgets/list/item-style.js');
+test('contrast: a template whose Background is Transparent is read against the section', () => {
   const palette = ['#000000', '#111111', '#777777', '#cccccc', '#ffffff'];
-  // dark text on a light template Background: fine where it shows, not over the dark section
-  const theme = { palette, colorThemes: { dark: { templates: { 'preset:plain': { background: 5, text: 1 }, 't-ab12': { background: 5, text: 1, heading: 1, link: 1 } } } } };
-  const seeThrough = seeThroughTemplates({ 't-ab12': { style: { background: 'transparent' } }, 't-cd34': { style: {} } });
-  assert.deepEqual(seeThrough, ['preset:plain', 'preset:photo', 't-ab12']);
-  const shown = contrastWarnings(theme);
-  assert.ok(!shown.some((w) => /templates\.t-ab12: Text/.test(w)), shown.join('\n'));
-  const real = contrastWarnings(theme, { seeThrough });
-  assert.ok(real.some((w) => /templates\.t-ab12: Text on Background/.test(w)), real.join('\n'));
-  assert.ok(real.some((w) => /templates\.preset:plain: Text on Background/.test(w)), real.join('\n'));
+  // dark text on a light template Background: fine where it shows; Transparent (its one fill:
+  // theme.json, no item style fill any more): over the dark section, a warning
+  const theme = { palette, colorThemes: { dark: { templates: { 'preset:plain': { background: 'transparent', text: 1 }, 't-ab12': { background: 5, text: 1, heading: 1, link: 1 } } } } };
+  const out = contrastWarnings(theme);
+  assert.ok(!out.some((w) => /templates\.t-ab12: Text/.test(w)), out.join('\n'));
+  assert.ok(out.some((w) => /templates\.preset:plain: Text on Background/.test(w)), out.join('\n'));
   // its Heading it leaves to the section: nothing new to say about it
-  assert.ok(!real.some((w) => /templates\.preset:plain: Heading/.test(w)), real.join('\n'));
+  assert.ok(!out.some((w) => /templates\.preset:plain: Heading/.test(w)), out.join('\n'));
+  // no seeThrough option any more: the check reads theme.json only
+  assert.equal(contrastWarnings.length, 1);
 });
 
 test("an item in another's takes its own template's Background, never the outer item's", () => {

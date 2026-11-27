@@ -15,15 +15,16 @@
  *   shadow           "none" | "s" | "m" | "l"
  *   padding          0 | 8 | 12 | 16 | 24 | 32
  *   spacing          0 | 4 | 8 | 12 | 16 | 24  between the item's widgets
- *   background       "transparent" | "surface" | "surface-2"   transparent: see-through; left
- *                    out: the Background its template sets in the color theme, else transparent
- *   hoverBackground  "transparent" | "surface" | "surface-2"
  *   textOverPhoto    "none" | "bottom"         the text over the photo's foot, a shade under it
  *   hoverEffect      "none" | "accent" | "zoom" | "shift" | "lift"   on hover: the title in the
  *                    accent (a linked item), plus zoom the photo, slide the title or lift the item
  *   titleSize        "s" | "m" | "l"           the title's size (Text over photo sizes its own)
  *   textBody         "lines" | "prose"         the body text as lines, or a readable paragraph
  *   align            "start" | "center" | "end"   the text
+ * An item's fill is not a style key: it is the Background its template sets in the color theme
+ * (theme.json colorThemes.<theme>.templates.<id>.background; "transparent": see-through; left
+ * out: none), the same on hover (src/render/colors.js). The old "background" and
+ * "hoverBackground" keys are gone (ewcms check names a leftover: src/render/validate.js).
  */
 import { isObject } from '../../render/is.js';
 
@@ -37,8 +38,6 @@ export const STYLE_KEYS = {
   shadow: ['none', 's', 'm', 'l'],
   padding: PX(0, 8, 12, 16, 24, 32),
   spacing: PX(0, 4, 8, 12, 16, 24),
-  background: ['transparent', 'surface', 'surface-2'],
-  hoverBackground: ['transparent', 'surface', 'surface-2'],
   textOverPhoto: ['none', 'bottom'],
   hoverEffect: ['none', 'accent', 'zoom', 'shift', 'lift'],
   titleSize: ['s', 'm', 'l'],
@@ -61,7 +60,6 @@ export const PRESET_STYLES = {
     padding: 0,
     border: 'none',
     shadow: 'none',
-    background: 'transparent',
     hoverEffect: 'accent',
     titleSize: 's',
     textBody: 'prose',
@@ -91,8 +89,6 @@ export const PRESET_STYLES = {
     spacing: 0,
     border: 'none',
     shadow: 'none',
-    background: 'transparent',
-    hoverBackground: 'transparent',
     textOverPhoto: 'none',
     hoverEffect: 'none',
     titleSize: 's',
@@ -100,9 +96,6 @@ export const PRESET_STYLES = {
   },
 };
 export const presetStyle = (id) => ({ ...(PRESET_STYLES[id] || PRESET_STYLES['preset:card']) });
-
-// the fills: "transparent", never "none" (renamed; ewcms check says so)
-const FILL_KEYS = ['background', 'hoverBackground'];
 
 /** Problems with a template's "style" ([] when fine). */
 export function styleProblems(style) {
@@ -113,8 +106,6 @@ export function styleProblems(style) {
     const allowed = STYLE_KEYS[k];
     if (!allowed)
       out.push(`style.${k} is not an item style key (${Object.keys(STYLE_KEYS).join(', ')})`);
-    else if (v === 'none' && FILL_KEYS.includes(k))
-      out.push(`style.${k} is "none": use "transparent" (no fill; "none" was renamed)`);
     else if (!allowed.includes(v))
       out.push(
         `style.${k} must be one of ${allowed.map((a) => JSON.stringify(a)).join(', ')} (left out: the theme's)`,
@@ -123,34 +114,14 @@ export function styleProblems(style) {
   return out;
 }
 
-/**
- * The templates whose item style's fill is Transparent (see-through: a Background their color theme
- * sets never shows): the presets' and the site's (`templates`: { id: template }).
- */
-export const seeThroughTemplates = (templates = {}) => [
-  ...Object.entries(PRESET_STYLES)
-    .filter(([, s]) => s.background === 'transparent')
-    .map(([id]) => id),
-  ...Object.entries(templates)
-    .filter(([, t]) => isObject(t?.style) && t.style.background === 'transparent')
-    .map(([id]) => id),
-];
-
 /** Only the valid keys (a broken one shows the theme's). */
 export const cleanStyle = (style) =>
   isObject(style)
     ? Object.fromEntries(Object.entries(style).filter(([k, v]) => STYLE_KEYS[k]?.includes(v)))
     : {};
 
-// the item's fill and ring: the color theme's roles (src/render/colors.js), a surface a step
-// (two) from Background toward Text; Transparent: no fill (see-through). Left empty: the Background
-// its template sets in the color theme (--item-bg, src/render/colors.js), else transparent
-const surface = (n) => `color-mix(in oklab, var(--color-background), var(--color-text) ${n}%)`;
-const FILL = {
-  transparent: 'transparent',
-  surface: surface(6),
-  'surface-2': surface(12),
-};
+// the item's ring: the color theme's roles (src/render/colors.js). Its fill is not here: the
+// Background its template sets in the color theme (--item-bg, src/render/colors.js)
 const RING = {
   none: 'inset 0 0 0 0 transparent',
   line: 'inset 0 0 0 1px var(--color-line)',
@@ -184,8 +155,6 @@ export function styleMarkup(style) {
   put('--item-shadow', s.shadow && SHADOW[s.shadow]);
   put('--item-pad', s.padding !== undefined ? `${s.padding}px` : undefined);
   put('--item-gap', s.spacing !== undefined ? `${s.spacing}px` : undefined);
-  put('--item-bg', s.background && FILL[s.background]);
-  put('--item-bg-hover', s.hoverBackground && FILL[s.hoverBackground]);
   put('--li-title-size', s.titleSize && TITLE[s.titleSize]);
   const cls = [
     s.border === 'bottom' && 'li--border-bottom',
