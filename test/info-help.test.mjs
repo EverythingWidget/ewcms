@@ -70,8 +70,14 @@ test('the audit tips: each in an existing row, with its label', () => {
   );
   assert.match(src('App.svelte'), /<InfoHelp label="About Desktop and Phone"/);
   assert.match(src('TemplateWidgetFields.svelte'), /<b>Role<\/b>: this widget's name/);
-  assert.match(src('TemplateWidgetFields.svelte'), /<b>Inherit<\/b>/);
-  assert.match(src('GroupFields.svelte'), /\{#snippet tip\(\)\}<b>When a value is missing<\/b>/);
+  // When a value is missing: one row for a page's and a template's widget (MissingField)
+  assert.match(src('MissingField.svelte'), /<b>Inherit<\/b>/);
+  assert.match(
+    src('MissingField.svelte'),
+    /\{#snippet tip\(\)\}\{#if inherit\}<b>When a value is missing<\/b>/,
+  );
+  assert.match(src('TemplateWidgetFields.svelte'), /<MissingField[^>]*\binherit\b/);
+  assert.match(src('GroupFields.svelte'), /<MissingField/);
   // Field: the tip in its label row, after the label
   assert.match(
     src('Field.svelte'),

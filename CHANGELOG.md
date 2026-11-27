@@ -171,6 +171,14 @@ say what a site must do before it bumps its pin.
 
 ### Editor
 
+- **A widget's fields are declared once for pages and templates.** A setting or config entry
+  that a template also offers carries `inTemplate` (a Photo's photo, a Button's label and link, a
+  List's Template); `templateFields()` (src/widgets/index.js) lists a type's template rows from
+  them and its template-only rows (`inTemplate.fields`: a Button's Opens the item's page, an inner
+  List's Items from). When a value is missing is one component (`MissingField.svelte`) for a page's
+  and a template's widget. Nothing looks or works differently. A custom widget's
+  `inTemplate.fields` still works.
+
 - **One color theme picker (`ColorThemePicker.svelte`).** Theme › Color's Site color theme is
   drawn by it (the same select, unsaved dot and Use Darkest reset); a section's and the header's
   pickers will use it too.

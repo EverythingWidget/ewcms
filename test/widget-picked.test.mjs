@@ -17,7 +17,7 @@ test("a Text's Content tab says its words are typed in the preview (F06, F15)", 
     /hint:\s*'Type the text in the preview: with the widget picked, just type/,
   );
   assert.match(src('WidgetSource.svelte'), /<b>None<\/b>: only\s+what you type/);
-  assert.match(src('GroupFields.svelte'), /<b>Hide<\/b>: the widget is left out/);
+  assert.match(src('MissingField.svelte'), /<b>Hide<\/b>: the widget is left out/);
 });
 
 test('a picked Text widget: Enter or a character typed edits its text (F45, F54)', () => {

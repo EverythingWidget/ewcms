@@ -222,7 +222,10 @@ function forItem(w, scope, link, sep, { custom = false, href = '' } = {}) {
 /** An inner List's "Items from" as the editor shows it (one item of a source shows as A source). */
 const innerMode = (w) => (w.source?.mode === 'item' ? 'all' : w.source?.mode);
 
-/** Its Content rows in an item template (TemplateWidgetFields.svelte). */
+/**
+ * Its template-only Content rows in an item template (TemplateWidgetFields.svelte); its
+ * Template row is its config entry's inTemplate (../index.js templateFields).
+ */
 const TEMPLATE_FIELDS = [
   {
     key: 'source/mode',
@@ -255,16 +258,6 @@ const TEMPLATE_FIELDS = [
     theirs: 'Match: their property',
     ours: 'Property',
     between: 'is this item’s',
-  },
-  {
-    key: 'config/template',
-    label: 'Template',
-    type: 'select',
-    options: 'innerTemplates',
-    value: (w) => w.config?.template || 'preset:card',
-    structure: true,
-    // Duplicate template / Edit template under the picker (TemplateWidgetFields)
-    editTemplate: true,
   },
 ];
 
@@ -315,6 +308,15 @@ export const list = {
       // besides the presets: a site template (content/templates/t-….json)
       also: isTemplateId,
       options: PRESETS.map((p) => [p.id, p.label]),
+      // an inner List's Template in an item template: the templates it may hold, with
+      // Duplicate template / Edit template under the picker (TemplateWidgetFields)
+      inTemplate: {
+        type: 'select',
+        options: 'innerTemplates',
+        value: (w) => w.config?.template || 'preset:card',
+        structure: true,
+        editTemplate: true,
+      },
     },
     {
       key: 'arrangement',

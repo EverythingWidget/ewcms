@@ -9,7 +9,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
-const { BUILTIN_WIDGETS, TEMPLATE_WIDGETS, widgetType } = await import('../src/widgets/index.js');
+const { BUILTIN_WIDGETS, TEMPLATE_WIDGETS, templateFields, widgetType } =
+  await import('../src/widgets/index.js');
 const { pageTitle } = await import('../src/render/routes.js');
 const { storedDefaults, omitDefaults } = await import('../src/render/defaults.js');
 const { checkContent } = await import('../src/render/validate.js');
@@ -44,7 +45,7 @@ test('the places that checked a widget name ask its declaration instead', () => 
   assert.doesNotMatch(twf, nameCheck, 'TemplateWidgetFields.svelte');
   assert.match(twf, /widgetType\(w\.type\)\?\.inTemplate\?\.missing/);
   assert.match(twf, /widgetType\(w\.type\)\?\.inTemplate\?\.join/);
-  assert.match(twf, /inTemplate\?\.fields/);
+  assert.match(twf, /templateFields\(widgetType\(w\.type\)\)/);
   const validate = code(read('src/render/validate.js'));
   assert.doesNotMatch(validate, /'hero'/);
   assert.doesNotMatch(validate, /\.phone`/);
@@ -114,7 +115,9 @@ test('the editor: a hint, the item-template rows and a drawing, each declared', 
           ? {
               missing: !!it.missing,
               join: !!it.join,
-              fields: (it.fields || []).map((f) => (f.type === 'match' ? 'match' : f.key)),
+              fields: templateFields(widgetType(n)).map((f) =>
+                f.type === 'match' ? 'match' : f.key,
+              ),
             }
           : null,
       ];
@@ -145,7 +148,7 @@ test('the editor: a hint, the item-template rows and a drawing, each declared', 
   });
   // the same labels and stored values as the rows they replaced
   const field = (type, key) =>
-    widgetType(type).inTemplate.fields.find((f) =>
+    templateFields(widgetType(type)).find((f) =>
       key === 'match' ? f.type === 'match' : f.key === key,
     );
   assert.equal(field('photo', 'src').label, 'Photo');
@@ -214,4 +217,29 @@ test('the template editor and Layout tab ask the type, not its name', async () =
   const wl = code(read('src/editor/svelte/WidgetLayout.svelte'));
   assert.match(wl, /c\.writeConfig/);
   assert.doesNotMatch(wl, /CAROUSEL|withArrangement/);
+});
+
+test('a field a page and a template both have is declared once (its inTemplate), not twice', () => {
+  const own = (n) => (widgetType(n).inTemplate?.fields || []).map((f) => f.key);
+  // template-only rows only: no page setting or config entry repeated there
+  for (const n of NAMES) {
+    const t = widgetType(n);
+    const page = [
+      ...(t.settings || []).map((s) => s.key),
+      ...(t.config || []).map((c) => `config/${c.key}`),
+    ];
+    for (const k of own(n)) assert.ok(!page.includes(k), `${n}: ${k} is declared twice`);
+  }
+  assert.deepEqual(own('photo'), []);
+  assert.deepEqual(own('button'), ['itemLink']);
+  // the page declaration gives the template row its key and label, its own type
+  const row = (n, key) => templateFields(widgetType(n)).find((f) => f.key === key);
+  assert.equal(widgetType('photo').settings.find((s) => s.key === 'src').type, 'photo');
+  assert.equal(row('photo', 'src').type, undefined);
+  assert.equal(row('photo', 'src').binds, true);
+  assert.equal(row('button', 'label').label, 'Label');
+  assert.equal(row('button', 'config/link').label, 'Link');
+  assert.equal(row('button', 'config/link').disabled({ itemLink: true }), true);
+  assert.equal(row('list', 'config/template').label, 'Template');
+  assert.equal(row('list', 'config/template').value({}), 'preset:card');
 });

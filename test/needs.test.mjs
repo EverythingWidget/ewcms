@@ -188,7 +188,7 @@ test('editor: Inherit is the left-out missing option; Also needs is not in the p
   assert.deepEqual(TEMPLATE_MISSING[1], ['hide', 'Hide']);
   assert.deepEqual(TEMPLATE_MISSING[2], ['show', 'Show empty']);
   const fields = read('src/editor/svelte/TemplateWidgetFields.svelte');
-  assert.match(fields, /label="When a value is missing"/);
+  assert.match(fields, /<MissingField/);
   assert.match(fields, /options=\{TEMPLATE_MISSING\}/);
   assert.doesNotMatch(fields, /Also needs|needsValue|needsFrom|config\/needs/);
   assert.doesNotMatch(

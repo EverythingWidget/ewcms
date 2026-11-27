@@ -298,7 +298,7 @@ test('the pop-up: Arrangement, Columns, Gap in Layout; Content has Preset and Wh
     new URL('../src/editor/svelte/GroupFields.svelte', import.meta.url),
     'utf8',
   );
-  assert.match(gf, /When a value is missing/);
+  assert.match(gf, /<MissingField/);
   assert.match(gf, /MISSING_OPTIONS/);
   assert.match(gf, /config\/missing/);
   const wl = readFileSync(

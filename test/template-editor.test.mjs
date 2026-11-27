@@ -378,7 +378,7 @@ test('a template Text is edited in the preview, like a page Text: no Style/Text 
   assert.doesNotMatch(fields, /body\/0\/style|body\/0\/text|twf__line/);
   // Role, When a value is missing, and a facts join stay in the pop-up
   assert.match(fields, /label="Role"/);
-  assert.match(fields, /label="When a value is missing"/);
+  assert.match(fields, /<MissingField/);
   assert.match(fields, /label="Between facts"/);
 
   const { oneLineBody } = await import('../src/render/text.js');

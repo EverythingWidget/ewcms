@@ -11,7 +11,7 @@ import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { checkContent } from '../src/render/validate.js';
 import { bindingProblems } from '../src/render/layout/bindings.js';
-import { WIDGET_TYPES } from '../src/widgets/index.js';
+import { WIDGET_TYPES, templateFields } from '../src/widgets/index.js';
 import {
   innerChoice,
   innerItems,
@@ -312,7 +312,7 @@ test('the template editor: Add list, the inner List rows always there, the label
   const panel = read('src/editor/svelte/TemplatePanel.svelte');
   const fields = read('src/editor/svelte/TemplateWidgetFields.svelte');
   const inspector = read('src/editor/svelte/WidgetInspector.svelte');
-  const rows = WIDGET_TYPES.list.inTemplate.fields;
+  const rows = templateFields(WIDGET_TYPES.list);
   const labels = rows.flatMap((f) => [f.label, f.theirs, f.ours, f.between].filter(Boolean));
   for (const label of [
     'Items from',

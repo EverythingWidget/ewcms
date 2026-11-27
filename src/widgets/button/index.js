@@ -20,12 +20,12 @@ export const button = {
   sketch: 'button',
   // the Add widget modal's drawing of it (WidgetsModal.svelte): grey shapes, classes there
   drawing: ['pill'],
-  // in an item template (the Template editor): When a value is missing, its label, whether
-  // it opens the item's page, and its link
+  // in an item template (the Template editor): When a value is missing, its label (its
+  // setting's inTemplate), whether it opens the item's page (a template's only), and its link
+  // (its config entry's inTemplate)
   inTemplate: {
     missing: true,
     fields: [
-      { key: 'label', label: 'Label', binds: true },
       {
         key: 'itemLink',
         label: 'Opens the item’s page',
@@ -33,9 +33,19 @@ export const button = {
         value: (w) => w.itemLink === true,
         write: (v) => (v ? true : undefined),
       },
-      {
-        key: 'config/link',
-        label: 'Link',
+    ],
+  },
+  // its content box (the button): Fit hugs its label, Fill fills the widget; placed in it
+  placement: { axes: 'both', box: true, place: 'left top' },
+  // (an emptied label keeps its element: the editor writes it in place)
+  settings: [{ key: 'label', label: 'Label', blank: 'keep', inTemplate: { binds: true } }],
+  config: [
+    {
+      key: 'link',
+      label: 'Link',
+      type: 'link',
+      // in a template: a parts field (a property: {url}), off when it opens the item's page
+      inTemplate: {
         binds: true,
         value: (w) => (Array.isArray(w.config?.link) ? w.config.link : []),
         write: (v) => {
@@ -46,14 +56,7 @@ export const button = {
         disabled: (w) => w.itemLink === true,
         help: (w) => (w.itemLink === true ? 'It opens the item’s page' : 'A property: {url}'),
       },
-    ],
-  },
-  // its content box (the button): Fit hugs its label, Fill fills the widget; placed in it
-  placement: { axes: 'both', box: true, place: 'left top' },
-  // (an emptied label keeps its element: the editor writes it in place)
-  settings: [{ key: 'label', label: 'Label', blank: 'keep' }],
-  config: [
-    { key: 'link', label: 'Link', type: 'link' },
+    },
     // a label longer than the widget is wide: cut at its edge (Clip, unset) or broken onto more
     // lines, the pill taller (Wrap: buttonwidget--wrap, src/client/styles/_layout.scss)
     {

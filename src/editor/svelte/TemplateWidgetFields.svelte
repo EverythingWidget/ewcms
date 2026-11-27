@@ -10,13 +10,14 @@
 -->
 <script>
   import Field from './Field.svelte';
+  import MissingField from './MissingField.svelte';
   import TemplateActions from './TemplateActions.svelte';
   import { sourceIds as sourceIdsOf, templateIdOf } from '../../render/files.js';
   import { schemaOf } from '../../render/schemas.js';
   import { sampleSource } from '../../widgets/list/template-preview.js';
   import { ITEM_WIDGETS, itemSection } from '../../widgets/list/item-grid.js';
   import { templatePickerGroups } from '../../widgets/list/presets.js';
-  import { widgetType } from '../../widgets/index.js';
+  import { templateFields, widgetType } from '../../widgets/index.js';
   import { innerChoice, innerTemplates } from '../../widgets/list/nested.js';
   import { MIN_TEXT_PX, sizeLine, textSizes } from '../lib/small-text.js';
   import {
@@ -143,7 +144,7 @@
     set(`${ptr}/role`, role || undefined);
   }
 
-  const fields = $derived(widgetType(w.type)?.inTemplate?.fields ?? []);
+  const fields = $derived(templateFields(widgetType(w.type)));
   let note = $state('');
 
   const at = (obj, path) => path.split('/').reduce((o, k) => o?.[k], obj);
@@ -196,19 +197,13 @@
   <!-- what its type offers in an item template (its inTemplate: src/widgets/index.js) -->
   {#if widgetType(w.type)?.inTemplate?.missing}
     <!-- When a value is missing (src/render/layout/missing.js): one full row; Inherit is left out -->
-    <Field
+    <MissingField
       edit={`${file}#${b}/config/missing`}
-      label="When a value is missing"
-      type="select"
       value={w.config?.missing || ''}
       options={TEMPLATE_MISSING}
+      inherit
       onvalue={(v) => set(`${b}/config/missing`, v || undefined, true)}
-    >
-      {#snippet tip()}<b>When a value is missing</b>: an item has no value for a property this
-        widget shows. <b>Hide</b> leaves the widget out of that item when all its properties are
-        empty (a button: its link or label). <b>Show empty</b> keeps it, empty. <b>Inherit</b>: as
-        the List says.{/snippet}
-    </Field>
+    />
   {/if}
   {#if widgetType(w.type)?.inTemplate?.join}
     <!-- Style + Text: edited in the preview (the page Text's toolbar), not here -->
@@ -222,7 +217,8 @@
       />
     {/if}
   {/if}
-  <!-- the type's own rows (its inTemplate.fields); every row always there (no shift): the ones
+  <!-- the type's own rows (templateFields: its settings' and config's inTemplate, and its
+     template-only inTemplate.fields); every row always there (no shift): the ones
      the Items from doesn't use disabled -->
   {#each fields as f (f.key || f.type)}
     {#if f.type === 'match'}

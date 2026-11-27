@@ -128,9 +128,9 @@ test('wired: Edit template pushes, Back pops, going elsewhere clears; the head s
 
 
 test('a List inside a template gets Edit template; Back returns to that template', async () => {
-  const { widgetType } = await import('../src/widgets/index.js');
+  const { templateFields, widgetType } = await import('../src/widgets/index.js');
   const field = (type, key) =>
-    (widgetType(type).inTemplate?.fields || []).find((f) => f.key === key);
+    templateFields(widgetType(type)).find((f) => f.key === key);
   assert.equal(field('list', 'config/template').editTemplate, true);
   assert.equal(field('details', 'config/template').editTemplate, true);
   const twf = read('src/editor/svelte/TemplateWidgetFields.svelte');

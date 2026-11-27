@@ -74,8 +74,11 @@
  *   inTemplate  optional { missing?, join?, fields? }: what the Template editor offers for it in a List's
  *             item template (TemplateWidgetFields.svelte): missing, When a value is missing
  *             (config.missing, ../layout/missing.js); join, Between facts (its join);
- *             fields, its own Content rows (a Photo's photo, a Button's label and link, an
- *             inner List's Items from, Summary and details' template): [{ key, label, type?,
+ *             fields, its template-only Content rows (a Button's Opens the item's page, an
+ *             inner List's Items from, Summary and details' rows). A row that is also a page
+ *             setting or config entry is declared there, once, with `inTemplate` (a Photo's
+ *             photo, a Button's label and link, a List's Template; templateFields() lists
+ *             them all, in order). A row: [{ key, label, type?,
  *             binds?, options?, help?, disabled?, value?, write?, structure?, replace?, empty?,
  *             editTemplate? }]
  *               key: the path under the widget ('src', 'config/link', 'source/mode')
@@ -173,6 +176,31 @@ export const widgetType = (type) => WIDGET_TYPES[type] || TEMPLATE_TYPES[type];
 const BUILTIN = new Set(BUILTIN_WIDGETS.map((t) => t.type));
 const TYPE_NAME = /^[a-z][a-z0-9-]*$/;
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+
+/**
+ * A type's Content rows in an item template (TemplateWidgetFields.svelte), each field declared
+ * once for pages and templates: its settings and config entries that carry `inTemplate` (true,
+ * or the row's own keys: binds, type, value, write …) give the row, their key and label kept
+ * (a config entry's key under config/: 'config/link'); the type's template-only rows
+ * (inTemplate.fields: a Button's Opens the item's page, an inner List's Items from) sit between
+ * them: settings, template-only, config. A row's type is its own ('text' unless it says): a
+ * Photo's photo is a parts field in a template, a photo card on a page.
+ */
+export function templateFields(def) {
+  const rows = (list, at) =>
+    (Array.isArray(list) ? list : [])
+      .filter((e) => e?.inTemplate)
+      .map((e) => ({
+        key: `${at}${e.key}`,
+        label: e.label,
+        ...(isObj(e.inTemplate) ? e.inTemplate : {}),
+      }));
+  return [
+    ...rows(def?.settings, ''),
+    ...(def?.inTemplate?.fields || []),
+    ...rows(def?.config, 'config/'),
+  ];
+}
 
 /** What is wrong with a widget definition (a widget module's default export): messages. */
 export function widgetProblems(def) {

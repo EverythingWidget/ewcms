@@ -20,6 +20,7 @@
   import Field from './Field.svelte';
   import LinkField from './LinkField.svelte';
   import ListField from './ListField.svelte';
+  import MissingField from './MissingField.svelte';
   import PhotoList from './PhotoList.svelte';
   import { ui } from './ui.svelte.js';
   import { runsOf, isSource } from './content-groups.js';
@@ -298,20 +299,13 @@
     {/if}
   {/each}
   {#if g.widget}
-    <Field
+    <MissingField
       edit="{g.file}#{missingPtr}"
-      label="When a value is missing"
-      type="select"
       value={live.get(g.file, missingPtr) ?? 'hide'}
       options={MISSING_OPTIONS}
       unsaved={live.changed(g.file, missingPtr)}
       onvalue={setMissing}
-    >
-      {#snippet tip()}<b>When a value is missing</b>: what happens on the published page when the
-        values this widget takes from its Source are all empty. <b>Hide</b>: the widget is left out
-        (a button too when its label or link is empty). <b>Show empty</b>: it stays, empty. The
-        editor always shows it, dimmed. A List's items follow the List unless they set their own.{/snippet}
-    </Field>
+    />
   {/if}
 </div>
 
