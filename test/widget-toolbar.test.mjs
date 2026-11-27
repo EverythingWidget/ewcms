@@ -47,6 +47,58 @@ test('one widget: toolbar order add, gear, locate, eye, copy, trash; layers only
   assert.match(body, /\{#if !one\}\s*<Button\s+size="small"\s+icon="angles-down"/);
 });
 
+test('one section: its name in its own casing, then + gear ↑ ↓ trash ⋯ (the + where a widget has it)', () => {
+  const st = src('svelte/SectionToolbar.svelte');
+  const body = st.slice(
+    st.indexOf('{:else if s}'),
+    st.indexOf('{:else}', st.indexOf('{:else if s}')),
+  );
+  const icons = [...body.matchAll(/icon="([a-z-]+)"/g)].map((m) => m[1]);
+  // six buttons, + first: as one widget's six (plus, gear, locate, eye, copy, trash), so the +
+  // sits in the same place when the selection switches
+  assert.deepEqual(icons, ['plus', 'gear', 'arrow-up', 'arrow-down', 'trash', 'ellipsis']);
+  assert.match(
+    body,
+    /^\{:else if s\}\s*<p class="stb__name" \{title\}>\{title\}<\/p>\s*<span class="stb__gap"><\/span>/,
+  );
+  assert.match(
+    body,
+    /<Button\s+size="small"\s+icon="plus"\s+iconOnly\s+label="Add widget to \{title\}"\s+title="Add widget to this section"\s+aria-haspopup="dialog"\s+disabled=\{!on\}\s+onclick=\{\(\) => onadd\(at\)\}/,
+  );
+  // no + Add widget text button there (a template's addOnly keeps its own)
+  assert.doesNotMatch(body, /stb__add|>Add widget/);
+  // its display name: the typed name, else "Section N"
+  assert.match(
+    st,
+    /const title = \$derived\(\(s && typeof s\.name === 'string' && s\.name\.trim\(\)\) \|\| `Section \$\{at \+ 1\}`\);/,
+  );
+  // .stb__name keeps its casing; .stb__count (a widget's PHOTO) stays uppercase
+  const css = (cls) => st.slice(st.indexOf(`.${cls} {`), st.indexOf('}', st.indexOf(`.${cls} {`)));
+  assert.doesNotMatch(css('stb__name'), /text-transform/);
+  assert.match(css('stb__name'), /color: var\(--c-widget-accent\);/);
+  assert.match(css('stb__count'), /text-transform: uppercase;/);
+});
+
+test("a section card's title in its own casing; its bar's size, colour and tracking stay", () => {
+  const card = src('svelte/SectionCard.svelte');
+  assert.match(
+    card,
+    /:global\(\.collapsible\[data-section\^='s-'\] > \.collapsible__bar\) \{\s*text-transform: none;\s*\}/,
+  );
+  const col = src('svelte/Collapsible.svelte');
+  const bar = col.slice(
+    col.indexOf('.collapsible__bar {'),
+    col.indexOf('> :global(*)', col.indexOf('.collapsible__bar {')),
+  );
+  for (const d of [
+    'font-size: var(--fs-base);',
+    'letter-spacing: 0.1em;',
+    'color: var(--c-text-dim);',
+    'text-transform: uppercase;',
+  ])
+    assert.ok(bar.includes(d), d); // other cards (Motion, SEO …) keep their uppercase titles
+});
+
 test('the marks go into … by the frame width only', () => {
   const s = src('svelte/WidgetToolbar.svelte');
   assert.match(s, /const room = box\.frameRight - box\.frameLeft - 16;/);

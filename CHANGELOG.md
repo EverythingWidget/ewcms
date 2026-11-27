@@ -215,6 +215,15 @@ for more above one section, leave empty rows above its widgets. Remove "sectionS
 
 ### Editor
 
+- **The selected section's toolbar: its name, and the widget toolbar's +.** With a section
+  selected, the Sections tab's toolbar shows the section's name on the left in its own casing
+  (the typed name, else "Section N"; a widget's type, PHOTO, stays uppercase), then the same 32px
+  **+** icon button as a selected widget's (Add widget to this section; off while the section is
+  hidden) as the first of gear / ↑ / ↓ / trash / ⋯. The **+ Add widget** text button is gone.
+  Both toolbars have six buttons, so the + sits in the same place and nothing moves when the
+  selection switches between a section and a widget. A section card's title in the Sections list
+  is in its own casing too ("Section 1", "Intro"; same size, colour and spacing).
+
 - **A widget's fields are declared once for pages and templates.** A setting or config entry
   that a template also offers carries `inTemplate` (a Photo's photo, a Button's label and link, a
   List's Template); `templateFields()` (src/widgets/index.js) lists a type's template rows from

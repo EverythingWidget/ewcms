@@ -1,11 +1,11 @@
 <!--
   One page section's card in the Sections tab's list (SectionsList.svelte), not collapsible:
-    title row  its title (its name, else "Section N"; one line, cut with …), the unsaved dot after it;
+    title row  its title (its name, else "Section N", in its own casing; one line, cut with …), the unsaved dot after it;
                a click selects it, a double click opens its settings (onsection)
     its widgets always shown under the title (not collapsible): WidgetRow.svelte each, in their
                order (drag a row's grip to reorder, within the section; their grid areas stay); none:
                a dashed + Add widget (onadd; F12), else the title alone
-  12px inside on every side. Its tools (Add widget, pen, move, ⋯) are the tab's section toolbar
+  12px inside on every side. Its tools (+ Add widget, gear, move, ⋯) are the tab's section toolbar
   (SectionToolbar.svelte), for the selected card (Delete: its trash, at once; undo brings it
   back). A Ctrl/Cmd or Shift click adds it to the selected sections (ui.selSections).
     live, file, at (its index), peek (hovered in the preview)
@@ -238,6 +238,12 @@
 
   :global(.collapsible[data-card] .collapsible__toggle--card > span) {
     @include ellipsis;
+  }
+
+  // a section card's title in its own casing ("Section 2", "Intro"), not uppercased; its size,
+  // colour and tracking stay the bar's
+  :global(.collapsible[data-section^='s-'] > .collapsible__bar) {
+    text-transform: none;
   }
 
   // hidden: the title muted (Section's), its widgets dimmed; the buttons follow their own rule

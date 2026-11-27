@@ -2,13 +2,15 @@
   The Sections & Widgets tab's toolbar for the selected section card (ui.selSection), a row
   right under the tab line, outside the scrolling body (it never scrolls away and, with no
   fill of its own, never covers the panel's inset border), its line under it as the tab line's:
-    [ + Add widget                    pen  ↑  ↓  ⋯ ]
-    [ + Add widget                    pen  ↑  ↓  trash  ⋯ ]
+    [ Section 2                 +  gear  ↑  ↓  trash  ⋯ ]
+  its name on the left in its own casing (the typed name, else "Section N"; not uppercased as
+  a widget's type is: .stb__name), then + (Add widget to this section: onadd(at)), the same
+  32px icon button in the same place as on one widget's toolbar (six buttons each), so nothing
+  moves when the selection switches between a section and a widget.
   gear: the section's settings pop-up (onsection, as a double click on its card; pressed while
   it is open, a press again closes it); ↑ / ↓ move it (off
   on the first / last); trash deletes it at once (one undo step brings it back); ⋯ a menu in the
-  top layer: Hide / Show section, Duplicate. Add widget (onadd(at)) is off while the section is
-  hidden, and only there while a section is selected.
+  top layer: Hide / Show section, Duplicate. + is off while the section is hidden.
   Two or more sections selected (ui.selSections: Ctrl/Cmd or Shift click on their cards):
     [ 3 sections                                       trash ]
   Delete removes them all, one undo step.
@@ -198,17 +200,19 @@
       onclick={() => removeSelected(many)}
     />
   {:else if s}
-    <button
-      type="button"
-      class="stb__add"
+    <p class="stb__name" {title}>{title}</p>
+    <span class="stb__gap"></span>
+    <!-- the widget toolbar's + (same button, same place: six buttons on both) -->
+    <Button
+      size="small"
+      icon="plus"
+      iconOnly
+      label="Add widget to {title}"
+      title="Add widget to this section"
       aria-haspopup="dialog"
-      aria-label="Add widget to {title}"
       disabled={!on}
       onclick={() => onadd(at)}
-    >
-      <i class="fa-solid fa-plus" aria-hidden="true"></i>Add widget
-    </button>
-    <span class="stb__gap"></span>
+    />
     <Button
       size="small"
       icon="gear"
@@ -309,6 +313,18 @@
     text-transform: uppercase;
   }
 
+  // the selected section's name: .stb__count's type, in its own casing (not uppercased: a
+  // widget's type stays PHOTO); a long one cut with …
+  .stb__name {
+    @include ellipsis;
+    min-width: 0;
+    margin: 0;
+    color: var(--c-widget-accent);
+    font-size: var(--fs-sm);
+    letter-spacing: 0.1em;
+    line-height: 24px;
+  }
+
   .stb__gap {
     flex: 1;
   }
@@ -322,7 +338,7 @@
     text-transform: uppercase;
   }
 
-  // the cards' former + Add widget (text only, no side padding: on the 12px edge)
+  // a template's + Add widget (text only, no side padding: on the 12px edge)
   .stb__add {
     @include row(var(--space-2));
     @include muted;
