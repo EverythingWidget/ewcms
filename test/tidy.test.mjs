@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { omitDefaults, storedDefaults } from '../src/render/defaults.js';
-import { checkContent } from '../src/render/validate.js';
+import { checkContent, contentWarnings } from '../src/render/validate.js';
 
 const F = 'pages/x/index.json';
 
@@ -50,7 +50,9 @@ test('a [param] page: its main widget decides its pages; "template" and "grid" a
   assert.deepEqual(checkContent(T, { ...ok, grid: 120 }), [
     '"grid" must be left out: the page grid is always 120',
   ]);
-  assert.deepEqual(checkContent(T, { ...base, template: { source: 'people' } }), [
+  // a warning (old content still loads), not a problem
+  assert.deepEqual(checkContent(T, { ...base, template: { source: 'people' } }), []);
+  assert.deepEqual(contentWarnings(), [
     '"template" is gone: a [param] page\'s main widget decides its pages ("main")',
   ]);
   assert.deepEqual(checkContent('pages/people/index.json', { ...ok, id: 'pg-t112' }), [

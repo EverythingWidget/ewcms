@@ -4,7 +4,7 @@ import { loadContent } from '../src/cli/content.mjs';
 import { renderOp } from '../src/editor/server/editor-server.mjs';
 import * as render from '../src/render/render.js';
 import { FOOTER, STRINGS, contentFromFiles } from '../src/render/files.js';
-import { checkContent } from '../src/render/validate.js';
+import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { newWidget, newSection } from '../src/render/layout/index.js';
 import { SITE_A } from './fixtures/index.mjs';
 
@@ -33,7 +33,9 @@ test("footer.json: a part, its sections checked like a page's; the kind is the f
   const page = { version: 1, kind: 'part', id: 'pg-t300', sections: [] };
   assert.match(checkContent('pages/x/index.json', page).join(), /"kind" must be "page"/);
   // the old footer texts and menu are gone
-  assert.match(checkContent(STRINGS, { version: 1, footer: {} })[0], /"footer" is gone/);
+  // a warning (old content still loads), not a problem
+  assert.deepEqual(checkContent(STRINGS, { version: 1, footer: {} }), []);
+  assert.match(contentWarnings().join(), /"footer" is gone/);
   // no footer file: an empty footer
   assert.deepEqual(contentFromFiles({}).footer, { kind: 'part', sections: [] });
 });

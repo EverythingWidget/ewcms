@@ -7,7 +7,7 @@ import { warnings } from '../scripts/test-layout.mjs';
 import { loadContent } from '../src/cli/content.mjs';
 import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
-import { checkContent } from '../src/render/validate.js';
+import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { bindingProblems } from '../src/render/layout/bindings.js';
 import { innerChoice } from '../src/widgets/list/nested.js';
 import listClient, { setOpen, opensKey } from '../src/widgets/list/client.js';
@@ -222,14 +222,17 @@ test('the validator: its settings, one per template, not a link, no button in th
     ),
     /no button in the summary/,
   );
-  // the retired keys name what replaced them
-  assert.match(p(tpl({ opens: { several: false } })), /"opens" is gone: a "details" widget/);
+  // the retired keys name what replaced them: a warning (old content still loads), not a problem
+  const warned = (t) => (problems(t), contentWarnings().join(' | '));
+  assert.doesNotMatch(p(tpl({ opens: { several: false } })), /"opens" is gone/);
+  assert.match(warned(tpl({ opens: { several: false } })), /"opens" is gone: a "details" widget/);
   assert.match(
     p(tpl({}, [...summary, { type: 'toggle' }])),
     /the toggle is gone: a "details" widget/,
   );
+  assert.doesNotMatch(p(tpl({}, [{ ...summary[0], details: true }])), /details is gone/);
   assert.match(
-    p(tpl({}, [{ ...summary[0], details: true }])),
+    warned(tpl({}, [{ ...summary[0], details: true }])),
     /details is gone: the details are a template of their own/,
   );
   // across the templates: the details' template exists, one level only

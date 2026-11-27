@@ -12,7 +12,8 @@ say what a site must do before it bumps its pin.
   fill, the color theme's.** An item's fill (on hover too) is the Background its template sets in
   `content/theme.json` (`colorThemes.<theme>.templates.<id>.background`; left out or
   `"transparent"`: no fill, the section shows through). The presets lost theirs too (Plain and
-  Photo were `transparent`, which is now simply the default). `ewcms check` names a leftover:
+  Photo were `transparent`, which is now simply the default). `ewcms check` warns about a leftover
+  (a warning: the content still loads and the render ignores the key):
   `"style.background" is gone: … Remove "style.background" (it was "transparent")`. Migration: drop
   the key from each `content/templates/t-*.json`; where a color theme gives that template a
   Background and the item should stay see-through, set it to `"transparent"` there. The editor
@@ -88,6 +89,18 @@ say what a site must do before it bumps its pin.
   colour role set to `"none"` in `content/theme.json`) to `"transparent"`.
 
 ### Engine
+
+- **A removed or retired key is a warning, not an error.** Old content loads again in the dev
+  server and the editor (`assertContent` no longer throws for it; the editor's error overlay
+  stayed up on a leftover `style.background`), and `ewcms check` lists it under warnings; the
+  renderer ignores the key. This covers an item template's `style.background` /
+  `style.hoverBackground` and the style keys the template grid took over (`padding`, `spacing`,
+  `photoRatio`, `photoFit`, `photoPlacement`, `textOverPhoto`, `align`, `titleSize`: a site
+  template's are no longer rendered), a template's `opens` / `photoFirst`, a template widget's
+  `details`, `grow` and a photo's `config.width`, a widget's `z`, `header.json` and
+  `strings.json` `footer`, and a [param] page's `template`. Real problems stay errors: a wrong
+  value, a retired widget type (Photo grid, Side by side, the toggle …), an old shape the
+  renderer can't read (`field` / `bind` parts, a `where` rule's `field`).
 
 - **Off counts nowhere in the published output.** A widget that is off (`config.enabled: false`),
   or one in a section that is off, no longer names its page (`<title>`, the curtain), and a

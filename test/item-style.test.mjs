@@ -6,7 +6,7 @@ import { onGrid, template } from '../scripts/grid-helper.mjs';
 import fs from 'node:fs';
 import * as sass from 'sass';
 import { loadContent } from '../src/cli/content.mjs';
-import { checkContent } from '../src/render/validate.js';
+import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { cloneTemplate } from '../src/widgets/list/presets.js';
 import {
   PRESET_STYLES,
@@ -69,10 +69,15 @@ test('the validator: a valid style passes, a wrong key or value is named, "theme
   assert.match(msg({ gap: 8 }), /style\.gap is not an item style key/);
   // the other keys' "none" stays (an item's fill is not a style key: theme.json's Background)
   assert.deepEqual(checkContent(T, tpl({ border: 'none', shadow: 'none' })), []);
-  // the keys the template grid took over (a preset keeps them): each names what replaced it
-  assert.match(msg({ photoFit: 'cover' }), /"style\.photoFit" is gone: the photo widget's own fit/);
-  for (const k of GRID_STYLE_KEYS)
-    assert.match(msg({ [k]: 0 }), new RegExp(`"style\\.${k}" is gone: `));
+  // the keys the template grid took over (a preset keeps them): each names what replaced it,
+  // a warning (old content still loads), not a problem; the render ignores them
+  const warned = (s) => (checkContent(T, tpl(s)), contentWarnings().join('; '));
+  assert.equal(msg({ photoFit: 'cover' }), '');
+  assert.match(warned({ photoFit: 'cover' }), /"style\.photoFit" is gone: the photo widget's own fit/);
+  for (const k of GRID_STYLE_KEYS) {
+    assert.equal(msg({ [k]: 0 }), '', k);
+    assert.match(warned({ [k]: 0 }), new RegExp(`"style\\.${k}" is gone: `));
+  }
   assert.match(msg({ border: 'theme' }), /style\.border must be one of/);
   assert.match(msg('big'), /"style" must be an object/);
   assert.deepEqual(styleProblems(undefined), []);
@@ -164,16 +169,21 @@ test('one fill: no item style background; the Style tab rows are retired', () =>
   assert.doesNotMatch(read('src/widgets/list/item-style.js'), /seeThroughTemplates|put\('--item-bg/);
 });
 
-test('ewcms check: a leftover style.background or hoverBackground says where the fill went', () => {
-  const msg = (s) => checkContent('templates/t-prow.json', tpl(s)).join('\n');
+test('ewcms check: a leftover style.background or hoverBackground warns where the fill went', () => {
+  // a warning, not a problem: the template still loads (assertContent doesn't throw)
+  const msg = (s) => {
+    assert.deepEqual(checkContent('templates/t-prow.json', tpl(s)), []);
+    return contentWarnings().join('\n');
+  };
   const bg = msg({ border: 'bottom', background: 'transparent' });
   assert.match(bg, /"style\.background" is gone: an item's fill \(on hover too\) is its template's Background in content\/theme\.json/);
   assert.match(bg, /"colorThemes\.<theme>\.templates\.t-prow\.background"/);
   assert.match(bg, /Remove "style\.background" \(it was "transparent"\)/);
-  assert.equal(checkContent('templates/t-prow.json', tpl({ border: 'bottom', background: 'transparent' })).length, 1);
+  assert.equal(contentWarnings().length, 1);
   assert.match(msg({ hoverBackground: 'surface' }), /"style\.hoverBackground" is gone: .*\(it was "surface"\)/);
-  // without it: fine
+  // without it: fine, no warning
   assert.deepEqual(checkContent('templates/t-prow.json', tpl({ border: 'bottom' })), []);
+  assert.deepEqual(contentWarnings(), []);
 });
 
 test('Title size: Large is never smaller than Medium, nor Medium than Small, at any width', () => {

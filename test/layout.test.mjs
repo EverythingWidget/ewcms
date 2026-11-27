@@ -11,7 +11,7 @@ import { save } from '../src/editor/server/local-data-layer.mjs';
 import * as render from '../src/render/render.js';
 import { buildRoutes } from '../src/render/routes.js';
 import { setEditable } from '../src/render/helpers.js';
-import { checkContent } from '../src/render/validate.js';
+import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { WIDGET_TYPES } from '../src/widgets/index.js';
 import {
   phoneRowsOf,
@@ -308,7 +308,9 @@ test('validation: the layout, then each widget against its type', () => {
     /layout.base.col/,
   );
   assert.match(one({ type: 'text', layer: 1.5 })[0], /"layer" must be a whole number/);
-  assert.match(one({ type: 'text', z: 2 }).join(), /"z" is "layer" now/);
+  // "z": a warning (old content still loads), not a problem
+  assert.deepEqual(one({ type: 'text', z: 2 }), []);
+  assert.match(contentWarnings().join(), /"z" is "layer" now/);
   assert.match(one({ type: 'text', body: 3 })[0], /\(Text\): "body" must be a list of lines/);
   assert.match(
     one({ type: 'text', body: [{ style: 'huge', text: [{ t: 'x', marks: ['u'] }] }] }).join(),

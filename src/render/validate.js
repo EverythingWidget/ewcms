@@ -182,7 +182,7 @@ function checkHeader(d) {
     }
   }
   if (d.footer !== undefined)
-    out.push('"footer" is gone: the footer is footer.json, sections like a page');
+    gone('"footer" is gone: the footer is footer.json, sections like a page');
   const check = (item, where, { nest }) => {
     if (!isObject(item)) return out.push(`${where} must be an object`);
     const name = `${where}${typeof item.label === 'string' ? ` ("${item.label}")` : ''}`;
@@ -283,7 +283,7 @@ function checkDoc(file, d) {
   // a [param] page: its main widget decides which pages exist (layout/source.js)
   const template = isTemplate(pageIdOf(file));
   if (d.template !== undefined)
-    out.push('"template" is gone: a [param] page\'s main widget decides its pages ("main")');
+    gone('"template" is gone: a [param] page\'s main widget decides its pages ("main")');
   if (d.main !== undefined && !template) out.push('"main" is only for [param] pages');
   else if (d.main !== undefined && !isId(d.main, 'w'))
     out.push('"main" must be the id of one of its widgets ("w-7qpa")');
@@ -472,6 +472,13 @@ function sourceProblems(src, t) {
  */
 const warnings = [];
 export const contentWarnings = () => [...warnings];
+/**
+ * A removed or retired key: a warning, never a problem, so old content still loads (the dev
+ * server, the editor, a build) and ewcms check lists it; the renderer ignores the key. Real
+ * problems (a wrong value, a retired widget type, an old shape the renderer can't read) stay
+ * problems.
+ */
+const gone = (message) => warnings.push(message);
 
 /**
  * A widget's place on the grid and its content box, one check for every widget (a page's or a
@@ -486,7 +493,7 @@ function gridProblems(w) {
     out.push('"aspect" must be a ratio like "4:5"');
   if (w.layer !== undefined && !Number.isInteger(w.layer))
     out.push('"layer" must be a whole number');
-  if (w.z !== undefined) out.push('"z" is "layer" now (its Layer)');
+  if (w.z !== undefined) gone('"z" is "layer" now (its Layer): "z" is ignored');
   out.push(...checkScale(w), ...checkPlacement(w));
   const enabled = isObject(w.config) ? w.config.enabled : undefined;
   if (enabled !== undefined && typeof enabled !== 'boolean')
@@ -693,14 +700,12 @@ export function checkContent(file, data) {
   if (file === THEME) return checkTheme(d);
   if (file === ANIMATIONS) return checkAnimations(d);
   if (file === HEADER) return checkHeader(d);
-  if (file === STRINGS)
-    return [
-      // the groups of UI text (src/render/strings.js CORE_STRINGS): objects of strings
-      ...optional(d, Object.fromEntries(Object.keys(CORE_STRINGS).map((g) => [g, 'object']))),
-      ...(d.footer !== undefined
-        ? ['"footer" is gone: the footer is footer.json, sections like a page']
-        : []),
-    ];
+  if (file === STRINGS) {
+    if (d.footer !== undefined)
+      gone('"footer" is gone: the footer is footer.json, sections like a page');
+    // the groups of UI text (src/render/strings.js CORE_STRINGS): objects of strings
+    return optional(d, Object.fromEntries(Object.keys(CORE_STRINGS).map((g) => [g, 'object'])));
+  }
   if (file === PHOTOS)
     return isObject(d.photos) ? checkPhotos(d.photos) : ['"photos" must be an object'];
   if (docKindOf(file)) return checkDoc(file, d);
@@ -734,14 +739,14 @@ export function checkItemTemplate(d, id = '<template id>') {
   out.push(...previewProblems(d.preview));
   // retired by the template grid (step I): what replaced each
   for (const [k, msg] of Object.entries(RETIRED_TEMPLATE_KEYS))
-    if (d[k] !== undefined) out.push(`"${k}" is gone: ${msg}`);
+    if (d[k] !== undefined) gone(`"${k}" is gone: ${msg}`);
   if (isObject(d.style)) {
     for (const [k, msg] of Object.entries(RETIRED_STYLE_KEYS))
-      if (d.style[k] !== undefined) out.push(`"style.${k}" is gone: ${msg}`);
+      if (d.style[k] !== undefined) gone(`"style.${k}" is gone: ${msg}`);
     // the item's fill: the color theme's (one fill), its value named for the move
     for (const k of FILL_STYLE_KEYS)
       if (d.style[k] !== undefined)
-        out.push(
+        gone(
           `"style.${k}" is gone: an item's fill (on hover too) is its template's Background in` +
             ` content/theme.json, "colorThemes.<theme>.templates.${id}.background" (left out or` +
             ` "transparent": no fill, the section shows through). Remove "style.${k}"` +
@@ -905,7 +910,7 @@ function checkTemplateWidget(w, at) {
       `${at}: the toggle is gone: a "details" widget (Summary and details) shows the +/× where it sits`,
     ];
   if (w.details !== undefined)
-    out.push(
+    gone(
       `${at}.details is gone: the details are a template of their own, named by a "details" widget's "config.template"`,
     );
   if (w.type === 'details') {
@@ -971,11 +976,11 @@ function checkTemplateWidget(w, at) {
     out.push(`${at}.itemLink: only a button's, true (it opens the item's page)`);
   out.push(...missingProblems(w, at), ...templateLinkProblems(w, at));
   if (w.grow !== undefined)
-    out.push(
+    gone(
       `${at}.grow is gone (Fill the space): give the widget the columns it fills (its "layout")`,
     );
   if (w.type === 'photo' && w.config?.width !== undefined)
-    out.push(`${at}.config.width is gone (Photo width): give the photo its columns (its "layout")`);
+    gone(`${at}.config.width is gone (Photo width): give the photo its columns (its "layout")`);
   const t = WIDGET_TYPES[w.type];
   if (t.warn) warnings.push(...t.warn(w).map((p) => `${at} (${t.label}): ${p}`));
   return out;

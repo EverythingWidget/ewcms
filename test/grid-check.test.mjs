@@ -36,7 +36,6 @@ const BAD = [
   [text({ size: 'tall' }), /^"size" must be /],
   [text({ size: 'aspect' }), '"aspect" must be a ratio like "4:5"'],
   [text({ layer: 1.5 }), '"layer" must be a whole number'],
-  [text({ z: 2 }), '"z" is "layer" now (its Layer)'],
   [text({ config: { enabled: 'no' } }), '"config.enabled" must be true or false'],
 ];
 

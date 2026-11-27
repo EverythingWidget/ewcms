@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { loadContent } from '../src/cli/content.mjs';
 import { buildRoutes } from '../src/render/routes.js';
 import { header, phoneMenu } from '../src/render/shell/header.js';
-import { checkContent } from '../src/render/validate.js';
+import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { setEditable } from '../src/render/helpers.js';
 import { warnings } from '../scripts/test-layout.mjs';
 import { SITE_A } from './fixtures/index.mjs';
@@ -43,10 +43,9 @@ test('header.json validation: links, nesting depth; no footer menu', () => {
   assert.match(problems({ header: [deep] })[0], /one level deep/);
   const both = { label: 'A', page: 'pg-aaaa', children: [], items: 'people' };
   assert.match(problems({ header: [both] })[0], /not both/);
-  assert.match(
-    problems({ footer: [{ label: 'A', page: 'pg-aaaa' }] })[0],
-    /"footer" is gone: the footer is footer\.json/,
-  );
+  // a warning (old content still loads), not a problem
+  assert.deepEqual(problems({ footer: [{ label: 'A', page: 'pg-aaaa' }] }), []);
+  assert.match(contentWarnings().join(), /"footer" is gone: the footer is footer\.json/);
 });
 
 test('render: the header and phone menu follow header.json', () => {

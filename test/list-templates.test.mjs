@@ -13,7 +13,7 @@ import { editableFiles } from '../src/editor/server/local-data-layer.mjs';
 import { buildRoutes } from '../src/render/routes.js';
 import { newWidget, newSection, renderSections } from '../src/render/layout/index.js';
 import { WIDGET_TYPES } from '../src/widgets/index.js';
-import { checkContent } from '../src/render/validate.js';
+import { checkContent, contentWarnings } from '../src/render/validate.js';
 import { cloneTemplate, presetWidgets, templatePickerGroups } from '../src/widgets/list/presets.js';
 import { contentPath, isContentFile, templateFile, templateIdOf } from '../src/render/files.js';
 import { SITE_A, withPhoto } from './fixtures/index.mjs';
@@ -137,10 +137,9 @@ test('a valid template passes; an invalid one is rejected with a clear message',
   );
   // on the grid, as a page widget: an id, a layout; its layer is "layer" (as a page widget's)
   assert.match(msg(card({ widgets: [{ type: 'text' }] })), /widgets\.0: "id" must be a widget id/);
-  assert.match(
-    msg(card({ widgets: [{ type: 'text', id: 'w-aaaa', z: 2 }] })),
-    /"z" is "layer" now/,
-  );
+  // "z": a warning (old content still loads), not a problem
+  assert.doesNotMatch(msg(card({ widgets: [{ type: 'text', id: 'w-aaaa', z: 2 }] })), /"z"/);
+  assert.match(contentWarnings().join(), /"z" is "layer" now/);
   assert.deepEqual(
     checkContent(T, card({ widgets: [{ type: 'text', id: 'w-aaaa', layer: 2 }] })),
     [],
@@ -167,10 +166,8 @@ test('a valid template passes; an invalid one is rejected with a clear message',
     ),
     /w-zzzz/,
   );
-  assert.match(
-    msg(card({ photoFirst: true })),
-    /"photoFirst" is gone: the photo's place is its own "layout"/,
-  );
+  assert.doesNotMatch(msg(card({ photoFirst: true })), /photoFirst/);
+  assert.match(contentWarnings().join(), /"photoFirst" is gone: the photo's place is its own "layout"/);
   assert.match(
     msg(card({ widgets: [{ type: 'text', itemLink: true }] })),
     /itemLink: only a button/,

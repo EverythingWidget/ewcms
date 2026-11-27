@@ -71,7 +71,7 @@ import { showOnlyItems, showOnlyOf, showOnlyProblem } from './show-only.js';
 import { CUSTOM_ITEM, customItemProblem, customItemsOf, isCustom } from './custom.js';
 import { presetStyle, styleMarkup } from './item-style.js';
 import { itemGridHtml } from './item-grid-render.js';
-import { itemSection, itemWidgets } from './item-grid.js';
+import { gridStyle, itemSection, itemWidgets } from './item-grid.js';
 import { templateOfPath } from './template-preview.js';
 import { detailsOf, nameOf, opensHtml, toggleHtml } from './details.js';
 import { innerItems, innerKeys } from './nested.js';
@@ -485,7 +485,9 @@ export const list = {
     const detailsTpl = opens ? structuredClone(itemWidgets(detTpl)) : [];
     const link = opens ? false : own ? own.clickable !== false : preset.link;
     // the item style (./item-style.js): the template's own, else the preset's
-    const look = styleMarkup(own ? own.style : presetStyle(preset.id));
+    // a site template's style without the keys the grid took over (gone: ewcms check warns, the
+    // render ignores them; a fill key is no style key at all)
+    const look = styleMarkup(own ? gridStyle(own.style) : presetStyle(preset.id));
     // tpl-<id>: its colours, the color theme's sub-roles of this template (src/render/colors.js)
     const tplClass = templateClass(own ? c.template : preset.id);
     const liClass = ['li', `li--${shape}`, tplClass, ...look.cls].join(' ');
