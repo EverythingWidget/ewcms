@@ -73,7 +73,7 @@ import { linkOf } from './links.js';
 import { scaledToFit } from './type.js';
 import { placeClass, placeVars } from './place.js';
 import { contentPath, FOOTER } from '../files.js';
-import { colorThemeClass } from '../colors.js';
+import { withColorTheme } from '../colors.js';
 
 export {
   COLS,
@@ -221,13 +221,13 @@ export function sectionClass(s) {
   // a phone height of its own: sec--mh-* (phones only)
   const own = HEIGHTS.includes(s?.phone?.height);
   const m = phoneHeightOf(s) === 'custom' && !phoneMinRowsOf(s) ? 'fit' : phoneHeightOf(s);
-  return (
+  // its color theme (src/render/colors.js): its roles, and its background edge to edge
+  return withColorTheme(
     'sec' +
-    (h !== 'fit' ? ` sec--h-${h}` : '') +
-    (own ? ` sec--mh-${m}` : '') +
-    (s?.width === 'full' ? ' sec--full' : '') +
-    // its color theme (src/render/colors.js): its roles, and its background edge to edge
-    (colorThemeClass(s?.colorTheme) ? ` ${colorThemeClass(s.colorTheme)}` : '')
+      (h !== 'fit' ? ` sec--h-${h}` : '') +
+      (own ? ` sec--mh-${m}` : '') +
+      (s?.width === 'full' ? ' sec--full' : ''),
+    s?.colorTheme,
   );
 }
 

@@ -39,10 +39,10 @@ import {
 import { schemaOf } from '../schemas.js';
 import { HEADER, STRINGS, contentPath } from '../files.js';
 import { t } from '../strings.js';
-import { colorThemeClass } from '../colors.js';
+import { withColorTheme } from '../colors.js';
 
-/** header.json's color theme as a class (' ct-<name>'; '' when it picks none: the site's). */
-const themeOf = (ctx) => (colorThemeClass(ctx.header?.colorTheme) ? ` ${colorThemeClass(ctx.header.colorTheme)}` : '');
+/** A class list with header.json's color theme added (none picked: the site's). */
+const themed = (ctx, base) => withColorTheme(base, ctx.header?.colorTheme);
 
 const caret =
   '<svg class="caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>';
@@ -198,7 +198,7 @@ export function header(ctx) {
   const { site } = ctx;
   const items = Array.isArray(ctx.header?.header) ? ctx.header.header : [];
   return html`
-  <header class="header${themeOf(ctx)}" data-header>
+  <header class="${themed(ctx, 'header')}" data-header>
     ${logoMark(ctx)}
 
     <nav class="nav" aria-label="${esc(t(ctx, 'header.main'))}">
@@ -250,7 +250,7 @@ export function phoneMenu(ctx) {
   const { site } = ctx;
   const items = Array.isArray(ctx.header?.header) ? ctx.header.header : [];
   return html`
-  <div class="mmenu${themeOf(ctx)}" id="phone-menu" data-phone-menu hidden>
+  <div class="${themed(ctx, 'mmenu')}" id="phone-menu" data-phone-menu hidden>
     <div class="mmenu__panel glass">
       <nav class="mmenu__nav" aria-label="${esc(t(ctx, 'header.phone'))}">
         ${items.map((item, i) => mmItem(ctx, item, i)).join('\n        ')}${ctaOf(ctx) ? html`\n        ${ctaMark(ctx, 'btn glass mmenu__cta')}` : ''}

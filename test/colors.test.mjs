@@ -137,7 +137,7 @@ test('check: palette, color themes, roles, slots; "none" only on fills', () => {
   assert.equal(rolesOf({ colorThemes: { dark: { button: 'none' } } }, 'dark').button, 'glass');
   assert.deepEqual(bad, [
     '"palette" must be 5 colors "#rrggbb", slot 1 first',
-    '"colorTheme" must be "lightest", "light", "accent", "dark", "darkest", not "blue"',
+    '"colorTheme" must be a color theme: "lightest", "light", "accent", "dark", "darkest", not "blue"',
     `"colorThemes.dark.text" can't be "transparent": only a fill can (Background, Button, Line, Header)`,
     `"colorThemes.dark.curtain" can't be "transparent": only a fill can (Background, Button, Line, Header)`,
     '"colorThemes.dark.link" must be a palette slot 1-5 or a color "#rrggbb", not 6',

@@ -60,10 +60,8 @@ import { bindTypeOf } from './layout/bindings.js';
 import { isPropertyPart, isParts, isWhole, NAME } from './layout/parts.js';
 import { FORMAT_TYPES, storedAs } from './property-types.js';
 import { isObject } from './is.js';
-import { THEME_NAMES, checkPagePalette } from './colors.js';
+import { checkPagePalette, colorThemeProblems } from './colors.js';
 import { checkHeaderRows } from './header-rows.js';
-
-const THEME_LIST = THEME_NAMES.map((n) => `"${n}"`).join(', ');
 import { styleProblems } from '../widgets/list/item-style.js';
 import { innerSourceProblems } from '../widgets/list/nested.js';
 import { gapProblem } from '../widgets/list/index.js';
@@ -173,8 +171,7 @@ function checkForms(f) {
 function checkHeader(d) {
   const out = optional(d, { header: 'array', logo: 'string', cta: 'object' });
   // its color theme (left out: the site's); the header's background options come later
-  if (d.colorTheme !== undefined && !THEME_NAMES.includes(d.colorTheme))
-    out.push(`"colorTheme" must be a color theme: ${THEME_LIST}`);
+  out.push(...colorThemeProblems(d.colorTheme));
   // its height in grid rows (the Header's Style tab: header-rows.js); left out, the theme's
   out.push(...checkHeaderRows(d));
   if (isObject(d.cta)) {
@@ -420,8 +417,7 @@ function checkSection(s, at) {
       bad('phone.rows.min', `a whole number of rows from 1 to ${MAX_MIN_ROWS}`);
   }
   if (s.width !== undefined && !WIDTHS.includes(s.width)) bad('width', WIDTHS.join(' or '));
-  if (s.colorTheme !== undefined && !THEME_NAMES.includes(s.colorTheme))
-    bad('colorTheme', `a color theme: ${THEME_LIST}`);
+  out.push(...colorThemeProblems(s.colorTheme).map((p) => `${where}: ${p}`));
   if (s.enabled !== undefined && typeof s.enabled !== 'boolean') bad('enabled', 'true or false');
   // space between sections, in grid rows (layout/space.js); 0 is an override of the site default
   const spaceKey = (key) => {

@@ -37,7 +37,7 @@ test('a section\'s colorTheme is its class ct-<name>; none or an unknown one: no
 test('validated: a section (page or footer) and header.json name a known color theme', () => {
   assert.deepEqual(checkContent('pages/x/index.json', page({ colorTheme: 'accent' })), []);
   assert.deepEqual(checkContent('pages/x/index.json', page({ colorTheme: 'blue' })), [
-    'section 1: "colorTheme" must be a color theme: "lightest", "light", "accent", "dark", "darkest"',
+    'section 1: "colorTheme" must be a color theme: "lightest", "light", "accent", "dark", "darkest", not "blue"',
   ]);
   assert.match(
     checkContent('footer.json', { version: 1, kind: 'footer', sections: [{ id: 's-ctf1', colorTheme: 'x', widgets: [] }] }).join('\n'),
@@ -45,7 +45,7 @@ test('validated: a section (page or footer) and header.json name a known color t
   );
   assert.deepEqual(checkContent('header.json', { ...base.header, colorTheme: 'darkest' }), []);
   assert.deepEqual(checkContent('header.json', { ...base.header, colorTheme: 'Dark' }), [
-    '"colorTheme" must be a color theme: "lightest", "light", "accent", "dark", "darkest"',
+    '"colorTheme" must be a color theme: "lightest", "light", "accent", "dark", "darkest", not "Dark"',
   ]);
 });
 

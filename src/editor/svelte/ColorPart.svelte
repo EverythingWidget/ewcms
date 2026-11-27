@@ -21,7 +21,7 @@
                    text role and Line: its contrast, as the check works it out (a see-through
                    fill blended over what is behind it), its room always kept. Its smart colours, read only, at
                    the bottom (worked out by the preview, the rule on hover)
-    Site color theme  the select (empty: Darkest)
+    Site color theme  the select (empty: Darkest): ColorThemePicker.svelte, every kind's
   Every pick is one undo step (a typed or dragged colour coalesces); theme.json is IN_PLACE, so
   the preview's #color-themes and theme-vars are rewritten as it changes (../theme-vars.js), no
   reload and no render job.
@@ -29,6 +29,7 @@
 <script>
   import { untrack } from 'svelte';
   import Field from './Field.svelte';
+  import ColorThemePicker from './ColorThemePicker.svelte';
   import Collapsible from './Collapsible.svelte';
   import Popover from './Popover.svelte';
   import { ui } from './ui.svelte.js';
@@ -65,7 +66,6 @@
     roleRow,
     rolePointer,
     siteColorThemeOf,
-    siteThemeEdit,
     swatchOf,
     TEXT_STYLE_ROWS,
     themeLabel,
@@ -174,7 +174,6 @@
 
   // ---- the site color theme
   const site = $derived(siteColorThemeOf(theme()));
-  const THEME_OPTIONS = THEMES.map(([name, label]) => [name, label]);
 
   // ---- smart colours: worked out by the preview (its color-themes style), per theme
   let smart = $state({});
@@ -502,21 +501,13 @@
     </Collapsible>
   {/each}
 
-  <Field
-    edit="{THEME}#/colorTheme"
+  <ColorThemePicker
+    {live}
+    file={THEME}
+    ptr="/colorTheme"
+    fallback={DEFAULT_COLOR_THEME}
     label="Site color theme"
-    type="select"
-    options={THEME_OPTIONS}
-    value={site}
-    unsaved={live.changed(THEME, '/colorTheme')}
     help="The page, the header and every section that picks none. {themeLabel(DEFAULT_COLOR_THEME)} by default."
-    reset={{
-      on: site !== DEFAULT_COLOR_THEME,
-      label: `Use ${themeLabel(DEFAULT_COLOR_THEME)}`,
-      title: `Use ${themeLabel(DEFAULT_COLOR_THEME)}`,
-      run: () => live.store.set(THEME, '/colorTheme', undefined, opts('/colorTheme')),
-    }}
-    onvalue={(v) => live.store.set(THEME, '/colorTheme', siteThemeEdit(v), opts('/colorTheme'))}
   />
 </div>
 

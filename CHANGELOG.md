@@ -76,6 +76,12 @@ say what a site must do before it bumps its pin.
 
 ### Engine
 
+- **One color theme check and one class helper for every kind.** `theme.json` `colorTheme`, a
+  section's and `header.json`'s are checked by one function (`colorThemeProblems`, colors.js) and
+  get their `ct-<name>` class from one (`withColorTheme`). The message is now the same everywhere:
+  `"colorTheme" must be a color theme: "lightest", "light", "accent", "dark", "darkest", not "blue"`
+  (a section's still starts with its name).
+
 - **One place check for every widget.** A template's widgets and the Summary and details widget
   are checked as a page's are: layout, `size`, `aspect`, `layer`, `box`, `place`, `scale` and
   `config.enabled`. A bad `box`, `place` or `scale` in a template used to pass `ewcms check` and
@@ -159,6 +165,10 @@ say what a site must do before it bumps its pin.
   exception. The default site's `theme/tokens.scss` points to it.
 
 ### Editor
+
+- **One color theme picker (`ColorThemePicker.svelte`).** Theme › Color's Site color theme is
+  drawn by it (the same select, unsaved dot and Use Darkest reset); a section's and the header's
+  pickers will use it too.
 
 - **A page's Style tab: Sections | Page motion | Style | SEO.** Its own palette: five full-width
   rows (the hex field with its swatch), a slot that follows the site shown dimmed (bright on hover

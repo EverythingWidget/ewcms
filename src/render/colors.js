@@ -270,6 +270,23 @@ export const siteColorThemeOf = (theme) =>
 /** A color theme's class (ct-<name>), '' for an unknown name or none. */
 export const colorThemeClass = (name) => (THEME_NAMES.includes(name) ? `ct-${name}` : '');
 
+/**
+ * An element's classes with its color theme added (`base ct-<name>`; `base` alone when it picks
+ * none: it shows its parent's). The one way a render adds it: a section, the header and its
+ * phone menu.
+ */
+export const withColorTheme = (base, name) =>
+  colorThemeClass(name) ? `${base} ${colorThemeClass(name)}` : base;
+
+/**
+ * A "colorTheme" value's problems, one check for every kind that picks one (theme.json's site
+ * theme, a section, header.json); left out is fine. Without a prefix: the caller names where.
+ */
+export const colorThemeProblems = (name) =>
+  name === undefined || THEME_NAMES.includes(name)
+    ? []
+    : [`"colorTheme" must be a color theme: ${THEME_NAMES.map((n) => JSON.stringify(n)).join(', ')}, not ${JSON.stringify(name)}`];
+
 /** An item template's class: tpl-<id>, ":" and anything else not a class character as "-". */
 export const templateClass = (id) => `tpl-${String(id).replace(/[^\w-]/g, '-')}`;
 
@@ -665,8 +682,7 @@ export function checkColors(d) {
   const out = [];
   if (d.palette !== undefined && !ownPaletteOf(d))
     out.push(`"palette" must be ${PALETTE_SIZE} colors "#rrggbb", slot 1 first`);
-  if (d.colorTheme !== undefined && !THEME_NAMES.includes(d.colorTheme))
-    out.push(`"colorTheme" must be ${THEME_NAMES.map(show).join(', ')}, not ${show(d.colorTheme)}`);
+  out.push(...colorThemeProblems(d.colorTheme));
   if (d.colorThemes === undefined) return out;
   if (!isObject(d.colorThemes))
     return [...out, `"colorThemes" must be an object { ${THEME_NAMES.join(', ')} }`];

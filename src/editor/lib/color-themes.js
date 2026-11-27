@@ -249,9 +249,18 @@ export function customCount(theme, name) {
 
 /* ---------- the site color theme ---------- */
 
+/**
+ * A "colorTheme" pick's value to store, for every kind (ColorThemePicker.svelte): the name, or
+ * undefined (left out) for an unknown name or the one it falls back to when it picks none.
+ */
+export const themeEdit = (name, fallback) =>
+  THEME_NAMES.includes(name) && name !== fallback ? name : undefined;
+
+/** What a stored "colorTheme" shows: its name, else the one it falls back to. */
+export const themeShown = (value, fallback) => (THEME_NAMES.includes(value) ? value : fallback);
+
 /** The site color theme's value for /colorTheme (undefined: the default, left out). */
-export const siteThemeEdit = (name) =>
-  THEME_NAMES.includes(name) && name !== DEFAULT_COLOR_THEME ? name : undefined;
+export const siteThemeEdit = (name) => themeEdit(name, DEFAULT_COLOR_THEME);
 export { siteColorThemeOf };
 
 /**
