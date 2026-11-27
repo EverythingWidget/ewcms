@@ -1,4 +1,4 @@
-// One place check for every widget (src/render/validate.js placeProblems): a page's, a
+// One grid check for every widget (src/render/validate.js gridProblems): a page's, a
 // template's and a details widget's layout, size, aspect, layer, box, place, scale and
 // config.enabled are refused alike, so a bad box in a template no longer passes the check.
 import { test } from 'node:test';
@@ -68,11 +68,11 @@ test('the details widget uses the same check', () => {
   assert.ok(inTemplate(dw({ layer: 'top' })).includes('"layer" must be a whole number'));
 });
 
-test('one placeProblems, called by the page, template and details paths', () => {
+test('one gridProblems, called by the page, template and details paths', () => {
   const v = readFileSync(new URL('../src/render/validate.js', import.meta.url), 'utf8');
   // declared once, called by the three paths
-  assert.equal(v.match(/\.\.\.placeProblems\(/g).length, 3);
-  assert.equal(v.match(/function placeProblems\(/g).length, 1);
+  assert.equal(v.match(/\.\.\.gridProblems\(/g).length, 3);
+  assert.equal(v.match(/function gridProblems\(/g).length, 1);
   assert.equal(v.match(/checkPlacement\(/g).length, 1);
   assert.equal(v.match(/checkScale\(/g).length, 1);
   assert.doesNotMatch(v, /\$\{at\}\.size must be|\$\{at\}\.aspect must be|\$\{at\}\.layer must be/);

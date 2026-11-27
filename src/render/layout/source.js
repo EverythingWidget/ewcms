@@ -21,7 +21,7 @@ import { isTemplate, paramsOf } from '../files.js';
 import { isObject } from '../is.js';
 import { schemaOf } from '../schemas.js';
 import { defaultWhere, query, unmatched } from '../query.js';
-import { widgetsOf, eachWidget } from './ids.js';
+import { widgetsOf, eachWidget, isOff } from './ids.js';
 
 export const MODES = ['item', 'all', 'url'];
 
@@ -95,7 +95,8 @@ export const pageSourceOf = (page) => sourceOf(mainOf(page))?.from ?? null;
 
 /**
  * Why [param] page `id` builds no pages, or null when its main widget can decide them:
- * { kind, message, param?, property? }. kind: 'none' (no main widget), 'mode' (not From URL),
+ * { kind, message, param?, property? }. kind: 'none' (no main widget), 'off' (it or its
+ * section is off: not on the published page), 'mode' (not From URL),
  * 'source' (its source isn't a list), 'any' / 'missing' (a param without a rule, or one whose
  * property the source doesn't have: param names it). The message is the page head's warning.
  */
@@ -105,6 +106,11 @@ export function mainProblem(content, id) {
   const main = mainOf(page);
   const say = (kind, why, more = {}) => ({ kind, message: `No pages are built: ${why}`, ...more });
   if (!main) return say('none', 'pick the main widget');
+  // off (itself or its section): not on the published page, so it decides no pages (the editor
+  // still gets them to edit on, unbuilt)
+  const at = mainAt(page);
+  if (isOff(main, page.sections?.[at?.at]))
+    return say('off', 'the main widget is off (or its section is): switch it on');
   const s = sourceOf(main);
   if (s?.mode !== 'url') return say('mode', 'the main widget isn’t From URL');
   if (!Array.isArray(content?.sources?.[s.from]))

@@ -27,6 +27,18 @@ export function* eachWidget(sections) {
       for (const [j, widget] of s.widgets.entries()) yield [widget, s, at, j];
 }
 
+/**
+ * Is a widget off on the published page: switched off itself (config.enabled false) or in a
+ * section that is off (enabled false)? Off counts nowhere in the published output: not
+ * rendered, no page title, no [param] pages (src/render/routes.js).
+ */
+export const isOff = (widget, section) =>
+  section?.enabled === false || widget?.config?.enabled === false;
+
+/** A page's widgets that are on (not isOff), in order. */
+export const onWidgetsOf = (page) =>
+  [...eachWidget(page?.sections)].filter(([w, s]) => !isOff(w, s)).map(([w]) => w);
+
 /** Every widget of a page (its sections' widgets, in order). */
 export const widgetsOf = (page) =>
   (Array.isArray(page?.sections) ? page.sections : []).flatMap((s) =>

@@ -4,7 +4,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { colorThemeProblems, withColorTheme } from '../src/render/colors.js';
-import { themeEdit, themeShown, siteThemeEdit } from '../src/editor/lib/color-themes.js';
+import {
+  FOLLOW,
+  followEdit,
+  followShown,
+  themeEdit,
+  themeShown,
+  siteThemeEdit,
+} from '../src/editor/lib/color-themes.js';
 
 const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
 
@@ -47,4 +54,55 @@ test('one check, one class helper, one picker: no copies left', () => {
   const part = read('src/editor/svelte/ColorPart.svelte');
   assert.match(part, /<ColorThemePicker[\s\S]*?ptr="\/colorTheme"[\s\S]*?label="Site color theme"/);
   assert.doesNotMatch(part, /edit="\{THEME\}#\/colorTheme"/);
+});
+
+test('a picker that follows the site: Follow site stores nothing, an explicit pick is stored', () => {
+  // a section on a Darkest site: picking Darkest itself is its own (it stays if the site's changes)
+  assert.equal(followEdit('darkest'), 'darkest');
+  assert.equal(followEdit('light'), 'light');
+  assert.equal(followEdit(FOLLOW), undefined);
+  assert.equal(followEdit(''), undefined);
+  assert.equal(followEdit('nope'), undefined);
+  // left out: no option shown, the inherited theme dimmed (placeholder); stored: its own
+  assert.deepEqual(followShown(undefined, 'darkest'), {
+    value: '',
+    own: false,
+    inherited: 'darkest',
+  });
+  assert.deepEqual(followShown('darkest', 'darkest'), {
+    value: 'darkest',
+    own: true,
+    inherited: 'darkest',
+  });
+  assert.deepEqual(followShown('bad', 'dark'), { value: '', own: false, inherited: 'dark' });
+  // the site's own picker keeps dropping its fallback (Darkest: the default, left out)
+  assert.equal(themeEdit('darkest', 'darkest'), undefined);
+});
+
+test("ColorThemePicker: Follow <what> only when it follows, dimmed inherited value, Use the site's", () => {
+  const p = read('src/editor/svelte/ColorThemePicker.svelte');
+  assert.match(
+    p,
+    /follow \? \[\[FOLLOW, `Follow \$\{follow\}`\], \.\.\.THEME_OPTIONS\] : THEME_OPTIONS/,
+  );
+  assert.match(p, /follow \? `Use the \$\{follow\}'s` : `Use \$\{themeLabel\(fallback\)\}`/);
+  assert.match(
+    p,
+    /placeholder=\{follow \? `\$\{themeLabel\(fallback\)\} \(the \$\{follow\}'s\)` : ''\}/,
+  );
+  assert.match(p, /follow \? followEdit\(v\) : themeEdit\(v, fallback\)/);
+  // the Select dims its placeholder (no option has the value)
+  assert.match(
+    read('src/editor/svelte/Select.svelte'),
+    /&\.is-placeholder \{\s*color: var\(--c-text-muted\);/,
+  );
+  // the site's own picker follows nothing: no follow prop there
+  const part = read('src/editor/svelte/ColorPart.svelte');
+  assert.doesNotMatch(
+    part.slice(
+      part.indexOf('<ColorThemePicker'),
+      part.indexOf('/>', part.indexOf('<ColorThemePicker')),
+    ),
+    /follow/,
+  );
 });

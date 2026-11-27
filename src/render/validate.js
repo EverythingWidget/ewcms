@@ -478,7 +478,7 @@ export const contentWarnings = () => [...warnings];
  * footer's, a template's, a details widget): its layout, size, aspect, layer, box, place, scale
  * and its on / off switch (config.enabled). Problems without a prefix: the caller names it.
  */
-function placeProblems(w) {
+function gridProblems(w) {
   const out = [...checkWidgetLayout(w)];
   if (w.size !== undefined && !SIZES.includes(w.size))
     out.push(`"size" must be ${SIZES.join(', ')}`);
@@ -504,7 +504,7 @@ function checkWidget(widget, where) {
   const out = [];
   const bad = (key, want) => out.push(`${name}: "${key}" must be ${want}`);
   if (!isId(widget.id, 'w')) bad('id', 'a widget id like "w-7qpa"');
-  out.push(...placeProblems(widget).map((p) => `${name}: ${p}`));
+  out.push(...gridProblems(widget).map((p) => `${name}: ${p}`));
   // a setting's own check of its value (its declaration's check(value); the Hero's photos)
   for (const f of t?.settings || [])
     if (f?.check) out.push(...f.check(widget[f.key]).map((p) => `${name}: ${p}`));
@@ -912,7 +912,7 @@ function checkTemplateWidget(w, at) {
     out.push(...detailsWidgetProblems(w, at));
     if (!isId(w.id, 'w')) out.push(`${at}: "id" must be a widget id like "w-7qpa"`);
     // its place has a height as any widget's (Rows: an item at least that tall): the one check
-    out.push(...placeProblems(w).map((p) => `${at}: ${p}`));
+    out.push(...gridProblems(w).map((p) => `${at}: ${p}`));
     const extra = Object.keys(w).filter(
       (k) => !['id', 'type', 'role', 'layout', 'layer', 'size', 'aspect', 'config'].includes(k),
     );
@@ -959,10 +959,10 @@ function checkTemplateWidget(w, at) {
     out.push(
       `${at}: a template's Text has one line (this one has ${w.body.length}): place each line as a Text of its own on the template's grid`,
     );
-  // on the grid, as a page's widget: the one place check (layout, size, aspect, layer, box,
+  // on the grid, as a page's widget: the one grid check (layout, size, aspect, layer, box,
   // place, scale, config.enabled)
   if (!isId(w.id, 'w')) out.push(`${at}: "id" must be a widget id like "w-7qpa"`);
-  out.push(...placeProblems(w).map((p) => `${at}: ${p}`));
+  out.push(...gridProblems(w).map((p) => `${at}: ${p}`));
   if (w.role !== undefined && (typeof w.role !== 'string' || !ROLE.test(w.role)))
     out.push(`${at}.role must be a name in lowercase letters, digits and "-"`);
   if (w.join !== undefined && (w.type !== 'text' || typeof w.join !== 'string'))

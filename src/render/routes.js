@@ -62,7 +62,7 @@ import { coverOf, editRef } from './helpers.js';
 import { itemTitle, schemaOf } from './schemas.js';
 import { fillTitle } from './seo.js';
 import { curtainMode } from '../client/anim/curtain.js';
-import { widgetsOf } from './layout/ids.js';
+import { onWidgetsOf } from './layout/ids.js';
 import { widgetType } from '../widgets/index.js';
 import { mainOf, mainProblem, refsOf, sourceOf } from './layout/source.js';
 import { hasProperty, query, ruleOf, valueOf, SLUG } from './query.js';
@@ -88,10 +88,11 @@ export const NAMED_VIEWS = {
 
 /**
  * A page's title: the first widget's whose type gives one (its pageTitle(widget): { title }, or
- * null for none; a Text's first title line, widgets/text/index.js), else undefined.
+ * null for none; a Text's first title line, widgets/text/index.js), else undefined. A widget
+ * that is off, or in a section that is off, gives none (it isn't on the published page).
  */
 export const pageTitle = (page) => {
-  for (const widget of widgetsOf(page)) {
+  for (const widget of onWidgetsOf(page)) {
     const found = widgetType(widget?.type)?.pageTitle?.(widget);
     if (found) return found.title;
   }

@@ -259,6 +259,26 @@ export const themeEdit = (name, fallback) =>
 /** What a stored "colorTheme" shows: its name, else the one it falls back to. */
 export const themeShown = (value, fallback) => (THEME_NAMES.includes(value) ? value : fallback);
 
+/** The picker's Follow choice (a section's, the header's: the site's theme), never stored. */
+export const FOLLOW = 'follow';
+
+/**
+ * A picker that follows something (follow: true; not the site's own): what to store for a pick.
+ * Follow: undefined (left out: it follows); a theme: that theme, even the one it follows (an
+ * explicit pick of the same theme is its own and stays when the site's changes); else undefined.
+ */
+export const followEdit = (picked) => (THEME_NAMES.includes(picked) ? picked : undefined);
+
+/**
+ * What a following picker shows for a stored value: { value, own, inherited }. own: a theme of
+ * its own (stored); else value '' (no option: the Select shows the inherited theme dimmed, its
+ * placeholder) and inherited the theme it follows.
+ */
+export const followShown = (stored, fallback) =>
+  THEME_NAMES.includes(stored)
+    ? { value: stored, own: true, inherited: fallback }
+    : { value: '', own: false, inherited: fallback };
+
 /** The site color theme's value for /colorTheme (undefined: the default, left out). */
 export const siteThemeEdit = (name) => themeEdit(name, DEFAULT_COLOR_THEME);
 export { siteColorThemeOf };

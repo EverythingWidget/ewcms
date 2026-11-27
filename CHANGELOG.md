@@ -89,6 +89,12 @@ say what a site must do before it bumps its pin.
 
 ### Engine
 
+- **Off counts nowhere in the published output.** A widget that is off (`config.enabled: false`),
+  or one in a section that is off, no longer names its page (`<title>`, the curtain), and a
+  [param] page whose main widget is off (or sits in a section that is off) builds no item pages:
+  `ewcms check` says "No pages are built: the main widget is off (or its section is): switch it
+  on". The editor still gets those pages to edit on (unbuilt, noindex), as before.
+
 - **A widget that is off is left out of the published page.** `config.enabled: false` on a page's
   or footer's widget now drops it from the built HTML, as a section that is off (it used to be
   there with `hidden`). A template's widgets were already left out. The editor's preview still
@@ -100,7 +106,7 @@ say what a site must do before it bumps its pin.
   `"colorTheme" must be a color theme: "lightest", "light", "accent", "dark", "darkest", not "blue"`
   (a section's still starts with its name).
 
-- **One place check for every widget.** A template's widgets and the Summary and details widget
+- **One grid check for every widget (`gridProblems`).** A template's widgets and the Summary and details widget
   are checked as a page's are: layout, `size`, `aspect`, `layer`, `box`, `place`, `scale` and
   `config.enabled`. A bad `box`, `place` or `scale` in a template used to pass `ewcms check` and
   render anyway; it is now a problem. A template's messages read as a page's
@@ -191,6 +197,12 @@ say what a site must do before it bumps its pin.
   List's Items from). When a value is missing is one component (`MissingField.svelte`) for a page's
   and a template's widget. Nothing looks or works differently. A custom widget's
   `inTemplate.fields` still works.
+
+- **The color theme picker can follow the site.** Given `follow` (a section's or the header's
+  picker, once they exist; never the site's own), it offers **Follow site** first and stores
+  nothing for it; left out, the inherited theme shows dimmed ("Darkest (the site's)"). Any theme
+  picked is stored, the site's own theme too, so it stays when the site's changes; the reset reads
+  "Use the site's". The site's picker is unchanged.
 
 - **One color theme picker (`ColorThemePicker.svelte`).** Theme › Color's Site color theme is
   drawn by it (the same select, unsaved dot and Use Darkest reset); a section's and the header's
