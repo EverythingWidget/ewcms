@@ -477,6 +477,27 @@ function sourceProblems(src, t) {
 const warnings = [];
 export const contentWarnings = () => [...warnings];
 
+/**
+ * A widget's place on the grid and its content box, one check for every widget (a page's or a
+ * footer's, a template's, a details widget): its layout, size, aspect, layer, box, place, scale
+ * and its on / off switch (config.enabled). Problems without a prefix: the caller names it.
+ */
+function placeProblems(w) {
+  const out = [...checkWidgetLayout(w)];
+  if (w.size !== undefined && !SIZES.includes(w.size))
+    out.push(`"size" must be ${SIZES.join(', ')}`);
+  if ((w.size === 'aspect' || w.aspect !== undefined) && !isRatio(w.aspect))
+    out.push('"aspect" must be a ratio like "4:5"');
+  if (w.layer !== undefined && !Number.isInteger(w.layer))
+    out.push('"layer" must be a whole number');
+  if (w.z !== undefined) out.push('"z" is "layer" now (its Layer)');
+  out.push(...checkScale(w), ...checkPlacement(w));
+  const enabled = isObject(w.config) ? w.config.enabled : undefined;
+  if (enabled !== undefined && typeof enabled !== 'boolean')
+    out.push('"config.enabled" must be true or false');
+  return out;
+}
+
 /** One widget: its place, then its content against its type in the registry. */
 function checkWidget(widget, where) {
   if (!isObject(widget)) return [`${where} must be an object`];
@@ -487,17 +508,10 @@ function checkWidget(widget, where) {
   const out = [];
   const bad = (key, want) => out.push(`${name}: "${key}" must be ${want}`);
   if (!isId(widget.id, 'w')) bad('id', 'a widget id like "w-7qpa"');
-  out.push(...checkWidgetLayout(widget).map((p) => `${name}: ${p}`));
-  if (widget.size !== undefined && !SIZES.includes(widget.size)) bad('size', SIZES.join(', '));
+  out.push(...placeProblems(widget).map((p) => `${name}: ${p}`));
   // a setting's own check of its value (its declaration's check(value); the Hero's photos)
   for (const f of t?.settings || [])
     if (f?.check) out.push(...f.check(widget[f.key]).map((p) => `${name}: ${p}`));
-  if ((widget.size === 'aspect' || widget.aspect !== undefined) && !isRatio(widget.aspect))
-    bad('aspect', 'a ratio like "4:5"');
-  if (widget.layer !== undefined && !Number.isInteger(widget.layer)) bad('layer', 'a whole number');
-  if (widget.z !== undefined) out.push(`${name}: "z" is "layer" now (its Layer)`);
-  out.push(...checkScale(widget).map((p) => `${name}: ${p}`));
-  out.push(...checkPlacement(widget).map((p) => `${name}: ${p}`));
   if (widget.motion !== undefined)
     out.push(...checkMotion(widget.motion).map((p) => `${name}: ${p}`));
   if (!t) return out; // an unknown type only warns (render)
@@ -592,8 +606,7 @@ function checkWidget(widget, where) {
   if (t.warn) warnings.push(...t.warn(widget).map((p) => `${name}: ${p}`));
   if (widget.config === undefined) return out;
   if (!isObject(widget.config)) return [...out, `${name}: "config" must be an object`];
-  const { enabled, missing } = widget.config;
-  if (enabled !== undefined && typeof enabled !== 'boolean') bad('config.enabled', 'true or false');
+  const { missing } = widget.config;
   // every widget: Hide (default) | Show empty (./layout/missing.js); omitted means Hide
   if (missing !== undefined && missing !== 'hide' && missing !== 'show')
     bad('config.missing', '"hide" or "show"');
@@ -886,12 +899,8 @@ function checkTemplateWidget(w, at) {
   if (w.type === 'details') {
     out.push(...detailsWidgetProblems(w, at));
     if (!isId(w.id, 'w')) out.push(`${at}: "id" must be a widget id like "w-7qpa"`);
-    out.push(...checkWidgetLayout(w).map((p) => `${at}: ${p}`));
-    // its place has a height as any widget's (Rows: an item at least that tall)
-    if (w.size !== undefined && !SIZES.includes(w.size))
-      out.push(`${at}.size must be ${SIZES.join(', ')}`);
-    if ((w.size === 'aspect' || w.aspect !== undefined) && !isRatio(w.aspect))
-      out.push(`${at}.aspect must be a ratio like "4:5"`);
+    // its place has a height as any widget's (Rows: an item at least that tall): the one check
+    out.push(...placeProblems(w).map((p) => `${at}: ${p}`));
     const extra = Object.keys(w).filter(
       (k) => !['id', 'type', 'role', 'layout', 'layer', 'size', 'aspect', 'config'].includes(k),
     );
@@ -938,16 +947,10 @@ function checkTemplateWidget(w, at) {
     out.push(
       `${at}: a template's Text has one line (this one has ${w.body.length}): place each line as a Text of its own on the template's grid`,
     );
-  // on the grid, as a page's widget (layout, size, aspect, layer)
+  // on the grid, as a page's widget: the one place check (layout, size, aspect, layer, box,
+  // place, scale, config.enabled)
   if (!isId(w.id, 'w')) out.push(`${at}: "id" must be a widget id like "w-7qpa"`);
-  if (w.z !== undefined) out.push(`${at}: "z" is "layer" now (its Layer)`);
-  if (w.layer !== undefined && !Number.isInteger(w.layer))
-    out.push(`${at}.layer must be a whole number`);
-  out.push(...checkWidgetLayout(w).map((p) => `${at}: ${p}`));
-  if (w.size !== undefined && !SIZES.includes(w.size))
-    out.push(`${at}.size must be ${SIZES.join(', ')}`);
-  if ((w.size === 'aspect' || w.aspect !== undefined) && !isRatio(w.aspect))
-    out.push(`${at}.aspect must be a ratio like "4:5"`);
+  out.push(...placeProblems(w).map((p) => `${at}: ${p}`));
   if (w.role !== undefined && (typeof w.role !== 'string' || !ROLE.test(w.role)))
     out.push(`${at}.role must be a name in lowercase letters, digits and "-"`);
   if (w.join !== undefined && (w.type !== 'text' || typeof w.join !== 'string'))

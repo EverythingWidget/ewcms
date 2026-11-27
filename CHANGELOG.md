@@ -76,6 +76,12 @@ say what a site must do before it bumps its pin.
 
 ### Engine
 
+- **One place check for every widget.** A template's widgets and the Summary and details widget
+  are checked as a page's are: layout, `size`, `aspect`, `layer`, `box`, `place`, `scale` and
+  `config.enabled`. A bad `box`, `place` or `scale` in a template used to pass `ewcms check` and
+  render anyway; it is now a problem. A template's messages read as a page's
+  (`sections.0.widgets.2: "size" must be …`).
+
 - **The header's height in grid rows: `header.json` `rows` and `rowsPhone`.** Whole numbers from 1
   to 30 (`ewcms check`); a row is a contained section's square cell (`--grid-row`), so the header
   grows with the window as the sections' rows do. An unset `rowsPhone` is the same number of rows

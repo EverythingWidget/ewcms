@@ -205,7 +205,7 @@ test('the validator: its settings, one per template, not a link, no button in th
     ),
     [],
   );
-  assert.match(p(tpl({}, [...summary, { ...dw(), size: 'tall' }])), /size must be/);
+  assert.match(p(tpl({}, [...summary, { ...dw(), size: 'tall' }])), /"size" must be/);
   assert.match(p(tpl({ config: { several: 'yes' } })), /config.several must be true or false/);
   assert.match(p(tpl({ config: { icon: 'x' } })), /config.icon must be plus or none/);
   assert.match(p(tpl({ config: { open: 'all' } })), /config.open must be none or first/);
