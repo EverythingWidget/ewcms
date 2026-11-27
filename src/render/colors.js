@@ -174,6 +174,33 @@ export const isPaletteColor = (v) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.
 export const isRoleValue = (v, transparent = false, glass = false) =>
   isSlot(v) || isHex(v) || (transparent && v === 'transparent') || (glass && v === 'glass');
 
+/*
+ * Opacity on a fill role (a color theme's or a template entry's "opacity": { "<role>": 0-100 },
+ * a whole percent; left out: 100, solid). Only the fills (Background, Button, Line, Header,
+ * Curtain), never a text role; the palette stays solid #rrggbb. It applies to a colour (a slot or
+ * a hex): a Transparent fill and a Glass button have none. The CSS writes the colour see-through
+ * (roleCss); the contrast check blends it over what is behind it first (blendOver).
+ */
+export const OPACITY_ROLES = Object.freeze(ROLES.filter((r) => r.kind === 'fill').map((r) => r.key));
+/** The fills a template entry may give an opacity (its TEMPLATE_ROLES fills). */
+export const TEMPLATE_OPACITY_ROLES = Object.freeze(OPACITY_ROLES.filter((k) => TEMPLATE_ROLES.includes(k)));
+/** An opacity: a whole percent 0-100. */
+export const isOpacity = (v) => Number.isInteger(v) && v >= 0 && v <= 100;
+
+/** A theme's or template entry's valid opacities, only those under 100: { role: percent }. */
+export function opacityOf(set, keys = OPACITY_ROLES) {
+  const o = isObject(set?.opacity) ? set.opacity : {};
+  const out = {};
+  for (const k of keys) if (isOpacity(o[k]) && o[k] < 100) out[k] = o[k];
+  return out;
+}
+
+/** A role value as CSS at `pct` percent (undefined or 100: solid; no colour: no opacity to give). */
+export const roleCss = (v, pct) =>
+  pct === undefined || pct >= 100 || v === 'transparent' || v === 'glass'
+    ? valueCss(v)
+    : `color-mix(in srgb, ${valueCss(v)} ${pct}%, transparent)`;
+
 /** theme.json's palette (5 × #rrggbb), or null when it sets none or it isn't valid. */
 export function ownPaletteOf(theme) {
   const p = theme?.palette;
@@ -273,8 +300,8 @@ export function textStyleRolesOf(set) {
 }
 
 /**
- * A template's own sub-roles in a theme, only what is set: { roles, textStyles } (none: the
- * section's roles; its parent's are never read, see copyTemplateRoles).
+ * A template's own sub-roles in a theme, only what is set: { roles, textStyles, opacity } (none:
+ * the section's roles; its parent's are never read, see copyTemplateRoles).
  */
 export function templateRolesOf(theme, name, id) {
   const all = own(theme, name).templates;
@@ -282,7 +309,7 @@ export function templateRolesOf(theme, name, id) {
   const roles = {};
   for (const k of TEMPLATE_ROLES)
     if (isRoleValue(set[k], roleOf(k).transparent, roleOf(k).glass)) roles[k] = normal(set[k]);
-  return { roles, textStyles: textStyleRolesOf(set) };
+  return { roles, textStyles: textStyleRolesOf(set), opacity: opacityOf(set, TEMPLATE_OPACITY_ROLES) };
 }
 
 /**
@@ -478,9 +505,10 @@ function buildCss(theme) {
   for (const name of THEME_NAMES) {
     const roles = rolesOf(theme, name);
     const textStyles = textStyleRolesOf(own(theme, name));
+    const opacity = opacityOf(own(theme, name));
     out.push(
       `${sel(name)} { ${decls([
-        ...ROLES.map((r) => [r.css, valueCss(roles[r.key])]),
+        ...ROLES.map((r) => [r.css, roleCss(roles[r.key], opacity[r.key])]),
         ...[...textStyleSet].map((textStyle) => [
           textStyleVar(textStyle),
           textStyles[textStyle] !== undefined ? valueCss(textStyles[textStyle]) : 'initial',
@@ -510,29 +538,33 @@ function buildCss(theme) {
   // templates: after the themes; the site theme's first (it matches everywhere, as :root),
   // so a section's theme wins inside it. A role a template leaves out in a theme: inherit.
   const order = [site, ...THEME_NAMES.filter((n) => n !== site)];
-  // the templates that set a Background in some theme
+  // the templates that set a Background (or its opacity) in some theme
+  const setsFill = (t, k) => t.roles[k] !== undefined || t.opacity[k] !== undefined;
   const paints = new Set(
-    ids.filter((id) =>
-      THEME_NAMES.some((n) => templateRolesOf(theme, n, id).roles.background !== undefined),
-    ),
+    ids.filter((id) => THEME_NAMES.some((n) => setsFill(templateRolesOf(theme, n, id), 'background'))),
   );
   for (const name of order)
     for (const id of ids) {
-      const { roles, textStyles } = templateRolesOf(theme, name, id);
+      const t = templateRolesOf(theme, name, id);
+      const { roles, textStyles } = t;
       const cls = templateClass(id);
+      // a fill's colour or opacity it sets: the other from the section's (its own opacity
+      // left out follows the section's, as its colour does)
+      const section = rolesOf(theme, name);
+      const sectionOpacity = opacityOf(own(theme, name));
       const selector =
         name === site ? `:root .${cls}, .ct-${name} .${cls}` : `.ct-${name} .${cls}`;
       const all = { ...rolesOf(theme, name), ...roles };
       // its item paints a Background it sets, when its style's fill is left empty (a fill set,
       // inline, wins: Transparent is see-through, Surface a surface of it); a theme where it sets none:
       // none (over the site theme's rule, which matches everywhere). Hover: .li's, its own fill
-      const fill = [['--item-bg', roles.background !== undefined ? 'var(--color-background)' : 'transparent']];
+      const fill = [['--item-bg', setsFill(t, 'background') ? 'var(--color-background)' : 'transparent']];
       out.push(
         `${selector} { ${decls([
           ...TEMPLATE_ROLES.map((k) => [
             roleOf(k).css,
-            roles[k] !== undefined
-              ? valueCss(roles[k])
+            setsFill(t, k)
+              ? roleCss(roles[k] ?? section[k], t.opacity[k] ?? sectionOpacity[k])
               : k === 'buttonText' && buttonTextFollows(theme, name, roles)
                 ? 'var(--color-text)'
                 : 'inherit',
@@ -590,10 +622,27 @@ function checkTextStyles(where, t) {
 }
 
 
+/** A theme's or template entry's "opacity": { fill role: whole percent 0-100 }. */
+function checkOpacity(where, o, keys) {
+  const text = `{ "<role>": 0-100 } (a whole percent; the fills ${keys.join(', ')})`;
+  if (!isObject(o)) return [`"${where}" must be an object ${text}`];
+  return Object.entries(o).flatMap(([k, v]) => {
+    if (!keys.includes(k))
+      return [
+        roleOf(k)
+          ? `"${where}.${k}": only a fill can have an opacity (${keys.join(', ')}), not ${roleOf(k).label}`
+          : `"${where}.${k}" is not a role with an opacity (${keys.join(', ')})`,
+      ];
+    return isOpacity(v) ? [] : [`"${where}.${k}" must be a whole percent 0-100, not ${show(v)}`];
+  });
+}
+
 function checkRoles(where, t, keys, extra) {
   if (!isObject(t)) return [`"${where}" must be an object of roles`];
   return Object.entries(t).flatMap(([k, v]) => {
     if (k === 'textStyles') return checkTextStyles(`${where}.textStyles`, v);
+    if (k === 'opacity')
+      return checkOpacity(`${where}.opacity`, v, OPACITY_ROLES.filter((r) => keys.includes(r)));
     if (k === 'templates' && extra.includes('templates')) {
       if (!isObject(v)) return [`"${where}.templates" must be an object { "<template id>": { … } }`];
       return Object.entries(v).flatMap(([id, s]) =>
@@ -606,7 +655,7 @@ function checkRoles(where, t, keys, extra) {
       return [
         `"${where}.heading" is not a role any more: Heading is a text style ("${where}.textStyles": { "heading": … }, as Title, Subheading and Statement); left out, a text style follows Text`,
       ];
-    if (!keys.includes(k)) return [`"${where}.${k}" is not a role (${[...keys, ...extra].join(', ')})`];
+    if (!keys.includes(k)) return [`"${where}.${k}" is not a role (${[...keys, ...extra, 'opacity'].join(', ')})`];
     return checkValue(`${where}.${k}`, v, roleOf(k).transparent, roleOf(k).glass);
   });
 }
@@ -652,57 +701,129 @@ export const contrastOf = (a, b) => {
 const hexOf = (v, palette) => (v === 'transparent' || v === 'glass' ? null : isSlot(v) ? palette[v - 1] : v);
 
 /**
- * Contrast warnings (ewcms check): per theme, each text colour against the background that
- * renders under it (a template's, the section's, the site theme's: "transparent" is see-through). WCAG
- * 4.5:1, 3:1 for the heading text styles. Only once a site has its own palette or color themes. seeThrough: the
- * templates whose item style's fill is Transparent (src/widgets/list/item-style.js): their Background
- * never shows, so their text is read against the section's.
+ * A colour at `pct` percent over what is behind it, as the browser composites it (in sRGB):
+ * pct × colour + (1 − pct) × behind, as "#rrggbb". Solid (undefined or 100): the colour itself;
+ * see-through over nothing known (null: a photo, the page behind the site's Background): null.
+ */
+export function blendOver(hex, pct, behind) {
+  if (!hex) return null;
+  const c = rgbOf(hex);
+  if (pct === undefined || pct >= 100) return `#${c.map((x) => x.toString(16).padStart(2, '0')).join('')}`;
+  if (!behind) return null;
+  const b = rgbOf(behind);
+  const a = pct / 100;
+  return `#${c.map((x, i) => Math.round(a * x + (1 - a) * b[i]).toString(16).padStart(2, '0')).join('')}`;
+}
+
+/**
+ * The fills as they render, see-through ones blended over what is behind them: { background,
+ * button, line, header, curtain } as "#rrggbb", null when it can't be known. raw: the role values,
+ * opacity: their percents, behind: what is under the Background (null for the site color theme:
+ * the page behind it, the browser's canvas or a page's backdrop photo, isn't known), site: the
+ * site's Background as it renders (under the header and the curtain).
+ */
+function fillsOf(raw, opacity, palette, behind, site) {
+  const at = (k, under) => {
+    const hex = hexOf(raw[k], palette);
+    return hex ? blendOver(hex, opacity[k], under) : undefined;
+  };
+  const background = at('background', behind) ?? behind;
+  const line = at('line', background);
+  return {
+    background,
+    button: at('button', background) ?? background,
+    line: line === undefined ? null : line,
+    header: at('header', site) ?? site,
+    curtain: at('curtain', site) ?? null,
+  };
+}
+
+/** Line against its Background: 3:1 (WCAG 1.4.11, a rule or border that must be seen); the editor shows it, the check doesn't warn. */
+export const LINE_CONTRAST = Object.freeze({ key: 'line', on: 'background', min: 3 });
+
+/**
+ * A color theme's contrast results, or a template's inside it (`template`): one per text role
+ * read against a fill (ROLES' on, min) and Line against Background, each { key, on, fg, bg,
+ * ratio, min, pass, seeThrough }. fg, bg as they render ("#rrggbb"): a see-through fill blended
+ * over what is behind it first; ratio null (not checked) when either can't be known (a
+ * Transparent Line; a see-through Background over a photo). A template's Background shows
+ * unless it is one of seeThrough (its item style's fill is Transparent): then its text is read
+ * against the section's. textStyles: the text styles set, each { textStyle, … } against Background.
+ */
+export function contrastResults(theme, name, { template = null, seeThrough = [] } = {}) {
+  const palette = paletteOf(theme);
+  const site = siteColorThemeOf(theme);
+  const siteFills = fillsOf(rolesOf(theme, site), opacityOf(own(theme, site)), palette, null, null);
+  const siteBg = siteFills.background;
+  const roles = rolesOf(theme, name);
+  const opacity = opacityOf(own(theme, name));
+  let fills = name === site ? siteFills : fillsOf(roles, opacity, palette, siteBg, siteBg);
+  let raw = roles;
+  let textStyles = textStyleRolesOf(own(theme, name));
+  let seen = { ...opacity };
+  if (template) {
+    const t = templateRolesOf(theme, name, template);
+    const { background, ...set } = t.roles;
+    if (buttonTextFollows(theme, name, t.roles)) set.buttonText = set.text;
+    const shows = (background !== undefined || t.opacity.background !== undefined) && !seeThrough.includes(template);
+    const top = { ...opacity, ...t.opacity };
+    if (!shows) delete top.background;
+    raw = { ...roles, ...set, ...(shows ? { background: background ?? roles.background } : {}) };
+    // its Background over the section's; the rest over its own (or the section's) Background
+    const tf = fillsOf(raw, top, palette, fills.background, siteBg);
+    fills = { ...tf, background: shows ? tf.background : fills.background };
+    textStyles = t.textStyles;
+    seen = top;
+  }
+  const out = [];
+  const result = (key, fgHex, on, min, extra = {}) => {
+    const bg = fills[on];
+    const ratio = fgHex && bg ? contrastOf(fgHex, bg) : null;
+    const pass = ratio === null ? null : ratio >= min;
+    out.push({ key, on, fg: fgHex, bg, ratio, min, pass, seeThrough: seen[on] !== undefined, ...extra });
+  };
+  for (const r of ROLES) if (r.on) result(r.key, hexOf(raw[r.key], palette), r.on, r.min);
+  result('line', fills.line, 'background', LINE_CONTRAST.min, { seeThrough: seen.line !== undefined || seen.background !== undefined });
+  for (const [textStyle, v] of Object.entries(textStyles))
+    result(`textStyles.${textStyle}`, hexOf(v, palette), 'background', HEADING_TEXT_STYLES.includes(textStyle) ? 3 : 4.5, { textStyle });
+  return out;
+}
+
+/**
+ * Contrast warnings (ewcms check): per theme, each text colour against the fill that renders
+ * under it (a template's, the section's, the site theme's: "transparent" is see-through; a fill
+ * with an opacity is blended over what is behind it first). WCAG 4.5:1, 3:1 for the heading text
+ * styles. Only once a site has its own palette or color themes. seeThrough: the templates whose
+ * item style's fill is Transparent (src/widgets/list/item-style.js): their Background never
+ * shows, so their text is read against the section's. A template is checked for what it sets
+ * (all its text when its Background shows), not for what it leaves to the section.
  */
 export function contrastWarnings(theme, { seeThrough = [] } = {}) {
   if (!ownPaletteOf(theme) && !isObject(theme?.colorThemes)) return [];
-  const palette = paletteOf(theme);
-  const siteBg = hexOf(rolesOf(theme, siteColorThemeOf(theme)).background, palette);
   const out = [];
   const label = (k) => roleOf(k)?.label || k;
-  const check = (where, roles, textStyles, fallbackBg) => {
-    const bg = hexOf(roles.background, palette) || fallbackBg;
-    const against = { background: bg, button: hexOf(roles.button, palette) || bg, header: hexOf(roles.header, palette) || siteBg, curtain: hexOf(roles.curtain, palette) };
-    for (const r of ROLES) {
-      if (!r.on || roles[r.key] === undefined) continue;
-      const fg = hexOf(roles[r.key], palette);
-      const on = against[r.on];
-      if (!fg || !on) continue;
-      const c = contrastOf(fg, on);
-      if (c < r.min)
-        out.push(`${where}: ${label(r.key)} on ${label(r.on)} has contrast ${c.toFixed(1)}:1 (needs ${r.min}:1)`);
+  const say = (where, list) => {
+    for (const c of list) {
+      if (c.pass !== false || c.key === 'line') continue;
+      out.push(
+        c.textStyle
+          ? `${where}: the ${c.textStyle} text style on Background has contrast ${c.ratio.toFixed(1)}:1 (needs ${c.min}:1)`
+          : `${where}: ${label(c.key)} on ${label(c.on)} has contrast ${c.ratio.toFixed(1)}:1 (needs ${c.min}:1)`,
+      );
     }
-    for (const [textStyle, v] of Object.entries(textStyles)) {
-      const fg = hexOf(v, palette);
-      const min = HEADING_TEXT_STYLES.includes(textStyle) ? 3 : 4.5;
-      const c = contrastOf(fg, bg);
-      if (c < min)
-        out.push(`${where}: the ${textStyle} text style on Background has contrast ${c.toFixed(1)}:1 (needs ${min}:1)`);
-    }
-    return bg;
   };
   for (const name of THEME_NAMES) {
-    const roles = rolesOf(theme, name);
     const where = `colorThemes.${name}`;
-    const bg = check(where, roles, textStyleRolesOf(own(theme, name)), siteBg);
+    say(where, contrastResults(theme, name));
     for (const id of templateIds(theme)) {
       const t = templateRolesOf(theme, name, id);
-      if (!Object.keys(t.roles).length && !Object.keys(t.textStyles).length) continue;
-      // a template's own background (when its fill lets it show): all its text against it; else
-      // only what it sets, against the section's
-      const { background, ...set } = t.roles;
-      if (buttonTextFollows(theme, name, t.roles)) set.buttonText = set.text;
-      const shows = background !== undefined && !seeThrough.includes(id);
-      const eff = { ...roles, ...set, ...(shows ? { background } : {}) };
-      const keys = shows ? TEMPLATE_ROLES : Object.keys(set);
-      const merged = Object.fromEntries(
-        ['background', 'button', ...keys].map((k) => [k, eff[k]]),
-      );
-      check(`${where}.templates.${id}`, merged, t.textStyles, bg);
+      const sets = [...Object.keys(t.roles), ...Object.keys(t.opacity)];
+      if (!sets.length && !Object.keys(t.textStyles).length) continue;
+      const shows = sets.includes('background') && !seeThrough.includes(id);
+      if (buttonTextFollows(theme, name, t.roles)) sets.push('buttonText');
+      // what it sets: a text role, or the fill a text role is read against
+      const checked = (c) => c.textStyle || shows || sets.includes(c.key) || sets.includes(c.on);
+      say(`${where}.templates.${id}`, contrastResults(theme, name, { template: id, seeThrough }).filter(checked));
     }
   }
   return out;

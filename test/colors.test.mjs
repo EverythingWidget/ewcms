@@ -141,7 +141,7 @@ test('check: palette, color themes, roles, slots; "none" only on fills', () => {
     `"colorThemes.dark.text" can't be "transparent": only a fill can (Background, Button, Line, Header)`,
     `"colorThemes.dark.curtain" can't be "transparent": only a fill can (Background, Button, Line, Header)`,
     '"colorThemes.dark.link" must be a palette slot 1-5 or a color "#rrggbb", not 6',
-    '"colorThemes.dark.glow" is not a role (background, text, link, accent, button, buttonText, line, header, headerText, curtain, curtainText, textStyles, templates)',
+    '"colorThemes.dark.glow" is not a role (background, text, link, accent, button, buttonText, line, header, headerText, curtain, curtainText, textStyles, templates, opacity)',
     `"colorThemes.dark.textStyles.label" can't be "transparent": only a fill can (Background, Button, Line, Header)`,
     '"colorThemes.dark.textStyles.note" is not a text style (title, heading, paragraph, label, subheading, statement, small)',
     '"colorThemes.blue" is not a color theme (lightest, light, accent, dark, darkest)',

@@ -14,7 +14,12 @@
                    while they follow ("follows Text"). A role that isn't the engine's default, or a sub-role set:
                    its reset arrow (the own-value marker); a theme with any: a reset arrow on its
                    card's bar (all its colours back to the defaults), its room always kept. Not
-                   saved yet: the yellow dot after the label or title. Its smart colours, read only, at
+                   saved yet: the yellow dot after the label or title. A fill (Background,
+                   Button, Line, Header, Curtain; a template's Background, Button, Line): its
+                   opacity in its label row (a compact − / + percent; empty: 100, a template's the
+                   section's, dimmed; off without a colour), its reset clearing both. Under each
+                   text role and Line: its contrast, as the check works it out (a see-through
+                   fill blended over what is behind it), its room always kept. Its smart colours, read only, at
                    the bottom (worked out by the preview, the rule on hover)
     Site color theme  the select (empty: Darkest)
   Every pick is one undo step (a typed or dragged colour coalesces); theme.json is IN_PLACE, so
@@ -38,17 +43,25 @@
     colorThemeClass,
   } from '../../render/colors.js';
   import { templatePickerGroups, PRESETS } from '../../widgets/list/presets.js';
+  import { seeThroughTemplates } from '../../widgets/list/item-style.js';
+  import { atLimit, stepNumber } from '../lib/number-step.js';
   import {
     buttonModeValue,
+    contrastRow,
+    contrastText,
     customCount,
     defaultPaletteOf,
     isCustomSlot,
     isHexColor,
     longHex,
+    opacityEdit,
+    opacityPointer,
+    opacityRow,
     paletteEdit,
     paletteShown,
     previewOf,
     roleEdit,
+    roleResetEdit,
     roleRow,
     rolePointer,
     siteColorThemeOf,
@@ -77,6 +90,42 @@
     const edit = roleEdit(theme(), spec, value);
     if (edit) live.store.set(THEME, edit.ptr, edit.value, opts(edit.ptr));
   }
+  // a fill's reset: its colour and opacity back as one undo step
+  function resetRole(spec) {
+    if (!opacityRow(theme(), spec)) return pick(spec, undefined);
+    const edit = roleResetEdit(theme(), spec);
+    live.store.set(THEME, edit.ptr, edit.value, opts(rolePointer(spec)));
+  }
+
+  // ---- a fill's opacity (a whole percent; the − / + step 5, the arrow keys 1)
+  const OPACITY_STEP = 5;
+  function setOpacity(spec, pct) {
+    const edit = opacityEdit(theme(), spec, pct);
+    if (edit) live.store.set(THEME, edit.ptr, edit.value, opts(edit.ptr));
+  }
+  function stepOpacity(spec, op, dir, input) {
+    const next = stepNumber({
+      value: op.own,
+      placeholder: String(op.inherited),
+      min: 0,
+      max: 100,
+      step: OPACITY_STEP,
+      dir,
+    });
+    if (next === null) return;
+    if (input) input.value = String(next);
+    setOpacity(spec, next);
+  }
+  function typeOpacity(spec, e) {
+    const raw = e.currentTarget.value.trim();
+    if (raw === '') return setOpacity(spec, undefined);
+    const n = Number(raw);
+    if (Number.isInteger(n) && n >= 0 && n <= 100) setOpacity(spec, n);
+  }
+
+  // the templates whose items show no Background of their own (contrast: the section's)
+  const seeThrough = $derived(seeThroughTemplates(live.content?.templates || {}));
+
   const SLOTS = Array.from({ length: PALETTE_SIZE }, (_, i) => i + 1);
   const BUTTON_CHOICES = [
     ['color', 'Color'],
@@ -154,23 +203,26 @@
   {@const following = !!row.follows && !row.custom}
   {@const swatches = !row.glass || row.mode === 'color'}
   {@const hex = isHexColor(row.shown)}
+  {@const op = opacityRow(theme(), spec)}
+  {@const opPtr = op ? opacityPointer(spec) : ''}
+  {@const resettable = row.custom || op?.own !== undefined}
+  {@const contrast = contrastText(contrastRow(theme(), spec, seeThrough))}
   <div
-    class={['crole', live.changed(THEME, ptr) && 'is-unsaved', following && 'is-following']}
+    class={[
+      'crole',
+      (live.changed(THEME, ptr) || (op && live.changed(THEME, opPtr))) && 'is-unsaved',
+      following && 'is-following',
+    ]}
     data-edit="{THEME}#{ptr}"
     title={row.custom ? (row.follows ? 'Its own color' : 'Its own color (not the default)') : undefined}
   >
-    <span class="tf__label">
+    <span class={['tf__label', op && 'has-opacity']}>
       <span class="crole__name">{row.label}</span>
       {#if row.follows}<span class="crole__follows">{following ? `follows ${row.follows}` : ''}</span>{/if}
-      {#if row.custom}
-        <button
-          type="button"
-          class="crole__reset"
-          title={row.follows ? `Follow ${row.follows} again` : 'Use the default'}
-          aria-label={row.follows ? `${row.label}: follow ${row.follows} again` : `${row.label}: use the default`}
-          onclick={() => pick(spec, undefined)}><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button
-        >
-      {/if}
+      {#if op}{@render opacity(spec, row, op)}{/if}
+      <!-- a fill's reset: a 16px slot, kept while empty (the opacity never moves) -->
+      {#if op}<span class="crole__end">{@render reset(spec, row, resettable)}</span>
+      {:else}{@render reset(spec, row, resettable)}{/if}
     </span>
     {#if row.glass}
       <div class="crole__ctl">
@@ -228,7 +280,65 @@
         onclick={(e) => openCustom(spec, e)}><i class="fa-solid fa-eyedropper" aria-hidden="true"></i></button
       >
     </div>
+    {#if contrast}
+      <!-- its contrast (a text role on its fill, Line on Background): one line, always there -->
+      <p class={['crole__contrast', contrast.verdict === 'Fail' && 'is-fail', contrast.verdict === 'Pass' && 'is-pass']}>
+        {#if contrast.ratio}<b>{contrast.ratio}</b>{/if}
+        <b>{contrast.verdict}</b>
+        <span>{contrast.need}</span>
+      </p>
+    {/if}
   </div>
+{/snippet}
+
+{#snippet reset(spec, row, on)}
+  {#if on}
+    <button
+      type="button"
+      class="crole__reset"
+      title={row.follows ? `Follow ${row.follows} again` : 'Use the default'}
+      aria-label={row.follows ? `${row.label}: follow ${row.follows} again` : `${row.label}: use the default`}
+      onclick={() => resetRole(spec)}><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button
+    >
+  {/if}
+{/snippet}
+
+<!-- a fill's opacity: a compact number field (the value, "%", then − and +), 20px tall in the
+     label row; empty: what it is (100, or the section's) dimmed; off while it has no colour -->
+{#snippet opacity(spec, row, op)}
+  {@const off = op.off}
+  <span
+    class={['copa', off && 'is-off', op.own === undefined && 'is-inherited']}
+    title={off ? 'No color to make see-through' : `Opacity: ${op.shown}%`}
+  >
+    <input
+      class="copa__input"
+      type="number"
+      inputmode="numeric"
+      min="0"
+      max="100"
+      step="1"
+      placeholder={String(op.inherited)}
+      aria-label="{row.label}: opacity (%)"
+      disabled={off}
+      value={op.own ?? ''}
+      oninput={(e) => typeOpacity(spec, e)}
+    /><span class="copa__pct" aria-hidden="true">%</span>
+    {#each [-1, 1] as dir (dir)}
+      <button
+        type="button"
+        class="copa__step"
+        tabindex="-1"
+        aria-label="{row.label}: opacity {dir < 0 ? 'down' : 'up'}"
+        title={dir < 0 ? 'Less opaque' : 'More opaque'}
+        disabled={off ||
+          atLimit({ value: op.own, placeholder: String(op.inherited), min: 0, max: 100, dir })}
+        onmousedown={(e) => e.preventDefault()}
+        onclick={(e) => stepOpacity(spec, op, dir, e.currentTarget.parentElement.querySelector('input'))}
+        ><i class="fa-solid {dir < 0 ? 'fa-minus' : 'fa-plus'}" aria-hidden="true"></i></button
+      >
+    {/each}
+  </span>
 {/snippet}
 
 <!-- a fold: caret + its name (the curtain's Advanced), its rows under it while open -->
@@ -577,6 +687,138 @@
 
     &:focus-visible {
       @include focus-ring;
+    }
+  }
+
+  // a fill's reset slot: 16px, kept while empty, so the opacity before it never moves
+  .crole__end {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 16px;
+    height: 16px;
+
+    > .crole__reset {
+      margin-left: 0;
+    }
+  }
+
+  // a fill's opacity: a compact number field (the editor's .nf look, 20px tall) at the end of
+  // the label row: the percent, then − and + flush right; the line an overlay over their hover
+  .copa {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: stretch;
+    height: 20px;
+    margin-left: auto;
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    background: var(--field-bg);
+    color: var(--c-text);
+    text-transform: none;
+    letter-spacing: 0;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 1px var(--c-line);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    &:focus-within::after {
+      box-shadow: var(--focus-ring);
+    }
+
+    // empty: what it is (100, or the section's), dimmed
+    &.is-inherited .copa__pct {
+      color: var(--text-quiet);
+    }
+
+    &.is-off {
+      opacity: var(--o-disabled);
+    }
+  }
+
+  .copa__input {
+    box-sizing: content-box;
+    width: 3ch;
+    min-width: 0;
+    padding: 0 0 0 var(--space-1);
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    line-height: 20px;
+    text-align: right;
+    outline: none;
+    appearance: textfield;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      appearance: none;
+      margin: 0;
+    }
+
+    &::placeholder {
+      color: var(--text-quiet);
+    }
+  }
+
+  .copa__pct {
+    padding: 0 var(--space-1) 0 1px;
+    line-height: 20px;
+  }
+
+  .copa__step {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-text-muted);
+    font-size: var(--fs-2xs);
+    cursor: pointer;
+
+    &:last-child {
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+
+    &:hover:not(:disabled) {
+      background: var(--field-hover);
+      color: var(--c-text);
+    }
+
+    &:disabled {
+      opacity: var(--o-disabled);
+      cursor: default;
+    }
+  }
+
+  // a role's contrast: one quiet line under its swatches, always there (no shift); a fail red
+  .crole__contrast {
+    @include ellipsis;
+    margin: var(--space-1) 0 0;
+    color: var(--c-text-faint);
+    font-size: var(--fs-xs);
+    line-height: 16px;
+
+    b {
+      margin-right: var(--space-1);
+      font-weight: 500;
+    }
+
+    &.is-pass b {
+      color: var(--c-success);
+    }
+
+    &.is-fail b {
+      color: var(--c-error);
     }
   }
 

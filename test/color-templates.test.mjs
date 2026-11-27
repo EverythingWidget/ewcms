@@ -109,7 +109,7 @@ test("a template is its own: basedOn isn't followed; its parent's are copied onc
     },
   };
   // a template with no entry of its own: the section's roles (no rules), whatever its basedOn
-  assert.deepEqual(templateRolesOf(theme, 'dark', 't-aa11'), { roles: {}, textStyles: {} });
+  assert.deepEqual(templateRolesOf(theme, 'dark', 't-aa11'), { roles: {}, textStyles: {}, opacity: {} });
   assert.doesNotMatch(colorThemeCss(theme), /tpl-t-aa11/);
   // copied: its own entry, in each theme that had the parent's, as edits to theme.json
   const copies = templateRoleCopies(theme, 'preset:card', 't-aa11');

@@ -45,8 +45,13 @@ test('the card: Theme › Color reads its labels from colors.js and writes throu
   assert.doesNotMatch(panel, /class="dot|\.dots \{/);
   // a colour of its own: its reset arrow, no dot; not saved yet: the yellow dot after its label;
   // a theme with any own colour: a reset arrow on its card's bar, in a slot kept while empty
-  assert.match(panel, /class=\{\['crole', live\.changed\(THEME, ptr\) && 'is-unsaved'/);
-  assert.match(panel, /\{#if row\.custom\}\s*<button\s+type="button"\s+class="crole__reset"/);
+  assert.match(
+    panel,
+    /'crole',\s*\(live\.changed\(THEME, ptr\) \|\| \(op && live\.changed\(THEME, opPtr\)\)\) && 'is-unsaved'/,
+  );
+  // (a fill's reset: its colour or its opacity of its own, role-opacity.test.mjs)
+  assert.match(panel, /\{@const resettable = row\.custom \|\| op\?\.own !== undefined\}/);
+  assert.match(panel, /\{#snippet reset\(spec, row, on\)\}\s*\{#if on\}\s*<button\s+type="button"\s+class="crole__reset"/);
   assert.match(panel, /<span class="ctheme__reset">\s*\{#if customCount\(theme\(\), name\) > 0\}/);
   assert.match(panel, /unsaved=\{live\.changed\(THEME, `\/colorThemes\/\$\{name\}`\)\}/);
   assert.match(read('src/editor/styles/editor.scss'), /\.crole\.is-unsaved > \.tf__label::after/);

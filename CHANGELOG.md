@@ -162,6 +162,16 @@ say what a site must do before it bumps its pin.
   (empty: the theme's height and desktop's rows, a reset arrow on a value of its own), with the
   height in px at a 1440 window and a 390 phone. The preview takes it at once: a rows edit no
   longer reloads it (other header edits still do).
+- **Opacity on a color theme's fill roles.** Theme › Color gives each fill (Background, Button,
+  Line, Header, Curtain; a template's Background, Button and Line) an opacity in its label row: a
+  compact percent with − and +, empty 100 (a template's: the section's, dimmed), its reset arrow
+  putting the colour and the opacity back, the yellow dot while unsaved. Text roles have none.
+  Stored as `"opacity": { "<role>": 0-100 }` in a color theme or template entry (left out: solid,
+  so nothing changes for existing sites); the role's variable is the colour see-through
+  (`color-mix(in srgb, … N%, transparent)`). `ewcms check` validates it, and its contrast warnings
+  blend a see-through fill over what is behind it first (text on a see-through site Background
+  isn't checked: what is behind the page isn't known). Under each text role and Line the editor
+  shows the contrast it works out (docs/COLORS.md).
 - **Number fields have − and + buttons.** Every number setting drawn as a field (the Header's
   height, Theme › Layout and Typography, a section's space above and custom rows, a List's space
   between items, other widget numbers) shows its value on the left and two 32 x 32 buttons flush

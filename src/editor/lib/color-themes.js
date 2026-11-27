@@ -11,15 +11,20 @@
 import {
   COLOR_THEME_DEFAULTS,
   DEFAULT_COLOR_THEME,
+  OPACITY_ROLES,
   PALETTE_SIZE,
   ROLES,
+  TEMPLATE_OPACITY_ROLES,
   TEMPLATE_ROLES,
   TEXT_STYLE_NAMES,
   TEXT_STYLE_PARENT,
   THEMES,
   THEME_NAMES,
   buttonModeOf,
+  contrastResults,
+  isOpacity,
   isRoleValue,
+  opacityOf,
   ownPaletteOf,
   pagePaletteOf,
   paletteOf,
@@ -232,9 +237,13 @@ export function previewOf(theme, name) {
 export function customCount(theme, name) {
   const set = own(theme, name);
   let n = ROLES.filter((r) => roleRow(theme, { theme: name, key: r.key }).custom).length;
-  n += Object.keys(textStyleRolesOf(set)).length;
+  n += Object.keys(textStyleRolesOf(set)).length + Object.keys(opacityOf(set)).length;
   for (const t of Object.values(isObject(set.templates) ? set.templates : {}))
-    if (isObject(t)) n += Object.keys(t).filter((k) => k !== 'textStyles').length + Object.keys(textStyleRolesOf(t)).length;
+    if (isObject(t))
+      n +=
+        Object.keys(t).filter((k) => k !== 'textStyles' && k !== 'opacity').length +
+        Object.keys(textStyleRolesOf(t)).length +
+        Object.keys(isObject(t.opacity) ? t.opacity : {}).filter((k) => isOpacity(t.opacity[k])).length;
   return n;
 }
 
@@ -252,3 +261,94 @@ export { siteColorThemeOf };
 export const TEXT_STYLE_ROWS = Object.freeze(
   LINE_STYLES.map(([textStyle]) => textStyle).filter((textStyle) => TEXT_STYLE_NAMES.includes(textStyle)),
 );
+
+/* ---------- a fill role's opacity ---------- */
+
+/** Where a fill role's opacity lives: /colorThemes/<name>[/templates/<id>]/opacity/<key>. */
+export const opacityPointer = ({ theme: name, key, template }) =>
+  `/colorThemes/${name}${template ? `/templates/${template}` : ''}/opacity/${key}`;
+
+/** Can this row have an opacity: a fill role (never a text role or a text style). */
+export const hasOpacity = ({ key, textStyle, template }) =>
+  !textStyle && (template ? TEMPLATE_OPACITY_ROLES : OPACITY_ROLES).includes(key);
+
+/**
+ * A fill row's opacity: { own (its percent in theme.json, else undefined), inherited (what it is
+ * when empty: 100, a template's the section's), shown, off (no colour to make see-through: a
+ * Transparent fill, a Glass or Transparent button) }; null for a row that has none.
+ */
+export function opacityRow(theme, spec) {
+  if (!hasOpacity(spec)) return null;
+  const { theme: name, key, template } = spec;
+  const section = opacityOf(own(theme, name))[key];
+  let ownValue;
+  let inherited = 100;
+  if (template) {
+    const all = own(theme, name).templates;
+    const set = isObject(all) && isObject(all[template]) ? all[template] : {};
+    const v = isObject(set.opacity) ? set.opacity[key] : undefined;
+    ownValue = isOpacity(v) ? v : undefined;
+    inherited = section ?? 100;
+  } else ownValue = section;
+  const shown = roleRow(theme, spec).shown;
+  return {
+    own: ownValue,
+    inherited,
+    shown: ownValue ?? inherited,
+    off: shown === 'transparent' || shown === 'glass',
+  };
+}
+
+/**
+ * An opacity typed or stepped: { ptr, value } for live.store.set (value undefined: left out); a
+ * theme's 100 is left out (solid, the default), a template's 100 kept (over a section's
+ * see-through one). null when it isn't a whole percent 0-100 or the row has no opacity.
+ */
+export function opacityEdit(theme, spec, pct) {
+  if (!THEME_NAMES.includes(spec.theme) || !hasOpacity(spec)) return null;
+  const ptr = opacityPointer(spec);
+  if (pct === undefined) return { ptr, value: undefined };
+  if (!isOpacity(pct)) return null;
+  return { ptr, value: !spec.template && pct === 100 ? undefined : pct };
+}
+
+/**
+ * A fill row's reset: its colour and its opacity back to the default (a template's: following the
+ * section's) as one edit, { ptr, value } on the theme's (or template entry's) object; empty
+ * objects left out.
+ */
+export function roleResetEdit(theme, spec) {
+  const { theme: name, key, template } = spec;
+  const ptr = `/colorThemes/${name}${template ? `/templates/${template}` : ''}`;
+  const base = own(theme, name);
+  const cur = template ? (isObject(base.templates) ? base.templates[template] : undefined) : base;
+  const next = isObject(cur) ? structuredClone(cur) : {};
+  delete next[key];
+  if (isObject(next.opacity)) {
+    delete next.opacity[key];
+    if (!Object.keys(next.opacity).length) delete next.opacity;
+  }
+  return { ptr, value: Object.keys(next).length ? next : undefined };
+}
+
+/**
+ * A row's contrast result, as the check works it out (a see-through fill blended over what is
+ * behind it first): { ratio, min, pass, on, seeThrough } for a text role read against a fill and
+ * for Line; null for the others (and the text styles). seeThrough: the templates whose items
+ * show no Background of their own.
+ */
+export function contrastRow(theme, spec, seeThrough = []) {
+  if (spec.textStyle) return null;
+  const all = contrastResults(theme, spec.theme, { template: spec.template || null, seeThrough });
+  return all.find((c) => c.key === spec.key && !c.textStyle) || null;
+}
+
+/** A contrast result in words: "15.4:1", "Pass" / "Fail", "4.5:1 on Background (blended)". */
+export function contrastText(c) {
+  if (!c) return null;
+  const on = roleOf(c.on).label;
+  const need = `${c.min}:1 on ${on}${c.seeThrough ? ' (blended)' : ''}`;
+  if (c.ratio === null)
+    return { ratio: '', verdict: 'Not checked', need: c.key === 'line' && !c.fg ? 'no line' : 'nothing known behind it' };
+  return { ratio: `${(Math.floor(c.ratio * 10) / 10).toFixed(1)}:1`, verdict: c.pass ? 'Pass' : 'Fail', need };
+}

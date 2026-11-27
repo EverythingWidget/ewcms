@@ -81,6 +81,41 @@ Button text, Line and text styles per color theme (a text style it leaves out fo
 sets one); inside its items (class `tpl-<id>`) the same
 variables carry them, so nothing changes in the CSS.
 
+## Opacity on a fill
+
+A color theme can make a fill see-through: its `"opacity"` gives a fill role a whole percent, 0-100.
+Left out (or 100), the fill is solid, so existing sites don't change. Only the fills take one
+(Background, Button, Line, Header, Curtain; in a template entry Background, Button and Line), never
+a text role: text stays solid so it stays readable. The palette stays solid `"#rrggbb"`; the
+opacity belongs to the role, so the same slot can be solid in one theme and see-through in another.
+
+```json
+"colorThemes": {
+  "darkest": {
+    "line": 5,
+    "opacity": { "line": 20 },
+    "templates": {
+      "preset:card": { "background": 3, "opacity": { "background": 80 } }
+    }
+  }
+}
+```
+
+The role's variable carries it: `--color-line: color-mix(in srgb, var(--palette-5) 20%, transparent)`,
+so a site's CSS reads the same `--color-*` names and the smart colours follow. A Transparent fill and a
+Glass or Transparent Button have no colour, so their opacity does nothing. In a template entry, an
+opacity it leaves out follows the section's (as its colour does), and an opacity alone makes the
+section's colour that see-through inside its items.
+
+`ewcms check` names an opacity on a text role, an unknown role and a value that isn't a whole percent
+0-100. Its contrast warnings blend a see-through fill over what is behind it first (opacity × colour +
+(1 − opacity) × behind, as the browser does): a template's Background over its section's, a
+section's over the site's, Button and Line over their Background, Header and Curtain over the
+site's Background. What is behind the site color theme's own Background (the browser's canvas or a
+page's backdrop photo) isn't known, so text on a see-through site Background isn't checked.
+Theme › Color shows each text role's and Line's contrast under its swatches the same way (Line:
+3:1, shown in the editor only; the check doesn't warn about lines).
+
 ## Smart colours: `--smart-*`
 
 Worked out from the roles (`color-mix`), never picked: read them for states instead of mixing
